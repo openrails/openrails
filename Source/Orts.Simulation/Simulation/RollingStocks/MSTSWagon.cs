@@ -1407,8 +1407,8 @@ namespace Orts.Simulation.RollingStocks
                 {
                    // set a process to pass relevant locomotive parameters from locomotive file to this wagon file
                     var LocoIndex = 0;
-                    for (var i = 0; i < Train.Cars.Count; i++) // test each car to find the where the steam locomotive is in the consist
-                        if (Train.Cars[i] == this)  // If this car is a Steam locomotive then set loco index
+                    for (var i = 0; i < Train.Cars.Count; i++) // test each car to find the where the Diesel locomotive is in the consist
+                        if (Train.Cars[i] == this)  // If this car is a Diesel locomotive then set loco index
                             LocoIndex = i;
                     if (Train.Cars[LocoIndex] is MSTSDieselLocomotive)
                         DieselLocomotiveIdentification = Train.Cars[LocoIndex] as MSTSDieselLocomotive;

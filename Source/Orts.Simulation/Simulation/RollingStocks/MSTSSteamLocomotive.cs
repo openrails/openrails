@@ -1315,6 +1315,7 @@ namespace Orts.Simulation.RollingStocks
                 const float FactorofAdhesion = 4.2f; // Assume a typical factor of adhesion
                 DrvWheelWeightKg = Kg.FromLb(FactorofAdhesion * MaxTractiveEffortLbf); // calculate Drive wheel weight if not in ENG file
                 DrvWheelWeightKg = MathHelper.Clamp(DrvWheelWeightKg, 0.1f, MassKG); // Make sure adhesive weight does not exceed the weight of the locomotive
+                InitialDrvWheelWeightKg = DrvWheelWeightKg; // Initialise the Initial Drive wheel weight the same as starting value
             }
 
             // Calculate factor of adhesion for display purposes
