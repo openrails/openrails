@@ -153,8 +153,9 @@ possible load type. The parameters of the subblock are described below:
 - ``IntakePoint`` has the same format and the same meaning of the IntakePoint 
   line within the standard MSTS freight animations. Following types of loads are 
   accepted: FreightGrain, FreightCoal, FreightGravel, FreightSand, FuelWater, 
-  FuelCoal, FuelDiesel. All these types of loads can be defined also for a pickup 
-  with the MSTS Route editor.
+  FuelCoal, FuelDiesel, FuelWood, FuelSand, FreightGeneral, FreightLivestock, 
+  FreightFuel, FreightMilk, SpecialMail. All these types of loads can be defined. 
+  Some of the pickup types (to right of FuelDiesel) need to be coded in W text files. 
 - ``Shape`` defines the path of the shape to be displayed for the load
 - ``MaxHeight`` defines the height of the shape over its 0 position at full load
 - ``MinHeight`` defines the height of the shape over its 0 position at zero load
@@ -240,3 +241,155 @@ container wagon that is able to carry more than one container, even as a double
 stack, it is therefore possible to use a static OR freightanim for each 
 container, defining its position within the wagon. 
 
+Physics Variation with Loads
+----------------------------
+
+Variable Loads (Continuous Freight Animation)
+'''''''''''''''''''''''''''''''''''''''''''''
+Oepn Rails supports the variation fo key physics parameters in the wagon as the 
+load varies within the wagon. The parameters which can be changed are:
+
+- Mass
+- Brake and handbrake force
+- Friction
+- Centre of Gravity (impacts on curve performance)
+- Drive wheel weight (impacts upon locomotive adhesve weight)
+
+Locomotives and tenders that are also configured will have their loads, and the 
+above physics parameters adjusted as coal and water is used. The adhesive weight 
+(Drive wheel weight) will also be adjusted as the load changes.
+
+To support the correct operation of this feature a known physics starting and 
+finishing point is required, ie the state of these parameters under empty conditions, 
+and the state of these parameters when the wagon or locomotive is full.
+
+To configure the stock correctly the following empty and full parameters need to be 
+included in the ORTSFreightAnims file. Empty values are included in the first block, 
+and full values are included in the second code block. A sample code block is shown 
+below.::
+
+    ORTSFreightAnims
+    (
+      MSTSFreightAnimEnabled (0)
+      WagonEmptyWeight(10.0t-uk)
+      EmptyMaxBrakeForce ( 29.892kN )
+      EmptyMaxHandbrakeForce ( 9.964kN )
+      EmptyORTSDavis_A ( 580.71 )
+      EmptyORTSDavis_B ( 5.0148 )
+      EmptyORTSDavis_C ( 0.694782 )
+      EmptyCentreOfGravity_Y ( 1.41 )
+      IsGondola(0)
+      UnloadingStartDelay (5)
+      
+    FreightAnimContinuous
+     (
+      IntakePoint ( 0.0 6.0 FreightCoal )
+      Shape(H_Coal.s) 
+      MaxHeight(0.1)
+      MinHeight(-0.85)
+      FreightWeightWhenFull(26.0t-uk)
+      FullAtStart( 0 )
+      FullMaxBrakeForce ( 89.676kN )
+      FullMaxHandbrakeForce ( 9.964kN )
+      FullORTSDavis_A ( 748.61 )
+      FullORTSDavis_B ( 18.0157 )
+      FullORTSDavis_C ( 0.838530 )
+      FullCentreOfGravity_Y ( 1.8 ) 
+     )
+  )
+
+
+Note for enclosed wagons, such as covered vans, the freight animation shape may not be required, 
+and therefore the parameters Shape, MaxHeight, and MinHeight can be left out of the file.
+ 
+The ``IntakePoint`` statement is necessary to ensure satisfactory operation of the feature.
+
+Open Rails supports the following freight or fuel load types:
+
+- FreightGrain = 1,
+- FreightCoal = 2,
+- FreightGravel = 3,
+- FreightSand = 4,
+- FuelWater = 5,
+- FuelCoal = 6,
+- FuelDiesel = 7,
+- FuelWood = 8, 
+- FuelSand = 9, 
+- FreightGeneral = 10, 
+- FreightLivestock = 11, 
+- FreightFuel = 12,  
+- FreightMilk = 13,   
+- SpecialMail = 14  
+
+The key word, e.g. ``FreightMilk``, is used to define the freight type in the ``IntakePoint`` statement, 
+whilst the number is used to define the pickup point in the route (Replaces the first number 
+in the ``PickupType ( 1 0 )`` statement).
+
+For load variation in a locomotive, a similar configuration is used in regard to the full and empty 
+parameters, but as the ``IntakePoint`` statement is normally included elsewhere in the ENG file 
+or tender (or auxiliary tender) WAG file these statements can be left out of the freight 
+animation section.
+
+For example, the following code block would apply to a steam locomotive (note the absence of the 
+``Intakepoint`` statement)::
+
+  ORTSFreightAnims
+  (
+      WagonEmptyWeight(76.35t-uk)
+      EmptyMaxBrakeForce ( 29.892kN )
+      EmptyMaxHandbrakeForce ( 9.964kN )
+      EmptyORTSDavis_A ( 580.71 )
+      EmptyORTSDavis_B ( 5.0148 )
+      EmptyORTSDavis_C ( 0.694782 )
+      EmptyCentreOfGravity_Y ( 1.41 )
+      
+    FreightAnimContinuous
+     (
+      FreightWeightWhenFull(10.34t-uk)
+      FullMaxBrakeForce ( 89.676kN )
+      FullMaxHandbrakeForce ( 9.964kN )
+      FullORTSDavis_A ( 748.61 )
+      FullORTSDavis_B ( 18.0157 )
+      FullORTSDavis_C ( 0.838530 )
+      FullCentreOfGravity_Y ( 1.8 ) 
+     )
+  )
+  
+Notes:
+
+- Intake points should be defined within the root WAG file
+- Intake points, freight animations should not be defined within the INCLUDE file
+- Empty weight of tender will be the full mass minus coal and water weight
+- ``FreightWeightWhenFull`` will be the sum of the coal and water weight.
+- Full physics values will be those values for the combined weight of the tender, water and coal.
+   
+
+Static wagons (Static Freight Animations)
+'''''''''''''''''''''''''''''''''''''''''
+Static wagons can be defined with a full and empty state, however only one freight animation should 
+have full values assigned to it,as OR cannot then calculate the known full state.
+
+A typical configuration code block will be as follows::
+
+  ORTSFreightAnims
+  (
+    MSTSFreightAnimEnabled (0)
+    WagonEmptyWeight(6.5t-uk)
+
+  FreightAnimStatic
+  (
+    SubType(Default)
+    Shape( 15ft_3p_HumpSheet2.s )
+    Offset( 0, 0, 0)
+    FreightWeight( 9.0t-uk )
+    FullMaxBrakeForce ( 19.43kN ) 
+    FullMaxHandbrakeForce ( 6.477kN )
+    FullORTSDavis_A ( 358.37 )
+    FullORTSDavis_B ( 7.7739 )
+    FullORTSDavis_C ( 0.718740 )
+    FullCentreOfGravity_Y ( 1.8 ) 
+   )
+  )
+ 
+The empty values for the wagon will be read from the normal base WAG file paramers.
+ 
