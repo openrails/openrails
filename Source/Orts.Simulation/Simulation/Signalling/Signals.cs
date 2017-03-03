@@ -8281,9 +8281,7 @@ namespace Orts.Simulation.Signalling
                         for (int iItem = 0; iItem < thisList.TrackCircuitItem.Count && !signalFound; iItem++)
                         {
                             TrackCircuitSignalItem thisItem = thisList.TrackCircuitItem[iItem];
-                            if ((thisItem.SignalRef.TCReference ==  TCReference && 
-                                (thisItem.SignalLocation > position && direction == 0) || (thisItem.SignalLocation < position && direction == 1))
-                                || thisItem.SignalRef.TCReference != TCReference)
+                            if (thisItem.SignalLocation > position)
                             {
                                 defaultNextSignal[fntype] = thisItem.SignalRef.thisRef;
                                 signalFound = true;
@@ -11491,9 +11489,10 @@ namespace Orts.Simulation.Signalling
             SignalObject thisSignal = mainSignal;
 
             // ensure next signal of type 1 is located correctly
-
-            if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) 
-            thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+            if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())
+            {
+                thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+            }
 
             // loop through all available signals of type 1
 
@@ -11504,9 +11503,8 @@ namespace Orts.Simulation.Signalling
                 MstsSignalAspect thisState = thisSignal.this_sig_mr_routed(sigFN1, dumpfile);
 
                 // ensure correct next signals are located
-
                 if (sigFN1 != MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal()) 
-               {
+                {
                     var sigFound = thisSignal.SONextSignal(sigFN1);
                     if (sigFound >= 0) thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
                 }
@@ -11516,17 +11514,18 @@ namespace Orts.Simulation.Signalling
                     if (sigFound >= 0) thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
                 }
 
-                if (sig2Index == thisSignal.thisRef) // this signal also contains type 2 signal and is therefor valid and last signal
+                if (sig2Index == thisSignal.thisRef) // this signal also contains type 2 signal and is therefor valid
                 {
                     foundValid = true;
                     foundState = foundState < thisState ? foundState : thisState;
-                    return (foundValid ? foundState : MstsSignalAspect.STOP);
+                    return (foundState);
                 }
 
-                if (sig2Index >= 0 && thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
+                else if (sig2Index >= 0 && thisSignal.sigfound[(int)sigFN2] != sig2Index)  // we are beyond type 2 signal
                 {
                     return (foundValid ? foundState : MstsSignalAspect.STOP);
                 }
+
                 foundValid = true;
                 foundState = foundState < thisState ? foundState : thisState;
             }
