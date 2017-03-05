@@ -42,7 +42,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             get
             {
-                return emergencyBrakingPushButton || tcsEmergencyBraking;
+                return emergencyBrakingPushButton || tcsEmergencyBraking || (Script.GetState() == ControllerState.Emergency);
             }
         }
         public bool EmergencyBrakingPushButton
