@@ -258,9 +258,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         // For copy
         public FreightAnimationContinuous(FreightAnimationContinuous freightAnimContin, MSTSWagon wagon)
         {
-            wagon.IntakePointList.Add(new IntakePoint(freightAnimContin.LinkedIntakePoint));
-            wagon.IntakePointList.Last().LinkedFreightAnim = this;
-            LinkedIntakePoint = wagon.IntakePointList.Last();
+            if (freightAnimContin.LinkedIntakePoint != null)
+            {
+                wagon.IntakePointList.Add(new IntakePoint(freightAnimContin.LinkedIntakePoint));
+                wagon.IntakePointList.Last().LinkedFreightAnim = this;
+                LinkedIntakePoint = wagon.IntakePointList.Last();
+            }
             ShapeFileName = freightAnimContin.ShapeFileName;
             MaxHeight = freightAnimContin.MaxHeight;
             MinHeight = freightAnimContin.MinHeight;

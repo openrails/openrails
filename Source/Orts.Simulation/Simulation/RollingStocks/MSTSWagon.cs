@@ -909,7 +909,9 @@ namespace Orts.Simulation.RollingStocks
                 foreach (IntakePoint copyIntakePoint in copy.IntakePointList)
                 {
                     // If freight animations not used or else wagon is a tender or locomotive, use the "MSTS" type IntakePoints if present in WAG / ENG file
-                    if (copyIntakePoint.LinkedFreightAnim == null || WagonType == WagonTypes.Engine || WagonType == WagonTypes.Tender || AuxWagonType == "AuxiliaryTender")
+
+                    if (copyIntakePoint.LinkedFreightAnim == null)
+               //     if (copyIntakePoint.LinkedFreightAnim == null || WagonType == WagonTypes.Engine || WagonType == WagonTypes.Tender || AuxWagonType == "AuxiliaryTender")
                         IntakePointList.Add(new IntakePoint(copyIntakePoint));
                 }
             }
