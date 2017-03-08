@@ -258,8 +258,6 @@ namespace Orts.Simulation.RollingStocks
         protected const float DefaultMainResVolume = 0.78f; // Value to be inserted if .eng parameters are corrected
         protected const float DefaultMaxMainResPressure = 140; // Max value to be inserted if .eng parameters are corrected
 
-        public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
-
         public List<CabView> CabViewList = new List<CabView>();
         public CabView3D CabView3D;
 
@@ -593,20 +591,6 @@ namespace Orts.Simulation.RollingStocks
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
 
             return new CabView3D(cvfFile, CabViewpoints, extendedCVF, CabViewType.Front, noseAhead, shapeFilePath);
-        }
-
-        protected void ParseEffects(string lowercasetoken, STFReader stf)
-        {
-            stf.MustMatch("(");
-            string s;
-
-            while ((s = stf.ReadItem()) != ")")
-            {
-                var data = new ParticleEmitterData(stf);
-                if (!EffectData.ContainsKey(s))
-                    EffectData.Add(s, new List<ParticleEmitterData>());
-                EffectData[s].Add(data);
-            }
         }
 
         /// <summary>

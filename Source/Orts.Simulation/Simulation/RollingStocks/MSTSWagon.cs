@@ -173,6 +173,22 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public MSTSDieselLocomotive DieselLocomotiveIdentification { get; private set; }
 
+        public Dictionary<string, List<ParticleEmitterData>> EffectData = new Dictionary<string, List<ParticleEmitterData>>();
+
+        protected void ParseEffects(string lowercasetoken, STFReader stf)
+        {
+            stf.MustMatch("(");
+            string s;
+
+            while ((s = stf.ReadItem()) != ")")
+            {
+                var data = new ParticleEmitterData(stf);
+                if (!EffectData.ContainsKey(s))
+                    EffectData.Add(s, new List<ParticleEmitterData>());
+                EffectData[s].Add(data);
+            }
+        }
+
 
         public List<IntakePoint> IntakePointList = new List<IntakePoint>();
 
