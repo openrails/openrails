@@ -233,12 +233,6 @@ namespace Orts.Viewer3D
                         if (node == null || node.TrVectorNode == null) continue;
                         foreach (var section in node.TrVectorNode.TrVectorSections)
                         {
-                            var trackShape = Viewer.Simulator.TSectionDat.TrackShapes.Get((uint)section.ShapeIndex);
-                            if (trackShape.TunnelShape)
-                            {
-                                var elev = Viewer.Tiles.GetElevation(section.TileX, section.TileZ, section.X, section.Z);
-                                if (elev > section.Y + 10) continue;
-                            }
                             var key = "" + section.WFNameX + "." + section.WFNameZ;
                             if (!SectionMap.ContainsKey(key)) SectionMap.Add(key, new List<TrVectorSection>());
                             SectionMap[key].Add(section);
