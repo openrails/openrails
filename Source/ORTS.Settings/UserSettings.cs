@@ -260,7 +260,7 @@ namespace ORTS.Settings
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
         [Default(false)]
-        public bool ConditionalLoadOfNightTextures { get; set; }
+        public bool ConditionalLoadOfDayOrNightTextures { get; set; }
         [Default(false)]
         public bool ExtendedAIShunting { get; set; }
         [Default(false)]

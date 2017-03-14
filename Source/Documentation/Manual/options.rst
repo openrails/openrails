@@ -541,13 +541,16 @@ the start signal will have. This option is checked by default. Unchecking
 the option has an effect on simulation behavior only if no
 :ref:`Timetable mode <timetable>` operation is under way.
 
-Load night textures only when needed
-------------------------------------
+Load day/night textures only when needed
+----------------------------------------
 
-As a default OR loads night textures together with the day textures at 
-daytime. When this option is selected, to reduce loading time and reduce 
+As a default OR loads night textures together with the day textures both at 
+daytime and nighttime. When this option is selected, to reduce loading time and reduce 
 memory used, night textures are not loaded in the daytime and are only 
-loaded at sunset (if the game continues through sunset time).
+loaded at sunset (if the game continues through sunset time); analogously day 
+textures are not loaded in the nighttime if the related night textures are 
+available, and are only loaded at sunrise (if the game continues through sunrise 
+time).
 
 Signal light glow
 -----------------

@@ -1763,7 +1763,7 @@
             this.checkConditionalLoadOfNightTextures.Name = "checkConditionalLoadOfNightTextures";
             this.checkConditionalLoadOfNightTextures.Size = new System.Drawing.Size(206, 17);
             this.checkConditionalLoadOfNightTextures.TabIndex = 17;
-            this.checkConditionalLoadOfNightTextures.Text = "Load night textures only when needed";
+            this.checkConditionalLoadOfNightTextures.Text = "Load day/night textures only when needed";
             this.checkConditionalLoadOfNightTextures.UseVisualStyleBackColor = true;
             // 
             // checkForcedRedAtStationStops

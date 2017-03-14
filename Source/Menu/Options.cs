@@ -306,7 +306,7 @@ namespace ORTS
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
-            checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
+            checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfDayOrNightTextures;
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
             checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
             checkAutopilot.Checked = Settings.Autopilot;
@@ -499,7 +499,7 @@ namespace ORTS
             Settings.DoubleWire = checkDoubleWire.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.LODBias = trackLODBias.Value;
-            Settings.ConditionalLoadOfNightTextures = checkConditionalLoadOfNightTextures.Checked;
+            Settings.ConditionalLoadOfDayOrNightTextures = checkConditionalLoadOfNightTextures.Checked;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
             Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
             Settings.Autopilot = checkAutopilot.Checked;

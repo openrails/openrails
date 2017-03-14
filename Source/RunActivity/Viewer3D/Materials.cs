@@ -356,6 +356,30 @@ namespace Orts.Viewer3D
             return true;
          }
 
+       public bool LoadDayTextures()
+       {
+           int count = 0;
+           foreach (KeyValuePair<string, Material> materialPair in Materials)
+           {
+               if (materialPair.Value is SceneryMaterial)
+               {
+                   var material = materialPair.Value as SceneryMaterial;
+                   if (material.LoadDayTexture()) count++;
+                   if (count >= 20)
+                   {
+                       count = 0;
+                       // retest if there is enough free memory left;
+                       var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                       if (remainingMemorySpace < 0)
+                       {
+                           return false; // too bad, no more space, other night textures won't be loaded
+                       }
+                   }
+               }
+           }
+           return true;
+       }
+
         public void Mark()
         {
             MaterialMarks = new Dictionary<string, bool>(Materials.Count);
@@ -626,7 +650,7 @@ namespace Orts.Viewer3D
     {
         readonly SceneryMaterialOptions Options;
         readonly float MipMapBias;
-        protected readonly Texture2D Texture;
+        protected Texture2D Texture;
         private readonly string TexturePath;
         protected Texture2D NightTexture;
         byte AceAlphaBits;   // the number of bits in the ace file's alpha channel 
@@ -643,19 +667,34 @@ namespace Orts.Viewer3D
             Options = options;
             MipMapBias = mipMapBias;
             TexturePath = texturePath;
-            Texture = Viewer.TextureManager.Get(texturePath, true);
+            Texture = SharedMaterialManager.MissingTexture;
+            NightTexture = SharedMaterialManager.MissingTexture;
             // <CSComment> if "trainset" is in the path (true for night textures for 3DCabs) deferred load of night textures is disabled 
-            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && (!viewer.DontLoadNightTextures || TexturePath.Contains(@"\trainset\")))
+            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.DontLoadNightTextures && !viewer.DontLoadDayTextures) 
+                || TexturePath.Contains(@"\trainset\")))
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                Texture = Viewer.TextureManager.Get(texturePath, true);
             }
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadNightTextures)
             {
-                NightTexture = SharedMaterialManager.MissingTexture;
                 viewer.NightTexturesNotLoaded = true;
+                Texture = Viewer.TextureManager.Get(texturePath, true);
             }
+
+            else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadDayTextures)
+            {
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
+                if (!String.IsNullOrEmpty(nightTexturePath))
+                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                if (NightTexture != SharedMaterialManager.MissingTexture)
+                {
+                    viewer.DayTexturesNotLoaded = true;
+                }
+            }
+            else Texture = Viewer.TextureManager.Get(texturePath, true);
 
             // Record the number of bits in the alpha channel of the original ace file
             if (Texture != null && Texture.Tag != null && Texture.Tag.GetType() == typeof(Orts.Formats.Msts.AceInfo))
@@ -667,7 +706,7 @@ namespace Orts.Viewer3D
 
        public bool LoadNightTexture ()
          {
-             bool oneMore = false;
+            bool oneMore = false;
             if (((Options & SceneryMaterialOptions.NightTexture) != 0) && (NightTexture == SharedMaterialManager.MissingTexture))               
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, TexturePath);
@@ -679,6 +718,17 @@ namespace Orts.Viewer3D
             }
             return oneMore;
         }
+
+       public bool LoadDayTexture ()
+       {
+           bool oneMore = false;
+           if (Texture == SharedMaterialManager.MissingTexture)
+           {
+                Texture = Viewer.TextureManager.Get(TexturePath.ToLower());
+                oneMore = true;
+           }
+           return oneMore;
+       }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {

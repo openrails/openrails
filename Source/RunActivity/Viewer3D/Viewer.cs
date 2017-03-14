@@ -173,9 +173,12 @@ namespace Orts.Viewer3D
         public CommandLog Log { get { return Simulator.Log; } }
 
         public bool DontLoadNightTextures; // Checkbox set and time of day allows not to load textures
+        public bool DontLoadDayTextures; // Checkbox set and time of day allows not to load textures
         public bool NightTexturesNotLoaded; // At least one night texture hasn't been loaded
-        public long LoadMemoryThreshold; // Above this threshold loader doesn't bulk load night textures
+        public bool DayTexturesNotLoaded; // At least one day texture hasn't been loaded
+        public long LoadMemoryThreshold; // Above this threshold loader doesn't bulk load day or night textures
         public bool tryLoadingNightTextures = false;
+        public bool tryLoadingDayTextures = false;
 
         public Camera SuspendedCamera { get; private set; }
 
@@ -307,6 +310,7 @@ namespace Orts.Viewer3D
             SaveActivityFileStem = fileStem;
             SaveActivityThumbnail = true;
             outf.Write(NightTexturesNotLoaded);
+            outf.Write(DayTexturesNotLoaded);
             World.WeatherControl.SaveWeatherParameters(outf);
         }
 
@@ -333,8 +337,10 @@ namespace Orts.Viewer3D
             Camera.Restore(inf);
             CabYOffsetPixels = inf.ReadInt32();
             NightTexturesNotLoaded = inf.ReadBoolean();
+            DayTexturesNotLoaded = inf.ReadBoolean();
             LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             tryLoadingNightTextures = true;
+            tryLoadingDayTextures = true;
             World.WeatherControl.RestoreWeatherParameters(inf);
         }
 
@@ -406,7 +412,7 @@ namespace Orts.Viewer3D
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that
             // all loading is performed on a single thread that we can handle in debugging and tracing.
             World.LoadPrep();
-            if (Simulator.Settings.ConditionalLoadOfNightTextures) // We need to compute sun height only in this case
+            if (Simulator.Settings.ConditionalLoadOfDayOrNightTextures) // We need to compute sun height only in this case
             {
             MaterialManager.LoadPrep();
             LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;

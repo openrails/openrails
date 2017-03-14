@@ -76,9 +76,12 @@ namespace Orts.Viewer3D
         public void Load()
         {
             var cancellation = Viewer.LoaderProcess.CancellationToken;
-            Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfNightTextures &&
+            Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
             ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime % 86400 < 43200) ||
             (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime % 86400 >= 43200))) ? true : false;
+            Viewer.DontLoadDayTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
+            ((Viewer.MaterialManager.sunDirection.Y < -0.05f && Program.Simulator.ClockTime % 86400 >= 43200) ||
+            (Viewer.MaterialManager.sunDirection.Y < -0.15f && Program.Simulator.ClockTime % 86400 < 43200))) ? true : false;
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
@@ -104,6 +107,7 @@ namespace Orts.Viewer3D
                     tile.Unload();
                 WorldFiles = newWorldFiles;
                 Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
+                Viewer.tryLoadingDayTextures = true; // when Tiles loaded change you can try
             }
             else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime % 86400 >= 43200 && Viewer.tryLoadingNightTextures)
             {
@@ -124,6 +128,26 @@ namespace Orts.Viewer3D
                 }
                 else if (sunHeight <= 0.01)
                     Viewer.NightTexturesNotLoaded = false; // too late to try, we must give up and we don't load the night textures
+            }
+            else if (Viewer.DayTexturesNotLoaded && Program.Simulator.ClockTime % 86400 < 43200 && Viewer.tryLoadingDayTextures)
+            {
+                var sunHeight = Viewer.MaterialManager.sunDirection.Y;
+                if (sunHeight > -0.10f && sunHeight < -0.01)
+                {
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    if (remainingMemorySpace >= 0) // if not we'll try again
+                    {
+                        // Day is coming, it's time to load the day textures
+                        var success = Viewer.MaterialManager.LoadDayTextures();
+                        if (success)
+                        {
+                            Viewer.DayTexturesNotLoaded = false;
+                        }
+                    }
+                    Viewer.tryLoadingDayTextures = false;
+                }
+                else if (sunHeight >= -0.01)
+                    Viewer.DayTexturesNotLoaded = false; // too late to try, we must give up and we don't load the day textures. TODO: is this OK?
             }
         }
 
