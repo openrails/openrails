@@ -192,20 +192,39 @@ namespace Orts.Viewer3D
                 bool onTrack = false;
                 var scale = MathHelper.Lerp(forest.scaleRange.Minimum, forest.scaleRange.Maximum, (float)random.NextDouble());
                 var treeSize = new Vector3(forest.treeSize.Width * scale, forest.treeSize.Height * scale, 1);
+                var heightComputed = false;
                 if (MaximumCenterlineOffset > 0 && sections != null && sections.Count > 0)
                 {
                     foreach (var section in sections)
                     {
-                        if (InitTrackSection(section, xnaTreePosition, position.TileX, position.TileZ, treeSize.X/2))
+                        onTrack = InitTrackSection(section, xnaTreePosition, position.TileX, position.TileZ, treeSize.X / 2);
+                        if (onTrack)
                         {
-                            onTrack = true;
+                            try
+                            {
+                                var trackShape = Viewer.Simulator.TSectionDat.TrackShapes.Get((uint)section.ShapeIndex);
+                                if (trackShape != null && trackShape.TunnelShape)
+                                {
+                                    xnaTreePosition.Y = tiles.LoadAndGetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z, false);
+                                    heightComputed = true;
+                                    if (xnaTreePosition.Y > section.Y + 10)
+                                    {
+                                        onTrack = false;
+                                        continue;
+                                    }
+                                }
+                            }
+                            catch
+                            {
+
+                            }
                             break;
                         }
                     }
                 }
                 if (!onTrack)
                 {
-                    xnaTreePosition.Y = tiles.LoadAndGetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z, false);
+                    if (!heightComputed) xnaTreePosition.Y = tiles.LoadAndGetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z, false);
                     xnaTreePosition -= position.XNAMatrix.Translation;
 
                     trees.Add(new VertexPositionNormalTexture(xnaTreePosition, treeSize, new Vector2(1, 1)));
