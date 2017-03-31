@@ -697,8 +697,11 @@ namespace Orts.Viewer3D
             else Texture = Viewer.TextureManager.Get(texturePath, true);
 
             // Record the number of bits in the alpha channel of the original ace file
-            if (Texture != null && Texture.Tag != null && Texture.Tag.GetType() == typeof(Orts.Formats.Msts.AceInfo))
-                AceAlphaBits = ((Orts.Formats.Msts.AceInfo)Texture.Tag).AlphaBits;
+            var texture = SharedMaterialManager.MissingTexture;
+            if (Texture != SharedMaterialManager.MissingTexture && Texture != null) texture = Texture;
+            else if (NightTexture != SharedMaterialManager.MissingTexture && NightTexture != null) texture = NightTexture;
+            if (texture.Tag != null && texture.Tag.GetType() == typeof(Orts.Formats.Msts.AceInfo))
+                AceAlphaBits = ((Orts.Formats.Msts.AceInfo)texture.Tag).AlphaBits;
             else
                 AceAlphaBits = 0;
 
