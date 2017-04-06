@@ -8246,7 +8246,14 @@ namespace Orts.Simulation.Physics
             }
             else if (ControlMode == TRAIN_CONTROL.EXPLORER)
             {
-                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                if (LeadLocomotive != null &&
+                    (((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSEmergencyBraking || ((MSTSLocomotive)LeadLocomotive).TrainBrakeController.TCSFullServiceBraking))
+                {
+                    ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+                    ResetExplorerMode();
+                    return;
+                }
+                else if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Cannot change to Manual Mode while in Explorer Mode"));
             }
             else
@@ -8381,6 +8388,66 @@ namespace Orts.Simulation.Physics
             if (!Simulator.TimetableMode) AuxActionsContain.ResetAuxAction(this);
             SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
             TCRoute.SetReversalOffset(Length);
+        }
+
+        //================================================================================================//
+        //
+        // ResetExplorerMode
+        //
+
+        public void ResetExplorerMode()
+        {
+            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
+                ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
+
+            // set track occupation (using present route)
+            UpdateSectionStateExplorer();
+
+            // breakdown present route - both directions if set
+
+            if (ValidRoute[0] != null)
+            {
+                int listIndex = PresentPosition[0].RouteListIndex;
+                signalRef.BreakDownRouteList(ValidRoute[0], listIndex, routedForward);
+                ClearDeadlocks();
+            }
+
+            ValidRoute[0] = null;
+            LastReservedSection[0] = -1;
+
+            if (ValidRoute[1] != null)
+            {
+                int listIndex = PresentPosition[1].RouteListIndex;
+                signalRef.BreakDownRouteList(ValidRoute[1], listIndex, routedBackward);
+            }
+            ValidRoute[1] = null;
+            LastReservedSection[1] = -1;
+
+            // clear all outstanding actions
+
+            ClearActiveSectionItems();
+            requiredActions.RemovePendingAIActionItems(true);
+
+            // clear signal info
+
+            NextSignalObject[0] = null;
+            NextSignalObject[1] = null;
+
+            SignalObjectItems.Clear();
+
+            PassedSignalSpeeds.Clear();
+
+            // set explorer mode
+
+            ControlMode = TRAIN_CONTROL.EXPLORER;
+
+            // reset routes and check sections either end of train
+
+            PresentPosition[0].RouteListIndex = -1;
+            PresentPosition[1].RouteListIndex = -1;
+            PreviousPosition[0].RouteListIndex = -1;
+
+            UpdateExplorerMode(-1);
         }
 
         //================================================================================================//
