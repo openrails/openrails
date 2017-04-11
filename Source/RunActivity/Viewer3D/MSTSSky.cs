@@ -331,7 +331,7 @@ namespace Orts.Viewer3D
             MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, mstsskytextureu, mstsskytexturev);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
-            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 0.4f, mstscloudtextureu, mstscloudtexturev);
+            MSTSSkyDomeVertexList(0, mstsskyRadius - mstscloudDomeRadiusDiff, 1.0f, mstscloudtextureu, mstscloudtexturev);
             MSTSSkyDomeTriangleList((short)((indexCount - 6) / 2), 1);
             // Moon quad
             MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
