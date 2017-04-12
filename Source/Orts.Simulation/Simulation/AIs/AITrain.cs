@@ -1274,7 +1274,7 @@ namespace Orts.Simulation.AIs
                 return;
             }
 
-            // get distance to station, but not if just after switch to Autopilot and now during station stop
+            // get distance to station, but not if just after switch to Autopilot and not during station stop
             bool validStop = false;
             if (!fromAutopilotSwitch || (Simulator.PlayerLocomotive != null && Simulator.ActivityRun != null &&
                 !(Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation())))
@@ -1282,7 +1282,7 @@ namespace Orts.Simulation.AIs
                 while (!validStop)
                 {
                     float[] distancesM = CalculateDistancesToNextStation(thisStation, TrainMaxSpeedMpS, false);
-                    if (distancesM[0] < 0f) // stop is not valid
+                    if (distancesM[0] < 0f && !(MovementState == AI_MOVEMENT_STATE.STATION_STOP &&  distancesM[0] != -1)) // stop is not valid
                     {
 
                         StationStops.RemoveAt(0);
