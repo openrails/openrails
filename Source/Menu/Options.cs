@@ -212,6 +212,7 @@ namespace ORTS
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
             checkDataLogMisc.Checked = Settings.DataLogMisc;
+            checkDataLogSteamPerformance.Checked = Settings.DataLogSteamPerformance;
 
             // Evaluation tab
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
@@ -472,6 +473,7 @@ namespace ORTS
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogMisc = checkDataLogMisc.Checked;
+            Settings.DataLogSteamPerformance = checkDataLogSteamPerformance.Checked;
 
             // Evaluation tab
             Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;

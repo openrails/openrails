@@ -224,7 +224,8 @@ namespace Orts.Common
         // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
         static float[] InitialPressureDropRatio = new float[]
         {
-            0.98f, 0.95f, 0.927f, 0.90f, 0.874f, 0.85f, 0.82f, 0.81f
+      //      0.98f, 0.95f, 0.927f, 0.90f, 0.874f, 0.85f, 0.82f, 0.81f    - old values to be checked
+            0.99f, 0.97f, 0.95f, 0.94f, 0.93f, 0.92f, 0.91f, 0.90f  // values to be checked
         };
         
        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON

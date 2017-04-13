@@ -52,6 +52,8 @@ namespace Orts.Viewer3D
         int FrameNumber;
         double LastUpdateRealTime;   // update text message only 10 times per second
 
+        float previousLoggedSteamSpeedMpH = -5.0f;
+
 #if DEBUG_DUMP_STEAM_POWER_CURVE
         float previousLoggedSpeedMpH = -1.0f;
 #endif
@@ -111,6 +113,49 @@ namespace Orts.Viewer3D
             }
         }
 
+        public bool IsRecordingSteamPerformance
+        {
+            get
+            {
+                return Viewer.Settings.DataLogger
+                && Viewer.Settings.DataLogSteamPerformance
+                && Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive);
+            }
+        }
+
+        void RecordSteamPerformance()
+        {
+           MSTSSteamLocomotive steamloco = (MSTSSteamLocomotive)Viewer.PlayerLocomotive;
+                        float SteamspeedMpH = MpS.ToMpH(steamloco.SpeedMpS);
+                        if (SteamspeedMpH >= previousLoggedSteamSpeedMpH + 5) // Add a new record every time speed increases by 5 mph
+                        {
+                            previousLoggedSteamSpeedMpH = (float)(int)SteamspeedMpH; // Keep speed records close to whole numbers
+
+                            Logger.Data(MpS.FromMpS(Viewer.PlayerLocomotive.SpeedMpS, false).ToString("F0"));
+                            Logger.Data(S.ToM(steamloco.SteamPerformanceTimeS).ToString("F1"));
+                            Logger.Data(Viewer.PlayerLocomotive.ThrottlePercent.ToString("F0"));
+                            Logger.Data(Viewer.PlayerTrain.MUReverserPercent.ToString("F0"));
+                            Logger.Data(N.ToLbf(Viewer.PlayerLocomotive.MotiveForceN).ToString("F0"));
+                            Logger.Data(steamloco.IndicatedHorsePowerHP.ToString("F0"));
+                            Logger.Data(steamloco.DrawBarPullLbsF.ToString("F0"));
+                            Logger.Data(steamloco.DrawbarHorsePowerHP.ToString("F0"));
+                            Logger.Data(N.ToLbf(steamloco.LocomotiveCouplerForceN).ToString("F0"));
+                            Logger.Data(N.ToLbf(steamloco.LocoTenderFrictionForceN).ToString("F0"));
+                            Logger.Data(N.ToLbf(steamloco.TotalFrictionForceN).ToString("F0"));
+                            Logger.Data(Kg.ToTUK(steamloco.TrainLoadKg).ToString("F0"));
+                            Logger.Data(steamloco.BoilerPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.CurrentSuperheatTempF.ToString("F0"));
+                            Logger.Data(steamloco.SteamChestPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.MeanEffectivePressurePSI.ToString("F0"));
+                            Logger.Data(pS.TopH(steamloco.CylinderSteamUsageLBpS).ToString("F0"));
+                            Logger.Data(pS.TopH(steamloco.WaterConsumptionLbpS / steamloco.WaterLBpUKG).ToString("F0"));
+                            Logger.Data(Kg.ToLb(pS.TopH(steamloco.FuelBurnRateKGpS)).ToString("F0"));
+                            Logger.Data(steamloco.SuperheaterSteamUsageFactor.ToString("F1"));
+                          
+                            Logger.End();
+                        }
+        }
+
 #if DEBUG_DUMP_STEAM_POWER_CURVE
         public bool IsRecordingSteamPowerCurve { get 
             {
@@ -118,6 +163,7 @@ namespace Orts.Viewer3D
                 && !Viewer.Settings.DataLogPerformance
                 && !Viewer.Settings.DataLogPhysics
                 && !Viewer.Settings.DataLogMisc
+                && !Viewer.Settings.DataLogSteamPerformance
                 && Viewer.PlayerLocomotive.GetType() == typeof(MSTSSteamLocomotive);
             }
         }
@@ -149,7 +195,7 @@ namespace Orts.Viewer3D
                 LastUpdateRealTime = Viewer.RealTime;
                 Profile(elapsedRealSeconds);
             }
-
+                        
 #if DEBUG_DUMP_STEAM_POWER_CURVE
             if (IsRecordingSteamPowerCurve)
             {
@@ -158,6 +204,13 @@ namespace Orts.Viewer3D
             else
             {
 #endif
+                if (IsRecordingSteamPerformance)
+                {
+                    RecordSteamPerformance();
+                }
+                else
+
+
             //Here's where the logger stores the data from each frame
                 if (Viewer.Settings.DataLogger)
                 {
@@ -391,11 +444,43 @@ namespace Orts.Viewer3D
                 //        "null"});
                 //}
 
+                if (settings.DataLogSteamPerformance)
+                {
+                    headerLine = String.Join(Convert.ToString((char)separator),
+                        new string[] 
+                            {    
+                                "Speed (mph)",
+                                "Time (M)",
+                                "Throttle (%)",
+                                "Cut-off (%)",
+                                "ITE (MotiveForce - lbf)",
+                                "IHP (hp)",
+                                "Drawbar TE (lbf)",
+                                "Drawbar HP (hp)",
+                                "Coupler Force (lbf)",
+                                "Loco & Tender Resistance (lbf)",
+                                "Train Resistance (lbf)",
+                                "Train Load (t-uk)",
+                                "Boiler Pressure (psi)",
+                                "Superheat Temp (F)",
+                                "Steam Chest Pressure (psi)",
+                                "MEP (psi)",
+                                "Steam consumption (lb/h)",
+                                "Water consumption (UK Gal/h",
+                                "Coal consumption (lb/h)",
+                                "Cylinder Thermal Efficiency"
+
+                             }
+                        );
+                }
+
 #if DEBUG_DUMP_STEAM_POWER_CURVE
                 if (!settings.DataLogPerformance
                 && !settings.DataLogPhysics
-                && !settings.DataLogMisc)
+                && !settings.DataLogMisc
+                && !settings.DataLogSteamPerformance)
                 {
+                    
                     headerLine = String.Join(Convert.ToString((char)separator),
                         new string[] 
                             {    

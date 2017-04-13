@@ -18,8 +18,8 @@
 // Steam debugging is off by default - uncomment the #define to turn on - provides printout in log at set speed for steam indicator pressures.
 //#define DEBUG_LOCO_STEAM
 
-// Burn debugging is off by default - uncomment the #define to turn on - provides visibility of burn related parameters on extended HUD.
-//#define DEBUG_LOCO_BURN
+// Burn debugging is off by default - uncomment the #define to turn on - provides visibility of burn related parameters for AI Fireman on extended HUD.
+//#define DEBUG_LOCO_BURN_AI
 
 // Steam usage debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
 //#define DEBUG_LOCO_STEAM_USAGE
@@ -48,6 +48,8 @@
 // Debug for Steam Ejector
 //#define DEBUG_STEAM_EJECTOR
 
+// Debug for Steam Performance Data @ 5mph increments
+//#define DEBUG_STEAM_PERFORMANCE
 
 /* STEAM LOCOMOTIVE CLASSES
  * 
@@ -130,6 +132,7 @@ namespace Orts.Simulation.RollingStocks
         public bool AuxTenderMoveFlag = false; // Flag to indicate whether train has moved
         bool SteamIsAuxTenderCoupled = false;
         float TenderWaterChangePercent;       // Percentatge of water in tender
+        public float WaterConsumptionLbpS;
         public float CurrentAuxTenderWaterMassKG;
         public float CurrentAuxTenderWaterVolumeUKG;
         float CombinedTenderWaterVolumeUKG;     // Combined value of water in tender and aux tender
@@ -180,9 +183,6 @@ namespace Orts.Simulation.RollingStocks
         float MaxBoilerPressHeatBTU;  // Boiler heat at max boiler pressure
         float baseStartTempK;     // Starting water temp
         float StartBoilerHeatBTU;
-        float FiringSteamUsageRateLBpS;   // rate if excessive usage
-        float BoilerHeatRatio = 1.0f;   // Boiler heat ratio, if boiler heat exceeds, normal boiler pressure boiler heat
-        float MaxBoilerHeatRatio = 1.0f;   // Max Boiler heat ratio, if boiler heat exceeds, safety boiler pressure boiler heat
         SmoothedData BoilerHeatSmoothBTU = new SmoothedData(60);       // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
         public float BoilerMassLB;         // current total mass of water and steam in boiler (changes as boiler usage changes)
 
@@ -193,7 +193,7 @@ namespace Orts.Simulation.RollingStocks
         float BoilerSteamDensityLBpFT3; // Steam Density based on current boiler pressure
         float BoilerWaterDensityLBpFT3; // Water Density based on current boiler pressure
         float BoilerWaterTempK;
-        float FuelBurnRateKGpS;
+        public float FuelBurnRateKGpS;
         float FuelFeedRateKGpS;
         float DesiredChange;     // Amount of change to increase fire mass, clamped to range 0.0 - 1.0
         public float CylinderSteamUsageLBpS;
@@ -235,13 +235,19 @@ namespace Orts.Simulation.RollingStocks
         float EvaporationAreaM2;
         float SuperheatAreaM2 = 0.0f;      // Heating area of superheater
         float SuperheatKFactor = 11.7f;     // Factor used to calculate superheat temperature - guesstimate
-        float SuperheatRefTempF;            // Superheat temperature in deg Fahrenheit, based upon the heating area.
+        float MaxSuperheatRefTempF;            // Maximum Superheat temperature in deg Fahrenheit, based upon the heating area.
         float SuperheatTempRatio;          // A ratio used to calculate the superheat temp - based on the ratio of superheat (using heat area) to "known" curve. 
-        float CurrentSuperheatTempF;      // current value of superheating based upon boiler steam output
+        public float CurrentSuperheatTempF;      // current value of superheating based upon boiler steam output
         float SuperheatVolumeRatio;   // Approximate ratio of Superheated steam to saturated steam at same pressure
+        float SuperheatInitialPressureFactor = 55.0f; // Factor to adjust cutoff pressure for superheat locomotives, defaults to 55.0, user defineable
         float FuelCalorificKJpKG = 33400;
         float ManBlowerMultiplier = 20.0f; // Blower Multipler for Manual firing
         float ShovelMassKG = 6;
+        float FiringSteamUsageRateLBpS;   // rate if excessive usage
+        float BoilerHeatRatio = 1.0f;   // Boiler heat ratio, if boiler heat exceeds, normal boiler pressure boiler heat
+        float MaxBoilerHeatRatio = 1.0f;   // Max Boiler heat ratio, if boiler heat exceeds, safety boiler pressure boiler heat
+        float AIFiremanBurnFactor = 1.0f;  // Factor by which to adjust burning (hence heat rate), combination of PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio
+        float AIFiremanBurnFactorExceed = 1.0f;  // Factor by which to adjust burning (hence heat rate) for excessive shoveling, combination of PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float PressureRatio = 0.001f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawKGpS;           // Raw combustion (burn) rate
@@ -255,6 +261,16 @@ namespace Orts.Simulation.RollingStocks
         public float ScoopResistanceN = 0.0f; // Scoop resistance
         public bool ScoopIsBroken = false; // becomes broken if activated where there is no trough
         public bool RefillingFromTrough = false; // refilling from through is ongoing
+
+        // steam performance reporting
+        public float SteamPerformanceTimeS = 0.0f; // Records the time since starting movement
+
+        int LocoIndex;
+        public float LocoTenderFrictionForceN; // Combined friction of locomotive and tender
+        public float TotalFrictionForceN;
+        public float TrainLoadKg;
+        public float LocomotiveCouplerForceN;
+
 
         // precomputed values
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
@@ -315,7 +331,7 @@ namespace Orts.Simulation.RollingStocks
         float IdealFireDepthIN = 7.0f;      // Assume standard coal coverage of grate = 7 inches.
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
-        const float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
+        public float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
         public float MaxTenderCoalMassKG;          // Maximum read from Eng File
         public float MaxTenderWaterMassKG;         // Maximum read from Eng file
         public float TenderCoalMassKG              // Decreased by firing and increased by refilling
@@ -417,7 +433,7 @@ namespace Orts.Simulation.RollingStocks
         float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
 
         float SuperheaterFactor = 1.0f;               // Currently 2 values respected: 0.0 for no superheat (default), > 1.0 for typical superheat
-        float SuperheaterSteamUsageFactor = 1.0f;       // Below 1.0, reduces steam usage due to superheater
+        public float SuperheaterSteamUsageFactor = 1.0f;       // Below 1.0, reduces steam usage due to superheater
         float Stoker = 0.0f;                // Currently 2 values respected: 0.0 for no mechanical stoker (default), = 1.0 for typical mechanical stoker
         float StokerMaxUsage = 0.01f;       // Max steam usage of stoker - 1% of max boiler output
         float StokerMinUsage = 0.005f;      // Min Steam usage - just to keep motor ticking over - 0.5% of max boiler output
@@ -436,7 +452,7 @@ namespace Orts.Simulation.RollingStocks
         float BackPressureAtmPSI;
         float InitialPressureAtmPSI;    // Initial Pressure to cylinder @ start if stroke
         float CutoffPressureAtmPSI;    // Pressure at cutoff
-        float SteamChestPressurePSI;    // Pressure in steam chest - input to cylinder
+        public float SteamChestPressurePSI;    // Pressure in steam chest - input to cylinder
 
         float CylinderAdmissionWorkInLbs; // Work done during steam admission into cylinder
         float CylinderExhaustOpenFactor; // Point on cylinder stroke when exhaust valve opens.
@@ -479,7 +495,7 @@ namespace Orts.Simulation.RollingStocks
 
         // Simple locomotive cylinder information
 
-        float MeanEffectivePressurePSI;         // Mean effective pressure
+        public float MeanEffectivePressurePSI;         // Mean effective pressure
         float RatioOfExpansion;             // Ratio of expansion
         float CylinderClearancePC = 0.09f;    // Assume cylinder clearance of 8% of the piston displacement for saturated locomotives and 9% for superheated locomotive - default to saturated locomotive value
         float CylinderPortOpeningFactor;   // Model the size of the steam port opening in the cylinder - set to 0.085 as default, if no ENG file value added
@@ -508,9 +524,9 @@ namespace Orts.Simulation.RollingStocks
         float DrvWheelDiaM;     // Diameter of driver wheel
         float DrvWheelRevRpS;       // number of revolutions of the drive wheel per minute based upon speed.
         float PistonSpeedFtpMin;      // Piston speed of locomotive
-        float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
-        float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
-        float DrawBarPullLbsF;      // Drawbar pull in lbf
+        public float IndicatedHorsePowerHP;   // Indicated Horse Power (IHP), theoretical power of the locomotive, it doesn't take into account the losses due to friction, etc. Typically output HP will be 70 - 90% of the IHP
+        public float DrawbarHorsePowerHP;  // Drawbar Horse Power  (DHP), maximum power available at the wheels.
+        public float DrawBarPullLbsF;      // Drawbar pull in lbf
         float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler is used to multiple boiler evaporation area by - used as a player customisation factor.
 
         float MaxSpeedFactor;      // Max Speed factor - factor @ critical piston speed to reduce TE due to speed increase - American locomotive company
@@ -530,6 +546,10 @@ namespace Orts.Simulation.RollingStocks
         float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
         float absSpeedMpS;
+        float CombFrictionN;  // Temporary parameter to store combined friction values of locomotive and tender
+        float CombGravityN;   // Temporary parameter to store combined Gravity values of locomotive and tender
+        float CombTunnelN;    // Temporary parameter to store combined Tunnel values of locomotive and tender
+        float CombCurveN;     // Temporary parameter to store combined Curve values of locomotive and tender
 
         float cutoff;
         float NumSafetyValves;  // Number of safety valves fitted to locomotive - typically 1 to 4
@@ -717,6 +737,11 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(maxsteamheatingpressure": MaxSteamHeatPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsmaxsuperheattemperature": MaxSuperheatRefTempF = stf.ReadFloatBlock(STFReader.UNITS.None, null);break;  // New input and conversion units to be added for temperature
+                case "engine(ortsmaxindicatedhorsepower": MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
+                    MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
+                    break;
+                case "engine(ortssuperheatInitialPressurefactor": SuperheatInitialPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtenderwatermass": MaxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -807,6 +832,9 @@ namespace Orts.Simulation.RollingStocks
             CylinderPortOpeningFactor = locoCopy.CylinderPortOpeningFactor;
             BoilerVolumeFT3 = locoCopy.BoilerVolumeFT3;
             MaxBoilerPressurePSI = locoCopy.MaxBoilerPressurePSI;
+            MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
+            MaxIndicatedHorsePowerHP = locoCopy.MaxIndicatedHorsePowerHP;
+            SuperheatInitialPressureFactor = locoCopy.SuperheatInitialPressureFactor;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
             ShovelMassKG = locoCopy.ShovelMassKG;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
@@ -996,10 +1024,15 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Check Cylinder efficiency rate to see if set - allows user to improve cylinder performance and reduce losses
-
             if (CylinderEfficiencyRate == 0)
             {
-                CylinderEfficiencyRate = 1.0f; // If no cylinder efficiency rate in the ENG file set to mormal (1.0)
+                CylinderEfficiencyRate = 1.0f; // If no cylinder efficiency rate in the ENG file set to nominal (1.0)
+            }
+
+            // Assign value for superheat Initial pressure factor if not set in ENG file
+            if (SuperheatInitialPressureFactor == 0)
+            {
+                SuperheatInitialPressureFactor = 55.0f; // If no factor in the ENG file set to nominal value (50.0)
             }
 
             // Determine if Cylinder Port Opening  Factor has been set
@@ -1219,17 +1252,19 @@ namespace Orts.Simulation.RollingStocks
             MaxFlueTempK = (MaxBoilerKW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseTempK;
 
             // Determine if Superheater in use
-
             if (HasSuperheater)
             {
                 SteamLocoType += " + Superheater";
 
-                // Calculate superheat steam reference temperature based upon heating area of superheater
-                // SuperTemp = (SuperHeatArea x HeatTransmissionCoeff * (MeanGasTemp - MeanSteamTemp)) / (SteamQuantity * MeanSpecificSteamHeat)
-                // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x FlueTempK x SFactor) / SteamQuantity
-                // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
-                SuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
-                SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve. 
+                if (MaxSuperheatRefTempF == 0) // If Max superheat temp is not set in ENG file, then set a default.
+                {
+                    // Calculate maximum superheat steam reference temperature based upon heating area of superheater - from Superheat Engineering Data by Elesco
+                    // SuperTemp = (SuperHeatArea x HeatTransmissionCoeff * (MeanGasTemp - MeanSteamTemp)) / (SteamQuantity * MeanSpecificSteamHeat)
+                    // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x FlueTempK x SFactor) / SteamQuantity
+                    // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
+                    MaxSuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
+                    SuperheatTempRatio = MaxSuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve. 
+                }
                 CylinderClearancePC = 0.09f;
             }
             else if (IsSaturated)
@@ -1242,15 +1277,15 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceWarning("Steam boiler type parameter not formally defined. Superheated locomotive has been assumed.");
 
                 HasSuperheater = true;
-                SuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
-                SuperheatTempRatio = SuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
-                SuperheatAreaM2 = Me2.FromFt2((SuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
+                MaxSuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
+                SuperheatTempRatio = MaxSuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
+                SuperheatAreaM2 = Me2.FromFt2((MaxSuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
                 CylinderClearancePC = 0.09f;
             }
             else // Default to saturated type of locomotive
             {
                 SteamLocoType += " + Not formally defined (assumed saturated)";
-                SuperheatRefTempF = 0.0f;
+                MaxSuperheatRefTempF = 0.0f;
             }
 
             MaxBoilerOutputLBpH = pS.TopH(TheoreticalMaxSteamOutputLBpS);
@@ -1308,6 +1343,13 @@ namespace Orts.Simulation.RollingStocks
                 MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
             }
 
+
+            if (MaxIndicatedHorsePowerHP == 0) // if MaxIHP is not set in ENG file, then set a default
+            {
+                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
+            }
+            
             // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.2
 
             if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
@@ -1439,6 +1481,29 @@ namespace Orts.Simulation.RollingStocks
             ApplyBoilerPressure();
 
             AuxPowerOn = true;
+
+            if (Simulator.Settings.DataLogSteamPerformance)
+            {
+                Trace.TraceInformation("============================================= Steam Locomotive Performance - Locomotive Details =========================================================");
+            //    Trace.TraceInformation("Locomotive Name - ");
+            //    Trace.TraceInformation("Steam Locomotive Type - ", SteamEngineType);
+
+                Trace.TraceInformation("**************** General ****************");
+                Trace.TraceInformation("WheelRadius {0:N2} ft, NumWheels {1}, DriveWheelWeight {2:N1} t-uk", Me.ToFt(WheelRadiusM),  LocoNumDrvWheels, Kg.ToTUK(DrvWheelWeightKg));
+
+                Trace.TraceInformation("**************** Boiler ****************");
+                Trace.TraceInformation("Boiler Volume {0:N1} cu ft, Evap Area {1:N1} sq ft, Superheat Area {2:N1} sq ft, Max Superheat Temp {3:N1} F, Max Boiler Pressure {4:N1} psi", BoilerVolumeFT3, Me2.ToFt2(EvaporationAreaM2), Me2.ToFt2(SuperheatAreaM2), MaxSuperheatRefTempF, MaxBoilerPressurePSI);
+
+                Trace.TraceInformation("**************** Cylinder ****************");
+                Trace.TraceInformation("Num {0}, Stroke {1:N1} in, Diameter {2:N1} in, Efficiency {3:n1}", NumCylinders, Me.ToIn(CylinderStrokeM), Me.ToIn(CylinderDiameterM), CylinderEfficiencyRate);
+                Trace.TraceInformation("Port Opening {0}, Exhaust Point {1}, InitialSuperheatFactor {2}", CylinderPortOpeningFactor, CylinderExhaustOpenFactor, SuperheatInitialPressureFactor);
+                
+                Trace.TraceInformation("**************** Fire ****************");
+                Trace.TraceInformation("Grate Area {0:N1} sq ft, Fuel Calorific {1} btu/lb, Max Firing Rate {2} lbs/h", Me2.ToFt2(GrateAreaM2), KJpKg.ToBTUpLb(FuelCalorificKJpKG), Kg.ToLb(pS.TopH(MaxFiringRateKGpS)));
+
+                Trace.TraceInformation("========================================================================================================================================================");
+            
+            }
         }
 
         /// <summary>
@@ -1938,6 +2003,8 @@ namespace Orts.Simulation.RollingStocks
             CurrentAuxTenderWaterVolumeUKG -= CombinedTenderWaterVolumeUKG * TenderWaterChangePercent; // Adjust water usage in aux tender
             PrevCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;   // Store value for next iteration
             PreviousTenderWaterVolumeUKG = TenderWaterVolumeUKG;     // Store value for next iteration            
+            WaterConsumptionLbpS = InjectorBoilerInputLB / elapsedClockSeconds; // water consumption
+            WaterConsumptionLbpS = MathHelper.Clamp(WaterConsumptionLbpS, 0, WaterConsumptionLbpS);
 
 
 #if DEBUG_AUXTENDER
@@ -1994,7 +2061,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS) + BlowerBurnEffect + DamperBurnEffect)])); // Manual Firing - note steam usage due to safety valve, compressor and steam cock operation not included, as these are factored into firemans calculations, and will be adjusted for manually - Radiation loss divided by factor of 5.0 to reduce the base level - Manual fireman to compensate as appropriate.
             }
-            else
+            else // AI Fireman
             {
                 if (PreviousTotalSteamUsageLBpS > TheoreticalMaxSteamOutputLBpS)
                 {
@@ -2002,18 +2069,21 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    FiringSteamUsageRateLBpS = PreviousTotalSteamUsageLBpS;
+                    FiringSteamUsageRateLBpS = PreviousTotalSteamUsageLBpS; // Current steam usage rate
                 }
+
+                AIFiremanBurnFactorExceed = HeatRatio * PressureRatio;  // Firing rate for AI fireman if firemass drops, and fireman needs to exceed normal capacity
+                AIFiremanBurnFactor = HeatRatio * PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio; // Firing rate factor under normal conditions
 
                 if (ShovelAnyway) // will force fire burn rate to increase even though boiler heat seems excessive - activated at full throttle, and on rising gradient
                 {
                     // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output - ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
-                    BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio))]));
+                    BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((FiringSteamUsageRateLBpS * AIFiremanBurnFactorExceed))]));
                 }
                 else
                 {
                     // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output - normal operation - reduces burn rate if boiler heat is excessive.
-                    BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((BlowerBurnEffect + HeatRatio * FiringSteamUsageRateLBpS * PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio))]));
+                    BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((FiringSteamUsageRateLBpS * AIFiremanBurnFactor))]));
                 }
 
                 //  Limit burn rate in AI fireman to within acceptable range of Fireman firing rate
@@ -2586,14 +2656,31 @@ namespace Orts.Simulation.RollingStocks
 
             if (!FiringIsManual)
             {
-                if (BoilerHeat)
+                if (BoilerHeat || pS.TopH(PreviousTotalSteamUsageLBpS) > MaxBoilerOutputLBpH)  // Cap pressure ratio if boiler heat is excessive or steam consumption exceeds production
                 {
-                    PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 0.99f); // Boiler pressure ratio to adjust burn rate, if maxboiler heat reached, then clamp ratio < 1.0
+                     PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 0.99f); // Boiler pressure ratio to adjust burn rate, if maxboiler heat reached, then clamp ratio < 1.0
                 }
-                else
-                {
-                    PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 1.5f); // Boiler pressure ratio to adjust burn rate
+                 else
+                 {
+                    
+                    if(BoilerPressurePSI <= MaxBoilerPressurePSI - 5.0f && BoilerPressurePSI > MaxBoilerPressurePSI - 10.0f)
+                    {
+                        PressureRatio = 1.5f; // if boiler pressure dropping two fast then push fire harder
+                    }
+                    else if (BoilerPressurePSI <= MaxBoilerPressurePSI - 10.0f  && BoilerPressurePSI > MaxBoilerPressurePSI - 20.0f)
+                    {
+                        PressureRatio = 1.75f; // if boiler pressure dropping two fast then push fire harder
+                    }
+                    else if (BoilerPressurePSI <= MaxBoilerPressurePSI - 20.0f)
+                    {
+                        PressureRatio = 2.0f; // if boiler pressure dropping two fast then push fire harder
+                    }
+                    else if (BoilerPressurePSI > MaxBoilerPressurePSI - 5.0f)
+                    {
+                        PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 2.0f); // Boiler pressure ratio to adjust burn rate
+                    }
                 }
+
             }
             #endregion
 
@@ -2630,7 +2717,7 @@ namespace Orts.Simulation.RollingStocks
             DrvWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * DriverWheelRadiusM);
 
             float DebugWheelRevs = pS.TopM(DrvWheelRevRpS);
-
+             
             #region Calculation of Mean Effective Pressure of Cylinder using an Indicator Diagram type approach - Compound Locomotive - No receiver
 
             if (SteamEngineType == SteamEngineTypes.Compound)
@@ -2657,9 +2744,11 @@ namespace Orts.Simulation.RollingStocks
                 float LPCylinderVolumePoint_m = (LPCylinderVolumeFactor + LPCylinderClearancePC) * CompoundCylinderRatio; // in LP Cylinder @ end of stroke
                 float LPCylinderVolumePoint_a = LPCylinderClearancePC * CompoundCylinderRatio;
 
-                SteamChestPressurePSI = (throttle * SteamChestPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
+    //            SteamChestPressurePSI = (throttle * SteamChestPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
 
-                if (CylinderCompoundOn)
+                SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
+
+                if (CylinderCompoundOn) // Compound bypass valve on - puts locomotive into simple mode
                 {
                     // ***** Simple mode *****
 
@@ -2673,6 +2762,12 @@ namespace Orts.Simulation.RollingStocks
                     // calculate value based upon setting of Cylinder port opening
 
                     float LPCutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
+
+                if (HasSuperheater) // If locomotive is superheated then cutoff pressure drop will be different.
+                {
+                    float DrvWheelRevpM = pS.TopM(DrvWheelRevRpS);
+                    LPCutoffPressureDropRatio = (1.0f - ((1 / SuperheatInitialPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS))));
+                }
 
                     // Steam Indicator Diagram reference - (h) 
                     LPCylinderPreCutoffPressureAtmPSI = LPCylinderInitialPressureAtmPSI * LPCutoffPressureDropRatio;
@@ -2767,6 +2862,12 @@ namespace Orts.Simulation.RollingStocks
 
                     float HPCutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
 
+                    if (HasSuperheater) // If locomotive is superheated then cutoff pressure drop will be different.
+                    {
+                        float DrvWheelRevpM = pS.TopM(DrvWheelRevRpS);
+                        HPCutoffPressureDropRatio = (1.0f - ((1 / SuperheatInitialPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS))));
+                    }
+                   
                     // Cutoff pressure also drops with locomotive speed
                     // Steam Indicator Diagram reference - (b)
                     HPCylinderCutoffPressureAtmPSI = HPCylinderInitialPressureAtmPSI * HPCutoffPressureDropRatio;
@@ -3040,7 +3141,9 @@ namespace Orts.Simulation.RollingStocks
                 // Expressed as a fraction of stroke R = (Exhaust point + c) / (cutoff + c)
                 RatioOfExpansion = (CylinderExhaustOpenFactor + CylinderClearancePC) / (cutoff + CylinderClearancePC);
                 // Absolute Mean Pressure = Ratio of Expansion
-                SteamChestPressurePSI = (throttle * SteamChestPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
+          //      SteamChestPressurePSI = (throttle * SteamChestPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
+
+                SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
 
                 // Initial pressure will be decreased depending upon locomotive speed
                 // This drop can be adjusted with a table in Eng File
@@ -3065,6 +3168,13 @@ namespace Orts.Simulation.RollingStocks
 
                 CutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
 
+                if (HasSuperheater) // If locomotive is superheated then cutoff pressure drop will be different.
+                {
+                    float DrvWheelRevpM = pS.TopM(DrvWheelRevRpS);
+                    CutoffPressureDropRatio = (1.0f - ((1 / SuperheatInitialPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS))));
+                }                
+                
+                
                 // Steam Indicator Diagram reference - (b) 
                 CutoffPressureAtmPSI = InitialPressureAtmPSI * CutoffPressureDropRatio;
 
@@ -3152,7 +3262,7 @@ namespace Orts.Simulation.RollingStocks
             if (HasSuperheater)
             {
                 CurrentSuperheatTempF = SuperheatTempLbpHtoDegF[pS.TopH(CylinderSteamUsageLBpS)] * SuperheatTempRatio; // Calculate current superheat temp
-                CurrentSuperheatTempF = MathHelper.Clamp(CurrentSuperheatTempF, 0.0f, SuperheatRefTempF); // make sure that superheat temp does not exceed max superheat temp or drop below zero
+                CurrentSuperheatTempF = MathHelper.Clamp(CurrentSuperheatTempF, 0.0f, MaxSuperheatRefTempF); // make sure that superheat temp does not exceed max superheat temp or drop below zero
                 float DifferenceSuperheatTeampF = CurrentSuperheatTempF - SuperheatTempLimitXtoDegF[cutoff]; // reduce superheat temp due to cylinder condensation
                 SuperheatVolumeRatio = 1.0f + (0.0015f * DifferenceSuperheatTeampF); // Based on formula Vsup = Vsat ( 1 + 0.0015 Tsup) - Tsup temperature at superheated level
                 // look ahead to see what impact superheat will have on cylinder usage
@@ -3173,7 +3283,7 @@ namespace Orts.Simulation.RollingStocks
 
                 if (IsSuperSet)
                 {
-                    SuperheaterSteamUsageFactor = 1.0f; // set steam condensation to unity as no condensation occurs
+                    SuperheaterSteamUsageFactor = 1.0f / SuperheatVolumeRatio; // set steam usage based upon the volume of superheated steam
                 }
                 else
                 {
@@ -3195,7 +3305,7 @@ namespace Orts.Simulation.RollingStocks
                 SuperheaterSteamUsageFactor = CondensationFactorTemp;
             }
 
-            SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.9f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.9, as this represents base steam consumption by the cylinders.
+            SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.70f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.7, as this represents base steam consumption by the cylinders.
 
             // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
             // Mean effective pressure = cylpressure - backpressure
@@ -3265,7 +3375,7 @@ namespace Orts.Simulation.RollingStocks
             if (SteamEngineType == SteamEngineTypes.Compound)
             {
 
-                if (!CylinderCompoundOn) // compound mode
+                if (!CylinderCompoundOn) // cylinder bypass value closed - in compound mode
                 // The steam in the HP @ Cutoff will give an indication of steam usage.
                 {
                     float HPCylinderCutoffPressureGaugePSI = HPCylinderCutoffPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
@@ -3345,9 +3455,6 @@ namespace Orts.Simulation.RollingStocks
 
             // This section updates the force calculations and maintains them at the current values.
 
-            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
-
             // Caculate the current piston speed - purely for display purposes at the moment 
             // Piston Speed (Ft p Min) = (Stroke length x 2) x (Ft in Mile x Train Speed (mph) / ( Circum of Drv Wheel x 60))
             PistonSpeedFtpMin = Me.ToFt(pS.TopM(CylinderStrokeM * 2.0f * DrvWheelRevRpS)) * SteamGearRatio;
@@ -3387,6 +3494,8 @@ namespace Orts.Simulation.RollingStocks
 
                     IndicatedHorsePowerHP = HPIndicatedHorsePowerHP + LPIndicatedHorsePowerHP;
 
+                    IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
+
                     float WheelRevs = pS.TopM(DrvWheelRevRpS);
 
 #if DEBUG_LOCO_STEAM
@@ -3418,12 +3527,85 @@ namespace Orts.Simulation.RollingStocks
                 IndicatedHorsePowerHP = NumCylinders * MotiveForceGearRatio * ((MeanEffectivePressurePSI * Me.ToFt(CylinderStrokeM) * Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) * CylStrokesPerCycle / 33000.0f));
             }
 
+            IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
             DisplayTractiveEffortLbsF = TractiveEffortLbsF;
 
-            DrawBarPullLbsF = -1.0f * N.ToLbf(CouplerForceU);
-            DrawbarHorsePowerHP = -1.0f * (N.ToLbf(CouplerForceU) * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
+            // Calculate the elapse time for the steam performance monitoring
+            if (Simulator.Settings.DataLogSteamPerformance)
+            {
+                if (SpeedMpS > 0.05)
+                {
+                    SteamPerformanceTimeS += elapsedClockSeconds;
+                }
+                else if (SpeedMpS < 0.04)
+                {
+                    SteamPerformanceTimeS = 0.0f;   // set time to zero if loco stops
+                }
+            }
 
+            // Calculate friction values and load variables for train
+            TotalFrictionForceN = 0.0f;
+            LocomotiveCouplerForceN = 0.0f;
+            TrainLoadKg = 0.0f;
+            for (int i = 0; i < Train.Cars.Count; i++)  // Doesn't included the locomotive or tender
+                if (Train.Cars[i].SpeedMpS > 0)
+                {
+                    if (Train.Cars[i].WagonType != WagonTypes.Engine && Train.Cars[i].WagonType != WagonTypes.Tender)
+                    {
+                        TotalFrictionForceN += Train.Cars[i].FrictionForceN;
+                        TrainLoadKg += Train.Cars[i].MassKG;
+                    }
+                    if ((Train.Cars[i].WagonType == WagonTypes.Engine || Train.Cars[i].WagonType == WagonTypes.Tender) && i < 2)
+                    {
+                        LocomotiveCouplerForceN = -1.0f * Train.Cars[i].CouplerForceU;
+                    }
+
+                }
+
+
+            // Reset frictional forces of the locomotive
+            CombFrictionN = 0;
+            CombGravityN = 0;
+            CombTunnelN = 0;
+            CombCurveN = 0;
+
+
+                LocoIndex = 0;
+                for (int i = 0; i < Train.Cars.Count; i++)  // Doesn't included the locomotive or tender
+                {
+                    if (Train.Cars[i] == this)
+                    LocoIndex = i;
+                }
+
+                // Find frictional forces of the locomotive
+                CombFrictionN = Train.Cars[LocoIndex].FrictionForceN;
+                CombGravityN -= Train.Cars[LocoIndex].GravityForceN;
+                CombTunnelN = Train.Cars[LocoIndex].TunnelForceN;
+                CombCurveN = Train.Cars[LocoIndex].CurveForceN;
+
+             if (HasTenderCoupled)
+            {
+                if (LocoIndex < Train.Cars.Count - 1) // Room for a tender in the train
+                {
+                    // Find frictional forces of tender and add them to the locomotive
+                    CombFrictionN += Train.Cars[LocoIndex + 1].FrictionForceN;
+                    CombGravityN -= Train.Cars[LocoIndex + 1].GravityForceN; // Gravity forces have negative values on rising grade
+                    CombTunnelN += Train.Cars[LocoIndex + 1].TunnelForceN;
+                    CombCurveN += Train.Cars[LocoIndex + 1].CurveForceN;
+                }
+
+            }
+
+            LocoTenderFrictionForceN = CombFrictionN + CombGravityN + CombTunnelN + CombCurveN;  // Combined frictional forces of the locomotive and tender
+
+            DrawBarPullLbsF = N.ToLbf(MotiveForceN - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
+                                 
+            DrawbarHorsePowerHP = (DrawBarPullLbsF * Me.ToFt(absSpeedMpS)) / 550.0f;  // TE in this instance is a maximum, and not at the wheel???
+
+            // Clamp drawbar values so that they never go negative
+            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF);
+            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP);
 
             MotiveForceSmoothedN.Update(elapsedClockSeconds, MotiveForceN);
             if (float.IsNaN(MotiveForceN))
@@ -3739,8 +3921,9 @@ namespace Orts.Simulation.RollingStocks
                 ExcessBalanceForceMiddle = 0.0f;
             }
 
-            SpeedStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + (SpeedVerticalThrustForceLeft + ExcessBalanceForceLeft) + (SpeedVerticalThrustForceMiddle + ExcessBalanceForceMiddle) + (SpeedVerticalThrustForceRight + ExcessBalanceForceRight)) * Train.LocomotiveCoefficientFriction;
+        //    SpeedStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + (SpeedVerticalThrustForceLeft + ExcessBalanceForceLeft) + (SpeedVerticalThrustForceMiddle + ExcessBalanceForceMiddle) + (SpeedVerticalThrustForceRight + ExcessBalanceForceRight)) * Train.LocomotiveCoefficientFriction;
 
+            SpeedStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) + (SpeedVerticalThrustForceLeft + ExcessBalanceForceLeft) + (SpeedVerticalThrustForceMiddle + ExcessBalanceForceMiddle) + (SpeedVerticalThrustForceRight + ExcessBalanceForceRight)) * 0.33f;
             // Calculate internal resistance - IR = 3.8 * diameter of cylinder^2 * stroke * dia of drivers (all in inches)
             float InternalResistance = 3.8f * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (Me.ToIn(DrvWheelDiaM));
 
@@ -4721,7 +4904,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("Water"),
                 FormatStrings.FormatTemperature(C.FromK(BoilerWaterTempK), IsMetric, false),
                 Simulator.Catalog.GetString("MaxSupH"),
-                FormatStrings.FormatTemperature(C.FromF(SuperheatRefTempF), IsMetric, false),
+                FormatStrings.FormatTemperature(C.FromF(MaxSuperheatRefTempF), IsMetric, false),
                 Simulator.Catalog.GetString("CurSupH"),
                 FormatStrings.FormatTemperature(C.FromF(CurrentSuperheatTempF), IsMetric, false));
 
@@ -4947,7 +5130,7 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.h,
                 IsMetric ? FormatStrings.m2 : FormatStrings.ft2);
 
-#if DEBUG_LOCO_BURN
+#if DEBUG_LOCO_BURN_AI
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\t{21}\t{22}\n",
                 "DbgBurn:",
                 "BoilHeat",
@@ -5271,7 +5454,7 @@ namespace Orts.Simulation.RollingStocks
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;
                         }
                         else if (SteamGearPosition == 2.0)
                         {
@@ -5283,7 +5466,7 @@ namespace Orts.Simulation.RollingStocks
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;
                         }
                     }
                 }
@@ -5320,7 +5503,7 @@ namespace Orts.Simulation.RollingStocks
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;
 
                         }
                         else if (SteamGearPosition == 0.0)

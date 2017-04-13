@@ -104,6 +104,7 @@
             this.label18 = new System.Windows.Forms.Label();
             this.checkDataLogMisc = new System.Windows.Forms.CheckBox();
             this.checkDataLogPerformance = new System.Windows.Forms.CheckBox();
+            this.checkDataLogSteamPerformance = new System.Windows.Forms.CheckBox();
             this.checkDataLogger = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
             this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
@@ -1079,6 +1080,7 @@
             this.tabPageDataLogger.Controls.Add(this.checkDataLogger);
             this.tabPageDataLogger.Controls.Add(this.label17);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPerformance);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
             this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
@@ -1149,6 +1151,17 @@
             this.checkDataLogPerformance.TabIndex = 6;
             this.checkDataLogPerformance.Text = "Log performance data";
             this.checkDataLogPerformance.UseVisualStyleBackColor = true;
+            // 
+            // checkDataLogSteamPerformance
+            // 
+            this.checkDataLogSteamPerformance.AutoSize = true;
+            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 180);
+            this.checkDataLogSteamPerformance.Name = "checkDataLogSteamPerformance";
+            this.checkDataLogSteamPerformance.Size = new System.Drawing.Size(130, 17);
+            this.checkDataLogSteamPerformance.TabIndex = 6;
+            this.checkDataLogSteamPerformance.Text = "Log Steam performance data";
+            this.checkDataLogSteamPerformance.UseVisualStyleBackColor = true;
+
             // 
             // checkDataLogger
             // 
@@ -2231,6 +2244,7 @@
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.CheckBox checkDataLogPhysics;
         private System.Windows.Forms.CheckBox checkDataLogPerformance;
+        private System.Windows.Forms.CheckBox checkDataLogSteamPerformance;
         private System.Windows.Forms.CheckBox checkDataLogger;
         private System.Windows.Forms.CheckBox checkDataLogMisc;
         private System.Windows.Forms.Label label18;

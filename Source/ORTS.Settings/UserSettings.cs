@@ -206,6 +206,9 @@ namespace ORTS.Settings
         public bool DataLogPhysics { get; set; }
         [Default(false)]
         public bool DataLogMisc { get; set; }
+        [Default(false)]
+        public bool DataLogSteamPerformance { get; set; }
+        
         
         // Evaluation settings:
         [Default(false)]
