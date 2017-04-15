@@ -148,10 +148,15 @@ namespace Orts.Viewer3D
                             Logger.Data(steamloco.SteamChestPressurePSI.ToString("F0"));
                             Logger.Data(steamloco.MeanEffectivePressurePSI.ToString("F0"));
                             Logger.Data(pS.TopH(steamloco.CylinderSteamUsageLBpS).ToString("F0"));
-                            Logger.Data(pS.TopH(steamloco.WaterConsumptionLbpS / steamloco.WaterLBpUKG).ToString("F0"));
+                            Logger.Data(pS.TopH(steamloco.WaterConsumptionLbpS).ToString("F0"));
                             Logger.Data(Kg.ToLb(pS.TopH(steamloco.FuelBurnRateKGpS)).ToString("F0"));
-                            Logger.Data(steamloco.SuperheaterSteamUsageFactor.ToString("F1"));
-                          
+
+
+                            Logger.Data(steamloco.SuperheaterSteamUsageFactor.ToString("F2"));
+                            Logger.Data(steamloco.CumulativeSteamConsumptionLbs.ToString("F0"));
+                            Logger.Data(steamloco.CumulativeWaterConsumptionLbs.ToString("F0"));
+
+
                             Logger.End();
                         }
         }
@@ -465,10 +470,13 @@ namespace Orts.Viewer3D
                                 "Superheat Temp (F)",
                                 "Steam Chest Pressure (psi)",
                                 "MEP (psi)",
-                                "Steam consumption (lb/h)",
-                                "Water consumption (UK Gal/h",
-                                "Coal consumption (lb/h)",
-                                "Cylinder Thermal Efficiency"
+                                "Steam consumption (lbs/h)",
+                                "Water consumption (lbs/h)",
+                                "Coal consumption (lbs/h)",
+                                "Cylinder Thermal Efficiency",
+                                "Cumulative Steam (lbs)",
+                                "Cumulative Water (lbs)"
+                                
 
                              }
                         );

@@ -234,7 +234,7 @@ namespace Orts.Simulation.RollingStocks
         float SafetyValveDropPSI = 4.0f;      // Pressure drop before Safety valve turns off, normally around 4 psi - First safety valve normally operates between MaxBoilerPressure, and MaxBoilerPressure - 4, ie Max Boiler = 200, cutoff = 196.
         float EvaporationAreaM2;
         float SuperheatAreaM2 = 0.0f;      // Heating area of superheater
-        float SuperheatKFactor = 11.7f;     // Factor used to calculate superheat temperature - guesstimate
+        float SuperheatKFactor = 15000.0f;     // Factor used to calculate superheat temperature - guesstimate
         float MaxSuperheatRefTempF;            // Maximum Superheat temperature in deg Fahrenheit, based upon the heating area.
         float SuperheatTempRatio;          // A ratio used to calculate the superheat temp - based on the ratio of superheat (using heat area) to "known" curve. 
         public float CurrentSuperheatTempF;      // current value of superheating based upon boiler steam output
@@ -264,6 +264,8 @@ namespace Orts.Simulation.RollingStocks
 
         // steam performance reporting
         public float SteamPerformanceTimeS = 0.0f; // Records the time since starting movement
+        public float CumulativeWaterConsumptionLbs = 0.0f;
+        public float CumulativeSteamConsumptionLbs = 0.0f;
 
         int LocoIndex;
         public float LocoTenderFrictionForceN; // Combined friction of locomotive and tender
@@ -1262,9 +1264,9 @@ namespace Orts.Simulation.RollingStocks
                     // SuperTemp = (SuperHeatArea x HeatTransmissionCoeff * (MeanGasTemp - MeanSteamTemp)) / (SteamQuantity * MeanSpecificSteamHeat)
                     // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x FlueTempK x SFactor) / SteamQuantity
                     // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
-                    MaxSuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
-                    SuperheatTempRatio = MaxSuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve. 
+                    MaxSuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
                 }
+                SuperheatTempRatio = MaxSuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];    // calculate a ratio figure for known value against reference curve.
                 CylinderClearancePC = 0.09f;
             }
             else if (IsSaturated)
@@ -1493,6 +1495,7 @@ namespace Orts.Simulation.RollingStocks
 
                 Trace.TraceInformation("**************** Boiler ****************");
                 Trace.TraceInformation("Boiler Volume {0:N1} cu ft, Evap Area {1:N1} sq ft, Superheat Area {2:N1} sq ft, Max Superheat Temp {3:N1} F, Max Boiler Pressure {4:N1} psi", BoilerVolumeFT3, Me2.ToFt2(EvaporationAreaM2), Me2.ToFt2(SuperheatAreaM2), MaxSuperheatRefTempF, MaxBoilerPressurePSI);
+                Trace.TraceInformation("Boiler Evap Rate {0} , Max Boiler Output {1} lbs/h", BoilerEvapRateLbspFt2, MaxBoilerOutputLBpH);
 
                 Trace.TraceInformation("**************** Cylinder ****************");
                 Trace.TraceInformation("Num {0}, Stroke {1:N1} in, Diameter {2:N1} in, Efficiency {3:n1}", NumCylinders, Me.ToIn(CylinderStrokeM), Me.ToIn(CylinderDiameterM), CylinderEfficiencyRate);
@@ -2005,7 +2008,7 @@ namespace Orts.Simulation.RollingStocks
             PreviousTenderWaterVolumeUKG = TenderWaterVolumeUKG;     // Store value for next iteration            
             WaterConsumptionLbpS = InjectorBoilerInputLB / elapsedClockSeconds; // water consumption
             WaterConsumptionLbpS = MathHelper.Clamp(WaterConsumptionLbpS, 0, WaterConsumptionLbpS);
-
+            CumulativeWaterConsumptionLbs += InjectorBoilerInputLB;
 
 #if DEBUG_AUXTENDER
 
@@ -3305,7 +3308,7 @@ namespace Orts.Simulation.RollingStocks
                 SuperheaterSteamUsageFactor = CondensationFactorTemp;
             }
 
-            SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.70f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.7, as this represents base steam consumption by the cylinders.
+            SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.60f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.6, as this represents base steam consumption by the cylinders.
 
             // mean pressure during stroke = ((absolute mean pressure + (clearance + cylstroke)) - (initial pressure + clearance)) / cylstroke
             // Mean effective pressure = cylpressure - backpressure
@@ -3448,6 +3451,8 @@ namespace Orts.Simulation.RollingStocks
             BoilerHeatBTU -= elapsedClockSeconds * CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); //  Boiler Heat will be reduced by heat required to replace the cylinder steam usage, ie create steam from hot water. 
             TotalSteamUsageLBpS += CylinderSteamUsageLBpS;
             BoilerHeatOutBTUpS += CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
+            CumulativeSteamConsumptionLbs += CylinderSteamUsageLBpS * elapsedClockSeconds;
+
         }
 
         private void UpdateMotion(float elapsedClockSeconds, float cutoff, float absSpeedMpS)
