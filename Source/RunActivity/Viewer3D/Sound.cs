@@ -1192,6 +1192,13 @@ namespace Orts.Viewer3D
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger, settings);
                         Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
                     }
+                        // unapplicable trigger type
+                    else
+                    {
+                        Triggers.Add(new ORTSTrigger()); // null trigger
+                        Trace.TraceWarning("Trigger type of trigger number {2} in stream number {1} in file {0} is not existent or not applicable",
+                            SoundSource.SMSFileName, SoundSource.SoundStreams.Count, Triggers.Count-1);
+                    }
                     IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
                 }  // for each mstsStream.Trigger
 
