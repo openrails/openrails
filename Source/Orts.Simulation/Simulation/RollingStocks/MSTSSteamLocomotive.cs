@@ -1279,7 +1279,7 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceWarning("Steam boiler type parameter not formally defined. Superheated locomotive has been assumed.");
 
                 HasSuperheater = true;
-                MaxSuperheatRefTempF = 200.0f; // Assume a superheating temp of 250degF
+                MaxSuperheatRefTempF = 250.0f; // Assume a superheating temp of 250degF
                 SuperheatTempRatio = MaxSuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
                 SuperheatAreaM2 = Me2.FromFt2((MaxSuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
                 CylinderClearancePC = 0.09f;
@@ -1487,11 +1487,12 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.Settings.DataLogSteamPerformance)
             {
                 Trace.TraceInformation("============================================= Steam Locomotive Performance - Locomotive Details =========================================================");
-            //    Trace.TraceInformation("Locomotive Name - ");
-            //    Trace.TraceInformation("Steam Locomotive Type - ", SteamEngineType);
+                Trace.TraceInformation("Version - ", VersionInfo.Revision);
+               // Trace.TraceInformation("Locomotive Name - ", Name);
+                Trace.TraceInformation("Steam Locomotive Type - ", SteamLocoType);
 
                 Trace.TraceInformation("**************** General ****************");
-                Trace.TraceInformation("WheelRadius {0:N2} ft, NumWheels {1}, DriveWheelWeight {2:N1} t-uk", Me.ToFt(WheelRadiusM),  LocoNumDrvWheels, Kg.ToTUK(DrvWheelWeightKg));
+                Trace.TraceInformation("WheelRadius {0:N2} ft, NumWheels {1}, DriveWheelWeight {2:N1} t-uk", Me.ToFt(DriverWheelRadiusM),  LocoNumDrvWheels, Kg.ToTUK(DrvWheelWeightKg));
 
                 Trace.TraceInformation("**************** Boiler ****************");
                 Trace.TraceInformation("Boiler Volume {0:N1} cu ft, Evap Area {1:N1} sq ft, Superheat Area {2:N1} sq ft, Max Superheat Temp {3:N1} F, Max Boiler Pressure {4:N1} psi", BoilerVolumeFT3, Me2.ToFt2(EvaporationAreaM2), Me2.ToFt2(SuperheatAreaM2), MaxSuperheatRefTempF, MaxBoilerPressurePSI);
