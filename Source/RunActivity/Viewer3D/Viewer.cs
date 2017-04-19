@@ -781,7 +781,29 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommands.DisplayHelpWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HelpWindow.TabAction(); else HelpWindow.Visible = !HelpWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrackMonitorWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrackMonitorWindow.TabAction(); else TrackMonitorWindow.Visible = !TrackMonitorWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayHUD)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) HUDWindow.TabAction(); else HUDWindow.Visible = !HUDWindow.Visible;
-            if (UserInput.IsPressed(UserCommands.DisplayStationLabels)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDLocations.TabAction(); else OSDLocations.Visible = !OSDLocations.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayStationLabels))
+            {
+                if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDLocations.TabAction(); else OSDLocations.Visible = !OSDLocations.Visible;
+                if (OSDLocations.Visible)
+                {
+                    switch (OSDLocations.CurrentDisplayState)
+                    {
+                        case OSDLocations.DisplayState.All:
+                            MessagesWindow.AddMessage(Catalog.GetString("Platform and siding labels visible."), 5);
+                            break;
+                        case OSDLocations.DisplayState.Platforms:
+                            MessagesWindow.AddMessage(Catalog.GetString("Platform labels visible."), 5);
+                            break;
+                        case OSDLocations.DisplayState.Sidings:
+                            MessagesWindow.AddMessage(Catalog.GetString("Siding labels visible."), 5);
+                            break;
+                    }
+                }
+                else
+                {
+                    MessagesWindow.AddMessage(Catalog.GetString("Platform and siding labels hidden."), 5);
+                }
+            }
             if (UserInput.IsPressed(UserCommands.DisplayCarLabels)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDCars.TabAction(); else OSDCars.Visible = !OSDCars.Visible;
             if (UserInput.IsPressed(UserCommands.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }

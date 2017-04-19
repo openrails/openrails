@@ -19,6 +19,8 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ORTS.Common;
+using System;
 using System.Collections.Generic;
 
 namespace Orts.Viewer3D.Popups
@@ -27,7 +29,10 @@ namespace Orts.Viewer3D.Popups
     {
         Matrix Identity = Matrix.Identity;
 
-        enum DisplayState
+        const float MaximumDistance = 500;
+        const float MinimumDistance = 100;
+
+        public enum DisplayState
         {
             Platforms = 0x1,
             Sidings = 0x2,
@@ -64,27 +69,62 @@ namespace Orts.Viewer3D.Popups
                 var labels = Labels;
                 var newLabels = new Dictionary<TrItemLabel, LabelPrimitive>(labels.Count);
                 var worldFiles = Owner.Viewer.World.Scenery.WorldFiles;
+                var cameraLocation = Owner.Viewer.Camera.CameraWorldLocation;
                 foreach (var worldFile in worldFiles)
                 {
                     if ((State & DisplayState.Platforms) != 0 && worldFile.platforms != null)
+                    {
                         foreach (var platform in worldFile.platforms)
-                            if (labels.ContainsKey(platform))
-                                newLabels[platform] = labels[platform];
-                            else
-                                newLabels[platform] = new LabelPrimitive(Owner.Label3DMaterial, Color.Yellow, Color.Black, 0) { Position = platform.Location, Text = platform.ItemName };
+                        {
+                            // Calculates distance between camera and platform label.
+                            var distance = WorldLocation.GetDistance(platform.Location.WorldLocation, cameraLocation).Length();
+                            if (distance <= MaximumDistance)
+                            {
+                                if (labels.ContainsKey(platform))
+                                    newLabels[platform] = labels[platform];
+                                else
+                                    newLabels[platform] = new LabelPrimitive(Owner.Label3DMaterial, Color.Yellow, Color.Black, 0) { Position = platform.Location, Text = platform.ItemName };
+
+                                // Change color with distance.
+                                var ratio = (MathHelper.Clamp(distance, MinimumDistance, MaximumDistance) - MinimumDistance) / (MaximumDistance - MinimumDistance);
+                                newLabels[platform].Color.G = (byte)MathHelper.Lerp(255, 140, ratio);
+                            }
+                        }
+                    }
 
                     if ((State & DisplayState.Sidings) != 0 && worldFile.sidings != null)
+                    {
                         foreach (var siding in worldFile.sidings)
-                            if (labels.ContainsKey(siding))
-                                newLabels[siding] = labels[siding];
-                            else
-                                newLabels[siding] = new LabelPrimitive(Owner.Label3DMaterial, Color.Yellow, Color.Black, 0) { Position = siding.Location, Text = siding.ItemName };
+                        {
+                            // Calculates distance between camera and siding label.
+                            var distance = WorldLocation.GetDistance(siding.Location.WorldLocation, cameraLocation).Length();
+                            if (distance <= MaximumDistance)
+                            {
+                                if (labels.ContainsKey(siding))
+                                    newLabels[siding] = labels[siding];
+                                else
+                                    newLabels[siding] = new LabelPrimitive(Owner.Label3DMaterial, Color.Yellow, Color.Black, 0) { Position = siding.Location, Text = siding.ItemName };
+
+                                // Change color with distance.
+                                var ratio = (MathHelper.Clamp(distance, MinimumDistance, MaximumDistance) - MinimumDistance) / (MaximumDistance - MinimumDistance);
+                                newLabels[siding].Color.G = (byte)MathHelper.Lerp(255, 140, ratio);
+                            }
+                        }
+                    }
                 }
                 Labels = newLabels;
             }
 
             foreach (var primitive in Labels.Values)
                 frame.AddPrimitive(Owner.Label3DMaterial, primitive, RenderPrimitiveGroup.World, ref Identity);
+        }
+
+        public DisplayState CurrentDisplayState
+        {
+            get
+            {
+                return State;
+            }
         }
     }
 }

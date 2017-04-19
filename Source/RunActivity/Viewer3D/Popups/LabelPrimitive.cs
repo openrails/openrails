@@ -29,9 +29,9 @@ namespace Orts.Viewer3D.Popups
 
         public WorldPosition Position;
         public string Text;
+        public Color Color;
 
         readonly Viewer Viewer;
-        readonly Color Color;
         readonly Color Outline;
         readonly float OffsetY;
 
