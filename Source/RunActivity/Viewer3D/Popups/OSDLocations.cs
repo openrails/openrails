@@ -29,7 +29,7 @@ namespace Orts.Viewer3D.Popups
     {
         Matrix Identity = Matrix.Identity;
 
-        const float MaximumDistance = 500;
+        const float MaximumDistance = 1000;
         const float MinimumDistance = 100;
 
         public enum DisplayState
@@ -87,7 +87,7 @@ namespace Orts.Viewer3D.Popups
 
                                 // Change color with distance.
                                 var ratio = (MathHelper.Clamp(distance, MinimumDistance, MaximumDistance) - MinimumDistance) / (MaximumDistance - MinimumDistance);
-                                newLabels[platform].Color.G = (byte)MathHelper.Lerp(255, 140, ratio);
+                                newLabels[platform].Color.A = (byte)MathHelper.Lerp(255, 127, ratio);
                             }
                         }
                     }
@@ -107,7 +107,7 @@ namespace Orts.Viewer3D.Popups
 
                                 // Change color with distance.
                                 var ratio = (MathHelper.Clamp(distance, MinimumDistance, MaximumDistance) - MinimumDistance) / (MaximumDistance - MinimumDistance);
-                                newLabels[siding].Color.G = (byte)MathHelper.Lerp(255, 140, ratio);
+                                newLabels[siding].Color.A = (byte)MathHelper.Lerp(255, 127, ratio);
                             }
                         }
                     }
