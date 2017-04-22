@@ -385,7 +385,7 @@ namespace Orts.Viewer3D.Processes
                     if (versionOrBuild == VersionInfo.VersionOrBuild)
                     {
                         // If the save version is the same as the program version, we can't be an incompatible save - it's just a bug.
-                        throw error;
+                        throw;
                     }
                     else
                     {
@@ -397,7 +397,7 @@ namespace Orts.Viewer3D.Processes
                         }
                         // Rethrow the existing error if it is already an IncompatibleSaveException.
                         if (error is IncompatibleSaveException)
-                            throw error;
+                            throw;
                         throw new IncompatibleSaveException(saveFile, versionOrBuild, error);
                     }
                 }
