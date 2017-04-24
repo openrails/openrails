@@ -1196,7 +1196,7 @@ namespace Orts.Viewer3D
                     else
                     {
                         Triggers.Add(new ORTSTrigger()); // null trigger
-                        Trace.TraceWarning("Trigger type of trigger number {2} in stream number {1} in file {0} is not existent or not applicable",
+                        if (SoundSource.SMSFileName != "ingame.sms") Trace.TraceWarning("Trigger type of trigger number {2} in stream number {1} in file {0} is not existent or not applicable",
                             SoundSource.SMSFileName, SoundSource.SoundStreams.Count, Triggers.Count-1);
                     }
                     IsReleasedWithJump |= (Triggers.Last().SoundCommand is ORTSReleaseLoopReleaseWithJump);
