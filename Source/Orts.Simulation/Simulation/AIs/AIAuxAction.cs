@@ -2614,8 +2614,7 @@ namespace Orts.Simulation.AIs
             {
                 TrackCircuitSection thisSection = thisTrain.signalRef.TrackCircuitList[((AIActSigDelegateRef)ActionRef).TCSectionIndex];
                 if (((thisSection.CircuitState.TrainReserved != null && thisSection.CircuitState.TrainReserved.Train == thisTrain) || thisSection.CircuitState.ThisTrainOccupying(thisTrain) ) && 
-                    ((AIActSigDelegateRef)ActionRef).EndSignalIndex != -1 && 
-                    thisTrain.signalRef.SignalObjects[((AIActSigDelegateRef)ActionRef).EndSignalIndex] == thisTrain.NextSignalObject[0])
+                    ((AIActSigDelegateRef)ActionRef).EndSignalIndex != -1)
                     return true;
             }
 
