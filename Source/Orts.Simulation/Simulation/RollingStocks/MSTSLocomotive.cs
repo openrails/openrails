@@ -261,6 +261,8 @@ namespace Orts.Simulation.RollingStocks
         public List<CabView> CabViewList = new List<CabView>();
         public CabView3D CabView3D;
 
+        public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
+
         public MSTSNotchController ThrottleController;
         public ScriptedBrakeController TrainBrakeController;
         public ScriptedBrakeController EngineBrakeController;
@@ -721,6 +723,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
                 case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
+                case "engine(enginecontrollers(steamheat": SteamHeatController.Parse(stf); break;
 
                 default: base.Parse(lowercasetoken, stf); break;
                     
@@ -793,6 +796,7 @@ namespace Orts.Simulation.RollingStocks
             IsDriveable = copy.IsDriveable;
             //ThrottleController = MSTSEngineController.Copy(locoCopy.ThrottleController);
             ThrottleController = (MSTSNotchController)locoCopy.ThrottleController.Clone();
+            SteamHeatController = (MSTSNotchController)locoCopy.SteamHeatController.Clone();
             TrainBrakeController = locoCopy.TrainBrakeController.Clone(this);
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
@@ -843,6 +847,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
             ControllerFactory.Save(DynamicBrakeController, outf);
+            ControllerFactory.Save(SteamHeatController, outf);
             outf.Write(AcceptMUSignals);
 
             base.Save(outf);
@@ -872,6 +877,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(TrainBrakeController, inf);
             ControllerFactory.Restore(EngineBrakeController, inf);
             ControllerFactory.Restore(DynamicBrakeController, inf);
+            ControllerFactory.Restore(SteamHeatController, inf);
             AcceptMUSignals = inf.ReadBoolean();
             AdhesionFilter.Reset(0.5f);
 
@@ -2115,6 +2121,73 @@ namespace Orts.Simulation.RollingStocks
                 new ContinuousThrottleCommand(Simulator.Log, false, ThrottleController.CurrentValue, CommandStartTime);
         }
 
+        //Steam Heat Controller
+
+        #region Steam heating controller
+
+        public void StartSteamHeatIncrease(float? target)
+        {
+            SteamHeatController.CommandStartTime = Simulator.ClockTime;
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
+            SteamHeatController.StartIncrease(target);
+            SignalEvent(Event.SteamHeatChange);
+        }
+
+        public void StopSteamHeatIncrease()
+        {
+            SteamHeatController.StopIncrease();
+            new ContinuousSteamHeatCommand(Simulator.Log, 1, true, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
+        }
+
+        public void StartSteamHeatDecrease(float? target)
+        {
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
+            SteamHeatController.StartDecrease(target);
+            SignalEvent(Event.SteamHeatChange);
+        }
+
+        public void StopSteamHeatDecrease()
+        {
+            SteamHeatController.StopDecrease();
+            if (IsPlayerTrain)
+                new ContinuousSteamHeatCommand(Simulator.Log, 1, false, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
+        }
+
+        public void SteamHeatChangeTo(bool increase, float? target)
+        {
+            if (increase)
+            {
+                if (target > SteamHeatController.CurrentValue)
+                {
+                    StartSteamHeatIncrease(target);
+                }
+            }
+            else
+            {
+                if (target < SteamHeatController.CurrentValue)
+                {
+                    StartSteamHeatDecrease(target);
+                }
+            }
+        }
+
+        public void SetSteamHeatValue(float value)
+        {
+            var controller = SteamHeatController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousSteamHeatCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
+        #endregion
+
         /// <summary>
         /// Used by commands to start a continuous adjustment.
         /// </summary>
@@ -2908,6 +2981,11 @@ namespace Orts.Simulation.RollingStocks
                         break;
                     }
                 case CABViewControlTypes.AMMETER: // Current not modelled yet to ammeter shows tractive effort until then.
+
+                case CABViewControlTypes.STEAM_HEAT:
+                    data = SteamHeatController.CurrentValue;
+                    break;
+
                 case CABViewControlTypes.AMMETER_ABS:
                     {
                         var direction = 0; // Forwards

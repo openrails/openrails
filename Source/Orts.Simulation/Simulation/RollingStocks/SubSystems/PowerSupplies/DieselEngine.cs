@@ -621,8 +621,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// Engine output torque table - Torque vs. RPM
         /// </summary>
         public Interpolator DieselTorqueTab;
-
-        /// <summary>
+         /// <summary>
         /// Current exhaust number of particles
         /// </summary>
         public float ExhaustParticles = 10.0f;

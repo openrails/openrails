@@ -90,7 +90,6 @@ namespace Orts.Simulation.RollingStocks
         //Configure a default cutoff controller
         //If none is specified, this will be used, otherwise those values will be overwritten
         public MSTSNotchController CutoffController = new MSTSNotchController(-0.9f, 0.9f, 0.1f);
-        public MSTSNotchController SteamHeatController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController Injector1Controller = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController Injector2Controller = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController BlowerController = new MSTSNotchController(0, 1, 0.1f);
@@ -743,7 +742,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsmaxindicatedhorsepower": MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                     MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
                     break;
-                case "engine(ortssuperheatInitialPressurefactor": SuperheatInitialPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortssuperheatinitialpressurefactor": SuperheatInitialPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtenderwatermass": MaxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -751,7 +750,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
-                case "engine(enginecontrollers(steamheat": SteamHeatController.Parse(stf); break;
                 case "engine(enginecontrollers(smallejector": SmallEjectorController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
@@ -845,7 +843,6 @@ namespace Orts.Simulation.RollingStocks
             Stoker = locoCopy.Stoker;
             ORTSMaxFiringRateKGpS = locoCopy.ORTSMaxFiringRateKGpS;
             CutoffController = (MSTSNotchController)locoCopy.CutoffController.Clone();
-            SteamHeatController = (MSTSNotchController)locoCopy.SteamHeatController.Clone();
             Injector1Controller = (MSTSNotchController)locoCopy.Injector1Controller.Clone();
             Injector2Controller = (MSTSNotchController)locoCopy.Injector2Controller.Clone();
             BlowerController = (MSTSNotchController)locoCopy.BlowerController.Clone();
@@ -903,7 +900,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(WaterFraction);
             outf.Write(ScoopIsBroken);
             ControllerFactory.Save(CutoffController, outf);
-            ControllerFactory.Save(SteamHeatController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
             ControllerFactory.Save(Injector2Controller, outf);
             ControllerFactory.Save(BlowerController, outf);
@@ -938,7 +934,6 @@ namespace Orts.Simulation.RollingStocks
             SteamGearPosition = inf.ReadSingle();
             ScoopIsBroken = inf.ReadBoolean();
             ControllerFactory.Restore(CutoffController, inf);
-            ControllerFactory.Restore(SteamHeatController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
             ControllerFactory.Restore(Injector2Controller, inf);
             ControllerFactory.Restore(BlowerController, inf);
@@ -4774,9 +4769,6 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.BLOWER:
                     data = BlowerController.CurrentValue;
                     break;
-                case CABViewControlTypes.STEAM_HEAT:
-                    data = SteamHeatController.CurrentValue;
-                    break;
                 case CABViewControlTypes.DAMPERS_FRONT:
                     data = DamperController.CurrentValue;
                     break;
@@ -5535,73 +5527,6 @@ namespace Orts.Simulation.RollingStocks
         {
 
         }
-
-        //Steam Heat Controller
-
-        #region Steam heating controller
-
-        public void StartSteamHeatIncrease(float? target)
-        {
-            SteamHeatController.CommandStartTime = Simulator.ClockTime;
-            if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
-            SteamHeatController.StartIncrease(target);
-            SignalEvent(Event.SteamHeatChange);
-        }
-
-        public void StopSteamHeatIncrease()
-        {
-            SteamHeatController.StopIncrease();
-            new ContinuousSteamHeatCommand(Simulator.Log, 1, true, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
-        }
-
-        public void StartSteamHeatDecrease(float? target)
-        {
-            if (IsPlayerTrain)
-                Simulator.Confirmer.ConfirmWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
-            SteamHeatController.StartDecrease(target);
-            SignalEvent(Event.SteamHeatChange);
-        }
-
-        public void StopSteamHeatDecrease()
-        {
-            SteamHeatController.StopDecrease();
-            if (IsPlayerTrain)
-                new ContinuousSteamHeatCommand(Simulator.Log, 1, false, SteamHeatController.CurrentValue, SteamHeatController.CommandStartTime);
-        }
-
-        public void SteamHeatChangeTo(bool increase, float? target)
-        {
-            if (increase)
-            {
-                if (target > SteamHeatController.CurrentValue)
-                {
-                    StartSteamHeatIncrease(target);
-                }
-            }
-            else
-            {
-                if (target < SteamHeatController.CurrentValue)
-                {
-                    StartSteamHeatDecrease(target);
-                }
-            }
-        }
-
-        public void SetSteamHeatValue(float value)
-        {
-            var controller = SteamHeatController;
-            var oldValue = controller.IntermediateValue;
-            var change = controller.SetValue(value);
-            if (change != 0)
-            {
-                new ContinuousSteamHeatCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
-            }
-            if (oldValue != controller.IntermediateValue)
-                Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
-        }
-
-        #endregion
 
         //Small Ejector Controller
 

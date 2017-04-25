@@ -80,6 +80,11 @@ namespace Orts.Simulation.RollingStocks
         public float DieselWeightKgpL = 0.8508f; //per liter
         float InitialMassKg = 100000.0f;
 
+        // Power  / Steam Generator 
+        public float GenratorParticles = 10.0f;
+        public float GeneratorMagnitude = 1.5f;
+        public Color GeneratorSteadyColor = Color.Gray;
+
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
         public SmoothedData ExhaustMagnitude = new SmoothedData(1);

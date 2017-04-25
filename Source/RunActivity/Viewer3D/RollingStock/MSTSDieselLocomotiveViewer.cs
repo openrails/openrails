@@ -35,6 +35,7 @@ namespace Orts.Viewer3D.RollingStock
     {
         MSTSDieselLocomotive DieselLocomotive { get { return (MSTSDieselLocomotive)Car; } }
         List<ParticleEmitterViewer> Exhaust = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> GeneratorFX = new List<ParticleEmitterViewer>();
 
         public MSTSDieselLocomotiveViewer(Viewer viewer, MSTSDieselLocomotive car)
             : base(viewer, car)
@@ -44,6 +45,8 @@ namespace Orts.Viewer3D.RollingStock
 
             string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
+
+            // Diesel Exhaust
             foreach (var drawers in from drawer in ParticleDrawers
                                     where drawer.Key.ToLowerInvariant().StartsWith("exhaust")
                                     select drawer.Value)
@@ -51,6 +54,17 @@ namespace Orts.Viewer3D.RollingStock
                 Exhaust.AddRange(drawers);
             }
             foreach (var drawer in Exhaust)
+                drawer.Initialize(dieselTexture);
+
+
+            // Exhaust for generator
+            foreach (var drawers in from drawer in ParticleDrawers
+                                    where drawer.Key.ToLowerInvariant().StartsWith("generatorfx")
+                                    select drawer.Value)
+            {
+                GeneratorFX.AddRange(drawers);
+            }
+            foreach (var drawer in GeneratorFX)
                 drawer.Initialize(dieselTexture);
         }
 
@@ -167,11 +181,20 @@ namespace Orts.Viewer3D.RollingStock
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var car = this.Car as MSTSDieselLocomotive;
+            
+            // Diesel exhaust
             var exhaustParticles = car.Train != null && car.Train.TrainType == Train.TRAINTYPE.STATIC ? 0 : car.ExhaustParticles.SmoothedValue;
             foreach (var drawer in Exhaust)
             {
                 drawer.SetOutput(exhaustParticles, car.ExhaustMagnitude.SmoothedValue, new Color((byte)car.ExhaustColorR.SmoothedValue, (byte)car.ExhaustColorG.SmoothedValue, (byte)car.ExhaustColorB.SmoothedValue));
             }
+
+            // Generator exhaust
+            foreach (var drawer in GeneratorFX)
+            {
+                drawer.SetOutput(car.GenratorParticles, car.GeneratorMagnitude, car.GeneratorSteadyColor);
+            }
+            
             base.PrepareFrame(frame, elapsedTime);
         }
     }
