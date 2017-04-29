@@ -114,7 +114,7 @@ namespace Orts.Common
         {
             372.76f, 388.11f, 398.94f, 407.45f, 414.53f, 420.62f, 426.01f, 430.84f, 435.23f, 439.27f, 443.02f,
             446.51f, 449.79f, 452.88f, 455.80f, 458.58f, 461.23f, 463.77f, 466.20f, 468.53f, 470.78f, 
-            472.94f, 475.03f, 477.06f, 479.02f, 480.92f, 482.76f, 484.56f, 486.30f, 488.00f, 489.66f, 
+            472.94f, 475.03f, 477.06f, 479.02f, 480.92f, 482.76f, 484.56f, 486.30f, 488.00f, 489.66f 
         };
 
         // Specific heat table for water - volume heat capacity?? - 
@@ -122,7 +122,7 @@ namespace Orts.Common
         {
             4.2170f, 4.2049f, 4.2165f, 4.2223f, 4.2287f, 4.2355f, 4.2427f, 4.2505f, 4.2587f, 4.2675f, 4.2769f,
             4.2926f, 4.3035f, 4.3151f, 4.3274f, 4.3405f, 4.3543f, 4.3690f, 4.3846f, 4.4012f, 4.4187f, 
-            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f, 
+            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f 
         };
 
         // Water temp in deg Kelvin
@@ -130,26 +130,32 @@ namespace Orts.Common
         {
             274.00f, 281.40f, 288.80f, 296.20f, 303.60f, 311.00f, 318.40f, 325.80f, 333.20f, 340.60f, 348.00f,
             355.40f, 362.80f, 370.20f, 377.60f, 385.00f, 392.40f, 399.80f, 407.20f, 414.60f, 422.00f, 
-            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f, 
+            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f 
         };
        
         static float[] SaturationPressureTablePSI = new float[]
         {
             0.00f, 10.00f, 20.00f, 30.00f, 40.00f, 50.00f, 60.00f, 70.00f, 80.00f, 90.00f, 100.00f,
             110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f, 
-            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f, 
+            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f 
         };
                         
         // Fire Rate - ie lbs of coal per Square Foot of Grate Area 
         static float[] CoalGrateAreaTableLbspFt2 = new float[]
         {
-            0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f,
+            0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f
         };
         
-        // Boiler Efficiency - based upon paper from Locomotive Stoker paper - values above 120, extrapolated
-        static float[] BoilerEfficiencyTableX = new float[]
+        // Boiler Efficiency - based upon average results from test papers
+        static float[] SatBoilerEfficiencyTableX = new float[]
         {
-            0.875f, 0.85f, 0.775f, 0.70f, 0.625f, 0.55f, 0.475f, 0.40f, 0.325f,
+            0.83f, 0.765f, 0.705f, 0.640f, 0.580f, 0.518f, 0.457f, 0.392f, 0.331f
+        };
+
+        // Boiler Efficiency - based upon average results from test papers
+        static float[] SuperBoilerEfficiencyTableX = new float[]
+        {
+            0.940f, 0.88f, 0.825f, 0.765f, 0.710f, 0.65f, 0.595f, 0.538f, 0.480f
         };
         
         // pressure tables for Injectors temperature and steam usage
@@ -215,21 +221,21 @@ namespace Orts.Common
             250.0f, 218.0f, 190.0f, 168.0f, 145.0f, 129.0f, 113.0f, 98.0f, 84.0f, 70.0f
         };
 
-        // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Ref Principles of Locomotive Operation (To be confirmed)
         static float[] WheelRotationRpM = new float[]
         {
             0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
         };
 
-        // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
-        static float[] InitialPressureDropRatio = new float[]
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Ref Principles of Locomotive Operation (To be confirmed) - Saturated
+        static float[] SatInitialPressureDropRatio = new float[]
         {
-      //      0.98f, 0.95f, 0.927f, 0.90f, 0.874f, 0.85f, 0.82f, 0.81f    - old values to be checked
-            0.99f, 0.97f, 0.95f, 0.94f, 0.93f, 0.92f, 0.91f, 0.90f  // values to be checked
+            0.98f, 0.95f, 0.92f, 0.90f, 0.88f, 0.87f, 0.86f, 0.85f 
+            
         };
         
-       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        static float[] SteamChestPressureDropRatio = new float[]
+       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - (To be confirmed) - Superheated
+        static float[] SuperInitialPressureDropRatio = new float[]
         {
             0.99f, 0.97f, 0.95f, 0.94f, 0.93f, 0.92f, 0.91f, 0.90f
         };
@@ -377,15 +383,15 @@ namespace Orts.Common
         
 
        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        public static Interpolator SteamChestPressureDropRatioInterpolatorRpMtoX()
+        public static Interpolator SuperInitialPressureDropRatioInterpolatorRpMtoX()
         {
-            return new Interpolator(WheelRotationRpM, SteamChestPressureDropRatio);
+            return new Interpolator(WheelRotationRpM, SuperInitialPressureDropRatio);
         }       
 
         // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
-        public static Interpolator InitialPressureDropRatioInterpolatorRpMtoX()
+        public static Interpolator SatInitialPressureDropRatioInterpolatorRpMtoX()
         {
-            return new Interpolator(WheelRotationRpM, InitialPressureDropRatio);
+            return new Interpolator(WheelRotationRpM, SatInitialPressureDropRatio);
         }    
 
         // Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
@@ -430,12 +436,18 @@ namespace Orts.Common
             return new Interpolator(InjectorUsePressureTablePSI, WaterDelFedSteamTableLbs);
         }    
 
-        // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area
-        public static Interpolator BoilerEfficiencyGrateAreaInterpolatorLbstoX()
+        // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area - Saturated
+        public static Interpolator SatBoilerEfficiencyGrateAreaInterpolatorLbstoX()
         {
-            return new Interpolator(CoalGrateAreaTableLbspFt2, BoilerEfficiencyTableX);
+            return new Interpolator(CoalGrateAreaTableLbspFt2, SatBoilerEfficiencyTableX);
         }
-                   
+
+        // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area - Saturated
+        public static Interpolator SuperBoilerEfficiencyGrateAreaInterpolatorLbstoX()
+        {
+            return new Interpolator(CoalGrateAreaTableLbspFt2, SuperBoilerEfficiencyTableX);
+        }
+           
         // Saturated pressure of steam (psi) @ water temperature (K)
         public static Interpolator SaturationPressureInterpolatorKtoPSI()
         {
