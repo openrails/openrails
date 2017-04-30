@@ -328,7 +328,7 @@ namespace Orts.Viewer3D
             vertexList = new VertexPositionNormalTexture[numVertices];
             triangleListIndices = new short[indexCount];
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, 1.0f, mstsskytextureu, mstsskytexturev);
+            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius, 0f, mstsskytextureu, mstsskytexturev);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
             MSTSSkyDomeVertexList(0, mstsskyRadius - mstscloudDomeRadiusDiff, 1.0f, mstscloudtextureu, mstscloudtexturev);
@@ -404,7 +404,7 @@ namespace Orts.Viewer3D
                     // UV coordinates - top overlay
                     float uvRadius;
                     uvRadius = (0.5f - (float)(0.5f * (i - 1)) / texDivisor);
-                    float uv_u = tile_u *(0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
+                    float uv_u = tile_u * (0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
                     float uv_v = tile_v * (0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
 
                     // Store the position, texture coordinates and normal (normalized position vector) for the current vertex
@@ -417,7 +417,7 @@ namespace Orts.Viewer3D
             // Single vertex at zenith
             vertexList[vertexIndex].Position = new Vector3(0, radius, 0);
             vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f, 0.5f); // (top overlay)
+            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f * tile_u, 0.5f *tile_v); // (top overlay)
         }
 
         /// <summary>
