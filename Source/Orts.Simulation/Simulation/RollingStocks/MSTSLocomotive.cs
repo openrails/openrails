@@ -2980,12 +2980,12 @@ namespace Orts.Simulation.RollingStocks
                         }
                         break;
                     }
-                case CABViewControlTypes.AMMETER: // Current not modelled yet to ammeter shows tractive effort until then.
 
                 case CABViewControlTypes.STEAM_HEAT:
                     data = SteamHeatController.CurrentValue;
                     break;
-
+                
+                case CABViewControlTypes.AMMETER: // Current not modelled yet to ammeter shows tractive effort until then.
                 case CABViewControlTypes.AMMETER_ABS:
                     {
                         var direction = 0; // Forwards
