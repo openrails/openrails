@@ -36,7 +36,7 @@ namespace Orts.Viewer3D
         public static int skyRadius = 6000;
         public const int skySides = 24;
         public static int skyHeight;
-        public const short skyLevels = 6;
+        public const short skyLevels = 4;
         public static bool IsNight = false;
         public static float mstsskyTileu;
         public static float mstsskyTilev;
@@ -328,10 +328,11 @@ namespace Orts.Viewer3D
             vertexList = new VertexPositionNormalTexture[numVertices];
             triangleListIndices = new short[indexCount];
             // Sky dome
-            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius, 0f, mstsskytextureu, mstsskytexturev);
+            //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius, 0f, mstsskytextureu, mstsskytexturev);
+            MSTSSkyDomeVertexList(0, mstsskyRadius, mstsskytextureu, mstsskytexturev);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius - mstscloudDomeRadiusDiff, 1.0f, mstscloudtextureu, mstscloudtexturev);
+            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, mstscloudtextureu, mstscloudtexturev);
             MSTSSkyDomeTriangleList((short)((indexCount - 6) / 2), 1);
             // Moon quad
             MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
@@ -384,16 +385,16 @@ namespace Orts.Viewer3D
         /// <param name="index">The starting vertex number</param>
         /// <param name="radius">The radius of the dome</param>
         /// <param name="oblate">The amount the dome is flattened</param>
-        private void MSTSSkyDomeVertexList(int index, int radius, float oblate, float tile_u, float tile_v)
+        private void MSTSSkyDomeVertexList(int index, int radius, float tile_u, float tile_v)
         {
             int vertexIndex = index;
-            int texDivisor = (oblate == 1.0f) ? mstsskyLevels : mstsskyLevels + 1;
+
             // for each vertex
             for (int i = 0; i <= (mstsskyLevels); i++) // (=6 for 24 sides)
             {
                 // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
                 // dome only. Gives the clouds a flatter appearance.
-                float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (i - 1))) * radius * oblate;
+                float y = (float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (i - 1))) * radius; //  oblate;
                 float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (i - 1)));
                 for (int j = 0; j < mstsskySides; j++) // (=24 for top overlay)
                 {
@@ -403,9 +404,9 @@ namespace Orts.Viewer3D
 
                     // UV coordinates - top overlay
                     float uvRadius;
-                    uvRadius = (0.5f - (float)(0.5f * (i - 1)) / texDivisor);
+                    uvRadius = (0.5f - (float)(0.5f * (i - 1)) / mstsskyLevels );
                     float uv_u = tile_u * (0.5f - ((float)Math.Cos(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
-                    float uv_v = tile_v * (0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius));
+                    float uv_v = tile_v * (0.5f - ((float)Math.Sin(MathHelper.ToRadians((360 / mstsskySides) * (mstsskySides - j))) * uvRadius ));
 
                     // Store the position, texture coordinates and normal (normalized position vector) for the current vertex
                     vertexList[vertexIndex].Position = new Vector3(x, y, z);
@@ -663,7 +664,6 @@ namespace Orts.Viewer3D
 
             MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Sky"];
             Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 1;
-
             MSTSSkyShader.SetViewMatrix(ref XNAViewMatrix);
             MSTSSkyShader.Begin();
             ShaderPassesSky.Reset();
