@@ -433,7 +433,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 						AuxResPressurePSI -= dp * EmergAuxVolumeRatio;
 					}
 				}
-                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || NoMRPAuxResCharging || BrakeLine2PressurePSI < BrakeLine1PressurePSI))
+                if (AuxResPressurePSI < BrakeLine1PressurePSI && (!TwoPipes || NoMRPAuxResCharging || BrakeLine2PressurePSI < BrakeLine1PressurePSI) && !BleedOffValveOpen)
                 {
                     float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS; // Change in pressure for train brake pipe.
                     if (AuxResPressurePSI + dp > BrakeLine1PressurePSI - dp * AuxBrakeLineVolumeRatio)
@@ -446,7 +446,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 && !NoMRPAuxResCharging
                 && AuxResPressurePSI < BrakeLine2PressurePSI
                 && AuxResPressurePSI < EmergResPressurePSI
-                && (BrakeLine2PressurePSI > BrakeLine1PressurePSI || TripleValveState != ValveState.Release))
+                && (BrakeLine2PressurePSI > BrakeLine1PressurePSI || TripleValveState != ValveState.Release) && !BleedOffValveOpen)
             {
                 float dp = elapsedClockSeconds * MaxAuxilaryChargingRatePSIpS;
                 if (AuxResPressurePSI + dp > BrakeLine2PressurePSI - dp * AuxBrakeLineVolumeRatio)
