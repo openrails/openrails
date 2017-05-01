@@ -93,7 +93,7 @@ namespace Orts.Simulation.RollingStocks
         public string FreightShapeFileName;
         public float FreightAnimMaxLevelM;
         public float FreightAnimMinLevelM;
-        public float FreightAnimFlag;   // if absent or >= 0 causes the freightanim to drop in tenders
+        public float FreightAnimFlag = 1;   // if absent or >= 0 causes the freightanim to drop in tenders
         public string Cab3DShapeFileName; // 3DCab view shape file name
         public string InteriorShapeFileName; // passenger view shape file name
         public string MainSoundFileName;
@@ -649,8 +649,13 @@ namespace Orts.Simulation.RollingStocks
                     FreightShapeFileName = stf.ReadString();
                     FreightAnimMaxLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
                     FreightAnimMinLevelM = stf.ReadFloat(STFReader.UNITS.Distance, null);
-                    FreightAnimFlag = stf.ReadFloat(STFReader.UNITS.Distance, 1.0f);
-                    stf.SkipRestOfBlock();
+                    // Flags are optional and we want to avoid a warning.
+                    if (!stf.EndOfBlock())
+                    {
+                        // TODO: The variable name (Flag), data type (Float), and unit (Distance) don't make sense here.
+                        FreightAnimFlag = stf.ReadFloat(STFReader.UNITS.Distance, 1.0f);
+                        stf.SkipRestOfBlock();
+                    }
                     break;
                 case "wagon(size":
                     stf.MustMatch("(");
