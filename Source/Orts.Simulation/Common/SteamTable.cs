@@ -282,19 +282,26 @@ namespace Orts.Common
               0.0f, 0.25f, 0.5f, 0.75f, 1.25f, 1.75f, 2.5f, 3.5f, 4.8f,
               7.2f, 11.25f, 16.0f, 20.0f, 22.0f, 24.0f, 26.0f
         };
-        
-// Burnrate - based upon test results from a Consolidation locomotive
+
+        // Burnrate - based upon average curve from test results
         static float[] CoalFiredLbspH = new float[]
         {
               10.0f, 1000.0f, 2000.0f, 3000.0f, 4000.0f, 5000.0f, 6000.0f, 7000.0f, 8000.0f,
               9000.0f, 10000.0f, 11000.0f
         };        
 
-// Burnrate - based upon test results from a Consolidation locomotive
-        static float[] SteamEvaporationLbspH = new float[]
+// Burnrate - based upon average curve from test results
+        static float[] SatSteamEvaporationLbspH = new float[]
         {
-              0.0f, 9000.0f, 14500.0f, 21000.0f, 26400.0f, 30800.0f, 34400.0f, 37500.0f, 40200.0f,
-              42800.0f, 45200.0f, 47800.0f
+              0.0f, 8000.0f, 15000.0f, 21000.0f, 26000.0f, 30000.0f, 31250.0f, 31500.0f, 31750.0f,
+              32000.0f, 32250.0f, 32500.0f
+        };
+
+// Burnrate - based upon average curve from test results
+        static float[] SuperSteamEvaporationLbspH = new float[]
+        {
+              0.0f, 9000.0f, 16500.0f, 22000.0f, 27000.0f, 31200.0f, 33300.0f, 34000.0f, 34250.0f,
+              34500.0f, 34600.0f, 34700.0f
         };      
         
 // Cylinder Condensation - Ref Principles of Locomotive Operation
@@ -349,10 +356,16 @@ namespace Orts.Common
         }
 
         
-// Burnrate - based upon test results from a Consolidation locomotive
-        public static Interpolator NewBurnRateSteamToCoalLbspH()
+// Burnrate - based upon average test results
+        public static Interpolator SatNewBurnRateSteamToCoalLbspH()
         {
-            return new Interpolator(SteamEvaporationLbspH, CoalFiredLbspH);
+            return new Interpolator(SatSteamEvaporationLbspH, CoalFiredLbspH);
+        }
+
+// Burnrate - based upon average test results
+        public static Interpolator SuperNewBurnRateSteamToCoalLbspH()
+        {
+            return new Interpolator(SuperSteamEvaporationLbspH, CoalFiredLbspH);
         }
 
 // Saturated Backpressure - Ref Principles of Locomotive Operation
