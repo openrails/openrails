@@ -48,6 +48,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Formats.Msts;
+using Orts.MultiPlayer;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -1583,10 +1584,12 @@ namespace Orts.Simulation.RollingStocks
             if (Horn && !PreviousHorn)
             {
                 SignalEvent(Event.HornOn);
+                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 1)).ToString());
             }
             else if (!Horn && PreviousHorn)
             {
                 SignalEvent(Event.HornOff);
+                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 0)).ToString());
             }
 
             if (ManualBell)
@@ -1606,10 +1609,12 @@ namespace Orts.Simulation.RollingStocks
             if (Bell && !PreviousBell)
             {
                 SignalEvent(Event.BellOn);
+                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
             }
             else if (!Bell && PreviousBell)
             {
                 SignalEvent(Event.BellOff);
+                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
             }
 
             PreviousHorn = Horn;

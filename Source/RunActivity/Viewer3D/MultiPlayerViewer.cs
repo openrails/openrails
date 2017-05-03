@@ -25,7 +25,6 @@ namespace Orts.Viewer3D
         //count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
         static int PantoSecondCount;
         static int PantoFirstCount;
-        static int BellCount;
         static int WiperCount;
         static int HeadLightCount;
         static int DoorLeftCount;
@@ -35,24 +34,15 @@ namespace Orts.Viewer3D
         public static void HandleUserInput()
         {
             //In Multiplayer, I maybe the helper, but I can request to be the controller
+            // Horn and bell are managed by UpdateHornAndBell in MSTSLocomotive.cs
             if (UserInput.IsPressed(UserCommands.GameRequestControl))
             {
                 MPManager.RequestControl();
             }
 
-            if (UserInput.IsPressed(UserCommands.ControlHorn)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 1)).ToString());
-
-            if (UserInput.IsReleased(UserCommands.ControlHorn)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 0)).ToString());
-
             if (UserInput.IsPressed(UserCommands.ControlPantograph2)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO2", (++PantoSecondCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommands.ControlPantograph1)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO1", (++PantoFirstCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlBell)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
-
-            if (UserInput.IsReleased(UserCommands.ControlBell)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlBellToggle)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", (++BellCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommands.ControlWiper)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
 

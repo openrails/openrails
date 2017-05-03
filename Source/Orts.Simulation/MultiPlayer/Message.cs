@@ -1926,8 +1926,11 @@ namespace Orts.MultiPlayer
 
             if (EventName == "HORN")
             {
-                if (t.LeadLocomotive is MSTSLocomotive) (t.LeadLocomotive as MSTSLocomotive).ManualHorn = (EventState == 1);
-                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+                if (t.LeadLocomotive != null)
+                {
+                    t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.HornOff : Event.HornOn);
+                    MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+                }
             }
             else if (EventName == "PANTO1")
             {
@@ -1943,8 +1946,11 @@ namespace Orts.MultiPlayer
             }
             else if (EventName == "BELL")
             {
-                if (t.LeadLocomotive is MSTSLocomotive) (t.LeadLocomotive as MSTSLocomotive).ManualBell = (EventState == 1);
-                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+                if (t.LeadLocomotive != null)
+                {
+                    t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.BellOff : Event.BellOn);
+                    MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+                }
             }
             else if (EventName == "WIPER")
             {
