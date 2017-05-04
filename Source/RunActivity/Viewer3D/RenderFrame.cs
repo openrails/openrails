@@ -835,7 +835,8 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        if (Game.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial))
+                        if (Game.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial
+                            || sequenceMaterial.Key is MSTSSkyMaterial))
                             continue;
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
@@ -864,7 +865,7 @@ namespace Orts.Viewer3D
                 {
                     if (sequenceMaterial.Value.Count == 0)
                         continue;
-                    if (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial)
+                    if (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial || sequenceMaterial.Key is MSTSSkyMaterial)
                     {
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
