@@ -83,9 +83,23 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
-                            if (required) 
-                                Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
-                            return defaultTexture;
+                            try //in case of no texture in wintersnow etc, go up one level
+                            {
+                                var p = System.IO.Directory.GetParent(path);//returns the current level of dir
+
+                                p = System.IO.Directory.GetParent(p.FullName);//go up one level
+                                var s = p.FullName + "\\" + Path.GetFileName(path);
+                                if (File.Exists(s) &&  s.ToLower().Contains("texture")) //in texure and exists
+                                {
+                                    texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, s);
+                                }
+                                else {
+                                    if (required)
+                                        Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
+                                    return defaultTexture;
+                                }
+                            }
+                            catch { texture = defaultTexture; return defaultTexture; }
                         }
                     }
                     else
