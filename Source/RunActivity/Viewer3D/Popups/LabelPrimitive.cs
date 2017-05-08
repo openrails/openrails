@@ -30,9 +30,9 @@ namespace Orts.Viewer3D.Popups
         public WorldPosition Position;
         public string Text;
         public Color Color;
+        public Color Outline;
 
         readonly Viewer Viewer;
-        readonly Color Outline;
         readonly float OffsetY;
 
         public LabelPrimitive(Label3DMaterial material, Color color, Color outline, float offsetY)
