@@ -15,11 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-// Steam debugging is off by default - uncomment the #define to turn on - provides printout in log at set speed for steam indicator pressures.
-//#define DEBUG_LOCO_STEAM
-
 // Burn debugging is off by default - uncomment the #define to turn on - provides visibility of burn related parameters for AI Fireman on extended HUD.
 //#define DEBUG_LOCO_BURN_AI
+
+// Burn debugging is off by default - uncomment the #define to turn on - provides visibility of calculations for MEP.
+//#define DEBUG_LOCO_STEAM_MEP
 
 // Steam usage debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
 //#define DEBUG_LOCO_STEAM_USAGE
@@ -447,12 +447,12 @@ namespace Orts.Simulation.RollingStocks
         float SpeedEquivMpS = 27.0f;          // Equvalent speed of 60mph in mps (27m/s) - used for damper control
 
         // Cylinder related parameters
-        float CutoffPressureDropRatio;  // Ratio of Cutoff Pressure to Initial Pressure
+        public float CutoffPressureDropRatio;  // Ratio of Cutoff Pressure to Initial Pressure
         float CylinderCocksPressureAtmPSI; // Pressure in cylinder (impacted by cylinder cocks).
         float BackPressureAtmPSI;
         float InitialPressureAtmPSI;    // Initial Pressure to cylinder @ start if stroke
         float CutoffPressureAtmPSI;    // Pressure at cutoff
-        public float SteamChestPressurePSI;    // Pressure in steam chest - input to cylinder
+        float SteamChestPressurePSI;    // Pressure in steam chest - input to cylinder
 
         float CylinderAdmissionWorkInLbs; // Work done during steam admission into cylinder
         float CylinderExhaustOpenFactor; // Point on cylinder stroke when exhaust valve opens.
@@ -466,6 +466,16 @@ namespace Orts.Simulation.RollingStocks
         float CylinderCompressionWorkInLbs; // Work done during compression stage of cylinder
         float CylinderPreAdmissionWorkInLbs; // Work done during PreAdmission stage of cylinder
         float CylinderExhaustWorkInLbs; // Work done during Exhaust stage of cylinder
+
+    // Values for logging and displaying Steam pressure
+        public float LogInitialPressurePSI;
+        public float LogCutoffPressurePSI;
+        public float LogBackPressurePSI;
+        public float LogReleasePressurePSI;
+        public float LogSteamChestPressurePSI;
+        float LogPreCompressionPressurePSI;
+        float LogPreAdmissionPressurePSI;
+
 
         // Compound Cylinder Information - HP Cylinder
 
@@ -1023,13 +1033,13 @@ namespace Orts.Simulation.RollingStocks
             // Assign value for superheat Initial pressure factor if not set in ENG file
             if (SuperheatCutoffPressureFactor == 0)
             {
-                SuperheatCutoffPressureFactor = 55.0f; // If no factor in the ENG file set to nominal value (50.0)
+                SuperheatCutoffPressureFactor = 75.0f; // If no factor in the ENG file set to nominal value (50.0)
             }
 
             // Determine if Cylinder Port Opening  Factor has been set
             if (CylinderPortOpeningFactor == 0)
             {
-                CylinderPortOpeningFactor = 0.05f; // Set as default if not specified
+                CylinderPortOpeningFactor = 0.085f; // Set as default if not specified
             }
             CylinderPortOpeningFactor = MathHelper.Clamp(CylinderPortOpeningFactor, 0.05f, 0.12f); // Clamp Cylinder Port Opening Factor to between 0.05 & 0.12 so that tables are not exceeded   
 
@@ -1054,6 +1064,7 @@ namespace Orts.Simulation.RollingStocks
             }
             CylinderExhaustOpenFactor = MathHelper.Clamp(CylinderExhaustOpenFactor, 0.5f, 0.95f); // Clamp Cylinder Exhaust Port Opening Factor to between 0.5 & 0.95 so that tables are not exceeded   
 
+//            CylinderExhaustOpenFactor = 0.66f;
             DrvWheelDiaM = DriverWheelRadiusM * 2.0f;
 
             // Test to see if gear type set
@@ -1311,6 +1322,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 SteamLocoType += " + Not formally defined (assumed saturated)";
                 MaxSuperheatRefTempF = 0.0f;
+                CylinderClearancePC = 0.08f;
             }
  
             // Assign default steam table values if table not in ENG file 
@@ -2773,6 +2785,9 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
 
+                LogSteamChestPressurePSI = SteamChestPressurePSI;  // Value for recording in log file
+                LogSteamChestPressurePSI = MathHelper.Clamp(LogSteamChestPressurePSI, 0.00f, LogSteamChestPressurePSI); // Clamp so that steam chest pressure does not go negative
+
                 if (CylinderCompoundOn) // Compound bypass valve on - puts locomotive into simple mode
                 {
                     // ***** Simple mode *****
@@ -3152,6 +3167,8 @@ namespace Orts.Simulation.RollingStocks
 
             #region Calculation of Mean Effective Pressure of Cylinder using an Indicator Diagram type approach - Single Expansion
 
+            // Principle source of reference for this section is - LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS BY G. R. HENDERSON  - pg 128
+
             if (SteamEngineType != SteamEngineTypes.Compound)
             {
 
@@ -3159,7 +3176,7 @@ namespace Orts.Simulation.RollingStocks
                 float CylinderVolumePoint_e = CylinderCompressionCloseFactor + CylinderClearancePC;
                 float CylinderVolumePoint_f = CylinderPreAdmissionOpenFactor + CylinderClearancePC;
 
-                // Note all presurres in absolute for working on steam indicator diagram
+                // Note all pressures in absolute pressure for working on steam indicator diagram. MEP will be just a gauge pressure value as it is a differencial pressure calculated as an area off the indicator diagram
                 // The pressures below are as calculated and referenced to the steam indicator diagram for single expansion locomotives by letters shown in brackets - see Coals to Newcastle website
                 // Calculate Ratio of expansion, with cylinder clearance
                 // R (ratio of Expansion) = (length of stroke to point of  exhaust + clearance) / (length of stroke to point of cut-off + clearance)
@@ -3169,13 +3186,19 @@ namespace Orts.Simulation.RollingStocks
 
                 SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
 
+                LogSteamChestPressurePSI = SteamChestPressurePSI;  // Value for recording in log file
+                LogSteamChestPressurePSI = MathHelper.Clamp(LogSteamChestPressurePSI, 0.00f, LogSteamChestPressurePSI); // Clamp so that steam chest pressure does not go negative
+
                 // Initial pressure will be decreased depending upon locomotive speed
                 // This drop can be adjusted with a table in Eng File
                 // Steam Indicator Diagram reference - (a) 
                 InitialPressureAtmPSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
 
+                LogInitialPressurePSI = InitialPressureAtmPSI - OneAtmospherePSI; // Value for log file & display
+                LogInitialPressurePSI = MathHelper.Clamp(LogInitialPressurePSI, 0.00f, LogInitialPressurePSI); // Clamp so that initial pressure does not go negative
+
                 // Steam Indicator Diagram reference - (d) 
-                BackPressureAtmPSI = BackPressureIHPtoAtmPSI[IndicatedHorsePowerHP];
+                BackPressureAtmPSI = BackPressureIHPtoAtmPSI[IndicatedHorsePowerHP] + OneAtmospherePSI;
 
                 if (throttle < 0.02f)
                 {
@@ -3183,6 +3206,8 @@ namespace Orts.Simulation.RollingStocks
                     BackPressureAtmPSI = 0.0f;
                 }
 
+                LogBackPressurePSI = BackPressureAtmPSI - OneAtmospherePSI;  // Value for log file
+                LogBackPressurePSI = MathHelper.Clamp(LogBackPressurePSI, 0.00f, LogBackPressurePSI); // Clamp so that Back pressure does not go negative
 
                 // Calculate Cut-off Pressure drop - cutoff pressure drops as speed of locomotive increases.
                 float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
@@ -3202,6 +3227,29 @@ namespace Orts.Simulation.RollingStocks
                 // Steam Indicator Diagram reference - (b) 
                 CutoffPressureAtmPSI = InitialPressureAtmPSI * CutoffPressureDropRatio;
 
+                LogCutoffPressurePSI = CutoffPressureAtmPSI - OneAtmospherePSI;   // Value for log file
+                LogCutoffPressurePSI = MathHelper.Clamp(LogCutoffPressurePSI, 0.00f, LogCutoffPressurePSI); // Clamp so that Cutoff pressure does not go negative
+
+                // Steam Indicator Diagram reference - (c) 
+                // Release pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
+                CylinderReleasePressureAtmPSI = (CutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (CylinderExhaustOpenFactor + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
+
+                LogReleasePressurePSI = CylinderReleasePressureAtmPSI - OneAtmospherePSI;   // Value for log file
+                LogReleasePressurePSI = MathHelper.Clamp(LogReleasePressurePSI, 0.00f, LogReleasePressurePSI); // Clamp so that Release pressure does not go negative
+
+                // Steam Indicator Diagram reference - (e) 
+                // Calculate pre-compression pressure based upon backpresure being equal to it, as steam should be exhausting
+                CylinderPreCompressionPressureAtmPSI = (BackPressureAtmPSI);
+
+                LogPreCompressionPressurePSI = CylinderPreCompressionPressureAtmPSI - OneAtmospherePSI;   // Value for log file
+                LogPreCompressionPressurePSI = MathHelper.Clamp(LogPreCompressionPressurePSI, 0.00f, LogPreCompressionPressurePSI); // Clamp so that pre compression pressure does not go negative
+
+                // Steam Indicator Diagram reference - (f) 
+                CylinderPreAdmissionPressureAtmPSI = CylinderPreCompressionPressureAtmPSI * (CylinderCompressionCloseFactor + CylinderClearancePC) / (CylinderPreAdmissionOpenFactor + CylinderClearancePC);  // Check factor to calculate volume of 
+
+                LogPreAdmissionPressurePSI = CylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI;   // Value for log file
+                LogPreAdmissionPressurePSI = MathHelper.Clamp(LogPreAdmissionPressurePSI, 0.00f, LogPreAdmissionPressurePSI); // Clamp so that pre admission pressure does not go negative
+
                 // In driving the wheels steam does work in the cylinders. The amount of work can be calculated by a typical steam indicator diagram
                 // Mean Effective Pressure (work) = average positive pressures - average negative pressures
                 // Average Positive pressures = admission + expansion + release
@@ -3211,10 +3259,6 @@ namespace Orts.Simulation.RollingStocks
                 // Av Admission work = Av (Initial Pressure + Cutoff Pressure) * length of Cylinder to cutoff
                 float CylinderLengthAdmissionIn = Me.ToIn(CylinderStrokeM * ((cutoff + CylinderClearancePC) - CylinderClearancePC));
                 CylinderAdmissionWorkInLbs = ((InitialPressureAtmPSI + CutoffPressureAtmPSI) / 2.0f) * CylinderLengthAdmissionIn;
-
-                // Steam Indicator Diagram reference - (c) 
-                // Release pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
-                CylinderReleasePressureAtmPSI = (CutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (CylinderExhaustOpenFactor + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
 
                 // Calculate Av Expansion Work (inch pounds) - between b) - c)
                 // Av pressure during expansion = Cutoff pressure x log (ratio of expansion) / (ratio of expansion - 1.0) 
@@ -3230,11 +3274,7 @@ namespace Orts.Simulation.RollingStocks
 
                 // Calculate Av Exhaust Work (inch pounds) - between d) - e)
                 // Av Exhaust work = Av pressure during exhaust * length of Cylinder during exhaust stroke
-                CylinderExhaustWorkInLbs = BackPressureAtmPSI * Me.ToIn(CylinderStrokeM) * ((1.0f - CylinderCompressionCloseFactor) + CylinderClearancePC);
-
-                // Steam Indicator Diagram reference - (e) 
-                // Calculate pre-compression pressure based upon backpresure being equal to it, as steam should be exhausting
-                CylinderPreCompressionPressureAtmPSI = (BackPressureAtmPSI);
+                CylinderExhaustWorkInLbs = BackPressureAtmPSI * Me.ToIn(CylinderStrokeM) * ((1.0f + CylinderClearancePC) - (CylinderCompressionCloseFactor + CylinderClearancePC));
 
                 // Calculate Av Compression Work (inch pounds) - between e) - f)
                 // Ratio of compression = stroke during compression = stroke @ start of compression / stroke and end of compression
@@ -3244,10 +3284,7 @@ namespace Orts.Simulation.RollingStocks
                 float CylinderLengthCompressionIn = Me.ToIn(CylinderStrokeM) * (CylinderVolumePoint_e - CylinderVolumePoint_f);
                 float AverageCompressionPressureAtmPSI = CylinderPreCompressionPressureAtmPSI * RatioOfCompression * ((float)Math.Log(RatioOfCompression) / (RatioOfCompression - 1.0f));
                 CylinderCompressionWorkInLbs = AverageCompressionPressureAtmPSI * CylinderLengthCompressionIn;
-
-                // Steam Indicator Diagram reference - (f) 
-                CylinderPreAdmissionPressureAtmPSI = CylinderPreCompressionPressureAtmPSI * (CylinderCompressionCloseFactor + CylinderClearancePC) / (CylinderPreAdmissionOpenFactor + CylinderClearancePC);  // Check factor to calculate volume of 
-
+                
                 // Calculate Av Pre-admission work (inch pounds) - between f) - a)
                 // Av Pre-admission work = Av pressure during pre-admission * length of Cylinder during pre-admission stroke
                 CylinderPreAdmissionWorkInLbs = ((InitialPressureAtmPSI + CylinderPreAdmissionPressureAtmPSI) / 2.0f) * CylinderPreAdmissionOpenFactor * Me.ToIn(CylinderStrokeM);
@@ -3255,30 +3292,38 @@ namespace Orts.Simulation.RollingStocks
                 // Calculate total work in cylinder
                 float TotalPositiveWorkInLbs = CylinderAdmissionWorkInLbs + CylinderExpansionWorkInLbs + CylinderReleaseWorkInLbs - CylinderExhaustWorkInLbs - CylinderCompressionWorkInLbs - CylinderPreAdmissionWorkInLbs;
 
-                MeanEffectivePressurePSI = TotalPositiveWorkInLbs / Me.ToIn(CylinderStrokeM);
-                MeanEffectivePressurePSI = MathHelper.Clamp(MeanEffectivePressurePSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
+                MeanEffectivePressurePSI = TotalPositiveWorkInLbs / Me.ToIn(CylinderStrokeM); // MEP doen't need to be converted from Atm to gauge pressure as it is a differential pressure.
+                MeanEffectivePressurePSI = MathHelper.Clamp(MeanEffectivePressurePSI, 0, MaxBoilerPressurePSI); // Make sure that Cylinder pressure does not go negative
 
-#if DEBUG_LOCO_STEAM
-                if (DebugWheelRevs >= 80.0 && DebugWheelRevs < 80.05 | DebugWheelRevs >= 160.0 && DebugWheelRevs < 160.05 | DebugWheelRevs >= 240.0 && DebugWheelRevs < 240.05 | DebugWheelRevs >= 320.0 && DebugWheelRevs < 320.05)
-                {
-                    Trace.TraceInformation("***************************************** Simple Steam Locomotive ***************************************************************");
+#if DEBUG_LOCO_STEAM_MEP
+                if (DebugWheelRevs >= 55.0 && DebugWheelRevs < 55.1 | DebugWheelRevs >= 110.0 && DebugWheelRevs < 110.1 | DebugWheelRevs >= 165.0 && DebugWheelRevs < 165.05 | DebugWheelRevs >= 220.0 && DebugWheelRevs < 220.05)
+                 {
+                     Trace.TraceInformation("***************************************** Simple Steam Locomotive ***************************************************************");
+ 
+                    Trace.TraceInformation("All pressures in Atmospheric Pressure (ie Added 14.5psi)");
 
-                    Trace.TraceInformation("*********** Operating Conditions *********");
+                     Trace.TraceInformation("*********** Operating Conditions *********");
+ 
+                    Trace.TraceInformation("Boiler Pressure {0} Initial/Cutoff Factor {1}", BoilerPressurePSI, CutoffPressureDropRatio);
 
-                    Trace.TraceInformation("Throttle {0} Cutoff {1}  Revs {2} RelPt {3} Clear {4}", throttle, cutoff, pS.TopM(DrvWheelRevRpS), CylinderExhaustOpenFactor, CylinderClearancePC);
+                     Trace.TraceInformation("Throttle {0} Cutoff {1}  Revs {2} RelPt {3} Clear {4}", throttle, cutoff, pS.TopM(DrvWheelRevRpS), CylinderExhaustOpenFactor, CylinderClearancePC);
+ 
+                     Trace.TraceInformation("*********** Cylinder *********");
+ 
+                    Trace.TraceInformation("Cylinder Pressures: a {0} b {1} c {2} d {3} e {4} f {5}", InitialPressureAtmPSI, CutoffPressureAtmPSI, CylinderReleasePressureAtmPSI, BackPressureAtmPSI, CylinderPreCompressionPressureAtmPSI, CylinderPreAdmissionPressureAtmPSI);
+ 
+                    Trace.TraceInformation("MeanPressure Expansion: AvExpansionPressure {0} ExpRatio {1} cutoff {2} Release {3}", AverageExpansionPressureAtmPSI, RatioOfExpansion, cutoff, CylinderExhaustOpenFactor);
+ 
+                    Trace.TraceInformation("MeanPressure Compression: AvCompressionPressure {0} CompRatio {1} Vol_e {2} Vol_f {3} PreCompPress {4}", AverageCompressionPressureAtmPSI, RatioOfCompression, CylinderVolumePoint_e, CylinderVolumePoint_f, CylinderPreCompressionPressureAtmPSI);
+ 
+                     //      Trace.TraceInformation("e - f: MeanPressPreComp {0} {1} d {2} b {3} ", HPMeanPressurePreCompAtmPSI, HPCylinderLengthPreCompExpansionIn, HPCylinderVolumePoint_d, HPCylinderVolumePoint_b);
+ 
+                    Trace.TraceInformation("Cylinder Works: Total {0} === a-b {1} b-c {2} c-d {3} d-e {4} e-f {5} f-a {6}", TotalPositiveWorkInLbs, CylinderAdmissionWorkInLbs, CylinderExpansionWorkInLbs, CylinderReleaseWorkInLbs, CylinderExhaustWorkInLbs, CylinderCompressionWorkInLbs, CylinderPreAdmissionWorkInLbs);
 
-                    Trace.TraceInformation("*********** Cylinder *********");
-
-                    Trace.TraceInformation("Cylinder Press: a {0} b {1} c {2} d {3} e {4} f {5}", InitialPressureAtmPSI, CutoffPressureAtmPSI, CylinderReleasePressureAtmPSI, BackPressureAtmPSI, CylinderPreCompressionPressureAtmPSI, CylinderPreAdmissionPressureAtmPSI);
-
-
-                    Trace.TraceInformation("MeanPressure e-f: AvCompressionPressure {0} CompRatio {1} Vol_e {2} Vol_f {3} PreCompPress {4}", AverageCompressionPressureAtmPSI, RatioOfCompression, CylinderVolumePoint_e, CylinderVolumePoint_f, CylinderPreCompressionPressureAtmPSI);
-
-                    //      Trace.TraceInformation("e - f: MeanPressPreComp {0} {1} d {2} b {3} ", HPMeanPressurePreCompAtmPSI, HPCylinderLengthPreCompExpansionIn, HPCylinderVolumePoint_d, HPCylinderVolumePoint_b);
-
-                    Trace.TraceInformation("HP Works: Total {0} === a-b {1} b-c {2} c-d {3} d-e {4} e-f {5} f-a {6}", TotalPositiveWorkInLbs, CylinderAdmissionWorkInLbs, CylinderExpansionWorkInLbs, CylinderReleaseWorkInLbs, CylinderExhaustWorkInLbs, CylinderCompressionWorkInLbs, CylinderPreAdmissionWorkInLbs);
-                }
+                    Trace.TraceInformation("MEP {0}", MeanEffectivePressurePSI);
+                 }
 #endif
+
             }
 
             #endregion
@@ -3327,8 +3372,8 @@ namespace Orts.Simulation.RollingStocks
                 CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
                 CylinderSpeedCondensationFactor = CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] / CylinderCondensationFactorSpeed[0.01f]; // Calculate compensating factor for condensation due to speed of locomotive
                 float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor * CylinderSpeedCondensationFactor);  // Calculate correcting factor for steam use due to compensation
-         //       SuperheaterSteamUsageFactor = CondensationFactorTemp;
-                SuperheaterSteamUsageFactor = 1.0f; // Steam input to cylinder, but loses effectiveness. In saturated mode steam usage should not be reduced
+                SuperheaterSteamUsageFactor = CondensationFactorTemp;
+          //      SuperheaterSteamUsageFactor = 1.0f; // Steam input to cylinder, but loses effectiveness. In saturated mode steam usage should not be reduced
             }
 
             SuperheaterSteamUsageFactor = MathHelper.Clamp(SuperheaterSteamUsageFactor, 0.60f, SuperheaterSteamUsageFactor); // ensure factor does not go below 0.6, as this represents base steam consumption by the cylinders.
@@ -3392,6 +3437,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderCocksPressureAtmPSI = MathHelper.Clamp(CylinderCocksPressureAtmPSI, 0, MaxBoilerPressurePSI + OneAtmospherePSI); // Make sure that Cylinder pressure does not go negative
 
             #region Calculation of Cylinder steam usage using an Indicator Diagram type approach
+            // Reference - Indicator Practice and Steam-Engine Economy by Frank Hemenway - pg 65
             // To calculate steam usage, Calculate amount of steam in cylinder 
             // Cylinder steam usage = steam volume (and weight) at start of release stage - steam remaining in cylinder after compression
             // This amount then should be corrected to allow for cylinder condensation in saturated locomotives or not in superheated locomotives
@@ -3441,13 +3487,14 @@ namespace Orts.Simulation.RollingStocks
             else // Calculate steam usage for simple and geared locomotives.
             {
                 float CylinderCutoffPressureGaugePSI = CutoffPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure
-                float CylinderPreAdmissionPressureGaugePSI = CylinderPreAdmissionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
                 CylinderCutoffSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (cutoff + CylinderClearancePC); // Calculate volume of cylinder at start of release
                 CylinderCutoffSteamWeightLbs = CylinderCutoffSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderCutoffPressureGaugePSI]; // Weight of steam in Cylinder at release
-                CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (CylinderPreAdmissionOpenFactor + CylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
-                if (CylinderPreAdmissionPressureGaugePSI > 0.0) // need to consider steam density for pressures less then 0 gauge pressure - To Do
+
+                float CylinderPreCompressionPressureGaugePSI = CylinderPreCompressionPressureAtmPSI - OneAtmospherePSI; // Convert to gauge pressure as steam tables are in gauge pressure  
+                CylinderClearanceSteamVolumeFt3 = CylinderSweptVolumeFT3pFT * (CylinderCompressionCloseFactor + CylinderClearancePC); // volume of the clearance area + area of steam at pre-admission
+                if (CylinderPreCompressionPressureGaugePSI > 0.0) // need to consider steam density for pressures less then 0 gauge pressure - To Do
                 {
-                    CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderPreAdmissionPressureGaugePSI]; // Weight of total steam remaining in the cylinder
+                    CylinderClearanceSteamWeightLbs = CylinderClearanceSteamVolumeFt3 * CylinderSteamDensityPSItoLBpFT3[CylinderPreCompressionPressureGaugePSI]; // Weight of total steam remaining in the cylinder
                 }
                 else
                 {
@@ -3525,24 +3572,6 @@ namespace Orts.Simulation.RollingStocks
                     IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
 
                     float WheelRevs = pS.TopM(DrvWheelRevRpS);
-
-#if DEBUG_LOCO_STEAM
-                    if (WheelRevs >= 80.0 && WheelRevs < 80.05 | WheelRevs >= 160.0 && WheelRevs < 160.05 | WheelRevs >= 240.0 && WheelRevs < 240.05 | WheelRevs >= 320.0 && WheelRevs < 320.05)
-                    {
-                        Trace.TraceInformation("*********** Tractive Effort *********");
-
-                        Trace.TraceInformation("HP Cylinder: {0} LP Cylinder: {1} Total {2}", HPTractiveEffortLbsF, LPTractiveEffortLbsF, TractiveEffortLbsF);
-
-                        Trace.TraceInformation("*********** Indicated HorsePower *********");
-
-                        Trace.TraceInformation("IHP LP Cylinder - MEP {0} Stroke {1} Area {2} Revs {3}", LPCylinderMEPAtmPSI, Me.ToFt(CylinderStrokeM), Me2.ToIn2(Me2.FromFt2(LPCylinderPistonAreaFt2)), pS.TopM(DrvWheelRevRpS));
-
-                        Trace.TraceInformation("HP Cylinder: {0} LP Cylinder: {1} Total {2}", HPIndicatedHorsePowerHP, LPIndicatedHorsePowerHP, IndicatedHorsePowerHP);
-
-
-                        Trace.TraceInformation("************************************************************************************************************************************************");
-                    }
-#endif
 
                 }
             }
@@ -4885,7 +4914,7 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatArea(SuperheatAreaM2, IsMetric),
                 FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric));
 
-            status.AppendFormat("{0}\t{1}\t{4:N1}\t{2}\t{5:N2}\t{3}\t{6:N2}\n",
+            status.AppendFormat("{0}\t{1}\t{4:N1}\t{2}\t{5:N2}\t{3}\t{6:N3}\n",
                 Simulator.Catalog.GetString("Adj:"),
                 Simulator.Catalog.GetString("CylEff"),
                 Simulator.Catalog.GetString("CylExh"),
@@ -5001,7 +5030,7 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
                 Simulator.Catalog.GetString("PressHP:"),
                 Simulator.Catalog.GetString("Chest"),
-                FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Initial"),
                 FormatStrings.FormatPressure(HPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Cutoff"),
@@ -5023,7 +5052,7 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",
                 Simulator.Catalog.GetString("PressLP:"),
                 Simulator.Catalog.GetString("Chest"),
-                FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Initial"),
                 FormatStrings.FormatPressure(LPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Cutoff"),
@@ -5053,13 +5082,13 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetString("PreComp"),
                     Simulator.Catalog.GetString("PreAdm"),
                     Simulator.Catalog.GetString("MEP"),
-                    FormatStrings.FormatPressure(SteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(InitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(CutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(CylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(BackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(CylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(CylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(LogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(LogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(LogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(LogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(LogPreCompressionPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    FormatStrings.FormatPressure(LogPreAdmissionPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true));
             }
 

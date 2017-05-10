@@ -144,9 +144,17 @@ namespace Orts.Viewer3D
                             Logger.Data(N.ToLbf(steamloco.TotalFrictionForceN).ToString("F0"));
                             Logger.Data(Kg.ToTUK(steamloco.TrainLoadKg).ToString("F0"));
                             Logger.Data(steamloco.BoilerPressurePSI.ToString("F0"));
-                            Logger.Data(steamloco.CurrentSuperheatTempF.ToString("F0"));
-                            Logger.Data(steamloco.SteamChestPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogSteamChestPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogInitialPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogCutoffPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogReleasePressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogBackPressurePSI.ToString("F0"));
+                            
                             Logger.Data(steamloco.MeanEffectivePressurePSI.ToString("F0"));
+
+
+                            Logger.Data(steamloco.CurrentSuperheatTempF.ToString("F0"));
+
                             Logger.Data(pS.TopH(steamloco.CylinderSteamUsageLBpS).ToString("F0"));
                             Logger.Data(pS.TopH(steamloco.WaterConsumptionLbpS).ToString("F0"));
                             Logger.Data(Kg.ToLb(pS.TopH(steamloco.FuelBurnRateKGpS)).ToString("F0"));
@@ -156,6 +164,7 @@ namespace Orts.Viewer3D
                             Logger.Data(steamloco.CumulativeSteamConsumptionLbs.ToString("F0"));
                             Logger.Data(steamloco.CumulativeWaterConsumptionLbs.ToString("F0"));
 
+                            Logger.Data(steamloco.CutoffPressureDropRatio.ToString("F2"));
 
                             Logger.End();
                         }
@@ -467,16 +476,20 @@ namespace Orts.Viewer3D
                                 "Train Resistance (lbf)",
                                 "Train Load (t-uk)",
                                 "Boiler Pressure (psi)",
-                                "Superheat Temp (F)",
                                 "Steam Chest Pressure (psi)",
+                                "Initial Pressure (psi)",
+                                "Cutoff Pressure (psi)",
+                                "Release Pressure (psi)",
+                                "Back Pressure (psi)",
                                 "MEP (psi)",
+                                "Superheat Temp (F)",
                                 "Steam consumption (lbs/h)",
                                 "Water consumption (lbs/h)",
                                 "Coal consumption (lbs/h)",
                                 "Cylinder Thermal Efficiency",
                                 "Cumulative Steam (lbs)",
-                                "Cumulative Water (lbs)"
-                                
+                                "Cumulative Water (lbs)",
+                                "Cutoff pressure Ratio"                                
 
                              }
                         );
