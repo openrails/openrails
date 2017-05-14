@@ -804,7 +804,26 @@ namespace Orts.Viewer3D
                     MessagesWindow.AddMessage(Catalog.GetString("Platform and siding labels hidden."), 5);
                 }
             }
-            if (UserInput.IsPressed(UserCommands.DisplayCarLabels)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDCars.TabAction(); else OSDCars.Visible = !OSDCars.Visible;
+            if (UserInput.IsPressed(UserCommands.DisplayCarLabels))
+            {
+                if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) OSDCars.TabAction(); else OSDCars.Visible = !OSDCars.Visible;
+                if (OSDCars.Visible)
+                {
+                    switch (OSDCars.CurrentDisplayState)
+                    {
+                        case OSDCars.DisplayState.Trains:
+                            MessagesWindow.AddMessage(Catalog.GetString("Train labels visible."), 5);
+                            break;
+                        case OSDCars.DisplayState.Cars:
+                            MessagesWindow.AddMessage(Catalog.GetString("Car labels visible."), 5);
+                            break;
+                    }
+                }
+                else
+                {
+                    MessagesWindow.AddMessage(Catalog.GetString("Train and car labels hidden."), 5);
+                }
+            }
             if (UserInput.IsPressed(UserCommands.DisplaySwitchWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) SwitchWindow.TabAction(); else SwitchWindow.Visible = !SwitchWindow.Visible;
             if (UserInput.IsPressed(UserCommands.DisplayTrainOperationsWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) TrainOperationsWindow.TabAction(); else { TrainOperationsWindow.Visible = !TrainOperationsWindow.Visible; if (!TrainOperationsWindow.Visible) CarOperationsWindow.Visible = false; }
             if (UserInput.IsPressed(UserCommands.DisplayNextStationWindow)) if (UserInput.IsDown(UserCommands.DisplayNextWindowTab)) NextStationWindow.TabAction(); else NextStationWindow.Visible = !NextStationWindow.Visible;
