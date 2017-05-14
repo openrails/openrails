@@ -1316,7 +1316,7 @@ namespace Orts.Viewer3D
 
         public override bool GetBlending()
         {
-            return false;
+            return true;
         }
 
         public Point GetTextLocation(int x, int y, string text)

@@ -116,7 +116,7 @@ namespace Orts.Viewer3D.Popups
             }
 
             foreach (var primitive in Labels.Values)
-                frame.AddPrimitive(Owner.Label3DMaterial, primitive, RenderPrimitiveGroup.World, ref Identity);
+                frame.AddPrimitive(Owner.Label3DMaterial, primitive, RenderPrimitiveGroup.Labels, ref Identity);
         }
 
         public DisplayState CurrentDisplayState

@@ -48,9 +48,10 @@ namespace Orts.Viewer3D
         Particles,
         InteriorOpaque,
         InteriorBlended,
+        Labels,
         CabBlended,
-        TextOverlayOpaque,
-        TextOverlayBlended,
+        OverlayOpaque,
+        OverlayBlended,
         // This value must be last.
         Sentinel
     }
@@ -64,6 +65,7 @@ namespace Orts.Viewer3D
         Precipitation, // TODO: May not be needed once alpha sorting works.
         Particles,
         Interior,
+        Labels,
         Overlay
     }
 
@@ -82,7 +84,8 @@ namespace Orts.Viewer3D
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
             RenderPrimitiveSequence.InteriorBlended,
-			RenderPrimitiveSequence.TextOverlayBlended,
+            RenderPrimitiveSequence.Labels,
+			RenderPrimitiveSequence.OverlayBlended,
 		};
 
         /// <summary>
@@ -98,7 +101,8 @@ namespace Orts.Viewer3D
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
             RenderPrimitiveSequence.InteriorOpaque,
-			RenderPrimitiveSequence.TextOverlayOpaque,
+            RenderPrimitiveSequence.Labels,
+			RenderPrimitiveSequence.OverlayOpaque,
 		};
 
         /// <summary>
