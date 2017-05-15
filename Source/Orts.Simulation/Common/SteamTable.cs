@@ -191,15 +191,20 @@ namespace Orts.Common
         // cutoff fraction
         static float[] CutOffFractionTableX = new float[]
         {
-            0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f
-        };
-        
-        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
-        static float[] CylinderCondensationFractionTableX = new float[]
-        {
-            0.42f, 0.345f, 0.29f, 0.245f, 0.213f, 0.181f, 0.159f, 0.141f, 0.125f, 0.11f
+           0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f
         };
 
+        // cylinder condensation fraction per cutoff fraction - saturated steam (upper and lower ends extrapolated) - Ref Elseco Superheater manual
+        static float[] CylinderCondensationFractionTableX = new float[]
+        {
+            0.526f, 0.42f, 0.345f, 0.29f, 0.245f, 0.213f, 0.181f, 0.159f, 0.142f, 0.125f, 0.11f
+        };
+
+        // Superheat required to prevent cylinder condensation fraction per cutoff fraction (upper and lower ends extrapolated) - Ref Elseco Superheater manual
+        static float[] SuperheatCondenstationLimitTableDegF = new float[]
+        {
+            282.0f, 253.0f, 214.0f, 190.0f, 166.0f, 146.0f, 128.0f, 114.0f, 98.0f, 84.0f, 70.0f
+        };
 
         // Steam to Cylinders - lbs per sec - from BTC Test Results for Std 8
         static float[] CylinderSteamTableLbpH = new float[]
@@ -213,12 +218,6 @@ namespace Orts.Common
         {
             0.0f, 40.0f, 70.0f, 100.0f, 140.0f, 164.0f, 195.0f, 220.0f, 242.0f, 260.0f, 278.0f, 290.0f, 304.0f, 320.0f, 335.0f, 348.0f,
             360.0f, 375.0f, 384.0f
-        };
-
-        // Superheat required to prevent cylinder condensation fraction per cutoff fraction - Ref Elseco Superheater manual
-        static float[] SuperheatCondenstationLimitTableDegF = new float[]
-        {
-            250.0f, 218.0f, 190.0f, 168.0f, 145.0f, 129.0f, 113.0f, 98.0f, 84.0f, 70.0f
         };
 
         // Allowance for drop in initial pressure (steam chest) as speed increases - Ref Principles of Locomotive Operation (To be confirmed)
@@ -355,7 +354,18 @@ namespace Orts.Common
             return new Interpolator(WheelRotationRpM, CylinderCondensationSimpleFactor);
         }
 
-        
+// cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
+        public static Interpolator CylinderCondensationFractionInterpolatorX()
+        {
+            return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
+        }
+
+// Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
+        public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
+        {
+            return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
+        }           
+
 // Burnrate - based upon average test results
         public static Interpolator SatNewBurnRateSteamToCoalLbspH()
         {
@@ -407,22 +417,10 @@ namespace Orts.Common
             return new Interpolator(WheelRotationRpM, SatInitialPressureDropRatio);
         }    
 
-        // Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
-        public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
-        {
-            return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
-        }    
-
         // Superheat temp per lbs of steam to cylinder - from BTC Test Results for Std 8
         public static Interpolator SuperheatTempInterpolatorLbpHtoDegF()
         {
             return new Interpolator(CylinderSteamTableLbpH, SuperheatTempTableDegF);
-        }    
-
-        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
-        public static Interpolator CylinderCondensationFractionInterpolatorX()
-        {
-            return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
         }    
 
         // Injector factor to determine the min capacity of the injector
