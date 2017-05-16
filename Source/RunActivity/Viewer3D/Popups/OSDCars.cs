@@ -29,8 +29,8 @@ namespace Orts.Viewer3D.Popups
     {
         Matrix Identity = Matrix.Identity;
 
-        const float MaximumDistance = 1000;
-        const float MinimumDistance = 100;
+        internal const float MaximumDistance = OSDLocations.MaximumDistanceSiding;
+        internal const float MinimumDistance = OSDLocations.MinimumDistance;
 
         public enum DisplayState
         {
