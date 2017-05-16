@@ -321,6 +321,10 @@ namespace Orts.Simulation.RollingStocks
         Interpolator2D CutoffInitialPressureDropRatioUpper;  // Upper limit of the pressure drop from initial pressure to cut-off pressure
         Interpolator2D CutoffInitialPressureDropRatioLower;  // Lower limit of the pressure drop from initial pressure to cut-off pressure
 
+        Interpolator CylinderExhausttoCutoff;  // Fraction of cylinder travel to exhaust
+        Interpolator CylinderCompressiontoCutoff;  // Fraction of cylinder travel to Compression
+        Interpolator CylinderAdmissiontoCutoff;  // Fraction of cylinder travel to Admission
+
          #region Additional steam properties
         const float SpecificHeatCoalKJpKGpK = 1.26f; // specific heat of coal - kJ/kg/K
         const float SteamVaporSpecVolumeAt100DegC1BarM3pKG = 1.696f;
@@ -742,7 +746,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(lpnumcylinders": LPNumCylinders = stf.ReadIntBlock(null); break;
                 case "engine(lpcylinderstroke": LPCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(lpcylinderdiameter": LPCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-                case "engine(ortscylinderexhaustopen": CylinderExhaustOpenFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+            //    case "engine(ortscylinderexhaustopen": CylinderExhaustOpenFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -1007,6 +1011,10 @@ namespace Orts.Simulation.RollingStocks
             CutoffInitialPressureDropRatioUpper = SteamTable.CutoffInitialPressureUpper();
             CutoffInitialPressureDropRatioLower = SteamTable.CutoffInitialPressureLower();
 
+            CylinderExhausttoCutoff = SteamTable.CylinderEventExhausttoCutoff();
+            CylinderCompressiontoCutoff = SteamTable.CylinderEventCompressiontoCutoff();
+            CylinderAdmissiontoCutoff = SteamTable.CylinderEventAdmissiontoCutoff();
+
             // Assign default steam table values if table not in ENG file
             if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
             {
@@ -1041,7 +1049,7 @@ namespace Orts.Simulation.RollingStocks
             // Assign value for superheat Initial pressure factor if not set in ENG file
             if (SuperheatCutoffPressureFactor == 0)
             {
-                SuperheatCutoffPressureFactor = 75.0f; // If no factor in the ENG file set to nominal value (50.0)
+                SuperheatCutoffPressureFactor = 90.0f; // If no factor in the ENG file set to nominal value (90.0)
             }
 
             // Determine if Cylinder Port Opening  Factor has been set
@@ -1051,27 +1059,27 @@ namespace Orts.Simulation.RollingStocks
             }
             CylinderPortOpeningFactor = MathHelper.Clamp(CylinderPortOpeningFactor, 0.05f, 0.12f); // Clamp Cylinder Port Opening Factor to between 0.05 & 0.12 so that tables are not exceeded   
 
-            // Initialise exhaust opening point on cylinder stroke, and its reciprocal compression close factor
-            if (CylinderExhaustOpenFactor == 0)
-            {
-                CylinderExhaustOpenFactor = CutoffController.MaximumValue + 0.025f; // If no value in ENG file set to default value based upon maximum cutoff value
-                CylinderCompressionCloseFactor = 1.0f - CylinderExhaustOpenFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
-                if (CutoffController.MaximumValue > CylinderExhaustOpenFactor)
-                {
-                    Trace.TraceWarning("Maximum Cutoff {0} value is greater then CylinderExhaustOpenFactor {1}", CutoffController.MaximumValue, CylinderExhaustOpenFactor); // provide warning if exhaust port is likely to open before maximum allowed cutoff value is reached.
-                }
-            }
-            else
-            {
-                if (CutoffController.MaximumValue > CylinderExhaustOpenFactor)
-                {
-                    CylinderExhaustOpenFactor = CutoffController.MaximumValue + 0.05f; // Ensure exhaust valve opening is always higher then specificed maximum cutoff value
-                    Trace.TraceWarning("Maximum Cutoff {0} value is greater then CylinderExhaustOpenFactor {1}, automatically adjusted", CutoffController.MaximumValue, CylinderExhaustOpenFactor); // provide warning if exhaust port is likely to open before maximum allowed cutoff value is reached.
-                }
-                CylinderCompressionCloseFactor = 1.0f - CylinderExhaustOpenFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
-            }
-            CylinderExhaustOpenFactor = MathHelper.Clamp(CylinderExhaustOpenFactor, 0.5f, 0.95f); // Clamp Cylinder Exhaust Port Opening Factor to between 0.5 & 0.95 so that tables are not exceeded   
-
+//            // Initialise exhaust opening point on cylinder stroke, and its reciprocal compression close factor
+//            if (CylinderExhaustOpenFactor == 0)
+//            {
+//                CylinderExhaustOpenFactor = CutoffController.MaximumValue + 0.025f; // If no value in ENG file set to default value based upon maximum cutoff value
+//                CylinderCompressionCloseFactor = 1.0f - CylinderExhaustOpenFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
+//                if (CutoffController.MaximumValue > CylinderExhaustOpenFactor)
+//                {
+//                    Trace.TraceWarning("Maximum Cutoff {0} value is greater then CylinderExhaustOpenFactor {1}", CutoffController.MaximumValue, CylinderExhaustOpenFactor); // provide warning if exhaust port is likely to open before maximum allowed cutoff value is reached.
+//                }
+//            }
+ //           else
+//            {
+//                if (CutoffController.MaximumValue > CylinderExhaustOpenFactor)
+//                {
+//                    CylinderExhaustOpenFactor = CutoffController.MaximumValue + 0.05f; // Ensure exhaust valve opening is always higher then specificed maximum cutoff value
+//                    Trace.TraceWarning("Maximum Cutoff {0} value is greater then CylinderExhaustOpenFactor {1}, automatically adjusted", CutoffController.MaximumValue, CylinderExhaustOpenFactor); // provide warning if exhaust port is likely to open before maximum allowed cutoff value is reached.
+//                }
+//                CylinderCompressionCloseFactor = 1.0f - CylinderExhaustOpenFactor; // Point on cylinder stroke when compression valve closes - assumed reciporical of exhaust opens.
+//            }
+//            CylinderExhaustOpenFactor = MathHelper.Clamp(CylinderExhaustOpenFactor, 0.5f, 0.95f); // Clamp Cylinder Exhaust Port Opening Factor to between 0.5 & 0.95 so that tables are not exceeded   
+//
 //            CylinderExhaustOpenFactor = 0.66f;
             DrvWheelDiaM = DriverWheelRadiusM * 2.0f;
 
@@ -2764,6 +2772,13 @@ namespace Orts.Simulation.RollingStocks
             // Calculate speed of locomotive in wheel rpm - used to determine changes in performance based upon speed.
             DrvWheelRevRpS = absSpeedMpS / (2.0f * MathHelper.Pi * DriverWheelRadiusM);
 
+
+            // Set Cylinder Events according to cutoff value
+
+            CylinderExhaustOpenFactor = CylinderExhausttoCutoff[cutoff];
+            CylinderCompressionCloseFactor = CylinderCompressiontoCutoff[cutoff];
+            CylinderPreAdmissionOpenFactor = CylinderAdmissiontoCutoff[cutoff];
+
             float DebugWheelRevs = pS.TopM(DrvWheelRevRpS);
              
             #region Calculation of Mean Effective Pressure of Cylinder using an Indicator Diagram type approach - Compound Locomotive - No receiver
@@ -3181,6 +3196,8 @@ namespace Orts.Simulation.RollingStocks
             if (SteamEngineType != SteamEngineTypes.Compound)
             {
 
+     //           Trace.TraceInformation("Cylinder Events - Cutoff {0} Admission {1} Exhaust {2} Compression {3}", cutoff, CylinderPreAdmissionOpenFactor, CylinderExhaustOpenFactor, CylinderCompressionCloseFactor);
+                
                 // Calculate apparent volumes at various points in cylinder
                 float CylinderVolumePoint_e = CylinderCompressionCloseFactor + CylinderClearancePC;
                 float CylinderVolumePoint_f = CylinderPreAdmissionOpenFactor + CylinderClearancePC;

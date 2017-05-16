@@ -187,7 +187,37 @@ namespace Orts.Common
         {
             0.366f, 0.395f, 0.419f, 0.454f, 0.509f
         };
-        
+ 
+// Cylinder Indicator Card Events
+
+        // cutoff fraction
+        static float[] CutOffFractionEventTableX = new float[]
+        {
+           0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f
+        };
+
+
+        // Indicator Event - Exhaust Open
+        static float[] CylinderExhaustTableX = new float[]
+        {
+           0.5306f, 0.6122f, 0.6646f, 0.7042f, 0.7358f, 0.7628f, 0.7866f, 0.8076f, 0.8270f, 0.8451f, 0.8626f, 0.8792f, 0.8955f, 0.9112f, 0.9269f, 0.9422f
+        };
+
+        // Indicator Event - Compression Close
+        static float[] CylinderCompressionTableX = new float[]
+        {
+           0.4580f, 0.3864f, 0.3418f, 0.3082f, 0.2811f, 0.2575f, 0.2363f, 0.2170f, 0.1988f, 0.1814f, 0.1641f, 0.1471f, 0.1299f, 0.1127f, 0.0950f, 0.0771f
+        };
+
+        // Indicator Event - Admission Open
+        static float[] CylinderAdmissionTableX = new float[]
+        {
+           0.0241f, 0.0121f, 0.0080f, 0.0058f, 0.0046f, 0.0037f, 0.0030f, 0.0026f, 0.0022f, 0.0019f, 0.0015f, 0.0013f, 0.0011f, 0.0009f, 0.0008f, 0.0006f
+        };
+
+
+// Cylinder condensation and superheat
+
         // cutoff fraction
         static float[] CutOffFractionTableX = new float[]
         {
@@ -335,6 +365,27 @@ namespace Orts.Common
         };
 
 // Steam Tables
+
+// Indicator Diagram - Cylinder Events
+
+        // Indicator Diagram Event - Exhaust Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
+        public static Interpolator CylinderEventExhausttoCutoff()
+        {
+            return new Interpolator(CutOffFractionEventTableX, CylinderExhaustTableX);
+        }
+
+        // Indicator Diagram Event - Compression Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
+        public static Interpolator CylinderEventCompressiontoCutoff()
+        {
+            return new Interpolator(CutOffFractionEventTableX, CylinderCompressionTableX);
+        }
+
+        // Indicator Diagram Event - Admission Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
+        public static Interpolator CylinderEventAdmissiontoCutoff()
+        {
+            return new Interpolator(CutOffFractionEventTableX, CylinderAdmissionTableX);
+        }   
+
 
         // Steam Ejector steam factor - Ref Ref Penberthy Type GL jet pump
         public static Interpolator EjectorCapacityFactorIntoX()
