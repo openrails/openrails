@@ -281,7 +281,7 @@ namespace Orts.Simulation.RollingStocks
         float BlowerSteamUsageFactor;
         float InjectorFlowRateLBpS;    // Current injector flow rate - based upon current boiler pressure
         float MaxInjectorFlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon maximum boiler pressure
-        Interpolator BackPressureIHPtoAtmPSI;             // back pressure in cylinders given usage
+        Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
         Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         Interpolator WaterDensityPSItoLBpFT3;   // water density given pressure
@@ -477,9 +477,17 @@ namespace Orts.Simulation.RollingStocks
         public float LogBackPressurePSI;
         public float LogReleasePressurePSI;
         public float LogSteamChestPressurePSI;
+
+        public float LogLPInitialPressurePSI;
+        public float LogLPCutoffPressurePSI;
+        public float LogLPBackPressurePSI;
+        public float LogLPReleasePressurePSI;
+        public float LogLPSteamChestPressurePSI;
+
+        public bool LogIsCompoundLoco = false;
+
         float LogPreCompressionPressurePSI;
         float LogPreAdmissionPressurePSI;
-
 
         // Compound Cylinder Information - HP Cylinder
 
@@ -491,11 +499,13 @@ namespace Orts.Simulation.RollingStocks
         float HPCylinderPreCompressionPressureAtmPSI;       // Pressure when exhaust valve closes, and compression commences
         float HPCylinderPreAdmissionOpenPressureAtmPSI; //  Pre-Admission pressure prior to exhaust valve closing
         float HPCylinderBackPressureAtmPSI;     // Back pressure on HP cylinder
-        float HPCylinderMEPAtmPSI;                 // Mean effective Pressure of HP Cylinder
+        float HPCylinderMEPPSI;                 // Mean effective Pressure of HP Cylinder
         float HPCylinderClearancePC = 0.19f;    // Assume cylinder clearance of 19% of the piston displacement for HP cylinder
         float CompoundRecieverVolumePCHP = 0.3f; // Volume of receiver or passages between HP and LP cylinder as a fraction of the HP cylinder volume.
         float HPCylinderVolumeFactor = 1.0f;    // Represents the full volume of the HP steam cylinder    
         float LPCylinderVolumeFactor = 1.0f;    // Represents the full volume of the LP steam cylinder 
+        float HPIndicatedHorsePowerHP;
+        float LPIndicatedHorsePowerHP;
 
         // Compound Cylinder Information - LP Cylinder
         float LPCylinderInitialPressureAtmPSI;    // Initial Pressure to LP cylinder @ start if stroke
@@ -503,7 +513,7 @@ namespace Orts.Simulation.RollingStocks
         float LPCylinderReleasePressureAtmPSI;   // Pressure in LP cylinder when steam release valve opens
         float LPCylinderPreCompressionPressureAtmPSI;       // Pressure in LP cylinder when exhaust valve closes, and compression commences
         float LPCylinderPreAdmissionPressureAtmPSI;    // Pressure in LP cylinder after compression occurs and steam admission starts
-        float LPCylinderMEPAtmPSI;                     // Mean effective pressure of LP Cylinder
+        float LPCylinderMEPPSI;                     // Mean effective pressure of LP Cylinder
         float LPCylinderClearancePC = 0.066f;    // Assume cylinder clearance of 6.6% of the piston displacement for LP cylinder
         float LPCylinderBackPressureAtmPSI;     // Back pressure on LP cylinder
 
@@ -780,7 +790,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsboilerevaporationrate": BoilerEvapRateLbspFt2 = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderefficiencyrate": CylinderEfficiencyRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderinitialpressuredrop": InitialPressureDropRatioRpMtoX = new Interpolator(stf); break;
-                case "engine(ortscylinderbackpressure": BackPressureIHPtoAtmPSI = new Interpolator(stf); break;
+                case "engine(ortscylinderbackpressure": BackPressureIHPtoPSI = new Interpolator(stf); break;
                 case "engine(ortsburnrate": NewBurnRateSteamToCoalLbspH = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(stf); break;
                 case "engine(ortssteamgearratio":
@@ -871,7 +881,7 @@ namespace Orts.Simulation.RollingStocks
             BoilerEvapRateLbspFt2 = locoCopy.BoilerEvapRateLbspFt2;
             CylinderEfficiencyRate = locoCopy.CylinderEfficiencyRate;
             InitialPressureDropRatioRpMtoX = new Interpolator(locoCopy.InitialPressureDropRatioRpMtoX);
-            BackPressureIHPtoAtmPSI = new Interpolator(locoCopy.BackPressureIHPtoAtmPSI);
+            BackPressureIHPtoPSI = new Interpolator(locoCopy.BackPressureIHPtoPSI);
             NewBurnRateSteamToCoalLbspH = new Interpolator(locoCopy.NewBurnRateSteamToCoalLbspH);
             BoilerEfficiency = locoCopy.BoilerEfficiency;
             SteamGearRatioLow = locoCopy.SteamGearRatioLow;
@@ -1107,6 +1117,7 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(DriverWheelRadiusM * 2.0f)));
+                LogIsCompoundLoco = true;  // Set logging to true for compound locomotive
 
             }
             else if (SteamEngineType == SteamEngineTypes.Geared)
@@ -1344,16 +1355,16 @@ namespace Orts.Simulation.RollingStocks
             // Assign default steam table values if table not in ENG file 
             // Back pressure increases with the speed of the locomotive, as cylinder finds it harder to exhaust all the steam.
 
-            if (BackPressureIHPtoAtmPSI == null)
+            if (BackPressureIHPtoPSI == null)
             {
                 if (HasSuperheater)
                 {
-                    BackPressureIHPtoAtmPSI = SteamTable.BackpressureSuperIHPtoPSI();
+                    BackPressureIHPtoPSI = SteamTable.BackpressureSuperIHPtoPSI();
                     Trace.TraceInformation("BackPressureIHPtoAtmPSI (Superheated) - default information read from SteamTables");
                 }
                 else
                 {
-                    BackPressureIHPtoAtmPSI = SteamTable.BackpressureSatIHPtoPSI();
+                    BackPressureIHPtoPSI = SteamTable.BackpressureSatIHPtoPSI();
                     Trace.TraceInformation("BackPressureIHPtoAtmPSI (Saturated) - default information read from SteamTables");
                 }
             }
@@ -2783,6 +2794,8 @@ namespace Orts.Simulation.RollingStocks
              
             #region Calculation of Mean Effective Pressure of Cylinder using an Indicator Diagram type approach - Compound Locomotive - No receiver
 
+            // Prinipal reference for compound locomotives: Compound Locomotives by Arthur Tannatt Woods - https://archive.org/stream/compoundlocomoti00woodrich#page/n5/mode/2up
+
             if (SteamEngineType == SteamEngineTypes.Compound)
             {
 
@@ -2808,7 +2821,7 @@ namespace Orts.Simulation.RollingStocks
                 float LPCylinderVolumePoint_a = LPCylinderClearancePC * CompoundCylinderRatio;
 
                 SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
-
+                
                 LogSteamChestPressurePSI = SteamChestPressurePSI;  // Value for recording in log file
                 LogSteamChestPressurePSI = MathHelper.Clamp(LogSteamChestPressurePSI, 0.00f, LogSteamChestPressurePSI); // Clamp so that steam chest pressure does not go negative
 
@@ -2819,6 +2832,10 @@ namespace Orts.Simulation.RollingStocks
                     // Steam Indicator Diagram reference - (g) 
                     LPCylinderInitialPressureAtmPSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
 
+                    LogLPInitialPressurePSI = LPCylinderInitialPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogLPInitialPressurePSI = MathHelper.Clamp(LogLPInitialPressurePSI, 0.00f, LogLPInitialPressurePSI); // Clamp so that LP Initial pressure does not go negative
+
+
                     // Calculate Cut-off Pressure drop - cutoff pressure drops as speed of locomotive increases.
                     float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
                     float CutoffDropLower = CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - lower limit
@@ -2827,29 +2844,34 @@ namespace Orts.Simulation.RollingStocks
 
                     float LPCutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (CutoffDropUpper - CutoffDropLower)) + CutoffDropLower;
 
-                if (HasSuperheater) // If locomotive is superheated then cutoff pressure drop will be different.
-                {
-                    float DrvWheelRevpM = pS.TopM(DrvWheelRevRpS);
-                    LPCutoffPressureDropRatio = (1.0f - ((1 / SuperheatCutoffPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS))));
-                }
+//                if (HasSuperheater) // If locomotive is superheated then cutoff pressure drop will be different.
+//                {
+//                    float DrvWheelRevpM = pS.TopM(DrvWheelRevRpS);
+//                    LPCutoffPressureDropRatio = (1.0f - ((1 / SuperheatCutoffPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS))));
+//                }
 
                     // Steam Indicator Diagram reference - (h) 
                     LPCylinderPreCutoffPressureAtmPSI = LPCylinderInitialPressureAtmPSI * LPCutoffPressureDropRatio;
 
-                    // Calculate work between g) - h) - Release Expansion  (LP Cylinder)              
-                    float LPCylinderLengthCutoffExpansionIn = Me.ToIn(CylinderStrokeM) * (LPCylinderVolumePoint_h_LPpost - LPCylinderVolumePoint_a);
-                    // For purposes of work done only consider the change in LP cylinder between stroke commencement and cutoff
-                    float LPMeanPressureCutoffWireAtmPSI = (LPCylinderInitialPressureAtmPSI + LPCylinderPreCutoffPressureAtmPSI) / 2.0f;  // Find the wire drawn pressure as an average, rather then as an expansion pressure
-                    float LPCylinderCutoffExpansionWorkInLbs = LPMeanPressureCutoffWireAtmPSI * LPCylinderLengthCutoffExpansionIn;
-
+                    LogLPCutoffPressurePSI = LPCylinderPreCutoffPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogLPCutoffPressurePSI = MathHelper.Clamp(LogLPCutoffPressurePSI, 0.00f, LogLPCutoffPressurePSI); // Clamp so that LP Cutoff pressure does not go negative
+                    
                     // LP cylinder release pressure 
                     // Steam Indicator Diagram reference - (l) 
                     float LPVolumeRatioRelease = LPCylinderVolumePoint_h_LPpost / LPCylinderVolumePoint_l;
                     LPCylinderReleasePressureAtmPSI = LPCylinderPreCutoffPressureAtmPSI * LPVolumeRatioRelease;
 
+                    LogLPReleasePressurePSI = LPCylinderReleasePressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogLPReleasePressurePSI = MathHelper.Clamp(LogLPReleasePressurePSI, 0.00f, LogLPReleasePressurePSI); // Clamp so that LP Release pressure does not go negative
+
                     // LP Cylinder back pressure will be decreased depending upon locomotive speed
                     // Steam Indicator Diagram reference - (m) 
-                    LPCylinderBackPressureAtmPSI = BackPressureIHPtoAtmPSI[IndicatedHorsePowerHP];
+                    LPCylinderBackPressureAtmPSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP] + OneAtmospherePSI;
+
+                    LogLPBackPressurePSI = LPCylinderBackPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogLPBackPressurePSI = MathHelper.Clamp(LogLPBackPressurePSI, 0.00f, LogLPBackPressurePSI); // Clamp so that LP Back pressure does not go negative
+
+                    float LPMeanPressurePreAdmAtmPSI = (LPCylinderInitialPressureAtmPSI + LPCylinderPreAdmissionPressureAtmPSI) / 2.0f;
 
                     // Calculate MEP for LP Cylinder
                     //Mean pressure & work between h) - l)
@@ -2876,19 +2898,23 @@ namespace Orts.Simulation.RollingStocks
                     float LPCylinderLengthPreCompExpansionIn = Me.ToIn(CylinderStrokeM) * (LPCylinderVolumePoint_n - LPCylinderVolumePoint_a);
                     float LPCylinderPreCompExpansionWorkInLbs = LPMeanPressurePreCompAtmPSI * LPCylinderLengthPreCompExpansionIn;
 
+                    // Calculate work between g) - h) - Release Expansion  (LP Cylinder)              
+                    float LPCylinderLengthCutoffExpansionIn = Me.ToIn(CylinderStrokeM) * (LPCylinderVolumePoint_h_LPpost - LPCylinderVolumePoint_a);
+                    // For purposes of work done only consider the change in LP cylinder between stroke commencement and cutoff
+                    float LPMeanPressureCutoffWireAtmPSI = (LPCylinderInitialPressureAtmPSI + LPCylinderPreCutoffPressureAtmPSI) / 2.0f;  // Find the wire drawn pressure as an average, rather then as an expansion pressure
+                    float LPCylinderCutoffExpansionWorkInLbs = LPMeanPressureCutoffWireAtmPSI * LPCylinderLengthCutoffExpansionIn;
+
                     // Mean pressure & work between q) - g)            
-                    float LPMeanPressurePreAdmAtmPSI = (LPCylinderInitialPressureAtmPSI + LPCylinderPreAdmissionPressureAtmPSI) / 2.0f;
                     // Calculate work between q) - g) - LP Cylinder only
                     float LPCylinderLengthPreAdmExpansionIn = Me.ToIn(CylinderStrokeM) * LPCylinderVolumePoint_a;
                     float LPCylinderPreAdmExpansionWorkInLbs = LPMeanPressurePreAdmAtmPSI * LPCylinderLengthPreAdmExpansionIn;
 
-
                     // Calculate total Work in LP Cylinder
                     float TotalLPCylinderWorksInLbs = LPCylinderCutoffExpansionWorkInLbs + LPCylinderReleaseWorkInLbs + LPCylinderExhaustWorkInLbs - LPCylinderBackPressureWorkInLbs - LPCylinderPreCompExpansionWorkInLbs - LPCylinderPreAdmExpansionWorkInLbs;
 
-                    LPCylinderMEPAtmPSI = TotalLPCylinderWorksInLbs / ((LPCylinderVolumeFactor * CompoundCylinderRatio) * Me.ToIn(CylinderStrokeM));
+                    LPCylinderMEPPSI = TotalLPCylinderWorksInLbs / ((LPCylinderVolumeFactor * CompoundCylinderRatio) * Me.ToIn(CylinderStrokeM));
 
-                    LPCylinderMEPAtmPSI = MathHelper.Clamp(LPCylinderMEPAtmPSI, 0.00f, LPCylinderMEPAtmPSI); // Clamp MEP so that LP MEP does not go negative
+                    LPCylinderMEPPSI = MathHelper.Clamp(LPCylinderMEPPSI, 0.00f, LPCylinderMEPPSI); // Clamp MEP so that LP MEP does not go negative
 
                     HPCylinderInitialPressureAtmPSI = 0.0f;  // for sake of display zero pressure values if compound is off.
                     HPCylinderBackPressureAtmPSI = 0.0f;
@@ -2897,7 +2923,7 @@ namespace Orts.Simulation.RollingStocks
                     HPCylinderExhaustPressureAtmPSI = 0.0f;
                     HPCylinderCutoffPressureAtmPSI = 0.0f;
                     HPCylinderPreCompressionPressureAtmPSI = 0.0f;
-                    HPCylinderMEPAtmPSI = 0.0f;
+                    HPCylinderMEPPSI = 0.0f;
 
                 }
                 else
@@ -2914,9 +2940,17 @@ namespace Orts.Simulation.RollingStocks
                     // Two process are followed her, firstly all the pressures are calculated using the full volume ratios of the HP & LP cylinder, as well as an allowance for the connecting passages between the cylinders. 
                     // The second process calculates the work done in the cylinders, and in this case only the volumes of either the HP or LP cylinder are used.
 
+                    SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
+
+                    LogSteamChestPressurePSI = SteamChestPressurePSI;  // Value for recording in log file
+                    LogSteamChestPressurePSI = MathHelper.Clamp(LogSteamChestPressurePSI, 0.00f, LogSteamChestPressurePSI); // Clamp so that steam chest pressure does not go negative
+
                     // Initial pressure will be decreased depending upon locomotive speed
                     // Steam Indicator Diagram reference - (a) 
                     HPCylinderInitialPressureAtmPSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
+
+                    LogInitialPressurePSI = HPCylinderInitialPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogInitialPressurePSI = MathHelper.Clamp(LogInitialPressurePSI, 0.00f, LogInitialPressurePSI); // Clamp so that HP Initial pressure does not go negative
 
                     // Calculate Cut-off Pressure drop - cutoff pressure drops as speed of locomotive increases.
                     float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
@@ -2936,23 +2970,16 @@ namespace Orts.Simulation.RollingStocks
                     // Steam Indicator Diagram reference - (b)
                     HPCylinderCutoffPressureAtmPSI = HPCylinderInitialPressureAtmPSI * HPCutoffPressureDropRatio;
 
-                    // Mean pressure & work between a) - b) - Admission
-                    float HPMeanPressureCuttoffAtmPSI = (HPCylinderInitialPressureAtmPSI + HPCylinderCutoffPressureAtmPSI) / 2.0f;
-                    // Calculate work between a) - b)
-                    float HPCylinderLengthAdmissionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_b - HPCylinderVolumePoint_a);
-                    float HPCylinderAdmissionWorkInLbs = HPMeanPressureCuttoffAtmPSI * HPCylinderLengthAdmissionIn;
+                    LogCutoffPressurePSI = HPCylinderCutoffPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogCutoffPressurePSI = MathHelper.Clamp(LogCutoffPressurePSI, 0.00f, LogCutoffPressurePSI); // Clamp so that HP Cutoff pressure does not go negative
 
                     // Release pressure - occurs when the exhaust valve opens to release steam from the cylinder
                     // Steam Indicator Diagram reference - (d)
                     float HPVolumeRatioCuttoff = HPCylinderVolumePoint_b / HPCylinderVolumePoint_d;
                     HPCylinderReleasePressureAtmPSI = HPCylinderCutoffPressureAtmPSI * HPVolumeRatioCuttoff;  // Check factor to calculate volume of cylinder for new volume at exhaust
 
-                    // Mean pressure & work between b) - d) - Cutoff Expansion - is after the cutoff and the first steam expansion, 
-                    float HPExpansionRatioCutoff = 1.0f / HPVolumeRatioCuttoff; // Invert volume ratio to find Expansion ratio
-                    float HPMeanPressureReleaseAtmPSI = HPCylinderCutoffPressureAtmPSI * ((float)Math.Log(HPExpansionRatioCutoff) / (HPExpansionRatioCutoff - 1.0f));
-                    // Calculate work between b) - d)
-                    float HPCylinderLengthCutoffExpansionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_d - HPCylinderVolumePoint_b);
-                    float HPCylinderCutoffExpansionWorkInLbs = HPMeanPressureReleaseAtmPSI * HPCylinderLengthCutoffExpansionIn;
+                    LogReleasePressurePSI = HPCylinderReleasePressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogReleasePressurePSI = MathHelper.Clamp(LogReleasePressurePSI, 0.00f, LogReleasePressurePSI); // Clamp so that HP Release pressure does not go negative
 
                     // Release pressure (with no receiver) is the pressure after the first steam expansion, and occurs as steam moves into the passageways between the HP and LP cylinder
                     // Steam Indicator Diagram reference - (e)
@@ -2965,12 +2992,20 @@ namespace Orts.Simulation.RollingStocks
                     float HPVolumeRatioReleaseReceiver = (HPCylinderVolumePoint_e / HPCylinderVolumePoint_f);
                     HPCylinderExhaustPressureAtmPSI = HPCylinderReleasePressureRecvAtmPSI * HPVolumeRatioReleaseReceiver;
 
-                    // Mean pressure & work between e) - f) - Release Expansion
-                    float HPExpansionRatioReleaseReceiver = 1.0f / HPVolumeRatioReleaseReceiver; // Invert volume ratio to find Expansion ratio
-                    float HPMeanPressureExhaustAtmPSI = HPCylinderReleasePressureRecvAtmPSI * ((float)Math.Log(HPExpansionRatioReleaseReceiver) / (HPExpansionRatioReleaseReceiver - 1.0f));
-                    // Calculate work between e) - f) - Release Expansion
-                    float HPCylinderLengthReleaseExpansionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_fHPonly - HPCylinderVolumePoint_d);
-                    float HPCylinderReleaseExpansionWorkInLbs = HPMeanPressureExhaustAtmPSI * HPCylinderLengthReleaseExpansionIn;
+                    // LP cylinder release pressure 
+                    // Steam Indicator Diagram reference - (l) 
+                    float LPVolumeRatioRelease = LPCylinderVolumePoint_h_LPpost / LPCylinderVolumePoint_l;
+                    LPCylinderReleasePressureAtmPSI = LPCylinderPreCutoffPressureAtmPSI * LPVolumeRatioRelease;
+
+                    LogLPReleasePressurePSI = LPCylinderReleasePressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogLPReleasePressurePSI = MathHelper.Clamp(LogLPReleasePressurePSI, 0.00f, LogLPReleasePressurePSI); // Clamp so that LP Release pressure does not go negative
+
+                    // LP Cylinder back pressure will be decreased depending upon locomotive speed
+                    // Steam Indicator Diagram reference - (m) 
+                    LPCylinderBackPressureAtmPSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP] + OneAtmospherePSI;
+
+                    LogLPBackPressurePSI = LPCylinderBackPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogLPBackPressurePSI = MathHelper.Clamp(LogLPBackPressurePSI, 0.00f, LogLPBackPressurePSI); // Clamp so that LP Back pressure does not go negative
 
                     // LP cylinder initial pressure will be mixture of the volume at exahust for HP cylinder and the volume of the LP clearance at the LP cylinder pre-admission pressure
                     // To calculate we need to calculate the LP Pre-Admission pressure @ q first
@@ -2985,6 +3020,9 @@ namespace Orts.Simulation.RollingStocks
 
                     // Steam Indicator Diagram reference - (g) 
                     LPCylinderInitialPressureAtmPSI = ((LPCylinderPreAdmissionPressureAtmPSI * (LPCylinderClearancePC * CompoundCylinderRatio)) + (HPCylinderExhaustPressureAtmPSI * (HPCylinderVolumeFactor + HPCylinderClearancePC + CompoundRecieverVolumePCHP))) / ((LPCylinderClearancePC * CompoundCylinderRatio) + (HPCylinderVolumeFactor + HPCylinderClearancePC + CompoundRecieverVolumePCHP));
+
+                    LogLPInitialPressurePSI = LPCylinderInitialPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogLPInitialPressurePSI = MathHelper.Clamp(LogLPInitialPressurePSI, 0.00f, LogLPInitialPressurePSI); // Clamp so that LP Initial pressure does not go negative
 
                     // LP cylinder cutoff pressure - before LP Cylinder Cutoff - in this instance both the HP and LP are still interconnected
                     // Steam Indicator Diagram reference - (h) - pre cutoff in HP & LP Cylinder
@@ -3003,27 +3041,53 @@ namespace Orts.Simulation.RollingStocks
 
                     float LPCutoffPressureDropRatio = (((CylinderPortOpeningFactor - CylinderPortOpeningLower) / (CylinderPortOpeningUpper - CylinderPortOpeningLower)) * (LPCutoffDropUpper - LPCutoffDropLower)) + LPCutoffDropLower;
 
-
                     LPCylinderPreCutoffPressureAtmPSI *= LPCutoffPressureDropRatio;  // allow for wire drawing into LP cylinder
 
-                    // Mean pressure & work between g) - h) - This curve is the admission curve for the LP and the Backpressure curve for the HP - it is an expansion curve
+                    // Mean pressure g) - h) - This curve is the admission curve for the LP and the Backpressure curve for the HP - it is an expansion curve 
+                    // (This section needs to be here because of the next calculation HPCylinderBackPressureAtmPSI)
                     float LPExpansionRatioPreCutoff = LPCylinderVolumePoint_h_pre / LPCylinderVolumePoint_g;  // Invert volume ratio to find Expansion ratio
                     float LPMeanPressureCutoffAtmPSI = LPCylinderInitialPressureAtmPSI * ((float)Math.Log(LPExpansionRatioPreCutoff) / (LPExpansionRatioPreCutoff - 1.0f));
 
                     // Find negative pressures for HP Cylinder - upper half of g) - h) curve
                     HPCylinderBackPressureAtmPSI = LPMeanPressureCutoffAtmPSI; // HP Back pressure is the same as the mean admission pressure for the LP cylinder
-                    // Calculate work between g) - h) - HP Cylinder only
-                    float HPCylinderLengthExpansionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_b - HPCylinderVolumePoint_a); // Calculate negative work in HP cylinder only due to back pressure, ie backpressure in HP Only x volume of cylinder between commencement of LP stroke and cutoff
-                    float HPCylinderBackPressureExpansionWorksInLbs = HPCylinderBackPressureAtmPSI * HPCylinderLengthExpansionIn;
 
+                    LogBackPressurePSI = HPCylinderBackPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                    LogBackPressurePSI = MathHelper.Clamp(LogBackPressurePSI, 0.00f, LogBackPressurePSI); // Clamp so that HP Release pressure does not go negative
 
                     // HP cylinder compression pressure
                     // Steam Indicator Diagram reference - (k) - before the valve closes
                     float HPExpansionRatioPreCompOpen = HPCylinderVolumePoint_h_HPpost / HPCylinderVolumePoint_k_pre;
                     HPCylinderPreAdmissionOpenPressureAtmPSI = HPCylinderPreCompressionPressureAtmPSI * HPExpansionRatioPreCompOpen;
 
+         // ***** Calculate mean pressures and work done in HP cylinder *****
+
+                    // Mean pressure & work between a) - b) - Admission
+                    float HPMeanPressureCuttoffAtmPSI = (HPCylinderInitialPressureAtmPSI + HPCylinderCutoffPressureAtmPSI) / 2.0f;  // Average pressure between initial and cutoff pressure
+                    // Calculate work between a) - b)
+                    float HPCylinderLengthAdmissionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_b - HPCylinderVolumePoint_a);
+                    float HPCylinderAdmissionWorkInLbs = HPMeanPressureCuttoffAtmPSI * HPCylinderLengthAdmissionIn;
+
+                    // Mean pressure between b) - d) - Cutoff Expansion - is after the cutoff and the first steam expansion, 
+                    float HPExpansionRatioCutoff = 1.0f / HPVolumeRatioCuttoff; // Invert volume ratio to find Expansion ratio
+                    float HPMeanPressureReleaseAtmPSI = HPCylinderCutoffPressureAtmPSI * ((float)Math.Log(HPExpansionRatioCutoff) / (HPExpansionRatioCutoff - 1.0f));
+
+                    // Calculate work between b) - d)
+                    float HPCylinderLengthCutoffExpansionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_d - HPCylinderVolumePoint_b);
+                    float HPCylinderCutoffExpansionWorkInLbs = HPMeanPressureReleaseAtmPSI * HPCylinderLengthCutoffExpansionIn;
+
+                    // Mean pressure e) - f) - Release Expansion
+                    float HPExpansionRatioReleaseReceiver = 1.0f / HPVolumeRatioReleaseReceiver; // Invert volume ratio to find Expansion ratio
+                    float HPMeanPressureExhaustAtmPSI = HPCylinderReleasePressureRecvAtmPSI * ((float)Math.Log(HPExpansionRatioReleaseReceiver) / (HPExpansionRatioReleaseReceiver - 1.0f));
+                    // Calculate work between e) - f) - Release Expansion
+                    float HPCylinderLengthReleaseExpansionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_fHPonly - HPCylinderVolumePoint_d);
+                    float HPCylinderReleaseExpansionWorkInLbs = HPMeanPressureExhaustAtmPSI * HPCylinderLengthReleaseExpansionIn;
+
+                    // Calculate work between g) - h) - HP Cylinder only
+                    float HPCylinderLengthExpansionIn = Me.ToIn(CylinderStrokeM) * (HPCylinderVolumePoint_b - HPCylinderVolumePoint_a); // Calculate negative work in HP cylinder only due to back pressure, ie backpressure in HP Only x volume of cylinder between commencement of LP stroke and cutoff
+                    float HPCylinderBackPressureExpansionWorksInLbs = HPCylinderBackPressureAtmPSI * HPCylinderLengthExpansionIn;
+                    
                     // Find negative pressures in HP Cylinder
-                    // Mean pressure & work between h) - k) - Compression Expansion
+                    // Mean pressure between h) - k) - Compression Expansion
                     // Ratio of compression = stroke during compression = stroke @ start of compression / stroke and end of compression
                     float HPCylinderCompressionRatioPreCompression = HPCylinderVolumePoint_h_HPpost / HPCylinderVolumePoint_k_pre;
                     float HPMeanPressurePreCompAtmPSI = HPCylinderPreCompressionPressureAtmPSI * HPCylinderCompressionRatioPreCompression * ((float)Math.Log(HPCylinderCompressionRatioPreCompression) / (HPCylinderCompressionRatioPreCompression - 1.0f));
@@ -3041,22 +3105,13 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate total Work in HP Cylinder
                     float TotalHPCylinderWorksInLbs = HPCylinderAdmissionWorkInLbs + HPCylinderCutoffExpansionWorkInLbs + HPCylinderReleaseExpansionWorkInLbs - HPCylinderBackPressureExpansionWorksInLbs - HPCylinderPreCompExpansionWorkInLbs - HPCylinderPreAdmExpansionWorkInLbs;
 
-                    // ***** Calculate pressures and work done in LP cylinder *****
+         // ***** Calculate pressures and work done in LP cylinder *****
 
                     // Calculate work between g) - h) - Release Expansion  (LP Cylinder)              
                     float LPCylinderLengthCutoffExpansionIn = Me.ToIn(CylinderStrokeM) * (LPCylinderVolumePoint_h_LPpost - LPCylinderVolumePoint_a);
                     // For purposes of work done only consider the change in LP cylinder between stroke commencement and cutoff
                     float LPMeanPressureCutoffWireAtmPSI = (LPCylinderInitialPressureAtmPSI + LPCylinderPreCutoffPressureAtmPSI) / 2.0f;  // Find the wire drawn pressure as an average, rather then as an expansion pressure
                     float LPCylinderCutoffExpansionWorkInLbs = LPMeanPressureCutoffWireAtmPSI * LPCylinderLengthCutoffExpansionIn;
-
-                    // LP cylinder release pressure 
-                    // Steam Indicator Diagram reference - (l) 
-                    float LPVolumeRatioRelease = LPCylinderVolumePoint_h_LPpost / LPCylinderVolumePoint_l;
-                    LPCylinderReleasePressureAtmPSI = LPCylinderPreCutoffPressureAtmPSI * LPVolumeRatioRelease;
-
-                    // LP Cylinder back pressure will be decreased depending upon locomotive speed
-                    // Steam Indicator Diagram reference - (m) 
-                    LPCylinderBackPressureAtmPSI = BackPressureIHPtoAtmPSI[IndicatedHorsePowerHP];
 
                     // Calculate MEP for LP Cylinder
                     //Mean pressure & work between h) - l)
@@ -3093,12 +3148,12 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate total Work in LP Cylinder
                     float TotalLPCylinderWorksInLbs = LPCylinderCutoffExpansionWorkInLbs + LPCylinderReleaseWorkInLbs + LPCylinderExhaustWorkInLbs - LPCylinderBackPressureWorkInLbs - LPCylinderPreCompExpansionWorkInLbs - LPCylinderPreAdmExpansionWorkInLbs;
 
-                    HPCylinderMEPAtmPSI = TotalHPCylinderWorksInLbs / (HPCylinderVolumeFactor * Me.ToIn(CylinderStrokeM));
-                    LPCylinderMEPAtmPSI = TotalLPCylinderWorksInLbs / ((LPCylinderVolumeFactor * CompoundCylinderRatio) * Me.ToIn(CylinderStrokeM));
+                    HPCylinderMEPPSI = TotalHPCylinderWorksInLbs / (HPCylinderVolumeFactor * Me.ToIn(CylinderStrokeM));
+                    LPCylinderMEPPSI = TotalLPCylinderWorksInLbs / ((LPCylinderVolumeFactor * CompoundCylinderRatio) * Me.ToIn(CylinderStrokeM));
 
 
-                    HPCylinderMEPAtmPSI = MathHelper.Clamp(HPCylinderMEPAtmPSI, 0.00f, HPCylinderMEPAtmPSI); // Clamp MEP so that HP MEP does not go negative
-                    LPCylinderMEPAtmPSI = MathHelper.Clamp(LPCylinderMEPAtmPSI, 0.00f, LPCylinderMEPAtmPSI); // Clamp MEP so that LP MEP does not go negative
+                    HPCylinderMEPPSI = MathHelper.Clamp(HPCylinderMEPPSI, 0.00f, HPCylinderMEPPSI); // Clamp MEP so that HP MEP does not go negative
+                    LPCylinderMEPPSI = MathHelper.Clamp(LPCylinderMEPPSI, 0.00f, LPCylinderMEPPSI); // Clamp MEP so that LP MEP does not go negative
 
                     // Debug information
 
@@ -3179,11 +3234,14 @@ namespace Orts.Simulation.RollingStocks
                     LPCylinderReleasePressureAtmPSI = 0.0f;
                     LPCylinderBackPressureAtmPSI = 0.0f;
 
-                    HPCylinderMEPAtmPSI = 0.0f;
-                    LPCylinderMEPAtmPSI = 0.0f;
-
-
+                    HPCylinderMEPPSI = 0.0f;
+                    LPCylinderMEPPSI = 0.0f;
                 }
+
+                LogLPCutoffPressurePSI = LPCylinderPreCutoffPressureAtmPSI - OneAtmospherePSI;  // Value for recording in log file
+                LogLPCutoffPressurePSI = MathHelper.Clamp(LogLPCutoffPressurePSI, 0.00f, LogLPCutoffPressurePSI); // Clamp so that LP Cutoff pressure does not go negative
+
+                MeanEffectivePressurePSI = HPCylinderMEPPSI + LPCylinderMEPPSI; // Calculate Total MEP
             }
 
             #endregion
@@ -3195,8 +3253,6 @@ namespace Orts.Simulation.RollingStocks
 
             if (SteamEngineType != SteamEngineTypes.Compound)
             {
-
-     //           Trace.TraceInformation("Cylinder Events - Cutoff {0} Admission {1} Exhaust {2} Compression {3}", cutoff, CylinderPreAdmissionOpenFactor, CylinderExhaustOpenFactor, CylinderCompressionCloseFactor);
                 
                 // Calculate apparent volumes at various points in cylinder
                 float CylinderVolumePoint_e = CylinderCompressionCloseFactor + CylinderClearancePC;
@@ -3224,7 +3280,7 @@ namespace Orts.Simulation.RollingStocks
                 LogInitialPressurePSI = MathHelper.Clamp(LogInitialPressurePSI, 0.00f, LogInitialPressurePSI); // Clamp so that initial pressure does not go negative
 
                 // Steam Indicator Diagram reference - (d) 
-                BackPressureAtmPSI = BackPressureIHPtoAtmPSI[IndicatedHorsePowerHP] + OneAtmospherePSI;
+                BackPressureAtmPSI = BackPressureIHPtoPSI[IndicatedHorsePowerHP] + OneAtmospherePSI;
 
                 if (throttle < 0.02f)
                 {
@@ -3565,23 +3621,26 @@ namespace Orts.Simulation.RollingStocks
                 if (!CylinderCompoundOn)
                 {
                     // Calculate tractive effort if set to simple operation - to be checked
-                    float LPSimpleTractiveEffortLbsF = CylinderEfficiencyRate * (0.7854f * LPCylinderMEPAtmPSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToFt(LPCylinderStrokeM)) / ((Me.ToFt(DriverWheelRadiusM * 2.0f)) * (float)Math.PI);
+                    float LPSimpleTractiveEffortLbsF = CylinderEfficiencyRate * (0.7854f * (LPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToFt(LPCylinderStrokeM)) / ((Me.ToFt(DriverWheelRadiusM * 2.0f)) * (float)Math.PI);
                     // There are two LP cylinders, and both ends need to be considered so the above value needs to multipled by 4 to get the total TE for the combined LP cylinders
                     LPSimpleTractiveEffortLbsF = 4.0f * LPSimpleTractiveEffortLbsF;
 
                     TractiveEffortLbsF = LPSimpleTractiveEffortLbsF;
+                    // Calculate IHP
+                    // IHP = (MEP x CylStroke(ft) x cylArea(sq in)) / 33000) - this is per cylinder - multiply by 4 for HP and LP to allow for each individual cylinder
+                    LPIndicatedHorsePowerHP = 4.0f * (((LPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToFt(CylinderStrokeM) * Me2.ToIn2(Me2.FromFt2(LPCylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) / 33000.0f));
                 }
                 else
                 {
                     // Calculate tractive effort if set for compounding - tractive effort in each cylinder will need to be calculated
                     // From PRR test report - TE(for each cylinder - both ends of cylinder treated separately) = 0.7845 * (MEP * Cyl Dia^2 (ins) * Stroke (ft)) / Drv Wheel Cicum (ft)
                     // HP Cylinder
-                    float HPTractiveEffortLbsF = CylinderEfficiencyRate * (0.7854f * HPCylinderMEPAtmPSI * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToFt(CylinderStrokeM)) / ((Me.ToFt(DriverWheelRadiusM * 2.0f)) * (float)Math.PI);
+                    float HPTractiveEffortLbsF = CylinderEfficiencyRate * (0.7854f * (HPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToFt(CylinderStrokeM)) / ((Me.ToFt(DriverWheelRadiusM * 2.0f)) * (float)Math.PI);
                     // There are two HP cylinders, and both ends need to be considered so the above value needs to multipled by 4 to get the total TE for the combined HP cylinders
                     HPTractiveEffortLbsF = 4.0f * HPTractiveEffortLbsF;
 
                     // LP Cylinder
-                    float LPTractiveEffortLbsF = CylinderEfficiencyRate * (0.7854f * LPCylinderMEPAtmPSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToFt(LPCylinderStrokeM)) / ((Me.ToFt(DriverWheelRadiusM * 2.0f)) * (float)Math.PI);
+                    float LPTractiveEffortLbsF = CylinderEfficiencyRate * (0.7854f * (LPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToFt(LPCylinderStrokeM)) / ((Me.ToFt(DriverWheelRadiusM * 2.0f)) * (float)Math.PI);
                     // There are two LP cylinders, and both ends need to be considered so the above value needs to multipled by 4 to get the total TE for the combined LP cylinders
                     LPTractiveEffortLbsF = 4.0f * LPTractiveEffortLbsF;
 
@@ -3589,17 +3648,19 @@ namespace Orts.Simulation.RollingStocks
 
                     // Calculate IHP
                     // IHP = (MEP x CylStroke(ft) x cylArea(sq in)) / 33000) - this is per cylinder - multiply by 4 for HP and LP to allow for each individual cylinder
-                    float HPIndicatedHorsePowerHP = 4.0f * ((HPCylinderMEPAtmPSI * Me.ToFt(CylinderStrokeM) * Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) / 33000.0f));
+                    HPIndicatedHorsePowerHP = 4.0f * (((HPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToFt(CylinderStrokeM) * Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) / 33000.0f));
 
-                    float LPIndicatedHorsePowerHP = 4.0f * ((LPCylinderMEPAtmPSI * Me.ToFt(CylinderStrokeM) * Me2.ToIn2(Me2.FromFt2(LPCylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) / 33000.0f));
+                    LPIndicatedHorsePowerHP = 4.0f * (((LPCylinderMEPPSI * CylinderEfficiencyRate) * Me.ToFt(CylinderStrokeM) * Me2.ToIn2(Me2.FromFt2(LPCylinderPistonAreaFt2)) * pS.TopM(DrvWheelRevRpS) / 33000.0f));
 
-                    IndicatedHorsePowerHP = HPIndicatedHorsePowerHP + LPIndicatedHorsePowerHP;
 
-                    IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
 
                     float WheelRevs = pS.TopM(DrvWheelRevRpS);
 
                 }
+
+                IndicatedHorsePowerHP = HPIndicatedHorsePowerHP + LPIndicatedHorsePowerHP;
+                IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
+
             }
             else // if simple or geared locomotive calculate tractive effort
             {
@@ -5053,69 +5114,58 @@ namespace Orts.Simulation.RollingStocks
             {
 
                 // Display steam indicator pressures in HP cylinder
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("PressHP:"),
                 Simulator.Catalog.GetString("Chest"),
                 FormatStrings.FormatPressure(LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Initial"),
-                FormatStrings.FormatPressure(HPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Cutoff"),
-                FormatStrings.FormatPressure(HPCylinderCutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Rel"),
-                FormatStrings.FormatPressure(HPCylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Simulator.Catalog.GetString("RelR"),
-                FormatStrings.FormatPressure(HPCylinderReleasePressureRecvAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Simulator.Catalog.GetString("Exhaust"),
-                FormatStrings.FormatPressure(HPCylinderExhaustPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Back"),
                 FormatStrings.FormatPressure(HPCylinderBackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Simulator.Catalog.GetString("PreComp"),
-                FormatStrings.FormatPressure(HPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("MEP"),
-                FormatStrings.FormatPressure(HPCylinderMEPAtmPSI, PressureUnit.PSI, MainPressureUnit, true));
-
+                FormatStrings.FormatPressure(HPCylinderMEPPSI, PressureUnit.PSI, MainPressureUnit, true)
+                );
+                
                 // Display steam indicator pressures in LP cylinder
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",
+                status.AppendFormat("{0}\t\t\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("PressLP:"),
-                Simulator.Catalog.GetString("Chest"),
-                FormatStrings.FormatPressure(LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Initial"),
-                FormatStrings.FormatPressure(LPCylinderInitialPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogLPInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Cutoff"),
-                FormatStrings.FormatPressure(LPCylinderPreCutoffPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogLPCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Rel"),
-                FormatStrings.FormatPressure(LPCylinderReleasePressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogLPReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Back"),
-                FormatStrings.FormatPressure(LPCylinderBackPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Simulator.Catalog.GetString("PreComp"),
-                FormatStrings.FormatPressure(LPCylinderPreCompressionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
-                Simulator.Catalog.GetString("PreAdm"),
-                FormatStrings.FormatPressure(LPCylinderPreAdmissionPressureAtmPSI, PressureUnit.PSI, MainPressureUnit, true),
+                FormatStrings.FormatPressure(LogLPBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("MEP"),
-                FormatStrings.FormatPressure(LPCylinderMEPAtmPSI, PressureUnit.PSI, MainPressureUnit, true));
+                FormatStrings.FormatPressure(LPCylinderMEPPSI, PressureUnit.PSI, MainPressureUnit, true),
+                Simulator.Catalog.GetString("Tot MEP"),
+                FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
+                );
 
             }
             else  // Display Steam Indicator Information for single expansion locomotive
             {
 
-                status.AppendFormat("{0}\t{1}\t{9}\t{2}\t{10}\t{3}\t{11}\t{4}\t{12}\t{5}\t{13}\t{6}\t{14}\t{7}\t{15}\t{8}\t{16}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("Press:"),
                     Simulator.Catalog.GetString("Chest"),
-                    Simulator.Catalog.GetString("Initial"),
-                    Simulator.Catalog.GetString("Cutoff"),
-                    Simulator.Catalog.GetString("Rel"),
-                    Simulator.Catalog.GetString("Back"),
-                    Simulator.Catalog.GetString("PreComp"),
-                    Simulator.Catalog.GetString("PreAdm"),
-                    Simulator.Catalog.GetString("MEP"),
                     FormatStrings.FormatPressure(LogSteamChestPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Initial"),
                     FormatStrings.FormatPressure(LogInitialPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Cutoff"),
                     FormatStrings.FormatPressure(LogCutoffPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Rel"),
                     FormatStrings.FormatPressure(LogReleasePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("Back"),
                     FormatStrings.FormatPressure(LogBackPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(LogPreCompressionPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(LogPreAdmissionPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                    FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true));
+                    Simulator.Catalog.GetString("MEP"),
+                    FormatStrings.FormatPressure(MeanEffectivePressurePSI, PressureUnit.PSI, MainPressureUnit, true)
+                    );
             }
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",

@@ -149,13 +149,13 @@ namespace Orts.Common
         // Boiler Efficiency - based upon average results from test papers
         static float[] SatBoilerEfficiencyTableX = new float[]
         {
-            0.83f, 0.765f, 0.705f, 0.640f, 0.580f, 0.518f, 0.457f, 0.392f, 0.331f
+            0.83f, 0.76f, 0.69f, 0.62f, 0.55f, 0.48f, 0.42f, 0.35f, 0.28f
         };
 
         // Boiler Efficiency - based upon average results from test papers
         static float[] SuperBoilerEfficiencyTableX = new float[]
         {
-            0.940f, 0.88f, 0.825f, 0.765f, 0.710f, 0.65f, 0.595f, 0.538f, 0.480f
+            0.940f, 0.89f, 0.84f, 0.78f, 0.73f, 0.68f, 0.625f, 0.57f, 0.52f
         };
         
         // pressure tables for Injectors temperature and steam usage
