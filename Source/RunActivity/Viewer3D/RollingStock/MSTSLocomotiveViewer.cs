@@ -1561,7 +1561,7 @@ namespace Orts.Viewer3D.RollingStock
                     if (Gauge.Direction != 0)  // column grows from bottom or from right
                     {
                         DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
-                        topY += Gauge.Height * (1 - percent);
+                        if (Gauge.Orientation != 0) topY += Gauge.Height * (1 - percent);
                     }
                     // Cab view vertical position adjusted to allow for clip or stretch.
                     DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
