@@ -3057,6 +3057,7 @@ namespace Orts.Simulation.RollingStocks
                             if (ThrottlePercent > 0)
                             {
                                 float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                                if ((cvc is CVCGauge && cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING)) rangeFactor = (float)cvc.MaxValue;
                                 if (FilteredMotiveForceN != 0)
                                     data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
                                 else
@@ -3067,7 +3068,7 @@ namespace Orts.Simulation.RollingStocks
                             {
                                 if (cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING)
                                 {
-                                    float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                                    float rangeFactor = (float)cvc.MaxValue;
                                     if (FilteredMotiveForceN != 0)
                                         data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
                                     else
@@ -3084,7 +3085,7 @@ namespace Orts.Simulation.RollingStocks
                                     data = -Math.Abs(data);
                                 }
                             }
-                            if (direction == 1)
+                            if (direction == 1 && !(cvc is CVCGauge && cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING))
                                 data = -data;
                             break;
                         }
