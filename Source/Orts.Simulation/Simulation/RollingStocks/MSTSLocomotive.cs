@@ -3044,6 +3044,35 @@ namespace Orts.Simulation.RollingStocks
                         break;
                     }
                 case CABViewControlTypes.LOAD_METER:
+                    {
+                        var direction = 0; // Forwards
+                        if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
+                            direction = ((CVCGauge)cvc).Direction;
+                        if (MaxCurrentA == 0)
+                            MaxCurrentA = (float)cvc.MaxValue;
+                        if (DynamicBrakeMaxCurrentA == 0)
+                            DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
+                        data = 0.0f;
+                        if (ThrottlePercent > 0)
+                        {
+                            if (FilteredMotiveForceN != 0)
+                                data = this.FilteredMotiveForceN / MaxForceN * MaxCurrentA;
+                            else
+                                data = this.LocomotiveAxle.AxleForceN / MaxForceN * MaxCurrentA;
+                            data = Math.Abs(data);
+                        }
+                        if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
+                        {
+                             if (FilteredMotiveForceN != 0)
+                                data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
+                            else
+                                data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
+                            data = -Math.Abs(data);
+                        }
+                        if (direction == 1)
+                            data = -data;
+                        break;
+                    }
                 case CABViewControlTypes.TRACTION_BRAKING:
                     {
                         var direction = 0; // Forwards
@@ -3051,47 +3080,28 @@ namespace Orts.Simulation.RollingStocks
                             direction = ((CVCGauge)cvc).Direction;
                         if (MaxCurrentA == 0)
                             MaxCurrentA = (float)cvc.MaxValue;
-                        if (LocomotiveAxle != null)
+                        data = 0.0f;
+                        if (ThrottlePercent > 0)
                         {
-                            data = 0.0f;
-                            if (ThrottlePercent > 0)
-                            {
-                                float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
-                                if ((cvc is CVCGauge && cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING)) rangeFactor = (float)cvc.MaxValue;
-                                if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
-                                else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxForceN * rangeFactor;
-                                data = Math.Abs(data);
-                            }
-                            if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
-                            {
-                                if (cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING)
-                                {
-                                    float rangeFactor = (float)cvc.MaxValue;
-                                    if (FilteredMotiveForceN != 0)
-                                        data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                    else
-                                        data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                    data = Math.Abs(data);
-                                }
-                                else
-                                {
-                                    float rangeFactor = direction == 0 ? (float)cvc.MinValue : (float)cvc.MaxValue;
-                                    if (FilteredMotiveForceN != 0)
-                                        data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                    else
-                                        data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                    data = -Math.Abs(data);
-                                }
-                            }
-                            if (direction == 1 && !(cvc is CVCGauge && cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING))
-                                data = -data;
-                            break;
-                        }
-                        data = this.MotiveForceN / MaxForceN * (float)cvc.MaxValue;
-                        if (cvc.ControlType == CABViewControlTypes.TRACTION_BRAKING)
+                            float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
+                            if (cvc is CVCGauge) rangeFactor = (float)cvc.MaxValue;
+                            if (FilteredMotiveForceN != 0)
+                                data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
+                            else
+                                data = this.LocomotiveAxle.AxleForceN / MaxForceN * rangeFactor;
                             data = Math.Abs(data);
+                        }
+                        if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
+                        {
+                            float rangeFactor = (float)cvc.MaxValue;
+                            if (FilteredMotiveForceN != 0)
+                                data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
+                            else
+                                data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
+                            data = Math.Abs(data);
+                            }
+                        if (direction == 1 && !(cvc is CVCGauge))
+                            data = -data;
                         break;
                     }
                 case CABViewControlTypes.MAIN_RES:
