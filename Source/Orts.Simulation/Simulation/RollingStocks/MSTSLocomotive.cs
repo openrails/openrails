@@ -3078,28 +3078,41 @@ namespace Orts.Simulation.RollingStocks
                         var direction = 0; // Forwards
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
-                        if (MaxCurrentA == 0)
-                            MaxCurrentA = (float)cvc.MaxValue;
                         data = 0.0f;
-                        if (ThrottlePercent > 0)
+                        if (FilteredMotiveForceN != 0)
+                            data = this.FilteredMotiveForceN;
+                        else
+                            data = this.LocomotiveAxle.AxleForceN;
+                        data = Math.Abs(data);
+                        switch (cvc.Units)
                         {
-                            float rangeFactor = direction == 0 ? (float)cvc.MaxValue : (float)cvc.MinValue;
-                            if (cvc is CVCGauge) rangeFactor = (float)cvc.MaxValue;
-                            if (FilteredMotiveForceN != 0)
-                                data = this.FilteredMotiveForceN / MaxForceN * rangeFactor;
-                            else
-                                data = this.LocomotiveAxle.AxleForceN / MaxForceN * rangeFactor;
-                            data = Math.Abs(data);
-                        }
-                        if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
-                        {
-                            float rangeFactor = (float)cvc.MaxValue;
-                            if (FilteredMotiveForceN != 0)
-                                data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
-                            else
-                                data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
-                            data = Math.Abs(data);
-                            }
+                            case CABViewControlUnits.AMPS:
+                                if (MaxCurrentA == 0)
+                                    MaxCurrentA = (float)cvc.MaxValue;
+                                if (DynamicBrakeMaxCurrentA == 0)
+                                    DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
+                                if (ThrottlePercent > 0)
+                                {
+                                    data = (data / MaxForceN) * MaxCurrentA;
+                                 }
+                                if (DynamicBrakePercent > 0)
+                                {
+                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                }
+                                data = Math.Abs(data);
+                                break;
+                    
+                            case CABViewControlUnits.NEWTONS:
+                                break;
+                    
+                            case CABViewControlUnits.KILO_NEWTONS:
+                                data = data / 1000.0f;
+                                break;
+                    
+                            case CABViewControlUnits.KILO_LBS:
+                                data = data / 4448.22162f;
+                                break;
+                        }                   
                         if (direction == 1 && !(cvc is CVCGauge))
                             data = -data;
                         break;
