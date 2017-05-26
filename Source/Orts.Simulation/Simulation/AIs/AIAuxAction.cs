@@ -131,7 +131,8 @@ namespace Orts.Simulation.AIs
 
                 // SigDelegate WP is running
 
-                if (((AuxActSigDelegate)specRequiredActions.First.Value).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)
+                if (((AuxActSigDelegate)specRequiredActions.First.Value).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION &&
+                    !(((AuxActSigDelegate)specRequiredActions.First.Value).ActionRef as AIActSigDelegateRef).IsAbsolute)
                 {
                     int remainingDelay = ((AuxActSigDelegate)specRequiredActions.First.Value).ActualDepart - currentClock;
                     AIActSigDelegateRef actionRef = ((AuxActSigDelegate)specRequiredActions.First.Value).ActionRef as AIActSigDelegateRef;
@@ -351,7 +352,8 @@ namespace Orts.Simulation.AIs
                 if (actionItem is AuxActSigDelegate)
                 {
                     var actionRef = (actionItem as AuxActSigDelegate).ActionRef;
-                    if ((actionRef as AIActSigDelegateRef).IsAbsolute) continue;
+                    if ((actionRef as AIActSigDelegateRef).IsAbsolute)
+                        continue;
                 }
                 itemList.Add(actionItem);
             }
