@@ -241,12 +241,13 @@ namespace ORTS.Updater
 
                 if (UpdateIsReady())
                 {
+                    VerifyUpdate();
                     TriggerApplyProgressChanged(98);
 
-                    VerifyUpdate();
+                    ApplyUpdate();
                     TriggerApplyProgressChanged(99);
 
-                    ApplyUpdate();
+                    CleanDirectories();
                     TriggerApplyProgressChanged(100);
                 }
 
@@ -255,10 +256,6 @@ namespace ORTS.Updater
             catch (Exception error)
             {
                 LastUpdateError = error;
-            }
-            finally
-            {
-                CleanDirectories();
             }
         }
 
@@ -458,9 +455,19 @@ namespace ORTS.Updater
             var updateStageDirectories = Directory.GetDirectories(PathUpdateStage, "*", SearchOption.AllDirectories);
 
             // Move (almost) all the files from the base path to the dirty path - this removes all the old program files.
-            MoveDirectoryFiles(BasePath, PathUpdateDirty, basePathFiles, basePathDirectories);
+            MoveFilesToDirty(basePathFiles, basePathDirectories);
 
             // Move all the files from the stage path to the base path - this adds all the new program files.
+            MoveFilesFromStage(updateStageFiles, updateStageDirectories);
+        }
+
+        void MoveFilesToDirty(string[] basePathFiles, string[] basePathDirectories)
+        {
+            MoveDirectoryFiles(BasePath, PathUpdateDirty, basePathFiles, basePathDirectories);
+        }
+
+        void MoveFilesFromStage(string[] updateStageFiles, string[] updateStageDirectories)
+        {
             MoveDirectoryFiles(PathUpdateStage, BasePath, updateStageFiles, updateStageDirectories);
         }
 
