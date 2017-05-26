@@ -6512,8 +6512,10 @@ namespace Orts.Simulation.Physics
                     {
                         endAuthority = END_AUTHORITY.TRAIN_AHEAD;
                         endAuthorityDistanceM = thisTrainAhead.Value;
-                        if (!thisSection.CircuitState.ThisTrainOccupying(this)) thisSection.PreReserve(thisRouted);
+                        if (!thisSection.CircuitState.ThisTrainOccupying(this))
+                            thisSection.PreReserve(thisRouted);
                     }
+                    RemoveSignalEnablings(0, newRoute);
                 }
 
                 // check route availability
@@ -6617,6 +6619,7 @@ namespace Orts.Simulation.Physics
                                             lastValidSectionIndex++;
                                             nextSection.PreReserve(thisRouted);
                                         }
+                                        RemoveSignalEnablings(lastValidSectionIndex, newRoute);
                                     }
                                 }
                             }
@@ -6642,6 +6645,27 @@ namespace Orts.Simulation.Physics
             }
 
             return (newRoute);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Remove signal enablings for subsequent route sections.
+        /// They were set before testing whether there is an occupying train
+        /// </summary>
+
+        private void RemoveSignalEnablings(int firstSection, TCSubpathRoute newRoute)
+        {
+            for (int iSection = firstSection; iSection <= newRoute.Count - 1; iSection++)
+            {
+                var thisRouteElement = newRoute[iSection];
+                var thisRouteSection = signalRef.TrackCircuitList[thisRouteElement.TCSectionIndex];
+                var thisReqDirection = thisRouteElement.Direction;
+                if (thisRouteSection.EndSignals[thisReqDirection] != null)
+                {
+                    var endSignal = thisRouteSection.EndSignals[thisReqDirection];
+                    if (endSignal.enabledTrain != null && endSignal.enabledTrain.Train == this) endSignal.enabledTrain = null;
+                }
+            }
         }
 
         //================================================================================================//
