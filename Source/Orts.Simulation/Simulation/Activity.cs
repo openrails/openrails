@@ -913,7 +913,7 @@ namespace Orts.Simulation
                                 ActArrive = SchArrive;
                             }
                         }
-                        BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeBoardingTime(Simulator.PlayerLocomotive.Train);
+                        BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeStationBoardingTime(Simulator.PlayerLocomotive.Train);
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
                             MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10 ))
                         {

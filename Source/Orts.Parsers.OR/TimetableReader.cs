@@ -42,8 +42,8 @@ namespace Orts.Parsers.OR
                 // extract separator from first line
                 var separator = readLine.Substring(0, 1);
 
-                // check : only ";" or "," are allowed as separators
-                var validSeparator = separator == ";" || separator == ",";
+                // check : only ";" or "," or "\tab" are allowed as separators
+                var validSeparator = separator == ";" || separator == "," || separator == "\t";
                 if (!validSeparator)
                 {
                     throw new InvalidDataException(String.Format("Expected separator ';' or ','; got '{1}' in timetable {0}", filePath, separator));

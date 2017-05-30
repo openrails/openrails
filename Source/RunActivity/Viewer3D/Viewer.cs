@@ -38,6 +38,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Management;
 using System.Threading;
 using Event = Orts.Common.Event;
@@ -91,6 +92,7 @@ namespace Orts.Viewer3D
         public SignallingDebugWindow SignallingDebugWindow { get; private set; } // Control-Alt-F11 window
         public ComposeMessage ComposeMessageWindow { get; private set; } // ??? window
         public TrainListWindow TrainListWindow { get; private set; } // for switching driven train
+        public TTDetachWindow TTDetachWindow { get; private set; } // for detaching player train in timetable mode
         // Route Information
         public TileManager Tiles { get; private set; }
         public TileManager LoTiles { get; private set; }
@@ -179,6 +181,8 @@ namespace Orts.Viewer3D
         public long LoadMemoryThreshold; // Above this threshold loader doesn't bulk load day or night textures
         public bool tryLoadingNightTextures = false;
         public bool tryLoadingDayTextures = false;
+
+        public int poscounter = 1; // counter for print position info
 
         public Camera SuspendedCamera { get; private set; }
 
@@ -275,6 +279,7 @@ namespace Orts.Viewer3D
 
             Simulator.PlayerLocomotiveChanged += PlayerLocomotiveChanged;
             Simulator.PlayerTrainChanged += PlayerTrainChanged;
+            Simulator.RequestTTDetachWindow += RequestTTDetachWindow;
 
             // The speedpost.dat file is needed only to derive the shape names for the temporary speed restriction zones,
             // so it is opened only in activity mode
@@ -324,6 +329,10 @@ namespace Orts.Viewer3D
             {
                 SelectedTrain = Simulator.Trains[selected];
             }
+            else if (selected < 0)
+            {
+                SelectedTrain = Simulator.Trains[0];
+            }
 
             WindowManager.Restore(inf);
 
@@ -341,6 +350,7 @@ namespace Orts.Viewer3D
             LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             tryLoadingNightTextures = true;
             tryLoadingDayTextures = true;
+
             World.WeatherControl.RestoreWeatherParameters(inf);
         }
 
@@ -391,11 +401,12 @@ namespace Orts.Viewer3D
             SignallingDebugWindow = new SignallingDebugWindow(WindowManager);
             ComposeMessageWindow = new ComposeMessage(WindowManager);
             TrainListWindow = new TrainListWindow(WindowManager);
+            TTDetachWindow = new TTDetachWindow(WindowManager);
             WindowManager.Initialize();
 
             InfoDisplay = new InfoDisplay(this);
 
-            World = new World(this);
+            World = new World(this, Simulator.ClockTime);
 
             Simulator.Confirmer.PlayErrorSound += (s, e) =>
             {
@@ -1061,6 +1072,34 @@ namespace Orts.Viewer3D
                 MessagesWindow.AddMessage(Catalog.GetStringFmt("Keyboard map image saved to '{0}'.", graphicPath), 10);
             }
 
+            // print position command
+            // <Rob Roeterdink (roeter)>
+            // code not yet activated - requires changes in output file selection
+            // TODO : get proper output file path
+            //if (UserInput.IsPressed(UserCommands.PrintTrainPosition))
+            //{
+            //    if (SelectedTrain != null)
+            //    {
+            //        var sob = new StringBuilder();
+            //        sob.Append("Position : ");
+            //        sob.AppendFormat("{0} : Tile : {1}, {2} ; Position : {3}, {4} ; Distance Travelled : {5}\n",
+            //            poscounter.ToString(),
+            //            SelectedTrain.FrontTDBTraveller.TileX.ToString(),
+            //            SelectedTrain.FrontTDBTraveller.TileZ.ToString(),
+            //            SelectedTrain.FrontTDBTraveller.X.ToString(),
+            //            SelectedTrain.FrontTDBTraveller.Z.ToString(),
+            //            SelectedTrain.DistanceTravelledM.ToString());
+            //        File.AppendAllText(@"C:\temp\TrainPosition.txt", sob.ToString());
+
+            //        if (Simulator.Confirmer != null)
+            //        {
+            //            Simulator.Confirmer.Information(sob.ToString());
+            //        }
+
+            //        poscounter++;
+            //    }
+            //}
+
             //in the dispatcher window, when one clicks a train and "See in Game", will jump to see that train
             if (Program.DebugViewer != null && Program.DebugViewer.ClickedTrain == true)
             {
@@ -1223,6 +1262,12 @@ namespace Orts.Viewer3D
             {
                 SelectedTrain = e.NewTrain;
             }
+        }
+
+        // display window for Timetable Player train detach actions
+        void RequestTTDetachWindow(object sender, EventArgs e)
+        {
+            TTDetachWindow.Visible = true;
         }
 
         // Finds the Turntable or Transfertable nearest to the viewing point

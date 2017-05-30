@@ -118,11 +118,13 @@
     <Compile Include="Simulation\Signalling\SIGSCRfile.cs" />
     <Compile Include="Simulation\Simulator.cs" />
     <Compile Include="Simulation\SuperElevation.cs" />
+    <Compile Include="Simulation\Timetables\PoolInfo.cs" />
     <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
+    <Compile Include="Simulation\Timetables\TTPool.cs" />
     <Compile Include="Simulation\Timetables\TTTrain.cs" />
-	<Compile Include="Simulation\Transfertables.cs" />
+    <Compile Include="Simulation\Transfertables.cs" />
     <Compile Include="Simulation\Traveller.cs" />
-	<Compile Include="Simulation\Turntables.cs" />
+    <Compile Include="Simulation\Turntables.cs" />
     <Compile Include="Simulation\Weather.cs" />
   </ItemGroup>
   <ItemGroup>

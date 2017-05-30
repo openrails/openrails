@@ -107,7 +107,25 @@ namespace ORTS.Menu
                         catch { }
                     }
 
+                    foreach (var ORTimetableFile in Directory.GetFiles(directory, "*.timetable-or"))
+                    {
+                        try
+                        {
+                            ORTTInfo.Add(new TimetableInfo(ORTimetableFile));
+                        }
+                        catch { }
+                    }
+
                     foreach (var ORMultitimetableFile in Directory.GetFiles(directory, "*.timetablelist_or"))
+                    {
+                        try
+                        {
+                            ORTTInfo.Add(new TimetableInfo(ORMultitimetableFile, directory));
+                        }
+                        catch { }
+                    }
+
+                    foreach (var ORMultitimetableFile in Directory.GetFiles(directory, "*.timetablelist-or"))
                     {
                         try
                         {

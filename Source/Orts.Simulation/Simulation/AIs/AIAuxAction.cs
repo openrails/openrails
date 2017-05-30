@@ -2041,7 +2041,7 @@ namespace Orts.Simulation.AIs
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
                     if (thisTrain is AITrain)
-                        movementState = ((AITrain)thisTrain).UpdateStoppedState();
+                        movementState = ((AITrain)thisTrain).UpdateStoppedState(elapsedClockSeconds);
                     break;
                 default:
                     break;
@@ -2230,7 +2230,7 @@ namespace Orts.Simulation.AIs
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
                     if (thisTrain is AITrain)
-                        movementState = ((AITrain)thisTrain).UpdateStoppedState();
+                        movementState = ((AITrain)thisTrain).UpdateStoppedState(elapsedClockSeconds);
                     break;
                 default:
                     break;
@@ -2419,7 +2419,7 @@ namespace Orts.Simulation.AIs
                     break;
                 case AITrain.AI_MOVEMENT_STATE.STOPPED:
                     if (thisTrain is AITrain)
-                        movementState = ((AITrain)thisTrain).UpdateStoppedState();
+                        movementState = ((AITrain)thisTrain).UpdateStoppedState(elapsedClockSeconds);
                     break;
                 default:
                     break;

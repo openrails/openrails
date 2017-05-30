@@ -149,7 +149,7 @@ namespace ORTS.TrackViewer.Drawing
             }
             if (sigcfgFile.SignalTypes.ContainsKey(this.signalType))
             {
-                this.isNormal = (sigcfgFile.SignalTypes[this.signalType].FnType == SignalType.FnTypes.Normal);
+                this.isNormal = (sigcfgFile.SignalTypes[this.signalType].FnType == MstsSignalFunction.NORMAL);
             }
         }
 

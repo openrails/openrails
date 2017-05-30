@@ -221,6 +221,17 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DataLogStationStops { get; set; }
 
+
+        // Timetable settings:
+        [Default(true)]
+        public bool TTUseRestartDelays { get; set; }
+        [Default(true)]
+        public bool TTCreateTrainOnPoolUnderflow { get; set; }
+        [Default(false)]
+        public bool TTOutputTimetableTrainInfo { get; set; }
+        [Default(false)]
+        public bool TTOutputTimetableFullEvaluation { get; set; }
+
         // Updater settings are saved only in "Updater.ini".
 
         // Experimental settings:
@@ -278,7 +289,10 @@ namespace ORTS.Settings
         public bool CorrectQuestionableBrakingParams { get; set; }
         [Default(false)]
         public bool OpenDoorsInAITrains { get; set; }
-
+        [Default(false)]
+        public bool UseWeatherFile { get; set; }
+        [Default("")]
+        public string LastUsedWeatherFile { get; set; }
 
         // Hidden settings:
         [Default(0)]

@@ -21,8 +21,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Timetables;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using System;
+using System.Collections.Generic;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -47,6 +49,8 @@ namespace Orts.Viewer3D.Popups
 
         Label StationNextName;
         Label StationNextDistance;
+
+
         Label StationNextArriveScheduled;
         Label StationNextDepartScheduled;
 
@@ -137,7 +141,258 @@ namespace Orts.Viewer3D.Popups
                 ActivityTaskPassengerStopAt Current = null;
 
                 // timetable information
-                if (playerTrain.CheckStations || (!Owner.Viewer.Simulator.TimetableMode && playerTrain != Owner.Viewer.Simulator.OriginalPlayerTrain))
+                if (playerTrain.CheckStations)
+                {
+                    TTTrain playerTimetableTrain = playerTrain as TTTrain;
+
+                    // train name
+                    StationPlatform.Text = String.Concat(playerTimetableTrain.Name.Substring(0, Math.Min(playerTimetableTrain.Name.Length, 20)));
+
+                    if (playerTimetableTrain.ControlMode == Train.TRAIN_CONTROL.INACTIVE || playerTimetableTrain.MovementState == Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                    {
+                        // no info available
+                        StationPreviousName.Text = "";
+                        StationPreviousArriveScheduled.Text = "";
+                        StationPreviousArriveActual.Text = "";
+                        StationPreviousDepartScheduled.Text = "";
+                        StationPreviousDepartActual.Text = "";
+                        StationPreviousDistance.Text = "";
+
+                        StationCurrentName.Text = "";
+                        StationCurrentArriveScheduled.Text = "";
+                        StationCurrentArriveActual.Text = "";
+                        StationCurrentDepartScheduled.Text = "";
+                        StationCurrentDistance.Text = "";
+
+                        StationNextName.Text = "";
+                        StationNextArriveScheduled.Text = "";
+                        StationNextDepartScheduled.Text = "";
+                        StationNextDistance.Text = "";
+
+                        bool validMessage = false;
+
+                        if (playerTimetableTrain.NeedAttach != null && playerTimetableTrain.NeedAttach.ContainsKey(-1))
+                        {
+                            List<int> attachTrains = playerTimetableTrain.NeedAttach[-1];
+                            TTTrain otherTrain = playerTimetableTrain.GetOtherTTTrainByNumber(attachTrains[0]);
+                            if (otherTrain == null)
+                            {
+                                if (playerTimetableTrain.Simulator.AutoGenDictionary.ContainsKey(attachTrains[0]))
+                                {
+                                    otherTrain = playerTimetableTrain.Simulator.AutoGenDictionary[attachTrains[0]] as TTTrain;
+                                }
+                            }
+
+                            if (otherTrain == null)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Waiting for train to attach");
+                                Message.Color = Color.Orange;
+                                validMessage = true;
+                            }
+                            else
+                            {
+                                Message.Text = String.Concat(Viewer.Catalog.GetString("Waiting for train to attach : "), otherTrain.Name);
+                                Message.Color = Color.Orange;
+                                validMessage = true;
+                            }
+                        }
+
+                        if (!validMessage && playerTimetableTrain.NeedTrainTransfer.Count > 0)
+                        {
+                            foreach (TrackCircuitSection occSection in playerTimetableTrain.OccupiedTrack)
+                            {
+                                if (playerTimetableTrain.NeedTrainTransfer.ContainsKey(occSection.Index))
+                                {
+
+                                    Message.Text = Viewer.Catalog.GetString("Waiting for transfer");
+                                    Message.Color = Color.Orange;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!validMessage)
+                        {
+                            Message.Color = Color.White;
+
+                            if (playerTimetableTrain.ActivateTime.HasValue)
+                            {
+                                DateTime activateDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.ActivateTime.Value));
+                                if (playerTimetableTrain.ControlMode == Train.TRAIN_CONTROL.INACTIVE)
+                                {
+                                    Message.Text = Viewer.Catalog.GetString("Train inactive.");
+                                }
+                                else if (playerTimetableTrain.MovementState == Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+                                {
+                                    Message.Text = Viewer.Catalog.GetString("Train static.");
+                                }
+                                else
+                                {
+                                    Message.Text = Viewer.Catalog.GetString("Train not active.");
+                                }
+                                Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" Activation time : "), activateDT.ToString("HH:mm:ss"));
+                            }
+                            else
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Train has terminated.");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // previous stop
+                        if (playerTimetableTrain.PreviousStop == null)
+                        {
+                            StationPreviousName.Text = "";
+                            StationPreviousArriveScheduled.Text = "";
+                            StationPreviousArriveActual.Text = "";
+                            StationPreviousDepartScheduled.Text = "";
+                            StationPreviousDepartActual.Text = "";
+                            StationPreviousDistance.Text = "";
+                        }
+                        else
+                        {
+                            StationPreviousName.Text = playerTimetableTrain.PreviousStop.PlatformItem.Name;
+                            StationPreviousArriveScheduled.Text = playerTimetableTrain.PreviousStop.arrivalDT.ToString("HH:mm:ss");
+                            if (playerTimetableTrain.PreviousStop.ActualArrival >= 0)
+                            {
+                                DateTime actArrDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.PreviousStop.ActualArrival));
+                                StationPreviousArriveActual.Text = actArrDT.ToString("HH:mm:ss");
+                                StationPreviousArriveActual.Color = actArrDT < playerTimetableTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
+                                DateTime actDepDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.PreviousStop.ActualDepart));
+                                StationPreviousDepartActual.Text = actDepDT.ToString("HH:mm:ss");
+                                StationPreviousDepartActual.Color = actDepDT > playerTimetableTrain.PreviousStop.arrivalDT ? Color.LightGreen : Color.LightSalmon;
+                            }
+                            else
+                            {
+                                StationPreviousArriveActual.Text = Viewer.Catalog.GetString("(missed)");
+                                StationPreviousArriveActual.Color = Color.LightSalmon;
+                                StationPreviousDepartActual.Text = "";
+                            }
+                            StationPreviousDepartScheduled.Text = playerTimetableTrain.PreviousStop.departureDT.ToString("HH:mm:ss");
+                            StationPreviousDistance.Text = "";
+                        }
+
+                        if (playerTimetableTrain.StationStops == null || playerTimetableTrain.StationStops.Count == 0)
+                        {
+                            StationCurrentName.Text = "";
+                            StationCurrentArriveScheduled.Text = "";
+                            StationCurrentArriveActual.Text = "";
+                            StationCurrentDepartScheduled.Text = "";
+                            StationCurrentDistance.Text = "";
+
+                            StationNextName.Text = "";
+                            StationNextArriveScheduled.Text = "";
+                            StationNextDepartScheduled.Text = "";
+                            StationNextDistance.Text = "";
+
+                            // check transfer details
+                            bool transferValid = false;
+                            string TransferMessage = String.Empty;
+
+                            if (playerTimetableTrain.TransferStationDetails != null && playerTimetableTrain.TransferStationDetails.Count > 0 &&
+                                playerTimetableTrain.StationStops != null && playerTimetableTrain.StationStops.Count > 0)
+                            {
+                                if (playerTimetableTrain.TransferStationDetails.ContainsKey(playerTimetableTrain.StationStops[0].PlatformReference))
+                                {
+                                    TransferInfo thisTransfer = playerTimetableTrain.TransferStationDetails[playerTimetableTrain.StationStops[0].PlatformReference];
+                                    TransferMessage = Viewer.Catalog.GetString("Transfer units at next station with train ");
+                                    TransferMessage = String.Concat(TransferMessage, thisTransfer.TransferTrainName);
+                                    transferValid = true;
+                                }
+                            }
+                            else if (playerTimetableTrain.TransferTrainDetails != null && playerTimetableTrain.TransferTrainDetails.Count > 0)
+                            {
+                                foreach (KeyValuePair <int, List<TransferInfo>> transferDetails in playerTimetableTrain.TransferTrainDetails)
+                                {
+                                    TransferInfo thisTransfer = transferDetails.Value[0];
+                                    TransferMessage = Viewer.Catalog.GetString("Transfer units with train ");
+                                    TransferMessage = String.Concat(TransferMessage, thisTransfer.TransferTrainName);
+                                    transferValid = true;
+                                    break;  // only show first
+                                }
+                            }
+
+                            // general details
+                            if (playerTimetableTrain.AttachDetails != null && playerTimetableTrain.AttachDetails.Valid)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
+                                Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
+                                Message.Color = Color.Orange;
+                            }
+                            else if (playerTimetableTrain.AttachDetails != null)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
+                                Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
+                                Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" ; other train not yet ready"));
+                                Message.Color = Color.Orange;
+                            }
+                            else if (playerTimetableTrain.PickUpStaticOnForms)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Train is to pickup train at end of path");
+                                Message.Color = Color.Orange;
+                            }
+                            else if (playerTimetableTrain.NeedPickUp)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Pick up train ahead");
+                                Message.Color = Color.Orange;
+                            }
+                            else if (transferValid)
+                            {
+                                Message.Text = String.Copy(TransferMessage);
+                                Message.Color = Color.Orange;
+                            }
+                            else if (playerTimetableTrain.NeedTransfer)
+                            {
+                                Message.Text = Viewer.Catalog.GetString("Transfer units with train ahead");
+                                Message.Color = Color.Orange;
+                            }
+                            else
+                            {
+                                Message.Text = Viewer.Catalog.GetString("No more stations.");
+                                Message.Color = Color.White;
+                            }
+                        }
+                        else
+                        {
+                            StationCurrentName.Text = playerTimetableTrain.StationStops[0].PlatformItem.Name;
+                            StationCurrentArriveScheduled.Text = playerTimetableTrain.StationStops[0].arrivalDT.ToString("HH:mm:ss");
+                            if (playerTimetableTrain.StationStops[0].ActualArrival >= 0)
+                            {
+                                DateTime actArrDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.StationStops[0].ActualArrival));
+                                StationCurrentArriveActual.Text = actArrDT.ToString("HH:mm:ss");
+                                StationCurrentArriveActual.Color = actArrDT < playerTimetableTrain.StationStops[0].arrivalDT ? Color.LightGreen : Color.LightSalmon;
+
+                            }
+                            else
+                            {
+                                StationCurrentArriveActual.Text = "";
+                            }
+                            StationCurrentDepartScheduled.Text = playerTimetableTrain.StationStops[0].departureDT.ToString("HH:mm:ss");
+                            StationCurrentDistance.Text = FormatStrings.FormatDistanceDisplay(playerTimetableTrain.StationStops[0].DistanceToTrainM, metric);
+                            Message.Text = playerTimetableTrain.DisplayMessage;
+                            Message.Color = playerTimetableTrain.DisplayColor;
+
+                            if (playerTimetableTrain.StationStops.Count >= 2)
+                            {
+                                StationNextName.Text = playerTimetableTrain.StationStops[1].PlatformItem.Name;
+                                StationNextArriveScheduled.Text = playerTimetableTrain.StationStops[1].arrivalDT.ToString("HH:mm:ss");
+                                StationNextDepartScheduled.Text = playerTimetableTrain.StationStops[1].departureDT.ToString("HH:mm:ss");
+                                StationNextDistance.Text = "";
+                            }
+                            else
+                            {
+                                StationNextName.Text = "";
+                                StationNextArriveScheduled.Text = "";
+                                StationNextDepartScheduled.Text = "";
+                                StationNextDistance.Text = "";
+                            }
+                        }
+                    }
+                }
+
+                // activity mode - switched train
+                else if (!Owner.Viewer.Simulator.TimetableMode && playerTrain != Owner.Viewer.Simulator.OriginalPlayerTrain)
                 {
                     // train name
                     StationPlatform.Text = String.Concat(playerTrain.Name.Substring(0, Math.Min(playerTrain.Name.Length, 20)));
@@ -163,7 +418,7 @@ namespace Orts.Viewer3D.Popups
                         StationNextDepartScheduled.Text = "";
                         StationNextDistance.Text = "";
 
-                        Message.Text = "Train not active.";
+                        Message.Text = Viewer.Catalog.GetString("Train not active.");
                         Message.Color = Color.White;
 
                         if (playerTrain.GetType() == typeof(TTTrain))
@@ -172,7 +427,7 @@ namespace Orts.Viewer3D.Popups
                             if (playerTimetableTrain.ActivateTime.HasValue)
                             {
                                 DateTime activateDT = new DateTime((long)(Math.Pow(10, 7) * playerTimetableTrain.ActivateTime.Value));
-                                Message.Text = String.Concat(Message.Text, " Activation time : ", activateDT.ToString("HH:mm:ss"));
+                                Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" Activation time : "), activateDT.ToString("HH:mm:ss"));
                             }
                         }
                     }

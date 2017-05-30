@@ -138,6 +138,7 @@
     <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainListWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TTDetachWindow.cs" />
     <Compile Include="Viewer3D\Popups\Window.cs" />
     <Compile Include="Viewer3D\Popups\WindowControls.cs" />
     <Compile Include="Viewer3D\Popups\WindowManager.cs" />

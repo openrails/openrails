@@ -96,6 +96,9 @@ namespace Orts.Simulation.RollingStocks
         public readonly string WagFilePath;
         public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
 
+        // original consist of which car was part (used in timetable for couple/uncouple options)
+        public string OrgConsist = string.Empty;
+
         // sound related variables
         public bool IsPartOfActiveTrain = true;
         public List<int> SoundSourceIDs = new List<int>();
@@ -1172,6 +1175,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(SpeedMpS);
             outf.Write(CouplerSlackM);
             outf.Write(Headlight);
+            outf.Write(OrgConsist);
             outf.Write(PrevTiltingZRot);
         }
 
@@ -1188,6 +1192,7 @@ namespace Orts.Simulation.RollingStocks
             _PrevSpeedMpS = SpeedMpS;
             CouplerSlackM = inf.ReadSingle();
             Headlight = inf.ReadInt32();
+            OrgConsist = inf.ReadString();
             PrevTiltingZRot = inf.ReadSingle();
         }
 

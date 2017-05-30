@@ -113,9 +113,16 @@ namespace Orts.Viewer3D.Popups
 
         void TrainOperationsCoupler_Click(Control arg1, Point arg2)
         {
-            new UncoupleCommand(Viewer.Log, CarPosition);
-            if (Viewer.CarOperationsWindow.CarPosition > CarPosition)
-                Viewer.CarOperationsWindow.Visible = false;
+            if (Viewer.Simulator.TimetableMode)
+            {
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("In Timetable Mode uncoupling using this window is not allowed"));
+            }
+            else
+            {
+                new UncoupleCommand(Viewer.Log, CarPosition);
+                if (Viewer.CarOperationsWindow.CarPosition > CarPosition)
+                    Viewer.CarOperationsWindow.Visible = false;
+            }
         }
     }
 

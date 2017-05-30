@@ -348,6 +348,15 @@ namespace Orts.Viewer3D
                     if (SignalTypeData.DrawAspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
                         continue;
 
+                    bool isDay;
+                    if (Viewer.Settings.UseMSTSEnv == false)
+                        isDay = Viewer.World.Sky.solarDirection.Y > 0;
+                    else
+                        isDay = Viewer.World.MSTSSky.mstsskysolarDirection.Y > 0;
+                    bool isPoorVisibility = Viewer.Simulator.Weather.FogDistance < 200;
+                    if (!SignalTypeData.DayLight && isDay && !isPoorVisibility)
+                        continue;
+
                     var xnaMatrix = Matrix.CreateTranslation(SignalTypeData.Lights[i].Position);
 
                     foreach (int MatrixIndex in MatrixIndices)
@@ -407,6 +416,7 @@ namespace Orts.Viewer3D
             public readonly float FlashTimeOn;
             public readonly float FlashTimeTotal;
             public readonly bool Semaphore;
+            public readonly bool DayLight = true;
             public readonly float SemaphoreAnimationTime;
             public bool AreSemaphoresReindexed;
 
@@ -438,10 +448,21 @@ namespace Orts.Viewer3D
                         //   Theatre box is 0.0/0.0
                         var glowDay = 3.0f;
                         var glowNight = 5.0f;
+
                         if (mstsSignalType.Semaphore)
                             glowDay = 0.0f;
-                        if (mstsSignalType.FnType == SignalType.FnTypes.Info || mstsSignalType.FnType == SignalType.FnTypes.Shunting) // These are good at identifying theatre boxes.
+                        if (mstsSignalType.FnType == MstsSignalFunction.INFO || mstsSignalType.FnType == MstsSignalFunction.SHUNTING) // These are good at identifying theatre boxes.
                             glowDay = glowNight = 0.0f;
+
+                        // use values from signal if defined
+                        if (mstsSignalType.DayGlow.HasValue)
+                        {
+                            glowDay = mstsSignalType.DayGlow.Value;
+                        }
+                        if (mstsSignalType.NightGlow.HasValue)
+                        {
+                            glowNight = mstsSignalType.NightGlow.Value;
+                        }
 
                         foreach (var mstsSignalLight in mstsSignalType.Lights)
                         {
@@ -462,6 +483,7 @@ namespace Orts.Viewer3D
                     FlashTimeTotal = mstsSignalType.FlashTimeOn + mstsSignalType.FlashTimeOff;
                     Semaphore = mstsSignalType.Semaphore;
                     SemaphoreAnimationTime = mstsSignalType.SemaphoreInfo;
+                    DayLight = mstsSignalType.DayLight;
                 }
             }
         }
