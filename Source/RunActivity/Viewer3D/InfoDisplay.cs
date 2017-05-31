@@ -166,6 +166,14 @@ namespace Orts.Viewer3D
 
                             Logger.Data(steamloco.CutoffPressureDropRatio.ToString("F2"));
 
+                            Logger.Data(steamloco.HPCylinderMEPPSI.ToString("F0"));
+                            Logger.Data(steamloco.LogLPInitialPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogLPCutoffPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogLPReleasePressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.LogLPBackPressurePSI.ToString("F0"));
+                            Logger.Data(steamloco.CutoffPressureDropRatio.ToString("F2"));
+                            Logger.Data(steamloco.LPCylinderMEPPSI.ToString("F0"));
+
                             Logger.End();
                         }
         }
@@ -489,7 +497,15 @@ namespace Orts.Viewer3D
                                 "Cylinder Thermal Efficiency",
                                 "Cumulative Steam (lbs)",
                                 "Cumulative Water (lbs)",
-                                "Cutoff pressure Ratio"                                
+                                "Cutoff pressure Ratio",
+                                
+                                "HP MEP (psi)",
+                                "LPInitial Pressure (psi)",
+                                "LPCutoff Pressure (psi)",
+                                "LPRelease Pressure (psi)",
+                                "LPBack Pressure (psi)",
+                                "LPCutoff pressure Ratio",
+                                "LP MEP (psi)"
 
                              }
                         );
