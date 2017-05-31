@@ -10915,7 +10915,8 @@ namespace Orts.Simulation.Physics
                 {
                     TCReversalInfo thisReversal = TCRoute.ReversalInfo[activeSubroute];
                     int reversalIndex = thisReversal.SignalUsed ? thisReversal.LastSignalIndex : thisReversal.LastDivergeIndex;
-                    if (reversalIndex >= 0 && reversalIndex <= lastRouteIndex
+                    if (reversalIndex >= 0 && reversalIndex <= lastRouteIndex &&
+                        (CheckVicinityOfPlatformToReversalPoint(thisPlatform.TCOffset[1, thisElement.Direction], activeSubrouteNodeIndex, activeSubroute) || Simulator.TimetableMode)
                         && !(reversalIndex == lastRouteIndex && thisReversal.ReverseReversalOffset - 50.0 > thisPlatform.TCOffset[1, thisElement.Direction])) // reversal point is this section or earlier
                     {
                         useDirection = useDirection == 0 ? 1 : 0;
@@ -11103,6 +11104,51 @@ namespace Orts.Simulation.Physics
             }
 #endif
             return (true);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check vicinity of reversal point to Platform
+        /// returns false if distance greater than preset value
+        /// <\summary>
+
+        public bool CheckVicinityOfPlatformToReversalPoint(float tcOffset, int routeListIndex, int activeSubpath)
+        {
+            float Threshold = 100.0f;
+            float lengthToGoM = -tcOffset;
+            TrackCircuitSection thisSection;
+            if (routeListIndex == -1)
+            {
+                Trace.TraceWarning("Train {0} service {1}, platform off path; reversal point considered remote", Number, Name);
+                return false;
+            }
+            int reversalRouteIndex =  TCRoute.TCRouteSubpaths[activeSubpath].GetRouteIndex(TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex, routeListIndex);
+            if (reversalRouteIndex == -1)
+            {
+                Trace.TraceWarning("Train {0} service {1}, reversal or end point off path; reversal point considered remote", Number, Name);
+                return false;
+            }
+            if (routeListIndex <= reversalRouteIndex)
+            {
+                for (int iElement = routeListIndex; iElement < TCRoute.TCRouteSubpaths[activeSubpath].Count; iElement++)
+                {
+                    TCRouteElement thisElement = TCRoute.TCRouteSubpaths[activeSubpath][iElement];
+                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    if (thisSection.Index == TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        lengthToGoM += thisSection.Length;
+                        if (lengthToGoM > Threshold) return false;
+                    }
+                }
+                return lengthToGoM + TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset < Threshold;
+            }
+            else
+                // platform is beyond reversal point
+                return true;
         }
 
         //================================================================================================//
