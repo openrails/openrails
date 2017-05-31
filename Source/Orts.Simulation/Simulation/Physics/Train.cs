@@ -5644,44 +5644,41 @@ namespace Orts.Simulation.Physics
                     return (endOfRoute);
 
                 // check position in relation to present end of path
-
-                if (ControlMode == TRAIN_CONTROL.AUTO_NODE)
+                // front is in last route section
+                if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) &&
+                    (!TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1))
                 {
-                    // front is in last route section
-                    if (PresentPosition[0].RouteListIndex == (ValidRoute[0].Count - 1) && (Simulator.TimetableMode ||
-                        (!TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)))
+                    endOfRoute = true;
+                }
+                // front is within 150m. of end of route and no junctions inbetween (only very short sections ahead of train)
+                else
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
+                    float lengthToGo = thisSection.Length - PresentPosition[0].TCOffset;
+
+                    bool junctionFound = false;
+                    if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
+                    {
+                        for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
+                        {
+                            thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
+                            junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
+                            lengthToGo += thisSection.Length;
+                        }
+                    }
+                    else lengthToGo = ComputeDistanceToReversalPoint();
+                    float compatibilityNegligibleRouteChunk = ((TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING)
+                        && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
+                    float negligibleRouteChunk = compatibilityNegligibleRouteChunk;
+
+                    if (lengthToGo < negligibleRouteChunk && !junctionFound && !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
                     {
                         endOfRoute = true;
                     }
-                    // front is within 150m. of end of route and no junctions inbetween (only very short sections ahead of train)
-                    else
-                    {
-                        TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
-                        float lengthToGo = thisSection.Length - PresentPosition[0].TCOffset;
-
-                        bool junctionFound = false;
-                        if (Simulator.TimetableMode || TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1)
-                        {
-                            for (int iIndex = PresentPosition[0].RouteListIndex + 1; iIndex < ValidRoute[0].Count && !junctionFound; iIndex++)
-                            {
-                                thisSection = signalRef.TrackCircuitList[ValidRoute[0][iIndex].TCSectionIndex];
-                                junctionFound = thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction;
-                                lengthToGo += thisSection.Length;
-                            }
-                        }
-                        else lengthToGo = ComputeDistanceToReversalPoint();
-                        float compatibilityNegligibleRouteChunk = ((TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING)
-                            && TCRoute.TCRouteSubpaths.Count - 1 == TCRoute.activeSubpath) ? 40f : 5f;
-                        float negligibleRouteChunk = compatibilityNegligibleRouteChunk;
-
-                        if (lengthToGo < negligibleRouteChunk && !junctionFound && !TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
-                        {
-                            endOfRoute = true;
-                        }
-                    }
                 }
+                
                 //<CSComment: check of vicinity to reverse point; only in subpaths ending with reversal
-                if (!Simulator.TimetableMode && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
+                if (TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
                 {
                     float distanceToReversalPoint = ComputeDistanceToReversalPoint();
                     if (distanceToReversalPoint < 50 && PresentPosition[1].RouteListIndex >= reversalSectionIndex)

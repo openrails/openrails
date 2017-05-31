@@ -2105,6 +2105,107 @@ namespace Orts.Simulation.Timetables
             return (atStation);
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Check for next station
+        /// Override from AITrain
+        /// <\summary>
+
+        public override void SetNextStationAction(bool fromAutopilotSwitch = false)
+        {
+            // do not set action if stopped in station
+            if (MovementState == AI_MOVEMENT_STATE.STATION_STOP || AtStation)
+            {
+                return;
+            }
+
+            // check if station in this subpath
+
+            int stationIndex = 0;
+            StationStop thisStation = StationStops[stationIndex];
+            while (thisStation.SubrouteIndex < TCRoute.activeSubpath) // station was in previous subpath
+            {
+                StationStops.RemoveAt(0);
+                if (StationStops.Count == 0) // no more stations
+                {
+                    return;
+                }
+                thisStation = StationStops[0];
+            }
+
+            if (thisStation.SubrouteIndex > TCRoute.activeSubpath)    // station is not in this subpath
+            {
+                return;
+            }
+
+            // get distance to station, but not if just after switch to Autopilot and not during station stop
+            bool validStop = false;
+            while (!validStop)
+            {
+                float[] distancesM = CalculateDistancesToNextStation(thisStation, TrainMaxSpeedMpS, false);
+                if (distancesM[0] < 0f && !(MovementState == AI_MOVEMENT_STATE.STATION_STOP && distancesM[0] != -1)) // stop is not valid
+                {
+
+                    StationStops.RemoveAt(0);
+                    if (StationStops.Count == 0)
+                    {
+                        return;  // no more stations - exit
+                    }
+
+                    thisStation = StationStops[0];
+                    if (thisStation.SubrouteIndex > TCRoute.activeSubpath) return;  // station not in this subpath - exit
+                }
+                else
+                {
+                    validStop = true;
+                    AIActionItem newAction = new AIActionItem(null, AIActionItem.AI_ACTION_TYPE.STATION_STOP);
+                    newAction.SetParam(distancesM[1], 0.0f, distancesM[0], DistanceTravelledM);
+                    requiredActions.InsertAction(newAction);
+
+#if DEBUG_REPORTS
+                    if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                    {
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
+                            Number.ToString() + ", type STATION_STOP (" +
+                            StationStops[0].PlatformItem.Name + "), at " +
+                            distancesM[0].ToString() + ", trigger at " +
+                            distancesM[1].ToString() + " (now at " +
+                            PresentPosition[0].DistanceTravelledM.ToString() + ")\n");
+                    }
+                    else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+                    {
+                        File.AppendAllText(@"C:\temp\printproc.txt", "Insert for train " +
+                                    Number.ToString() + ", type WAITING_POINT (" +
+                                    distancesM[0].ToString() + ", trigger at " +
+                                    distancesM[1].ToString() + " (now at " +
+                                    PresentPosition[0].DistanceTravelledM.ToString() + ")\n");
+                    }
+#endif
+
+                    if (CheckTrain)
+                    {
+                        if (StationStops[0].ActualStopType == StationStop.STOPTYPE.STATION_STOP)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
+                                    Number.ToString() + ", type STATION_STOP (" +
+                                    StationStops[0].PlatformItem.Name + "), at " +
+                                    distancesM[0].ToString() + ", trigger at " +
+                                    distancesM[1].ToString() + " (now at " +
+                                    PresentPosition[0].DistanceTravelledM.ToString() + ")\n");
+                        }
+                        else if (StationStops[0].ActualStopType == StationStop.STOPTYPE.WAITING_POINT)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Insert for train " +
+                                        Number.ToString() + ", type WAITING_POINT (" +
+                                        distancesM[0].ToString() + ", trigger at " +
+                                        distancesM[1].ToString() + " (now at " +
+                                        PresentPosition[0].DistanceTravelledM.ToString() + ")\n");
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Recalculate station stop
         /// Main method, check if train presently in station

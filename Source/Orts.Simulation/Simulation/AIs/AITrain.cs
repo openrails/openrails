@@ -1273,7 +1273,7 @@ namespace Orts.Simulation.AIs
         /// Check for next station
         /// <\summary>
 
-        public void SetNextStationAction(bool fromAutopilotSwitch = false)
+        public virtual void SetNextStationAction(bool fromAutopilotSwitch = false)
         {
             // check if station in this subpath
 
@@ -5167,7 +5167,7 @@ namespace Orts.Simulation.AIs
             AuxActionsContain.SetAuxAction(this);
 
             // set next station stop in not at station
-            if (StationStops.Count > 0 && MovementState != AI_MOVEMENT_STATE.STATION_STOP && !AtStation)
+            if (StationStops.Count > 0)
             {
                 SetNextStationAction(fromAutopilotSwitch);
             }
