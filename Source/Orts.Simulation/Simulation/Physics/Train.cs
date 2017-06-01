@@ -12785,6 +12785,7 @@ namespace Orts.Simulation.Physics
 
             TCSubpathRoute thisRoute = ValidRoute[0];
             TCSubpathRoute newRoute = new TCSubpathRoute();
+            int actSubpath = TCRoute.activeSubpath;
 
             TCSubpathRoute altRoute = TCRoute.TCAlternativePaths[altRouteIndex];
             TCRoute.activeAltpath = altRouteIndex;
@@ -12802,10 +12803,14 @@ namespace Orts.Simulation.Physics
             {
                 newRoute.Add(altRoute[iElement]);
             }
+            int lastAlternativeSectionIndex = thisRoute.GetRouteIndex(altRoute[altRoute.Count - 1].TCSectionIndex, startElementIndex);
+
+            // check for any stations in abandoned path
+            Dictionary<int, StationStop> abdStations = new Dictionary<int, StationStop>();
+            CheckAbandonedStations(startElementIndex, lastAlternativeSectionIndex, actSubpath, abdStations);
 
             // continued path
 
-            int lastAlternativeSectionIndex = thisRoute.GetRouteIndex(altRoute[altRoute.Count - 1].TCSectionIndex, startElementIndex);
             for (int iElement = lastAlternativeSectionIndex + 1; iElement < thisRoute.Count; iElement++)
             {
                 newRoute.Add(thisRoute[iElement]);
@@ -12822,6 +12827,9 @@ namespace Orts.Simulation.Physics
             ValidRoute[0] = newRoute;
             TCRoute.TCRouteSubpaths[TCRoute.activeSubpath] = newRoute;
 
+            // check for abandoned stations - try to find alternative on passing path
+            LookForReplacementStations(abdStations, newRoute, altRoute);
+ 
             // set signal route
             // part upto split
 
@@ -12966,38 +12974,9 @@ namespace Orts.Simulation.Physics
             File.AppendAllText(@"C:\temp\deadlock.txt", "\n");
 #endif
             // check for any stations in abandoned path
+
             Dictionary<int, StationStop> abdStations = new Dictionary<int, StationStop>();
-            int nextStationIndex = 0;
-
-
-            if (StationStops != null && StationStops.Count > 0)
-            {
-                int stationRouteIndex = StationStops[nextStationIndex].RouteIndex;
-                int stationSubpath = StationStops[nextStationIndex].SubrouteIndex;
-
-                while (stationRouteIndex < lastAlternativeSectionIndex)
-                {
-                    if (stationSubpath == actSubpath && stationRouteIndex > startElementIndex)
-                    {
-                        abdStations.Add(nextStationIndex, StationStops[nextStationIndex]);
-                    }
-
-                    nextStationIndex++;
-                    if (nextStationIndex > StationStops.Count - 1)
-                    {
-                        stationRouteIndex = lastAlternativeSectionIndex + 1;  // no more stations - set index beyond end
-                    }
-                    else
-                    {
-                        stationRouteIndex = StationStops[nextStationIndex].RouteIndex;
-                        stationSubpath = StationStops[nextStationIndex].SubrouteIndex;
-                        if (stationSubpath > actSubpath)
-                        {
-                            stationRouteIndex = lastAlternativeSectionIndex + 1; // no more stations in this subpath
-                        }
-                    }
-                }
-            }
+            CheckAbandonedStations(startElementIndex, lastAlternativeSectionIndex, actSubpath, abdStations);
 
             // continued path
 
@@ -13019,36 +12998,8 @@ namespace Orts.Simulation.Physics
             TCRoute.TCRouteSubpaths[TCRoute.activeSubpath] = newRoute;
 
             // check for abandoned stations - try to find alternative on passing path
-            if (StationStops != null)
-            {
-                List<StationStop> newStops = new List<StationStop>();
-                int firstIndex = -1;
-
-                foreach (KeyValuePair<int, StationStop> abdStop in abdStations)
-                {
-                    if (firstIndex < 0) firstIndex = abdStop.Key;
-                    StationStop newStop = SetAlternativeStationStop(abdStop.Value, altRoute);
-                    StationStops.RemoveAt(abdStop.Key);
-                    if (newStop != null)
-                    {
-                        newStops.Add(newStop);
-                    }
-                }
-
-                for (int iStop = newStops.Count - 1; iStop == 0; iStop--)
-                {
-                    StationStops.Insert(firstIndex, newStops[iStop]);
-                }
-
-                // recalculate indices of all stops
-                int prevIndex = 0;
-                foreach (StationStop statStop in StationStops)
-                {
-                    statStop.RouteIndex = newRoute.GetRouteIndex(statStop.TCSectionIndex, prevIndex);
-                    prevIndex = statStop.RouteIndex;
-                }
-            }
-
+            LookForReplacementStations(abdStations, newRoute, altRoute);
+ 
             // set signal route
             // part upto split
 
@@ -13117,6 +13068,85 @@ namespace Orts.Simulation.Physics
                     {
                         NextSignalObject[0].requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
                     }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Check for abandoned stations in the abandoned path
+        //
+        //
+        private void CheckAbandonedStations(int startElementIndex, int lastAlternativeSectionIndex, int actSubpath, Dictionary<int, StationStop> abdStations)
+        {
+            int nextStationIndex = 0;
+
+
+            if (StationStops != null && StationStops.Count > 0)
+            {
+                int stationRouteIndex = StationStops[nextStationIndex].RouteIndex;
+                int stationSubpath = StationStops[nextStationIndex].SubrouteIndex;
+
+                while (stationRouteIndex < lastAlternativeSectionIndex)
+                {
+                    if (stationSubpath == actSubpath && stationRouteIndex > startElementIndex)
+                    {
+                        abdStations.Add(nextStationIndex, StationStops[nextStationIndex]);
+                    }
+
+                    nextStationIndex++;
+                    if (nextStationIndex > StationStops.Count - 1)
+                    {
+                        stationRouteIndex = lastAlternativeSectionIndex + 1;  // no more stations - set index beyond end
+                    }
+                    else
+                    {
+                        stationRouteIndex = StationStops[nextStationIndex].RouteIndex;
+                        stationSubpath = StationStops[nextStationIndex].SubrouteIndex;
+                        if (stationSubpath > actSubpath)
+                        {
+                            stationRouteIndex = lastAlternativeSectionIndex + 1; // no more stations in this subpath
+                        }
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        //
+        // Look for stations in alternative route
+        //
+        //
+        private void LookForReplacementStations(Dictionary<int, StationStop> abdStations, TCSubpathRoute newRoute, TCSubpathRoute altRoute)
+        {
+
+            if (StationStops != null)
+            {
+                List<StationStop> newStops = new List<StationStop>();
+                int firstIndex = -1;
+
+                foreach (KeyValuePair<int, StationStop> abdStop in abdStations)
+                {
+                    if (firstIndex < 0) firstIndex = abdStop.Key;
+                    StationStop newStop = SetAlternativeStationStop(abdStop.Value, altRoute);
+                    StationStops.RemoveAt(abdStop.Key);
+                    if (newStop != null)
+                    {
+                        newStops.Add(newStop);
+                    }
+                }
+
+                for (int iStop = newStops.Count - 1; iStop == 0; iStop--)
+                {
+                    StationStops.Insert(firstIndex, newStops[iStop]);
+                }
+
+                // recalculate indices of all stops
+                int prevIndex = 0;
+                foreach (StationStop statStop in StationStops)
+                {
+                    statStop.RouteIndex = newRoute.GetRouteIndex(statStop.TCSectionIndex, prevIndex);
+                    prevIndex = statStop.RouteIndex;
                 }
             }
         }
