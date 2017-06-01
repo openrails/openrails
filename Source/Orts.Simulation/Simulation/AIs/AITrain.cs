@@ -2709,22 +2709,30 @@ namespace Orts.Simulation.AIs
 
             lowestSpeedMpS = Math.Min(lowestSpeedMpS, AllowedMaxSpeedMpS);
 
-            // braking distance - use 0.25 * MaxDecelMpSS as average deceleration (due to braking delay)
-            // T = deltaV / A
-            // R = 0.5 * Vdelta * T + Vreq * T = 0.5 * (Vnow + Vreq) * T 
-            // 0.5 * Vdelta is average speed over used time, 0.5 * Vdelta * T is related distance covered , Vreq * T is additional distance covered at minimal speed
-            // remaining time : Trem = 2 * R / (Vnow + Vreq)
-            // ideal speed : Videal = Vreq + acc * Trem
+            // braking distance - use 0.22 * MaxDecelMpSS as average deceleration (due to braking delay)
+            // Videal - Vreq = a * T => T = (Videal - Vreq) / a
+            // R = Vreq * T + 0.5 * a * T^2 => R = Vreq * (Videal - Vreq) / a + 0.5 * a * (Videal - Vreq)^2 / a^2 =>
+            // R = Vreq * Videal / a - Vreq^2 / a + Videal^2 / 2a - 2 * Vreq * Videal / 2a + Vreq^2 / 2a => R = Videal^2 / 2a - Vreq^2 /2a
+            // so : Videal = SQRT (2 * a * R + Vreq^2)
             // remaining distance is corrected for minimal approach distance as safety margin
+            // for requiredSpeed > 0, take hysteris margin off ideal speed so speed settles on required speed
+            // for requiredSpeed == 0, use ideal speed, this allows actual speed to be a little higher
+            // upto creep distance : set creep speed as lowest possible speed
 
             float correctedDistanceToGoM = distanceToGoM - creepDistanceM;
-            float maxPossSpeedMpS = requiredSpeedMpS + (0.25f * MaxDecelMpSS * (2.0f * correctedDistanceToGoM) / (AllowedMaxSpeedMpS + requiredSpeedMpS));
-            float idealSpeedMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max((maxPossSpeedMpS - (2f * hysterisMpS)), lowestSpeedMpS));
 
-            float idealLowBandMpS = Math.Max(lowestSpeedMpS, idealSpeedMpS - (3f * hysterisMpS));
-            float ideal3LowBandMpS = Math.Max(lowestSpeedMpS, idealSpeedMpS - (9f * hysterisMpS));
-            float idealHighBandMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max(lowestSpeedMpS, idealSpeedMpS + hysterisMpS));
-            float ideal3HighBandMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max(lowestSpeedMpS, idealSpeedMpS + (2f * hysterisMpS)));
+            float maxPossSpeedMpS = lowestSpeedMpS;
+            if (correctedDistanceToGoM > 0)
+            {
+                maxPossSpeedMpS = (float)Math.Sqrt(0.22f * MaxDecelMpSS * 2.0f * correctedDistanceToGoM + (requiredSpeedMpS * requiredSpeedMpS));
+                maxPossSpeedMpS = Math.Max(lowestSpeedMpS, maxPossSpeedMpS);
+            }
+
+            float idealSpeedMpS = requiredSpeedMpS == 0 ? Math.Min((AllowedMaxSpeedMpS - 2f * hysterisMpS), maxPossSpeedMpS) : Math.Min(AllowedMaxSpeedMpS, maxPossSpeedMpS) - (2f * hysterisMpS);
+            float idealLowBandMpS = Math.Max(0.25f * lowestSpeedMpS, idealSpeedMpS - (3f * hysterisMpS));
+            float ideal3LowBandMpS = Math.Max(0.5f * lowestSpeedMpS, idealSpeedMpS - (9f * hysterisMpS));
+            float idealHighBandMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max(lowestSpeedMpS, idealSpeedMpS) + hysterisMpS);
+            float ideal3HighBandMpS = Math.Min(AllowedMaxSpeedMpS, Math.Max(lowestSpeedMpS, idealSpeedMpS) + (2f * hysterisMpS));
 
             float deltaSpeedMpS = SpeedMpS - requiredSpeedMpS;
             float idealDecelMpSS = Math.Max((0.5f * MaxDecelMpSS), (deltaSpeedMpS * deltaSpeedMpS / (2.0f * distanceToGoM)));
@@ -4969,18 +4977,18 @@ namespace Orts.Simulation.AIs
 
             float triggerDistanceM = PresentPosition[0].DistanceTravelledM; // worst case
 
-            // braking distance - use 0.25 * MaxDecelMpSS as average deceleration (due to braking delay)
+            // braking distance - use 0.22 * MaxDecelMpSS as average deceleration (due to braking delay)
             // T = deltaV / A
             // R = 0.5 * Vdelta * T + Vreq * T = 0.5 * (Vnow + Vreq) * T 
             // 0.5 * Vdelta is average speed over used time, 0.5 * Vdelta * T is related distance covered , Vreq * T is additional distance covered at minimal speed
 
-            float fullPartTime = (AllowedMaxSpeedMpS - reqSpeedMpS) / (0.25f * MaxDecelMpSS);
+            float fullPartTime = (AllowedMaxSpeedMpS - reqSpeedMpS) / (0.22f * MaxDecelMpSS);
             float fullPartRangeM = ((AllowedMaxSpeedMpS + reqSpeedMpS) * 0.5f * fullPartTime);
 
             // if present speed higher, brake distance is always required (same equation)
             if (presentSpeedMpS > reqSpeedMpS)
             {
-                firstPartTime = (presentSpeedMpS - reqSpeedMpS) / (0.25f * MaxDecelMpSS);
+                firstPartTime = (presentSpeedMpS - reqSpeedMpS) / (0.22f * MaxDecelMpSS);
                 firstPartRangeM = ((presentSpeedMpS + reqSpeedMpS) * 0.5f * firstPartTime);
             }
 
