@@ -234,7 +234,7 @@ namespace Orts.Simulation
                 Current = Current.NextTask;
             }
 
-            if (Simulator.PlayerLocomotive.SpeedMpS == 0)
+            if (Simulator.OriginalPlayerTrain.SpeedMpS == 0)
             {
                 if (prevTrainSpeed != 0)
                 {
@@ -250,7 +250,7 @@ namespace Orts.Simulation
             {
                 if (prevTrainSpeed == 0)
                 {
-                    prevTrainSpeed = Simulator.PlayerLocomotive.SpeedMpS;
+                    prevTrainSpeed = Simulator.OriginalPlayerTrain.SpeedMpS;
                     Current.NotifyEvent(ActivityEventType.TrainStart);
                     if (Current.IsCompleted != null)
                     {

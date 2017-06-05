@@ -11305,6 +11305,7 @@ namespace Orts.Simulation.Physics
             {
                 for (int iStation = foundStation; iStation >= 0; iStation--)
                 {
+                    PreviousStop = StationStops[iStation].CreateCopy();
                     StationStops.RemoveAt(iStation);
                 }
             }
