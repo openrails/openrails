@@ -1297,7 +1297,7 @@ namespace Orts.Simulation.AIs
             // get distance to station, but not if just after switch to Autopilot and not during station stop
             bool validStop = false;
             if (!fromAutopilotSwitch || (Simulator.PlayerLocomotive != null && Simulator.ActivityRun != null &&
-                !(Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation())))
+                !(Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation(this))))
             {
                 while (!validStop)
                 {
@@ -6237,7 +6237,7 @@ namespace Orts.Simulation.AIs
             }
             ResetActions(true, true);
             if (SpeedMpS != 0) MovementState = AI_MOVEMENT_STATE.BRAKING;
-            else if (this == Simulator.OriginalPlayerTrain && Simulator.ActivityRun != null && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation() &&
+            else if (this == Simulator.OriginalPlayerTrain && Simulator.ActivityRun != null && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation(this) &&
                 ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingS > 0)
             {
                 StationStops[0].ActualDepart = (int)((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS;

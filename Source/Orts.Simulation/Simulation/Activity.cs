@@ -769,11 +769,11 @@ namespace Orts.Simulation
         /// Tests for either the front or the rear of the train is within the platform.
         /// </summary>
         /// <returns></returns>
-        public bool IsAtStation()
+        public bool IsAtStation(Train myTrain)
         {
             // Front calcs
             TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+                new TDBTravellerDistanceCalculatorHelper(myTrain.FrontTDBTraveller);
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
             TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
@@ -793,7 +793,7 @@ namespace Orts.Simulation
 
             // Rear calcs
             helper =
-                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.RearTDBTraveller);
+                new TDBTravellerDistanceCalculatorHelper(myTrain.RearTDBTraveller);
 
             distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
                     PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
@@ -864,7 +864,7 @@ namespace Orts.Simulation
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
             {
-                if (IsAtStation())
+                if (IsAtStation(MyPlayerTrain))
                 {
                     if (Simulator.TimetableMode || MyPlayerTrain.StationStops.Count == 0)
                     {
