@@ -5209,6 +5209,15 @@ namespace Orts.Simulation.Timetables
 
         public void DelayedStartMoving(AI_START_MOVEMENT reason)
         {
+            // do not apply delayed restart while running in pre-update
+            if (AI.PreUpdate)
+            {
+                RestdelayS = 0.0f;
+                DelayedStart = false;
+                StartMoving(reason);
+                return;
+            }
+
             // note : RestDelayS may have a preset value due to previous action (e.g. reverse)
             int randDelayPart = 0;
             float baseDelayPart = 0;

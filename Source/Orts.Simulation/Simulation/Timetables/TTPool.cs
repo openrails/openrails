@@ -129,14 +129,15 @@ namespace Orts.Simulation.Timetables
 
         public struct PoolDetails
         {
-            public Train.TCSubpathRoute StoragePath;
-            public Traveller StoragePathTraveller;
-            public string StorageName;
-            public List<Train.TCSubpathRoute> AccessPaths;
-            public float StorageLength;
+            public Train.TCSubpathRoute StoragePath;          // path defined as storage location
+            public Traveller StoragePathTraveller;            // traveller used to get path position and direction
+            public string StorageName;                        // storage name
+            public List<Train.TCSubpathRoute> AccessPaths;    // access paths defined for storage location
+            public float StorageLength;                       // available length
+            public float StorageCorrection;                   // length correction (e.g. due to switch overlap safety) - difference between length of sections in path and actual storage length
 
-            public List<int> StoredUnits;
-            public float RemLength;
+            public List<int> StoredUnits;                     // stored no. of units
+            public float RemLength;                           // remaining storage length
         }
 
         public List<PoolDetails> StoragePool = new List<PoolDetails>();
@@ -250,6 +251,7 @@ namespace Orts.Simulation.Timetables
                 }
 
                 newPool.StorageLength = inf.ReadSingle();
+                newPool.StorageCorrection = inf.ReadSingle();
                 newPool.RemLength = inf.ReadSingle();
                 StoragePool.Add(newPool);
             }
@@ -286,6 +288,7 @@ namespace Orts.Simulation.Timetables
                 }
 
                 outf.Write(thisStorage.StorageLength);
+                outf.Write(thisStorage.StorageCorrection);
                 outf.Write(thisStorage.RemLength);
             }
         }
@@ -542,6 +545,7 @@ namespace Orts.Simulation.Timetables
             }
 
             newPool.StorageLength = storeLength;
+            newPool.StorageCorrection = addedLength;
             newPool.RemLength = storeLength;
 
             return (newPool);
@@ -746,6 +750,13 @@ namespace Orts.Simulation.Timetables
             int occSectionIndex = train.PresentPosition[0].TCSectionIndex;
             int occSectionDirection = train.PresentPosition[0].TCDirection;
             int storageSectionIndex = reqStorage.StoragePath.GetRouteIndex(occSectionIndex, 0);
+
+            // if train not stopped in pool, return remaining length = 0
+            if (storageSectionIndex < 0)
+            {
+                return (0);
+            }
+
             int storageSectionDirection = reqStorage.StoragePath[storageSectionIndex].Direction;
 
             TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
@@ -758,6 +769,12 @@ namespace Orts.Simulation.Timetables
             {
                 remLength += train.signalRef.TrackCircuitList[reqStorage.StoragePath[iSection].TCSectionIndex].Length;
             }
+
+            // position was front, so take off train length
+            remLength -= train.Length;
+
+            // correct for overlap etc.
+            remLength += reqStorage.StorageCorrection;  // storage correction is negative!
 
             return (remLength);
         }

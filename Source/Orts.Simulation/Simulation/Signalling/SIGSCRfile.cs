@@ -58,8 +58,8 @@ namespace Orts.Simulation.Signalling
     {
 
 #if DEBUG_PRINT_PROCESS
-        public static int[] TDB_debug_ref = { -1 };            /* signal TDB idents         */
-        public static int[] OBJ_debug_ref = { 211 };            /* signal object reference   */
+        public static int[] TDB_debug_ref = { 4813 };            /* signal TDB idents         */
+        public static int[] OBJ_debug_ref = { -1 };            /* signal object reference   */
         public static string dpr_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
@@ -563,6 +563,7 @@ namespace Orts.Simulation.Signalling
 
                 case (SignalScripts.SCRExternalFunctions.NEXT_SIG_LR):
                     return_value = (int)thisHead.next_sig_lr(parameter1_value);
+
 #if DEBUG_PRINT_ENABLED
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
@@ -605,7 +606,7 @@ namespace Orts.Simulation.Signalling
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
                         File.AppendAllText(dpe_fileLoc + @"printproc.txt",
-                                " NEXT_SIG_LR : Located signal : " +
+                                " NEXT_SIG_MR : Located signal : " +
                                                thisHead.mainSignal.sigfound[parameter1_value].ToString() + "\n");
                     }
 #endif
@@ -613,7 +614,7 @@ namespace Orts.Simulation.Signalling
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
                     {
                         File.AppendAllText(dpr_fileLoc + @"printproc.txt",
-                                        " NEXT_SIG_LR : Located signal : " +
+                                        " NEXT_SIG_MR : Located signal : " +
                                                thisHead.mainSignal.sigfound[parameter1_value].ToString() + "\n");
                     }
 #endif
@@ -719,14 +720,14 @@ namespace Orts.Simulation.Signalling
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
                         File.AppendAllText(dpe_fileLoc + @"printproc.txt",
-                                " NEXT_SIG_LR : Located signal : " + return_value + "\n");
+                                " NEXT_SIG_ID : Located signal : " + return_value + "\n");
                     }
 #endif
 #if DEBUG_PRINT_PROCESS
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat(" NEXT_SIG_LR : Located signal : {0}", return_value.ToString());
+                        sob.AppendFormat(" NEXT_SIG_ID : Located signal : {0}", return_value.ToString());
 
                         if (return_value > 0)
                         {
@@ -756,14 +757,14 @@ namespace Orts.Simulation.Signalling
                     if (thisHead.mainSignal.enabledTrain != null)
                     {
                         File.AppendAllText(dpe_fileLoc + @"printproc.txt",
-                                " NEXT_NSIG_LR : Located signal " + parameter2_value + " : " + return_value + "\n");
+                                " NEXT_NSIG_ID : Located signal " + parameter2_value + " : " + return_value + "\n");
                     }
 #endif
 #if DEBUG_PRINT_PROCESS
                     if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
                     {
                         var sob = new StringBuilder();
-                        sob.AppendFormat(" NEXT_SIG_LR : Located signal {0} : {1}", parameter2_value, return_value.ToString());
+                        sob.AppendFormat(" NEXT_NSIG_ID : Located signal {0} : {1}", parameter2_value, return_value.ToString());
 
                         if (return_value > 0)
                         {
@@ -940,6 +941,48 @@ namespace Orts.Simulation.Signalling
 
                 case (SignalScripts.SCRExternalFunctions.APPROACH_CONTROL_LOCK_CLAIM):
                     thisHead.mainSignal.LockClaim();
+                    break;
+
+                // Activate timing trigger
+
+                case (SignalScripts.SCRExternalFunctions.ACTIVATE_TIMING_TRIGGER):
+                    thisHead.mainSignal.ActivateTimingTrigger();
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        File.AppendAllText(dpr_fileLoc + @"printproc.txt",
+                                " TIMING TRIGGER : activated \n");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        File.AppendAllText(dpr_fileLoc + @"printproc.txt",
+                                " TIMING TRIGGER : activated \n");
+                    }
+#endif
+                    break;
+
+                // Check timing trigger
+                case (SignalScripts.SCRExternalFunctions.CHECK_TIMING_TRIGGER):
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc, "printproc.txt");
+                    }
+#endif
+                    temp_value = thisHead.mainSignal.CheckTimingTrigger(parameter1_value, dumpfile);
+                    return_value = Convert.ToInt32(temp_value);
                     break;
 
                 // Check for CallOn

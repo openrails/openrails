@@ -8176,7 +8176,7 @@ namespace Orts.Simulation.Physics
                 TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[thisDirection][isigtype];
                 foreach (TrackCircuitSignalItem thisItem in thisList.TrackCircuitItem)
                 {
-                    if (thisItem.SignalLocation > PresentPosition[0].TCOffset)
+                    if (thisItem.SignalLocation > PresentPosition[0].TCOffset && !thisItem.SignalRef.isSignalNormal())
                     {
                         thisItem.SignalRef.enabledTrain = this.routedForward;
                     }
@@ -8194,7 +8194,7 @@ namespace Orts.Simulation.Physics
                     TrackCircuitSignalList thisList = thisSection.CircuitItems.TrackCircuitSignals[thisDirection][isigtype];
                     foreach (TrackCircuitSignalItem thisItem in thisList.TrackCircuitItem)
                     {
-                        if (thisItem.SignalLocation > PresentPosition[0].TCOffset)
+                        if (!thisItem.SignalRef.isSignalNormal())
                         {
                             thisItem.SignalRef.enabledTrain = this.routedForward;
                         }

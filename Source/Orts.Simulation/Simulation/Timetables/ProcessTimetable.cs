@@ -75,6 +75,7 @@ namespace Orts.Simulation.Timetables
         }
 
         Dictionary<string, AIPath> Paths = new Dictionary<string, AIPath>();                                  // original path referenced by path name
+        List<string> reportedPaths = new List<string>();                                                      // reported path fails
         Dictionary<int, string> TrainRouteXRef = new Dictionary<int, string>();                               // path name referenced from train index    
 
         public bool BinaryPaths = false;
@@ -1102,14 +1103,22 @@ namespace Orts.Simulation.Timetables
                             catch (Exception e)
                             {
                                 validPath = false;
-                                Trace.TraceInformation(new FileLoadException(formedpathFilefull, e).ToString());
+                                if (!reportedPaths.Contains(formedpathFilefull))
+                                {
+                                    Trace.TraceInformation(new FileLoadException(formedpathFilefull, e).ToString());
+                                    reportedPaths.Add(formedpathFilefull);
+                                }
                             }
                         }
                     }
                     catch (Exception e)
                     {
                         validPath = false;
-                        Trace.TraceInformation(new FileLoadException(formedpathFilefull, e).ToString());
+                        if (!reportedPaths.Contains(formedpathFilefull))
+                        {
+                            Trace.TraceInformation(new FileLoadException(formedpathFilefull, e).ToString());
+                            reportedPaths.Add(formedpathFilefull);
+                        }
                     }
 
                     if (validPath)
@@ -1122,13 +1131,12 @@ namespace Orts.Simulation.Timetables
                                 outPath.Save(outfpath);
                                 outfpath.Close();
                             }
-                            catch (Exception e)
-                            {
-                                validPath = false;
-                                Trace.TraceInformation(new FileLoadException(formedpathFilefull, e).ToString());
-                            }
+                            // dummy catch to avoid error
+                            catch
+                            { }
                         }
                     }
+                    // report path load failure
                 }
             }
 
@@ -1151,6 +1159,7 @@ namespace Orts.Simulation.Timetables
             public bool validTrain = true;
             public bool playerTrain = false;
             public Dictionary<string, StopInfo> Stops = new Dictionary<string, StopInfo>();
+            public List<string> reportedConsistFailures = new List<string>();
             public int Index;
             public List<TTTrainCommands> TrainCommands = new List<TTTrainCommands>();
             public DisposeInfo DisposeDetails = null;
@@ -2136,8 +2145,12 @@ namespace Orts.Simulation.Timetables
                     }
                     catch (Exception e)
                     {
-                        Trace.TraceInformation("Reading " + consistFile.ToString() + " : " + e.ToString());
-                        return (false);
+                        if (!reportedConsistFailures.Contains(consistFile.ToString()))
+                        {
+                            Trace.TraceInformation("Reading " + consistFile.ToString() + " : " + e.ToString());
+                            reportedConsistFailures.Add(consistFile.ToString());
+                            return (false);
+                        }
                     }
 
                     // add wagons

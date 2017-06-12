@@ -377,7 +377,7 @@ namespace Orts.Simulation.AIs
 #if DEBUG_CHECKTRAIN
             if (!CheckTrain)
             {
-                if (Number == 81)
+                if (Number == 134)
                 {
                     DateTime baseDT = new DateTime();
                     DateTime actTime = baseDT.AddSeconds(AI.clockTime);
@@ -615,7 +615,7 @@ namespace Orts.Simulation.AIs
 #if DEBUG_CHECKTRAIN
             if (!CheckTrain)
             {
-                if (Number == 81)
+                if (Number == 134)
                 {
                     DateTime baseDT = new DateTime();
                     DateTime actTime = baseDT.AddSeconds(AI.clockTime);
@@ -715,7 +715,7 @@ namespace Orts.Simulation.AIs
                     {
                         leadingloco.SignalEvent(Event.WiperOn);
                     }
-                    else if (leadingloco.Wiper)
+                    else if (Simulator.Weather.PricipitationIntensityPPSPM2 == 0 && leadingloco.Wiper)
                     {
                         leadingloco.SignalEvent(Event.WiperOff);
                     }

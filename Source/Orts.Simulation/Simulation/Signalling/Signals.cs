@@ -8257,6 +8257,7 @@ namespace Orts.Simulation.Signalling
         public bool ApproachControlSet;         // set in case approach control is active
         public bool ClaimLocked;                // claim is locked in case of approach control
         public bool ForcePropOnApproachControl; // force propagation if signal is held on close control
+        public double TimingTriggerValue;        // used timing trigger if time trigger is required, hold trigger time
 
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
@@ -11722,6 +11723,36 @@ namespace Orts.Simulation.Signalling
         public void LockClaim()
         {
             ClaimLocked = ApproachControlSet;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Activate timing trigger
+        /// </summary>
+
+        public void ActivateTimingTrigger()
+        {
+            TimingTriggerValue = signalRef.Simulator.GameTime;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check timing trigger
+        /// </summary>
+
+        public bool CheckTimingTrigger(int reqTiming, string dumpfile)
+        {
+            int foundDelta = (int) (signalRef.Simulator.GameTime - TimingTriggerValue);
+            bool triggerExceeded = foundDelta > reqTiming;
+
+            if (!String.IsNullOrEmpty(dumpfile))
+            {
+                var sob = new StringBuilder();
+                sob.AppendFormat("TIMING TRIGGER : found delta time : {0}; return state {1} \n", foundDelta, triggerExceeded.ToString());
+                File.AppendAllText(dumpfile, sob.ToString());
+            }
+
+            return (triggerExceeded);
         }
 
         //================================================================================================//
