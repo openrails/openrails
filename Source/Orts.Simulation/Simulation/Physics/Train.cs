@@ -3059,7 +3059,23 @@ namespace Orts.Simulation.Physics
             }
             else if (ControlMode != TRAIN_CONTROL.AUTO_NODE)
             {
-                SwitchToNodeControl(LastReservedSection[0]);
+                bool validModeSwitch = true;
+
+                if (this is AITrain)
+                {
+                    AITrain aiTrain = this as AITrain;
+
+                    // do not switch to node control if train is set for auxiliary action
+                    if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION)
+                    {
+                        validModeSwitch = false;
+                    }
+                }
+
+                if (validModeSwitch)
+                { 
+                    SwitchToNodeControl(LastReservedSection[0]);
+                }
             }
 
             //
