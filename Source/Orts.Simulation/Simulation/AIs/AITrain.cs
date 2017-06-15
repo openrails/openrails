@@ -973,7 +973,8 @@ namespace Orts.Simulation.AIs
                 countRequiredAction = requiredActions.Count;
             }
 #endif
-
+ //            Trace.TraceWarning ("Time {0} Train no. {1} Speed {2} AllowedMaxSpeed {3} Throttle percent {4} Distance travelled {5} Movement State {6} BrakePerCent {7}",
+ //               clockTime, Number, SpeedMpS, AllowedMaxSpeedMpS, AITrainThrottlePercent, DistanceTravelledM, MovementState, AITrainBrakePercent);
         }
 
         //================================================================================================//
@@ -1827,7 +1828,7 @@ namespace Orts.Simulation.AIs
                                 MovementState = AI_MOVEMENT_STATE.BRAKING;
                                 //>CSComment: better be sure the train will stop in front of signal
                                 CreateTrainAction(0.0f, 0.0f, distanceSignaltoTrain, SignalObjectItems[0], AIActionItem.AI_ACTION_TYPE.SIGNAL_ASPECT_STOP);
-                                Alpha10 = 10;
+                                Alpha10 = PreUpdate ? 2 : 10;
                                 AITrainThrottlePercent = 25;
                                 AdjustControlsBrakeOff();
                             }
@@ -2460,7 +2461,7 @@ namespace Orts.Simulation.AIs
             {
                 ResetActions(true);
                 MovementState = AI_MOVEMENT_STATE.RUNNING;
-                Alpha10 = 10;
+                Alpha10 = PreUpdate ? 2 : 10;
                 if (SpeedMpS < AllowedMaxSpeedMpS - 3.0f * hysterisMpS)
                 {
                     AdjustControlsBrakeOff();
@@ -2586,7 +2587,7 @@ namespace Orts.Simulation.AIs
                         AdjustControlsBrakeOff();
                         AllowedMaxSpeedMpS = nextActionInfo.RequiredSpeedMpS;
                         MovementState = AI_MOVEMENT_STATE.RUNNING;
-                        Alpha10 = 10;
+                        Alpha10 = PreUpdate ? 2 : 10;
                         if (CheckTrain)
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt",
@@ -2798,9 +2799,11 @@ namespace Orts.Simulation.AIs
                 if (SpeedMpS > AllowedMaxSpeedMpS)
                 {
                     AdjustControlsFixedSpeed(AllowedMaxSpeedMpS);
+                    // PreUpdate doesn't use car speeds, so you need to adjust also overall train speed
+                    if (PreUpdate) SpeedMpS = AllowedMaxSpeedMpS;
                 }
 
-                Alpha10 = 5;
+                Alpha10 = PreUpdate ? 1 : 5;
             }
             else if (SpeedMpS > requiredSpeedMpS && distanceToGoM < 0)
             {
@@ -2815,7 +2818,7 @@ namespace Orts.Simulation.AIs
                 else if (AITrainBrakePercent < 50)
                 {
                     AdjustControlsBrakeMore(2.0f * MaxDecelMpSS, elapsedClockSeconds, 10);
-                    Alpha10 = 5;
+                    Alpha10 = PreUpdate ? 1 : 5;
                 }
                 // if at full brake always perform application as it forces braking in case of brake failure (eg due to wheelslip)
                 else if (AITrainBrakePercent == 100)
@@ -2826,7 +2829,7 @@ namespace Orts.Simulation.AIs
                 else if (lastDecelMpSS < 0.5f * idealDecelMpSS || Alpha10 <= 0)
                 {
                     AdjustControlsBrakeMore(2.0f * MaxDecelMpSS, elapsedClockSeconds, 50);
-                    Alpha10 = 5;
+                    Alpha10 = PreUpdate ? 1 : 5;
                 }
                 Alpha10 = Alpha10 > 0 ? --Alpha10 : 0;
             }
@@ -2847,11 +2850,11 @@ namespace Orts.Simulation.AIs
                         else if (Alpha10 <= 0)
                         {
                             AdjustControlsBrakeLess(0.3f * MaxDecelMpSS, elapsedClockSeconds, 2);
-                            Alpha10 = 10;
+                            Alpha10 = PreUpdate ? 2 : 10;
                         }
                     }
                 }
-                else
+                else if (LastSpeedMpS < SpeedMpS)
                 {
                     if (AITrainThrottlePercent > 50)
                     {
@@ -2868,7 +2871,7 @@ namespace Orts.Simulation.AIs
                     else if (Alpha10 <= 0 || lastDecelMpSS < (0.5 * idealDecelMpSS))
                     {
                         AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 10);
-                        Alpha10 = 10;
+                        Alpha10 = PreUpdate ? 2 : 10;
                     }
 
                 }
@@ -2881,7 +2884,7 @@ namespace Orts.Simulation.AIs
                     if (AITrainThrottlePercent > 50)
                     {
                         AdjustControlsAccelLess(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
-                        Alpha10 = 5;
+                        Alpha10 = PreUpdate ? 1 : 5;
                     }
                 }
                 else
@@ -2900,21 +2903,31 @@ namespace Orts.Simulation.AIs
                     }
                 }
             }
+            else if (distanceToGoM > 4 * preferredBrakingDistanceM && SpeedMpS < idealLowBandMpS)
+            {
+                AdjustControlsBrakeOff();
+                AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
+            }
             else if (SpeedMpS > ideal3LowBandMpS)
             {
                 if (AITrainBrakePercent > 0)
                 {
                     AdjustControlsBrakeLess(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
                 }
-                else if (LastSpeedMpS > SpeedMpS)
+                else if (LastSpeedMpS >= SpeedMpS)
                 {
                     if (Alpha10 <= 0)
                     {
                         AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
-                        Alpha10 = 5;
+                        Alpha10 = PreUpdate ? 1 : 5;
                     }
                 }
                 Alpha10 = Alpha10 > 0 ? --Alpha10 : 0;
+            }
+            else if (distanceToGoM > preferredBrakingDistanceM && SpeedMpS < ideal3LowBandMpS)
+            {
+                AdjustControlsBrakeOff();
+                AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
             }
             else if (SpeedMpS < requiredSpeedMpS)
             {
@@ -2923,17 +2936,7 @@ namespace Orts.Simulation.AIs
                 {
                     AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
                 }
-                Alpha10 = 5;
-            }
-            else if (distanceToGoM > 4 * preferredBrakingDistanceM && SpeedMpS < idealLowBandMpS)
-            {
-                AdjustControlsBrakeOff();
-                AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
-            }
-            else if (distanceToGoM > preferredBrakingDistanceM && SpeedMpS < ideal3LowBandMpS)
-            {
-                AdjustControlsBrakeOff();
-                AdjustControlsAccelMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 20);
+                Alpha10 = PreUpdate ? 1 : 5;
             }
             else if (requiredSpeedMpS == 0 && distanceToGoM > creepDistanceM && SpeedMpS < creepSpeedMpS)
             {
@@ -3382,7 +3385,7 @@ namespace Orts.Simulation.AIs
                 }
 
                 AdjustControlsFixedSpeed(AllowedMaxSpeedMpS);
-                Alpha10 = 5;
+                Alpha10 = PreUpdate ? 1 : 5;
             }
             else if (SpeedMpS > topBand)
             {
@@ -3404,7 +3407,7 @@ namespace Orts.Simulation.AIs
                         if (Alpha10 <= 0)
                         {
                             AdjustControlsAccelLess(0.0f, elapsedClockSeconds, 2);
-                            Alpha10 = 5;
+                            Alpha10 = PreUpdate ? 1 : 5;
                         }
                     }
                     else if (AITrainBrakePercent < 50)
@@ -3433,7 +3436,7 @@ namespace Orts.Simulation.AIs
                     else if (Alpha10 <= 0)
                     {
                         AdjustControlsAccelMore(0.3f * MaxAccelMpSS, elapsedClockSeconds, 2);
-                        Alpha10 = 10;
+                        Alpha10 = PreUpdate ? 2 : 10;
                     }
                 }
                 else
@@ -3445,12 +3448,12 @@ namespace Orts.Simulation.AIs
                     else if (Alpha10 <= 0 && AITrainThrottlePercent > 20)
                     {
                         AdjustControlsAccelLess(0.3f * MaxAccelMpSS, elapsedClockSeconds, 5);
-                        Alpha10 = 10;
+                        Alpha10 = PreUpdate ? 2 : 10;
                     }
                     else if (Alpha10 <= 0 && AITrainThrottlePercent < 10)
                     {
                         AdjustControlsAccelMore(0.3f * MaxAccelMpSS, elapsedClockSeconds, 2);
-                        Alpha10 = 10;
+                        Alpha10 = PreUpdate ? 2 : 10;
                     }
                 }
                 Alpha10 = Alpha10 > 0 ? --Alpha10 : 0;
@@ -3517,14 +3520,14 @@ namespace Orts.Simulation.AIs
             else if (nextActionInfo != null)  // train has valid action, so start in BRAKE mode
             {
                 MovementState = AI_MOVEMENT_STATE.BRAKING;
-                Alpha10 = 10;
+                Alpha10 = PreUpdate ? 2 : 10;
                 AITrainThrottlePercent = 25;
                 AdjustControlsBrakeOff();
             }
             else
             {
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
-                Alpha10 = 10;
+                Alpha10 = PreUpdate ? 2 : 10;
                 AITrainThrottlePercent = (!PreUpdate) ? 25 : 50;
                 AdjustControlsBrakeOff();
             }
@@ -5273,7 +5276,7 @@ namespace Orts.Simulation.AIs
             if (MovementState == AI_MOVEMENT_STATE.RUNNING && SpeedMpS < AllowedMaxSpeedMpS - 2.0f * hysterisMpS)
             {
                 MovementState = AI_MOVEMENT_STATE.ACCELERATING;
-                Alpha10 = 10;
+                Alpha10 = PreUpdate & !Simulator.TimetableMode ? 2 : 10;
             }
 
 #if DEBUG_REPORTS
@@ -5821,7 +5824,7 @@ namespace Orts.Simulation.AIs
                 if (nextActionInfo.RequiredSpeedMpS == 0)
                 {
                     NextStopDistanceM = thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM;
-                    if (AI.PreUpdate)
+                    if (AI.PreUpdate && !(nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && NextStopDistanceM > minCheckDistanceM))
                     {
                         AITrainBrakePercent = 100; // because of short reaction time
                         AITrainThrottlePercent = 0;
@@ -5841,10 +5844,11 @@ namespace Orts.Simulation.AIs
                 if (MovementState != AI_MOVEMENT_STATE.STATION_STOP && 
                     MovementState != AI_MOVEMENT_STATE.STOPPED && 
                     MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION &&
-                    MovementState != AI_MOVEMENT_STATE.FOLLOWING)
+                    MovementState != AI_MOVEMENT_STATE.FOLLOWING &&
+                    MovementState != AI_MOVEMENT_STATE.BRAKING)
                 {
                     MovementState = AI_MOVEMENT_STATE.BRAKING;
-                    Alpha10 = 10;
+                    Alpha10 = PreUpdate & !Simulator.TimetableMode ? 2 : 10;
 #if DEBUG_REPORTS
                     File.AppendAllText(@"C:\temp\printproc.txt", "Train " + Number.ToString() +
                     " , new state : " + MovementState.ToString() + "\n");
@@ -5858,7 +5862,7 @@ namespace Orts.Simulation.AIs
                 else if (MovementState == AI_MOVEMENT_STATE.STOPPED && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
                 {
                     MovementState = AI_MOVEMENT_STATE.BRAKING;
-                    Alpha10 = 10;
+                    Alpha10 = PreUpdate ? 2 : 10;
                 }
                 else
                 {
