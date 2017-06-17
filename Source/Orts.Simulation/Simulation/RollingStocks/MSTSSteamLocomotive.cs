@@ -3862,6 +3862,10 @@ namespace Orts.Simulation.RollingStocks
             }
 
             IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
+            if (throttle < 0.001)
+            {
+                TractiveEffortLbsF = 0.0f; // Force tractive effort to zero if throttle is closed. MEP calculation is not allowing it to go to zero
+            }
             TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
             DisplayTractiveEffortLbsF = TractiveEffortLbsF;
 

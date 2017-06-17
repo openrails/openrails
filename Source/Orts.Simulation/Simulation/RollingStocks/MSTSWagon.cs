@@ -131,6 +131,11 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
 
+        // Wagon steam leaks
+        public float HeatingHoseParticleDurationS = 3.0f;
+        public float HeatingHoseSteamVelocityMpS = 100.0f;
+        public float HeatingHoseSteamVolumeM3pS = 50.0f;
+        
         /// <summary>
         /// True if vehicle is equipped with an additional emergency brake reservoir
         /// </summary>
@@ -179,7 +184,7 @@ namespace Orts.Simulation.RollingStocks
         {
             stf.MustMatch("(");
             string s;
-
+            
             while ((s = stf.ReadItem()) != ")")
             {
                 var data = new ParticleEmitterData(stf);
@@ -187,6 +192,7 @@ namespace Orts.Simulation.RollingStocks
                     EffectData.Add(s, new List<ParticleEmitterData>());
                 EffectData[s].Add(data);
             }
+
         }
 
 
@@ -819,6 +825,8 @@ namespace Orts.Simulation.RollingStocks
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
                     break;
+                case "wagon(effects(steameffects": ParseEffects(lowercasetoken, stf); break;
+
             }
         }
 
@@ -1082,6 +1090,10 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateLocomotiveLoadPhysics(); // Updates the load physics characteristics of locomotives
             
+            // Update Steam Leaks Information
+
+            
+
 
             // Update Aux Tender Information
 

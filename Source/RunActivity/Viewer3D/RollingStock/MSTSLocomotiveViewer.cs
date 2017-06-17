@@ -44,7 +44,7 @@ namespace Orts.Viewer3D.RollingStock
     {
         MSTSLocomotive Locomotive;
 
-        protected Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
+   //     protected Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
 
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
@@ -58,9 +58,11 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             Locomotive = car;
-            ParticleDrawers = (from effect in Locomotive.EffectData
-                               select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(from data in effect.Value
-                                                                                                                                        select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            // Now superseded by similar code in MSTSWagonView.cs
+            // ParticleDrawers = (from effect in Locomotive.EffectData
+            //                   select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(from data in effect.Value
+            //                                                                                                                            select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
             //    _CabRenderer = new CabRenderer(viewer, Locomotive);

@@ -60,7 +60,14 @@ namespace Orts.Viewer3D.RollingStock
         protected AnimatedPart Wipers;
         AnimatedPart UnloadingParts;
 
+        public Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
+
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon)Car; } }
+
+
+
+        // Create viewers for special steam effects on car
+        List<ParticleEmitterViewer> HeatingHose = new List<ParticleEmitterViewer>();
 
         bool HasFirstPanto;
         int numBogie1, numBogie2, numBogie, bogie1Axles, bogie2Axles = 0;
@@ -70,6 +77,32 @@ namespace Orts.Viewer3D.RollingStock
         public MSTSWagonViewer(Viewer viewer, MSTSWagon car)
             : base(viewer, car)
         {
+            
+            string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
+
+          // New code to replace that from MSTSLocomotiveViewer.cs
+            ParticleDrawers = (
+                from effect in MSTSWagon.EffectData
+                select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(
+                    from data in effect.Value
+                    select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            // Initaialise particle viewers for special steam effects
+            foreach (var emitter in ParticleDrawers)
+            {
+
+                Trace.TraceInformation("Emitter Value - {0} Key {1}", emitter.Value, emitter.Key.ToLowerInvariant());
+
+                if (emitter.Key.ToLowerInvariant() == "heatinghosefx")
+                    HeatingHose.AddRange(emitter.Value);
+
+                foreach (var drawer in emitter.Value)
+               {
+                    
+                    drawer.Initialize(steamTexture);
+               }
+            }
+
             var wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
 
             TrainCarShape = car.MainShapeFileName != string.Empty
@@ -356,6 +389,14 @@ namespace Orts.Viewer3D.RollingStock
             Mirrors.UpdateState(MSTSWagon.MirrorOpen, elapsedTime);
             UnloadingParts.UpdateState(MSTSWagon.UnloadingPartsOpen, elapsedTime);
             UpdateAnimation(frame, elapsedTime);
+
+            var car = Car as MSTSWagon;
+            foreach (var drawer in HeatingHose)
+            {
+                Trace.TraceInformation("Velocity {0} Volume {1} Duration {2}", car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
+                drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
+            }
+
         }
 
 
