@@ -393,7 +393,7 @@ namespace Orts.Viewer3D.RollingStock
             var car = Car as MSTSWagon;
             foreach (var drawer in HeatingHose)
             {
-                Trace.TraceInformation("Velocity {0} Volume {1} Duration {2}", car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
+         //       Trace.TraceInformation("Drawer - Velocity {0} Volume {1} Duration {2}", car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
                 drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
             }
 
