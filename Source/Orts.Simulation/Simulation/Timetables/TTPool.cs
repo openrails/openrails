@@ -576,6 +576,7 @@ namespace Orts.Simulation.Timetables
             for (int iPool = 0; iPool < StoragePool.Count && reqPool < 0; iPool++)
             {
                 PoolDetails thisStorage = StoragePool[iPool];
+
                 if (thisStorage.StoredUnits.Contains(train.Number))
                 {
 #if DEBUG_POOLINFO
@@ -647,7 +648,6 @@ namespace Orts.Simulation.Timetables
                     else
                     {
                         Train.TCSubpathRoute accessPath = thisStorage.AccessPaths[reqPath];
-
                         newRoute = new Train.TCSubpathRoute(train.TCRoute.TCRouteSubpaths.Last());
 
                         // add elements from access route except those allready on the path
@@ -677,6 +677,7 @@ namespace Orts.Simulation.Timetables
                 else
                 {
                     newRoute = new Train.TCSubpathRoute(thisStorage.AccessPaths[0]);
+
                     foreach (Train.TCRouteElement thisElement in thisStorage.StoragePath)
                     {
                         if (newRoute.GetRouteIndex(thisElement.TCSectionIndex, 0) < 0)
@@ -719,8 +720,8 @@ namespace Orts.Simulation.Timetables
 #endif
 
             // clear track behind engine, only keep actual occupied sections
-            Train.TCSubpathRoute tempRoute = train.signalRef.BuildTempRoute(train, train.PresentPosition[0].TCSectionIndex, train.PresentPosition[0].TCOffset,
-                train.PresentPosition[0].TCDirection, train.Length, true, true, false);
+            Train.TCSubpathRoute tempRoute = train.signalRef.BuildTempRoute(train, train.PresentPosition[1].TCSectionIndex, train.PresentPosition[1].TCOffset,
+                train.PresentPosition[1].TCDirection, train.Length, true, true, false);
             train.OccupiedTrack.Clear();
 
             foreach(Train.TCRouteElement thisElement in tempRoute)
@@ -758,19 +759,30 @@ namespace Orts.Simulation.Timetables
             }
 
             int storageSectionDirection = reqStorage.StoragePath[storageSectionIndex].Direction;
+            // if directions of paths are equal, use front section, section.length - position.offset, and use front of train position
 
-            TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
+            float remLength = 0;
 
-            // if directions of paths are equal, use section.length - position.offset
-            // else, use position.offset
-            float remLength = occSectionDirection == storageSectionDirection ? (occSection.Length - train.PresentPosition[0].TCOffset) : train.PresentPosition[0].TCOffset;
+            // same direction : use rear of train position
+            if (occSectionDirection == storageSectionDirection)
+            {
+                occSectionIndex = train.PresentPosition[1].TCSectionIndex;
+                TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
+                remLength = occSection.Length - train.PresentPosition[1].TCOffset;
+            }
+            else
+            // opposite direction : use front of train position
+            {
+                TrackCircuitSection occSection = train.signalRef.TrackCircuitList[occSectionIndex];
+                remLength = train.PresentPosition[0].TCOffset;
+            }
 
             for (int iSection = reqStorage.StoragePath.Count - 1; iSection >= 0 && reqStorage.StoragePath[iSection].TCSectionIndex != occSectionIndex; iSection--)
             {
                 remLength += train.signalRef.TrackCircuitList[reqStorage.StoragePath[iSection].TCSectionIndex].Length;
             }
 
-            // position was front, so take off train length
+            // position was furthest down the storage area, so take off train length
             remLength -= train.Length;
 
             // correct for overlap etc.

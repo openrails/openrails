@@ -1111,6 +1111,7 @@ namespace Orts.Simulation.AIs
             }
 
             // create in pool
+            // note : train is placed in pool in outbound direction
 
             else if (!String.IsNullOrEmpty(thisTrain.CreateInPool))
             {
