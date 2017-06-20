@@ -745,7 +745,6 @@ namespace Orts.Simulation.RollingStocks
             CVFFileName = locoCopy.CVFFileName;
             CabViewList = locoCopy.CabViewList;
             CabView3D = locoCopy.CabView3D;
-
             MaxPowerW = locoCopy.MaxPowerW;
             MaxForceN = locoCopy.MaxForceN;
             MaxCurrentA = locoCopy.MaxCurrentA;
@@ -766,7 +765,6 @@ namespace Orts.Simulation.RollingStocks
             VacuumPumpFitted = locoCopy.VacuumPumpFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             InitialDrvWheelWeightKg = locoCopy.InitialDrvWheelWeightKg;
-            EffectData = locoCopy.EffectData;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
             PowerOnDelayS = locoCopy.PowerOnDelayS;
@@ -3508,26 +3506,5 @@ namespace Orts.Simulation.RollingStocks
         [ORTSPhysics("Second light ARGB", "Light2ColorARGB", "The color of the second cab light", "0 0 0")]
         public Color Light2Color;
 
-    } // End Class ExtendedCVF
-
-    public struct ParticleEmitterData
-    {
-        public readonly Vector3 XNALocation;
-        public readonly Vector3 XNADirection;
-        public readonly float NozzleWidth;
-
-        public ParticleEmitterData(STFReader stf)
-        {
-            stf.MustMatch("(");
-            XNALocation.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNALocation.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNALocation.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.X = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Y = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Z = -stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            XNADirection.Normalize();
-            NozzleWidth = stf.ReadFloat(STFReader.UNITS.Distance, 0.0f);
-            stf.SkipRestOfBlock();
-        }
-    }
+    } // End Class ExtendedCVF 
 }

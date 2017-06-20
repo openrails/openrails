@@ -3937,12 +3937,6 @@ namespace Orts.Simulation.RollingStocks
 
             LocoTenderFrictionForceN = CombFrictionN + CombGravityN + CombTunnelN + CombCurveN;  // Combined frictional forces of the locomotive and tender
 
-            DrawBarPullLbsF = N.ToLbf(MotiveForceN - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
-            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
-                     
-            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
-            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
-
             MotiveForceSmoothedN.Update(elapsedClockSeconds, MotiveForceN);
             if (float.IsNaN(MotiveForceN))
                 MotiveForceN = 0;
@@ -4033,6 +4027,12 @@ namespace Orts.Simulation.RollingStocks
                     DisplaySpeedFactor = SpeedFactor;
                 }
             }
+
+            DrawBarPullLbsF = N.ToLbf(MotiveForceN - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
+            DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
+
+            DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
+            DrawbarHorsePowerHP = MathHelper.Clamp(DrawbarHorsePowerHP, 0, DrawbarHorsePowerHP); // clamp value so it doesn't go negative
 
             #region - Steam Adhesion Model Input for Steam Locomotives
 

@@ -80,7 +80,7 @@ namespace Orts.Viewer3D.RollingStock
             
             string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
 
-          // New code to replace that from MSTSLocomotiveViewer.cs
+          // Particle Drawers called in Wagon so that wagons can also have steam effects.
             ParticleDrawers = (
                 from effect in MSTSWagon.EffectData
                 select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(
@@ -91,14 +91,11 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var emitter in ParticleDrawers)
             {
 
-                Trace.TraceInformation("Emitter Value - {0} Key {1}", emitter.Value, emitter.Key.ToLowerInvariant());
-
                 if (emitter.Key.ToLowerInvariant() == "heatinghosefx")
                     HeatingHose.AddRange(emitter.Value);
 
-                foreach (var drawer in emitter.Value)
-               {
-                    
+                foreach (var drawer in HeatingHose)
+               {                
                     drawer.Initialize(steamTexture);
                }
             }
@@ -393,9 +390,12 @@ namespace Orts.Viewer3D.RollingStock
             var car = Car as MSTSWagon;
             foreach (var drawer in HeatingHose)
             {
-         //       Trace.TraceInformation("Drawer - Velocity {0} Volume {1} Duration {2}", car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
                 drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
             }
+
+            foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
+                foreach (ParticleEmitterViewer drawer in drawers)
+                    drawer.PrepareFrame(frame, elapsedTime);
 
         }
 

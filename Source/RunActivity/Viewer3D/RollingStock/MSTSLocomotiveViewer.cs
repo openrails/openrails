@@ -44,8 +44,6 @@ namespace Orts.Viewer3D.RollingStock
     {
         MSTSLocomotive Locomotive;
 
-   //     protected Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
-
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
         public bool _hasCabRenderer;
@@ -58,14 +56,6 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             Locomotive = car;
-
-            // Now superseded by similar code in MSTSWagonView.cs
-            // ParticleDrawers = (from effect in Locomotive.EffectData
-            //                   select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(from data in effect.Value
-            //                                                                                                                            select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-            //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
-            //    _CabRenderer = new CabRenderer(viewer, Locomotive);
 
             string wagonFolderSlash = Path.GetDirectoryName(Locomotive.WagFilePath) + "\\";
             if (Locomotive.CabSoundFileName != null) LoadCarSound(wagonFolderSlash, Locomotive.CabSoundFileName);
@@ -250,10 +240,6 @@ namespace Orts.Viewer3D.RollingStock
                     ThreeDimentionCabViewer.PrepareFrame(frame, elapsedTime);
                 return;
             }
-
-            foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
-                foreach (ParticleEmitterViewer drawer in drawers)
-                    drawer.PrepareFrame(frame, elapsedTime);
 
             // Wiper animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
