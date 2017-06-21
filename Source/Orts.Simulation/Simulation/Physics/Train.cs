@@ -151,6 +151,8 @@ namespace Orts.Simulation.Physics
         public float TrainHeatVolumeM3;                 // Total Volume of train to steam heat
         public float TrainHeatPipeAreaM2;               // Total area of heating pipe for steam heating
         public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
+        public bool CarSteamHeatOn = false;    // Is steam heating turned on
+
 
         // Auxiliary Water Tenders
         public float MaxAuxTenderWaterMassKG;

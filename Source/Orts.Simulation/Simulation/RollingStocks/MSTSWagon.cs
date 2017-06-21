@@ -132,9 +132,13 @@ namespace Orts.Simulation.RollingStocks
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
 
         // Wagon steam leaks
-        public float HeatingHoseParticleDurationS = 3.0f;
-        public float HeatingHoseSteamVelocityMpS = 100.0f;
-        public float HeatingHoseSteamVolumeM3pS = 50.0f;
+        public float HeatingHoseParticleDurationS;
+        public float HeatingHoseSteamVelocityMpS;
+        public float HeatingHoseSteamVolumeM3pS;
+
+        // Power  / Steam Generator 
+        public float GenratorParticles = 10.0f;
+        public float GeneratorMagnitude = 1.5f;
         
         /// <summary>
         /// True if vehicle is equipped with an additional emergency brake reservoir
@@ -1090,11 +1094,27 @@ namespace Orts.Simulation.RollingStocks
             UpdateTenderLoad(); // Updates the load physics characteristics of tender and aux tender
 
             UpdateLocomotiveLoadPhysics(); // Updates the load physics characteristics of locomotives
-            
+
             // Update Steam Leaks Information
-
+            if(Train.CarSteamHeatOn)
+            {
+                        // Turn wagon steam leaks on 
+                HeatingHoseParticleDurationS = 0.75f;
+                HeatingHoseSteamVelocityMpS = 15.0f;
+                HeatingHoseSteamVolumeM3pS = 3.0f;
+                GenratorParticles = 10.0f;
+                GeneratorMagnitude = 1.5f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingHoseParticleDurationS = 0.0f;
+                HeatingHoseSteamVelocityMpS = 0.0f;
+                HeatingHoseSteamVolumeM3pS = 0.0f;
+                GenratorParticles = 0.0f;
+                GeneratorMagnitude = 0.0f;
+            }
             
-
 
             // Update Aux Tender Information
 

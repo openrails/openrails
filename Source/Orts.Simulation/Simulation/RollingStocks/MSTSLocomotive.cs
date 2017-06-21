@@ -138,6 +138,11 @@ namespace Orts.Simulation.RollingStocks
         public float DrvWheelWeightKg; // current weight on locomotive drive wheels, includes drag factor (changes as mass changes)
         public float InitialDrvWheelWeightKg; // initialising weight on locomotive drive wheels, includes drag factor
 
+        public string LocomotiveName; // Name of locomotive from ENG file
+
+        // Carriage Steam Heating Parameters
+        public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
+
         // Adhesion Debug
         bool DebugSpeedReached;
         float DebugSpeedIncrement = 5.0f; // Speed increment for debug display - in mph
@@ -725,7 +730,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
                 case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
                 case "engine(enginecontrollers(steamheat": SteamHeatController.Parse(stf); break;
-
+                case "engine(name": stf.MustMatch("("); LocomotiveName = stf.ReadString(); break;
+                case "engine(maxsteamheatingpressure": MaxSteamHeatPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 default: base.Parse(lowercasetoken, stf); break;
                     
             }
@@ -769,6 +775,7 @@ namespace Orts.Simulation.RollingStocks
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
             PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
+            MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
 
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
             EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
@@ -800,6 +807,7 @@ namespace Orts.Simulation.RollingStocks
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
+            LocomotiveName = locoCopy.LocomotiveName;
 
             MoveParamsToAxle();
 
@@ -1288,6 +1296,16 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateControllers(float elapsedClockSeconds)
         {
+
+            SteamHeatController.Update(elapsedClockSeconds);
+            if (IsPlayerTrain)
+            {
+                if (SteamHeatController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
+                if (SteamHeatController.UpdateValue < 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
+            }
+
             TrainBrakeController.Update(elapsedClockSeconds);
             if (TrainBrakeController.UpdateValue > 0.0)
             {

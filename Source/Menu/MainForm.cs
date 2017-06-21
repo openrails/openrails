@@ -56,7 +56,7 @@ namespace ORTS
         List<Folder> Folders = new List<Folder>();
         public List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
-        List<Consist> Consists = new List<Consist>();
+        public List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
         Task<List<Folder>> FolderLoader;

@@ -2967,7 +2967,11 @@ namespace Orts.MultiPlayer
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH, ref SE);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE);
+            }
+            if (loco.SteamHeatController != null)
+            {
+                SH = loco.SteamHeatController.CurrentValue;
             }
             if (loco.EngineBrakeController != null)
             {
@@ -3029,7 +3033,11 @@ namespace Orts.MultiPlayer
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SH, ref SE);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE);
+            }
+            if (loco.SteamHeatController != null)
+            {
+                SH = loco.SteamHeatController.CurrentValue;
             }
             if (loco.EngineBrakeController != null)
             {
@@ -3041,6 +3049,7 @@ namespace Orts.MultiPlayer
                 loco.DynamicBrakeController.CurrentValue = DB;
                 loco.DynamicBrakeController.UpdateValue = 0.0f;
             }
+
             loco.ThrottleController.CurrentValue = TT;
             loco.ThrottleController.UpdateValue = 0.0f;
             if (loco is MSTSElectricLocomotive)

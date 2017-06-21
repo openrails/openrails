@@ -39,6 +39,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
 using ORTS.Common;
+using System.Diagnostics;
 using System;
 using System.IO;
 using System.Text;
@@ -80,10 +81,7 @@ namespace Orts.Simulation.RollingStocks
         public float DieselWeightKgpL = 0.8508f; //per liter
         float InitialMassKg = 100000.0f;
 
-        // Power  / Steam Generator 
-        public float GenratorParticles = 10.0f;
-        public float GeneratorMagnitude = 1.5f;
-        public Color GeneratorSteadyColor = Color.Gray;
+
 
         public float EngineRPM;
         public SmoothedData ExhaustParticles = new SmoothedData(1);
@@ -94,6 +92,7 @@ namespace Orts.Simulation.RollingStocks
         public Color ExhaustTransientColor = Color.Black;
         public Color ExhaustDecelColor = Color.WhiteSmoke;
         public Color ExhaustSteadyColor = Color.Gray;
+        public Color GeneratorSteadyColor = Color.Gray;
 
         public float DieselOilPressurePSI = 0f;
         public float DieselMinOilPressurePSI = 40f;
@@ -327,7 +326,11 @@ namespace Orts.Simulation.RollingStocks
             FuelController.Update(elapsedClockSeconds);
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
+
+            UpdateSteamHeat(elapsedClockSeconds);
+        
         }
+
 
         /// <summary>
         /// This function updates periodically the states and physical variables of the locomotive's power supply.
@@ -641,6 +644,24 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
             }
 
+        }
+
+        private void UpdateSteamHeat(float elapsedClockSeconds)
+        {
+            // Update Steam Heating System
+
+            float CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
+
+            if ((MaxSteamHeatPressurePSI != 0 || Simulator.Season != SeasonType.Summer) && CurrentSteamHeatPressurePSI > 0.001f)       // Check to see if steam heating is fitted to locomotive, if summer disable steam heating
+            {
+                Train.CarSteamHeatOn = true; // Turn car steam effects on
+                
+            }
+            else
+            {
+                Train.CarSteamHeatOn = false; // turn car steam effects off
+            }
+    
         }
     } // class DieselLocomotive
 }

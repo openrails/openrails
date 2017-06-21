@@ -149,7 +149,6 @@ namespace Orts.Simulation.RollingStocks
         public bool HasTenderCoupled = true;
 
         // Carriage Steam Heating Parameters
-        float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
         float InsideTempC;                // Desired inside temperature for carriage steam heating
         float OutsideTempC;               // External ambient temeprature for carriage steam heating.
         float CurrentSteamHeatPressurePSI = 0.0f;   // Current pressure in steam heat system
@@ -767,7 +766,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
-                case "engine(maxsteamheatingpressure": MaxSteamHeatPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsmaxsuperheattemperature": MaxSuperheatRefTempF = stf.ReadFloatBlock(STFReader.UNITS.None, null);break;  // New input and conversion units to be added for temperature
                 case "engine(ortsmaxindicatedhorsepower": MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                     MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
@@ -837,6 +835,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(steamwaterscoopresistance": ScoopResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, 0.0f); break;
                 //Not used at the moment. Default unit of measure libs/s does not exist either
                 //                case "engine(steamwaterpickuprate": ScoopPickupRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null); break;
+       
                 default: base.Parse(lowercasetoken, stf); break;
             }
         }
@@ -865,7 +864,6 @@ namespace Orts.Simulation.RollingStocks
             MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
             MaxIndicatedHorsePowerHP = locoCopy.MaxIndicatedHorsePowerHP;
             SuperheatCutoffPressureFactor = locoCopy.SuperheatCutoffPressureFactor;
-            MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
             ShovelMassKG = locoCopy.ShovelMassKG;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
             MaxTenderWaterMassKG = locoCopy.MaxTenderWaterMassKG;
@@ -1527,7 +1525,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 Trace.TraceInformation("============================================= Steam Locomotive Performance - Locomotive Details =========================================================");
                 Trace.TraceInformation("Version - {0}", VersionInfo.VersionOrBuild);
-              //  Trace.TraceInformation("Locomotive Name - {0}", Name);
+                Trace.TraceInformation("Locomotive Name - {0}", LocomotiveName);
                 Trace.TraceInformation("Steam Locomotive Type - {0}", SteamLocoType);
 
                 Trace.TraceInformation("**************** General ****************");
@@ -1823,10 +1821,6 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.Blower, CabSetting.Increase, BlowerController.CurrentValue * 100);
                 if (BlowerController.UpdateValue < 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.Blower, CabSetting.Decrease, BlowerController.CurrentValue * 100);
-                if (SteamHeatController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
-                if (SteamHeatController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
                 if (DamperController.UpdateValue > 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.Damper, CabSetting.Increase, DamperController.CurrentValue * 100);
                 if (DamperController.UpdateValue < 0.0)
@@ -1838,24 +1832,9 @@ namespace Orts.Simulation.RollingStocks
                 if (FiringRateController.UpdateValue > 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Increase, FiringRateController.CurrentValue * 100);
                 if (FiringRateController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Decrease, FiringRateController.CurrentValue * 100);
-
-                if (SmallEjectorController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Increase, SmallEjectorController.CurrentValue * 100);
-                if (SmallEjectorController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Decrease, SmallEjectorController.CurrentValue * 100);
-            
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Decrease, FiringRateController.CurrentValue * 100);        
             }
-
-            SteamHeatController.Update(elapsedClockSeconds);
-            if (IsPlayerTrain)
-            {
-                if (SteamHeatController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Increase, SteamHeatController.CurrentValue * 100);
-                if (SteamHeatController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, CabSetting.Decrease, SteamHeatController.CurrentValue * 100);
-            }
-
+ 
             SmallEjectorController.Update(elapsedClockSeconds);
             if (IsPlayerTrain)
             {
@@ -4965,6 +4944,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         CurrentSteamHeatPipeTempC = 0.0f;       // Reset values to zero if steam is not turned on.
                         SteamPipeHeatW = 0.0f;
+                        Train.CarSteamHeatOn = false; // turn off steam effects on wagons
                     }
                     else
                     {
@@ -4974,6 +4954,7 @@ namespace Orts.Simulation.RollingStocks
                         float PipeTempBK = (float)Math.Pow(C.ToK(CurrentCarriageHeatTempC), 4.0f);
                         SteamHeatPipeRadW = (BoltzmanConstPipeWpM2 * (PipeTempAK - PipeTempBK));
                         SteamPipeHeatW = SteamPipeHeatConvW + SteamHeatPipeRadW;   // heat generated by pipe per degree
+                        Train.CarSteamHeatOn = true; // turn on steam effects on wagons
                     }
 
                     // Calculate Net steam heat loss or gain
@@ -6463,7 +6444,7 @@ namespace Orts.Simulation.RollingStocks
             return 0f;
         }
 
-        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2, ref float SH, ref float SE)
+        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2, ref float SE)
         {
             CC = CutoffController.CurrentValue;
             BC = BlowerController.CurrentValue;
@@ -6471,11 +6452,10 @@ namespace Orts.Simulation.RollingStocks
             FC = FiringRateController.CurrentValue;
             I1 = Injector1Controller.CurrentValue;
             I2 = Injector2Controller.CurrentValue;
-            SH = SteamHeatController.CurrentValue;
             SE = SmallEjectorController.CurrentValue;
         }
 
-        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2, float SH, float SE)
+        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2, float SE)
         {
             CutoffController.CurrentValue = CC;
             CutoffController.UpdateValue = 0.0f;
@@ -6489,8 +6469,6 @@ namespace Orts.Simulation.RollingStocks
             Injector1Controller.UpdateValue = 0.0f;
             Injector2Controller.CurrentValue = I2;
             Injector2Controller.UpdateValue = 0.0f;
-            SteamHeatController.CurrentValue = SH;
-            SteamHeatController.UpdateValue = 0.0f;
             SmallEjectorController.CurrentValue = SE;
             SmallEjectorController.UpdateValue = 0.0f;
         }

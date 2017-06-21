@@ -906,7 +906,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand
     {
-        public static MSTSSteamLocomotive Receiver { get; set; }
+        public static MSTSLocomotive Receiver { get; set; }
         
         public ContinuousSteamHeatCommand(CommandLog log, int injector, bool toState, float? target, double startTime)
             : base(log, toState, target, startTime)
