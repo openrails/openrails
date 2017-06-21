@@ -4991,8 +4991,11 @@ namespace Orts.Simulation.Signalling
                         if (tsectiondat.TrackShapes.ContainsKey(thisSection.ShapeIndex))
                         {
                             TrackShape thisShape = tsectiondat.TrackShapes[thisSection.ShapeIndex];
-                            troughShape = thisShape.FileName.EndsWith("Wtr.s") || thisShape.FileName.EndsWith("wtr.s");
-                            shapePaths = Convert.ToInt32(thisShape.NumPaths);
+                            if (thisShape.FileName != null)
+                            {
+                                troughShape = thisShape.FileName.EndsWith("Wtr.s") || thisShape.FileName.EndsWith("wtr.s");
+                                shapePaths = Convert.ToInt32(thisShape.NumPaths);
+                            }
                         }
 
                         if (troughShape)
