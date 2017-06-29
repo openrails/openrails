@@ -8371,7 +8371,7 @@ namespace Orts.Simulation.Physics
 
         public void ToggleToManualMode()
         {
-            if (ControlMode == TRAIN_CONTROL.OUT_OF_CONTROL && LeadLocomotive != null)
+            if (LeadLocomotive != null)
                 ((MSTSLocomotive)LeadLocomotive).SetEmergency(false);
 
             // set track occupation (using present route)
