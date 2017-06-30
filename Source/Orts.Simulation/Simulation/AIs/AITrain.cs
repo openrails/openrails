@@ -3091,7 +3091,7 @@ namespace Orts.Simulation.AIs
 
                         // <CScomment> Make check when this train in same section of OtherTrain or other train at less than 50m;
                         // if other train is static or other train is in last section of this train, pass to passive coupling
-                        if (Math.Abs(OtherTrain.SpeedMpS) < 0.001f && distanceToTrain <= 2 * keepDistanceMovingTrainM)
+                        if (Math.Abs(OtherTrain.SpeedMpS) < 0.025f && distanceToTrain <= 2 * keepDistanceMovingTrainM)
                         {
                             var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
 
@@ -3106,7 +3106,7 @@ namespace Orts.Simulation.AIs
                             }
 
                         }
-                        if (Math.Abs(OtherTrain.SpeedMpS) >= 0.001f)
+                        if (Math.Abs(OtherTrain.SpeedMpS) >= 0.025f)
                         {
                             keepDistanceTrainM = keepDistanceMovingTrainM;
                         }
@@ -3140,7 +3140,7 @@ namespace Orts.Simulation.AIs
                         }
 
                         // check distance and speed
-                        if (Math.Abs(OtherTrain.SpeedMpS) < 0.001f)
+                        if (Math.Abs(OtherTrain.SpeedMpS) < 0.025f)
                         {
                             float brakingDistance = SpeedMpS * SpeedMpS * 0.5f * (0.5f * MaxDecelMpSS);
                             float reqspeed = (float)Math.Sqrt(distanceToTrain * MaxDecelMpSS);
