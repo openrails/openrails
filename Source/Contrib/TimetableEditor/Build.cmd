@@ -14,7 +14,7 @@ SET Lazarus.lazbuild=%FindExecutable%
 SET FindExecutable.Default=%SystemDrive%\Lazarus\fpc\2.6.4\bin\i386-win32\strip.exe
 CALL :find-executable strip.exe
 IF NOT EXIST "%FindExecutable%" (
-	ECHO Error: Lazarus compiler ^(lazbuild.exe^) not found.
+	ECHO Error: Lazarus compiler ^(strip.exe^) not found.
 	ECHO Expected location is %FindExecutable.Default% or on the PATH.
 	EXIT /B 1
 )
