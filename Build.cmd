@@ -207,7 +207,7 @@ GOTO :EOF
 
 :delete
 ECHO Delete "%~1"
-DEL /F /Q "%~1"
+IF EXIST "%~1" DEL /F /Q "%~1"
 GOTO :EOF
 
 REM Reports that an error occurred.
