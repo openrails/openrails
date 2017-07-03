@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunActivity", "RunActivity\RunActivity.csproj", "{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}"
 EndProject
@@ -50,6 +50,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Formats.OR", "Orts.Formats.OR\Orts.Formats.OR.csproj", "{0D8D312B-2C02-4B77-A795-566394A9DB95}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConverter", "Contrib\DataConverter\DataConverter.csproj", "{D4848FAB-C391-438B-BE29-3BFFF9469480}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataValidator", "Contrib\DataValidator\DataValidator.csproj", "{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -153,6 +155,10 @@ Global
 		{D4848FAB-C391-438B-BE29-3BFFF9469480}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{D4848FAB-C391-438B-BE29-3BFFF9469480}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{D4848FAB-C391-438B-BE29-3BFFF9469480}.Release|Mixed Platforms.Build.0 = Release|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Release|Mixed Platforms.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
