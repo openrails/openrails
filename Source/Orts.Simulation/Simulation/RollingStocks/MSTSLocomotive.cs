@@ -2805,7 +2805,7 @@ namespace Orts.Simulation.RollingStocks
                 return;
 
             CabLightOn = !CabLightOn;
-            SignalEvent(Event.LightSwitchToggle);
+            SignalEvent(Event.CabLightSwitchToggle);
             Simulator.Confirmer.Confirm(CabControl.CabLight, CabLightOn ? CabSetting.On : CabSetting.Off);
         }
 

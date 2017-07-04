@@ -30,6 +30,7 @@ namespace Orts.Common
         BellOff,
         BellOn,
         BlowerChange,
+        CabLightSwitchToggle,
         CircuitBreakerOpen,
         CircuitBreakerClosing,
         CircuitBreakerClosed,
@@ -315,7 +316,9 @@ namespace Orts.Common
                         case 157: return Event.CircuitBreakerClosingAuthorizationOn;
                         case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
-                        case 160: return Event.SmallEjectorChange; 
+                        case 160: return Event.SmallEjectorChange;
+
+                        case 161: return Event.CabLightSwitchToggle;
                         
                         //
 
