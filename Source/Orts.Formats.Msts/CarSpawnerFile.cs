@@ -30,8 +30,10 @@ namespace Orts.Formats.Msts
         public string[] shapeNames; //car shape names
         public float[] distanceFrom; // the second parameter of the CarSpawnerItem
         public string ListName;
-        public CarSpawnerList(List<CarSpawnerItemData> spawnerDataItems, string listName)
+        public bool IgnoreXRotation = false; // true for humans
+        public CarSpawnerList(List<CarSpawnerItemData> spawnerDataItems, string listName, bool ignoreXRotation)
         {
+            IgnoreXRotation = ignoreXRotation;
             shapeNames = new string[spawnerDataItems.Count];
             distanceFrom = new float[spawnerDataItems.Count];
             ListName = listName;
@@ -47,12 +49,14 @@ namespace Orts.Formats.Msts
 
     public class CarSpawnerBlock
     {
+        private bool IgnoreXRotation = false;
         public CarSpawnerBlock(STFReader stf, string shapePath, List<CarSpawnerList> carSpawnerLists, string listName)
         {
             var spawnerDataItems = new List<CarSpawnerItemData>();
             {
                 var count = stf.ReadInt(null);
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("ignorexrotation", ()=>{IgnoreXRotation = stf.ReadBoolBlock(true); }),
                     new STFReader.TokenProcessor("carspawneritem", ()=>{
                         if (--count < 0)
                             STFException.TraceWarning(stf, "Skipped extra CarSpawnerItem");
@@ -70,7 +74,7 @@ namespace Orts.Formats.Msts
                     STFException.TraceWarning(stf, count + " missing CarSpawnerItem(s)");
             }
 
-            CarSpawnerList carSpawnerList = new CarSpawnerList(spawnerDataItems, listName);
+            CarSpawnerList carSpawnerList = new CarSpawnerList(spawnerDataItems, listName, IgnoreXRotation);
             carSpawnerLists.Add(carSpawnerList);
         }
 

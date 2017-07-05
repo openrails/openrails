@@ -181,7 +181,7 @@ namespace Orts.Viewer3D
     // TODO: Move to simulator!
     public class RoadCar
     {
-        const float VisualHeightAdjustment = 0.1f;
+        public const float VisualHeightAdjustment = 0.1f;
         const float AccelerationFactor = 5;
         const float BrakingFactor = 5;
         const float BrakingMinFactor = 1;
@@ -191,6 +191,7 @@ namespace Orts.Viewer3D
         public readonly int Type;
         public readonly float Length;
         public float Travelled;
+        public readonly bool IgnoreXRotation;
 
         public int TileX { get { return FrontTraveller.TileX; } }
         public int TileZ { get { return FrontTraveller.TileZ; } }
@@ -235,6 +236,7 @@ namespace Orts.Viewer3D
             // Travelled is the center of the vehicle.
             Travelled = Length * 0.50f;
             Speed = SpeedMax = averageSpeed * (0.75f + (float)Viewer.Random.NextDouble() / 2);
+            IgnoreXRotation = viewer.Simulator.CarSpawnerLists[CarSpawnerListIdx].IgnoreXRotation;
         }
 
         [CallOnThread("Updater")]
@@ -373,7 +375,19 @@ namespace Orts.Viewer3D
             // TODO: Add 0.1f to Y to put wheels above road. Matching MSTS?
             var front = Car.FrontLocation;
             var rear = Car.RearLocation;
-            CarShape.Location.XNAMatrix = Simulator.XNAMatrixFromMSTSCoordinates(front.X, front.Y, front.Z, rear.X, rear.Y, rear.Z);
+            var frontY = front.Y;
+            var rearY = rear.Y;
+            if (Car.IgnoreXRotation)
+            {
+                frontY = frontY - RoadCar.VisualHeightAdjustment;
+                rearY = rearY - RoadCar.VisualHeightAdjustment;
+                if (Math.Abs(frontY - rearY) > 0.01f)
+                {
+                    if (frontY > rearY) rearY = frontY;
+                    else frontY = rearY;
+                }
+            }
+            CarShape.Location.XNAMatrix = Simulator.XNAMatrixFromMSTSCoordinates(front.X, frontY, front.Z, rear.X, rearY, rear.Z);
             CarShape.PrepareFrame(frame, elapsedTime);
         }
 
