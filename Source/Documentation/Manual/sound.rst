@@ -219,6 +219,8 @@ Trigger       Function
 158           CircuitBreakerClosingAuthorizationOff
 =========     =====================================
 
+Trigger 161 is activated when the cab light is switched on or off.
+
 Variable Triggers
 -----------------
 

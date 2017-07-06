@@ -394,6 +394,35 @@ The other one is to use the OR specific TSRE route editor, that natively manages
 feature. Also in the latter case, however, if the route is later edited with the MSTS 
 route editor, the above line will be deleted.
 
+Car spawners used for walking people
+====================================
+The OR specific TSRE route editor is able to generate car spawner paths also outside 
+roads. This has many applications, one of which is to generate paths for walking people.
+Walking people have the peculiarity that on an inclined path they don't incline like a 
+vehicle does, instead they remain vertical. To enable OR to handle these car (or better 
+person) spawners specifically, the parameter IgnoreXRotation () has to be inserted in 
+the car spawner list, just after the number of the car spawner items.
+
+
+.. image:: images/features-carspawner.png
+   :align: center
+
+Here is an example of a car spawner file specific for walking people to be inserted in 
+the route's Openrails subfolder ( see :ref:`here <features-route-extended-carspawners>` )::
+
+  SIMISA@@@@@@@@@@JINX0v1t______
+  
+  1
+  CarSpawnerList(
+  ListName ( "People1" )
+  3
+  IgnoreXRotation ()
+  CarSpawnerItem( "walkingperson1.s" 3 )
+  CarSpawnerItem( "walkingperson2.s" 1 )
+  CarSpawnerItem( "walkingperson3.s" 1 )
+  )
+
+
 .. _features-route-tracksections:
 
 Route specific TrackSections and TrackShapes
