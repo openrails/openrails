@@ -67,6 +67,7 @@ namespace Orts.MultiPlayer
             else if (key == "WEATHER") return new MSGWeather(m.Substring(index + 1));
             else if (key == "AIDER") return new MSGAider(m.Substring(index + 1));
             else if (key == "SIGNALCHANGE") return new MSGSignalChange(m.Substring(index + 1));
+            else if (key == "EXHAUST") return new MSGExhaust(m.Substring(index + 1));
             else throw new Exception("Unknown Keyword" + key);
         }
 
@@ -217,7 +218,7 @@ namespace Orts.MultiPlayer
                         t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
                         // This is necessary as sometimes a train isn't in the Trains list
                         MPManager.Instance().AddOrRemoveTrain(t, true);
-
+ //                       if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(m.user, t, true);
                     }
                 }
                 if (found == false) //I do not have the train, tell server to send it to me
@@ -493,6 +494,7 @@ namespace Orts.MultiPlayer
                         MPManager.OnlineTrains.Players.Add(user, p1);
                         p1.CreatedTime = MPManager.Simulator.GameTime;
                         MPManager.Instance().AddOrRemoveTrain(p1.Train, true);
+                        if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, p1.Train, true);
                         MPManager.Instance().lostPlayer.Remove(user);
                     }
                     else//if the player uses different train cars
@@ -584,6 +586,7 @@ namespace Orts.MultiPlayer
                     p.Username = this.user;
                     MPManager.OnlineTrains.Players.Add(user, p);
                     MPManager.Instance().AddOrRemoveTrain(p.Train, true);
+                    if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, p.Train, true);
                     MPManager.Instance().lostPlayer.Remove(user);
                 }
                 else//if the player uses different train cars
@@ -1229,6 +1232,7 @@ namespace Orts.MultiPlayer
 
             if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
             if (MPManager.Instance().AddOrRemoveTrain(train, true) == false) return; //add train, but failed
+            // if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, train, true);
         }
 
         public override string ToString()
@@ -1458,6 +1462,7 @@ namespace Orts.MultiPlayer
 
             if (train1.Cars[0] is MSTSLocomotive) train1.LeadLocomotive = train1.Cars[0];
             MPManager.Instance().AddOrRemoveTrain(train1, true);
+            if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, train1, true);
         }
 
         public override string ToString()
@@ -1525,6 +1530,7 @@ namespace Orts.MultiPlayer
                 {
                     if (i == train.Number)
                     {
+                        if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives("", train, false);
                         MPManager.Instance().AddOrRemoveTrain(train, false);//added to the removed list, treated later to be thread safe
                     }
                 }
@@ -1868,7 +1874,7 @@ namespace Orts.MultiPlayer
                         {
                             if (p.Value.Train == t)
                             {
-                                p.Value.LeadingLocomotiveID = car.CarID;                              
+                                p.Value.LeadingLocomotiveID = car.CarID;
                                 break;
                             }
                         }
@@ -2432,6 +2438,7 @@ namespace Orts.MultiPlayer
                             tmpcars.Add(car);
                         }
                         if (tmpcars.Count == 0) return;
+                        if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, train, false);
                         t.Cars = tmpcars;
                         Traveller.TravellerDirection d1 = Traveller.TravellerDirection.Forward;
                         if (trainDirection == 1) d1 = Traveller.TravellerDirection.Backward;
@@ -2570,6 +2577,8 @@ namespace Orts.MultiPlayer
                     train2.LastReportedSpeed = 1;
                     if (train2.Name.Length < 4) train2.Name = String.Concat("STATIC-", String.Copy(train2.Name));
                     MPManager.Simulator.AI.aiListChanged = true;
+                    MPManager.Instance().AddOrRemoveLocomotives(user, train, true);
+                    MPManager.Instance().AddOrRemoveLocomotives(user, train2, true);
                     MPManager.BroadCast(this.ToString());//if server receives this, will tell others, including whoever sent the information
                 }
                 else
@@ -2700,7 +2709,23 @@ namespace Orts.MultiPlayer
                     MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("Trains coupled, hit \\ then Shift-? to release brakes"));
             }
             if (!MPManager.IsServer() || !(oldT.TrainType == Train.TRAINTYPE.AI_INCORPORATED))
+            {
+                if (MPManager.IsServer())
+                {
+                    MPManager.Instance().AddOrRemoveLocomotives("", oldT, false);
+                    MPManager.Instance().AddOrRemoveLocomotives("", t, false);
+                    var player = "";
+                    foreach (var p in MPManager.OnlineTrains.Players)
+                    {
+                        if (p.Value.Train == t) { player = p.Key; break; }
+                    }
+                    MPManager.Instance().AddOrRemoveLocomotives(player, t, true);
+                }
                 MPManager.Instance().AddOrRemoveTrain(oldT, false); //remove the old train
+
+
+
+            }
         }
 
         public override string ToString()
@@ -2803,6 +2828,7 @@ namespace Orts.MultiPlayer
             if (MPManager.FindPlayerTrain(whoControls) != null) MPManager.OnlineTrains.Players[whoControls].Train = train;
             if (train.Cars.Contains(MPManager.Simulator.PlayerLocomotive)) MPManager.Simulator.PlayerLocomotive.Train = train;
 
+            if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives("", train2, false);
             MPManager.Instance().AddOrRemoveTrain(train2, false);
 
 
@@ -3347,4 +3373,94 @@ namespace Orts.MultiPlayer
     }
     #endregion MSGSignalChange
 
+    #region MSGExhaust
+    public class MSGExhaust : Message
+    {
+        class MSGExhaustItem
+        {
+            public string user;
+            public int num;
+            public int iCar;
+            public float exhPart;
+            public float exhMag;
+            public float exhColorR, exhColorG, exhColorB;
+
+            public MSGExhaustItem(string u, int n, int i, float eP, float eM, float eCR, float eCG, float eCB)
+            {
+                user = u; num = n; iCar = i; exhPart = eP; exhMag = eM; exhColorR = eCR; exhColorG = eCG; exhColorB = eCB;
+            }
+
+            public override string ToString()
+            {
+                return user + " " + num + " " + iCar + " " + exhPart.ToString(CultureInfo.InvariantCulture) + " " + exhMag.ToString(CultureInfo.InvariantCulture) + 
+                    " " + exhColorR.ToString(CultureInfo.InvariantCulture) + " " + exhColorG.ToString(CultureInfo.InvariantCulture) + " " + exhColorB.ToString(CultureInfo.InvariantCulture);
+            }
+        }
+        List<MSGExhaustItem> items;
+
+        public MSGExhaust(string m)
+        {
+            m = m.Trim();
+            string[] areas = m.Split(' ');
+            if (areas.Length % 8 != 0) 
+            {
+                throw new Exception("Parsing error " + m);
+            }
+            try
+            {
+                int i = 0;
+                items = new List<MSGExhaustItem>();
+                for (i = 0; i < areas.Length / 8; i++)
+                    items.Add(new MSGExhaustItem(areas[8 * i], int.Parse(areas[8 * i + 1]), int.Parse(areas[8 * i + 2]),
+                        float.Parse(areas[8 * i + 3], CultureInfo.InvariantCulture), float.Parse(areas[8 * i + 4], CultureInfo.InvariantCulture),
+                        float.Parse(areas[8 * i + 5], CultureInfo.InvariantCulture), float.Parse(areas[8 * i + 6], CultureInfo.InvariantCulture), float.Parse(areas[8 * i + 7], CultureInfo.InvariantCulture)));
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+        public MSGExhaust()
+        {
+        }
+
+        public void AddNewItem(string u, Train t, int c)
+        {
+            if (items == null) items = new List<MSGExhaustItem>();
+            MSTSDieselLocomotive l = t.Cars[c] as MSTSDieselLocomotive;
+            items.Add(new MSGExhaustItem(u, t.Number, c, l.ExhaustParticles.SmoothedValue, l.ExhaustMagnitude.SmoothedValue,
+                l.ExhaustColorR.SmoothedValue, l.ExhaustColorG.SmoothedValue, l.ExhaustColorB.SmoothedValue));
+        }
+
+        public bool OKtoSend()
+        {
+            if (items != null && items.Count > 0) return true;
+            return false;
+        }
+
+        public override string ToString()
+        {
+            string tmp = "EXHAUST ";
+            for (var i = 0; i < items.Count; i++) tmp += items[i].ToString() + " ";
+            return " " + tmp.Length + ": " + tmp;
+        }
+
+        public override void HandleMsg()
+        {
+            foreach (MSGExhaustItem m in items)
+            {
+                if (m.user != MPManager.GetUserName())
+                {
+                    Train t = MPManager.FindPlayerTrain(m.user);
+                    if (t != null && t.Cars.Count > m.iCar && t.Cars[m.iCar] is MSTSDieselLocomotive)
+                    {
+                        MSTSDieselLocomotive remoteDiesel = t.Cars[m.iCar] as MSTSDieselLocomotive;
+                        remoteDiesel.RemoteUpdate(m.exhPart, m.exhMag, m.exhColorR, m.exhColorG, m.exhColorB);
+                    }
+                }
+            }
+        }
+        #endregion MSGExhaust
+    }
 }

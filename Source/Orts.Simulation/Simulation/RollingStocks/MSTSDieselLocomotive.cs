@@ -663,5 +663,15 @@ namespace Orts.Simulation.RollingStocks
             }
     
         }
+
+        //used by remote diesels to update their exhaust
+        public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB)
+        {
+            ExhaustParticles.ForceSmoothValue(exhPart);
+            ExhaustMagnitude.ForceSmoothValue(exhMag);
+            ExhaustColorR.ForceSmoothValue(exhColorR);
+            ExhaustColorG.ForceSmoothValue(exhColorG);
+            ExhaustColorB.ForceSmoothValue(exhColorB);
+        }
     } // class DieselLocomotive
 }

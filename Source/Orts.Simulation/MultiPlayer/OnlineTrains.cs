@@ -34,6 +34,9 @@ namespace Orts.MultiPlayer
         {
             Players = new Dictionary<string, OnlinePlayer>();
         }
+
+        public List<OnlineLocomotive> OnlineLocomotives = new List<OnlineLocomotive>();
+
         public static void Update()
         {
 
@@ -233,14 +236,17 @@ namespace Orts.MultiPlayer
             train.AITrainBrakePercent = 100;
 
             //if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
-            foreach (var car in train.Cars)
+            for (int iCar = 0; iCar < train.Cars.Count; iCar++)
             {
+                var car = train.Cars[iCar];
                 if (car.CarID == p.LeadingLocomotiveID)
                 {
                     train.LeadLocomotive = car;
                     (train.LeadLocomotive as MSTSLocomotive).Headlight = player.headlight;
                     (train.LeadLocomotive as MSTSLocomotive).UsingRearCab = player.frontorrearcab == "R" ? true : false;
                 }
+                if (car is MSTSLocomotive && MPManager.IsServer())
+                    MPManager.Instance().AddOrRemoveLocomotive(player.user, train.Number, iCar, true);
             }
             if (train.LeadLocomotive == null)
             {
@@ -281,5 +287,34 @@ namespace Orts.MultiPlayer
             p.Train = train;
             if (player.newTrainReverseFormation) p.Train.ReverseFormation(false);
         }
+
+        public string ExhaustingLocos(MSGExhaust exhaust)
+        {
+            string tmp = "";
+            if (exhaust == null) exhaust = new MSGExhaust();
+            foreach (OnlineLocomotive l in OnlineLocomotives)
+            {
+                if (l.userName != MPManager.GetUserName())
+                {
+                    Train t = MPManager.FindPlayerTrain(l.userName);
+                    if (t != null && l.trainCarPosition < t.Cars.Count && (Math.Abs(t.SpeedMpS) > 0.001 || Math.Abs(t.LastReportedSpeed) > 0))
+                    {
+                            if (t.Cars[l.trainCarPosition] is MSTSDieselLocomotive)
+                            {
+                                exhaust.AddNewItem(l.userName, t, l.trainCarPosition);
+                            }
+                    }
+                }
+            }
+            tmp += exhaust.ToString();
+            return tmp;
+        }
+    }
+
+    public struct OnlineLocomotive
+    {
+        public string userName;
+        public int trainNumber;
+        public int trainCarPosition;
     }
 }

@@ -2933,6 +2933,11 @@ namespace Orts.Simulation.RollingStocks
             base.SignalEvent(evt);
         }
 
+        //used by remote train locomotives
+ /*       public virtual void RemoteUpdate()
+        {
+        }*/
+
         public virtual float GetDataOf(CabViewControl cvc)
         {
             float data = 0;

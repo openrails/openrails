@@ -62,6 +62,11 @@ namespace ORTS.Common
                 smoothedValue = (smoothedValue * (rate - 1) + newValue) / rate;
         }
 
+        public void ForceSmoothValue(float forcedValue)
+        {
+            smoothedValue = forcedValue;
+        }
+
         public float Value { get { return value; } }
         public float SmoothedValue { get { return smoothedValue; } }
     }
