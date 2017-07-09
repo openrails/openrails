@@ -306,7 +306,7 @@ namespace Orts.MultiPlayer
                     }
                 }
             }
-            tmp += exhaust.ToString();
+            if (exhaust != null) tmp += exhaust.ToString();
             return tmp;
         }
     }

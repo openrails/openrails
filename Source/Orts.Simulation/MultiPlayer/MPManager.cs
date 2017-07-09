@@ -246,7 +246,8 @@ namespace Orts.MultiPlayer
                     }
                 }
                 // Broadcast also exhaust
-                Server.BroadCast(OnlineTrains.ExhaustingLocos(exhaust));
+                var exhaustMessage = OnlineTrains.ExhaustingLocos(exhaust);
+                if (exhaustMessage != "") Server.BroadCast(exhaustMessage);
 
                 lastMoveTime = lastSendTime = newtime;
 

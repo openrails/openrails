@@ -3441,6 +3441,7 @@ namespace Orts.MultiPlayer
 
         public override string ToString()
         {
+            if (items == null || items.Count == 0) return "";
             string tmp = "EXHAUST ";
             for (var i = 0; i < items.Count; i++) tmp += items[i].ToString() + " ";
             return " " + tmp.Length + ": " + tmp;
