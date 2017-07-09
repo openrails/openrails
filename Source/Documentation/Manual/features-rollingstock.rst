@@ -173,8 +173,8 @@ In a gondola this could be used to rotate the whole wagon, while in a hopper it
 could be used to open the bottom of the wagon.
 
 The base matrix within the wagon shape that has to be animated must have a name 
-that starts with ``ANIMATED_PARTS``. There may be more than one, like 
-``ANIMATED_PARTS1``, ``ANIMATED_PARTS2`` and so on. Its frame rate is fixed, 
+that starts with ``UNLOADINGPARTS``. There may be more than one, like 
+``UNLOADINGPARTS1``, ``UNLOADINGPARTS2`` and so on. Its frame rate is fixed, 
 and is 1 frame per second as for the other types of OR trainset animations.
 
 To define a pickup point as an unload point, its shape must be inserted in the 
@@ -191,7 +191,10 @@ To define a pickup point as an unload point, its shape must be inserted in the
 When laying it down in the route with the MSTS Route Editor, its fill rate must 
 be set to a negative value.
 
-Such a pickup (which in reality is an unloader) may be animated too. As for the 
+Such a pickup (which in reality is an unloader) may be animated too. The base matrix 
+within the wagon shape that has to be animated must have a name 
+that starts with ``ANIMATED_PARTS``. There may be more than one, like 
+``ANIMATED_PARTS1``, ``ANIMATED_PARTS2`` and so on. As for the 
 MSTS standard pickups, the pickup animation frame rate is computed as the ratio 
 between the number of frames defined in the .s file, divided by the Anim length.
 
