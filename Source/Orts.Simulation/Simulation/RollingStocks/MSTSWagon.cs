@@ -1943,6 +1943,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
+                controller.SetStepSize(-matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / FreightAnimations.LoadedOne.FreightWeightWhenFull);
                 WaitForAnimationReady = true;
                 UnloadingPartsOpen = true;
                 if (FreightAnimations.UnloadingStartDelay > 0)
