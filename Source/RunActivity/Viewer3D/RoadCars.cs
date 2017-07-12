@@ -200,7 +200,7 @@ namespace Orts.Viewer3D
             get
             {
                 var wl = FrontTraveller.WorldLocation;
-                wl.Location.Y += Spawner.GetRoadHeightAdjust(Travelled - Length * 0.25f) + VisualHeightAdjustment;
+                wl.Location.Y += Math.Max(Spawner.GetRoadHeightAdjust(Travelled - Length * 0.25f), 0) + VisualHeightAdjustment;
                 return wl.Location;
             }
         }
@@ -210,7 +210,7 @@ namespace Orts.Viewer3D
             {
                 var wl = RearTraveller.WorldLocation;
                 wl.NormalizeTo(TileX, TileZ);
-                wl.Location.Y += Spawner.GetRoadHeightAdjust(Travelled + Length * 0.25f) + VisualHeightAdjustment;
+                wl.Location.Y += Math.Max(Spawner.GetRoadHeightAdjust(Travelled + Length * 0.25f), 0) + VisualHeightAdjustment;
                 return wl.Location;
             }
         }
