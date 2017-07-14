@@ -428,18 +428,18 @@ namespace Orts.Viewer3D
                     if (stateChange && (CarOnSwitch || CarOnCurve))
                     {
                         Car.TrackSoundLocation = new WorldLocation(Car.WorldPosition.WorldLocation);
-                        if (CarOnSwitch && CarOnCurve && SharedSMSFileManager.CurveSMSNumber != -1)
+                        if (CarOnSwitch && CarOnCurve && SharedSMSFileManager.CurveSwitchSMSNumber != -1)
                         {
                             _curTType = SharedSMSFileManager.CurveSwitchSMSNumber;
                         }
-                        else if (CarOnSwitch && SharedSMSFileManager.SwitchSMSNumber != -1)
-                        {
-                            _curTType = SharedSMSFileManager.SwitchSMSNumber;
-                        }
-                        else if (SharedSMSFileManager.CurveSMSNumber != -1)
-                        // car on curve
+                        else if (CarOnCurve && SharedSMSFileManager.CurveSMSNumber != -1)
                         {
                             _curTType = SharedSMSFileManager.CurveSMSNumber;
+                        }
+                        else if (CarOnSwitch && SharedSMSFileManager.SwitchSMSNumber != -1)
+                        // car on switch
+                        {
+                            _curTType = SharedSMSFileManager.SwitchSMSNumber;
                         }
                         else stateChange = false;
                     }
