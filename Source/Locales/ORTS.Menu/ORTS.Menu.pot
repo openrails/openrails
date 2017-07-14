@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-07-25 22:38:39+0200\n"
-"PO-Revision-Date: 2016-07-25 22:38:39+0200\n"
+"POT-Creation-Date: 2017-07-14 17:31:04+0200\n"
+"PO-Revision-Date: 2017-07-14 17:31:04+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -62,12 +62,12 @@ msgstr ""
 msgid "Locomotive '{0}' is excluded."
 msgstr ""
 
-#: ../../ORTS.Menu/Paths.cs:150
+#: ../../ORTS.Menu/Paths.cs:168
 #, csharp-format
 msgid "Start at: {0}"
 msgstr ""
 
-#: ../../ORTS.Menu/Paths.cs:151
+#: ../../ORTS.Menu/Paths.cs:169
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr ""
