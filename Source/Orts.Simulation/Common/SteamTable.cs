@@ -272,23 +272,20 @@ namespace Orts.Common
 // piston speed (feet per minute) - American Locomotive Company
         static float[] PistonSpeedFtpMin = new float[]
         {
-              0, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500, 525, 550, 575, 600, 625, 650, 675,
-             700, 725, 750, 775, 800, 850, 900, 950, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2100
+              0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100
         };
         
         
-// Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
+// Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - Based upon dat from American Locomotive Company
         static float[] SpeedFactorSat = new float[]
         {
-             1.0f, 1.0f, 0.976f, 0.954f, 0.932f, 0.908f, 0.886f, 0.863f, 0.840f, 0.817f, 0.795f, 0.772f, 0.750f, 0.727f, 0.704f, 0.680f, 0.660f, 0.636f, 0.614f,
-             0.590f, 0.570f, 0.550f, 0.530f, 0.517f, 0.487f, 0.460f, 0.435f, 0.412f, 0.372f, 0.337f, 0.307f, 0.283f, 0.261f, 0.241f, 0.1f, 0.05f
+             1.0f, 1.0f, 1.0f, 0.954f, 0.863f, 0.772f, 0.680f, 0.590f, 0.517f, 0.460f, 0.412f, 0.372f, 0.337f, 0.307f, 0.283f, 0.261f, 0.241f, 0.225f, 0.213f, 0.202f, 0.190f, 0.185f
         };
         
 // Speed factor - Superheated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
         static float[] SpeedFactorSuper = new float[]
         {
-              1.0f, 1.0f, 0.976f, 0.954f, 0.932f, 0.908f, 0.886f, 0.863f, 0.840f, 0.817f, 0.795f, 0.772f, 0.750f, 0.727f, 0.704f, 0.682f, 0.664f, 0.643f, 0.624f,
-             0.605f, 0.588f, 0.572f, 0.558f, 0.542f, 0.515f, 0.490f, 0.467f, 0.445f, 0.405f, 0.371f, 0.342f, 0.318f, 0.297f, 0.278f, 0.1f, 0.05f
+              1.0f, 1.0f, 1.0f, 0.988f, 0.965f, 0.912f, 0.859f, 0.800f, 0.753f, 0.706f, 0.659f, 0.612f, 0.571f, 0.535f, 0.500f, 0.471f, 0.447f, 0.433f, 0.424f, 0.420f, 0.410f, 0.410f
         };
 
 // Indicated HorsePower - 

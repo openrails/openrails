@@ -132,6 +132,8 @@ namespace Orts.Simulation.RollingStocks
         bool IsFixGeared = false;
         bool IsSelectGeared = false;
         bool IsLocoSlip = false; 	   // locomotive is slipping
+        bool IsCritTELimit = false; // Flag to advise if critical TE is exceeded
+        bool ISBoilerLimited = false;  // Flag to indicate that Boiler is limiting factor with the locomotive power
 
         // Aux Tender Parameters
         public bool AuxTenderMoveFlag = false; // Flag to indicate whether train has moved
@@ -192,6 +194,7 @@ namespace Orts.Simulation.RollingStocks
 
         float BoilerKW;                 // power of boiler
         float MaxBoilerKW;              // power of boiler at full performance
+        float MaxBoilerOutputHP;           // Horsepower output of boiler
         float BoilerSteamHeatBTUpLB;    // Steam Heat based on current boiler pressure
         float BoilerWaterHeatBTUpLB;    // Water Heat based on current boiler pressure
         float BoilerSteamDensityLBpFT3; // Steam Density based on current boiler pressure
@@ -568,7 +571,7 @@ namespace Orts.Simulation.RollingStocks
         float MaxCriticalSpeedTractiveEffortLbf;  // Maximum power value @ critical speed of piston
         float CurrentCriticalSpeedTractiveEffortLbf;  // Current power value @ current speed of piston
         float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
-        float StartTractiveEffortN = 0.0f;      // Record starting tractive effort
+        float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
         float TractiveEffortLbsF;           // Current sim calculated tractive effort
         const float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort
 
@@ -1251,7 +1254,7 @@ namespace Orts.Simulation.RollingStocks
                 IdealFireMassKG = GrateAreaM2 * Me.FromIn(IdealFireDepthIN) * FuelDensityKGpM3;
 
             // Calculate the maximum fuel burn rate based upon grate area and limit
-            float GrateLimitLBpFt2add = 162.0f;     // Alow burn rate to slightly exceed grate limit
+            float GrateLimitLBpFt2add = GrateLimitLBpFt2 * 1.10f;     // Alow burn rate to slightly exceed grate limit (by 10%)
             MaxFuelBurnGrateKGpS = pS.FrompH(Kg.FromLb(Me2.ToFt2(GrateAreaM2) * GrateLimitLBpFt2add));
 
 
@@ -1275,7 +1278,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
             }
-            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 15.0f); // Clamp BoilerEvap Rate to between 10 & 15
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 30.0f); // Clamp BoilerEvap Rate to between 10 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
             TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
 
             float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
@@ -1386,10 +1389,195 @@ namespace Orts.Simulation.RollingStocks
             }
 
 
+            // Calculate Boiler output horsepower - based upon information in Johnsons book - The Steam Locomotive - pg 150
+            // In essence the cylinder power and boiler power are calculated, and the smaller of the two are used. Thus in some instances the boiler power may be the limiting factor rather then the cylinder power.
+            // BoilerOutputHP = Boiler Evap / Steam per ihp-hour. These values will be rounded for calculation purposes
+            float SteamperIHPh = 0.0f;
+            if (HasSuperheater)
+            {
+                if (MaxSuperheatRefTempF >= 350.0f)
+                {
+                    if (MaxBoilerPressurePSI >= 200)
+                    {
+                        SteamperIHPh = 19.3f; // For 350 deg superheated locomotive with boiler pressure between 200 and 249
+                    }
+                    else if (MaxBoilerPressurePSI >= 250)
+                    {
+                        SteamperIHPh = 16.1f; // For 350 deg superheated locomotive with default boiler pressure between 250 and 299
+                    }
+                    else if (MaxBoilerPressurePSI >= 300)
+                    {
+                        SteamperIHPh = 15.825f; // For 350 deg superheated locomotive with default boiler pressure between 300 and 349 
+                    }
+                    else if (MaxBoilerPressurePSI >= 350)
+                    {
+                        SteamperIHPh = 15.625f; // For 350 deg superheated locomotive with default boiler pressure between 350 and 399 
+                    }
+                    else
+                    {
+                        SteamperIHPh = 20.1f; // For For 350 deg superheated locomotive with boiler pressure less then 200
+                    }
+
+                }
+                else if(MaxSuperheatRefTempF >= 300.0f)
+                {
+                    if (MaxBoilerPressurePSI >= 200)
+                    {
+                        SteamperIHPh = 19.3f; // For 300 deg superheated locomotive with boiler pressure between 200 and 249
+                    }
+                    else if (MaxBoilerPressurePSI >= 250)
+                    {
+                        SteamperIHPh = 16.925f; // For 300 deg superheated locomotive with default boiler pressure between 250 and 299
+                    }
+                    else if (MaxBoilerPressurePSI >= 300)
+                    {
+                        SteamperIHPh = 16.675f; // For 300 deg superheated locomotive with default boiler pressure between 300 and 349 
+                    }
+                    else if (MaxBoilerPressurePSI >= 350)
+                    {
+                        SteamperIHPh = 16.5f; // For 300 deg superheated locomotive with default boiler pressure between 350 and 399 
+                    }
+                    else
+                    {
+                        SteamperIHPh = 20.1f; // For For 300 deg superheated locomotive with boiler pressure less then 200
+                    }
+                }
+                else if(MaxSuperheatRefTempF >= 250.0f)
+                {
+                    if (MaxBoilerPressurePSI >= 200)
+                    {
+                        SteamperIHPh = 18.325f; // For 250 deg superheated locomotive with boiler pressure between 200 and 249
+                    }
+                    else if (MaxBoilerPressurePSI >= 250)
+                    {
+                        SteamperIHPh = 17.8125f; // For 250 deg superheated locomotive with default boiler pressure between 250 and 299
+                    }
+                    else if (MaxBoilerPressurePSI >= 300)
+                    {
+                        SteamperIHPh = 17.575f; // For 250 deg superheated locomotive with default boiler pressure between 300 and 349 
+                    }
+                    else if (MaxBoilerPressurePSI >= 350)
+                    {
+                        SteamperIHPh = 17.3875f; // For 250 deg superheated locomotive with default boiler pressure between 350 and 399 
+                    }
+                    else
+                    {
+                        SteamperIHPh = 19.05f; // For For 250 deg superheated locomotive with boiler pressure less then 200
+                    }
+                }
+                else if(MaxSuperheatRefTempF > 200.0f)
+                {
+                    if (MaxBoilerPressurePSI >= 200)
+                    {
+                        SteamperIHPh = 19.3f; // For 200 deg superheated locomotive with boiler pressure between 200 and 249
+                    }
+                    else if (MaxBoilerPressurePSI >= 250)
+                    {
+                        SteamperIHPh = 18.725f; // For 200 deg superheated locomotive with default boiler pressure between 250 and 299
+                    }
+                    else if (MaxBoilerPressurePSI >= 300)
+                    {
+                        SteamperIHPh = 18.5f; // For 200 deg superheated locomotive with default boiler pressure between 300 and 349 
+                    }
+                    else if (MaxBoilerPressurePSI >= 350)
+                    {
+                        SteamperIHPh = 18.3f; // For 200 deg superheated locomotive with default boiler pressure between 350 and 399 
+                    }
+                    else
+                    {
+                        SteamperIHPh = 20.1f; // For For 200 deg superheated locomotive with boiler pressure less then 200
+                    }
+                }
+                else if(MaxSuperheatRefTempF >= 150.0f)
+                {
+                    if (MaxBoilerPressurePSI >= 200)
+                    {
+                        SteamperIHPh = 20.6f; // For 150 deg superheated locomotive with boiler pressure between 200 and 249
+                    }
+                    else if (MaxBoilerPressurePSI >= 250)
+                    {
+                        SteamperIHPh = 19.95f; // For 150 deg superheated locomotive with default boiler pressure between 250 and 299
+                    }
+                    else if (MaxBoilerPressurePSI >= 300)
+                    {
+                        SteamperIHPh = 19.55f; // For 150 deg superheated locomotive with default boiler pressure between 300 and 349 
+                    }
+                    else if (MaxBoilerPressurePSI >= 350)
+                    {
+                        SteamperIHPh = 19.3f; // For 150 deg superheated locomotive with default boiler pressure between 350 and 399 
+                    }
+                    else
+                    {
+                        SteamperIHPh = 21.375f; // For For 150 deg superheated locomotive with boiler pressure less then 200
+                    }
+                }
+                else  // Assume the same as a saturated locomotive
+                {
+                    if (MaxBoilerPressurePSI >= 200)
+                    {
+                        SteamperIHPh = 27.5f; // For saturated locomotive with boiler pressure between 200 and 249
+                    }
+                    else if (MaxBoilerPressurePSI >= 250)
+                    {
+                        SteamperIHPh = 26.6f; // For saturated locomotive with default boiler pressure between 250 and 299
+                    }
+                    else if (MaxBoilerPressurePSI >= 300)
+                    {
+                        SteamperIHPh = 26.05f; // For saturated locomotive with default boiler pressure between 300 and 349 
+                    }
+                    else if (MaxBoilerPressurePSI >= 350)
+                    {
+                        SteamperIHPh = 25.7f; // For saturated locomotive with default boiler pressure between 350 and 399 
+                    }
+                    else
+                    {
+                        SteamperIHPh = 28.425f; // For saturated locomotive with boiler pressure less then 200
+                    }
+                }
+
+            }
+            else
+            {
+                if (MaxBoilerPressurePSI >= 200)
+                {
+                    SteamperIHPh = 27.5f; // For saturated locomotive with boiler pressure between 200 and 249
+                }
+                else if (MaxBoilerPressurePSI >= 250)
+                {
+                    SteamperIHPh = 26.6f; // For saturated locomotive with default boiler pressure between 250 and 299
+                }
+                else if (MaxBoilerPressurePSI >= 300)
+                {
+                    SteamperIHPh = 26.05f; // For saturated locomotive with default boiler pressure between 300 and 349 
+                }
+                else if (MaxBoilerPressurePSI >= 350)
+                {
+                    SteamperIHPh = 25.7f; // For saturated locomotive with default boiler pressure between 350 and 399 
+                }
+                else
+                {
+                    SteamperIHPh = 28.425f; // For saturated locomotive with boiler pressure less then 200
+                }
+            }
+
+            MaxBoilerOutputHP = MaxBoilerOutputLBpH / SteamperIHPh; // Calculate boiler output power
+
             if (MaxIndicatedHorsePowerHP == 0) // if MaxIHP is not set in ENG file, then set a default
             {
                 // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
+                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
+
+            // Check to see if MaxIHP is in fact limited by the boiler
+                if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP )
+                {
+                    MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                    ISBoilerLimited = true;
+                }
+                else
+                {
+                    ISBoilerLimited = false;
+                }
+            
             }
             
             // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.2
@@ -1503,19 +1691,33 @@ namespace Orts.Simulation.RollingStocks
             BlowerSteamUsageFactor = 0.04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
             WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
             FireMassKG = IdealFireMassKG;
-            if (MaxFiringRateKGpS == 0)
-                MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
-
+            
             if (ORTSMaxFiringRateKGpS != 0)
                 MaxFiringRateKGpS = ORTSMaxFiringRateKGpS; // If OR value present then use it 
+            
+            if (MaxFiringRateKGpS == 0)  // If no value for Firing rate then estimate a rate.
+            {
+                if (Stoker == 1.0f)
+                {
+                    MaxFiringRateKGpS = pS.FrompH(Kg.FromLb(14400.0f)); // Assume mecxhanical stocker can feed at a rate of 14,400 lb/hr
+                        
+                }
+                else
+                {
+                  MaxFiringRateKGpS = 180 * MaxBoilerOutputLBpH / 775 / 3600 / 2.2046f;
+                }
+
+            }
 
             // Initialise Mechanical Stoker if present
             if (Stoker == 1.0f)
             {
                 StokerIsMechanical = true;
-                MaxFiringRateKGpS = 2 * MaxFiringRateKGpS; // Temp allowance for mechanical stoker
+             }
+            else // AI fireman
+            {
+                MaxTheoreticalFiringRateKgpS = MaxFiringRateKGpS * 1.33f; // allow the fireman to overfuel for short periods of time 
             }
-            MaxTheoreticalFiringRateKgpS = MaxFiringRateKGpS * 1.33f; // allow the fireman to overfuel for short periods of time 
 
             ApplyBoilerPressure();
 
@@ -1536,7 +1738,7 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Boiler Evap Rate {0} , Max Boiler Output {1} lbs/h", BoilerEvapRateLbspFt2, MaxBoilerOutputLBpH);
 
                 Trace.TraceInformation("**************** Cylinder ****************");
-                Trace.TraceInformation("Num {0}, Stroke {1:N1} in, Diameter {2:N1} in, Efficiency {3:n1}", NumCylinders, Me.ToIn(CylinderStrokeM), Me.ToIn(CylinderDiameterM), CylinderEfficiencyRate);
+                Trace.TraceInformation("Num {0}, Stroke {1:N1} in, Diameter {2:N1} in, Efficiency {3:N1}, MaxIHP {4:N1}", NumCylinders, Me.ToIn(CylinderStrokeM), Me.ToIn(CylinderDiameterM), CylinderEfficiencyRate, MaxIndicatedHorsePowerHP);
                 Trace.TraceInformation("Port Opening {0}, Exhaust Point {1}, InitialSuperheatFactor {2}", CylinderPortOpeningFactor, CylinderExhaustOpenFactor, SuperheatCutoffPressureFactor);
                 
                 Trace.TraceInformation("**************** Fire ****************");
@@ -3823,8 +4025,8 @@ namespace Orts.Simulation.RollingStocks
               // Calculate IHP
                     // IHP = (MEP x Speed (mph)) / 375.0) - this is per cylinder
 
-                    HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(SpeedMpS))) / 375.0f;
-                    LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(SpeedMpS))) / 375.0f;
+                    HPIndicatedHorsePowerHP = (HPTractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
+                    LPIndicatedHorsePowerHP = (LPTractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
 
                 float WheelRevs = pS.TopM(DrvWheelRevRpS);
                 IndicatedHorsePowerHP = HPIndicatedHorsePowerHP + LPIndicatedHorsePowerHP;
@@ -3837,7 +4039,7 @@ namespace Orts.Simulation.RollingStocks
            // Calculate IHP
                 // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
 
-                IndicatedHorsePowerHP = (TractiveEffortLbsF * pS.TopH(Me.ToMi(SpeedMpS)))/ 375.0f;
+                IndicatedHorsePowerHP = (TractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS)))/ 375.0f;
             }
 
             IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
@@ -3963,51 +4165,62 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceN = 0; 
 
             // Based upon max IHP, limit motive force.
-            if (PistonSpeedFtpMin > MaxPistonSpeedFtpM || IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
-            {
+//            if (PistonSpeedFtpMin > MaxPistonSpeedFtpM || IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
+//            {
 
                 if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
                 {
+                    MotiveForceN = N.FromLbf((MaxIndicatedHorsePowerHP * 375.0f) / pS.TopH(Me.ToMi(SpeedMpS)));
                     IndicatedHorsePowerHP = MaxIndicatedHorsePowerHP; // Set IHP to maximum value
+                    IsCritTELimit = true; // Flag if limiting TE
+                }
+                else
+                {
+                    IsCritTELimit = false; // Reset flag if limiting TE
                 }
                 // Calculate the speed factor for the locomotive, based upon piston speed limit  
 
                 /// TODO - Add compound locomotive  ++++++++++++
-                if (HasSuperheater)
-                {
-                    SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
+//                if (HasSuperheater)
+//                {
+//                    SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
                     // Calculate "critical" power of locomotive @ pistion speed
-                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
-                }
-                else if (SteamEngineType == SteamEngineTypes.Geared)
-                {
-                    SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];   // Assume the same as saturated locomotive for time being.
+//                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
+//                }
+//                else if (SteamEngineType == SteamEngineTypes.Geared)
+//                {
+//                    SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];   // Assume the same as saturated locomotive for time being.
                     // Calculate "critical" power of locomotive @ pistion speed
-                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor * MotiveForceGearRatio;
-                }
-                else
-                {
-                    SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
+//                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor * MotiveForceGearRatio;
+//                }
+//                else
+//                {
+//                    SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
                     // Calculate "critical" power of locomotive @ pistion speed
-                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
-                }
+//                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
+//                }
                 // Limit motive force once piston speed exceeds limit - natural limitation is achieved by MEP, however a cross check against the speed factor
                 // (determined by Alco) will also be considered. Speed factor will be used if smaller then MEP calculated tractive effort. 
                 // This allows a tapered effect as the locomotive force reaches a limit.
-                if ((TractiveEffortLbsF * CylinderEfficiencyRate) > CurrentCriticalSpeedTractiveEffortLbf)
-                {
-                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CurrentCriticalSpeedTractiveEffortLbf);
-                }
+//                if ((TractiveEffortLbsF * CylinderEfficiencyRate) > CurrentCriticalSpeedTractiveEffortLbf)
+//                {
+//                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CurrentCriticalSpeedTractiveEffortLbf);
+//                    IsCritTELimit = true; // Flag if limiting TE
+//                }
+//                else
+//                {
+//                    IsCritTELimit = false; // Reset flag if not limiting TE
+//                }
 
                 // Only display value changes once piston limit exceeded
-                if (PistonSpeedFtpMin > MaxPistonSpeedFtpM && CurrentCriticalSpeedTractiveEffortLbf < MaxCriticalSpeedTractiveEffortLbf)
-                {
-                    DisplayCriticalSpeedTractiveEffortLbf = CurrentCriticalSpeedTractiveEffortLbf;
+//                if (PistonSpeedFtpMin > MaxPistonSpeedFtpM && CurrentCriticalSpeedTractiveEffortLbf < MaxCriticalSpeedTractiveEffortLbf)
+//                {
+//                    DisplayCriticalSpeedTractiveEffortLbf = CurrentCriticalSpeedTractiveEffortLbf;
                     DisplaySpeedFactor = SpeedFactor;
-                }
-            }
+//                }
+//            }
 
-            DrawBarPullLbsF = N.ToLbf(MotiveForceN - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
+            DrawBarPullLbsF = N.ToLbf(Math.Abs(MotiveForceN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
             DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
 
             DrawbarHorsePowerHP = (DrawBarPullLbsF * MpS.ToMpH(absSpeedMpS)) / 375.0f;  // TE in this instance is a maximum, and not at the wheel???
@@ -4429,9 +4642,9 @@ namespace Orts.Simulation.RollingStocks
             // Find the maximum TE for debug i.e. @ start and full throttle
             if (absSpeedMpS < 1.0)
             {
-                if (MotiveForceN > StartTractiveEffortN && MotiveForceN < MaxForceN)
+                if ( Math.Abs(MotiveForceN) > absStartTractiveEffortN &&  Math.Abs(MotiveForceN) < MaxForceN)
                 {
-                    StartTractiveEffortN = MotiveForceN; // update to new maximum TE
+                    absStartTractiveEffortN = Math.Abs(MotiveForceN); // update to new maximum TE
                 }
             }
         }
@@ -4596,31 +4809,31 @@ namespace Orts.Simulation.RollingStocks
             InjCylEquivSizeIN = (NumCylinders / 2.0f) * Me.ToIn(CylinderDiameterM);
 
             // Based on equiv cyl size determine correct size injector
-            if (InjCylEquivSizeIN <= 19.0)
+            if (InjCylEquivSizeIN <= 19.0 && (2.0f * (pS.TopH(pS.FrompM(Injector09FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
             {
                 MaxInjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector09FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 9mm Injector Flow rate 
                 InjectorSize = 09.0f; // store size for display in HUD
             }
-            else if (InjCylEquivSizeIN <= 24.0)
+            else if (InjCylEquivSizeIN <= 24.0 && (2.0f * (pS.TopH(pS.FrompM(Injector10FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
             {
                 MaxInjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 10mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector10FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 10 mm Injector Flow rate 
                 InjectorSize = 10.0f; // store size for display in HUD                
             }
-            else if (InjCylEquivSizeIN <= 26.0)
+            else if (InjCylEquivSizeIN <= 26.0 && (2.0f * (pS.TopH(pS.FrompM(Injector11FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
             {
                 MaxInjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 11mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector11FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 11 mm Injector Flow rate 
                 InjectorSize = 11.0f; // store size for display in HUD                
             }
-            else if (InjCylEquivSizeIN <= 28.0)
+            else if (InjCylEquivSizeIN <= 28.0 && (2.0f * (pS.TopH(pS.FrompM(Injector13FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
             {
                 MaxInjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 13mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector13FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 13 mm Injector Flow rate 
                 InjectorSize = 13.0f; // store size for display in HUD                
             }
-            else if (InjCylEquivSizeIN <= 30.0)
+            else if (InjCylEquivSizeIN <= 30.0 && (2.0f * (pS.TopH(pS.FrompM(Injector14FlowratePSItoUKGpM[MaxBoilerPressurePSI])) * WaterLBpUKG)) > MaxBoilerOutputLBpH)
             {
                 MaxInjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[MaxBoilerPressurePSI]) * WaterLBpUKG; // 14mm Injector maximum flow rate @ maximm boiler pressure
                 InjectorFlowRateLBpS = pS.FrompM(Injector14FlowratePSItoUKGpM[BoilerPressurePSI]) * WaterLBpUKG; // 14 mm Injector Flow rate 
@@ -4806,7 +5019,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = true;
                     Injector2Fraction = 0.4f;
                 }
-                else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 10.0))  // If boiler pressure is not too low then turn on injector 2
+                else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 40.0))  // If boiler pressure is not too low then turn on injector 2
                 {
                     if (WaterGlassLevelIN <= 5.75 & WaterGlassLevelIN > 5.5)
                     {
@@ -5517,29 +5730,35 @@ namespace Orts.Simulation.RollingStocks
                 IsGrateLimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Performance"));
-            status.AppendFormat("{0}\t{1}\t{4}\t{2}\t{5}\t{3}\t{6}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                 Simulator.Catalog.GetString("Power:"),
                 Simulator.Catalog.GetString("MaxInd"),
-                Simulator.Catalog.GetString("Ind"),
-                Simulator.Catalog.GetString("Drawbar"),
                 FormatStrings.FormatPower(W.FromHp(MaxIndicatedHorsePowerHP), IsMetric, false, false),
+                Simulator.Catalog.GetString("Ind"),
                 FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
-                FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false));
+                Simulator.Catalog.GetString("Drawbar"),
+                FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false),
+                Simulator.Catalog.GetString("BlrLmt"),
+                ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
-            status.AppendFormat("{0}\t{1}\t{7}\t{2}\t{8}\t{3}\t{9}\t{4}\t{10}\t{5}\t{11}\t{6} {12}\n",
+//            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                      Simulator.Catalog.GetString("Force:"),
                      Simulator.Catalog.GetString("TheorTE"),
-                     Simulator.Catalog.GetString("StartTE"),
-                     Simulator.Catalog.GetString("TE"),
-                     Simulator.Catalog.GetString("Draw"),
-                     Simulator.Catalog.GetString("CritSpTE"),
-                     Simulator.Catalog.GetString("CritSpeed"),
                      FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
-                     FormatStrings.FormatForce(StartTractiveEffortN, IsMetric),
+                     Simulator.Catalog.GetString("StartTE"),
+                     FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                     Simulator.Catalog.GetString("TE"),
                      FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                     Simulator.Catalog.GetString("Draw"),
                      FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
-                     FormatStrings.FormatForce(N.FromLbf(DisplayCriticalSpeedTractiveEffortLbf), IsMetric),
-                     FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric));
+//                     Simulator.Catalog.GetString("CritSpTE"),
+//                     FormatStrings.FormatForce(N.FromLbf(DisplayCriticalSpeedTractiveEffortLbf), IsMetric),
+                     Simulator.Catalog.GetString("CritSpeed"),
+                     FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
+                     Simulator.Catalog.GetString("SpdLmt"),
+                     IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+
 
             status.AppendFormat("{0}\t{1}\t{5:N0} {9}/{10}\t\t{2}\t{6:N3}\t{3}\t{7:N0} {11}\t{4} {8:N2}\n",
                 Simulator.Catalog.GetString("Move:"),
@@ -5755,7 +5974,18 @@ namespace Orts.Simulation.RollingStocks
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+
+                            // Check to see if MaxIHP is in fact limited by the boiler
+                            if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
+                            {
+                                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                                ISBoilerLimited = true;
+                            }
+                            else
+                            {
+                                ISBoilerLimited = false;
+                            }
                         }
                         else if (SteamGearPosition == 2.0)
                         {
@@ -5767,7 +5997,17 @@ namespace Orts.Simulation.RollingStocks
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            // Check to see if MaxIHP is in fact limited by the boiler
+                            if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
+                            {
+                                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                                ISBoilerLimited = true;
+                            }
+                            else
+                            {
+                                ISBoilerLimited = false;
+                            }
                         }
                     }
                 }
@@ -5804,7 +6044,17 @@ namespace Orts.Simulation.RollingStocks
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf / 0.85f) * MaxLocoSpeedMpH) / 375.0f;
+                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            // Check to see if MaxIHP is in fact limited by the boiler
+                            if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
+                            {
+                                MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                                ISBoilerLimited = true;
+                            }
+                            else
+                            {
+                                ISBoilerLimited = false;
+                            }
 
                         }
                         else if (SteamGearPosition == 0.0)
