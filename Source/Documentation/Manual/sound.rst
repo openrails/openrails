@@ -125,6 +125,8 @@ The signal file (``signal.sms``) and its discrete trigger 1 is managed by OR.
 
 Moreover, OR manages the extended set of discrete triggers provided by MSTSbin.
 
+.. _sound-discrete:
+
 OR-Specific Discrete Triggers
 -----------------------------
 
@@ -220,6 +222,16 @@ Trigger       Function
 =========     =====================================
 
 Trigger 161 is activated when the cab light is switched on or off.
+
+The following triggers are activated when the state of the cab radio changes 
+(see :ref:`here <cabs-cabradio>`):
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+162           Cab radio switched on
+163           Cab radio switched off
+=========     =====================================
 
 Variable Triggers
 -----------------

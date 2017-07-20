@@ -17,8 +17,29 @@ next paragraphs.
 OR adds support for the ETCS circular speed gauge, as described 
 :ref:`here <options-etcs>`.
 
+.. _cabs-cabradio:
+
+Cab radio
+---------
+
+OR supports the cab radio cabview control.
+Pressing keys Alt+R switches on and off the cab radio.
+Switching on and off the cab radio enables discrete sound triggers 162 and 
+163, as explained :ref:`here <sound-discrete>`.
+Here is an example of a cab radio control block within the .cvf file::
+
+			TwoState (
+            Type ( CAB_RADIO TWO_STATE )
+			Position ( 150 425 30 21 )
+			Graphic ( Horn.ace )
+			NumFrames ( 2 2 1 )
+			Style ( ONOFF )
+			MouseControl ( 1 )
+            )
+
+
 High-resolution Cab Backgrounds and Controls
-============================================
+--------------------------------------------
 
 In MSTS the resolution of the cab background image is limited to 1024x1024; 
 this limitation does not apply in OR as a result of OR's better handling of 
