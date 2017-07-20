@@ -206,6 +206,7 @@ namespace ORTS.Settings
         [GetString("Control ImmediateRefill")]ControlImmediateRefill,
         [GetString("Control Turntable Clockwise")]ControlTurntableClockwise,
         [GetString("Control Turntable Counterclockwise")]ControlTurntableCounterclockwise,
+        [GetString("Control Cab Radio")] ControlCabRadio,
     }
 
     /// <summary>
@@ -518,6 +519,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlSteamHeatIncrease] = new UserCommandKeyInput(0x16, KeyModifiers.Alt);
             Commands[(int)UserCommands.ControlBrakeHoseConnect] = new UserCommandKeyInput(0x2B);
             Commands[(int)UserCommands.ControlBrakeHoseDisconnect] = new UserCommandKeyInput(0x2B, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlCabRadio] = new UserCommandKeyInput(0x13, KeyModifiers.Alt);
             Commands[(int)UserCommands.ControlCircuitBreakerClosingOrder] = new UserCommandKeyInput(0x18);
             Commands[(int)UserCommands.ControlCircuitBreakerOpeningOrder] = new UserCommandKeyInput(0x17);
             Commands[(int)UserCommands.ControlCircuitBreakerClosingAuthorization] = new UserCommandKeyInput(0x18, KeyModifiers.Shift);

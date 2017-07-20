@@ -102,6 +102,7 @@ namespace Orts.Simulation
       , SignalMode
       // Freight Load
       , FreightLoad
+      , CabRadio
     }
 
     public enum CabSetting {
@@ -230,7 +231,9 @@ namespace Orts.Simulation
                 , new string [] { GetString("Gearbox"), null, null, null, GetString("down"), GetString("up"), GetString("locked. Use shaft before changing gear.") } 
                 , new string [] { GetString("Signal mode"), GetString("manual"), null, GetString("auto"), null, null, GetString("locked. Stop train, then re-try.") } 
                 // Freight Load
-                , new string [] { GetString("Wagon"), GetString("Wagon fully unloaded"), null, GetString("Wagon fully loaded"), null, GetString("Freight load") } 
+                , new string [] { GetString("Wagon"), GetString("Wagon fully unloaded"), null, GetString("Wagon fully loaded"), null, GetString("Freight load") }
+
+                , new string [] { GetString("Cab Radio"), GetString("off"), null, GetString("on") }
 
             };
             Debug.Assert(ConfirmText.Length == Enum.GetNames(typeof(CabControl)).Length, "Number of entries indexer ConfirmText must match values in CabControl enum.");

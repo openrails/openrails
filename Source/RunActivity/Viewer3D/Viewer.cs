@@ -496,6 +496,7 @@ namespace Orts.Viewer3D
             ToggleDoorsLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleDoorsRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleCabRadioCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleSwitchAheadCommand.Receiver = this;
             ToggleSwitchBehindCommand.Receiver = this;
             ToggleAnySwitchCommand.Receiver = this;

@@ -1199,6 +1199,32 @@ namespace Orts.Common
         }
     }
 
+    // Cab radio switch on-switch off command
+    [Serializable()]
+    public sealed class ToggleCabRadioCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleCabRadioCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver != null)
+            {
+                Receiver.ToggleCabRadio();
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "switched on" : "switched off");
+        }
+    }
+
     [Serializable()]
     public sealed class TurntableClockwiseCommand : Command
     {

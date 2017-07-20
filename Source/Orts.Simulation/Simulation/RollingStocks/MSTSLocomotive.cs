@@ -137,6 +137,9 @@ namespace Orts.Simulation.RollingStocks
         public bool MilepostUnitsMetric;
         public float DrvWheelWeightKg; // current weight on locomotive drive wheels, includes drag factor (changes as mass changes)
         public float InitialDrvWheelWeightKg; // initialising weight on locomotive drive wheels, includes drag factor
+        public bool CabRadioOn;
+        public bool OnLineCabRadio;
+        public string OnLineCabRadioURL;
 
         public string LocomotiveName; // Name of locomotive from ENG file
 
@@ -732,6 +735,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(steamheat": SteamHeatController.Parse(stf); break;
                 case "engine(name": stf.MustMatch("("); LocomotiveName = stf.ReadString(); break;
                 case "engine(maxsteamheatingpressure": MaxSteamHeatPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsonlinecabradio": OnLineCabRadio = stf.ReadBoolBlock(false); break;
+                case "engine(ortsonlinecabradiourl": OnLineCabRadioURL = stf.ReadString(); break;
                 default: base.Parse(lowercasetoken, stf); break;
                     
             }
@@ -2809,6 +2814,19 @@ namespace Orts.Simulation.RollingStocks
             Simulator.Confirmer.Confirm(CabControl.CabLight, CabLightOn ? CabSetting.On : CabSetting.Off);
         }
 
+        public void ToggleCabRadio()
+        {
+            CabRadioOn = !CabRadioOn;
+            if (!OnLineCabRadio)
+            {
+                if (CabRadioOn) SignalEvent(Event.CabRadioOn); // hook for sound trigger
+                else SignalEvent(Event.CabRadioOff);
+            }
+            else if (OnLineCabRadioURL != "")
+            { }
+            if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.CabRadio, CabRadioOn ? CabSetting.On : CabSetting.Off);
+        }
+
         public void ToggleWipers()
         {
             SignalEvent(Wiper ? Event.WiperOff : Event.WiperOn);
@@ -3388,6 +3406,11 @@ namespace Orts.Simulation.RollingStocks
                             if (dieselLoco.DieselEngines.HasGearBox)
                                 data = dieselLoco.DieselEngines[0].GearBox.CurrentGearIndex + 1;
                         }
+                        break;
+                    }
+                case CABViewControlTypes.CAB_RADIO:
+                    {
+                        data = CabRadioOn ? 1 : 0;
                         break;
                     }
                 default:
