@@ -153,7 +153,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommands.ControlTroughRefill, new Action[] { Noop, () => ToggleTroughRefill() });
             UserInputCommands.Add(UserCommands.ControlSmallEjectorIncrease, new Action[] { () => SteamLocomotive.StopSmallEjectorIncrease(), () => SteamLocomotive.StartSmallEjectorIncrease(null) });
             UserInputCommands.Add(UserCommands.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
-            base.InitializeUserInputCommands();
+             base.InitializeUserInputCommands();
         }
 
         /// <summary>
@@ -164,6 +164,12 @@ namespace Orts.Viewer3D.RollingStock
         {
             // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
             if (UserInput.IsPressed(UserCommands.ControlFiring)) new ToggleManualFiringCommand(Viewer.Log);
+
+            // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
+            if (UserInput.IsPressed(UserCommands.ControlAIFireOn)) new AIFireOnCommand(Viewer.Log);
+
+            // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
+            if (UserInput.IsPressed(UserCommands.ControlAIFireOff)) new AIFireOffCommand(Viewer.Log);
 
             if (UserInput.RDState != null && UserInput.RDState.Changed)
                 SteamLocomotive.SetCutoffPercent(UserInput.RDState.DirectionPercent);

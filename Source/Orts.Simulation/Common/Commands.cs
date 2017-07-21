@@ -1080,6 +1080,44 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class AIFireOnCommand : Command
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public AIFireOnCommand(CommandLog log)
+            : base( log )
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.AIFireOn();
+
+        }
+
+     }
+
+    [Serializable()]
+    public sealed class AIFireOffCommand : Command
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public AIFireOffCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.AIFireOff();
+
+        }
+
+    }
+
+    [Serializable()]
     public sealed class FireShovelfullCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 

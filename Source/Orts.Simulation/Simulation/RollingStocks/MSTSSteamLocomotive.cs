@@ -134,6 +134,8 @@ namespace Orts.Simulation.RollingStocks
         bool IsLocoSlip = false; 	   // locomotive is slipping
         bool IsCritTELimit = false; // Flag to advise if critical TE is exceeded
         bool ISBoilerLimited = false;  // Flag to indicate that Boiler is limiting factor with the locomotive power
+        bool SetFireOn = false; // Flag to set the fire to on for starting of locomotive
+        bool SetFireOff = false; // Flag to set the fire to off for locomotive when approaching a stop 
 
         // Aux Tender Parameters
         public bool AuxTenderMoveFlag = false; // Flag to indicate whether train has moved
@@ -1397,15 +1399,15 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (MaxSuperheatRefTempF >= 350.0f)
                 {
-                    if (MaxBoilerPressurePSI >= 200)
+                    if (MaxBoilerPressurePSI >= 200 && MaxBoilerPressurePSI < 249)
                     {
-                        SteamperIHPh = 19.3f; // For 350 deg superheated locomotive with boiler pressure between 200 and 249
+                        SteamperIHPh = 16.53f; // For 350 deg superheated locomotive with boiler pressure between 200 and 249
                     }
-                    else if (MaxBoilerPressurePSI >= 250)
+                    else if (MaxBoilerPressurePSI >= 250 && MaxBoilerPressurePSI < 299)
                     {
                         SteamperIHPh = 16.1f; // For 350 deg superheated locomotive with default boiler pressure between 250 and 299
                     }
-                    else if (MaxBoilerPressurePSI >= 300)
+                    else if (MaxBoilerPressurePSI >= 300 && MaxBoilerPressurePSI < 349)
                     {
                         SteamperIHPh = 15.825f; // For 350 deg superheated locomotive with default boiler pressure between 300 and 349 
                     }
@@ -1415,21 +1417,21 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        SteamperIHPh = 20.1f; // For For 350 deg superheated locomotive with boiler pressure less then 200
+                        SteamperIHPh = 17.01f; // For For 350 deg superheated locomotive with boiler pressure less then 200
                     }
 
                 }
                 else if(MaxSuperheatRefTempF >= 300.0f)
                 {
-                    if (MaxBoilerPressurePSI >= 200)
+                    if (MaxBoilerPressurePSI >= 200 && MaxBoilerPressurePSI < 249)
                     {
-                        SteamperIHPh = 19.3f; // For 300 deg superheated locomotive with boiler pressure between 200 and 249
+                        SteamperIHPh = 17.41f; // For 300 deg superheated locomotive with boiler pressure between 200 and 249
                     }
-                    else if (MaxBoilerPressurePSI >= 250)
+                    else if (MaxBoilerPressurePSI >= 250 && MaxBoilerPressurePSI < 299)
                     {
                         SteamperIHPh = 16.925f; // For 300 deg superheated locomotive with default boiler pressure between 250 and 299
                     }
-                    else if (MaxBoilerPressurePSI >= 300)
+                    else if (MaxBoilerPressurePSI >= 300 && MaxBoilerPressurePSI < 349)
                     {
                         SteamperIHPh = 16.675f; // For 300 deg superheated locomotive with default boiler pressure between 300 and 349 
                     }
@@ -1439,20 +1441,20 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        SteamperIHPh = 20.1f; // For For 300 deg superheated locomotive with boiler pressure less then 200
+                        SteamperIHPh = 17.91f; // For For 300 deg superheated locomotive with boiler pressure less then 200
                     }
                 }
                 else if(MaxSuperheatRefTempF >= 250.0f)
                 {
-                    if (MaxBoilerPressurePSI >= 200)
+                    if (MaxBoilerPressurePSI >= 200 && MaxBoilerPressurePSI < 249)
                     {
                         SteamperIHPh = 18.325f; // For 250 deg superheated locomotive with boiler pressure between 200 and 249
                     }
-                    else if (MaxBoilerPressurePSI >= 250)
+                    else if (MaxBoilerPressurePSI >= 250 && MaxBoilerPressurePSI < 299)
                     {
                         SteamperIHPh = 17.8125f; // For 250 deg superheated locomotive with default boiler pressure between 250 and 299
                     }
-                    else if (MaxBoilerPressurePSI >= 300)
+                    else if (MaxBoilerPressurePSI >= 300 && MaxBoilerPressurePSI < 349)
                     {
                         SteamperIHPh = 17.575f; // For 250 deg superheated locomotive with default boiler pressure between 300 and 349 
                     }
@@ -1467,15 +1469,15 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if(MaxSuperheatRefTempF > 200.0f)
                 {
-                    if (MaxBoilerPressurePSI >= 200)
+                    if (MaxBoilerPressurePSI >= 200 && MaxBoilerPressurePSI < 249)
                     {
                         SteamperIHPh = 19.3f; // For 200 deg superheated locomotive with boiler pressure between 200 and 249
                     }
-                    else if (MaxBoilerPressurePSI >= 250)
+                    else if (MaxBoilerPressurePSI >= 250 && MaxBoilerPressurePSI < 299)
                     {
                         SteamperIHPh = 18.725f; // For 200 deg superheated locomotive with default boiler pressure between 250 and 299
                     }
-                    else if (MaxBoilerPressurePSI >= 300)
+                    else if (MaxBoilerPressurePSI >= 300 && MaxBoilerPressurePSI < 349)
                     {
                         SteamperIHPh = 18.5f; // For 200 deg superheated locomotive with default boiler pressure between 300 and 349 
                     }
@@ -1490,15 +1492,15 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if(MaxSuperheatRefTempF >= 150.0f)
                 {
-                    if (MaxBoilerPressurePSI >= 200)
+                    if (MaxBoilerPressurePSI >= 200 && MaxBoilerPressurePSI < 249)
                     {
                         SteamperIHPh = 20.6f; // For 150 deg superheated locomotive with boiler pressure between 200 and 249
                     }
-                    else if (MaxBoilerPressurePSI >= 250)
+                    else if (MaxBoilerPressurePSI >= 250 && MaxBoilerPressurePSI < 299)
                     {
                         SteamperIHPh = 19.95f; // For 150 deg superheated locomotive with default boiler pressure between 250 and 299
                     }
-                    else if (MaxBoilerPressurePSI >= 300)
+                    else if (MaxBoilerPressurePSI >= 300 && MaxBoilerPressurePSI < 349)
                     {
                         SteamperIHPh = 19.55f; // For 150 deg superheated locomotive with default boiler pressure between 300 and 349 
                     }
@@ -1513,15 +1515,15 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else  // Assume the same as a saturated locomotive
                 {
-                    if (MaxBoilerPressurePSI >= 200)
+                    if (MaxBoilerPressurePSI >= 200 && MaxBoilerPressurePSI < 249)
                     {
                         SteamperIHPh = 27.5f; // For saturated locomotive with boiler pressure between 200 and 249
                     }
-                    else if (MaxBoilerPressurePSI >= 250)
+                    else if (MaxBoilerPressurePSI >= 250 && MaxBoilerPressurePSI < 299)
                     {
                         SteamperIHPh = 26.6f; // For saturated locomotive with default boiler pressure between 250 and 299
                     }
-                    else if (MaxBoilerPressurePSI >= 300)
+                    else if (MaxBoilerPressurePSI >= 300 && MaxBoilerPressurePSI < 349)
                     {
                         SteamperIHPh = 26.05f; // For saturated locomotive with default boiler pressure between 300 and 349 
                     }
@@ -1538,15 +1540,15 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                if (MaxBoilerPressurePSI >= 200)
+                if (MaxBoilerPressurePSI >= 200 && MaxBoilerPressurePSI < 249)
                 {
                     SteamperIHPh = 27.5f; // For saturated locomotive with boiler pressure between 200 and 249
                 }
-                else if (MaxBoilerPressurePSI >= 250)
+                else if (MaxBoilerPressurePSI >= 250 && MaxBoilerPressurePSI < 299)
                 {
                     SteamperIHPh = 26.6f; // For saturated locomotive with default boiler pressure between 250 and 299
                 }
-                else if (MaxBoilerPressurePSI >= 300)
+                else if (MaxBoilerPressurePSI >= 300 && MaxBoilerPressurePSI < 349)
                 {
                     SteamperIHPh = 26.05f; // For saturated locomotive with default boiler pressure between 300 and 349 
                 }
@@ -2263,6 +2265,10 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateFirebox(float elapsedClockSeconds, float absSpeedMpS)
         {
+
+//            Trace.TraceInformation("FireOn - {0}", SetFireOn);
+//            Trace.TraceInformation("FireOff - {0}", SetFireOff);
+
             if (!FiringIsManual && !HotStart)  // if loco is started cold, and is not moving then the blower may be needed to heat loco up.
             {
                 if (absSpeedMpS < 1.0f)    // locomotive is stationary then blower can heat fire
@@ -4976,7 +4982,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 // Injectors
                 // Injectors normally not on when stationary?
-                // Injector water delivery heat decreases with the capacity of the injectors, therefore cycle injectors on evenly across both.
+                // Injector water delivery heat decreases with the capacity of the injectors, ideally one injector would be used as appropriate to match steam consumption. @nd one only used if required.
                 if (WaterGlassLevelIN > 7.99)        // turn injectors off if water level in boiler greater then 8.0, to stop cycling
                 {
                     Injector1IsOn = false;
@@ -4994,65 +5000,55 @@ namespace Orts.Simulation.RollingStocks
                 else if (WaterGlassLevelIN <= 6.75 & WaterGlassLevelIN > 6.5)
                 {
                     Injector1IsOn = true;
-                    Injector1Fraction = 0.2f;
-                    Injector2IsOn = true;
-                    Injector2Fraction = 0.2f;
+                    Injector1Fraction = 0.4f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f; Injector2IsOn = false;
                 }
                 else if (WaterGlassLevelIN <= 6.5 & WaterGlassLevelIN > 6.25)
                 {
                     Injector1IsOn = true;
-                    Injector1Fraction = 0.4f;
-                    Injector2IsOn = true;
-                    Injector2Fraction = 0.2f;
+                    Injector1Fraction = 0.6f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f; Injector2IsOn = false;
                 }
                 else if (WaterGlassLevelIN <= 6.25 & WaterGlassLevelIN > 6.0)
                 {
                     Injector1IsOn = true;
-                    Injector1Fraction = 0.4f;
-                    Injector2IsOn = true;
-                    Injector2Fraction = 0.4f;
+                    Injector1Fraction = 0.8f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
                 }
                 else if (WaterGlassLevelIN <= 6.0 & WaterGlassLevelIN > 5.75)
                 {
                     Injector1IsOn = true;
-                    Injector1Fraction = 0.6f;
-                    Injector2IsOn = true;
-                    Injector2Fraction = 0.4f;
+                    Injector1Fraction = 1.0f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
                 }
-                else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 40.0))  // If boiler pressure is not too low then turn on injector 2
+                else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2
                 {
                     if (WaterGlassLevelIN <= 5.75 & WaterGlassLevelIN > 5.5)
                     {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 0.6f;
                         Injector2IsOn = true;
-                        Injector2Fraction = 0.6f;
+                        Injector2Fraction = 0.2f;
                     }
                     else if (WaterGlassLevelIN <= 5.5 & WaterGlassLevelIN > 5.25)
                     {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 0.8f;
                         Injector2IsOn = true;
-                        Injector2Fraction = 0.6f;
+                        Injector2Fraction = 0.4f;
                     }
                     else if (WaterGlassLevelIN <= 5.25 & WaterGlassLevelIN > 5.0)
                     {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 0.8f;
                         Injector2IsOn = true;
-                        Injector2Fraction = 0.8f;
+                        Injector2Fraction = 0.6f;
                     }
                     else if (WaterGlassLevelIN <= 5.0 & WaterGlassLevelIN > 4.75)
                     {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 1.0f;
                         Injector2IsOn = true;
                         Injector2Fraction = 0.8f;
                     }
                     else if (WaterGlassLevelIN <= 4.75 & WaterGlassLevelIN > 4.5)
                     {
-                        Injector1IsOn = true;
-                        Injector1Fraction = 1.0f;
                         Injector2IsOn = true;
                         Injector2Fraction = 1.0f;
                     }
@@ -6639,6 +6635,18 @@ namespace Orts.Simulation.RollingStocks
         public void ToggleManualFiring()
         {
             FiringIsManual = !FiringIsManual;
+        }
+
+        public void AIFireOn()
+        {
+            SetFireOn = true;
+            Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("AI Fireman has started adding fuel to fire"));
+        }
+
+        public void AIFireOff()
+        {
+            SetFireOff = true;
+            Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("AI Fireman has stopped adding fuel to fire"));
         }
 
         /// <summary>
