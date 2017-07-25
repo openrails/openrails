@@ -400,7 +400,7 @@ namespace Orts.Viewer3D
                 float length = 0, radius = -1;
 
                 length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0) continue; // Consider zero-length subsections vacuous
+                if (length == 0.0 || dTrackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
 
                 // Create new DT object copy; has only one meaningful subsection
                 DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
@@ -462,7 +462,7 @@ namespace Orts.Viewer3D
                 float length = 0;
 
                 length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0) continue; // Consider zero-length subsections vacuous
+                if (length == 0.0 || dTrackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
 
                 // Create new DT object copy; has only one meaningful subsection
                 DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
