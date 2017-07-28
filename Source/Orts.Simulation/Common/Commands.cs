@@ -1253,7 +1253,7 @@ namespace Orts.Common
         {
             if (Receiver != null)
             {
-                Receiver.ToggleCabRadio();
+                Receiver.ToggleCabRadio(ToState);
             }
         }
 

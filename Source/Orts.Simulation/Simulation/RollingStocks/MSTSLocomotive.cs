@@ -2814,9 +2814,9 @@ namespace Orts.Simulation.RollingStocks
             Simulator.Confirmer.Confirm(CabControl.CabLight, CabLightOn ? CabSetting.On : CabSetting.Off);
         }
 
-        public void ToggleCabRadio()
+        public void ToggleCabRadio( bool newState)
         {
-            CabRadioOn = !CabRadioOn;
+            CabRadioOn = newState;
             if (!OnLineCabRadio)
             {
                 if (CabRadioOn) SignalEvent(Event.CabRadioOn); // hook for sound trigger

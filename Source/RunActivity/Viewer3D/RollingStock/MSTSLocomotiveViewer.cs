@@ -162,7 +162,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommands.ControlOdoMeterShowHide, new Action[] { Noop, () => new ToggleOdometerCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlOdoMeterReset, new Action[] { Noop, () => new ResetOdometerCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlCabRadio, new Action[] { Noop, () => new ToggleCabRadioCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommands.ControlCabRadio, new Action[] { Noop, () => new ToggleCabRadioCommand(Viewer.Log, Locomotive.CabRadioOn? false : true) });
             base.InitializeUserInputCommands();
         }
 
