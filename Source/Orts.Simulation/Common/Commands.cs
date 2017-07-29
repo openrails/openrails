@@ -841,16 +841,16 @@ namespace Orts.Common
     }
 
     [Serializable()]
-    public sealed class ToggleWipersCommand : Command {
+    public sealed class WipersCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public ToggleWipersCommand( CommandLog log ) 
-            : base( log ) { 
+        public WipersCommand( CommandLog log , bool toState) 
+            : base( log , toState ) { 
             Redo(); 
         }
 
         public override void Redo() {
-            Receiver.ToggleWipers();
+            Receiver.ToggleWipers(ToState);
             // Report();
         }
     }
@@ -1239,11 +1239,11 @@ namespace Orts.Common
 
     // Cab radio switch on-switch off command
     [Serializable()]
-    public sealed class ToggleCabRadioCommand : BooleanCommand
+    public sealed class CabRadioCommand : BooleanCommand
     {
         public static MSTSLocomotive Receiver { get; set; }
 
-        public ToggleCabRadioCommand(CommandLog log, bool toState)
+        public CabRadioCommand(CommandLog log, bool toState)
             : base(log, toState)
         {
             Redo();

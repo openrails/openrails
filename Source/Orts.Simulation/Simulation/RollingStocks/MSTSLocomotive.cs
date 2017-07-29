@@ -2827,9 +2827,9 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.CabRadio, CabRadioOn ? CabSetting.On : CabSetting.Off);
         }
 
-        public void ToggleWipers()
+        public void ToggleWipers(bool newState)
         {
-            SignalEvent(Wiper ? Event.WiperOff : Event.WiperOn);
+            SignalEvent(newState ? Event.WiperOn : Event.WiperOff);
         }
 
         public void SetBailOff(bool bailOff)

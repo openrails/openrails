@@ -492,13 +492,13 @@ namespace Orts.Viewer3D
             HornCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BellCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleCabLightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleWipersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            WipersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             HeadlightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ChangeCabCommand.Receiver = this;
             ToggleDoorsLeftCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleDoorsRightCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleMirrorsCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
-            ToggleCabRadioCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            CabRadioCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             ToggleSwitchAheadCommand.Receiver = this;
             ToggleSwitchBehindCommand.Receiver = this;
             ToggleAnySwitchCommand.Receiver = this;
