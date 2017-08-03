@@ -3454,7 +3454,7 @@ namespace Orts.Simulation.Signalling
                             {
                                 SignalObject endSignal = thisSection.EndSignals[thisElement.Direction];
                                 // check if signal enabled for other train - if so, keep in node control
-                                if (!endSignal.enabled || endSignal.enabledTrain == thisTrain)
+                                if (endSignal.enabledTrain == null || endSignal.enabledTrain == thisTrain)
                                 {
                                     if (routeIndex < routePart.Count)
                                     {
