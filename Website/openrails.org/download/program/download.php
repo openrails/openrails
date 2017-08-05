@@ -5,20 +5,10 @@ session_start();
 $file_path  = $_REQUEST['file'];
 $path_parts = pathinfo($file_path);
 $file_name  = $path_parts['basename'];
-$file_ext   = $path_parts['extension'];
-$file_path  = '../../files/' . $file_name;
-$file_size  = filesize($file_path);
 $downloaded_by = $_REQUEST['id'];
 
-// Download takes place in the background thanks to "Content-Disposition: attachment"
-header("Content-Disposition: attachment; filename=\"$file_name\"");
-if ($file_ext == 'zip') {
-	header("Content-Type: application/zip");
-} else {
-	header("Content-Type: application/octet-stream");
-}
-header("Content-Length: $file_size");
-readfile("../../files/$file_name");
+// Redirect to download instead of streaming, to reduce problems (e.g. with download accelerators)
+header("Location: /files/$file_name?file=$file&id=$downloaded_by");
 
 // Record successful event
 require_once('../../shared/mysql/db_connect.php');
