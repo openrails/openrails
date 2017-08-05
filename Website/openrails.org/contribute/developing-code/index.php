@@ -92,11 +92,13 @@ The main folders in the repository are:
 To compile and debug the Open Rails source code, ensure you have the following Microsoft products installed:
       </p>
       <ul>
-        <li>Visual C# 2010, 2012, 2013 - any edition, including the
-          <a href="http://www.microsoft.com/en-us/download/details.aspx?id=40787">Express Edition</a>,
-          which is free
+        <li>Visual Studio 2015/17, any edition. The 
+          <a href="https://www.visualstudio.com/downloads/">Community Edition</a> 
+         is free
+		 <br />(Note 1: To save on disk space, all you need is the option Windows > .NET Development)
+		 <br />(Note 2: Install this before Microsoft XNA Framework Redistributable 3.1)
         </li>
-        <li><a href="http://www.microsoft.com/en-us/download/details.aspx?id=39">XNA Game Studio 3.1</a></li>
+        <li><a href="https://www.microsoft.com/en-gb/download/details.aspx?id=15163">Microsoft XNA Framework Redistributable 3.1</a></li>
       </ul>
       <p>
 After you have downloaded the code:

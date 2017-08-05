@@ -9,6 +9,7 @@
           <img class="totally_free_software" src="shared/totally_free_software3.png" alt="Totally free software"/>
           <!--<img class="totally_free_software" src="shared/now_at_version_1_0b.png" alt="Now at Version 1.0"/>-->
           <!--<img class="totally_free_software" src="shared/now_at_version_1_1.png" alt="Now at Version 1.1"/>-->
+          <!--<img class="totally_free_software" src="shared/now_at_version_1_2.png" alt="Now at Version 1.2"/>-->
           <a href="/">
             <img class="logo" src='shared/logos/or_logo.png' alt='logo for Open Rails'/>
             <div class="logo_text">Open Rails</div>
@@ -66,9 +67,20 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>Jul 2017</strong>
+            The Elvas Tower forum plays a major role in developing Open Rails but has been closed to non-members following a dispute.
+            All of the <a href="http://www.elvastower.com/forums/">Open Rails sub-forums</a>
+            are now open again and becoming a member is easier too.
+          </p>          <p>
+            <strong>Feb 2017</strong>
+			3D cabs available commercially - 
+            <a href="https://www.youtube.com/watch?v=EiccxSAIEe0&feature=em-subs_digest">see video</a>.
+          </p>
+          <p>									 
             <strong>Jan 2017</strong>
             <a href="/discover/version-1-2/">Open Rails 1.2</a> released! <a href="/download/program/">Download it here</a>.
           </p>
+<!--
           <p>
             <strong>Mar 2016</strong>
             <a href="/discover/version-1-1/">Open Rails 1.1</a> released!
@@ -83,6 +95,7 @@
             <strong>Jun 2015</strong>
             The Australian <a href="http://www.zigzag.coalstonewcastle.com.au/">Great Zig Zag Railway</a> released for Open Rails v1.0
           </p>
+-->
         </div>
         <div class="col-md-4 divider">
           <div class="heading">

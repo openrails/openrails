@@ -39,6 +39,11 @@ Add-ons designed for Microsoft Train Simulator may rely on files from the Micros
 <p>
 No, Open Rails does not modify any Microsoft Train Simulator files.
 </p>
+<h3>Does Open Rails suppport RailDriver?</h3>
+<p>
+<img src="http://raildriver.com/assets/images/raildriver/rd.desktop.home.jpg" width=250 style="float: right; margin: 20px;" /> Yes; this cab controller from P.I.Engineering is suitable for Open Rails and support for it is built in to the simulator. Installation instructions are included in the installation download (and <a href="http://openrails.org/download/program/">also from this webpage</a>).
+Eric Conrad has posted a <a href="http://msts-roundhouse.vnxglobal.com/opinon/raildriver-review">detailed review on his MSTS Roundhouse blog</a> which provides valuable advice for using this product.
+</p>											 
 <h3>Does Open Rails report data back to its creators?</h3>
 <p>
 Not at the moment. Data on how Open Rails is used will be very helpful for the project but, if we wish to collect usage data, we will inform you

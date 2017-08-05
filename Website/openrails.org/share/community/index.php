@@ -25,7 +25,7 @@ might give their interest a new lease of life; one that is potentially unlimited
 Then there are others who perhaps have come more recently to the hobby. It's a long time since 2001 and they find Microsoft Train Simulator unreliable and awkward
 compared to modern products. But Open Rails is robust, shows much promise and its open nature is more appealing than commercial products, so they follow its progress on the forums.
 </p><p>
-We have commentators on the whole train simulator world, such as Nicholas Ozorak's video library <em>At The Railyard</em>. For his independent opinion, watch <a href="http://www.attherailyard.com/seasonfiveepisodes.htm" target="_blank">this video review of Open Rails</a>.
+We have commentators on the whole train simulator world, such as Nicholas Ozorak's video library <em>At The Railyard</em>. For his independent opinion, watch <a href="http://attherailyard.com/index.php/2013/09/25/open-rails-full-bucket-line/" target="_blank">this video review of Open Rails</a>.
 </p><p>
 Finally we have the experts who collaborate to produce quality models for sale - for more, see <a href="../../trade/">Trade</a>. 
 </p>
@@ -39,17 +39,23 @@ These boards have forums and files dedicated to Open Rails:</p>
 <ul>
   <li><a href="http://www.elvastower.com" target="_blank">Elvas Tower</a> - International and American</li>
   <li><a href="http://www.trainsim.com" target="_blank">TrainSim</a> - International and American</li>
-  <li><a href="http://www.activitysimulatorworld.net" target="_blank">Activity Simulator World</a> - French</li>
+  <li><a href="http://www.railpage.com.au" target="_blank">Rail Page</a> - Australian</li>
+  <li><a href="http://forums.railvictoria.net/viewforum.php?f=48" target="_blank">Rail Victoria Forums</a> - Australian</li>
+  <li><a href="http://www.uktrainsim.com" target="_blank">UKTrainSim</a> - British</li>
+  <li><a href="http://tsforum.freeclanforum.com/f13-openrails" target="_blank" title="Dedicated to MSTS and Open Rails">Train Sim Safe House</a> - British</li>
   <li><a href="http://www.openrails.cn" target="_blank">China Open Rails Forum</a> - Chinese</li>
   <li><a href="http://open-rails.forumczech.com" target="_blank">Czech Open Rails Forum</a> - Czech</li>
-  <li><a href="http://www.msts.fora.pl" target="_blank">Polish Microsoft Train Simulator Forum</a> - Polish</li>
-  <li><a href="http://www.railpage.com.au" target="_blank">Rail Page</a> - Australian</li>
-  <li><a href="http://www.spaintrainzrutas.com" target="_blank">Spain Trainz Rutas</a> - Spanish</li>
-  <li><a href="http://www.trainsimhobby.net/forum" target="_blank">TrainSimHobby</a> - Italian</li>
-  <li><a href="http://tsforum.freeclanforum.com/f13-openrails" target="_blank">Train Sim Safe House</a> - UK</li>
+																												
+																						  
+																									 
+																								   
+																												 
   <li><a href="http://forum.treinpunt.nl/index.php/topic,65746.0.html" target="_blank">Trein Punt Open Rails Forum</a> - Dutch</li>
-  <li><a href="http://www.uktrainsim.com" target="_blank">UKTrainSim</a> - British</li>
-  <li><a href="http://forums.railvictoria.net/viewforum.php?f=48" target="_blank">Rail Victoria Forums</a> - Australian</li>
+  <li><a href="http://www.activitysimulatorworld.net" target="_blank">Activity Simulator World</a> - French</li>
+  <li><a href="http://www.ir-msts.in" target="_blank">IR MSTS</a> - Indian</li>
+  <li><a href="http://www.trainsimhobby.net/forum" target="_blank">TrainSimHobby</a> - Italian</li>
+  <li><a href="http://www.msts.fora.pl" target="_blank">Polish MSTS Forum</a> - Polish</li>
+  <li><a href="http://www.spaintrainzrutas.com" target="_blank">Spain Trainz Rutas</a> - Spanish</li>
 </ul>
 <p>&nbsp;</p>
 <p>See also these boards which support Microsoft Train Simulator:</p>
