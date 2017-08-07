@@ -471,6 +471,7 @@ namespace Orts.Viewer3D
                 FireShovelfullCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 AIFireOnCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 AIFireOffCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                AIFireResetCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
             }
 
             PantographCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;

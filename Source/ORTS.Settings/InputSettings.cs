@@ -209,6 +209,7 @@ namespace ORTS.Settings
         [GetString("Control Cab Radio")] ControlCabRadio,
         [GetString("Control AI Fire On")] ControlAIFireOn,
         [GetString("Control AI Fire Off")] ControlAIFireOff,
+        [GetString("Control AI Fire Reset")] ControlAIFireReset,
     }
 
     /// <summary>
@@ -585,6 +586,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlTurntableCounterclockwise] = new UserCommandKeyInput(0x2E, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlAIFireOn] = new UserCommandKeyInput(0x23, KeyModifiers.Alt);
             Commands[(int)UserCommands.ControlAIFireOff] = new UserCommandKeyInput(0x23, KeyModifiers.Control);
+            Commands[(int)UserCommands.ControlAIFireReset] = new UserCommandKeyInput(0x23, KeyModifiers.Control | KeyModifiers.Alt);
 
             Commands[(int)UserCommands.ControlWiper] = new UserCommandKeyInput(0x2F);
 
