@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 // Burn debugging is off by default - uncomment the #define to turn on - provides visibility of burn related parameters for AI Fireman on extended HUD.
-//#define DEBUG_LOCO_BURN_AI
+#define DEBUG_LOCO_BURN_AI
 
 // Compound Indicator Pressures are off by default - uncomment the #define to turn on - provides visibility of calculations for MEP.
 //#define DEBUG_LOCO_STEAM_COMPOUND_HP_MEP
@@ -2939,28 +2939,27 @@ namespace Orts.Simulation.RollingStocks
                 }
                  else  // AI fireman recognises that boiler pressure is dropping, the lower it goes, the higher to try and push the ratio.
                  {
-                    
-                    if(BoilerPressurePSI <= MaxBoilerPressurePSI - 5.0f && BoilerPressurePSI > MaxBoilerPressurePSI - 10.0f)
+                    float MaxRise = 3.0f;
+                    float MaxRun = 20.0f;
+                    float Grad = MaxRise / MaxRun;
+                    if (BoilerPressurePSI > MaxBoilerPressurePSI - 2.0f)
                     {
-                        PressureRatio = 1.1f; // if boiler pressure dropping two fast then push fire harder
+                        PressureRatio = 1.0f; // if boiler pressure close to normal set pressure ratio to normal
                     }
-                    else if (BoilerPressurePSI <= MaxBoilerPressurePSI - 10.0f  && BoilerPressurePSI > MaxBoilerPressurePSI - 15.0f)
+                    else if (BoilerPressurePSI > MaxBoilerPressurePSI - MaxRun && BoilerPressurePSI <= MaxBoilerPressurePSI - 1.0f)
                     {
-                        PressureRatio = 1.25f; // if boiler pressure dropping two fast then push fire harder
+                        PressureRatio = Grad * (MaxBoilerPressurePSI - BoilerPressurePSI) + 1.0f;
                     }
-                    else if (BoilerPressurePSI <= MaxBoilerPressurePSI - 15.0f && BoilerPressurePSI > MaxBoilerPressurePSI - 20.0f)
+                    else if (BoilerPressurePSI < MaxBoilerPressurePSI - MaxRun)
                     {
-                        PressureRatio = 1.5f; // if boiler pressure dropping two fast then push fire harder
+                        PressureRatio = MaxRise +1.0f;
                     }
-                    else if (BoilerPressurePSI <= MaxBoilerPressurePSI - 20.0f )
+                    else if (BoilerPressurePSI > MaxBoilerPressurePSI)
                     {
-                        PressureRatio = 1.75f; // if boiler pressure dropping two fast then push fire harder
+                        PressureRatio = 0.01f;
                     }
-                    else if (BoilerPressurePSI > MaxBoilerPressurePSI - 5.0f)
-                    {
-                        PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 2.0f); // Boiler pressure ratio to adjust burn rate
-                    }
-                }
+                          PressureRatio = MathHelper.Clamp(PressureRatio, 0.001f, (MaxRise + 1.0f)); // Boiler pressure ratio to adjust burn rate
+                 }
             }
             #endregion
 
