@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 // Burn debugging is off by default - uncomment the #define to turn on - provides visibility of burn related parameters for AI Fireman on extended HUD.
-#define DEBUG_LOCO_BURN_AI
+//#define DEBUG_LOCO_BURN_AI
 
 // Compound Indicator Pressures are off by default - uncomment the #define to turn on - provides visibility of calculations for MEP.
 //#define DEBUG_LOCO_STEAM_COMPOUND_HP_MEP
@@ -2939,6 +2939,8 @@ namespace Orts.Simulation.RollingStocks
                 }
                  else  // AI fireman recognises that boiler pressure is dropping, the lower it goes, the higher to try and push the ratio.
                  {
+                    // The pressure ratio forces the fire to burn harder if the pressure drops below the maximum boiler pressure - 2psi.
+
                     float MaxRise = 3.0f;
                     float MaxRun = 20.0f;
                     float Grad = MaxRise / MaxRun;
