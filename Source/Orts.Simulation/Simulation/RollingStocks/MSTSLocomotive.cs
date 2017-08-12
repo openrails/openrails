@@ -295,6 +295,8 @@ namespace Orts.Simulation.RollingStocks
 
         public double CommandStartTime;
 
+        public double LastBrakeSoundTime = 0;
+
         public MSTSLocomotive(Simulator simulator, string wagPath)
             : base(simulator, wagPath)
         {
@@ -2946,6 +2948,19 @@ namespace Orts.Simulation.RollingStocks
                 case Event.CompressorOn: { CompressorIsOn = true; break; }
                 case Event.CompressorOff: { CompressorIsOn = false; break; }
                 case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
+                case Event.TrainBrakePressureDecrease:
+                case Event.TrainBrakePressureIncrease:
+                    {
+                        if (Train.TrainType == Train.TRAINTYPE.AI || Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                        {
+                            if (Train.Simulator.GameTime - LastBrakeSoundTime < 15) // don't repeat sound too often for AI trains (which frequently set brakes on and off)
+                            {
+                                return;
+                            }
+                            LastBrakeSoundTime = Train.Simulator.GameTime;
+                        }
+                        break;
+                    }
             }
 
             base.SignalEvent(evt);
