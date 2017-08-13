@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2016-07-25 22:38:45+0200\n"
-"PO-Revision-Date: 2016-07-25 22:47+0100\n"
+"POT-Creation-Date: 2017-08-13 17:50:20+0200\n"
+"PO-Revision-Date: 2017-08-13 18:47+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -16,121 +16,174 @@ msgstr ""
 msgid "Free"
 msgstr "Frei beweglich"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:979
+#: ../../RunActivity/Viewer3D/Cameras.cs:985
 msgid "Outside Front"
 msgstr "Außen 1 (Zugspitze)"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:979
+#: ../../RunActivity/Viewer3D/Cameras.cs:985
 msgid "Outside Rear"
 msgstr "Außen 2 (Zugende)"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1235
+#: ../../RunActivity/Viewer3D/Cameras.cs:1241
 msgid "Brakeman"
 msgstr "Bremser"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1426
+#: ../../RunActivity/Viewer3D/Cameras.cs:1432
 msgid "Passenger"
 msgstr "Passagier"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1459
+#: ../../RunActivity/Viewer3D/Cameras.cs:1465
 msgid "Head out"
 msgstr "Hinauslehnen"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1503
+#: ../../RunActivity/Viewer3D/Cameras.cs:1509
 msgid "Cab"
 msgstr "Führerstand"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1683
+#: ../../RunActivity/Viewer3D/Cameras.cs:1684
 msgid "Trackside"
 msgstr "Beobachter"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1839
+#: ../../RunActivity/Viewer3D/Cameras.cs:1840
 msgid "3D Cab"
 msgstr "3D-Führerstand"
 
-#: ../../RunActivity/Viewer3D/Materials.cs:166
+#: ../../RunActivity/Viewer3D/Materials.cs:184
 #, fuzzy, csharp-format
 msgid "{0:F0} texture"
 msgid_plural "{0:F0} textures"
-msgstr[0] "{0:F0} Texturen"
+msgstr[0] "{0:F0} Textur"
 msgstr[1] "{0:F0} Texturen"
 
-#: ../../RunActivity/Viewer3D/Materials.cs:392
+#: ../../RunActivity/Viewer3D/Materials.cs:434
 #, fuzzy, csharp-format
 msgid "{0:F0} material"
 msgid_plural "{0:F0} materials"
-msgstr[0] "{0:F0} Materialien"
+msgstr[0] "{0:F0} Material"
 msgstr[1] "{0:F0} Materialien"
 
 #: ../../RunActivity/Viewer3D/Shapes.cs:110
 #, fuzzy, csharp-format
 msgid "{0:F0} shape"
 msgid_plural "{0:F0} shapes"
-msgstr[0] "{0:F0} Formen"
+msgstr[0] "{0:F0} Form"
 msgstr[1] "{0:F0} Formen"
 
 #: ../../RunActivity/Viewer3D/Terrain.cs:127
 #, fuzzy, csharp-format
 msgid "{0:F0} tile"
 msgid_plural "{0:F0} tiles"
-msgstr[0] "{0:F0} Tiles"
+msgstr[0] "{0:F0} Tile"
 msgstr[1] "{0:F0} Tiles"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:646
-#: ../../RunActivity/Viewer3D/Viewer.cs:771
+#: ../../RunActivity/Viewer3D/Viewer.cs:711
+#: ../../RunActivity/Viewer3D/Viewer.cs:878
 msgid "Cab view not available"
 msgstr "Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:710
+#: ../../RunActivity/Viewer3D/Viewer.cs:776
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "Benutzen Sie Alt-F4, um den Mehrspielermodus direkt zu beenden."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:782
+#: ../../RunActivity/Viewer3D/Viewer.cs:807
+#, fuzzy
+msgid "Platform and siding labels visible."
+msgstr "Bahnsteig- und Nebengleislabels sichtbar."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:810
+#, fuzzy
+msgid "Platform labels visible."
+msgstr "Bahsnteiglabels sichtbar."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:813
+#, fuzzy
+msgid "Siding labels visible."
+msgstr "Nebengleislabels sichtbar."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:819
+#, fuzzy
+msgid "Platform and siding labels hidden."
+msgstr "Bahnsteig- und Nebengleislabels ausgeblendet."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:830
+#, fuzzy
+msgid "Train labels visible."
+msgstr "Zuglabels sichtbar."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:833
+#, fuzzy
+msgid "Car labels visible."
+msgstr "Farhrzeuglabels sichtbar."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:839
+#, fuzzy
+msgid "Train and car labels hidden."
+msgstr "Zug- und Fahrzeuglabels asugeblendet."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:889
 msgid "3D Cab view not available"
 msgstr "3D-Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:947
+#: ../../RunActivity/Viewer3D/Viewer.cs:1054
 msgid "Switched to player control"
 msgstr "Manuelle Steuerung reaktiviert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:952
+#: ../../RunActivity/Viewer3D/Viewer.cs:1059
 msgid "You can't switch from manual to autopilot mode"
 msgstr "Wechsel zum Autopiloten im manuellen Modus nicht möglich."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:956
+#: ../../RunActivity/Viewer3D/Viewer.cs:1063
 msgid "Switched to autopilot"
 msgstr "Autopilot aktiviert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1350
+#: ../../RunActivity/Viewer3D/Viewer.cs:1491
 msgid "Game saved"
 msgstr "Spiel gespeichert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:267
+#: ../../RunActivity/Viewer3D/Viewer.cs:275
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:800
+#: ../../RunActivity/Viewer3D/Viewer.cs:907
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibrationslevel {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:965
+#: ../../RunActivity/Viewer3D/Viewer.cs:1072
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr "Tastenbelegung (Liste) in '{0}' gespeichert."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:969
+#: ../../RunActivity/Viewer3D/Viewer.cs:1076
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr "Tastenbelegung (Grafik) in '{0}' gespeichert."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:831
+#: ../../RunActivity/Viewer3D/Viewer.cs:938
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
 msgstr[0] "{0} Kameraeinstellung gespeichert. Shift+8 zum Reaktivieren."
 msgstr[1] "{0} Kameraeinstellungen gespeichert. Shift+8 zum Reaktivieren."
+
+#: ../../RunActivity/Viewer3D/Weather.cs:115
+#, fuzzy
+msgid ""
+"Restoring wrong weather type : trying to restore dynamic weather but save "
+"contains user controlled weather"
+msgstr ""
+"Falschen Wettertyp laden: Versuche, dynamisches Wetter wiederherzustelen, "
+"während gespeichertes Spiel benutzerdefiniertes Wetter enthält"
+
+#: ../../RunActivity/Viewer3D/Weather.cs:1199
+#, fuzzy
+msgid ""
+"Restoring wrong weather type : trying to restore user controlled weather but "
+"save contains dynamic weather"
+msgstr ""
+"Falschen Wettertyp laden: Versuche, benutzerdefiniertes Wetter "
+"wiederherzustelen, während gespeichertes Spiel dynamisches Wetter enthält"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1974
 msgid "Switching Request Sent to the Server"
@@ -277,8 +330,8 @@ msgid "3D"
 msgstr "3D"
 
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:284
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:393
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:718
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:771
 msgid "Speed"
 msgstr "Geschwin."
 
@@ -295,9 +348,9 @@ msgid "Variable 1"
 msgstr "Variable 1"
 
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:351
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:724
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:726
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:777
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:779
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:78
 msgid "Distance"
 msgstr "Entfernu."
 
@@ -437,59 +490,59 @@ msgstr "Hanbremse angezogen"
 msgid "Handbrake off"
 msgstr "Handbremse gelöst"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:116
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:115
 msgid "Power OFF command sent"
 msgstr "Motor-aus-Kommando gesendet"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:118
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:117
 msgid "Power ON command sent"
 msgstr "Motor-an-Kommando gesendet"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:120
 msgid "No power command for this type of car!"
 msgstr "Kein Motoren-Kommando für diese Art Rollmaterial!"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:134
 msgid "MU signal connected"
 msgstr "Mehrfachsteuerung verbunden"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:139
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:136
 msgid "MU signal disconnected"
 msgstr "Mehrfachsteuerungs getrennt"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:142
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:139
 msgid "No MU command for this type of car!"
 msgstr "Keine Mehrfachsteuerung für diese Art Rollmaterial!"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:151
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:146
 msgid "Front brake hose connected"
 msgstr "Vorderer Bremschlauch verbunden"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:153
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:148
 msgid "Front brake hose disconnected"
 msgstr "Vorderer Bremschlauch nicht verbunden"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:160
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:155
 msgid "Front angle cock opened"
 msgstr "Vorderes Bremsleitungsventil geöffnet"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:162
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:157
 msgid "Front angle cock closed"
 msgstr "Vorderes Bremsleitungsventil geschlossen"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:169
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:164
 msgid "Rear angle cock opened"
 msgstr "Hinteres Bremsleitungsventil geöffnet"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:171
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:166
 msgid "Rear angle cock closed"
 msgstr "Hinteres Bremsleitungsventil geschlossen"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:181
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:176
 msgid "Bleed off valve opened"
 msgstr "Druckablassventil geöffnet"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:183
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:178
 msgid "Bleed off valve closed"
 msgstr "Druckablassventil geschlossen"
 
@@ -526,32 +579,33 @@ msgid "Timetable"
 msgstr "Fahrplan"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:77
 msgid "Station"
 msgstr "Station"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:79
 msgid "Arrive"
 msgstr "Ankunft"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:76
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:78
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:80
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:82
 msgid "Actual"
 msgstr "Ist"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:77
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:81
 msgid "Depart"
 msgstr "Abfahrt"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:206
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:282
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:285
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:268
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:461
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:537
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:540
 msgid "(missed)"
 msgstr "(ausgelassen)"
 
@@ -599,544 +653,584 @@ msgstr "Abgeschlossen"
 msgid "Procedures"
 msgstr "Bedienung"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:127
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:396
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:128
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:397
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:556
 msgid "Throttle"
 msgstr "Regler:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:128
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:129
 msgid "Power In/Out"
 msgstr "Leistung ein-/ausgegeben"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:132
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:133
 msgid "Motive force"
 msgstr "Antriebskräfte"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:134
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:135
 msgid "Num of substeps"
 msgstr "Anzahl der Teilschritte"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:137
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:840
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:138
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:893
 msgid "Memory"
 msgstr "Speicher:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:138
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:139
 msgid "GCs"
 msgstr "Speicherbereinigungen (GCs)"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:139
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:140
 msgid "Frame time"
 msgstr "Framezeit"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:140
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:854
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:907
 msgid "Render process"
 msgstr "Render-Prozess:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:855
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:142
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:908
 msgid "Updater process"
 msgstr "Updater-Prozess:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:142
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:856
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:143
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:909
 msgid "Loader process"
 msgstr "Lade-Prozess:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:143
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:857
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:144
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:910
 msgid "Sound process"
 msgstr "Sound-Prozess:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:382
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:383
 msgid "Version"
 msgstr "Version:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:386
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:388
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:387
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:389
 msgid "Time"
 msgstr "Zeit:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:391
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:392
 msgid "Replay"
 msgstr "Abspielen"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:394
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:681
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:395
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:734
 msgid "Gradient"
 msgstr "Steigung:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:395
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:546
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:396
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:554
 msgid "Direction"
 msgstr "Richtung:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:396
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:397
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:556
 msgid "Regulator"
 msgstr "Regler:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:397
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:398
 msgid "Train brake"
 msgstr "Zugbremse:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:399
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:400
 msgid "Retainers"
 msgstr "Retainer"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:401
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:402
 msgid "Engine brake"
 msgstr "Lokbremse:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:403
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:549
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:404
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:557
 msgid "Dynamic brake"
 msgstr "E-Bremse:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:417
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:418
 msgid "FPS"
 msgstr "FPS:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:421
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:422
 msgid "Autopilot"
 msgstr "Autopilot"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:424
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:642
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:425
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:695
 msgid "Wheel slip"
 msgstr "Radschlupf:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:426
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:427
 msgid "Wheel slip warning"
 msgstr "Radschlupf-Warnung"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:429
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:430
 #, fuzzy
 msgid "Wheel skid"
 msgstr "Radschlupf:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:435
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:436
 msgid "Sander blocked"
 msgstr "Sander blockiert"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:437
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:438
 msgid "Sander on"
 msgstr "Sander an"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:450
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:451
 msgid "Doors open"
 msgstr "Türen offen"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:456
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:457
 msgid "MultiPlayerStatus: "
 msgstr "Mehrspieler-Status:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:457
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:458
 msgid "Dispatcher"
 msgstr "Disponent"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:458
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:459
 msgid "Helper"
 msgstr "Helfer"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:459
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:460
 msgid "Client"
 msgstr "Client"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:468
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:469
 msgid "CONSIST INFORMATION"
 msgstr "ZUGVERBANDS-INFORMATION"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:475
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
 msgid "Player"
 msgstr "Spieler"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:476
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:482
 msgid "Tilted"
 msgstr "Neigetech."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:477
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:497
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:590
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:483
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:505
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:643
 msgid "Type"
 msgstr "Typ"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:478
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:498
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:484
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:506
 msgid "Length"
 msgstr "Länge"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:479
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:499
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:485
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:507
 msgid "Weight"
 msgstr "Gewicht"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:480
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:486
+#, fuzzy
+msgid "Tonnage"
+msgstr "Tonnage"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:487
 msgid "Control Mode"
 msgstr "Kontrollmodus"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:488
 msgid "Out of Control"
 msgstr "Außer Kontrolle"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:482
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:489
 msgid "Cab Aspect"
 msgstr "Führerstand-Signalanzeige"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:484
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:491
 msgid "R"
 msgstr "R"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:484
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:491
 msgid "F"
 msgstr "F"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:485
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:506
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:706
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:838
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:492
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:514
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:759
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
 msgid "Yes"
 msgstr "Ja"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:485
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:506
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:838
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:492
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:514
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
 msgid "No"
 msgstr "Nein"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:486
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:507
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:493
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:515
 msgid "Freight"
 msgstr "Güter"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:486
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:507
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:493
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:515
 msgid "Pass"
 msgstr "Pass"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:495
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:589
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:671
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:503
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:642
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:724
 msgid "Car"
 msgstr "Waggon"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:496
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:707
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:504
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:760
 msgid "Flipped"
 msgstr "Verkehrt"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:500
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:508
 msgid "Drv/Cabs"
 msgstr "Fahrb/Fst"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:509
 msgid "Wheels"
 msgstr "Räder"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:540
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
 msgid "LOCOMOTIVE INFORMATION"
 msgstr "LOKOMOTIV-INFORMATION"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:553
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:570
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:583
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:561
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:587
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:589
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:598
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:611
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:621
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:636
 msgid "off"
 msgstr "aus"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:562
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:570
 msgid "BRAKE INFORMATION"
 msgstr "BREMS-INFORMATION"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:566
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:585
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:596
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:607
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:617
 msgid "PlayerLoco"
 msgstr "SpielerLok"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:567
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:580
-msgid "Main reservoir"
-msgstr "Haupdruckbehälter:"
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:586
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:597
+#, fuzzy
+msgid "Large Ejector"
+msgstr "Große Dampfstrahl-Vakuumpumpe"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:569
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:582
-msgid "Compressor"
-msgstr "Komprsr"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:570
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:583
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:587
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:589
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:598
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:611
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:621
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:636
 msgid "on"
 msgstr "an"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:578
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:588
+msgid "Small Ejector"
+msgstr "Kleine Dampfstrahl-Vakuumpumpe"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:590
+#, fuzzy
+msgid "Pressure"
+msgstr "Druck"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:599
+#, fuzzy
+msgid "Vacuum Pump"
+msgstr "Vakuumpumpe"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:608
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:618
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:633
+msgid "Main reservoir"
+msgstr "Haupdruckbehälter:"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:610
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:620
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:635
+msgid "Compressor"
+msgstr "Komprsr"
+
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:631
 msgid "Loco"
 msgstr "Lok"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:591
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:644
 msgid "BrkCyl"
 msgstr "BreZyl"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:592
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:645
 msgid "BrkPipe"
 msgstr "BreLtg"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:593
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:646
 msgid "AuxRes"
 msgstr "HilfBeh"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:594
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:647
 msgid "ErgRes"
 msgstr "NotBeh"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:595
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:648
 msgid "MRPipe"
 msgstr "DruckLtg"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:596
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:649
 msgid "RetValve"
 msgstr "HalteVent"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:597
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:650
 msgid "TripleValve"
 msgstr "3wegVent"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:599
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:652
 msgid "Handbrk"
 msgstr "HandBre"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:653
 msgid "Conn"
 msgstr "Vbdg"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:601
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:654
 msgid "AnglCock"
 msgstr "VbdgVent"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:602
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:655
 msgid "BleedOff"
 msgstr "DruckAblass"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:618
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:671
 msgid "FORCE INFORMATION"
 msgstr "KRÄFTE-INFORMATION"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:632
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:641
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:685
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:694
 #, fuzzy
 msgid "(Advanced adhesion model)"
 msgstr "(Detaillierteres Reibungsmodell)"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:633
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:653
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:661
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:686
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:706
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:714
 #, fuzzy
 msgid "Loco Adhesion"
 msgstr "Reibung Lok:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:634
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:687
 #, fuzzy
 msgid "Wag Adhesion"
 msgstr "Reibung Waggon:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:635
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:688
 #, fuzzy
 msgid "Tang. Force"
 msgstr "Tangentialkraft:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:636
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:689
 #, fuzzy
 msgid "Static Force"
 msgstr "Ruhekraft:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:643
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:696
 msgid "Conditions"
 msgstr "Schienenbeding.:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:644
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:697
 msgid "Axle drive force"
 msgstr "Achsantriebskraft:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:645
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:698
 msgid "Axle brake force"
 msgstr "Achsbremskraft:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:646
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:699
 msgid "Number of substeps"
 msgstr "Anzahl Teilschritte:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:648
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:701
 msgid "Solver"
 msgstr "Löser:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:649
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:702
 msgid "Stability correction"
 msgstr "Math. Stabilitätkorr:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:650
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:660
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:703
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:713
 msgid "Axle out force"
 msgstr "Ges. Achskraft:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:654
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:662
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:707
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:715
 #, fuzzy
 msgid "Wagon Adhesion"
 msgstr "Reibung Waggon:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:659
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:712
 #, fuzzy
 msgid "(Simple adhesion model)"
 msgstr "(Einfacheres Reibungsmodell)"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:672
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:725
 msgid "Total"
 msgstr "Gesamt"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:673
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:726
 msgid "Motive"
 msgstr "Antrieb"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:674
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:727
 msgid "Brake"
 msgstr "Bremskr."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:675
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:728
 msgid "Friction"
 msgstr "Reibung"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:676
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:729
 msgid "Gravity"
 msgstr "Gravitatn."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:677
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:682
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:730
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:735
 msgid "Curve"
 msgstr "Kurve"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:678
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:731
 msgid "Tunnel"
 msgstr "Tunnel"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:679
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:732
 msgid "Coupler"
 msgstr "Kupplung"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:680
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:733
 msgid "Mass"
 msgstr "Masse"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:683
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:736
 #, fuzzy
 msgid "Brk Frict."
 msgstr "Bremsreibung"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:684
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:737
 #, fuzzy
 msgid "Brk Slide"
-msgstr "Bremsrutschen"
+msgstr "Bremsschlupf"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:714
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:767
 msgid "DISPATCHER INFORMATION"
 msgstr "DISPONENTEN-INFORMATION"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:716
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:769
 msgid "Train"
 msgstr "Zug"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:717
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:770
 msgid "Travelled"
 msgstr "Gereist"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:719
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:772
 msgid "Max"
 msgstr "Max."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:720
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:773
 msgid "AI mode"
 msgstr "KI-Modus"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:721
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:774
 msgid "AI data"
 msgstr "KI-Daten"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:722
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:775
 msgid "Mode"
 msgstr "Modus"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:723
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:776
 msgid "Auth"
 msgstr "Erlaubnis"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:725
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:778
 msgid "Signal"
 msgstr "Signal"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:727
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:780
 msgid "Consist"
 msgstr "Zugverbd."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:728
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:781
 msgid "Path"
 msgstr "Fahrstraße"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:832
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:885
 msgid "DEBUG INFORMATION"
 msgstr "DEBUGGING-INFORMATION"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:838
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
 msgid "Logging enabled"
 msgstr "Logger an:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:839
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:892
 msgid "Build"
 msgstr "Build:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:841
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:894
 msgid "CPU"
 msgstr "CPU:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:842
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:895
 msgid "GPU"
 msgstr "GPU:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:843
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:896
 msgid "Adapter"
 msgstr "Grafik-Adapter:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:848
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:901
 msgid "Shadow maps"
 msgstr "Shadow Maps:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:850
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:903
 msgid "Shadow primitives"
 msgstr "Schattenprimitiven:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:853
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:906
 msgid "Render primitives"
 msgstr "Darstell.primitiven:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:854
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:855
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:856
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:857
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:858
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:907
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:908
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:909
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:910
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:911
 msgid "wait"
 msgstr "gewartet"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:858
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:911
 msgid "Total process"
 msgstr "Geamt-Prozess:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:859
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:912
 msgid "Camera"
 msgstr "Kamera:"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:647
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:700
 #, csharp-format
 msgid "filtered by {0:F0}"
 msgstr "durch {0:F0} gefiltert"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:840
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:893
 #, csharp-format
 msgid ""
 "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, "
@@ -1145,12 +1239,12 @@ msgstr ""
 "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB verwaltet, {9:F0} kB/Frame "
 "zugeteilt, {2:F0}/{3:F0}/{4:F0} Speicherbereinigungen/GCs)"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:841
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:894
 #, csharp-format
 msgid "{0:F0}% ({1})"
 msgstr "{0:F0}% ({1})"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:842
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:895
 #, csharp-format
 msgid ""
 "{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader "
@@ -1159,37 +1253,37 @@ msgstr ""
 "{0:F0} FPS (50./95./99. Perzentile {1:F1} / {2:F1} / {3:F1} ms, Shader-"
 "Modell {4})"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:843
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:896
 #, csharp-format
 msgid "{0} ({1:F0} MB)"
 msgstr "{0} ({1:F0} MB)"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:846
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:899
 #, csharp-format
 msgid "{0}/{1}"
 msgstr "{0}/{1}"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:847
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:900
 #, csharp-format
 msgid "({0}x{0})"
 msgstr "({0}x{0})"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:850
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:853
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:903
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:906
 #, csharp-format
 msgid "{0:F0}"
 msgstr "{0:F0}"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:854
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:855
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:856
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:857
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:858
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:907
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:908
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:909
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:910
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:911
 #, csharp-format
 msgid "{0:F0}% ({1:F0}% {2})"
 msgstr "{0:F0}% ({1:F0}% {2})"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:841
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:894
 #, csharp-format
 msgid "{0} logical processor"
 msgid_plural "{0} logical processors"
@@ -1197,39 +1291,110 @@ msgstr[0] "{0} logischer Processor"
 msgstr[1] "{0} logische Processoren"
 
 #. Context: Steam
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:547
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:555
 msgctxt "Steam"
 msgid "Reverser"
 msgstr "Steuerng:"
 
 #. Context: NonSteam
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:547
+#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:555
 msgctxt "NonSteam"
 msgid "Reverser"
 msgstr "Steuerng:"
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:56
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:60
 msgid "Next Station"
 msgstr "Nächste Station"
 
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:188
+#, fuzzy
+msgid "Waiting for train to attach"
+msgstr "Warte bis Zug ankuppelt"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:194
+#, fuzzy
+msgid "Waiting for train to attach : "
+msgstr "Warte bis Zug ankuppelt:"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:207
+#, fuzzy
+msgid "Waiting for transfer"
+msgstr "Warte auf Verschieben"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:223
+#, fuzzy
+msgid "Train inactive."
+msgstr "Zug inaktiv."
+
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:227
+#, fuzzy
+msgid "Train static."
+msgstr "Zug ruht."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:231
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:421
+msgid "Train not active."
+msgstr "Zug inaktiv"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:233
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:430
+#, fuzzy
+msgid " Activation time : "
+msgstr "Aktivierungszeit:"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:237
+#, fuzzy
+msgid "Train has terminated."
+msgstr "Zugfahrt beendet."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:299
+msgid "Transfer units at next station with train "
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:309
+msgid "Transfer units with train "
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:319
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:325
+#, fuzzy
+msgid "Train is to attach to : "
+msgstr "Zug soll kupel an:"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:327
+#, fuzzy
+msgid " ; other train not yet ready"
+msgstr "; anderer Zug noch nicht fertig"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:332
+#, fuzzy
+msgid "Train is to pickup train at end of path"
+msgstr "Zug soll am Ende des anderen Zug Pfades ankuppeln."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:337
+#, fuzzy
+msgid "Pick up train ahead"
+msgstr "Zug voraus ankuppeln"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:347
+msgid "Transfer units with train ahead"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:352
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:482
 msgid "No more stations."
 msgstr "Keine weiteren Stationen"
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:362
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:617
 msgid "Activity completed."
 msgstr "Aufgabe abgeschlossen."
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:126
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:130
 #, csharp-format
 msgid "Current Delay: {0} minute"
 msgid_plural "Current Delay: {0} minutes"
 msgstr[0] "Aktuelle Verspätung: {0} Minute"
 msgstr[1] "Aktuelle Verspätung: {0} Minuten"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:166
-msgid "Train not active."
-msgstr "Zug inaktiv"
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:96
 #, csharp-format
@@ -1269,58 +1434,59 @@ msgstr "Weiterspielen ({0})"
 msgid "Switch"
 msgstr "Weiche"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:72
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:73
 msgid "Track Monitor"
 msgstr "Streckenmonitor"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:76
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
 msgid "Auto Signal"
 msgstr "Auto Signal"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
 msgid "Node"
 msgstr "Node"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
 msgid "Manual"
 msgstr "Manuell"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
 msgid "Explorer"
 msgstr "Erkundung"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
 msgid "OutOfControl : "
 msgstr "AußerKontrolle:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
 msgid "Inactive"
 msgstr "Inaktiv"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:83
 #, fuzzy
 msgid "Turntable"
-msgstr "Fahrplan"
+msgstr "Drehscheibe"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:83
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
 msgid "Unknown"
 msgstr "Unbekannt"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:92
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:93
 msgid "Speed:"
 msgstr "Geschwindigk.:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:97
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:98
 msgid "Projected:"
 msgstr "Prognose:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:102
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:103
 msgid "Limit:"
 msgstr "Begrenzung:"
 
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:113
-msgid " Dist      Speed   Aspect"
-msgstr " Entf       Begr    Signal"
+#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:116
+#, fuzzy
+msgid " Milepost   Limit     Dist"
+msgstr "km-Stein   Limit     Abst"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:33
 msgid "Train List"
@@ -1340,9 +1506,80 @@ msgstr "Deinstname"
 msgid "Viewed"
 msgstr "Angesehen"
 
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:166
+#, fuzzy
+msgid "Train in turntable not aligned to a track can't be selected"
+msgstr ""
+"Ein Zug auf einer nicht zu einem Gleis asugerichteten Drehscheibe kann nicht "
+"ausgewählt werden."
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:171
+#, fuzzy
+msgid "Player train can't be switched when in turntable not aligned to a track"
+msgstr ""
+"Der Spieler kann nicht gewechselt werden, wenn die Drehscheibe nicht zu "
+"einem Gleis ausgerichtet ist."
+
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:39
 msgid "Train Operations"
 msgstr "Zugbedienung"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:118
+#, fuzzy
+msgid "In Timetable Mode uncoupling using this window is not allowed"
+msgstr "Im Fahrplanmodus ist das Abkuppeln über dieses Fenster nicht möglich."
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:44
+#, fuzzy
+msgid "Timetable Detach Menu"
+msgstr "Fahrplanmodus Abkuppel-Menü"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:54
+#, fuzzy
+msgid "This train is about to split."
+msgstr "Dieser Zug wird gleich geteilt."
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:66
+#, fuzzy
+msgid "Perform Detach"
+msgstr "Abkuppeln durchführen"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:90
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:95
+msgid "static consist"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:99
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:104
+#, fuzzy
+msgid "Rear"
+msgstr "Hinten"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:100
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:103
+#, fuzzy
+msgid "Front"
+msgstr "Vorne"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:109
+#, fuzzy
+msgid "This portion will continue as train : "
+msgstr "Dieser Teil wird weitergeführt als Zug: "
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:110
+#, fuzzy
+msgid " portion will form train : "
+msgstr "Teil wird diesen Zug bilden: "
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:114
+#, fuzzy
+msgid "This portion will form into train : "
+msgstr "Dieser Teil wird diesen Zug bilden: "
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:115
+#, fuzzy
+msgid " portion will continue as train : "
+msgstr "Teil wird weitergeführt als Zug: "
 
 #: ../../RunActivity/Viewer3D/Popups/WindowText.cs:152
 msgid ""
@@ -1352,122 +1589,154 @@ msgstr ""
 "AÄBCDEFGHIJKLMNOÖPQRSTUÜVWXYZaäbcdefghijklmnoöpqrsßtuüvwxyz1234567890 \",.-"
 "+|!$%&/()=?;:'_[]#€@"
 
-#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1075
+#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1083
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 "Aufgaben-Spielstandsdatei '*.save' konnte nicht gefunden werden. Ordnerpfad: "
 "{0}"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:334
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:325
 msgid "freight-grain"
 msgstr "Güter (Getreide)"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:335
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:326
 msgid "freight-coal"
 msgstr "Güter (Kohle)"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:336
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:327
 msgid "freight-gravel"
 msgstr "Güter (Schotter)"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:337
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:328
 msgid "freight-sand"
 msgstr "Güter (Sand)"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:338
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:329
 msgid "water"
 msgstr "Wasser"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:339
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:330
 msgid "coal"
 msgstr "Kohle"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:340
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:331
 msgid "diesel oil"
 msgstr "Diesel"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:341
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:332
 msgid "wood"
 msgstr "Holz"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:464
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:333
+msgid "sand"
+msgstr "Sand"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:334
+#, fuzzy
+msgid "freight-general"
+msgstr "Güter (Allgemein)"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:335
+#, fuzzy
+msgid "freight-livestock"
+msgstr "Güter (Vieh)"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:336
+#, fuzzy
+msgid "freight-fuel"
+msgstr "Güter (Treibstoff)"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:337
+#, fuzzy
+msgid "freight-milk"
+msgstr "Güter (Milch)"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:338
+#, fuzzy
+msgid "mail"
+msgstr "Post"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:466
 #, fuzzy
 msgid "Refill: Immediate refill process selected, refilling immediately."
-msgstr "Auffüllen: Sofortiges AUffüllen gewählt, wird sofort aufgefüllt."
+msgstr "Auffüllen: Sofortiges Auffüllen gewählt, wird sofort aufgefüllt."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:485
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:487
 #, fuzzy
 msgid "Refill: Electric loco and no pickup. Command rejected"
-msgstr "Auffüllen: E-Lok, kein Ladebereich. Nicht ausgeführt."
+msgstr "Auffüllen: E-Lok, kein Auffüllbereich. Nicht ausgeführt."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:601
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:619
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:603
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:622
 #, fuzzy
 msgid "Incompatible pickup type"
 msgstr "Inkompatible Ladeguttypen"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:606
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:609
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:627
 #, fuzzy
 msgid "Starting refill"
 msgstr "Auffüllen starten"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:492
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:494
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr "Auftanken: Entfernung zur nächsten {0}-Tankstelle: {1}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:500
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:502
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr "Auftanken: Lokomotive muss stillstehen, um {0} auftanken zu können."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:506
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:233
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:508
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:242
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr "Auftanken: Geschwindigkeit muss größer als {0} sein."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:513
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:239
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:515
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:248
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr "Auftanken: Geschwindigkeit darf nicht größer als {0} sein."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:531
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:552
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:246
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:533
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:554
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:255
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr "Auftanken: {0} Vorrat jetzt ergänzt."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:558
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:560
 #, fuzzy, csharp-format
-msgid "Refill: {0} fuel or freight now unloaded."
+msgid "Unload: {0} fuel or freight now unloaded."
 msgstr "Auffüllen: {0} Treibstoff / Güter abgeladen."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:493
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:495
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
 msgstr[0] "{0} Meter"
 msgstr[1] "{0} Meter"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:217
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:226
 #, fuzzy
 msgid "No scoop in this loco"
 msgstr "Kein Schöpfrohr auf dieser Lok."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:222
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:231
 #, fuzzy
 msgid "Scoop is broken, can't refill"
 msgstr "Schöpfrohr beschädigt, auffüllen nicht möglich."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:228
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:237
 #, fuzzy
 msgid "Scoop broken because activated outside through"
 msgstr "Schöpfrohr durch Aktivierung außerhalb des Troges beschädigt."
+
+#~ msgid " Dist      Speed   Aspect"
+#~ msgstr " Entf       Begr    Signal"
 
 #~ msgid "Will not rotate cab and land"
 #~ msgstr "Führerstand und Umgebung werden nicht mehr mitgedreht."
@@ -2033,9 +2302,6 @@ msgstr "Schöpfrohr durch Aktivierung außerhalb des Troges beschädigt."
 #~ msgid "GrLimit"
 #~ msgstr "RostLimit"
 
-#~ msgid "Performance"
-#~ msgstr "Funktion"
-
 #~ msgid "Power:"
 #~ msgstr "Leistung:"
 
@@ -2132,9 +2398,6 @@ msgstr "Schöpfrohr durch Aktivierung außerhalb des Troges beschädigt."
 #~ "Sie fahren zu schnell für diese Kurve. Verlangsamen Sie die Fahrt, um den "
 #~ "Passagierkomfort zu erhöhen und eine Entgleisung zu verhindern."
 
-#~ msgid "Your train has overturned."
-#~ msgstr "Ihr Zug hat sich überschlagen."
-
 #~ msgid "(flipped)"
 #~ msgstr "(verkehrt)"
 
@@ -2146,9 +2409,6 @@ msgstr "Schöpfrohr durch Aktivierung außerhalb des Troges beschädigt."
 
 #~ msgid "High Pressure"
 #~ msgstr "Hohen Druck halten"
-
-#~ msgid "Low Pressure"
-#~ msgstr "Niedrigen Druck halten"
 
 #~ msgid "Slow Direct"
 #~ msgstr "Langsam lösen"
@@ -2550,6 +2810,3 @@ msgstr "Schöpfrohr durch Aktivierung außerhalb des Troges beschädigt."
 #~ msgctxt "Switch"
 #~ msgid "change"
 #~ msgstr "stellen"
-
-#~ msgid "Held for connecting train : "
-#~ msgstr "Wartet auf Anschlusszug:"

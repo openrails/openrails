@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2016-12-30 17:56:10+0100\n"
-"PO-Revision-Date: 2016-12-30 17:56:10+0100\n"
+"POT-Creation-Date: 2017-08-13 17:50:15+0200\n"
+"PO-Revision-Date: 2017-08-13 17:50:15+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -663,22 +663,38 @@ msgstr ""
 msgid "Control Turntable Counterclockwise"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:666
+#: ../../ORTS.Settings/InputSettings.cs:209
+msgid "Control Cab Radio"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:210
+msgid "Control AI Fire On"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:211
+msgid "Control AI Fire Off"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:212
+msgid "Control AI Fire Reset"
+msgstr ""
+
+#: ../../ORTS.Settings/InputSettings.cs:674
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:668
+#: ../../ORTS.Settings/InputSettings.cs:676
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:670
+#: ../../ORTS.Settings/InputSettings.cs:678
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:701
+#: ../../ORTS.Settings/InputSettings.cs:709
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""

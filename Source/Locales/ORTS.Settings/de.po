@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2016-02-05 01:40:29+0100\n"
-"PO-Revision-Date: 2016-02-22 21:31+0100\n"
-"Last-Translator: Markus Gelbman <gelbmann.markus@gmail.com>\n"
+"POT-Creation-Date: 2017-08-13 16:56:22+0200\n"
+"PO-Revision-Date: 2017-08-13 17:33+0100\n"
+"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -100,6 +100,7 @@ msgstr "Spiel: Signal hinten zurücksetzen"
 msgid "Game Autopilot Mode"
 msgstr "Spiel: Autopilot aktivieren"
 
+# Exact functionality?
 #: ../../ORTS.Settings/InputSettings.cs:64
 #, fuzzy
 msgid "Game Suspend Old Player"
@@ -373,290 +374,347 @@ msgstr "Kamera: Weiche ansehen"
 msgid "Camera Vibrate"
 msgstr "Kamera: Vibration"
 
-#: ../../ORTS.Settings/InputSettings.cs:135
-msgid "Camera Cab Rotate"
-msgstr "Kamera: Führerstand in überhöhten Kurven mitdrehen"
-
-#: ../../ORTS.Settings/InputSettings.cs:137
+#: ../../ORTS.Settings/InputSettings.cs:136
 msgid "Control Forwards"
 msgstr "Steuerung: Vorwärts"
 
-#: ../../ORTS.Settings/InputSettings.cs:138
+#: ../../ORTS.Settings/InputSettings.cs:137
 msgid "Control Backwards"
 msgstr "Steuerung: Rückwärts"
 
-#: ../../ORTS.Settings/InputSettings.cs:139
+#: ../../ORTS.Settings/InputSettings.cs:138
 msgid "Control Throttle Increase"
 msgstr "Steuerung: Regler höher"
 
-#: ../../ORTS.Settings/InputSettings.cs:140
+#: ../../ORTS.Settings/InputSettings.cs:139
 msgid "Control Throttle Decrease"
 msgstr "Steuerung: Regler niedriger"
 
-#: ../../ORTS.Settings/InputSettings.cs:141
+#: ../../ORTS.Settings/InputSettings.cs:140
 msgid "Control Throttle Zero"
 msgstr "Steuerung: Regler 0"
 
-#: ../../ORTS.Settings/InputSettings.cs:142
+#: ../../ORTS.Settings/InputSettings.cs:141
 msgid "Control Gear Up"
 msgstr "Steuerung: Gang hinaufschalten"
 
-#: ../../ORTS.Settings/InputSettings.cs:143
+#: ../../ORTS.Settings/InputSettings.cs:142
 msgid "Control Gear Down"
 msgstr "Steuerung: Gang zurückschalten"
 
-#: ../../ORTS.Settings/InputSettings.cs:144
+#: ../../ORTS.Settings/InputSettings.cs:143
 msgid "Control Train Brake Increase"
 msgstr "Steuerung: Zugbremse stärker"
 
-#: ../../ORTS.Settings/InputSettings.cs:145
+#: ../../ORTS.Settings/InputSettings.cs:144
 msgid "Control Train Brake Decrease"
 msgstr "Steuerung: Zugbremse schwächer"
 
-#: ../../ORTS.Settings/InputSettings.cs:146
+#: ../../ORTS.Settings/InputSettings.cs:145
 msgid "Control Train Brake Zero"
 msgstr "Steuerung: Zugbremse 0"
 
-#: ../../ORTS.Settings/InputSettings.cs:147
+#: ../../ORTS.Settings/InputSettings.cs:146
 msgid "Control Engine Brake Increase"
 msgstr "Steuerung: Lokbremse stärker"
 
-#: ../../ORTS.Settings/InputSettings.cs:148
+#: ../../ORTS.Settings/InputSettings.cs:147
 msgid "Control Engine Brake Decrease"
 msgstr "Steuerung: Lokbremse schwächer"
 
-#: ../../ORTS.Settings/InputSettings.cs:149
+#: ../../ORTS.Settings/InputSettings.cs:148
 msgid "Control Dynamic Brake Increase"
 msgstr "Steuerung: E-Bremse stärker"
 
-#: ../../ORTS.Settings/InputSettings.cs:150
+#: ../../ORTS.Settings/InputSettings.cs:149
 msgid "Control Dynamic Brake Decrease"
 msgstr "Steuerung: E-Bremse schwächer"
 
-#: ../../ORTS.Settings/InputSettings.cs:151
+#: ../../ORTS.Settings/InputSettings.cs:150
 msgid "Control Bail Off"
 msgstr "Steuerung: Bremsen getrennt lösen"
 
-#: ../../ORTS.Settings/InputSettings.cs:152
+#: ../../ORTS.Settings/InputSettings.cs:151
 msgid "Control Initialize Brakes"
 msgstr "Steuerung: Bremsen zurücksetzen"
 
-#: ../../ORTS.Settings/InputSettings.cs:153
+#: ../../ORTS.Settings/InputSettings.cs:152
 msgid "Control Handbrake Full"
 msgstr "Steuerung: Handbremsen voll"
 
-#: ../../ORTS.Settings/InputSettings.cs:154
+#: ../../ORTS.Settings/InputSettings.cs:153
 msgid "Control Handbrake None"
 msgstr "Steuerung: Handbremsen aus"
 
-#: ../../ORTS.Settings/InputSettings.cs:155
+#: ../../ORTS.Settings/InputSettings.cs:154
 msgid "Control Odometer Show/Hide"
 msgstr "Steuerung: Entfernungsmesser anzeigen/ausblenden"
 
-#: ../../ORTS.Settings/InputSettings.cs:156
+#: ../../ORTS.Settings/InputSettings.cs:155
 msgid "Control Odometer Reset"
 msgstr "Steuerung: Entfernungsmesser zurücksetzen"
 
-#: ../../ORTS.Settings/InputSettings.cs:157
+#: ../../ORTS.Settings/InputSettings.cs:156
 msgid "Control Odometer Direction"
 msgstr "Steuerung: Entfernungsmesser Zählrichtung umschalten"
 
-#: ../../ORTS.Settings/InputSettings.cs:158
+#: ../../ORTS.Settings/InputSettings.cs:157
 msgid "Control Retainers On"
 msgstr "Steuerung: Bremsdruckhalteventil schließen"
 
-#: ../../ORTS.Settings/InputSettings.cs:159
+#: ../../ORTS.Settings/InputSettings.cs:158
 msgid "Control Retainers Off"
 msgstr "Steuerung: Bremsdruckhalteventil zurücksetzen"
 
-#: ../../ORTS.Settings/InputSettings.cs:160
+#: ../../ORTS.Settings/InputSettings.cs:159
 msgid "Control Brake Hose Connect"
 msgstr "Steuerung: Bremsschläuche verbinden"
 
-#: ../../ORTS.Settings/InputSettings.cs:161
+#: ../../ORTS.Settings/InputSettings.cs:160
 msgid "Control Brake Hose Disconnect"
 msgstr "Steuerung: Bremsschläuche trennen"
 
-#: ../../ORTS.Settings/InputSettings.cs:162
+#: ../../ORTS.Settings/InputSettings.cs:161
 msgid "Control Alerter"
 msgstr "Steuerung: SIFA"
 
-#: ../../ORTS.Settings/InputSettings.cs:163
+#: ../../ORTS.Settings/InputSettings.cs:162
 msgid "Control Emergency Push Button"
 msgstr "Steuerung: Druckknopf für Notbremse"
 
-#: ../../ORTS.Settings/InputSettings.cs:164
+#: ../../ORTS.Settings/InputSettings.cs:163
 msgid "Control Sander"
 msgstr "Steuerung: Sander"
 
-#: ../../ORTS.Settings/InputSettings.cs:165
+#: ../../ORTS.Settings/InputSettings.cs:164
 msgid "Control Sander Toggle"
 msgstr "Steuerung: Sander an/aus"
 
-#: ../../ORTS.Settings/InputSettings.cs:166
+#: ../../ORTS.Settings/InputSettings.cs:165
 msgid "Control Wiper"
 msgstr "Steuerung: Scheibenwischer"
 
-#: ../../ORTS.Settings/InputSettings.cs:167
+#: ../../ORTS.Settings/InputSettings.cs:166
 msgid "Control Horn"
 msgstr "Steuerung: Horn"
 
-#: ../../ORTS.Settings/InputSettings.cs:168
+#: ../../ORTS.Settings/InputSettings.cs:167
 msgid "Control Bell"
 msgstr "Steuerung: Glocke"
 
-#: ../../ORTS.Settings/InputSettings.cs:169
+#: ../../ORTS.Settings/InputSettings.cs:168
 msgid "Control Bell Toggle"
 msgstr "Steuerung: Glocke an/aus"
 
-#: ../../ORTS.Settings/InputSettings.cs:170
+#: ../../ORTS.Settings/InputSettings.cs:169
 msgid "Control Door Left"
 msgstr "Steuerung: Türen links"
 
-#: ../../ORTS.Settings/InputSettings.cs:171
+#: ../../ORTS.Settings/InputSettings.cs:170
 msgid "Control Door Right"
 msgstr "Steuerung: Türen rechts"
 
-#: ../../ORTS.Settings/InputSettings.cs:172
+#: ../../ORTS.Settings/InputSettings.cs:171
 msgid "Control Mirror"
 msgstr "Steuerung: Spiegel"
 
-#: ../../ORTS.Settings/InputSettings.cs:173
+#: ../../ORTS.Settings/InputSettings.cs:172
 msgid "Control Light"
 msgstr "Steuerung: Führerstandbeleuchtung"
 
-#: ../../ORTS.Settings/InputSettings.cs:174
+#: ../../ORTS.Settings/InputSettings.cs:173
 msgid "Control Pantograph 1"
 msgstr "Steuerung: Pantograph 1"
 
-#: ../../ORTS.Settings/InputSettings.cs:175
+#: ../../ORTS.Settings/InputSettings.cs:174
 msgid "Control Pantograph 2"
 msgstr "Steuerung: Pantograph 2"
 
+# Exact funtionality?
+#: ../../ORTS.Settings/InputSettings.cs:175
+#, fuzzy
+msgid "Control Circuit Breaker Closing Order"
+msgstr "Steuerung: Circuit Breaker Closing Order"
+
+# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:176
+#, fuzzy
+msgid "Control Circuit Breaker Opening Order"
+msgstr "Steuerung: Circuit Breaker Opening Order"
+
+# Exact funtionality?
+#: ../../ORTS.Settings/InputSettings.cs:177
+#, fuzzy
+msgid "Control Circuit Breaker Closing Authorization"
+msgstr "Steuerung: Circuit Breaker Closing Authorization"
+
+#: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Diesel Player"
 msgstr "Steuerung: Motor Spielerlok"
 
-#: ../../ORTS.Settings/InputSettings.cs:177
+#: ../../ORTS.Settings/InputSettings.cs:179
 msgid "Control Diesel Helper"
 msgstr "Steuerung: Motor Hilfloks"
 
-#: ../../ORTS.Settings/InputSettings.cs:178
+#: ../../ORTS.Settings/InputSettings.cs:180
 msgid "Control Headlight Increase"
 msgstr "Steuerung: Spitzenlicht aufblenden"
 
-#: ../../ORTS.Settings/InputSettings.cs:179
+#: ../../ORTS.Settings/InputSettings.cs:181
 msgid "Control Headlight Decrease"
 msgstr "Steuerung: Spitzenlicht abblenden"
 
-#: ../../ORTS.Settings/InputSettings.cs:180
-msgid "Control Injector 1 Increase"
-msgstr "Steuerung: Injektor 1 stärker"
-
-#: ../../ORTS.Settings/InputSettings.cs:181
-msgid "Control Injector 1 Decrease"
-msgstr "Steuerung: Injektor 1 schwächer"
-
 #: ../../ORTS.Settings/InputSettings.cs:182
-msgid "Control Injector 1"
-msgstr "Steuerung: Injektor 1"
+msgid "Control Injector 1 Increase"
+msgstr "Steuerung: Speisepumpe 1 stärker"
 
 #: ../../ORTS.Settings/InputSettings.cs:183
-msgid "Control Injector 2 Increase"
-msgstr "Steuerung: Injektor 2 stärker"
+msgid "Control Injector 1 Decrease"
+msgstr "Steuerung: Speisepumpe 1 schwächer"
 
 #: ../../ORTS.Settings/InputSettings.cs:184
-msgid "Control Injector 2 Decrease"
-msgstr "Steuerung: Injektor 2 schwächer"
+msgid "Control Injector 1"
+msgstr "Steuerung: Speisepumpe 1"
 
 #: ../../ORTS.Settings/InputSettings.cs:185
-msgid "Control Injector 2"
-msgstr "Steuerung: Injektor 2"
+msgid "Control Injector 2 Increase"
+msgstr "Steuerung: Speisepumpe 2 stärker"
 
 #: ../../ORTS.Settings/InputSettings.cs:186
+msgid "Control Injector 2 Decrease"
+msgstr "Steuerung: Speisepumpe 2 schwächer"
+
+#: ../../ORTS.Settings/InputSettings.cs:187
+msgid "Control Injector 2"
+msgstr "Steuerung: Speisepumpe 2"
+
+#: ../../ORTS.Settings/InputSettings.cs:188
 msgid "Control Blower Increase"
 msgstr "Steuerung: Bläser stärker"
 
-#: ../../ORTS.Settings/InputSettings.cs:187
+#: ../../ORTS.Settings/InputSettings.cs:189
 msgid "Control Blower Decrease"
 msgstr "Steuerung: Bläser schwächer"
 
-#: ../../ORTS.Settings/InputSettings.cs:188
+#: ../../ORTS.Settings/InputSettings.cs:190
 msgid "Control Steam Heat Increase"
 msgstr "Steuerung: Dampfheizung stärker"
 
-#: ../../ORTS.Settings/InputSettings.cs:189
+#: ../../ORTS.Settings/InputSettings.cs:191
 msgid "Control Steam Heat Decrease"
 msgstr "Steuerung: Dampfheizung schwächer"
 
-#: ../../ORTS.Settings/InputSettings.cs:190
+#: ../../ORTS.Settings/InputSettings.cs:192
 msgid "Control Damper Increase"
 msgstr "Steuerung: Dämpfer stärker"
 
-#: ../../ORTS.Settings/InputSettings.cs:191
+#: ../../ORTS.Settings/InputSettings.cs:193
 msgid "Control Damper Decrease"
 msgstr "Steuerung: Dämpfer schwächer"
 
-#: ../../ORTS.Settings/InputSettings.cs:192
+#: ../../ORTS.Settings/InputSettings.cs:194
 msgid "Control Firebox Open"
 msgstr "Steuerung: Feuerbüchse öffnen"
 
-#: ../../ORTS.Settings/InputSettings.cs:193
+#: ../../ORTS.Settings/InputSettings.cs:195
 msgid "Control Firebox Close"
 msgstr "Steuerung: Feuerbüchse schließen"
 
-#: ../../ORTS.Settings/InputSettings.cs:194
+#: ../../ORTS.Settings/InputSettings.cs:196
 msgid "Control Firing Rate Increase"
 msgstr "Steuerung: Schaufelrate erhöhen"
 
-#: ../../ORTS.Settings/InputSettings.cs:195
+#: ../../ORTS.Settings/InputSettings.cs:197
 msgid "Control Firing Rate Decrease"
 msgstr "Steuerung: Schaufelrate verringern"
 
-#: ../../ORTS.Settings/InputSettings.cs:196
+#: ../../ORTS.Settings/InputSettings.cs:198
 msgid "Control Fire Shovel Full"
 msgstr "Steuerung: Schaufelrate maximal"
 
-#: ../../ORTS.Settings/InputSettings.cs:197
+#: ../../ORTS.Settings/InputSettings.cs:199
 msgid "Control Cylinder Cocks"
 msgstr "Steuerung: Zylinderhähne"
 
-#: ../../ORTS.Settings/InputSettings.cs:198
+#: ../../ORTS.Settings/InputSettings.cs:200
+msgid "Control Small Ejector Increase"
+msgstr "Steuerung: Kleine Dampfstrahl-Vakuumpumpe stärker"
+
+#: ../../ORTS.Settings/InputSettings.cs:201
+msgid "Control Small Ejector Decrease"
+msgstr "Steuerung: Kleine Dampfstrahl-Vakuumpumpe schwächer"
+
+#: ../../ORTS.Settings/InputSettings.cs:202
 msgid "Control Cylinder Compound"
 msgstr "Steuerung: Verbundlokomotive"
 
-#: ../../ORTS.Settings/InputSettings.cs:199
+#: ../../ORTS.Settings/InputSettings.cs:203
 msgid "Control Firing"
 msgstr "Steuerung: Befeuern"
 
-#: ../../ORTS.Settings/InputSettings.cs:200
+#: ../../ORTS.Settings/InputSettings.cs:204
 msgid "Control Refill"
 msgstr "Steuerung: Auffüllen"
 
-#: ../../ORTS.Settings/InputSettings.cs:201
+#: ../../ORTS.Settings/InputSettings.cs:205
 msgid "Control TroughRefill"
 msgstr "Steuerung: Auffüllen bei Wassertrog"
 
-#: ../../ORTS.Settings/InputSettings.cs:202
+#: ../../ORTS.Settings/InputSettings.cs:206
 msgid "Control ImmediateRefill"
 msgstr "Steuerung: Sofort auffüllen"
 
-#: ../../ORTS.Settings/InputSettings.cs:653
+#: ../../ORTS.Settings/InputSettings.cs:207
+msgid "Control Turntable Clockwise"
+msgstr "Steuerung: Drehscheibe im Uhrzeigersinn drehen"
+
+#: ../../ORTS.Settings/InputSettings.cs:208
+msgid "Control Turntable Counterclockwise"
+msgstr "Steuerung: Drehscheibe gegen Uhrzeigersinn drehen"
+
+# Exact funtionality?
+#: ../../ORTS.Settings/InputSettings.cs:209
+#, fuzzy
+msgid "Control Cab Radio"
+msgstr "Steuerung: Führerstand-Funk"
+
+# Exact funtionality?
+#: ../../ORTS.Settings/InputSettings.cs:210
+#, fuzzy
+msgid "Control AI Fire On"
+msgstr "Steuerung: KI Feuer ein"
+
+# Exact funtionality?
+#: ../../ORTS.Settings/InputSettings.cs:211
+#, fuzzy
+msgid "Control AI Fire Off"
+msgstr "Steuerung: KI Feuer aus"
+
+# Exact funtionality?
+#: ../../ORTS.Settings/InputSettings.cs:212
+#, fuzzy
+msgid "Control AI Fire Reset"
+msgstr "Steuerung: KI Feuer zurücksetzen"
+
+#: ../../ORTS.Settings/InputSettings.cs:674
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr "{0} benötigt und wird von SHIFT (Umschalttaste) abgeändert."
 
-#: ../../ORTS.Settings/InputSettings.cs:655
+#: ../../ORTS.Settings/InputSettings.cs:676
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr "{0} benötigt und wird von CTRL (STRG) abgeändert."
 
-#: ../../ORTS.Settings/InputSettings.cs:657
+#: ../../ORTS.Settings/InputSettings.cs:678
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
-msgstr "{0} {0} benötigt und wird von ALT abgeändert."
+msgstr "{0} benötigt und wird von ALT abgeändert."
 
-#: ../../ORTS.Settings/InputSettings.cs:688
+#: ../../ORTS.Settings/InputSettings.cs:709
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr "{0} und {1} liegen beide auf {2}."
+
+#~ msgid "Camera Cab Rotate"
+#~ msgstr "Kamera: Führerstand in überhöhten Kurven mitdrehen"

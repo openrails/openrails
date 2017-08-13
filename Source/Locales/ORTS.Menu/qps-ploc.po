@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2015-05-18 18:50:14+0100\n"
-"PO-Revision-Date: 2015-05-18 18:50:14+0100\n"
+"POT-Creation-Date: 2017-08-13 15:13:24+0200\n"
+"PO-Revision-Date: 2017-08-13 15:13:24+0200\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -64,12 +64,12 @@ msgstr "[- Âñ¥ £ôçô₥ôƭïƲè - !!!]"
 msgid "Locomotive '{0}' is excluded."
 msgstr "[£ôçô₥ôƭïƲè '{0}' ïƨ èжçℓúδèδ. !!!]"
 
-#: ../../ORTS.Menu/Paths.cs:150
+#: ../../ORTS.Menu/Paths.cs:168
 #, csharp-format
 msgid "Start at: {0}"
 msgstr "[§ƭářƭ áƭ: {0} !!!]"
 
-#: ../../ORTS.Menu/Paths.cs:151
+#: ../../ORTS.Menu/Paths.cs:169
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr "[Hèáδïñϱ ƭô: {0} !!!]"
