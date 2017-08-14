@@ -591,6 +591,14 @@ namespace Orts.Viewer3D
             }
             CabHeightPixels = windowHeight + CabExceedsDisplay;
             CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
+            if (Settings.Cab2DStretch == 0 && Settings.ViewingFOV == 45 && CabExceedsDisplay > 0)
+            {
+                // We must modify FOV to get correct lookout
+                if (CabCamera.IsAvailable)
+                {
+                    CabCamera.FieldOfView = MathHelper.ToDegrees((float) (2 * Math.Atan ((float)windowHeight / windowWidth) * Math.Tan(MathHelper.ToRadians(30))));
+                }
+            }
             if (CabCamera.IsAvailable)
                 CabCamera.InitialiseRotation(Simulator.PlayerLocomotive);
         }
