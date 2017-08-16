@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
-"POT-Creation-Date: 2017-08-13 17:15:22+0200\n"
-"PO-Revision-Date: 2017-08-13 18:26+0100\n"
+"POT-Creation-Date: 2017-08-16 23:55:05+0200\n"
+"PO-Revision-Date: 2017-08-17 00:25+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -165,7 +165,7 @@ msgstr "Schließt"
 #, fuzzy
 msgctxt "CircuitBreaker"
 msgid "Closed"
-msgstr "Zu"
+msgstr "Geschlossen"
 
 #: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:124
 #: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:136
@@ -448,9 +448,8 @@ msgstr "Stromkreisuntbrech"
 
 # Exact functionality?
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:176
-#, fuzzy
 msgid "Circuit breaker closing authorization"
-msgstr "Circuit breaker closing authorization"
+msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:176
 #, fuzzy
@@ -524,7 +523,6 @@ msgstr "stärker"
 msgid "increase"
 msgstr "schwächer"
 
-# Appearing where?
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:187
 #, fuzzy
 msgid "SteamHeat"
@@ -562,7 +560,6 @@ msgstr "Zylinderhähne"
 msgid "Cylinder Compound"
 msgstr "Zylinderverbund"
 
-# Appearing where?
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:195
 msgid "SmallEjector"
 msgstr ""
@@ -881,7 +878,6 @@ msgstr "Waggon vollständig beladen"
 msgid "Freight load"
 msgstr "Güterladung"
 
-# Exact functionality?
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:236
 #, fuzzy
 msgid "Cab Radio"
@@ -1038,7 +1034,6 @@ msgstr ""
 msgid "Train front on {0}"
 msgstr "Vorderes Zugende auf {0}"
 
-# Exact funtionality?
 #: ../../Orts.Simulation/Simulation/Turntables.cs:203
 #, fuzzy, csharp-format
 msgid "Train front outside {0}"
@@ -1049,7 +1044,6 @@ msgstr "Vorderes Zugende außerhalb von {0}"
 msgid "Train rear on {0}"
 msgstr "Hinteres Zugende auf {0}"
 
-# Exact funtionality?
 #: ../../Orts.Simulation/Simulation/Turntables.cs:244
 #, fuzzy, csharp-format
 msgid "Train rear outside {0}"
@@ -1084,7 +1078,6 @@ msgstr "Drehscheibe vorne verbunden"
 msgid "Turntable backward connected"
 msgstr "Drehscheibe hinten verbunden"
 
-# Vorderes Zugende außerhalb von {0}
 #: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4943
 #, fuzzy, csharp-format
 msgid ""
@@ -1133,7 +1126,6 @@ msgstr "Keine Weiche gefunden"
 msgid "You cannot enter manual mode when autopiloted"
 msgstr "Wechsel zum manuellen Modus im Autopilot nicht möglich."
 
-# Vorderes Zugende außerhalb von {0}
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:8301
 #, fuzzy
 msgid "You cannot use this command for pathless trains"
@@ -2041,7 +2033,7 @@ msgstr "KI-Heizer hat aufgehört zu heizen"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6739
 #, fuzzy
 msgid "AI Fireman has been reset"
-msgstr "KI-Heizer wurde zurüchkgesetzt"
+msgstr "KI-Heizer wurde zurückgesetzt"
 
 #. Context: HUD
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5477
