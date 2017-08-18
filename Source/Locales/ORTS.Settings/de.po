@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Settings\n"
-"POT-Creation-Date: 2017-08-13 16:56:22+0200\n"
-"PO-Revision-Date: 2017-08-13 17:33+0100\n"
+"POT-Creation-Date: 2017-08-18 20:02:58+0200\n"
+"PO-Revision-Date: 2017-08-18 21:17+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -100,11 +100,9 @@ msgstr "Spiel: Signal hinten zurücksetzen"
 msgid "Game Autopilot Mode"
 msgstr "Spiel: Autopilot aktivieren"
 
-# Exact functionality?
 #: ../../ORTS.Settings/InputSettings.cs:64
-#, fuzzy
 msgid "Game Suspend Old Player"
-msgstr "Spiel: Suspend Old Player"
+msgstr "Spiel: Alten Zug abstellen"
 
 #: ../../ORTS.Settings/InputSettings.cs:66
 msgid "Display Next Window Tab"
@@ -530,23 +528,20 @@ msgstr "Steuerung: Pantograph 1"
 msgid "Control Pantograph 2"
 msgstr "Steuerung: Pantograph 2"
 
-# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:175
 #, fuzzy
 msgid "Control Circuit Breaker Closing Order"
-msgstr "Steuerung: Circuit Breaker Closing Order"
+msgstr "Steuerung: Hauptschalter schließen"
 
-# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:176
 #, fuzzy
 msgid "Control Circuit Breaker Opening Order"
-msgstr "Steuerung: Circuit Breaker Opening Order"
+msgstr "Steuerung: Hauptschalter öffnen"
 
-# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:177
 #, fuzzy
 msgid "Control Circuit Breaker Closing Authorization"
-msgstr "Steuerung: Circuit Breaker Closing Authorization"
+msgstr "Steuerung: Erlaubnis, Hauptschalter zu schließen"
 
 #: ../../ORTS.Settings/InputSettings.cs:178
 msgid "Control Diesel Player"
@@ -672,29 +667,21 @@ msgstr "Steuerung: Drehscheibe im Uhrzeigersinn drehen"
 msgid "Control Turntable Counterclockwise"
 msgstr "Steuerung: Drehscheibe gegen Uhrzeigersinn drehen"
 
-# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:209
-#, fuzzy
 msgid "Control Cab Radio"
-msgstr "Steuerung: Führerstand-Funk"
+msgstr "Steuerung: Führerstand: Funk an / aus"
 
-# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:210
-#, fuzzy
 msgid "Control AI Fire On"
-msgstr "Steuerung: KI Feuer ein"
+msgstr "Steuerung: KI Heizer: Heizen beginnen"
 
-# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:211
-#, fuzzy
 msgid "Control AI Fire Off"
-msgstr "Steuerung: KI Feuer aus"
+msgstr "Steuerung: KI Heizer: Heizen beenden"
 
-# Exact funtionality?
 #: ../../ORTS.Settings/InputSettings.cs:212
-#, fuzzy
 msgid "Control AI Fire Reset"
-msgstr "Steuerung: KI Feuer zurücksetzen"
+msgstr "Steuerung: KI Heizer auf Automatik zurücksetzen"
 
 #: ../../ORTS.Settings/InputSettings.cs:674
 #, csharp-format

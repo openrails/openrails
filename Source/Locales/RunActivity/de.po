@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2017-08-16 23:55:09+0200\n"
-"PO-Revision-Date: 2017-08-17 00:32+0100\n"
+"POT-Creation-Date: 2017-08-18 20:03:05+0200\n"
+"PO-Revision-Date: 2017-08-18 21:30+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -1329,7 +1329,7 @@ msgstr "Zug inaktiv."
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:227
 #, fuzzy
 msgid "Train static."
-msgstr "Zug ruht."
+msgstr "Zug abgestellt."
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:231
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:421
@@ -1348,12 +1348,14 @@ msgid "Train has terminated."
 msgstr "Zugfahrt beendet."
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:299
+#, fuzzy
 msgid "Transfer units at next station with train "
-msgstr ""
+msgstr "Rollmaterial an nächster Station mit Zug verschieben."
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:309
+#, fuzzy
 msgid "Transfer units with train "
-msgstr ""
+msgstr "Rollmaterial mit Zug verschieben."
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:319
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:325
@@ -1377,8 +1379,9 @@ msgid "Pick up train ahead"
 msgstr "Zug voraus ankuppeln"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:347
+#, fuzzy
 msgid "Transfer units with train ahead"
-msgstr ""
+msgstr "Rollmaterial mit Zug vorne verschieben."
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:352
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:482
@@ -1546,8 +1549,9 @@ msgstr "Abkuppeln durchführen"
 
 #: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:90
 #: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:95
+#, fuzzy
 msgid "static consist"
-msgstr ""
+msgstr "Abgestellter Zugverband"
 
 #: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:99
 #: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:104

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
-"POT-Creation-Date: 2017-08-16 23:55:05+0200\n"
-"PO-Revision-Date: 2017-08-17 00:25+0100\n"
+"POT-Creation-Date: 2017-08-18 20:03:00+0200\n"
+"PO-Revision-Date: 2017-08-18 21:28+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -446,10 +446,10 @@ msgstr "Pantograph 2"
 msgid "Circuit breaker"
 msgstr "Stromkreisuntbrech"
 
-# Exact functionality?
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:176
+#, fuzzy
 msgid "Circuit breaker closing authorization"
-msgstr ""
+msgstr "Schließen des Hauptschalters erlaubt."
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:176
 #, fuzzy
@@ -881,7 +881,7 @@ msgstr "Güterladung"
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:236
 #, fuzzy
 msgid "Cab Radio"
-msgstr "Führerstand-Funk"
+msgstr "Funk (Führerstand)"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:246
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:255
@@ -976,19 +976,16 @@ msgctxt "Switch"
 msgid "change"
 msgstr "stellen"
 
-# Exact funtionality?
 #: ../../Orts.Simulation/Simulation/Simulator.cs:1657
 #, fuzzy
 msgid "Train can't be suspended with speed not equal 0"
 msgstr "Zug kann nur bei Stillstand abgestellt werden."
 
-# Exact funtionality?
 #: ../../Orts.Simulation/Simulation/Simulator.cs:1778
 #, fuzzy
 msgid "To return to static train speed must be = 0"
-msgstr "Zum abstellen muss die Zuggeschwindigkeit =0 sein."
+msgstr "Zum Abstellen muss die Zuggeschwindigkeit =0 sein."
 
-# Exact funtionality?
 #: ../../Orts.Simulation/Simulation/Simulator.cs:759
 #: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4390
 #, fuzzy, csharp-format
@@ -996,7 +993,7 @@ msgid ""
 "Player train has been included into train {0} service {1}, that "
 "automatically becomes the new player train"
 msgstr ""
-"Der Spielerzug wurde in Zug {0}, Dienst {1}, eingegliedert, dieser ist der "
+"Der Spielerzug wurde in Zug {0}, Dienst {1} eingegliedert, dieser ist der "
 "neue Spielerzug."
 
 #: ../../Orts.Simulation/Simulation/Transfertables.cs:244
@@ -1025,9 +1022,9 @@ msgstr "Verschiebebühne verbunden"
 # Exact funtionality?
 #: ../../Orts.Simulation/Simulation/Turntables.cs:188
 #: ../../Orts.Simulation/Simulation/Turntables.cs:229
-#, csharp-format
+#, fuzzy, csharp-format
 msgid "Train slipped into non aligned {0}"
-msgstr ""
+msgstr "Zug in nicht ausgerichtete {0} gerutscht."
 
 #: ../../Orts.Simulation/Simulation/Turntables.cs:195
 #, fuzzy, csharp-format
@@ -1085,7 +1082,7 @@ msgid ""
 "service {3}"
 msgstr ""
 "Kuppeln erfolgreich: Zug {0}, Dienst {1}, wurde in Zug {2}, Dienst {3} "
-"eingegliedert"
+"eingegliedert."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:1649
 msgid "Coupler broken!"
@@ -1129,7 +1126,9 @@ msgstr "Wechsel zum manuellen Modus im Autopilot nicht möglich."
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:8301
 #, fuzzy
 msgid "You cannot use this command for pathless trains"
-msgstr "Diese Funktion ist für Züge ohne Fahrstraße nicht verfügbar."
+msgstr ""
+"Diese Funktion ist für ursprünglich abgestellte Züge (ohne Fahrstraße) nicht "
+"verfügbar."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:8313
 msgid "Train is not back on original route"
@@ -2097,10 +2096,10 @@ msgstr "Tandemst:"
 msgid "Single"
 msgstr "Einfach"
 
-# Exact funtionality?
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/CircuitBreaker.cs:401
+#, fuzzy
 msgid "Circuit breaker closing not authorized"
-msgstr ""
+msgstr "Schließen des Hauptschalters nicht erlaubt."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:299
 msgid "Status"
@@ -2149,7 +2148,7 @@ msgstr "Wartet auf Anschlusszug:"
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9480
 #, fuzzy
 msgid "Waiting for train to attach : "
-msgstr "Warten, dass Zug abkuppelt:"
+msgstr "Warten, dass Zug ankuppelt:"
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9496
 #, fuzzy
@@ -2165,13 +2164,13 @@ msgstr "Warten auf Ankunft von Zug:"
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9597
 #, fuzzy
 msgid ", backward"
-msgstr ", rückwärts"
+msgstr ", hinten"
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9581
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9597
 #, fuzzy
 msgid ", forward"
-msgstr ", vorwärts"
+msgstr ", vorne"
 
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9590
 #: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:9598
