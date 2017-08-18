@@ -1633,7 +1633,7 @@ namespace Orts.Viewer3D
                 return;
             }
             // Adjust inclination (up/down angle) of external view to match.
-            var viewSpeed = (int)speed * 0.00105f; // factor found by trial and error.
+            var viewSpeed = (int)speed * 0.00081f; // factor found by trial and error.
             RotationXRadians -= (up) ? viewSpeed : -viewSpeed;
         }
 
@@ -1650,7 +1650,7 @@ namespace Orts.Viewer3D
             ? loco.CabViewList[(int)CabViewType.Rear].ViewPointList
             : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
 
-            RotationXRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.X) - 0.00105f * (Viewer.CabYOffsetPixels + Viewer.CabExceedsDisplay / 2);
+            RotationXRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.X) - 0.00081f * (Viewer.CabYOffsetPixels + Viewer.CabExceedsDisplay / 2);
             RotationYRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.Y);
         }
 

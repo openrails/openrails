@@ -365,8 +365,6 @@ namespace Orts.Viewer3D
             GraphicsDevice = RenderProcess.GraphicsDevice;
             UpdateAdapterInformation(GraphicsDevice.CreationParameters.Adapter);
 
-            AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
-
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
             if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
@@ -378,6 +376,9 @@ namespace Orts.Viewer3D
             InitializeAutomaticTrackSounds();
 
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
+
+            AdjustCabHeight(DisplaySize.X, DisplaySize.Y); // needs TextureManager
+
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
 
@@ -570,19 +571,27 @@ namespace Orts.Viewer3D
 
         public void AdjustCabHeight(int windowWidth, int windowHeight)
         {
-            int MSTSCabHeightPixels = windowWidth * 3 / 4; // MSTS cab views are designed for 4:3 aspect ratio.
+            float CabTextureInverseRatio = 0.75f;
+            // MSTS cab views are designed for 4:3 aspect ratio. This is the default. However a check is done with the actual
+            // cabview texture. If this has a different aspect ratio, that one is considered
             // For wider screens (e.g. 16:9), the height of the cab view before adjustment exceeds the height of the display.
             // The user can decide how much of this excess to keep. Setting of 0 keeps all the excess and 100 keeps none.
 
-            // <CJComment> This scheme treats all cab views the same and assumes that they have a 4:3 aspect ratio.
-            // For a cab view with a different aspect ratio (e.g. designed for a 16:9 screen), use a setting of 100 which
-            // will disable this feature. A smarter scheme would discover the aspect ratio of the cab view and adjust
-            // appropriately. </CJComment>
-
-            if (((float)windowWidth / windowHeight) > (4.0 / 3))
+            // <CSComment> If the aspect ratio of the viewing window is greater than the aspect ratio of the cabview texture file
+            // it is either possible to stretch the cabview texture file or to leave the proportions unaltered and to vertically pan
+            // the screen
+            if (CabCamera.IsAvailable)
+            {
+                var i = ((PlayerLocomotive as MSTSLocomotive).UsingRearCab) ? 1 : 0;
+                var cabTextureFileName = (PlayerLocomotive as MSTSLocomotive).CabViewList[i].CVFFile.TwoDViews[0];
+                var cabTextureInverseRatio = ComputeCabTextureInverseRatio(cabTextureFileName);
+                if (cabTextureInverseRatio != -1) CabTextureInverseRatio = cabTextureInverseRatio;
+            }
+            int unstretchedCabHeightPixels = (int)(CabTextureInverseRatio * windowWidth);
+            if (((float)windowHeight / windowWidth) < CabTextureInverseRatio)
             {
                 // screen is wide-screen, so can choose between scroll or stretch
-                CabExceedsDisplay = (int)((MSTSCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
+                CabExceedsDisplay = (int)((unstretchedCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
             }
             else
             {
@@ -596,11 +605,20 @@ namespace Orts.Viewer3D
                 // We must modify FOV to get correct lookout
                 if (CabCamera.IsAvailable)
                 {
-                    CabCamera.FieldOfView = MathHelper.ToDegrees((float) (2 * Math.Atan ((float)windowHeight / windowWidth * 4.0/3 *Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV/2)))));
+                    CabCamera.FieldOfView = MathHelper.ToDegrees((float) (2 * Math.Atan ((float)windowHeight / windowWidth / CabTextureInverseRatio *Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV/2)))));
                 }
             }
             if (CabCamera.IsAvailable)
                 CabCamera.InitialiseRotation(Simulator.PlayerLocomotive);
+        }
+
+        public float ComputeCabTextureInverseRatio(string cabTextureFileName)
+        {
+            float cabTextureInverseRatio = -1;
+            var cabTexture = TextureManager.Get(cabTextureFileName, true);
+            if (cabTexture != SharedMaterialManager.MissingTexture)
+                cabTextureInverseRatio = (float)cabTexture.Height / cabTexture.Width;
+            return cabTextureInverseRatio;
         }
 
         string adapterDescription;

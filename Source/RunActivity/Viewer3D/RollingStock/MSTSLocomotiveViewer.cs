@@ -978,22 +978,6 @@ namespace Orts.Viewer3D.RollingStock
             _Viewer = viewer;
             _Locomotive = car;
 
-            // _Viewer.DisplaySize intercepted to adjust cab view height
-            Point DisplaySize = _Viewer.DisplaySize;
-            DisplaySize.Y = _Viewer.CabHeightPixels;
-
-            // Use same shader for both front-facing and rear-facing cabs.
-            if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
-            {
-                _Shader = new CabShader(viewer.GraphicsDevice,
-                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
-                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
-                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
-                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
-            }
-
-            _PrevScreenSize = DisplaySize;
-
             #region Create Control renderers
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
             int[] count = new int[256];//enough to hold all types, count the occurence of each type
@@ -1095,6 +1079,25 @@ namespace Orts.Viewer3D.RollingStock
                 i++;
             }
             #endregion
+
+            _Viewer.AdjustCabHeight(_Viewer.DisplaySize.X, _Viewer.DisplaySize.Y);
+
+            // _Viewer.DisplaySize intercepted to adjust cab view height
+            Point DisplaySize = _Viewer.DisplaySize;
+            DisplaySize.Y = _Viewer.CabHeightPixels;
+
+            // Use same shader for both front-facing and rear-facing cabs.
+            if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
+            {
+                _Shader = new CabShader(viewer.GraphicsDevice,
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
+            }
+
+            _PrevScreenSize = DisplaySize;
+
         }
 
         public CabRenderer(Viewer viewer, MSTSLocomotive car, CabViewFile CVFFile) //used by 3D cab as a refrence, thus many can be eliminated
