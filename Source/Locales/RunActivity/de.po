@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2017-08-18 20:03:05+0200\n"
-"PO-Revision-Date: 2017-08-18 21:30+0100\n"
+"POT-Creation-Date: 2017-08-18 21:38:07+0200\n"
+"PO-Revision-Date: 2017-08-18 21:43+0100\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -76,67 +76,67 @@ msgid_plural "{0:F0} tiles"
 msgstr[0] "{0:F0} Tile"
 msgstr[1] "{0:F0} Tiles"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:719
-#: ../../RunActivity/Viewer3D/Viewer.cs:886
+#: ../../RunActivity/Viewer3D/Viewer.cs:737
+#: ../../RunActivity/Viewer3D/Viewer.cs:904
 msgid "Cab view not available"
 msgstr "Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:784
+#: ../../RunActivity/Viewer3D/Viewer.cs:802
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "Benutzen Sie Alt-F4, um den Mehrspielermodus direkt zu beenden."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:815
+#: ../../RunActivity/Viewer3D/Viewer.cs:833
 #, fuzzy
 msgid "Platform and siding labels visible."
 msgstr "Bahnsteig- und Nebengleislabels sichtbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:818
+#: ../../RunActivity/Viewer3D/Viewer.cs:836
 #, fuzzy
 msgid "Platform labels visible."
 msgstr "Bahsnteiglabels sichtbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:821
+#: ../../RunActivity/Viewer3D/Viewer.cs:839
 #, fuzzy
 msgid "Siding labels visible."
 msgstr "Nebengleislabels sichtbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:827
+#: ../../RunActivity/Viewer3D/Viewer.cs:845
 #, fuzzy
 msgid "Platform and siding labels hidden."
 msgstr "Bahnsteig- und Nebengleislabels ausgeblendet."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:838
+#: ../../RunActivity/Viewer3D/Viewer.cs:856
 #, fuzzy
 msgid "Train labels visible."
 msgstr "Zuglabels sichtbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:841
+#: ../../RunActivity/Viewer3D/Viewer.cs:859
 #, fuzzy
 msgid "Car labels visible."
 msgstr "Farhrzeuglabels sichtbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:847
+#: ../../RunActivity/Viewer3D/Viewer.cs:865
 #, fuzzy
 msgid "Train and car labels hidden."
 msgstr "Zug- und Fahrzeuglabels asugeblendet."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:897
+#: ../../RunActivity/Viewer3D/Viewer.cs:915
 msgid "3D Cab view not available"
 msgstr "3D-Führerstandsansicht nicht verfügbar."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1062
+#: ../../RunActivity/Viewer3D/Viewer.cs:1080
 msgid "Switched to player control"
 msgstr "Manuelle Steuerung reaktiviert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1067
+#: ../../RunActivity/Viewer3D/Viewer.cs:1085
 msgid "You can't switch from manual to autopilot mode"
 msgstr "Wechsel zum Autopiloten im manuellen Modus nicht möglich."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1071
+#: ../../RunActivity/Viewer3D/Viewer.cs:1089
 msgid "Switched to autopilot"
 msgstr "Autopilot aktiviert"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1499
+#: ../../RunActivity/Viewer3D/Viewer.cs:1517
 msgid "Game saved"
 msgstr "Spiel gespeichert"
 
@@ -145,22 +145,22 @@ msgstr "Spiel gespeichert"
 msgid "Allowed speed raised to {0}"
 msgstr "Geschwindigkeitsbegrenzung auf {0} erhöht."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:915
+#: ../../RunActivity/Viewer3D/Viewer.cs:933
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibrationslevel {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1080
+#: ../../RunActivity/Viewer3D/Viewer.cs:1098
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr "Tastenbelegung (Liste) in '{0}' gespeichert."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1084
+#: ../../RunActivity/Viewer3D/Viewer.cs:1102
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr "Tastenbelegung (Grafik) in '{0}' gespeichert."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:946
+#: ../../RunActivity/Viewer3D/Viewer.cs:964
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -217,7 +217,7 @@ msgstr "Entfernen"
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:174
 #, fuzzy
 msgid "Auto Switch"
-msgstr "Auto-Weiche"
+msgstr "Weichen automatisch ausrichten"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:189
 msgid "Show Avatars"
@@ -1371,12 +1371,12 @@ msgstr "; anderer Zug noch nicht fertig"
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:332
 #, fuzzy
 msgid "Train is to pickup train at end of path"
-msgstr "Zug soll am Ende des anderen Zug Pfades ankuppeln."
+msgstr "Zug soll am Ende des Pfades anderen Zug ankuppeln."
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:337
 #, fuzzy
 msgid "Pick up train ahead"
-msgstr "Zug voraus ankuppeln"
+msgstr "Zug vorne ankuppeln"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:347
 #, fuzzy

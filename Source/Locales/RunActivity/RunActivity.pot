@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2017-08-18 20:03:05+0200\n"
-"PO-Revision-Date: 2017-08-18 20:03:08+0200\n"
+"POT-Creation-Date: 2017-08-18 21:38:07+0200\n"
+"PO-Revision-Date: 2017-08-18 21:38:07+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -75,60 +75,60 @@ msgid_plural "{0:F0} tiles"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:719
-#: ../../RunActivity/Viewer3D/Viewer.cs:886
+#: ../../RunActivity/Viewer3D/Viewer.cs:737
+#: ../../RunActivity/Viewer3D/Viewer.cs:904
 msgid "Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:784
+#: ../../RunActivity/Viewer3D/Viewer.cs:802
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:815
+#: ../../RunActivity/Viewer3D/Viewer.cs:833
 msgid "Platform and siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:818
+#: ../../RunActivity/Viewer3D/Viewer.cs:836
 msgid "Platform labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:821
+#: ../../RunActivity/Viewer3D/Viewer.cs:839
 msgid "Siding labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:827
+#: ../../RunActivity/Viewer3D/Viewer.cs:845
 msgid "Platform and siding labels hidden."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:838
+#: ../../RunActivity/Viewer3D/Viewer.cs:856
 msgid "Train labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:841
+#: ../../RunActivity/Viewer3D/Viewer.cs:859
 msgid "Car labels visible."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:847
+#: ../../RunActivity/Viewer3D/Viewer.cs:865
 msgid "Train and car labels hidden."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:897
+#: ../../RunActivity/Viewer3D/Viewer.cs:915
 msgid "3D Cab view not available"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1062
+#: ../../RunActivity/Viewer3D/Viewer.cs:1080
 msgid "Switched to player control"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1067
+#: ../../RunActivity/Viewer3D/Viewer.cs:1085
 msgid "You can't switch from manual to autopilot mode"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1071
+#: ../../RunActivity/Viewer3D/Viewer.cs:1089
 msgid "Switched to autopilot"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1499
+#: ../../RunActivity/Viewer3D/Viewer.cs:1517
 msgid "Game saved"
 msgstr ""
 
@@ -137,22 +137,22 @@ msgstr ""
 msgid "Allowed speed raised to {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:915
+#: ../../RunActivity/Viewer3D/Viewer.cs:933
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1080
+#: ../../RunActivity/Viewer3D/Viewer.cs:1098
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1084
+#: ../../RunActivity/Viewer3D/Viewer.cs:1102
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:946
+#: ../../RunActivity/Viewer3D/Viewer.cs:964
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
