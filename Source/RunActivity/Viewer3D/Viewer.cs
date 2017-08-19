@@ -606,6 +606,7 @@ namespace Orts.Viewer3D
                 if (CabCamera.IsAvailable)
                 {
                     CabCamera.FieldOfView = MathHelper.ToDegrees((float) (2 * Math.Atan ((float)windowHeight / windowWidth / CabTextureInverseRatio *Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV/2)))));
+                    CabCamera.RotationRatio = (float)(0.962314f * 2 * Math.Tan(MathHelper.ToRadians(CabCamera.FieldOfView / 2)) / windowHeight);
                 }
             }
             if (CabCamera.IsAvailable)
