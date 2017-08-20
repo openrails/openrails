@@ -1373,7 +1373,7 @@ namespace Orts.Viewer3D
         public LodControl[] LodControls;
         public bool HasNightSubObj;
         public int RootSubObjectIndex = 0;
-        public bool negativeBogie = false;
+        //public bool negativeBogie = false;
 
         readonly Viewer Viewer;
         public readonly string FilePath;
@@ -1481,11 +1481,6 @@ namespace Orts.Viewer3D
                     }
                 }
             }
-        }
-
-        static void WagonMatrixCheck(string MSTSMatrixName, float M43)
-        {
-
         }
 
         public class LodControl
@@ -1987,28 +1982,6 @@ namespace Orts.Viewer3D
             Matrix matrix = Matrix.Identity;
             while (iNode != -1)
             {
-                // The rare situation when equipment use dummy axles that use repeating offset that happen to be opposite(negative) from the bogie(positive)
-                // OR was unable to process the axles so the process below will make changes so that OR can work with the axles.
-                if (MatrixNames[iNode].Contains("BOGIE"))
-                {
-                    if (Matrices[iNode].M43 < 0)
-                        negativeBogie = true;
-                    else
-                        negativeBogie = false;
-                }
-                else if ( iNode > 0 && MatrixNames[iNode].Contains("WHEELS") && Matrices[iNode].M43 == Matrices[iNode - 1].M43)
-                {
-                    if (Matrices[iNode].M43 > 0 && negativeBogie)
-                    {
-                        Matrices[iNode].M43 *= -1;
-                        Matrices[iNode - 1].M43 *= -1;
-                    }
-                    else if (Matrices[iNode].M43 < 0 && !negativeBogie)
-                    {
-                        Matrices[iNode].M43 *= -1;
-                        Matrices[iNode - 1].M43 *= -1;
-                    }
-                }
                 matrix *= Matrices[iNode];
                 iNode = h[iNode];
             }
