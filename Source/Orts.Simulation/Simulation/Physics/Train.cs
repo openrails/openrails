@@ -304,6 +304,7 @@ namespace Orts.Simulation.Physics
         public float ReservedTrackLengthM = 0.0f;                        // lenght of reserved section
 
         public float travelled;                                          // distance travelled, but not exactly
+        public float targetSpeedMpS;                                    // target speed for remote trains; used for sound management
         public DistanceTravelledActions requiredActions = new DistanceTravelledActions(); // distance travelled action list
         public AuxActionsContainer AuxActionsContain;          // Action To Do during activity, like WP
 
@@ -18274,15 +18275,18 @@ namespace Orts.Simulation.Physics
         public void UpdateRemoteTrainPos(float elapsedClockSeconds)
         {
             float newDistanceTravelledM = DistanceTravelledM;
+ //           float xx = 0;
 
             if (updateMSGReceived)
             {
                 updateMSGReceived = false;
                 try
                 {
+                    targetSpeedMpS = SpeedMpS;
                     UpdateCarSlack(expectedLength);//update car slack first
 
                     var x = travelled + LastSpeedMpS * elapsedClockSeconds + (SpeedMpS - LastSpeedMpS) / 2 * elapsedClockSeconds;
+//                    xx = x;
                     this.MUDirection = (Direction)expectedDIr;
 
                     if (Math.Abs(x - expectedTravelled) < 1 || Math.Abs(x - expectedTravelled) > 20)
@@ -18334,20 +18338,41 @@ namespace Orts.Simulation.Physics
             {
                 if (car != null)
                 {
-                    if (car.IsDriveable && car is MSTSWagon) (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
                     car.SpeedMpS = SpeedMpS;
                     if (car.Flipped) car.SpeedMpS = -car.SpeedMpS;
-
-
-
+                    car.AbsSpeedMpS = car.AbsSpeedMpS * (1 - elapsedClockSeconds ) + targetSpeedMpS * elapsedClockSeconds;
+                    if (car.IsDriveable && car is MSTSWagon)
+                    {
+                        (car as MSTSWagon).WheelSpeedMpS = SpeedMpS;
+                        if (car.AbsSpeedMpS > 0.5f)
+                        {
+                            if (car is MSTSElectricLocomotive)
+                            {
+                                (car as MSTSElectricLocomotive).Variable1 = 70;
+                                (car as MSTSElectricLocomotive).Variable2 = 70;
+                            }
+                            else if (car is MSTSDieselLocomotive)
+                            {
+                                (car as MSTSDieselLocomotive).Variable1 = 0.7f;
+                                (car as MSTSDieselLocomotive).Variable2 = 0.7f;
+                            }
+                            else if (car is MSTSSteamLocomotive)
+                            {
+                                (car as MSTSSteamLocomotive).Variable1 = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
+                                (car as MSTSDieselLocomotive).Variable2 = 0.7f;
+                            }
+                        }
+                    }
 #if INDIVIDUAL_CONTROL
                 if (car is MSTSLocomotive && car.CarID.StartsWith(MPManager.GetUserName()))
                         {
                             car.Update(elapsedClockSeconds);
                         }
-#endif
+#endif  
                 }
             }
+//            Trace.TraceWarning("SpeedMpS {0}  LastSpeedMpS {1}  AbsSpeedMpS {2}  targetSpeedMpS {7} x {3}  expectedTravelled {4}  travelled {5}  newDistanceTravelledM {6}",
+//                SpeedMpS, LastSpeedMpS, Cars[0].AbsSpeedMpS, xx, expectedTravelled, travelled, newDistanceTravelledM, targetSpeedMpS);
             LastSpeedMpS = SpeedMpS;
             DistanceTravelledM = newDistanceTravelledM;
 
