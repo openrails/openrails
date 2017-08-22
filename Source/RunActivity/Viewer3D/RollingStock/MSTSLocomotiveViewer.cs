@@ -1217,7 +1217,7 @@ namespace Orts.Viewer3D.RollingStock
                 return;
 
             // Cab view height adjusted to allow for clip or stretch
-            _CabRect.Width = _Viewer.DisplaySize.X;
+            _CabRect.Width = _Viewer.CabWidthPixels;
             _CabRect.Height = _Viewer.CabHeightPixels;
 
             if (_PrevScreenSize != _Viewer.DisplaySize && _Shader != null)
@@ -1244,10 +1244,10 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (_CabTexture != null)
                     stretchedCab = new Rectangle(-50, -40, _CabTexture.Width + 100, _CabTexture.Height + 80);
-                else stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
+                else stretchedCab = new Rectangle(_CabRect.Left - _Viewer.CabXOffsetPixels, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
             }
             else
-                stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
+                stretchedCab = new Rectangle(_CabRect.Left - _Viewer.CabXOffsetPixels, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
 
             if (_Shader != null)
             {
@@ -1267,7 +1267,7 @@ namespace Orts.Viewer3D.RollingStock
                 if (this._Viewer.Simulator.UseSuperElevation > 0 || _Viewer.Simulator.CarVibrating > 0 || _Locomotive.Train.IsTilting)
                 {
                     var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
-                    var place = new Vector2(_CabRect.Width / 2 - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
+                    var place = new Vector2(_CabRect.Width / 2 - _Viewer.CabXOffsetPixels - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
                     var place2 = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
                     _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, 0, place2, scale, SpriteEffects.None, 0f);
                 }
@@ -1406,7 +1406,7 @@ namespace Orts.Viewer3D.RollingStock
             base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
-            Position.X = (float)Viewer.DisplaySize.X / 640 * ((float)Control.PositionX + Origin.X * Scale);
+            Position.X = (float)Viewer.CabWidthPixels / 640 * ((float)Control.PositionX + Origin.X * Scale) - Viewer.CabXOffsetPixels;
             Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y * Scale) + Viewer.CabYOffsetPixels;
             ScaleToScreen = (float)Viewer.DisplaySize.X / 640 * Scale;
 
@@ -1502,7 +1502,7 @@ namespace Orts.Viewer3D.RollingStock
             base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height adjusted to allow for clip or stretch.
-            var xratio = (float)Viewer.DisplaySize.X / 640;
+            var xratio = (float)Viewer.CabWidthPixels / 640;
             var yratio = (float)Viewer.CabHeightPixels / 480;
 
             float percent, xpos, ypos, zeropos;
@@ -1530,16 +1530,16 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     if (Gauge.Orientation == 0)
                     {
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
+                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos))) - Viewer.CabXOffsetPixels;
                         DestinationRectangle.Y = (int)(yratio * Control.PositionY) + Viewer.CabYOffsetPixels;
                         DestinationRectangle.Width = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
                         DestinationRectangle.Height = (int)(yratio * ypos);
                     }
                     else
                     {
-                        DestinationRectangle.X = (int)(xratio * Control.PositionX);
+                        DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
                         if (Gauge.Direction != 1 && !IsFire)
-                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos))) + Viewer.CabYOffsetPixels;
+                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos))) - Viewer.CabYOffsetPixels;
                         else
                         DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos))) + Viewer.CabYOffsetPixels;
                         DestinationRectangle.Width = (int)(xratio * xpos);
@@ -1548,11 +1548,11 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else
                 {
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX);
+                    DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
                     var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                     if (Gauge.Direction != 0)  // column grows from bottom or from right
                     {
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
+                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - xpos)) - Viewer.CabXOffsetPixels;
                         if (Gauge.Orientation != 0) topY += Gauge.Height * (1 - percent);
                     }
                     // Cab view vertical position adjusted to allow for clip or stretch.
@@ -1566,14 +1566,14 @@ namespace Orts.Viewer3D.RollingStock
                 var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                 if (Gauge.Orientation == 0) // gauge horizontal
                 {
-                    DestinationRectangle.X = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos));
+                    DestinationRectangle.X = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos)) - Viewer.CabXOffsetPixels;
                     if (Gauge.Direction != 0)  // column grows from right
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos));
+                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos)) - Viewer.CabXOffsetPixels;
                 }
                 else // gauge vertical
                 {
                     topY += ypos - 0.5 * Gauge.Area.Height;
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX);
+                    DestinationRectangle.X = (int)(xratio * Control.PositionX) + Viewer.CabXOffsetPixels;
                     if (Gauge.Direction != 0)  // column grows from bottom
                         topY += Gauge.Height - 2 * ypos;
                 }
@@ -1692,9 +1692,9 @@ namespace Orts.Viewer3D.RollingStock
             base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
-            var xratio = (float)Viewer.DisplaySize.X / 640;
+            var xratio = (float)Viewer.CabWidthPixels / 640;
             var yratio = (float)Viewer.CabHeightPixels / 480;
-            DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001);
+            DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001) - Viewer.CabXOffsetPixels;
             DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
             DestinationRectangle.Width = (int)(xratio * Math.Min(Control.Width, Texture.Width));  // Allow only downscaling of the texture, and not upscaling
             DestinationRectangle.Height = (int)(yratio * Math.Min(Control.Height, Texture.Height));  // Allow only downscaling of the texture, and not upscaling
@@ -1983,7 +1983,7 @@ namespace Orts.Viewer3D.RollingStock
             else
                 Format = Format1;
             DrawFont = Viewer.WindowManager.TextManager.GetExact(digital.FontFamily, Viewer.CabHeightPixels * digital.FontSize / 480, digital.FontStyle == 0 ? System.Drawing.FontStyle.Regular : System.Drawing.FontStyle.Bold);
-            DrawPosition.X = (int)(Position.X * Viewer.DisplaySize.X / 640);
+            DrawPosition.X = (int)(Position.X * Viewer.CabWidthPixels / 640) + (Viewer.CabExceedsDisplayHorizontally > 0 ? DrawFont.Height / 4 : 0) - Viewer.CabXOffsetPixels;
             DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels;
             DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
             DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);

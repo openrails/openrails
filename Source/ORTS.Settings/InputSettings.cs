@@ -132,6 +132,8 @@ namespace ORTS.Settings
         [GetString("Camera Jump Back Player")] CameraJumpBackPlayer,
         [GetString("Camera Jump See Switch")] CameraJumpSeeSwitch,
         [GetString("Camera Vibrate")] CameraVibrate,
+        [GetString("Camera Scroll Right")] CameraScrollRight,
+        [GetString("Camera Scroll Left")] CameraScrollLeft,
 
         [GetString("Control Forwards")] ControlForwards,
         [GetString("Control Backwards")] ControlBackwards,
@@ -505,6 +507,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.CameraRotateLeft] = new UserCommandModifiableKeyInput(0x4B, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
             Commands[(int)UserCommands.CameraRotateRight] = new UserCommandModifiableKeyInput(0x4D, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
             Commands[(int)UserCommands.CameraRotateUp] = new UserCommandModifiableKeyInput(0x48, KeyModifiers.Alt, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
+            Commands[(int)UserCommands.CameraScrollLeft] = new UserCommandModifiableKeyInput(0x4B, KeyModifiers.Alt);
+            Commands[(int)UserCommands.CameraScrollRight] = new UserCommandModifiableKeyInput(0x4D, KeyModifiers.Alt);
             Commands[(int)UserCommands.CameraToggleShowCab] = new UserCommandKeyInput(0x02, KeyModifiers.Shift);
             Commands[(int)UserCommands.CameraTrackside] = new UserCommandKeyInput(0x05);
             Commands[(int)UserCommands.CameraVibrate] = new UserCommandKeyInput(0x2F, KeyModifiers.Control);

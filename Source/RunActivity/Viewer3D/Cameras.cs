@@ -1523,6 +1523,7 @@ namespace Orts.Viewer3D
         }
 
         public float RotationRatio = 0.00081f;
+        public float RotationRatioHorizontal = 0.00081f;
 
         public CabCamera(Viewer viewer)
             : base(viewer)
@@ -1545,6 +1546,7 @@ namespace Orts.Viewer3D
         {
             base.Reset();
             Viewer.CabYOffsetPixels = (Viewer.DisplaySize.Y - Viewer.CabHeightPixels) / 2;
+            Viewer.CabXOffsetPixels = (Viewer.CabWidthPixels - Viewer.DisplaySize.X) / 2;
             OnActivate(true);
         }
 
@@ -1640,6 +1642,40 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
+        /// Where cabview image doesn't fit the display exactly (cabview image "larger" than display, this method mimics the player looking left and right
+        /// and pans the image left/right to reveal details at the sides of the cab.
+        /// The external view also moves sidewards by a similar amount.
+        /// </summary>
+        void ScrollRight (bool right, float speed)
+        {
+            int min = 0;
+            int max = Viewer.CabWidthPixels - Viewer.DisplaySize.X; // -ve value
+            int cushionPixels = 40;
+            int slowFactor = 4;
+
+            // Cushioned approach to limits of travel. Within 40 pixels, travel at 1/4 speed
+            if (right && Math.Abs(Viewer.CabXOffsetPixels - max) < cushionPixels)
+                speed /= slowFactor;
+            if (!right && Math.Abs(Viewer.CabXOffsetPixels - min) < cushionPixels)
+                speed /= slowFactor;
+            Viewer.CabXOffsetPixels += (right) ? (int)speed : -(int)speed;
+            // Enforce limits to travel
+            if (Viewer.CabXOffsetPixels >= max)
+            {
+                Viewer.CabXOffsetPixels = max;
+                return;
+            }
+            if (Viewer.CabXOffsetPixels <= min)
+            {
+                Viewer.CabXOffsetPixels = min;
+                return;
+            }
+            // Adjust direction (right/left angle) of external view to match.
+            var viewSpeed = (int)speed * RotationRatioHorizontal; // factor found by trial and error.
+            RotationYRadians += (right) ? viewSpeed : -viewSpeed;
+        }
+
+        /// <summary>
         /// Sets direction for view out of cab front window. Also called when toggling between full screen and windowed.
         /// </summary>
         /// <param name="attachedCar"></param>
@@ -1653,7 +1689,7 @@ namespace Orts.Viewer3D
             : loco.CabViewList[(int)CabViewType.Front].ViewPointList;
 
             RotationXRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.X) - RotationRatio * (Viewer.CabYOffsetPixels + Viewer.CabExceedsDisplay / 2);
-            RotationYRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.Y);
+            RotationYRadians = MathHelper.ToRadians(viewpoints[sideLocation].StartDirection.Y) - RotationRatioHorizontal * (-Viewer.CabXOffsetPixels + Viewer.CabExceedsDisplayHorizontally / 2); ;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -1669,6 +1705,10 @@ namespace Orts.Viewer3D
                 PanUp(true, speed);
             if (UserInput.IsDown(UserCommands.CameraPanDown))
                 PanUp(false, speed);
+            if (UserInput.IsDown(UserCommands.CameraScrollRight))
+                ScrollRight(true, speed);
+            if (UserInput.IsDown(UserCommands.CameraScrollLeft))
+                ScrollRight(false, speed);
         }
     }
 

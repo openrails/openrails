@@ -169,8 +169,11 @@ namespace Orts.Viewer3D
         // No difference is seen on screens with 4:3 aspect ratio.
         // This adjustment assumes that the cab view is 4:3. Where the cab view matches the aspect ratio of the screen, use an adjustment of 100.
         public int CabHeightPixels { get; private set; }
+        public int CabWidthPixels { get; private set; }
         public int CabYOffsetPixels { get; set; } // Note: Always -ve. Without it, the cab view is fixed to the top of the screen. -ve values pull it up the screen.
+        public int CabXOffsetPixels { get; set; }
         public int CabExceedsDisplay; // difference between cabview texture vertical resolution and display vertical resolution
+        public int CabExceedsDisplayHorizontally; // difference between cabview texture horizontal resolution and display vertical resolution
 
         public CommandLog Log { get { return Simulator.Log; } }
 
@@ -310,6 +313,7 @@ namespace Orts.Viewer3D
                 camera.Save(outf);
             Camera.Save(outf);
             outf.Write(CabYOffsetPixels);
+            outf.Write(CabXOffsetPixels);
 
             // Set these so RenderFrame can use them when its thread gets control.
             SaveActivityFileStem = fileStem;
@@ -345,6 +349,7 @@ namespace Orts.Viewer3D
                 WellKnownCameras[cameraToRestore].Activate();
             Camera.Restore(inf);
             CabYOffsetPixels = inf.ReadInt32();
+            CabXOffsetPixels = inf.ReadInt32();
             NightTexturesNotLoaded = inf.ReadBoolean();
             DayTexturesNotLoaded = inf.ReadBoolean();
             LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
@@ -588,18 +593,30 @@ namespace Orts.Viewer3D
                 if (cabTextureInverseRatio != -1) CabTextureInverseRatio = cabTextureInverseRatio;
             }
             int unstretchedCabHeightPixels = (int)(CabTextureInverseRatio * windowWidth);
+            int unstretchedCabWidthPixels = (int)(windowHeight / CabTextureInverseRatio);
             if (((float)windowHeight / windowWidth) < CabTextureInverseRatio)
             {
-                // screen is wide-screen, so can choose between scroll or stretch
+                // screen is wide-screen, so can choose between vertical scroll or horizontal stretch
                 CabExceedsDisplay = (int)((unstretchedCabHeightPixels - windowHeight) * ((100 - Settings.Cab2DStretch) / 100f));
+                CabExceedsDisplayHorizontally = 0;
+            }
+            else if (((float)windowHeight / windowWidth) > CabTextureInverseRatio)
+            {
+                // must scroll horizontally
+                CabExceedsDisplay = 0;
+                CabExceedsDisplayHorizontally = unstretchedCabWidthPixels - windowWidth;
             }
             else
             {
-                // scroll not practical, so stretch instead
+                // nice, window aspect ratio and cabview aspect ratio are identical
                 CabExceedsDisplay = 0;
+                CabExceedsDisplayHorizontally = 0;
             }
             CabHeightPixels = windowHeight + CabExceedsDisplay;
             CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
+            CabWidthPixels = windowWidth + CabExceedsDisplayHorizontally;
+            CabXOffsetPixels = CabExceedsDisplayHorizontally / 2;
+
             if (Settings.Cab2DStretch == 0 && CabExceedsDisplay > 0)
             {
                 // We must modify FOV to get correct lookout
@@ -607,6 +624,14 @@ namespace Orts.Viewer3D
                 {
                     CabCamera.FieldOfView = MathHelper.ToDegrees((float) (2 * Math.Atan ((float)windowHeight / windowWidth / CabTextureInverseRatio *Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV/2)))));
                     CabCamera.RotationRatio = (float)(0.962314f * 2 * Math.Tan(MathHelper.ToRadians(CabCamera.FieldOfView / 2)) / windowHeight);
+                }
+            }
+            else if (CabExceedsDisplayHorizontally > 0)
+            {
+                if (CabCamera.IsAvailable)
+                {
+                    var halfFOVHorizontalRadians = (float)(Math.Atan((float)windowWidth / windowHeight * Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV / 2))));
+                    CabCamera.RotationRatioHorizontal = (float)(0.962314f * 2 * windowWidth / windowHeight * Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV / 2)) / windowWidth);
                 }
             }
             if (CabCamera.IsAvailable)
