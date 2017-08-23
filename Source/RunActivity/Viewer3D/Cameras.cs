@@ -345,7 +345,7 @@ namespace Orts.Viewer3D
         }
     }
 
-    public abstract class LookAtCamera : Camera
+    public abstract class LookAtCamera : RotatingCamera
     {
         protected WorldLocation targetLocation = new WorldLocation();
         public WorldLocation TargetWorldLocation { get { return targetLocation; } }
@@ -1792,6 +1792,10 @@ namespace Orts.Viewer3D
                     CameraAltitudeOffset = 0;
                 }
             }
+            if (UserInput.IsDown(UserCommands.CameraPanRight)) PanRight(speed);
+            if (UserInput.IsDown(UserCommands.CameraPanLeft)) PanRight(-speed);
+            if (UserInput.IsDown(UserCommands.CameraZoomIn)) ZoomIn(speed * 2);
+            if (UserInput.IsDown(UserCommands.CameraZoomOut)) ZoomIn(-speed * 2);
             ZoomByMouseWheel(speed);
 
             var trainCars = Viewer.SelectedTrain.Cars;
@@ -1866,6 +1870,23 @@ namespace Orts.Viewer3D
             targetLocation.Location.Y += TargetAltitude;
             UpdateListener();
         }
+
+        protected virtual void PanRight(float speed)
+        {
+            var movement = new Vector3(0, 0, 0);
+            movement.X += speed;
+            XRadians += movement.X;
+            MoveCamera(movement);
+        }
+
+        protected override void ZoomIn(float speed)
+        {
+            var movement = new Vector3(0, 0, 0);
+            movement.Z += speed;
+            ZRadians += movement.Z;
+            MoveCamera(movement);
+        }
+
     }
 
     public class ThreeDimCabCamera : InsideThreeDimCamera
