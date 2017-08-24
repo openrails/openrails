@@ -225,6 +225,7 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeSpeed2MpS = MpS.FromKpH(30);
         public float DynamicBrakeSpeed3MpS = MpS.FromKpH(999);
         public float DynamicBrakeSpeed4MpS = MpS.FromKpH(999);
+        public float DynamicBrakeRatioAtSpeed4 = 0;
         public float MaxDynamicBrakeForceN;
         public float DynamicBrakeMaxCurrentA;
         public float DynamicBrakeDelayS;
@@ -408,11 +409,14 @@ namespace Orts.Simulation.RollingStocks
                 interp[0] = 0;
                 interp[100] = 0;
                 DynamicBrakeForceCurves[0] = interp;
-                interp = new Interpolator(4);
+                interp = new Interpolator(7);
+                interp[0] = 0;
                 interp[DynamicBrakeSpeed1MpS] = 0;
                 interp[DynamicBrakeSpeed2MpS] = MaxDynamicBrakeForceN;
                 interp[DynamicBrakeSpeed3MpS] = MaxDynamicBrakeForceN;
-                interp[DynamicBrakeSpeed4MpS] = 0;
+                interp[DynamicBrakeSpeed4MpS] = DynamicBrakeRatioAtSpeed4 * MaxDynamicBrakeForceN;
+                interp[DynamicBrakeSpeed4MpS + 0.5f] = 0;
+                interp[100] = 0;
                 DynamicBrakeForceCurves[1] = interp;
             }
         }
@@ -695,6 +699,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakesfadingspeed": DynamicBrakeSpeed2MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumeffectivespeed": DynamicBrakeSpeed3MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
                 case "engine(dynamicbrakesmaximumspeedforfadeout": DynamicBrakeSpeed4MpS = stf.ReadFloatBlock(STFReader.UNITS.SpeedDefaultMPH, null); break;
+                case "engine(dynamicbrakeseffectatmaximumfadeout": DynamicBrakeRatioAtSpeed4 = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dynamicbrakesmaximumforce": MaxDynamicBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(dynamicbrakehasautobailoff":
                 case "engine(ortsdynamicbrakeshasautobailoff": DynamicBrakeAutoBailOff = stf.ReadBoolBlock(true); break;
