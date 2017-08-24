@@ -24,7 +24,7 @@ and this model, which is cut down from a full-size commercial route, compresses 
 <br>
 <img src="waverley.jpg" width=300><br>
 <p style="text-align: center">Edinburgh Waverley station</p>
-The model, generously donated by <a href="http://www.MakingTracks-online.co.uk" target="_blank">Making Tracks Ltd</a>, reproduces the route between the Scottish capitals during the "blue" period of British Rail. Your service is a morning express from Edinburgh Waverley as far as the town of Linlithgow, about 20 minutes running.
+The model, generously donated by Making Tracks Ltd, reproduces the route between the Scottish capitals during the "blue" period of British Rail. Your service is a morning express from Edinburgh Waverley as far as the town of Linlithgow, about 20 minutes running.
 </p><p>
 You can also watch a player driving the route on Open Rails in <a href="https://www.youtube.com/watch?v=aZ5aVEvbOOE&feature=youtu.be" target="_blank">this video</a>, which provides a voice-over.
 </p>
