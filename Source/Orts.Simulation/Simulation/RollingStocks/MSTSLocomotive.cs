@@ -369,9 +369,9 @@ namespace Orts.Simulation.RollingStocks
                     Trace.TraceWarning("{0} locomotive's CabView references non-existent {1}", wagFilePath, CVFFileName);
             }
 
+            CorrectBrakingParams();
             CheckCoherence();
             GetPressureUnit();
-            CorrectBrakingParams();
             IsDriveable = true;
 
             MoveParamsToAxle();
@@ -1048,6 +1048,13 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             else if (MainResChargingRatePSIpS <= 0) MainResChargingRatePSIpS = 0.4f;
+
+            // Corrections for dynamic braking parameters
+
+            if (this is MSTSElectricLocomotive && DynamicBrakeDelayS > 4) DynamicBrakeDelayS = 2; // Electric locomotives have short engaging delays
+            if (MaxDynamicBrakeForceN > 0 && MaxContinuousForceN > 0 &&
+                ((MaxDynamicBrakeForceN / MaxContinuousForceN < 0.3f && MaxDynamicBrakeForceN == 20000) || (MaxDynamicBrakeForceN / MaxContinuousForceN < 0.15f)))
+                MaxDynamicBrakeForceN = MaxContinuousForceN * 0.5f; // 20000 is suggested as standard value in the MSTS documentation, but in general it is a too low value
         }
 
         /// <summary>
