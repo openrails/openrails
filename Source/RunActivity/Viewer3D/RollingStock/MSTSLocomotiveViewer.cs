@@ -1573,7 +1573,7 @@ namespace Orts.Viewer3D.RollingStock
                 else // gauge vertical
                 {
                     topY += ypos - 0.5 * Gauge.Area.Height;
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX) + Viewer.CabXOffsetPixels;
+                    DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
                     if (Gauge.Direction != 0)  // column grows from bottom
                         topY += Gauge.Height - 2 * ypos;
                 }
