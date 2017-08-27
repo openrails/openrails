@@ -782,8 +782,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 case ValveState.Apply: lead.SignalEvent(Event.EngineBrakePressureDecrease); break;
                                 case ValveState.Lap: lead.SignalEvent(Event.EngineBrakePressureStoppedChanging); break;
                             }
-                        if (lead.BailOff || (lead.DynamicBrakeAutoBailOff && train.MUDynamicBrakePercent > 0))
-                            p += 1000;
+                        if (lead.PowerOn)
+                        {
+                            if (lead.BailOff || lead.DynamicBrakeAutoBailOff && train.MUDynamicBrakePercent > 0 && lead.DynamicBrakeForceCurves == null) p += 1000;
+                            else if (lead.DynamicBrakeAutoBailOff && train.MUDynamicBrakePercent > 0 && lead.DynamicBrakeForceCurves != null)
+                            {
+                                var dynforce = lead.DynamicBrakeForceCurves.Get(1.0f, lead.AbsSpeedMpS);  // max dynforce at that speed
+                                if ((lead.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > lead.MaxDynamicBrakeForceN * 0.6)
+                                    p += 1000;
+                            }
+                        }
                         brakeSystem.BrakeLine3PressurePSI = p;
                     }
                 }
