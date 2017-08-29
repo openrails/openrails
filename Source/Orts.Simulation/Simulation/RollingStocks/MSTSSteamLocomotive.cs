@@ -120,7 +120,8 @@ namespace Orts.Simulation.RollingStocks
         bool FuelBoostReset = false;
         bool StokerIsMechanical = false;
         bool HotStart; // Determine whether locomotive is started in hot or cold state - selectable option in Options TAB
-        bool BoilerHeat = false;    // Boiler heat has exceeded total max possible heat in boiler
+        bool FullBoilerHeat = false;    // Boiler heat has exceeded max possible heat in boiler (max operating steam pressure)
+        bool FullMaxPressBoilerHeat = false; // Boiler heat has exceed the max total possible heat in boiler (max safety valve pressure)
         bool ShovelAnyway = false; // Predicts when the AI fireman should be increasing the fire burn rate despite the heat in the boiler
         bool IsGrateLimit = false; // Grate limit of locomotive exceeded
         bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
@@ -138,6 +139,7 @@ namespace Orts.Simulation.RollingStocks
         bool SetFireOff = false; // Flag to set the AI fire to off for locomotive when approaching a stop 
         bool SetFireReset = false; // Flag if AI fire has been reset, ie no overrides in place
         bool AIFireOverride = false; // Flag to show ai fire has has been overriden
+        bool InjectorLockedOut = false; // Flag to lock injectors from changing within a fixed period of time
 
         // Aux Tender Parameters
         public bool AuxTenderMoveFlag = false; // Flag to indicate whether train has moved
@@ -184,17 +186,19 @@ namespace Orts.Simulation.RollingStocks
         int NextPulse = 1;
 
         // state variables
+       SmoothedData BoilerHeatSmoothBTU = new SmoothedData(120); // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
+        float BoilerHeatSmoothedBTU;
+        float PreviousBoilerHeatSmoothedBTU;
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
+        float BoilerHeatRawBTU;   // Raw value (not smoothed)
         float MaxBoilerHeatBTU;   // Boiler heat at max output and pressure, etc
         float MaxBoilerHeatPressurePSI; // Boiler Pressure for calculating max boiler pressure, includes safety valve pressure
-        float PreviousBoilerHeatInBTU; // Hold previous boiler heat value
         float BoilerStartkW;        // calculate starting boilerkW
         float MaxBoilerHeatInBTUpS = 0.1f; // Remember the BoilerHeat value equivalent to Max Boiler Heat
         float MaxBoilerPressHeatBTU;  // Boiler heat at max boiler pressure
         float baseStartTempK;     // Starting water temp
         float StartBoilerHeatBTU;
-        SmoothedData BoilerHeatSmoothBTU = new SmoothedData(60);       // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
-        public float BoilerMassLB;         // current total mass of water and steam in boiler (changes as boiler usage changes)
+         public float BoilerMassLB;         // current total mass of water and steam in boiler (changes as boiler usage changes)
 
         float BoilerKW;                 // power of boiler
         float MaxBoilerKW;              // power of boiler at full performance
@@ -256,7 +260,7 @@ namespace Orts.Simulation.RollingStocks
         float ManBlowerMultiplier = 20.0f; // Blower Multipler for Manual firing
         float ShovelMassKG = 6;
         float FiringSteamUsageRateLBpS;   // rate if excessive usage
-        float BoilerHeatRatio = 1.0f;   // Boiler heat ratio, if boiler heat exceeds, normal boiler pressure boiler heat
+        float FullBoilerHeatRatio = 1.0f;   // Boiler heat ratio, if boiler heat exceeds, normal boiler pressure boiler heat
         float MaxBoilerHeatRatio = 1.0f;   // Max Boiler heat ratio, if boiler heat exceeds, safety boiler pressure boiler heat
         float AIFiremanBurnFactor = 1.0f;  // Factor by which to adjust burning (hence heat rate), combination of PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio
         float AIFiremanBurnFactorExceed = 1.0f;  // Factor by which to adjust burning (hence heat rate) for excessive shoveling, combination of PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio
@@ -292,6 +296,8 @@ namespace Orts.Simulation.RollingStocks
         float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to cutoff
         float CylinderSpeedCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to speed
         float BlowerSteamUsageFactor;
+        float InjectorLockOutResetTimeS = 15.0f; // Time to reset the injector lock out time - time to prevent change of injectors
+        float InjectorLockOutTimeS = 0.0f; // Current lock out time - reset after Reset Time exceeded 
         float InjectorFlowRateLBpS;    // Current injector flow rate - based upon current boiler pressure
         float MaxInjectorFlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon maximum boiler pressure
         Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage
@@ -417,7 +423,7 @@ namespace Orts.Simulation.RollingStocks
         float EvapAreaDesignFactor = 10.0f;     // Design factor for determining Evaporation Area
 
         float SpecificHeatWaterKJpKGpC; // Specific Heat Capacity of water in boiler (from Interpolator table) kJ/kG per deg C
-        float WaterTempIN;              // Input to water Temp Integrator.
+        float WaterTempInK;              // Input to water Temp Integrator.
         float WaterTempNewK;            // Boiler Water Temp (Kelvin) - for testing purposes
         float BkW_Diff;                 // Net Energy into boiler after steam loads taken.
         float WaterVolL;                // Actual volume of water in bolier (litres)
@@ -1294,7 +1300,7 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3); // Advise player that Boiler Volume is missing from or incorrect in ENG file
             }
 
-            MaxBoilerHeatPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 5.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
+            MaxBoilerHeatPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 6.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
             MaxBoilerPressHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerHeatPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerHeatPressurePSI];  // calculate the maximum possible heat in the boiler, assuming safety valve and a small margin
             MaxBoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI];  // calculate the maximum possible heat in the boiler
 
@@ -1696,6 +1702,7 @@ namespace Orts.Simulation.RollingStocks
             DamperFactorManual = TheoreticalMaxSteamOutputLBpS / SpeedEquivMpS; // Calculate a factor for damper control that will vary with speed.
             BlowerSteamUsageFactor = 0.04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
             WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
+            Trace.TraceInformation("Boilerpressure {0} F Deg {1} K Deg {2}", BoilerPressurePSI, PressureToTemperaturePSItoF[BoilerPressurePSI], WaterTempNewK);
             FireMassKG = IdealFireMassKG;
             
             if (ORTSMaxFiringRateKGpS != 0)
@@ -2308,9 +2315,10 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 AIFiremanBurnFactorExceed = HeatRatio * PressureRatio;  // Firing rate for AI fireman if firemass drops, and fireman needs to exceed normal capacity
-                AIFiremanBurnFactor = HeatRatio * PressureRatio * BoilerHeatRatio * MaxBoilerHeatRatio; // Firing rate factor under normal conditions
+                AIFiremanBurnFactor = HeatRatio * PressureRatio * FullBoilerHeatRatio * MaxBoilerHeatRatio; // Firing rate factor under normal conditions
+                float AIFiremanStartingBurnFactor = 4.0f;
 
-                if (ShovelAnyway) // will force fire burn rate to increase even though boiler heat seems excessive - activated at full throttle, and on rising gradient
+                if (ShovelAnyway && BoilerHeatBTU < MaxBoilerHeatBTU) // will force fire burn rate to increase even though boiler heat seems excessive
                 {
                     // burnrate will be the radiation loss @ rest & then related to heat usage as a factor of the maximum boiler output
                     // ignores total bolier heat to allow burn rate to increase if boiler heat usage is exceeding input
@@ -2319,10 +2327,11 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
 
-                    if (BoilerHeatBTU > MaxBoilerHeatBTU)
+                    if (BoilerHeatBTU > MaxBoilerHeatBTU && BoilerHeatBTU<= MaxBoilerPressHeatBTU && throttle > 0.1 && cutoff > 0.1 && BoilerHeatInBTUpS < PreviousBoilerHeatOutBTUpS && FullMaxPressBoilerHeat)
+                        // This allows for situation where boiler heat has gone beyond safety valve heat, and is reducing, but steam will be required shortly so don't allow fire to go too low
                     {
                         // Burn Rate rate if Boiler Heat is too high
-                        BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG); // Calculate the amount of coal that should be burnt based upon heat used by boiler
+                        BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanStartingBurnFactor; // Calculate the amount of coal that should be burnt based upon heat used by boiler
                     }
                     else
                     {
@@ -2613,7 +2622,7 @@ namespace Orts.Simulation.RollingStocks
             // For display purposes calculate the maximum steam discharge with all safety valves open
             MaxSafetyValveDischargeLbspS = NumSafetyValves * (SafetyValveSizeDiaIn2 * (MaxBoilerPressurePSI + OneAtmospherePSI)) / SafetyValveDischargeFactor;
             // Set open pressure and close pressures for safety valves.
-            float SafetyValveOpen1Psi = MaxBoilerPressurePSI;
+            float SafetyValveOpen1Psi = MaxBoilerPressurePSI + SafetyValveStartPSI;
             float SafetyValveClose1Psi = MaxBoilerPressurePSI - 4.0f;
             float SafetyValveOpen2Psi = MaxBoilerPressurePSI + 2.0f;
             float SafetyValveClose2Psi = MaxBoilerPressurePSI - 3.0f;
@@ -2624,7 +2633,7 @@ namespace Orts.Simulation.RollingStocks
 
             #endregion
 
-            if (FiringIsManual || AIFireOverride) // Operate safety valves if manual firing or AI Fire Override is active
+            if (FiringIsManual) // Operate safety valves if manual firing or AI Fire Override is active
             {
 
                 #region Safety Valve - Manual Firing
@@ -2754,7 +2763,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 #region Safety Valve - AI Firing
 
-                if (BoilerHeatExcess > 1.075 && !ShovelAnyway)  // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient
+                if (BoilerHeatExcess > 1.075 && !ShovelAnyway && AIFireOverride)  // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient
                 {
                     SignalEvent(Event.SteamSafetyValveOn);
                     SafetyIsOn = true;
@@ -2820,36 +2829,68 @@ namespace Orts.Simulation.RollingStocks
                 EvaporationLBpS = Kg.ToLb(BoilerKW / W.ToKW(W.FromBTUpS(BoilerSteamHeatBTUpLB)));  // convert kW,  1kW = 0.94781712 BTU/s - fudge factor required - 1.1
             }
 
-            // Cap Steam Generation rate if excessive
-            //EvaporationLBpS = MathHelper.Clamp(EvaporationLBpS, 0, TheoreticalMaxSteamOutputLBpS); // If steam generation is too high, then cap at max theoretical rule of thumb
-
-            PreviousBoilerHeatInBTU = BoilerHeatBTU;
-
             if (!FiringIsManual)
             {
-
-                if (BoilerHeatBTU > MaxBoilerHeatBTU) // Limit boiler heat to max value for the boiler
+                // FullBoilerHeatRatio - provides a multiplication factor which attempts to reduce the firing rate of the locomotive in AI Firing if the boiler Heat
+                // exceeds the heat in the boiler when the boiler is at full operating pressure
+                if (BoilerHeatBTU > MaxBoilerHeatBTU && BoilerHeatInBTUpS > (PreviousBoilerHeatOutBTUpS * 0.90f)) // Limit boiler heat to max value for the boiler
                 {
-                    BoilerHeat = true;
-                    const float BoilerHeatFactor = 1.025f; // Increasing this factor will change the burn rate once boiler heat has been reached
-                    float FactorPower = BoilerHeatBTU / (MaxBoilerHeatBTU / BoilerHeatFactor);
-                    BoilerHeatRatio = MaxBoilerHeatBTU / (float)Math.Pow(BoilerHeatBTU, FactorPower);
+                    float FullBoilerHeatRatioMaxRise = -1.0f;
+                    float FullBoilerHeatRatioMaxRun = MaxBoilerPressHeatBTU - MaxBoilerHeatBTU;
+                    float FullBoilerHeatRatioGrad = FullBoilerHeatRatioMaxRise / FullBoilerHeatRatioMaxRun;
+
+                    if (BoilerHeatBTU <= MaxBoilerHeatBTU) 
+                        // If boiler heat is "normal" then set HeatRatio to 1.0
+                    {
+                        FullBoilerHeat = false;
+                        FullBoilerHeatRatio = 1.0f; // if boiler pressure close to normal set pressure ratio to normal
+                        FullMaxPressBoilerHeat = false; // Rest flag
+                    }
+                    else if (BoilerHeatBTU > MaxBoilerHeatBTU && BoilerHeatBTU <= MaxBoilerPressHeatBTU && !FullMaxPressBoilerHeat && BoilerHeatSmoothedBTU > (MaxBoilerHeatBTU * 0.995)) 
+                        // If boiler heat exceeds full boiler heat, but is less then the MaxPressHeat, and is not coming down from having exceeded the safety valve heat then set to variable value which tries to reduce the heat level
+                    {
+                        FullBoilerHeatRatio = (FullBoilerHeatRatioGrad * (BoilerHeatBTU - MaxBoilerHeatBTU)) + 1.0f;
+                        FullBoilerHeat = true;
+
+                    }
+                    else if (BoilerHeatBTU > MaxBoilerPressHeatBTU)
+                        // if heat level has exceeded the safety valve heat
+                    {
+                        FullBoilerHeatRatio = 0.1f;
+                        FullMaxPressBoilerHeat = true;  // Set flag to indicate that heat has exceeded the safety valve heat
+                    }
                 }
                 else
                 {
-                    float BoilerHeatDiffValue = MaxBoilerHeatBTU * (MaxBoilerPressurePSI * 0.025f); // Set a differenntial to reset boilerheat flag - Allow a 2.5% drop in boiler pressure
-                    if (BoilerHeatBTU < BoilerHeatDiffValue)
-                    {
-                        BoilerHeat = false;
-                        BoilerHeatRatio = 1.0f;
-                    }
+                    FullBoilerHeat = false;
+                    FullBoilerHeatRatio = 1.0f; // if boiler pressure back to normal, set pressure ratio to normal
                 }
-                BoilerHeatRatio = MathHelper.Clamp(BoilerHeatRatio, 0.001f, 1.0f); // Keep Boiler Heat ratio within bounds
 
-                if (BoilerHeatBTU > MaxBoilerPressHeatBTU)  // Limit boiler heat further if heat excced the pressure that the safety valves are set to.
+                if (BoilerHeatBTU < MaxBoilerHeatBTU || BoilerHeatInBTUpS > PreviousBoilerHeatOutBTUpS)
                 {
-                    float FactorPower = BoilerHeatBTU / (MaxBoilerPressHeatBTU - MaxBoilerHeatBTU);
-                    MaxBoilerHeatRatio = MaxBoilerHeatBTU / (float)Math.Pow(BoilerHeatBTU, FactorPower);
+                    FullMaxPressBoilerHeat = false; // Reset flag
+                }
+
+                // MaxBoilerHeatRatio - provides a multiplication factor which attempts to reduce the firing rate of the locomotive in AI Firing if the boiler Heat
+                // exceeds the heat in the boiler when the boiler is at the pressure of the safety valves.
+                // Set Heat Ratio if boiler heat excceds the maximum boiler limit
+                if (BoilerHeatBTU > MaxBoilerPressHeatBTU )  // Limit boiler heat further if heat excced the pressure that the safety valves are set to.
+                {
+
+                    if (BoilerHeatBTU > MaxBoilerPressHeatBTU * 1.1)
+                    {
+                        MaxBoilerHeatRatio = 0.01f;
+                    }
+                    else if (BoilerHeatInBTUpS > PreviousBoilerHeatOutBTUpS)
+                    {
+                        float FactorPower = BoilerHeatBTU / (MaxBoilerPressHeatBTU - MaxBoilerHeatBTU);
+                        MaxBoilerHeatRatio = MaxBoilerHeatBTU / (float)Math.Pow(BoilerHeatBTU, FactorPower);
+                    }
+                    else
+                    {
+                        MaxBoilerHeatRatio = 1.0f;
+                    }
+
                 }
                 else
                 {
@@ -2910,18 +2951,27 @@ namespace Orts.Simulation.RollingStocks
             // Based on formula - BoilerCapacity (btu/h) = (SteamEnthalpy (btu/lb) - EnthalpyCondensate (btu/lb) ) x SteamEvaporated (lb/h) ?????
             // EnthalpyWater (btu/lb) = BoilerCapacity (btu/h) / SteamEvaporated (lb/h) + Enthalpysteam (btu/lb)  ?????
 
-            BoilerHeatSmoothBTU.Update(elapsedClockSeconds, BoilerHeatBTU);
+          BoilerHeatSmoothBTU.Update(elapsedClockSeconds, BoilerHeatBTU);
 
-            WaterHeatBTUpFT3 = (BoilerHeatSmoothBTU.Value / BoilerVolumeFT3 - (1 - WaterFraction) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (WaterFraction * BoilerWaterDensityLBpFT3);
+            BoilerHeatSmoothedBTU = MathHelper.Clamp(BoilerHeatSmoothBTU.SmoothedValue , 0.0f, (MaxBoilerPressHeatBTU * 1.05f));
+
+            WaterHeatBTUpFT3 = (BoilerHeatSmoothedBTU / BoilerVolumeFT3 - (1 - WaterFraction) * BoilerSteamDensityLBpFT3 * BoilerSteamHeatBTUpLB) / (WaterFraction * BoilerWaterDensityLBpFT3);
 
             #region Boiler Pressure calculation
             // works on the principle that boiler pressure will go up or down based on the change in water temperature, which is impacted by the heat gain or loss to the boiler
             WaterVolL = WaterFraction * BoilerVolumeFT3 * 28.31f;   // idealy should be equal to water flow in and out. 1ft3 = 28.31 litres of water
-            BkW_Diff = (((BoilerHeatInBTUpS - BoilerHeatOutBTUpS) * 3600) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
+                                                                    //            BkW_Diff = (((BoilerHeatInBTUpS - BoilerHeatOutBTUpS) * 3600) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
+            if (PreviousBoilerHeatSmoothedBTU != 0.0)
+            {
+                BkW_Diff = (pS.TopH((BoilerHeatSmoothedBTU - PreviousBoilerHeatSmoothedBTU)) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
+            }
             SpecificHeatWaterKJpKGpC = SpecificHeatKtoKJpKGpK[WaterTempNewK] * WaterVolL;  // Spec Heat = kj/kg, litres = kgs of water
-            WaterTempIN = BkW_Diff / SpecificHeatWaterKJpKGpC;   // calculate water temp variation
-            WaterTempNewK += elapsedClockSeconds * WaterTempIN; // Calculate new water temp
+            WaterTempInK = BkW_Diff / SpecificHeatWaterKJpKGpC;   // calculate water temp variation
+            WaterTempNewK += WaterTempInK; // Calculate new water temp
             WaterTempNewK = MathHelper.Clamp(WaterTempNewK, 274.0f, 496.0f);
+
+            PreviousBoilerHeatSmoothedBTU = BoilerHeatSmoothedBTU;
+
             if (FusiblePlugIsBlown)
             {
                 BoilerPressurePSI = 0.50f; // Drop boiler pressure if fusible plug melts.
@@ -2933,35 +2983,34 @@ namespace Orts.Simulation.RollingStocks
 
             if (!FiringIsManual)
             {
-                if (BoilerHeat || pS.TopH(PreviousTotalSteamUsageLBpS) > MaxBoilerOutputLBpH)  // Cap pressure ratio if boiler heat is excessive or steam consumption exceeds production
+                //PressureRatio - provides a multiplication factor which attempts to increase the firing rate of the locomotive in AI Firing if the boiler pressure
+                // drops below the normal operating pressure
+                if (BoilerHeatBTU > MaxBoilerHeatBTU || (BoilerHeatInBTUpS > (PreviousBoilerHeatOutBTUpS * 1.05f)))  // Cap pressure ratio if boiler heat is excessive or steam consumption exceeds production
                 {
-                     PressureRatio = MathHelper.Clamp((MaxBoilerPressurePSI / BoilerPressurePSI), 0.001f, 0.99f); // Boiler pressure ratio to adjust burn rate, if maxboiler heat reached, then clamp ratio < 1.0
+                    PressureRatio = 1.0f;
                 }
-                 else  // AI fireman recognises that boiler pressure is dropping, the lower it goes, the higher to try and push the ratio.
-                 {
+                else
+                { 
                     // The pressure ratio forces the fire to burn harder if the pressure drops below the maximum boiler pressure - 2psi.
 
-                    float MaxRise = 3.0f;
-                    float MaxRun = 20.0f;
-                    float Grad = MaxRise / MaxRun;
-                    if (BoilerPressurePSI > MaxBoilerPressurePSI - 2.0f)
+                    float PressureRatioMaxRise = 1.75f;
+                    float PressureRatioMaxRun = 20.0f;
+                    float PressureRatioGrad = PressureRatioMaxRise / PressureRatioMaxRun;
+                    if (BoilerPressurePSI > (MaxBoilerPressurePSI - 2.0f) && BoilerPressurePSI <= MaxBoilerPressurePSI)
                     {
                         PressureRatio = 1.0f; // if boiler pressure close to normal set pressure ratio to normal
                     }
-                    else if (BoilerPressurePSI > MaxBoilerPressurePSI - MaxRun && BoilerPressurePSI <= MaxBoilerPressurePSI - 1.0f)
+                    else if (BoilerPressurePSI > (MaxBoilerPressurePSI - PressureRatioMaxRun) && BoilerPressurePSI <= (MaxBoilerPressurePSI))
                     {
-                        PressureRatio = Grad * (MaxBoilerPressurePSI - BoilerPressurePSI) + 1.0f;
+                        PressureRatio = PressureRatioGrad * (MaxBoilerPressurePSI - BoilerPressurePSI) + 1.0f;
                     }
-                    else if (BoilerPressurePSI < MaxBoilerPressurePSI - MaxRun)
+                    else if (BoilerPressurePSI <= (MaxBoilerPressurePSI - PressureRatioMaxRun))
                     {
-                        PressureRatio = MaxRise +1.0f;
+                        PressureRatio = PressureRatioMaxRise +1.0f;
                     }
-                    else if (BoilerPressurePSI > MaxBoilerPressurePSI)
-                    {
-                        PressureRatio = 0.01f;
-                    }
-                          PressureRatio = MathHelper.Clamp(PressureRatio, 0.001f, (MaxRise + 1.0f)); // Boiler pressure ratio to adjust burn rate
+                          PressureRatio = MathHelper.Clamp(PressureRatio, 0.001f, (PressureRatioMaxRise + 1.0f)); // Boiler pressure ratio to adjust burn rate
                  }
+
             }
             #endregion
 
@@ -2976,11 +3025,9 @@ namespace Orts.Simulation.RollingStocks
                 }
              }
 
-            // Manual Fireman
-            if (FiringIsManual && BoilerPressurePSI > MaxBoilerPressurePSI + 10) // For manual fireman stop excessive pressure
-            {
-                BoilerPressurePSI = MaxBoilerPressurePSI + 10.0f;  // Check for manual firing
-            }
+            // Manual Fireman - clamp pressure at pressure just over top safety valve
+
+            BoilerPressurePSI = MathHelper.Clamp(BoilerPressurePSI, 0.000f, (MaxBoilerPressurePSI + 7.0f)); // Clamp Boiler pressure to maximum safety valve pressure
 
             ApplyBoilerPressure();
         }
@@ -4998,6 +5045,24 @@ namespace Orts.Simulation.RollingStocks
                     BoilerHeatOutBTUpS += (Inject2WaterHeatLossBTU + Inject2SteamHeatLossBTU); // Total loss of boiler heat due to water injection - inject steam and water Heat
                 }
             }
+
+            // Update injector lockout timer
+            if ( Injector1IsOn || Injector2IsOn)
+            {
+                if( InjectorLockedOut)
+                {
+                    InjectorLockOutTimeS += elapsedClockSeconds;
+                }
+                if(InjectorLockOutTimeS > InjectorLockOutResetTimeS)
+                {
+                    InjectorLockedOut = false;
+                    InjectorLockOutTimeS = 0.0f;
+
+                }
+
+
+
+            }
         }
 
         private void UpdateFiring(float absSpeedMpS)
@@ -5058,67 +5123,147 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                 }
-                else if (WaterGlassLevelIN <= 7.0 & WaterGlassLevelIN > 6.75)  // turn injector 1 on 20% if water level in boiler drops below 7.0
+                else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 6.875 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
+                {
+                    Injector1IsOn = true;
+                    Injector1Fraction = 0.1f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
+                }
+                else if (WaterGlassLevelIN <= 6.875 && WaterGlassLevelIN > 6.75 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.2f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
                 }
-                else if (WaterGlassLevelIN <= 6.75 & WaterGlassLevelIN > 6.5)
+                else if (WaterGlassLevelIN <= 6.75 && WaterGlassLevelIN > 6.675 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
+                {
+                    Injector1IsOn = true;
+                    Injector1Fraction = 0.3f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
+                }
+                else if (WaterGlassLevelIN <= 6.675 && WaterGlassLevelIN > 6.5 && !InjectorLockedOut)
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.4f;
                     Injector2IsOn = false;
-                    Injector2Fraction = 0.0f; Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
                 }
-                else if (WaterGlassLevelIN <= 6.5 & WaterGlassLevelIN > 6.25)
+                else if (WaterGlassLevelIN <= 6.5 && WaterGlassLevelIN > 6.375 && !InjectorLockedOut)
+                {
+                    Injector1IsOn = true;
+                    Injector1Fraction = 0.5f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
+                }
+                else if (WaterGlassLevelIN <= 6.375 && WaterGlassLevelIN > 6.25 && !InjectorLockedOut)
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.6f;
                     Injector2IsOn = false;
-                    Injector2Fraction = 0.0f; Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
                 }
-                else if (WaterGlassLevelIN <= 6.25 & WaterGlassLevelIN > 6.0)
+                else if (WaterGlassLevelIN <= 6.25 && WaterGlassLevelIN > 6.125 && !InjectorLockedOut)
+                {
+                    Injector1IsOn = true;
+                    Injector1Fraction = 0.7f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
+                }
+                else if (WaterGlassLevelIN <= 6.125 && WaterGlassLevelIN > 6.0 && !InjectorLockedOut)
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 0.8f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
                 }
-                else if (WaterGlassLevelIN <= 6.0 & WaterGlassLevelIN > 5.75)
+                else if (WaterGlassLevelIN <= 6.0 && WaterGlassLevelIN > 5.875 && !InjectorLockedOut)
+                {
+                    Injector1IsOn = true;
+                    Injector1Fraction = 0.9f;
+                    Injector2IsOn = false;
+                    Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
+                }
+                else if (WaterGlassLevelIN <= 5.875 && WaterGlassLevelIN > 5.75 && !InjectorLockedOut)
                 {
                     Injector1IsOn = true;
                     Injector1Fraction = 1.0f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
+                    InjectorLockedOut = true;
                 }
                 else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2
                 {
-                    if (WaterGlassLevelIN <= 5.75 & WaterGlassLevelIN > 5.5)
+                    if (WaterGlassLevelIN <= 5.75 && WaterGlassLevelIN > 5.675 && !InjectorLockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 0.1f;
+                        InjectorLockedOut = true;
+                    }
+                    else if (WaterGlassLevelIN <= 5.675 && WaterGlassLevelIN > 5.5 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.2f;
+                        InjectorLockedOut = true;
                     }
-                    else if (WaterGlassLevelIN <= 5.5 & WaterGlassLevelIN > 5.25)
+                    else if (WaterGlassLevelIN <= 5.5 && WaterGlassLevelIN > 5.325 && !InjectorLockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 0.3f;
+                        InjectorLockedOut = true;
+                    }
+                    else if (WaterGlassLevelIN <= 5.325 && WaterGlassLevelIN > 5.25 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.4f;
+                        InjectorLockedOut = true;
                     }
-                    else if (WaterGlassLevelIN <= 5.25 & WaterGlassLevelIN > 5.0)
+                    else if (WaterGlassLevelIN <= 5.25 && WaterGlassLevelIN > 5.125 && !InjectorLockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 0.5f;
+                        InjectorLockedOut = true;
+                    }
+                    else if (WaterGlassLevelIN <= 5.125 && WaterGlassLevelIN > 5.0 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
+                        InjectorLockedOut = true;
                     }
-                    else if (WaterGlassLevelIN <= 5.0 & WaterGlassLevelIN > 4.75)
+                    else if (WaterGlassLevelIN <= 5.0 && WaterGlassLevelIN > 4.875 && !InjectorLockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 0.7f;
+                        InjectorLockedOut = true;
+                    }
+                    else if (WaterGlassLevelIN <= 4.875 && WaterGlassLevelIN > 4.75 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.8f;
+                        InjectorLockedOut = true;
                     }
-                    else if (WaterGlassLevelIN <= 4.75 & WaterGlassLevelIN > 4.5)
+                    else if (WaterGlassLevelIN <= 4.75 && WaterGlassLevelIN > 4.625 && !InjectorLockedOut)
+                    {
+                        Injector2IsOn = true;
+                        Injector2Fraction = 0.9f;
+                        InjectorLockedOut = true;
+                    }
+                    else if (WaterGlassLevelIN <= 4.625 && WaterGlassLevelIN > 4.5 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 1.0f;
+                        InjectorLockedOut = true;
                     }
                 }
 
@@ -5140,58 +5285,47 @@ namespace Orts.Simulation.RollingStocks
                     ShovelAnyway = false; // Fireman should not be increasing fire burn rate if high boiler heat
                 }
 
+                // HeatRatio - provides a multiplication factor which attempts to increase the firing rate of the locomotive in AI Firing if the boiler Heat
+                // drops below the heat in the boiler when the boiler is at normal operating pressure
+
                 // Determine Heat Ratio - for calculating burn rate
 
-                if (BoilerHeat && !ShovelAnyway) // If heat in boiler is going too high, ie has exceeded maximum heat
+                if (FullBoilerHeat && !ShovelAnyway) // If heat in boiler is going too high, ie has exceeded maximum heat
                 {
                         HeatRatio = 1.0f;
 
                 }
                 else  // If heat in boiler is normal or low
                 {
-
-                    if (BoilerHeatBTU > 0.999f * MaxBoilerHeatBTU)
+                    // Use a straight line correlation to vary the HeatRatio as the heat fluctuates compared to the max heat required in the boiler
+                    float HeatRatioMaxRise = 5.0f;
+                    float HeatRatioMaxRun = 10.0f; // 10% of boilerheat
+                    float HeatRatioGrad = HeatRatioMaxRise / HeatRatioMaxRun;
+                    if (BoilerHeatBTU > (MaxBoilerHeatBTU) && BoilerHeatBTU <= MaxBoilerHeatBTU || (BoilerHeatInBTUpS > (PreviousBoilerHeatOutBTUpS * 1.05f))) // If boiler heat within 0.5% of max then set HeatRatio to 1.0
+                    {
+                        HeatRatio = 1.0f; // if boiler pressure close to normal set pressure ratio to normal
+                    }
+                    else if (BoilerHeatBTU > (MaxBoilerHeatBTU * 0.90f) && BoilerHeatBTU <= (MaxBoilerHeatBTU)) // If boiler heat between 90 and 98% of Max then set to variable value
+                    {
+                        HeatRatio = (HeatRatioGrad * ((MaxBoilerHeatBTU - BoilerHeatBTU) / MaxBoilerHeatBTU) * 100.0f) + 1.0f;
+                        
+                    }
+                    else if (BoilerHeatBTU <= (MaxBoilerHeatBTU * 0.90f))
+                    {
+                        HeatRatio = HeatRatioMaxRise + 1.0f;
+                    }
+                    else if (BoilerHeatBTU > MaxBoilerHeatBTU)
                     {
                         HeatRatio = 1.0f;
-                    }
-                    else if (BoilerHeatBTU <= 0.999f * MaxBoilerHeatBTU && BoilerHeatBTU > 0.99f * MaxBoilerHeatBTU)
-                    {
-                        HeatRatio = 1.1f;
-                    }
-                    else if (BoilerHeatBTU <= 0.99f * MaxBoilerHeatBTU && BoilerHeatBTU > 0.98f * MaxBoilerHeatBTU)
-                    {
-                        HeatRatio = 1.2f;
-                    }
-                    else if (BoilerHeatBTU <= 0.98f * MaxBoilerHeatBTU && BoilerHeatBTU > 0.97f * MaxBoilerHeatBTU)
-                    {
-                        HeatRatio = 1.5f;
-                    }
-                    else if (BoilerHeatBTU <= 0.97f * MaxBoilerHeatBTU && BoilerHeatBTU > 0.95f * MaxBoilerHeatBTU)
-                    {
-                        HeatRatio = 1.7f;
-                    }
-                    else if (BoilerHeatBTU <= 0.95f * MaxBoilerHeatBTU && BoilerHeatBTU > 0.93f * MaxBoilerHeatBTU)
-                    {
-                        HeatRatio = 1.9f;
-                    }
-                    else if (BoilerHeatBTU <= 0.93f * MaxBoilerHeatBTU && BoilerHeatBTU > 0.90f * MaxBoilerHeatBTU)
-                    {
-                        HeatRatio = 2.0f;
-                    }
-                    else if (BoilerHeatBTU <= 0.90f * MaxBoilerHeatBTU)
-                    {
-                        HeatRatio = 2.5f;
                     }
                     else
                     {
                         HeatRatio = 1.0f;
                     }
-
+                    HeatRatio = MathHelper.Clamp(HeatRatio, 0.001f, (HeatRatioMaxRise + 1.0f)); // Boiler pressure ratio to adjust burn rate
                 }
-
             }
             #endregion
-
         }
 
         private void UpdateSteamHeat(float elapsedClockSeconds)
@@ -5495,16 +5629,19 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.h,
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
-            status.AppendFormat("{0}\t{1}\t{5}\t{2}\t{6}\t{3}\t{7}\t\t{4}\t{8}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6}\t\t{7}\t{8}\t\t{9}\t{10}\n",
                 Simulator.Catalog.GetString("Heat:"),
                 Simulator.Catalog.GetString("In"),
-                Simulator.Catalog.GetString("Out"),
-                Simulator.Catalog.GetString("Stored"),
-                Simulator.Catalog.GetString("Max"),
                 FormatStrings.FormatPower(W.FromBTUpS(BoilerHeatInBTUpS), IsMetric, false, true),
+                Simulator.Catalog.GetString("Out"),
                 FormatStrings.FormatPower(W.FromBTUpS(PreviousBoilerHeatOutBTUpS), IsMetric, false, true),
-                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothBTU.Value), IsMetric),
-                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerHeatBTU), IsMetric));
+                Simulator.Catalog.GetString("Stored"),
+                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothBTU.SmoothedValue), IsMetric),
+                Simulator.Catalog.GetString("Max"),
+                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerHeatBTU), IsMetric),
+                Simulator.Catalog.GetString("Safety"),
+                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerPressHeatBTU), IsMetric)
+                );
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
                 Simulator.Catalog.GetString("Temp:"),
@@ -5732,14 +5869,14 @@ namespace Orts.Simulation.RollingStocks
                 );
 
 #if DEBUG_LOCO_BURN_AI
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12:N0}\t{13}\t{14:N0}\t{15}\t{16:N0}\t{17}\t{18:N0}\t{19}\t{20:N0}\t{21}\t{22}\t{23}\t{24}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12:N0}\t{13}\t{14:N0}\t{15}\t{16:N0}\t{17}\t{18:N0}\t{19}\t{20:N0}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\n",
                 "DbgBurn:",
                 "BoilHeat",
-                BoilerHeat ? "Yes" : "No",
+                FullBoilerHeat ? "Yes" : "No",
                 "H/R",
                 HeatRatio,
                 "BoilH/R",
-                BoilerHeatRatio,
+                FullBoilerHeatRatio,
                 "MBoilH/R",
                 MaxBoilerHeatRatio,
                 "PrRatio",
@@ -5748,6 +5885,8 @@ namespace Orts.Simulation.RollingStocks
                 FireHeatTxfKW,
                 "RawBurn",
                 pS.TopH(Kg.ToLb( BurnRateRawKGpS)),
+                "RawHeat",
+                BoilerHeatBTU,
                 "SuperSet",
                 IsSuperSet,
                 "GratLmt",
@@ -5757,7 +5896,7 @@ namespace Orts.Simulation.RollingStocks
                 "BstReset",
                 FuelBoostReset ? "Yes" : "No",
                 "ShAny",
-                ShovelAnyway);
+                ShovelAnyway  );
 #endif
 
             status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",

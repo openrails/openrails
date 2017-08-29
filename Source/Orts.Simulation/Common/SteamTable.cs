@@ -108,14 +108,6 @@ namespace Orts.Common
             102.98f, 111.49f, 113.33f, 115.16f, 117.0f, 118.83f, 120.67f, 122.50f, 125.50f, 128.50f,
             130.14f, 131.78f, 133.41f, 135.05f, 136.69f, 138.33f, 139.97f, 141.60f, 143.24f, 144.88f
         };        
-       
-        // Temperature of water in deg Kelvin
-                static float[] TemperatureTableK = new float[]
-        {
-            372.76f, 388.11f, 398.94f, 407.45f, 414.53f, 420.62f, 426.01f, 430.84f, 435.23f, 439.27f, 443.02f,
-            446.51f, 449.79f, 452.88f, 455.80f, 458.58f, 461.23f, 463.77f, 466.20f, 468.53f, 470.78f, 
-            472.94f, 475.03f, 477.06f, 479.02f, 480.92f, 482.76f, 484.56f, 486.30f, 488.00f, 489.66f 
-        };
 
         // Specific heat table for water - volume heat capacity?? - 
         static float[] SpecificHeatTableKJpKGpK = new float[]
@@ -139,7 +131,15 @@ namespace Orts.Common
             110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f, 
             210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f 
         };
-                        
+
+        // Temperature of water in deg Kelvin
+        static float[] TemperatureTableK = new float[]
+        {
+            372.76f, 388.11f, 398.94f, 407.45f, 414.53f, 420.62f, 426.01f, 430.84f, 435.23f, 439.27f, 443.02f,
+            446.51f, 449.79f, 452.88f, 455.80f, 458.58f, 461.23f, 463.77f, 466.20f, 468.53f, 470.78f,
+            472.94f, 475.03f, 477.06f, 479.02f, 480.92f, 482.76f, 484.56f, 486.30f, 488.00f, 489.66f
+        };
+
         // Fire Rate - ie lbs of coal per Square Foot of Grate Area 
         static float[] CoalGrateAreaTableLbspFt2 = new float[]
         {
