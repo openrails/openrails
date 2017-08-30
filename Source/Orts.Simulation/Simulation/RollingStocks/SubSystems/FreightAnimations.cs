@@ -149,14 +149,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 if (freightAnim is FreightAnimationContinuous)
                 {
-                    if ((freightAnim as FreightAnimationContinuous).LinkedIntakePoint.Type == FreightType)
+                    if ((freightAnim as FreightAnimationContinuous).LinkedIntakePoint !=  null )
                     {
-                        LoadedOne = freightAnim as FreightAnimationContinuous;
-                        LoadedOne.LoadPerCent = FreightWeight/LoadedOne.FreightWeightWhenFull*100;
-                    }
-                    else
-                    {
-                        (freightAnim as FreightAnimationContinuous).LoadPerCent = 0;
+                        if ((freightAnim as FreightAnimationContinuous).LinkedIntakePoint.Type == FreightType)
+                        {
+                            LoadedOne = freightAnim as FreightAnimationContinuous;
+                            LoadedOne.LoadPerCent = FreightWeight / LoadedOne.FreightWeightWhenFull * 100;
+                        }
+                        else
+                        {
+                            (freightAnim as FreightAnimationContinuous).LoadPerCent = 0;
+                        }
                     }
                 }
             }
