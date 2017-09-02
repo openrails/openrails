@@ -14,13 +14,16 @@ Modifications to .trk Files
 ===========================
 
 Many of the features described in this chapter require additional parameters to be 
-added in the route's .trk file. The additional parameters can be directly added in 
-the route's .trk file residing in the route's root folder. However, to avoid 
+added in the route's .trk file. The additional parameters can be directly added at 
+the end (just above the last parenthesis) of  
+the route's .trk file residing in the route's root folder. Don't add such parameters 
+in other positions of the file, because this would create problems if you want to use 
+the MSTS editors with the related route. However, to avoid 
 modifying the original file, the *Include* method described 
 :ref:`here <physics-inclusions>` is also applicable to the .trk file, creating a 
 new .trk file inserted into an ``OpenRails`` folder in the root folder of the route.
 As an example, in case of the parameter needed to avoid forest trees on tracks ( see 
-:ref:`here <features-route-remove-trees>`). This .trk file will contain::
+:ref:`here <features-route-remove-trees>`), this additional .trk file will contain::
 
     include ( ../Surfliner2.trk )
         ORTSUserPreferenceForestClearDistance ( 2 )
