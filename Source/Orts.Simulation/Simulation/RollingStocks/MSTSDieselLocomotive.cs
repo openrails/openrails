@@ -30,8 +30,7 @@
 
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
@@ -89,10 +88,6 @@ namespace Orts.Simulation.RollingStocks
         public SmoothedData ExhaustColorR = new SmoothedData(1);
         public SmoothedData ExhaustColorG = new SmoothedData(1);
         public SmoothedData ExhaustColorB = new SmoothedData(1);
-        public Color ExhaustTransientColor = Color.Black;
-        public Color ExhaustDecelColor = Color.WhiteSmoke;
-        public Color ExhaustSteadyColor = Color.Gray;
-        public Color GeneratorSteadyColor = Color.Gray;
 
         public float DieselOilPressurePSI = 0f;
         public float DieselMinOilPressurePSI = 40f;
@@ -652,14 +647,17 @@ namespace Orts.Simulation.RollingStocks
 
             float CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
-            if ((MaxSteamHeatPressurePSI != 0 || Simulator.Season != SeasonType.Summer) && CurrentSteamHeatPressurePSI > 0.001f)       // Check to see if steam heating is fitted to locomotive, if summer disable steam heating
+            if (IsLeadLocomotive())
             {
-                Train.CarSteamHeatOn = true; // Turn car steam effects on
-                
-            }
-            else
-            {
-                Train.CarSteamHeatOn = false; // turn car steam effects off
+                if (MaxSteamHeatPressurePSI != 0 && CurrentSteamHeatPressurePSI > 0.001f)       // Check to see if steam heating is fitted to locomotive, if summer disable steam heating
+                {
+                    Train.CarSteamHeatOn = true; // Turn car steam effects on
+
+                }
+                else
+                {
+                    Train.CarSteamHeatOn = false; // turn car steam effects off
+                }
             }
     
         }

@@ -65,9 +65,14 @@ namespace Orts.Viewer3D.RollingStock
         protected MSTSWagon MSTSWagon { get { return (MSTSWagon)Car; } }
 
 
+        // Create viewers for special steam/smoke effects on car
+        List<ParticleEmitterViewer> HeatingHose = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> WagonSmoke = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> HeatingSteamBoiler = new List<ParticleEmitterViewer>();
 
         // Create viewers for special steam effects on car
-        List<ParticleEmitterViewer> HeatingHose = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> WagonGenerator = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> DieselLocoGenerator = new List<ParticleEmitterViewer>();
 
         bool HasFirstPanto;
         int numBogie1, numBogie2, numBogie, bogie1Axles, bogie2Axles = 0;
@@ -79,8 +84,9 @@ namespace Orts.Viewer3D.RollingStock
         {
             
             string steamTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\smokemain.ace";
+            string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
-          // Particle Drawers called in Wagon so that wagons can also have steam effects.
+            // Particle Drawers called in Wagon so that wagons can also have steam effects.
             ParticleDrawers = (
                 from effect in MSTSWagon.EffectData
                 select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(
@@ -91,13 +97,43 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var emitter in ParticleDrawers)
             {
 
+                // Exhaust for steam heating boiler
+                if (emitter.Key.ToLowerInvariant() == "heatingsteamboilerfx")
+                    HeatingSteamBoiler.AddRange(emitter.Value);
+
+                foreach (var drawer in HeatingSteamBoiler)
+                {
+                    drawer.Initialize(dieselTexture);
+                }
+
+                // Exhaust for HEP/Power Generator
+                if (emitter.Key.ToLowerInvariant() == "wagongeneratorfx")
+                    WagonGenerator.AddRange(emitter.Value);
+                
+                foreach (var drawer in WagonGenerator)
+                {
+                    drawer.Initialize(dieselTexture);
+                }
+
+                // Smoke for wood/coal fire
+                if (emitter.Key.ToLowerInvariant() == "wagonsmokefx")
+                    WagonSmoke.AddRange(emitter.Value);
+
+                foreach (var drawer in WagonSmoke)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Steam leak in heating hose 
+
                 if (emitter.Key.ToLowerInvariant() == "heatinghosefx")
                     HeatingHose.AddRange(emitter.Value);
 
                 foreach (var drawer in HeatingHose)
-               {                
+                {
                     drawer.Initialize(steamTexture);
-               }
+                }
+
             }
 
             var wagonFolderSlash = Path.GetDirectoryName(car.WagFilePath) + @"\";
@@ -388,9 +424,29 @@ namespace Orts.Viewer3D.RollingStock
             UpdateAnimation(frame, elapsedTime);
 
             var car = Car as MSTSWagon;
+            // Steam leak in heating hose
             foreach (var drawer in HeatingHose)
             {
                 drawer.SetOutput(car.HeatingHoseSteamVelocityMpS, car.HeatingHoseSteamVolumeM3pS, car.HeatingHoseParticleDurationS);
+            }
+
+            // Heating Steam Boiler Exhaust
+            foreach (var drawer in HeatingSteamBoiler)
+            {
+                drawer.SetOutput(car.HeatingSteamBoilerVolumeM3pS, car.HeatingSteamBoilerDurationS, car.HeatingSteamBoilerSteadyColor);
+            }
+
+            // Exhaust for HEP/Electrical Generator
+            foreach (var drawer in WagonGenerator)
+            {
+               drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
+            }
+
+            // Wagon fire smoke
+            foreach (var drawer in WagonSmoke)
+            {
+                  drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+               // drawer.SetOutput(car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)

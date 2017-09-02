@@ -37,6 +37,7 @@
 //#define DEBUG_VARIABLE_MASS
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -131,15 +132,35 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController WeightLoadController; // Used to control freight loading in freight cars
         public float AbsWheelSpeedMpS; // Math.Abs(WheelSpeedMpS) is used frequently in the subclasses, maybe it's more efficient to compute it once
 
+        // Colours for smoke and steam effects
+        public Color ExhaustTransientColor = Color.Black;
+        public Color ExhaustDecelColor = Color.WhiteSmoke;
+        public Color ExhaustSteadyColor = Color.Gray;
+
         // Wagon steam leaks
         public float HeatingHoseParticleDurationS;
         public float HeatingHoseSteamVelocityMpS;
         public float HeatingHoseSteamVolumeM3pS;
 
-        // Power  / Steam Generator 
-        public float GenratorParticles = 10.0f;
-        public float GeneratorMagnitude = 1.5f;
-        
+        // Wagon Power Generator
+        public float WagonGeneratorDurationS = 1.5f;
+        public float WagonGeneratorVolumeM3pS = 2.0f;
+        public Color WagonGeneratorSteadyColor = Color.Gray;
+
+        // Heating Steam Boiler
+        public float HeatingSteamBoilerDurationS;
+        public float HeatingSteamBoilerVolumeM3pS;
+        public Color HeatingSteamBoilerSteadyColor = Color.Aqua;
+
+        // Wagon Smoke
+        public float WagonSmokeVolumeM3pS;
+        float InitialWagonSmokeVolumeM3pS = 3.0f;
+        public float WagonSmokeDurationS;
+        float InitialWagonSmokeDurationS = 1.0f;
+        public float WagonSmokeVelocityMpS = 15.0f;
+        public Color WagonSmokeSteadyColor = Color.Gray;
+
+
         /// <summary>
         /// True if vehicle is equipped with an additional emergency brake reservoir
         /// </summary>
@@ -829,8 +850,7 @@ namespace Orts.Simulation.RollingStocks
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
                     break;
-                case "wagon(effects(steameffects": ParseEffects(lowercasetoken, stf); break;
-
+                case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
             }
         }
 
@@ -1095,26 +1115,8 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateLocomotiveLoadPhysics(); // Updates the load physics characteristics of locomotives
 
-            // Update Steam Leaks Information
-            if(Train.CarSteamHeatOn)
-            {
-                        // Turn wagon steam leaks on 
-                HeatingHoseParticleDurationS = 0.75f;
-                HeatingHoseSteamVelocityMpS = 15.0f;
-                HeatingHoseSteamVolumeM3pS = 3.0f;
-                GenratorParticles = 10.0f;
-                GeneratorMagnitude = 1.5f;
-            }
-            else
-            {
-                // Turn wagon steam leaks off 
-                HeatingHoseParticleDurationS = 0.0f;
-                HeatingHoseSteamVelocityMpS = 0.0f;
-                HeatingHoseSteamVolumeM3pS = 0.0f;
-                GenratorParticles = 0.0f;
-                GeneratorMagnitude = 0.0f;
-            }
-            
+            UpdateSpecialEffects(elapsedClockSeconds); // Updates the special effects
+      
 
             // Update Aux Tender Information
 
@@ -1544,9 +1546,45 @@ namespace Orts.Simulation.RollingStocks
                     CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempTenderMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
                 }
             }
-        }        
-        
-        
+        }
+
+        private void UpdateSpecialEffects(float elapsedClockSeconds)
+        // This section updates the special effects
+        {
+
+            // Update Steam Leaks Information
+            if (Train.CarSteamHeatOn)
+            {
+                // Turn wagon steam leaks on 
+                HeatingHoseParticleDurationS = 0.75f;
+                HeatingHoseSteamVelocityMpS = 15.0f;
+                HeatingHoseSteamVolumeM3pS = 4.0f;
+                HeatingSteamBoilerVolumeM3pS = 1.5f;
+                HeatingSteamBoilerDurationS = 1.0f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingHoseParticleDurationS = 0.0f;
+                HeatingHoseSteamVelocityMpS = 0.0f;
+                HeatingHoseSteamVolumeM3pS = 0.0f;
+                HeatingSteamBoilerVolumeM3pS = 0.0f;
+                HeatingSteamBoilerDurationS = 0.0f;
+            }
+
+            // Decrease wagon smoke as speed increases, smoke completely dissappears when wagon reaches 5MpS.
+            float WagonSmokeMaxRise = -1.0f;
+            float WagonSmokeMaxRun = 5.0f;
+            float WagonSmokeGrad = WagonSmokeMaxRise / WagonSmokeMaxRun;
+
+            float WagonSmokeRatio = (WagonSmokeGrad * AbsSpeedMpS) + 1.0f;
+         //   WagonSmokeDurationS = InitialWagonSmokeDurationS * WagonSmokeRatio;
+         //   WagonSmokeVolumeM3pS = InitialWagonSmokeVolumeM3pS * WagonSmokeRatio;
+            WagonSmokeDurationS = InitialWagonSmokeDurationS;
+            WagonSmokeVolumeM3pS = InitialWagonSmokeVolumeM3pS;
+        }
+
+
         public override void SignalEvent(Event evt)
         {
             switch (evt)
