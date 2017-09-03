@@ -1052,9 +1052,20 @@ namespace Orts.Simulation.RollingStocks
             // Corrections for dynamic braking parameters
 
             if (this is MSTSElectricLocomotive && DynamicBrakeDelayS > 4) DynamicBrakeDelayS = 2; // Electric locomotives have short engaging delays
-            if (MaxDynamicBrakeForceN > 0 && MaxContinuousForceN > 0 &&
-                ((MaxDynamicBrakeForceN / MaxContinuousForceN < 0.3f && MaxDynamicBrakeForceN == 20000) || (MaxDynamicBrakeForceN / MaxContinuousForceN < 0.15f)))
-                MaxDynamicBrakeForceN = MaxContinuousForceN * 0.5f; // 20000 is suggested as standard value in the MSTS documentation, but in general it is a too low value
+            if (DynamicBrakeSpeed2MpS > 0 && DynamicBrakeSpeed3MpS > 0 && DynamicBrakeSpeed2MpS > DynamicBrakeSpeed3MpS)
+            {
+                // also exchanging DynamicBrakesMaximumEffectiveSpeed with DynamicBrakesFadingSpeed is a frequent error that upsets operation of
+                // dynamic brakes
+                var temp = DynamicBrakeSpeed2MpS;
+                DynamicBrakeSpeed2MpS = DynamicBrakeSpeed3MpS;
+                DynamicBrakeSpeed3MpS = temp;
+            }
+            if (Simulator.Settings.CorrectQuestionableBrakingParams)
+            {
+                if (MaxDynamicBrakeForceN > 0 && MaxContinuousForceN > 0 &&
+                (MaxDynamicBrakeForceN / MaxContinuousForceN < 0.3f && MaxDynamicBrakeForceN == 20000))
+                    MaxDynamicBrakeForceN = Math.Min (MaxContinuousForceN * 0.5f, 150000); // 20000 is suggested as standard value in the MSTS documentation, but in general it is a too low value
+            }
         }
 
         /// <summary>
