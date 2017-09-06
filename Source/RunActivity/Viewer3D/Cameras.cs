@@ -1775,6 +1775,7 @@ namespace Orts.Viewer3D
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
+            RotationYRadians = -ORTSMath.MatrixToYAngle(XnaView);
             var speed = GetSpeed(elapsedTime);
 
             if (UserInput.IsDown(UserCommands.CameraPanUp))
