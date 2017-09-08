@@ -267,6 +267,7 @@ namespace Orts.Simulation.RollingStocks
         float HeatRatio = 0.001f;        // Ratio to control burn rate - based on ratio of heat in vs heat out
         float PressureRatio = 0.001f;    // Ratio to control burn rate - based upon boiler pressure
         float BurnRateRawKGpS;           // Raw combustion (burn) rate
+        float MaxCombustionRateKgpS;
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRate = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs.
         SmoothedData BurnRateSmoothKGpS = new SmoothedData(120); // Changes in BurnRate take x seconds to fully react to changing needs.
@@ -367,7 +368,7 @@ namespace Orts.Simulation.RollingStocks
             get { return WaterController.CurrentValue * Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG; }
             set { WaterController.CurrentValue = value / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG); }
         }
-        float DamperBurnEffect;             // Effect of the Damper control
+        float DamperBurnEffect;             // Effect of the Damper control Used in manual firing)
         float Injector1Fraction = 0.0f;     // Fraction (0-1) of injector 1 flow from Fireman controller or AI
         float Injector2Fraction = 0.0f;     // Fraction (0-1) of injector  of injector 2 flow from Fireman controller or AI
         float SafetyValveStartPSI = 0.1f;   // Set safety valve to just over max pressure - allows for safety valve not to operate in AI firing
@@ -1624,7 +1625,7 @@ namespace Orts.Simulation.RollingStocks
             CylinderSweptVolumeFT3pFT = ((CylinderPistonAreaFt2 * Me.ToFt(CylinderStrokeM)) - CylinderPistonShaftFt3);
             LPCylinderSweptVolumeFT3pFT = ((LPCylinderPistonAreaFt2 * Me.ToFt(LPCylinderStrokeM)) - CylinderPistonShaftFt3);
 
-            float MaxCombustionRateKgpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)]));
+            MaxCombustionRateKgpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)]));
 
             // Calculate the maximum boiler heat input based on the steam generation rate
 
@@ -1682,7 +1683,7 @@ namespace Orts.Simulation.RollingStocks
                 CurrentCarriageHeatTempC = OutsideTempC;
             }
 
-            if (MaxSteamHeatPressurePSI == 0 || Simulator.Season == SeasonType.Summer)       // Check to see if steam heating is fitted to locomotive, if summer disable steam heating
+            if (MaxSteamHeatPressurePSI == 0 )       // Check to see if steam heating is fitted to locomotive, if summer disable steam heating
             {
                 IsSteamHeatFitted = false;
                 CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Set to zero by default
@@ -2298,9 +2299,9 @@ namespace Orts.Simulation.RollingStocks
             // Adjust burn rates for firing in either manual or AI mode
             if (FiringIsManual)
             {
-                // Manual Firing - note steam usage due to safety valve, compressor and steam cock operation not included, as these are factored into firemans calculations, and will be adjusted for manually
-                // Manual fireman to compensate as appropriate.
-                BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * (BlowerBurnEffect + DamperBurnEffect); 
+                // Manual Firing - a samml burning effect is maintained by the Radiation Steam Loss. The Blower is designed to be used when stationary, or if required when regulator is closed
+                // The exhaust steam from the cylinders drives the draught through the firebox, the damper is used to reduce (or increase) the draft as required.
+                BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS) + BlowerBurnEffect + DamperBurnEffect)]));
             }
             else // ***********  AI Fireman *****************
             {
@@ -5103,9 +5104,10 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    DamperBurnEffect = DamperController.CurrentValue * absSpeedMpS * DamperFactorManual; // Damper value for manual firing - related to damper setting and increased speed
+                    // The damper burn effect is created by the cylinder exhaust steam, and the opening state of the damper. 1.2 included as a small increase to compensate for calculation losses
+                    DamperBurnEffect = DamperController.CurrentValue * CylinderSteamUsageLBpS *1.2f; 
                 }
-                DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS); // set damper maximum to the max generation rate
+                DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS * 1.5f); // set damper maximum to the max generation rate
             }
             #endregion
 
@@ -5336,7 +5338,6 @@ namespace Orts.Simulation.RollingStocks
 
             if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
-
                 if (IsSteamHeatFirstTime)
                 {
                     IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
@@ -5368,8 +5369,9 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
-                    if (IsLeadLocomotive())
-                    {
+ //                   if (this.IsLeadLocomotive())
+ //                   {
+                        
                         if (CurrentSteamHeatPressurePSI == 0.0)
                         {
                             CurrentSteamHeatPipeTempC = 0.0f;       // Reset values to zero if steam is not turned on.
@@ -5386,7 +5388,7 @@ namespace Orts.Simulation.RollingStocks
                             SteamPipeHeatW = SteamPipeHeatConvW + SteamHeatPipeRadW;   // heat generated by pipe per degree
                             Train.CarSteamHeatOn = true; // turn on steam effects on wagons
                         }
-                    }
+ //                   }
 
                     // Calculate Net steam heat loss or gain
                     NetSteamHeatLossWpTime = SteamPipeHeatW - Train.TrainSteamHeatLossWpT;
