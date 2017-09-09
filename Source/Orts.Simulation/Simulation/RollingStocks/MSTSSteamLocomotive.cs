@@ -2380,6 +2380,9 @@ namespace Orts.Simulation.RollingStocks
                 BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 90% of fire needed to maintain full boiler steam generation
             }
 
+            float MinimumBurnRateKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(RadiationSteamLossLBpS)]));
+            BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, MinimumBurnRateKGpS, BurnRateRawKGpS); // clamp burnrate to maintain it within limits
+
             FuelFeedRateKGpS = BurnRateRawKGpS;
             float MinimumFireLevelfactor = 0.05f; // factor representing the how low firemass has got compared to ideal firemass
             if (FireMassKG / IdealFireMassKG < MinimumFireLevelfactor) // If fire level drops too far 
