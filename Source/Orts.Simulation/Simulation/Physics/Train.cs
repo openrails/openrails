@@ -10713,6 +10713,7 @@ namespace Orts.Simulation.Physics
             int platformIndex;
             int lastRouteIndex = 0;
             int activeSubroute = beginActiveSubroute;
+            bool terminalStation = false;
 
             TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
 
@@ -10895,10 +10896,31 @@ namespace Orts.Simulation.Physics
                     deltaLength = fullLength - Length;
                 }
 
+                // check whether terminal station or not
+                TCSubpathRoute routeToEndOfTrack = signalRef.BuildTempRoute(this, endSectionIndex, endOffset, thisElement.Direction, 30, true, true, false);
+                if (routeToEndOfTrack.Count > 0)
+                {
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[routeToEndOfTrack[routeToEndOfTrack.Count - 1].TCSectionIndex];
+                    if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.EndOfTrack)
+                    {
+                        terminalStation = true;
+                        foreach (TCRouteElement tcElement in routeToEndOfTrack)
+                        {
+                            thisSection = signalRef.TrackCircuitList[tcElement.TCSectionIndex];
+                            if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
+                            {
+                                terminalStation = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
 
                 // determine stop position
-
                 float stopOffset = endOffset - (0.5f * deltaLength);
+                if (terminalStation && deltaLength > 0 && !Simulator.TimetableMode)
+                        stopOffset = endOffset - 1;
 
                 // beyond section : check for route validity (may not exceed route)
 
@@ -10984,7 +11006,8 @@ namespace Orts.Simulation.Physics
 
                             if ((stopOffset - Length - beginOffset + thisPlatform.DistanceToSignals[useDirection]) < clearingDistanceM)
                             {
-                                stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
+                                if (!(terminalStation && deltaLength > 0 && !Simulator.TimetableMode)) 
+                                    stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
                             }
                         }
                         // if most of train fits in platform then stop at signal
@@ -10992,7 +11015,8 @@ namespace Orts.Simulation.Physics
                                       (0.6 * Length))
                         {
                             // set 1m earlier to give priority to station stop over signal
-                            stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
+                            if (!(terminalStation && deltaLength > 0 && !Simulator.TimetableMode))
+                                stopOffset = beginOffset - thisPlatform.DistanceToSignals[useDirection] + Length + clearingDistanceM + 1.0f;
 
                             // check if stop is clear of end signal (if any)
                             if (thisPlatform.EndSignals[thisElement.Direction] != -1)
@@ -11003,7 +11027,8 @@ namespace Orts.Simulation.Physics
                                 }
                                 else
                                 {
-                                    stopOffset = endOffset + thisPlatform.DistanceToSignals[thisElement.Direction] - 1.0f; // stop at end signal
+                                    if (!(terminalStation && deltaLength > 0 && !Simulator.TimetableMode))
+                                        stopOffset = endOffset + thisPlatform.DistanceToSignals[thisElement.Direction] - 1.0f; // stop at end signal
                                 }
                             }
                         }
