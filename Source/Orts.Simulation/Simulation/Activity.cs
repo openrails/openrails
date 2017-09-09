@@ -1002,7 +1002,7 @@ namespace Orts.Simulation
                     else if (!maydepart)
                     {
                         // check if signal ahead is cleared - if not, do not allow depart
-                        if (distanceToNextSignal >= 0 && distanceToNextSignal< 300 &&
+                        if (distanceToNextSignal >= 0 && distanceToNextSignal< 300 && MyPlayerTrain.NextSignalObject[0] != null &&
                             MyPlayerTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
                             && MyPlayerTrain.NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
                         {
