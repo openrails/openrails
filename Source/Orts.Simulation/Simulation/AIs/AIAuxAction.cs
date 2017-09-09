@@ -2711,7 +2711,7 @@ namespace Orts.Simulation.AIs
                     File.AppendAllText(@"C:\temp\checkpath.txt", "AITRain " + thisTrain.Number + "!  No more AuxActions...\n");
                 }
 #endif
-                return AITrain.AI_MOVEMENT_STATE.STOPPED;
+                return (thisTrain is AITrain && (thisTrain as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.STATION_STOP ? AITrain.AI_MOVEMENT_STATE.STATION_STOP : AITrain.AI_MOVEMENT_STATE.STOPPED);
             }
             return movementState;
         }
