@@ -1776,7 +1776,7 @@ namespace Orts.Simulation
                     var playerTrain = PlayerLocomotive.Train;
                     if (playerTrain != null)
                     {
-                        if (playerTrain.SpeedMpS != 0)
+                        if (playerTrain.SpeedMpS < -0.1 || playerTrain.SpeedMpS > 0.1)
                         {
                             Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("To return to static train speed must be = 0"));
                             TrainSwitcher.SuspendOldPlayer = false;
@@ -1791,6 +1791,8 @@ namespace Orts.Simulation
                             playerTrain.routedBackward);
                         playerTrain.ControlMode = Train.TRAIN_CONTROL.UNDEFINED;
                         playerTrain.TrainType = Train.TRAINTYPE.STATIC;
+                        playerTrain.SpeedMpS = 0;
+                        foreach (TrainCar car in playerTrain.Cars) car.SpeedMpS = 0;
                         playerTrain.CheckFreight();
                         playerTrain.InitializeBrakes();
                     }
