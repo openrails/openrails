@@ -10987,7 +10987,7 @@ namespace Orts.Simulation.Physics
                         else if (terminalStation && deltaLength <= 0 && !Simulator.TimetableMode)
                         {
                             HoldSignal = true;
-                            stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - 2.0f;
+                            stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - 3.0f;
                         }
                         // if most of train fits in platform then stop at signal
                         else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
@@ -11006,6 +11006,12 @@ namespace Orts.Simulation.Physics
                     else
                     // end of train is beyond signal
                     {
+                        int oldUseDirection = useDirection == 1 ? 0 : 1;
+                        if (thisPlatform.EndSignals[oldUseDirection] >= 0 && terminalStation && deltaLength <= 0 && !Simulator.TimetableMode)
+                        {
+                            // check also the back of train after reverse
+                            stopOffset = endOffset + thisPlatform.DistanceToSignals[oldUseDirection] - 3.0f;
+                        }
                         if ((beginOffset - thisPlatform.DistanceToSignals[useDirection]) < (stopOffset - Length))
                         {
                             HoldSignal = true;
