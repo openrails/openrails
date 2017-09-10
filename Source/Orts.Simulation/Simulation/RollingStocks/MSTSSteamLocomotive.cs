@@ -2299,7 +2299,7 @@ namespace Orts.Simulation.RollingStocks
             // Adjust burn rates for firing in either manual or AI mode
             if (FiringIsManual)
             {
-                // Manual Firing - a samml burning effect is maintained by the Radiation Steam Loss. The Blower is designed to be used when stationary, or if required when regulator is closed
+                // Manual Firing - a small burning effect is maintained by the Radiation Steam Loss. The Blower is designed to be used when stationary, or if required when regulator is closed
                 // The exhaust steam from the cylinders drives the draught through the firebox, the damper is used to reduce (or increase) the draft as required.
                 BurnRateRawKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH((RadiationSteamLossLBpS + CalculatedCarHeaterSteamUsageLBpS) + BlowerBurnEffect + DamperBurnEffect)]));
             }
@@ -2340,49 +2340,49 @@ namespace Orts.Simulation.RollingStocks
                         BurnRateRawKGpS = (W.ToKW(W.FromBTUpS(PreviousBoilerHeatOutBTUpS - BoilerHeatExceptionsBtupS)) / FuelCalorificKJpKG) * AIFiremanBurnFactor;
                     }
                 }
-            }
 
-            // AIFireOverride flag set to challenge driver if boiler AI fireman is overriden - ie steam safety valves will be set and blow if pressure is excessive
-            if(SetFireOn || SetFireOff) // indicate that AI fireman override is in use
-            {
-                AIFireOverride = true; // Set whenever SetFireOn or SetFireOff are selected
-            }
-            else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatBTU < MaxBoilerHeatBTU)
-            {
-                AIFireOverride = false; // Reset if pressure and heat back to normal
-            }
-            
-            if (SetFireReset)  // Check FireReset Override command - resets fireoff and fireon override
-            {
-                SetFireOff = false;
-                SetFireOn = false;
-                SetFireReset = false;
-            }
-
-            // Check FireOff Override command - allows player to force fire low in preparation for a station stop
-            if(SetFireOff)
-            {
-                if (BoilerPressurePSI < MaxBoilerPressurePSI - 20.0f || BoilerHeatBTU < 0.90f || (absSpeedMpS < 0.01f && throttle < 0.01f ))
+                // AIFireOverride flag set to challenge driver if boiler AI fireman is overriden - ie steam safety valves will be set and blow if pressure is excessive
+                if (SetFireOn || SetFireOff) // indicate that AI fireman override is in use
                 {
-                    SetFireOff = false; // Disable FireOff if bolierpressure too low
+                    AIFireOverride = true; // Set whenever SetFireOn or SetFireOff are selected
                 }
-                
-                BurnRateRawKGpS = 0.0035f;
-            }
-
-            // Check FireOn Override command - allows player to force the fire up in preparation for a station departure
-            if (SetFireOn)
-            {
-                if ((BoilerHeatBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f ) || BoilerPressurePSI > MaxBoilerPressurePSI || (BoilerHeatBTU > MaxBoilerHeatBTU && absSpeedMpS <= 10.0f))
+                else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatBTU < MaxBoilerHeatBTU)
                 {
-                    SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
+                    AIFireOverride = false; // Reset if pressure and heat back to normal
                 }
-                BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 90% of fire needed to maintain full boiler steam generation
+
+                if (SetFireReset)  // Check FireReset Override command - resets fireoff and fireon override
+                {
+                    SetFireOff = false;
+                    SetFireOn = false;
+                    SetFireReset = false;
+                }
+
+                // Check FireOff Override command - allows player to force fire low in preparation for a station stop
+                if (SetFireOff)
+                {
+                    if (BoilerPressurePSI < MaxBoilerPressurePSI - 20.0f || BoilerHeatBTU < 0.90f || (absSpeedMpS < 0.01f && throttle < 0.01f))
+                    {
+                        SetFireOff = false; // Disable FireOff if bolierpressure too low
+                    }
+
+                    BurnRateRawKGpS = 0.0035f;
+                }
+
+                // Check FireOn Override command - allows player to force the fire up in preparation for a station departure
+                if (SetFireOn)
+                {
+                    if ((BoilerHeatBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f) || BoilerPressurePSI > MaxBoilerPressurePSI || (BoilerHeatBTU > MaxBoilerHeatBTU && absSpeedMpS <= 10.0f))
+                    {
+                        SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
+                    }
+                    BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 90% of fire needed to maintain full boiler steam generation
+                }
             }
 
-            float MinimumBurnRateKGpS = pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(RadiationSteamLossLBpS)]));
-            BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, MinimumBurnRateKGpS, BurnRateRawKGpS); // clamp burnrate to maintain it within limits
-
+            float MinimumBurnRateKGpS = 0.0012626f; // Set minimum burn rate @ 10lb/hr
+            BurnRateRawKGpS = MathHelper.Clamp(BurnRateRawKGpS, MinimumBurnRateKGpS, BurnRateRawKGpS); // ensure burnrate never goes to zero, unless the fire drops to an unacceptable level, or a fusible plug blows
+       
             FuelFeedRateKGpS = BurnRateRawKGpS;
             float MinimumFireLevelfactor = 0.05f; // factor representing the how low firemass has got compared to ideal firemass
             if (FireMassKG / IdealFireMassKG < MinimumFireLevelfactor) // If fire level drops too far 
