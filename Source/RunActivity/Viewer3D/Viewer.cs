@@ -643,7 +643,10 @@ namespace Orts.Viewer3D
             float cabTextureInverseRatio = -1;
             var cabTexture = TextureManager.Get(cabTextureFileName, true);
             if (cabTexture != SharedMaterialManager.MissingTexture)
+            {
                 cabTextureInverseRatio = (float)cabTexture.Height / cabTexture.Width;
+                if (cabTextureInverseRatio == 1 && cabTexture.Width == 1024) cabTextureInverseRatio = 0.75f;
+            }
             return cabTextureInverseRatio;
         }
 
