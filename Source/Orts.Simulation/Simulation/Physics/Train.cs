@@ -10983,6 +10983,12 @@ namespace Orts.Simulation.Physics
                                 stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM - 1.0f;
                             }
                         }
+                        // at terminal station we will stop just in front of signal
+                        else if (terminalStation && deltaLength <= 0 && !Simulator.TimetableMode)
+                        {
+                            HoldSignal = true;
+                            stopOffset = endOffset + thisPlatform.DistanceToSignals[useDirection] - 2.0f;
+                        }
                         // if most of train fits in platform then stop at signal
                         else if ((thisPlatform.DistanceToSignals[useDirection] - clearingDistanceM + thisPlatform.Length) >
                                       (0.6 * Length))

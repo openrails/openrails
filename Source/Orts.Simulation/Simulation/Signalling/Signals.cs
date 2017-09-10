@@ -4347,7 +4347,7 @@ namespace Orts.Simulation.Signalling
                         if (thisSection.EndSignals[0] != null)
                         {
                             // end signal is always valid in timetable mode
-                            if (Simulator.TimetableMode)
+                            if (Simulator.TimetableMode || distToSignal <= 150)
                             {
                                 thisDetails.EndSignals[0] = thisSection.EndSignals[0].thisRef;
                                 thisDetails.DistanceToSignals[0] = distToSignal;
@@ -4400,7 +4400,7 @@ namespace Orts.Simulation.Signalling
 
                         if (thisSection.EndSignals[1] != null)
                         {
-                            if (Simulator.TimetableMode)
+                            if (Simulator.TimetableMode || distToSignal <= 150)
                             {
                                 thisDetails.EndSignals[1] = thisSection.EndSignals[1].thisRef;
                                 thisDetails.DistanceToSignals[1] = distToSignal;
