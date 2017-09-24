@@ -49,7 +49,7 @@ namespace Orts.Viewer3D.RollingStock
         public bool _hasCabRenderer;
         public bool _has3DCabRenderer;
         public CabRenderer _CabRenderer;
-        private ThreeDimentionCabViewer ThreeDimentionCabViewer = null;
+        public ThreeDimentionCabViewer ThreeDimentionCabViewer = null;
         public CabRenderer ThreeDimentionCabRenderer = null; //allow user to have different setting of .cvf file under CABVIEW3D
 
         public MSTSLocomotiveViewer(Viewer viewer, MSTSLocomotive car)
@@ -2197,8 +2197,8 @@ namespace Orts.Viewer3D.RollingStock
     {
         MSTSLocomotive Locomotive;
 
-        protected PoseableShape TrainCarShape = null;
-        Dictionary<int, AnimatedPartMultiState> AnimateParts = null;
+        public PoseableShape TrainCarShape = null;
+        public Dictionary<int, AnimatedPartMultiState> AnimateParts = null;
         Dictionary<int, ThreeDimCabGaugeNative> Gauges = null;
         Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
         //Dictionary<int, DigitalDisplay> DigitParts = null;
@@ -2956,7 +2956,7 @@ namespace Orts.Viewer3D.RollingStock
     public class AnimatedPartMultiState : AnimatedPart
     {
         public CABViewControlTypes Type;
-        int Key;
+        public int Key;
         /// <summary>
         /// Construct with a link to the shape that contains the animated parts 
         /// </summary>
