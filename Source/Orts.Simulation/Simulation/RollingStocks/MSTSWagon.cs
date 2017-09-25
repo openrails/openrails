@@ -1559,8 +1559,6 @@ namespace Orts.Simulation.RollingStocks
                 HeatingHoseParticleDurationS = 0.75f;
                 HeatingHoseSteamVelocityMpS = 15.0f;
                 HeatingHoseSteamVolumeM3pS = 4.0f;
-                HeatingSteamBoilerVolumeM3pS = 1.5f;
-                HeatingSteamBoilerDurationS = 1.0f;
             }
             else
             {
@@ -1568,8 +1566,6 @@ namespace Orts.Simulation.RollingStocks
                 HeatingHoseParticleDurationS = 0.0f;
                 HeatingHoseSteamVelocityMpS = 0.0f;
                 HeatingHoseSteamVolumeM3pS = 0.0f;
-                HeatingSteamBoilerVolumeM3pS = 0.0f;
-                HeatingSteamBoilerDurationS = 0.0f;
             }
 
             // Decrease wagon smoke as speed increases, smoke completely dissappears when wagon reaches 5MpS.

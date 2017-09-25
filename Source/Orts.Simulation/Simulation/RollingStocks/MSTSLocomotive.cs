@@ -141,10 +141,20 @@ namespace Orts.Simulation.RollingStocks
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
 
+        // Steam heating Flags
+        public bool IsSteamInitial = true;        // To initialise steam heat
+        public bool IsSteamHeatFirstTime = true;  // Flag for first pass at steam heating.
+        public bool IsSteamHeatFitted = false;    // Is steam heating fitted to locomotive
+        public float CurrentSteamHeatPressurePSI = 0.0f;   // Current pressure in steam heat system
+
         public string LocomotiveName; // Name of locomotive from ENG file
 
         // Carriage Steam Heating Parameters
         public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
+        public Interpolator SteamHeatPressureToTemperaturePSItoF;
+        public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
+        public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
+        public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
 
         // Adhesion Debug
         bool DebugSpeedReached;
@@ -977,6 +987,18 @@ namespace Orts.Simulation.RollingStocks
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
             TrainControlSystem.Initialize();
+
+            if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
+            {
+                IsSteamHeatFitted = false;
+            }
+            else
+            {
+                IsSteamHeatFitted = true;
+                CurrentSteamHeatFuelCapacityL = SteamHeatFuelTankCapacityL;
+            }
+
+            SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
 
             if (BrakePipeChargingRatePSIorInHgpS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
             {

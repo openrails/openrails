@@ -590,7 +590,12 @@ namespace Orts.Common
             return new Interpolator(PressureTableGaugePSI, TemperatureTableF);
         }
 
-         // ++++++++++++++++++++++++++++++++
+        public static Interpolator SteamHeatPressureToTemperatureInterpolatorPSItoF()
+        {
+            return new Interpolator(PressureTableGaugePSI, TemperatureTableF);
+        }
+
+        // ++++++++++++++++++++++++++++++++
         // Interpolator2D for Cut-off pressure to Initial Pressure - Ref Plate 10 - LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
         // 
 

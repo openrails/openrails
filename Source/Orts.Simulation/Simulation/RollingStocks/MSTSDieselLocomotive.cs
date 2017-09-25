@@ -31,6 +31,7 @@
 //#define ALLOW_ORTS_SPECIFIC_ENG_PARAMETERS
 
 
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
@@ -544,7 +545,28 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines.HasGearBox)
                 status.AppendFormat("\t{0} {1}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex);
-            status.AppendFormat("\t{0} {1}\t\t\t{2}", Simulator.Catalog.GetString("Fuel"), FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
+            status.AppendFormat("\t{0} {1}\t\t\t{2}\n", 
+                Simulator.Catalog.GetString("Fuel"), 
+                FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
+
+            if (IsSteamHeatFitted && Train.TrainFittedSteamHeat && this.IsLeadLocomotive())  // Only show steam heating HUD if fitted to locomotive and the train
+               {
+            // Display Steam Heat info
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8:N0}\t{9}\t{10}\n",
+                   Simulator.Catalog.GetString("StHeat:"),
+                   Simulator.Catalog.GetString("Press"),
+                   FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                   Simulator.Catalog.GetString("TrTemp"),
+                   FormatStrings.FormatTemperature(Train.TrainCurrentCarriageHeatTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("StTemp"),
+                   FormatStrings.FormatTemperature(Train.TrainCurrentSteamHeatPipeTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("NetHt"),
+                   Train.DisplayTrainNetSteamHeatLossWpTime,
+                   Simulator.Catalog.GetString("FuelLvl"),
+                   CurrentSteamHeatFuelCapacityL);
+               }
+
+
             return status.ToString();
         }
 
@@ -645,22 +667,64 @@ namespace Orts.Simulation.RollingStocks
         {
             // Update Steam Heating System
 
-            float CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
+            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsLeadLocomotive())
+            if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
-                if (MaxSteamHeatPressurePSI != 0 && CurrentSteamHeatPressurePSI > 0.001f)       // Check to see if steam heating is fitted to locomotive, if summer disable steam heating
-                {
-                    Train.CarSteamHeatOn = true; // Turn car steam effects on
 
-                }
-                else
+                if (this.IsLeadLocomotive())
                 {
-                    Train.CarSteamHeatOn = false; // turn car steam effects off
+                    if (IsSteamHeatFirstTime)
+                    {
+                        IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
+                        Train.TrainInsideTempC = 15.5f; // Assume a desired temperature of 60oF = 15.5oC
+                    }
+                    else
+                    {
+                        // After first pass continue as normal
+
+                        if (IsSteamInitial)
+                        {
+                            Train.TrainCurrentCarriageHeatTempC = 13.0f;
+                        }
+                        // Initialise current Train Steam Heat based upon selected Current carriage Temp
+                        Train.TrainCurrentTrainSteamHeatW = (Train.TrainCurrentCarriageHeatTempC - Train.TrainOutsideTempC) / (Train.TrainInsideTempC - Train.TrainOutsideTempC) * Train.TrainTotalSteamHeatW;
+                        IsSteamInitial = false;
+                    }
+
+                    // Calculate steam pressure in steam pipe
+                    if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
+                    {
+                        CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
+
+                        // Set values for visible exhaust based upon setting of steam controller
+                        HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
+                        HeatingSteamBoilerDurationS = 1.0f * SteamHeatController.CurrentValue;
+
+                        // Calculate fuel usage for steam heat boiler
+                        float FuelUsageL = SteamHeatController.CurrentValue * pS.FrompH(SteamHeatBoilerFuelUsageLpH) * elapsedClockSeconds;
+                        CurrentSteamHeatFuelCapacityL -= FuelUsageL; // Reduce Tank capacity as fuel used.
+                        MassKG -= FuelUsageL * 0.85f; // Reduce locomotive weight as Steam heat boiler uses fuel.
+
+                    }
+
+                    CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
+
+                    if (CurrentSteamHeatPressurePSI < 0.1)
+                    {
+                        Train.TrainCurrentSteamHeatPipeTempC = 0.0f;       // Reset values to zero if steam is not turned on.
+                        Train.TrainSteamPipeHeatW = 0.0f;
+                        Train.CarSteamHeatOn = false; // turn off steam effects on wagons
+                    }
+                    else
+                    {
+                        Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
+                        Train.CarSteamHeatOn = true; // turn on steam effects on wagons
+                    }
                 }
             }
-    
-        }
+                }
+            
 
         //used by remote diesels to update their exhaust
         public void RemoteUpdate(float exhPart, float exhMag, float exhColorR, float exhColorG, float exhColorB)

@@ -641,12 +641,13 @@ namespace Orts.Simulation.RollingStocks
         }
 
 
-#endregion
+        #endregion
 
         #region Calculate Heat loss for Passenger Cars
 
         /// <summary>
         /// This section calculates the heat loss in a carriage, and is used in conjunction with steam heating.
+        /// Heat Loss is based upon the model for heat loss from a building - http://www.engineeringtoolbox.com/heat-loss-buildings-d_113.html
         /// Overall heat loss is made up of the following components - heat loss due to transmission through walls, windows, doors, floors and more (W) + heat loss caused by ventilation (W) + heat loss caused by infiltration (W) 
         /// </summary>
 
@@ -655,8 +656,13 @@ namespace Orts.Simulation.RollingStocks
 
             // +++++++++++++++++++++++++++
 
-            if (WagonType == WagonTypes.Passenger) // only calculate heat loss on paasenger cars
+            if (WagonType == WagonTypes.Passenger) // only calculate heat loss on passenger cars
             {
+
+                // Initialise car values for heating to zero
+                CarHeatLossWpT = 0.0f;
+                CarHeatPipeAreaM2 = 0.0f;
+                CarHeatVolumeM3 = 0.0f;
 
                 // Transmission heat loss = exposed area * heat transmission coeff (inside temp - outside temp)
                 // Calculate the heat loss through the roof, wagon sides, and floor separately  
@@ -692,6 +698,24 @@ namespace Orts.Simulation.RollingStocks
 
                 float HeatLossTransmissionWpT = HeatLossTransRoofWpT + HeatLossTransTotalSidesWpT + HeatLossTransFloorWpT;
 
+               // Heat loss due to train movement and air flow, based upon convection heat transfer information - http://www.engineeringtoolbox.com/convective-heat-transfer-d_430.html
+               // The formula on this page ( hc = 10.45 - v + 10v1/2), where v = m/s. This formula is used to develop a multiplication factor with train speed.
+               // Curve is only valid from 2.5m/s
+
+                float LowSpeedMpS = 2.0f;
+                float ConvHeatTxfLowSpeed = 10.45f - LowSpeedMpS + (10.0f * (float)Math.Pow(LowSpeedMpS, 0.5));
+                float ConvHeatTxSpeed = 10.45f - AbsSpeedMpS + (10.0f * (float)Math.Pow(AbsSpeedMpS, 0.5));
+                float ConvFactor = ConvHeatTxSpeed / ConvHeatTxfLowSpeed;
+
+                // TO DO - CHeck this out further - allow full range of values?
+               // ConvFactor = MathHelper.Clamp(ConvFactor, 1.0f, 1.6f); // Keep Conv Factor ratio within bounds - should not exceed 1.6.
+
+                ConvFactor = MathHelper.Clamp(ConvFactor, 1.0f, 1.0f); // Keep Conv Factor ratio within bounds - should not exceed 1.6.
+
+               // Adjust transmission heat loss due to speed of train - loss increases as the apparent wind speed across carriages increases
+                HeatLossTransmissionWpT *= ConvFactor;
+
+
                 // ++++++++++++++++++++++++
                 // Infiltration Heat loss, per degree of temp change
                 float SpecificHeatCapacityJpKgpK = 1000.0f;   // a value of cp = 1.0 kJ/kg.K (equal to kJ/kg.oC) - is normally accurate enough
@@ -703,6 +727,7 @@ namespace Orts.Simulation.RollingStocks
 
                 CarHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT;
 
+                // ++++++++++++++++++++++++
                 // Calculate steam pipe surface area
                 float CompartmentSteamPipeRadiusM = Me.FromIn(2.0f) / 2.0f;  // Assume the steam pipes in the compartments have diameter of 2" (50mm)
                 float DoorSteamPipeRadiusM = Me.FromIn(1.75f) / 2.0f;        // Assume the steam pipes in the doors have diameter of 1.75" (50mm)
@@ -713,7 +738,7 @@ namespace Orts.Simulation.RollingStocks
 
                 float CarDoorPipeAreaM2 = 2.0f * MathHelper.Pi * DoorSteamPipeRadiusM * CarDoorLengthM;
 
-                // Use rule of thumb - 1" of 2" steam heat pipe for every 3.5 cu ft of volume in car compartment
+                // Use rule of thumb - 1" of 2" steam heat pipe for every 3.5 cu ft of volume in car compartment (second class)
                 float CarCompartmentPipeLengthM = Me.FromIn((CarHeatVolumeM3 - CarDoorVolumeM3) / (Me3.FromFt3(3.5f)));
                 float CarCompartmentPipeAreaM2 = 2.0f * MathHelper.Pi * CompartmentSteamPipeRadiusM * CarCompartmentPipeLengthM;
 
@@ -728,6 +753,14 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Car {0} Car Vol {1} Car Pipe Area {2}", CarID, CarHeatVolumeM3, CarHeatPipeAreaM2);
                 Trace.TraceInformation("Car Temp {0} Car Outside Temp {1}", CarriageHeatTempC, CarOutsideTempC);
 #endif
+            }
+            else
+            {
+
+                // If car is not a valid car for heating set values to zero
+                CarHeatLossWpT = 0.0f;
+                CarHeatPipeAreaM2 = 0.0f;
+                CarHeatVolumeM3 = 0.0f;
             }
         }
 
