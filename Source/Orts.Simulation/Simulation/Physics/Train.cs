@@ -606,10 +606,10 @@ namespace Orts.Simulation.Physics
             RestoreCars(simulator, inf);
             Number = inf.ReadInt32();
             TotalNumber = Math.Max(Number + 1, TotalNumber);
-            TrainCurrentCarriageHeatTempC = inf.ReadSingle();
-            TrainCurrentTrainSteamHeatW = inf.ReadSingle();
             Name = inf.ReadString();
             SpeedMpS = inf.ReadSingle();
+            TrainCurrentCarriageHeatTempC = inf.ReadSingle();
+            TrainCurrentTrainSteamHeatW = inf.ReadSingle();
             TrainType = (TRAINTYPE)inf.ReadInt32();
             MUDirection = (Direction)inf.ReadInt32();
             MUThrottlePercent = inf.ReadSingle();
@@ -935,11 +935,11 @@ namespace Orts.Simulation.Physics
         public virtual void Save(BinaryWriter outf)
         {
             SaveCars(outf);
-            outf.Write(TrainCurrentCarriageHeatTempC);
-            outf.Write(TrainCurrentTrainSteamHeatW);
             outf.Write(Number);
             outf.Write(Name);
             outf.Write(SpeedMpS);
+            outf.Write(TrainCurrentCarriageHeatTempC);
+            outf.Write(TrainCurrentTrainSteamHeatW);
             outf.Write((int)TrainType);
             outf.Write((int)MUDirection);
             outf.Write(MUThrottlePercent);
