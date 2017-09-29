@@ -155,6 +155,7 @@ namespace Orts.Simulation.RollingStocks
         public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
         public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
         public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
+        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
 
         // Adhesion Debug
         bool DebugSpeedReached;
@@ -991,10 +992,12 @@ namespace Orts.Simulation.RollingStocks
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
                 IsSteamHeatFitted = false;
+                TrainFittedSteamHeat = false;
             }
             else
             {
                 IsSteamHeatFitted = true;
+                TrainFittedSteamHeat = true;
                 CurrentSteamHeatFuelCapacityL = SteamHeatFuelTankCapacityL;
             }
 

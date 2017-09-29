@@ -5283,7 +5283,7 @@ namespace Orts.Simulation.RollingStocks
 
             // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
+            if (IsSteamHeatFitted && TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
                 if (this.IsLeadLocomotive())
                 {
@@ -5694,10 +5694,11 @@ namespace Orts.Simulation.RollingStocks
                 CylinderSpeedCondensationFactor);
 #endif
 
-            if (IsSteamHeatFitted && Train.TrainFittedSteamHeat)  // Only show steam heating HUD if fitted to locomotive and the train
+            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive())  
             {
+                // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive
                 // Display Steam Heat info
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}/{9}\t{10}\t{11:N0}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}/{11}\t{12}\t{13:N0}\n",
                    Simulator.Catalog.GetString("StHeat:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
@@ -5705,6 +5706,8 @@ namespace Orts.Simulation.RollingStocks
                    FormatStrings.FormatTemperature(Train.TrainCurrentCarriageHeatTempC, IsMetric, false),
                    Simulator.Catalog.GetString("StTemp"),
                    FormatStrings.FormatTemperature(Train.TrainCurrentSteamHeatPipeTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("OutTemp"),
+                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
                    Simulator.Catalog.GetString("StUse"),
                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
                    FormatStrings.h,

@@ -1116,7 +1116,6 @@ namespace Orts.Simulation.RollingStocks
             UpdateLocomotiveLoadPhysics(); // Updates the load physics characteristics of locomotives
 
             UpdateSpecialEffects(elapsedClockSeconds); // Updates the special effects
-      
 
             // Update Aux Tender Information
 

@@ -57,6 +57,7 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
+using Orts.Parsers.Msts;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
@@ -151,7 +152,7 @@ namespace Orts.Simulation.Physics
         public float TrainHeatVolumeM3;                 // Total Volume of train to steam heat
         public float TrainHeatPipeAreaM2;               // Total area of heating pipe for steam heating
         public float TrainCurrentSteamHeatPipeTempC;                 // Temperature of steam in steam heat system based upon pressure setting
-        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
+//        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
         public bool CarSteamHeatOn = false;    // Is steam heating turned on
         public float TrainNetSteamHeatLossWpTime;        // Net Steam loss - Loss in Cars vs Steam Pipe Heat
         public float TrainCurrentTrainSteamHeatW;    // Current steam heat of air in train
@@ -166,7 +167,58 @@ namespace Orts.Simulation.Physics
         public float TrainSteamHeatPipeRadW;                // Heat radiated by steam pipe - radiation
         float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
         float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
-        bool IsSteamHeatInitial = true; // Allow steam heat to be initialised.
+        bool IsTrainSteamHeatInitial = true; // Allow steam heat to be initialised.
+        Interpolator OutsideWinterTempbyLatitudeC;
+        Interpolator OutsideAutumnTempbyLatitudeC;
+        Interpolator OutsideSpringTempbyLatitudeC;
+        Interpolator OutsideSummerTempbyLatitudeC;
+
+        // Input values to allow the temperature for different values of latitude to be calculated
+        static float[] WorldLatitudeDeg = new float[]
+        {
+           -50.0f, -40.0f, -30.0f, -20.0f, -10.0f, 0.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f
+        };
+
+        // Temperature in deg Celcius
+        static float[] WorldTemperatureWinter = new float[]
+        {
+            0.9f, 8.7f, 12.4f, 17.2f, 20.9f, 24.0f, 22.8f, 18.2f, 11.1f, 1.1f, -10.2f, -6.1f
+         };
+
+        static float[] WorldTemperatureAutumn = new float[]
+        {
+            7.5f, 13.7f, 18.8f, 22.0f, 24.0f, 24.3f, 25.0f, 21.6f, 21.0f, 14.3f, 6.0f, 3.8f
+         };
+
+        static float[] WorldTemperatureSpring = new float[]
+        {
+            8.5f, 13.1f, 17.6f, 18.6f, 24.6f, 24.1f, 26.8f, 23.4f, 18.5f, 12.6f, 6.1f, 1.7f
+         };
+
+        static float[] WorldTemperatureSummer = new float[]
+        {
+            13.4f, 18.3f, 22.8f, 24.3f, 24.4f, 23.4f, 25.2f, 22.5f, 26.6f, 24.8f, 19.4f, 14.3f
+         };
+
+        public static Interpolator WorldWinterLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureWinter);
+        }
+
+        public static Interpolator WorldAutumnLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureAutumn);
+        }
+
+        public static Interpolator WorldSpringLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureSpring);
+        }
+
+        public static Interpolator WorldSummerLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureSummer);
+        }
 
         // Auxiliary Water Tenders
         public float MaxAuxTenderWaterMassKG;
@@ -1824,125 +1876,139 @@ namespace Orts.Simulation.Physics
 
         public void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
+            var mstsLocomotive = Cars[0] as MSTSLocomotive;
+            if (mstsLocomotive != null)
+            { 
 
-            // Find the latitude reading and set outside temperature
-            double latitude = 0;
-            double longitude = 0;
-            var location = this.FrontTDBTraveller;
-            new Orts.Common.WorldLatLon().ConvertWTC(location.TileX, location.TileZ, location.Location, ref latitude, ref longitude);
-
-
-            // Checks to see if winter or autumn only?
-            if (Simulator.Season == SeasonType.Winter)
+            if (IsTrainSteamHeatInitial) // First time method processed do this loop to set up the temprature tables
             {
-                // Winter temps
-               TrainOutsideTempC = -10.0f;
-            }
-            else if (Simulator.Season == SeasonType.Autumn || Simulator.Season == SeasonType.Spring)
-            {
-                // Sping / Autumn temps
-                TrainOutsideTempC = 0.0f;
-            }
-            else
-            {
-                // Summer temps
-                TrainOutsideTempC = 15.0f;
+                OutsideWinterTempbyLatitudeC = WorldWinterLatitudetoTemperatureC();
+                OutsideAutumnTempbyLatitudeC = WorldAutumnLatitudetoTemperatureC();
+                OutsideSpringTempbyLatitudeC = WorldSpringLatitudetoTemperatureC();
+                OutsideSummerTempbyLatitudeC = WorldSummerLatitudetoTemperatureC();
             }
 
-            // Reset Values to zero to recalculate values
-            TrainHeatVolumeM3 = 0.0f;
-            TrainHeatPipeAreaM2 = 0.0f;
-            TrainSteamHeatLossWpT = 0.0f;
-
-            // Calculate total heat loss for whole train
-            for (int i = 0; i < Cars.Count; i++)
-            {
-                TrainSteamHeatLossWpT += Cars[i].CarHeatLossWpT;
-                TrainHeatPipeAreaM2 += Cars[i].CarHeatPipeAreaM2;
-                TrainHeatVolumeM3 += Cars[i].CarHeatVolumeM3;
-            }
-
-            // Cehck to confirm that train is player driven and has passenger cars in the consist.
-            if (IsPlayerDriven && PassengerCarsNumber > 0)
-            {
-                TrainFittedSteamHeat = true;  // Use flag to turn functionon and off in Steam Locomotive Module
-            }
-
-            // Carriage temperature will be equal to heat input (from steam pipe) less heat losses through carriage walls, etc
-            // Calculate Heat in Train
-            TrainTotalSteamHeatW = SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * TrainHeatVolumeM3 * (TrainInsideTempC - TrainOutsideTempC);
-
-            if (TrainNetSteamHeatLossWpTime < 0)
-            {
-                TrainNetSteamHeatLossWpTime = -1.0f * TrainNetSteamHeatLossWpTime; // If steam heat loss is negative, convert to a positive number
-                TrainCurrentTrainSteamHeatW -= TrainNetSteamHeatLossWpTime * elapsedClockSeconds;  // Losses per elapsed time
-            }
-            else
-            {
-                TrainCurrentTrainSteamHeatW += TrainNetSteamHeatLossWpTime * elapsedClockSeconds;  // Gains per elapsed time         
-            }
-
-            float MaximumHeatTempC = 30.0f;     // Allow heat to go to 86oF (30oC)
-
-            if (IsSteamHeatInitial)
-            {
-                // Until train is loaded don't do this.
-                TrainCurrentCarriageHeatTempC = 10.5f;
-                TrainCurrentTrainSteamHeatW = (TrainCurrentCarriageHeatTempC - TrainOutsideTempC) / (TrainInsideTempC - TrainOutsideTempC) * TrainTotalSteamHeatW;
-                IsSteamHeatInitial = false;
-            }
-            else
-            {
-                // After initialisation do this loop
-                if (TrainCurrentCarriageHeatTempC > TrainOutsideTempC && TrainCurrentCarriageHeatTempC <= MaximumHeatTempC && TrainTotalSteamHeatW > 0.0)
+                // Check to confirm that train is player driven and has passenger cars in the consist.
+                if (IsPlayerDriven && PassengerCarsNumber > 0 && mstsLocomotive.TrainFittedSteamHeat)
                 {
-                    TrainCurrentCarriageHeatTempC = (((TrainInsideTempC - TrainOutsideTempC) * TrainCurrentTrainSteamHeatW) / TrainTotalSteamHeatW) + TrainOutsideTempC;
-                }
-                TrainSteamPipeHeatConvW = (PipeHeatTransCoeffWpM2K * TrainHeatPipeAreaM2 * (C.ToK(TrainCurrentSteamHeatPipeTempC) - C.ToK(TrainCurrentCarriageHeatTempC)));
-                float PipeTempAK = (float)Math.Pow(C.ToK(TrainCurrentSteamHeatPipeTempC), 4.0f);
-                float PipeTempBK = (float)Math.Pow(C.ToK(TrainCurrentCarriageHeatTempC), 4.0f);
-                TrainSteamHeatPipeRadW = (BoltzmanConstPipeWpM2 * (PipeTempAK - PipeTempBK));
-                TrainSteamPipeHeatW = TrainSteamPipeHeatConvW + TrainSteamHeatPipeRadW;   // heat generated by pipe per degree
 
-                // Calculate Net steam heat loss or gain
-                TrainNetSteamHeatLossWpTime = TrainSteamPipeHeatW - TrainSteamHeatLossWpT;
+                    // Find the latitude reading and set outside temperature
+                    double latitude = 0;
+                    double longitude = 0;
+                    var location = this.FrontTDBTraveller;
+                    new Orts.Common.WorldLatLon().ConvertWTC(location.TileX, location.TileZ, location.Location, ref latitude, ref longitude);
+                    float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
 
-                DisplayTrainNetSteamHeatLossWpTime = TrainNetSteamHeatLossWpTime; // Captures raw value of heat loss for display on HUD
-
-                // Test to see if steam heating temp has exceeded the comfortable heating value.
-
-                if (TrainCurrentCarriageHeatTempC > TrainInsideTempC)
-                {
-                    if (!IsSteamHeatExceeded)
+                    // Sets outside temperature dependent upon the season
+                    if (Simulator.Season == SeasonType.Winter)
                     {
-                        IsSteamHeatExceeded = true;
-                        // Provide warning message if temperature is too hot
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
+                        // Winter temps
+                        TrainOutsideTempC = OutsideWinterTempbyLatitudeC[LatitudeDeg];
                     }
-                }
-                else if (TrainCurrentCarriageHeatTempC < TrainInsideTempC - 3.0f)
-                {
-
-                    IsSteamHeatExceeded = false;        // Reset temperature warning
-                }
-
-                // Test to see if steam heating temp has dropped too low.
-
-                if (TrainCurrentCarriageHeatTempC < 10.0f) // If temp below 50of (10oC) then alarm
-                {
-                    if (!IsSteamHeatLow)
+                    else if (Simulator.Season == SeasonType.Autumn)
                     {
-                        IsSteamHeatLow = true;
-                        // Provide warning message if temperature is too hot
-                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
+                        // Autumn temps
+                        TrainOutsideTempC = OutsideAutumnTempbyLatitudeC[LatitudeDeg];
                     }
-                }
-                else if (TrainCurrentCarriageHeatTempC > 13.0f)
-                {
+                    else if (Simulator.Season == SeasonType.Spring)
+                    {
+                        // Sping temps
+                        TrainOutsideTempC = OutsideSpringTempbyLatitudeC[LatitudeDeg];
+                    }
+                    else
+                    {
+                        // Summer temps
+                        TrainOutsideTempC = OutsideSummerTempbyLatitudeC[LatitudeDeg];
+                    }
 
-                    IsSteamHeatLow = false;        // Reset temperature warning
-                }
-            }
+                    // Reset Values to zero to recalculate values
+                    TrainHeatVolumeM3 = 0.0f;
+                    TrainHeatPipeAreaM2 = 0.0f;
+                    TrainSteamHeatLossWpT = 0.0f;
+
+                    // Calculate total heat loss for whole train
+                    for (int i = 0; i < Cars.Count; i++)
+                    {
+                        TrainSteamHeatLossWpT += Cars[i].CarHeatLossWpT;
+                        TrainHeatPipeAreaM2 += Cars[i].CarHeatPipeAreaM2;
+                        TrainHeatVolumeM3 += Cars[i].CarHeatVolumeM3;
+                    }
+
+                    // Carriage temperature will be equal to heat input (from steam pipe) less heat losses through carriage walls, etc
+                    // Calculate Heat in Train
+                    TrainTotalSteamHeatW = SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * TrainHeatVolumeM3 * (TrainInsideTempC - TrainOutsideTempC);
+
+                    if (TrainNetSteamHeatLossWpTime < 0)
+                    {
+                        TrainNetSteamHeatLossWpTime = -1.0f * TrainNetSteamHeatLossWpTime; // If steam heat loss is negative, convert to a positive number
+                        TrainCurrentTrainSteamHeatW -= TrainNetSteamHeatLossWpTime * elapsedClockSeconds;  // Losses per elapsed time
+                    }
+                    else
+                    {
+                        TrainCurrentTrainSteamHeatW += TrainNetSteamHeatLossWpTime * elapsedClockSeconds;  // Gains per elapsed time         
+                    }
+
+                    float MaximumHeatTempC = 30.0f;     // Allow heat to go to 86oF (30oC)
+
+                    if (IsTrainSteamHeatInitial)
+                    {
+                        // First time this method is processed do this loop
+                        TrainCurrentCarriageHeatTempC = 10.5f;
+                        TrainCurrentTrainSteamHeatW = (TrainCurrentCarriageHeatTempC - TrainOutsideTempC) / (TrainInsideTempC - TrainOutsideTempC) * TrainTotalSteamHeatW;
+                        IsTrainSteamHeatInitial = false;
+                    }
+                    else
+                    {
+                        // After initialisation do this loop
+                        if (TrainCurrentCarriageHeatTempC > TrainOutsideTempC && TrainCurrentCarriageHeatTempC <= MaximumHeatTempC && TrainTotalSteamHeatW > 0.0)
+                        {
+                            TrainCurrentCarriageHeatTempC = (((TrainInsideTempC - TrainOutsideTempC) * TrainCurrentTrainSteamHeatW) / TrainTotalSteamHeatW) + TrainOutsideTempC;
+                        }
+                        TrainSteamPipeHeatConvW = (PipeHeatTransCoeffWpM2K * TrainHeatPipeAreaM2 * (C.ToK(TrainCurrentSteamHeatPipeTempC) - C.ToK(TrainCurrentCarriageHeatTempC)));
+                        float PipeTempAK = (float)Math.Pow(C.ToK(TrainCurrentSteamHeatPipeTempC), 4.0f);
+                        float PipeTempBK = (float)Math.Pow(C.ToK(TrainCurrentCarriageHeatTempC), 4.0f);
+                        TrainSteamHeatPipeRadW = (BoltzmanConstPipeWpM2 * (PipeTempAK - PipeTempBK));
+                        TrainSteamPipeHeatW = TrainSteamPipeHeatConvW + TrainSteamHeatPipeRadW;   // heat generated by pipe per degree
+
+                        // Calculate Net steam heat loss or gain
+                        TrainNetSteamHeatLossWpTime = TrainSteamPipeHeatW - TrainSteamHeatLossWpT;
+
+                        DisplayTrainNetSteamHeatLossWpTime = TrainNetSteamHeatLossWpTime; // Captures raw value of heat loss for display on HUD
+
+                        // Test to see if steam heating temp has exceeded the comfortable heating value.
+                        if (TrainCurrentCarriageHeatTempC > 22.0f)
+                 //     if (TrainCurrentCarriageHeatTempC > TrainInsideTempC)
+                        {
+                            if (!IsSteamHeatExceeded)
+                            {
+                                IsSteamHeatExceeded = true;
+                                // Provide warning message if temperature is too hot
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
+                            }
+                        }
+                        else if (TrainCurrentCarriageHeatTempC < 19.0f)
+             //           else if (TrainCurrentCarriageHeatTempC < TrainInsideTempC - 3.0f)
+                        {
+                            IsSteamHeatExceeded = false;        // Reset temperature warning
+                        }
+
+                        // Test to see if steam heating temp has dropped too low.
+
+                        if (TrainCurrentCarriageHeatTempC < 10.0f) // If temp below 50of (10oC) then alarm
+                        {
+                            if (!IsSteamHeatLow)
+                            {
+                                IsSteamHeatLow = true;
+                                // Provide warning message if temperature is too hot
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
+                            }
+                        }
+                        else if (TrainCurrentCarriageHeatTempC > 13.0f)
+                        {
+
+                            IsSteamHeatLow = false;        // Reset temperature warning
+                        }
+                    }
 
 
 #if DEBUG_CARSTEAMHEAT
@@ -1953,7 +2019,8 @@ namespace Orts.Simulation.Physics
         Trace.TraceInformation("Train heat loss {0} Train heat pipe area {1} Train heat volume {2}", TrainSteamHeatLossWpT, TrainHeatPipeAreaM2, TrainHeatVolumeM3);        
 
 #endif
-
+                }
+            }
         }
 
         //================================================================================================//
