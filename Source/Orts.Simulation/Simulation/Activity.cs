@@ -1321,15 +1321,17 @@ namespace Orts.Simulation
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
+                    // Dropping off of wagons should only count once disconnected from player train.
                     // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
-                    if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
-                    {
-                        triggered = includesWagons(OriginalPlayerTrain, ChangeWagonIdList);
-                    }
-                    // To recognize the dropping off of the cars before the event is activated, this method is used.
                     consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
                     if (consistTrain != null)
                         triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
+
+                    //if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                    //{
+                    //    triggered = includesWagons(OriginalPlayerTrain, ChangeWagonIdList);
+                    //}
+                    // To recognize the dropping off of the cars before the event is activated, this method is used.
                     break;
                 case EventType.PickUpPassengers:
                     break;
