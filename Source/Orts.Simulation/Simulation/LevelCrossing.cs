@@ -134,7 +134,13 @@ namespace Orts.Simulation
                     if (!WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))) && !WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))))
                         continue;
                     if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))))
-                        validStaticConsist = true;
+                    {
+                        foreach (var scar in train.Cars)
+                        {
+                            if (WorldLocation.Within(crossing.Location, scar.WorldPosition.WorldLocation, minimumDist))
+                                validStaticConsist = true;
+                        }
+                    }
                 }
 
                 if ((train.TrainType != Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
@@ -195,10 +201,18 @@ namespace Orts.Simulation
 
                 // Depending upon future development in this area, it would probably be best to have the current operation in its own class followed by any new region specific operations. 
 
-
                 // Recognizing static consists at crossings.
-                if ((train.TrainType == Train.TRAINTYPE.STATIC) && validStaticConsist && speedMpS == 0)
+                if ((train.TrainType == Train.TRAINTYPE.STATIC) && validStaticConsist)
                 {
+                    // This process is to raise the crossing gates if a loose consist rolls through the crossing.
+                    if(speedMpS > 0)
+                    {
+                        frontDist = crossing.DistanceTo(train.FrontTDBTraveller, minimumDist);
+                        rearDist = crossing.DistanceTo(train.RearTDBTraveller, minimumDist);
+                                                
+                        if (frontDist < 0 && rearDist < 0)
+                            crossing.RemoveTrain(train);
+                    }
                     //adjustDist is used to allow static cars to be placed closer to the crossing without activation.
                     // One example would be industry sidings with a crossing nearby.  This was found in a custom route.
                     if (minimumDist >= 20)
@@ -210,14 +224,25 @@ namespace Orts.Simulation
                     // Static consist passed the crossing.
                     if (frontDist < 0 && rearDist < 0)
                         rearDist = crossing.DistanceTo(new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward), adjustDist);
+
+                   // Testing distance before crossing
+                    if (frontDist > 0 && frontDist <= adjustDist)
+                        crossing.AddTrain(train);
+
                     // Testing to check if consist is straddling the crossing.
-                    if (frontDist < 0 && rearDist > 0)
+                    else if (frontDist < 0 && rearDist > 0)
                         crossing.AddTrain(train);
-                    // Testing to check distance while static consist is before crossing.
-                    else if(frontDist <= adjustDist && frontDist > 0)
+
+                    // This is an odd test because a custom route has a particular
+                    // crossing object placement that is creating different results.
+                    // Testing to check if consist is straddling the crossing.
+                    else if (frontDist < 0 && rearDist < 0)
                         crossing.AddTrain(train);
+
+                    // Testing distance when past crossing.
                     else if (rearDist <= adjustDist && rearDist > 0)
                         crossing.AddTrain(train);
+
                     else
                         crossing.RemoveTrain(train);
                 }
@@ -262,7 +287,7 @@ namespace Orts.Simulation
                 }
 
                 // Player train travelling in forward direction above 11.1mph will activate the crossing.  
-                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER || train.TrainType == Train.TRAINTYPE.STATIC) && speedMpS > 0 && speedMpS > minCrossingActivationSpeed && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
+                else if ((train is AITrain || train.TrainType == Train.TRAINTYPE.PLAYER) && speedMpS > 0 && speedMpS > minCrossingActivationSpeed && frontDist <= reqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     crossing.AddTrain(train);
                 }
