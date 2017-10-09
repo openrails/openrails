@@ -134,7 +134,16 @@ namespace Orts.Simulation
                     if (!WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))) && !WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))))
                         continue;
                     if (WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, (minimumDist + (train.Length / 2))))
-                        validStaticConsist = true;
+                    {
+                        foreach (var scar in train.Cars)
+                        {
+                            if (WorldLocation.Within(crossing.Location, scar.WorldPosition.WorldLocation, minimumDist))
+                            {
+                                validStaticConsist = true;
+                            }
+                        }
+                    }
+                        
                 }
 
                 if ((train.TrainType != Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalDist))
@@ -151,7 +160,7 @@ namespace Orts.Simulation
                     hornReqDist = Math.Min(totalMaxDist, 80.0f);
                 }
 
-                if ((train.TrainType == Train.TRAINTYPE.STATIC) && !validStaticConsist && !crossing.StaticConsists.Contains(train))
+                if ((train.TrainType = Train.TRAINTYPE.STATIC) && !validStaticConsist && !crossing.StaticConsists.Contains(train))
                 {
                     continue;
                 }
@@ -197,27 +206,49 @@ namespace Orts.Simulation
 
 
                 // Recognizing static consists at crossings.
-                if ((train.TrainType == Train.TRAINTYPE.STATIC) && validStaticConsist && speedMpS == 0)
+                if ((train.TrainType == Train.TRAINTYPE.STATIC) && validStaticConsist && speedMpS == 0 )
                 {
                     //adjustDist is used to allow static cars to be placed closer to the crossing without activation.
                     // One example would be industry sidings with a crossing nearby.  This was found in a custom route.
+                    Trace.TraceInformation("The value of minimumDist is: {0}", minimumDist);
                     if (minimumDist >= 20)
                         adjustDist = minimumDist - 13.5f;
                     else if (minimumDist < 20)
                         adjustDist = minimumDist - 6.5f;
                     frontDist = crossing.DistanceTo(train.FrontTDBTraveller, adjustDist);
                     rearDist = crossing.DistanceTo(train.RearTDBTraveller, adjustDist);
+                    //rearDist = -frontDist - train.Length;
                     // Static consist passed the crossing.
-                    if (frontDist < 0 && rearDist < 0)
-                        rearDist = crossing.DistanceTo(new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward), adjustDist);
-                    // Testing to check if consist is straddling the crossing.
-                    if (frontDist < 0 && rearDist > 0)
-                        crossing.AddTrain(train);
+                    //if (frontDist < 0 && rearDist < 0)
+                    //{
+                    //    frontDist = crossing.DistanceTo(new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward), adjustDist);
+                    //    rearDist = crossing.DistanceTo(new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward), adjustDist);
+                    //    // Trace.TraceInformation("The value of frontDist is: {0}", frontDist);
+                    //    //Trace.TraceInformation("The value of rearDist is: {0}", rearDist);
+                    //}
                     // Testing to check distance while static consist is before crossing.
-                    else if(frontDist <= adjustDist && frontDist > 0)
+                    if (frontDist <= adjustDist && frontDist > 0)
+                    {
+                        Trace.TraceInformation("First If executed");
                         crossing.AddTrain(train);
-                    else if (rearDist <= adjustDist && rearDist > 0)
+                    }
+                    else if (rearDist > 0 && rearDist <= adjustDist)
+                    {
+                        Trace.TraceInformation("Second If executed");
                         crossing.AddTrain(train);
+                    }
+                    //Testing to check if consist is straddling the crossing.
+                    //else if (frontDist > 0 && frontDist == 1 && rearDist )
+                    //{
+                    //    Trace.TraceInformation("Third If executed");
+                    //    crossing.AddTrain(train);
+                    //}
+                    else if (frontDist < 0 && rearDist < 0)
+                    {
+                        Trace.TraceInformation("Third If executed");
+                        Trace.TraceInformation("The value of rearDist for third execute is: {0}", rearDist);
+                        crossing.AddTrain(train);
+                    }
                     else
                         crossing.RemoveTrain(train);
                 }
