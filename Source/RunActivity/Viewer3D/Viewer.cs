@@ -648,7 +648,8 @@ namespace Orts.Viewer3D
         public float ComputeCabTextureInverseRatio(string cabTextureFileName)
         {
             float cabTextureInverseRatio = -1;
-            var cabTexture = TextureManager.Get(cabTextureFileName, true);
+            bool _isNightTexture;
+            var cabTexture = CABTextureManager.GetTexture(cabTextureFileName, false, false, out _isNightTexture);
             if (cabTexture != SharedMaterialManager.MissingTexture)
             {
                 cabTextureInverseRatio = (float)cabTexture.Height / cabTexture.Width;
@@ -1462,7 +1463,9 @@ namespace Orts.Viewer3D
 
             Simulator.PlayerLocomotive = Simulator.PlayerLocomotive.Train.GetNextCab();
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
-            Camera.Activate(); // If you need anything else here the cameras should check for it.
+            if (PlayerLocomotiveViewer is MSTSLocomotiveViewer && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
+                AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
+            Camera.Activate(); // If you need anything else here the cameras should check for it.        
             SetCommandReceivers();
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
