@@ -63,6 +63,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float SoundTriggerCounter = 0;
         protected float prevCylPressurePSI = 0f;
         protected float prevBrakePipePressurePSI = 0f;
+        protected bool BailOffOn;
 
 
         /// <summary>
@@ -255,6 +256,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             outf.Write(BleedOffValveOpen);
             outf.Write((int)HoldingValve);
             outf.Write(CylVolumeM3);
+            outf.Write(BailOffOn);
         }
 
         public override void Restore(BinaryReader inf)
@@ -276,6 +278,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BleedOffValveOpen = inf.ReadBoolean();
             HoldingValve = (ValveState)inf.ReadInt32();
             CylVolumeM3 = inf.ReadSingle();
+            BailOffOn = inf.ReadBoolean();
         }
 
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
@@ -454,12 +457,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AuxResPressurePSI += dp;
                 BrakeLine2PressurePSI -= dp * AuxBrakeLineVolumeRatio;
             }
-                                 
-            if (BrakeLine3PressurePSI >= 1000) // a really weird method: instead of getting the state of bailoff control here, the engine brake simulation signals the bailoff state with brakelinepressure3=1000
+
+            if (Car is MSTSLocomotive && (Car as MSTSLocomotive).PowerOn)
             {
-                BrakeLine3PressurePSI -= 1000;
-                AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
+                var loco = Car as MSTSLocomotive;
+                BailOffOn = false;
+                if (loco.BailOff || loco.DynamicBrakeAutoBailOff && loco.Train.MUDynamicBrakePercent > 0 && loco.DynamicBrakeForceCurves == null)
+                    BailOffOn = true;
+                else if (loco.DynamicBrakeAutoBailOff && loco.Train.MUDynamicBrakePercent > 0 && loco.DynamicBrakeForceCurves != null)
+                {
+                    var dynforce = loco.DynamicBrakeForceCurves.Get(1.0f, loco.AbsSpeedMpS);  // max dynforce at that speed
+                    if ((loco.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > loco.MaxDynamicBrakeForceN * 0.6)
+                        BailOffOn = true;
+                }
+                if (BailOffOn)
+                    AutoCylPressurePSI -= MaxReleaseRatePSIpS * elapsedClockSeconds;
             }
+
             if (AutoCylPressurePSI < 0)
                 AutoCylPressurePSI = 0;
             if (AutoCylPressurePSI < BrakeLine3PressurePSI) // Brake Cylinder pressure will be the greater of engine brake pressure or train brake pressure
@@ -782,16 +796,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 case ValveState.Apply: lead.SignalEvent(Event.EngineBrakePressureDecrease); break;
                                 case ValveState.Lap: lead.SignalEvent(Event.EngineBrakePressureStoppedChanging); break;
                             }
-                        if (lead.PowerOn)
-                        {
-                            if (lead.BailOff || lead.DynamicBrakeAutoBailOff && train.MUDynamicBrakePercent > 0 && lead.DynamicBrakeForceCurves == null) p += 1000;
-                            else if (lead.DynamicBrakeAutoBailOff && train.MUDynamicBrakePercent > 0 && lead.DynamicBrakeForceCurves != null)
-                            {
-                                var dynforce = lead.DynamicBrakeForceCurves.Get(1.0f, lead.AbsSpeedMpS);  // max dynforce at that speed
-                                if ((lead.MaxDynamicBrakeForceN == 0 && dynforce > 0) || dynforce > lead.MaxDynamicBrakeForceN * 0.6)
-                                    p += 1000;
-                            }
-                        }
                         brakeSystem.BrakeLine3PressurePSI = p;
                     }
                 }

@@ -34,7 +34,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (controlPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f) 
                 || controlPressurePSI < 2.2f) // The latter is a UIC regulation (0.15 bar)
                 TripleValveState = ValveState.Release;
-            else if (BrakeLine3PressurePSI<1000 && controlPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))
+            else if (!BailOffOn && controlPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))
                 TripleValveState = ValveState.Apply;
             else
                 TripleValveState = ValveState.Lap;
