@@ -154,24 +154,7 @@ namespace Orts.Simulation.RollingStocks
         public bool HasTenderCoupled = true;
 
         // Carriage Steam Heating Parameters
-
-//        float CurrentSteamHeatPressurePSI = 0.0f;   // Current pressure in steam heat system
-//        float CurrentTrainSteamHeatW;    // Current steam heat of air in train
-//        float CurrentCarriageHeatTempC;          // Set train carriage heat
-//        float SteamPipeHeatConvW;               // Heat radiated by steam pipe - convection
-//        float SteamHeatPipeRadW;                // Heat radiated by steam pipe - radiation
-//        float SteamPipeHeatW;               // Heat radiated by steam pipe - total
-//        float CurrentSteamHeatPipeTempC;                 // Temperature of steam in steam heat system based upon pressure setting
- //       float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
-//        float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
-//        bool IsSteamInitial = true;        // To initialise steam heat
-//        bool IsSteamHeatFirstTime = true;  // Flag for first pass at steam heating.
-//        bool IsSteamHeatFitted = false;    // Is steam heating fitted to locomotive
         float CalculatedCarHeaterSteamUsageLBpS;  //
-//        float TotalTrainSteamHeatW;         // Total steam heat in train - based upon air volume
-//        bool IsSteamHeatExceeded = false;   // Flag to indicate when steam heat temp is exceeded
-//        bool IsSteamHeatLow = false;        // Flag to indicate when steam heat temp is low
-//        float DisplayNetSteamHeatLossWpTime;  // Display Net Steam loss - Loss in Cars vs Steam Pipe Heat
 
         string SteamLocoType;     // Type of steam locomotive type
 
@@ -179,11 +162,10 @@ namespace Orts.Simulation.RollingStocks
         int NextPulse = 1;
 
         // state variables
-       SmoothedData BoilerHeatSmoothBTU = new SmoothedData(120); // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
+       SmoothedData BoilerHeatSmoothBTU = new SmoothedData(180); // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
         float BoilerHeatSmoothedBTU;
         float PreviousBoilerHeatSmoothedBTU;
         float BoilerHeatBTU;        // total heat in water and steam in boiler - lb/s * SteamHeat(BTU/lb)
-        float BoilerHeatRawBTU;   // Raw value (not smoothed)
         float MaxBoilerHeatBTU;   // Boiler heat at max output and pressure, etc
         float MaxBoilerHeatPressurePSI; // Boiler Pressure for calculating max boiler pressure, includes safety valve pressure
         float BoilerStartkW;        // calculate starting boilerkW
@@ -191,7 +173,7 @@ namespace Orts.Simulation.RollingStocks
         float MaxBoilerPressHeatBTU;  // Boiler heat at max boiler pressure
         float baseStartTempK;     // Starting water temp
         float StartBoilerHeatBTU;
-         public float BoilerMassLB;         // current total mass of water and steam in boiler (changes as boiler usage changes)
+        public float BoilerMassLB;         // current total mass of water and steam in boiler (changes as boiler usage changes)
 
         float BoilerKW;                 // power of boiler
         float MaxBoilerKW;              // power of boiler at full performance
@@ -233,7 +215,6 @@ namespace Orts.Simulation.RollingStocks
         float MaxFiringRateKGpS;              // Max rate at which fireman or stoker can can feed coal into fire
         float GrateLimitLBpFt2 = 150.0f;       // Max combustion rate of the grate, once this is reached, no more steam is produced.
         float MaxFuelBurnGrateKGpS;            // Maximum rate of fuel burnt depending upon grate limit
-        float PreviousFireHeatTxfKW;    // Capture max FireHeat value before Grate limit is exceeded.
         float GrateCombustionRateLBpFt2;     // Grate combustion rate, ie how many lbs coal burnt per sq ft grate area.
         float ORTSMaxFiringRateKGpS;          // OR equivalent of above
         float DisplayMaxFiringRateKGpS;     // Display value of MaxFiringRate
@@ -371,7 +352,6 @@ namespace Orts.Simulation.RollingStocks
 
         // Steam Ejector
         float SteamEjectorSmallDiameterIn = 0.787402f; // Actual diameter of small ejector (Assume a small ejector of 20mm - Dreadnought)
-        float EjectorBaseDiameterIn = 1.0f;         // Base reference diameter all values scalled from this value.
         float SteamEjectorSmallSetting;
         float SteamEjectorSmallBaseSteamUsageLbpS;
         float SmallEjectorCapacityFactor;
@@ -569,13 +549,11 @@ namespace Orts.Simulation.RollingStocks
         float BoilerEvapRateLbspFt2;  // Sets the evaporation rate for the boiler is used to multiple boiler evaporation area by - used as a player customisation factor.
 
         float MaxSpeedFactor;      // Max Speed factor - factor @ critical piston speed to reduce TE due to speed increase - American locomotive company
-        float SpeedFactor;      // Current Speed factor - factor to reduce TE due to speed increase - American locomotive company
         float DisplaySpeedFactor;  // Value displayed in HUD
 
         public float MaxTractiveEffortLbf;     // Maximum theoritical tractive effort for locomotive
         float DisplayTractiveEffortLbsF; // Value of Tractive eefort to display in HUD
         float MaxCriticalSpeedTractiveEffortLbf;  // Maximum power value @ critical speed of piston
-        float CurrentCriticalSpeedTractiveEffortLbf;  // Current power value @ current speed of piston
         float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
         float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
         float TractiveEffortLbsF;           // Current sim calculated tractive effort
@@ -771,7 +749,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(lpnumcylinders": LPNumCylinders = stf.ReadIntBlock(null); break;
                 case "engine(lpcylinderstroke": LPCylinderStrokeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(lpcylinderdiameter": LPCylinderDiameterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
-            //    case "engine(ortscylinderexhaustopen": CylinderExhaustOpenFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortscylinderportopening": CylinderPortOpeningFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(boilervolume": BoilerVolumeFT3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
                 case "engine(maxboilerpressure": MaxBoilerPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
@@ -1201,7 +1178,6 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
-
             }
 
             // ******************  Test Boiler Type *********************  
@@ -1258,7 +1234,6 @@ namespace Orts.Simulation.RollingStocks
             // Calculate the maximum fuel burn rate based upon grate area and limit
             float GrateLimitLBpFt2add = GrateLimitLBpFt2 * 1.10f;     // Alow burn rate to slightly exceed grate limit (by 10%)
             MaxFuelBurnGrateKGpS = pS.FrompH(Kg.FromLb(Me2.ToFt2(GrateAreaM2) * GrateLimitLBpFt2add));
-
 
             if (MaxFireMassKG == 0) // If not specified, assume twice as much as ideal. 
                 // Scale FIREBOX control to show FireMassKG as fraction of MaxFireMassKG.
@@ -1710,7 +1685,7 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// Sets controler settings from other engine for cab switch
+        /// Sets controller settings from other engine for cab switch
         /// </summary>
         /// <param name="other"></param>
         public override void CopyControllerSettings(TrainCar other)
@@ -1856,21 +1831,17 @@ namespace Orts.Simulation.RollingStocks
             Cylinder2ParticleDurationS = 1.0f;
 
             // Drainpipe Steam Effects
-
             DrainpipeSteamVolumeM3pS = 0.0f;  // Turn Drainpipe permanently "off"
             DrainpipeSteamVelocityMpS = 0.0f;
             DrainpipeParticleDurationS = 1.0f;
 
             // Generator Steam Effects
-
             GeneratorSteamVelocityMpS = 50.0f;
             GeneratorSteamVolumeM3pS = 4.0f * SteamEffectsFactor;
             GeneratorParticleDurationS = 1.0f;
             GeneratorParticleDurationS = MathHelper.Clamp(GeneratorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
 
-
             // Injector Steam Effects
-
             Injector1SteamVolumeM3pS = (Injector1IsOn ? (5.0f * SteamEffectsFactor) : 0);
             Injector1SteamVelocityMpS = 10.0f;
             Injector1ParticleDurationS = 1.0f;
@@ -1892,7 +1863,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Whistle Steam Effects
-
             WhistleSteamVelocityMpS = 10.0f;
             WhistleSteamVolumeM3pS = (Horn ? (5.0f * SteamEffectsFactor) : 0);
             WhistleParticleDurationS = 3.0f;
@@ -1933,7 +1903,6 @@ namespace Orts.Simulation.RollingStocks
             SmokeColor.Update(elapsedClockSeconds, MathHelper.Clamp(SmokeColorUnits, 0.25f, 1));
             
             // Variable1 is proportional to angular speed, value of 10 means 1 rotation/second.
-         //   var variable1 = (Simulator.UseAdvancedAdhesion && Train.IsPlayerDriven ? LocomotiveAxle.AxleSpeedMpS : SpeedMpS) / DriverWheelRadiusM / MathHelper.Pi * 5;
             var variable1 = WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
@@ -2094,7 +2063,6 @@ namespace Orts.Simulation.RollingStocks
 
             if (HasTenderCoupled) // If a tender is coupled then coal is available
             {         
-             //   TenderCoalMassKG -= elapsedClockSeconds * FuelBurnRateKGpS; // Current Tender coal mass determined by burn rate.
                 TenderCoalMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
                 TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
             }
@@ -2106,7 +2074,6 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else  // Tender is not required (ie tank locomotive) - therefore coal will be carried on the locomotive
                 {
-                    //        TenderCoalMassKG -= elapsedClockSeconds * FuelBurnRateKGpS; // Current Tender coal mass determined by burn rate.
                     TenderCoalMassKG -= elapsedClockSeconds * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TempCylinderSteamUsageLbpS)])); // Current Tender coal mass determined by burn rate.
                     TenderCoalMassKG = MathHelper.Clamp(TenderCoalMassKG, 0, MaxTenderCoalMassKG); // Clamp value so that it doesn't go out of bounds
                 }
@@ -2208,8 +2175,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             #endregion
-
-
 
             if (CombinedTenderWaterVolumeUKG < 1.0)
             {
@@ -2326,7 +2291,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
                     }
-                    BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 90% of fire needed to maintain full boiler steam generation
+                    BurnRateRawKGpS = 0.9f * pS.FrompH(Kg.FromLb(NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)])); // AI fire on goes to approx 100% of fire needed to maintain full boiler steam generation
                 }
             }
 
@@ -2361,8 +2326,7 @@ namespace Orts.Simulation.RollingStocks
 
             BurnRateSmoothKGpS.Update(elapsedClockSeconds, BurnRateRawKGpS);
             FuelBurnRateKGpS = BurnRateSmoothKGpS.SmoothedValue;
-            //   FuelBurnRateKGpS = MathHelper.Clamp(FuelBurnRateKGpS, 0.0f, MaxFireMassKG); // clamp burnrate to maintain it within limits  MaxFuelBurnGrateKGpS
-            FuelBurnRateKGpS = MathHelper.Clamp(FuelBurnRateKGpS, 0.0f, MaxFuelBurnGrateKGpS); // clamp burnrate to maintain it within limits
+            FuelBurnRateKGpS = MathHelper.Clamp(FuelBurnRateKGpS, 0.0f, MaxFuelBurnGrateKGpS); // clamp burnrate to max fuel that can be burnt within grate limit
             #endregion
 
             #region Firing (feeding fuel) Rate of locomotive
@@ -2408,7 +2372,6 @@ namespace Orts.Simulation.RollingStocks
                     if (FuelBoost)
                     {
                         FuelBoost = false; // disable boost shoveling 
-                        //  FuelBoostReset = false; // Reset boost timer
                         if (!StokerIsMechanical && IsPlayerTrain)  // Don't display message if stoker in operation
                         {
                             Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("FireMass is back within limits. Your fireman will shovel as per normal."));
@@ -2853,10 +2816,12 @@ namespace Orts.Simulation.RollingStocks
                 MaxBoilerHeatRatio = MathHelper.Clamp(MaxBoilerHeatRatio, 0.001f, 1.0f); // Keep Max Boiler Heat ratio within bounds
             }
 
-            // Limit Boiler heat input once grate limit is reached.
+            // Calculate the amount of heat produced by the fire - this is naturally limited by the Grate Limit (see above)
+            FireHeatTxfKW = FuelCalorificKJpKG * FuelBurnRateKGpS;
+
+            // Provide information message only to user if grate limit is exceeded.
             if (GrateCombustionRateLBpFt2 > GrateLimitLBpFt2)
             {
-                FireHeatTxfKW = PreviousFireHeatTxfKW; // if greater then grate limit don't allow any more heat txf
                 if (!IsGrateLimit)  // Provide message to player that grate limit has been exceeded
                 {
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Grate limit exceeded - boiler heat rate cannot increase."));
@@ -2865,15 +2830,12 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                FireHeatTxfKW = FuelCalorificKJpKG * FuelBurnRateKGpS;
                 if (IsGrateLimit)  // Provide message to player that grate limit has now returned within limits
                 {
                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Grate limit return to normal."));
                 }
                 IsGrateLimit = false;
             }
-
-            PreviousFireHeatTxfKW = FireHeatTxfKW; // store the last value of FireHeatTxfKW
 
             BoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(FireHeatTxfKW) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))]);
             BoilerHeatBTU += elapsedClockSeconds * W.ToBTUpS(W.FromKW(FireHeatTxfKW) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateKGpS)) / Me2.ToFt2(GrateAreaM2))]);
@@ -3981,8 +3943,6 @@ namespace Orts.Simulation.RollingStocks
             // Cylinder steam usage = steam volume (and weight) at start of release stage - steam remaining in cylinder after compression
             // This amount then should be corrected to allow for cylinder condensation in saturated locomotives or not in superheated locomotives
 
-
-
             if (SteamEngineType == SteamEngineTypes.Compound)
             {
 
@@ -4051,7 +4011,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             #endregion
-
 
             if (throttle < 0.01 && absSpeedMpS > 0.1 || FusiblePlugIsBlown) // If locomotive moving and throttle set to close, then reduce steam usage, alternatively if fusible plug is blown.
             {
@@ -4237,8 +4196,6 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceN = 0; 
 
             // Based upon max IHP, limit motive force.
-//            if (PistonSpeedFtpMin > MaxPistonSpeedFtpM || IndicatedHorsePowerHP > MaxIndicatedHorsePowerHP)
-//            {
 
                 if (IndicatedHorsePowerHP >= MaxIndicatedHorsePowerHP)
                 {
@@ -4250,47 +4207,6 @@ namespace Orts.Simulation.RollingStocks
                 {
                     IsCritTELimit = false; // Reset flag if limiting TE
                 }
-                // Calculate the speed factor for the locomotive, based upon piston speed limit  
-
-                /// TODO - Add compound locomotive  ++++++++++++
-//                if (HasSuperheater)
-//                {
-//                    SpeedFactor = SuperheatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
-                    // Calculate "critical" power of locomotive @ pistion speed
-//                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
-//                }
-//                else if (SteamEngineType == SteamEngineTypes.Geared)
-//                {
-//                    SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];   // Assume the same as saturated locomotive for time being.
-                    // Calculate "critical" power of locomotive @ pistion speed
-//                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor * MotiveForceGearRatio;
-//                }
-//                else
-//                {
-//                    SpeedFactor = SaturatedSpeedFactorSpeedDropFtpMintoX[PistonSpeedFtpMin];
-                    // Calculate "critical" power of locomotive @ pistion speed
-//                    CurrentCriticalSpeedTractiveEffortLbf = (MaxTractiveEffortLbf * CylinderEfficiencyRate) * SpeedFactor;
-//                }
-                // Limit motive force once piston speed exceeds limit - natural limitation is achieved by MEP, however a cross check against the speed factor
-                // (determined by Alco) will also be considered. Speed factor will be used if smaller then MEP calculated tractive effort. 
-                // This allows a tapered effect as the locomotive force reaches a limit.
-//                if ((TractiveEffortLbsF * CylinderEfficiencyRate) > CurrentCriticalSpeedTractiveEffortLbf)
-//                {
-//                    MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(CurrentCriticalSpeedTractiveEffortLbf);
-//                    IsCritTELimit = true; // Flag if limiting TE
-//                }
-//                else
-//                {
-//                    IsCritTELimit = false; // Reset flag if not limiting TE
-//                }
-
-                // Only display value changes once piston limit exceeded
-//                if (PistonSpeedFtpMin > MaxPistonSpeedFtpM && CurrentCriticalSpeedTractiveEffortLbf < MaxCriticalSpeedTractiveEffortLbf)
-//                {
-//                    DisplayCriticalSpeedTractiveEffortLbf = CurrentCriticalSpeedTractiveEffortLbf;
-                    DisplaySpeedFactor = SpeedFactor;
-//                }
-//            }
 
             DrawBarPullLbsF = N.ToLbf(Math.Abs(MotiveForceN) - LocoTenderFrictionForceN); // Locomotive drawbar pull is equal to motive force of locomotive (+ tender) - friction forces of locomotive (+ tender)
             DrawBarPullLbsF = MathHelper.Clamp(DrawBarPullLbsF, 0, DrawBarPullLbsF); // clamp value so it doesn't go negative
@@ -4590,7 +4506,6 @@ namespace Orts.Simulation.RollingStocks
                     FrictionWheelSpeedMpS = 0.0f;
                 }
             
-
                 // If locomotive slip is occuring, set parameters to reduce motive force (pulling power), and set wheel rotational speed for wheel viewers
                 if (IsLocoSlip)
                 {
@@ -5013,9 +4928,6 @@ namespace Orts.Simulation.RollingStocks
                     InjectorLockOutTimeS = 0.0f;
 
                 }
-
-
-
             }
         }
 
@@ -5244,7 +5156,6 @@ namespace Orts.Simulation.RollingStocks
                 // drops below the heat in the boiler when the boiler is at normal operating pressure
 
                 // Determine Heat Ratio - for calculating burn rate
-
                 if (FullBoilerHeat && !ShovelAnyway) // If heat in boiler is going too high, ie has exceeded maximum heat
                 {
                         HeatRatio = 1.0f;
@@ -5862,7 +5773,6 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("BlrLmt"),
                 ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
-//            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\n",
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
                      Simulator.Catalog.GetString("Force:"),
                      Simulator.Catalog.GetString("TheorTE"),
@@ -5873,27 +5783,24 @@ namespace Orts.Simulation.RollingStocks
                      FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
                      Simulator.Catalog.GetString("Draw"),
                      FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
-//                     Simulator.Catalog.GetString("CritSpTE"),
-//                     FormatStrings.FormatForce(N.FromLbf(DisplayCriticalSpeedTractiveEffortLbf), IsMetric),
                      Simulator.Catalog.GetString("CritSpeed"),
                      FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
                      Simulator.Catalog.GetString("SpdLmt"),
                      IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
-
-            status.AppendFormat("{0}\t{1}\t{5:N0} {9}/{10}\t\t{2}\t{6:N3}\t{3}\t{7:N0} {11}\t{4} {8:N2}\n",
+            status.AppendFormat("{0}\t{1}\t{2:N0} {7}/{8}\t\t{3}\t{4:N0} {9}\t{5} {6:N2}\t\t{10}\t{11}\n",
                 Simulator.Catalog.GetString("Move:"),
                 Simulator.Catalog.GetString("Piston"),
-                Simulator.Catalog.GetString("SpdFact"),
-                Simulator.Catalog.GetString("DrvWhl"),
-                Simulator.Catalog.GetString("MF-Gear"),
                 IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
-                DisplaySpeedFactor,
+                Simulator.Catalog.GetString("DrvWhl"),
                 pS.TopM(DrvWheelRevRpS),
+                Simulator.Catalog.GetString("MF-Gear"),
                 MotiveForceGearRatio,
                 IsMetric ? FormatStrings.m : FormatStrings.ft,
                 FormatStrings.min,
-                FormatStrings.rpm);
+                FormatStrings.rpm,
+                Simulator.Catalog.GetString("Max-SpdF"),
+                DisplaySpeedFactor);
 
             status.AppendFormat("\n{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
                 Simulator.Catalog.GetString("Sand:"),
