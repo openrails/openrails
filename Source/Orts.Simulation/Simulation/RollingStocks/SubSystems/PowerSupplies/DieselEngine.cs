@@ -445,6 +445,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             IdleRPM = copy.IdleRPM;
             MaxRPM = copy.MaxRPM;
+            StallingRPM = copy.StallingRPM;
             StartingRPM = copy.StartingRPM;
             StartingConfirmationRPM = copy.StartingConfirmationRPM;
             ChangeUpRPMpS = copy.ChangeUpRPMpS;
@@ -523,8 +524,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     | SettingsFlags.ExhaustDynamics | SettingsFlags.ExhaustColor | SettingsFlags.ExhaustTransientColor | SettingsFlags.DieselPowerTab | SettingsFlags.DieselConsumptionTab | SettingsFlags.ThrottleRPMTab
                     | SettingsFlags.DieselTorqueTab | SettingsFlags.MinOilPressure | SettingsFlags.MaxOilPressure | SettingsFlags.MaxTemperature | SettingsFlags.Cooling
                     | SettingsFlags.TempTimeConstant | SettingsFlags.OptTemperature | SettingsFlags.IdleTemperature))
+                {
+                        //If optional parameters for advanced diesel simulation if not given in ENG, or the parameter is wrong, set it to default value
+                        if (StallingRPM>IdleRPM || StallingRPM<1) StallingRPM = IdleRPM-1f;
 
                     return true;
+                }
                 else
                     return false;
             }
@@ -558,6 +563,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public float MaxRPM;
         /// <summary>
         /// RPM change rate from ENG file
+        /// </summary>
+        public float StallingRPM;
+        /// <summary>
+        /// Engine stalling RPM from ENG file
         /// </summary>
         public float RPMRange;
         /// <summary>
@@ -743,6 +752,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 {
                     case "idlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleRPM; break;
                     case "maxrpm":          MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxRPM; break;
+                    case "stallingrpm": StallingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); break;
                     case "startingrpm": StartingRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingRPM; break;
                     case "startingconfirmrpm": StartingConfirmationRPM = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.StartingConfirmRPM; break;
                     case "changeuprpmps": ChangeUpRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ChangeUpRPMpS; break;
@@ -889,6 +899,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if ((EngineStatus != Status.Starting) && (RealRPM == 0f))
                 EngineStatus = Status.Stopped;
 
+            if ( (GearBox!=null) && (EngineStatus == Status.Running) && (RealRPM < StallingRPM))
+            {
+                DemandedRPM = 0;
+                EngineStatus = Status.Stopping;
+            }
             if ((EngineStatus == Status.Stopped) || (EngineStatus == Status.Stopping) || ((EngineStatus == Status.Starting) && (RealRPM < StartingRPM)))
             {
                 ExhaustParticles = 0;
@@ -1055,7 +1070,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void InitFromMSTS(MSTSDieselLocomotive loco)
         {
-            if((initLevel & SettingsFlags.IdleRPM) == 0) IdleRPM = loco.IdleRPM;
+            if ((initLevel & SettingsFlags.IdleRPM) == 0) { IdleRPM = loco.IdleRPM; StallingRPM = loco.IdleRPM-1f; };
             if ((initLevel & SettingsFlags.MaxRPM) == 0) MaxRPM = loco.MaxRPM;
             InitialMagnitude = loco.InitialMagnitude;
             MaxMagnitude = loco.MaxMagnitude;

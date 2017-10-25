@@ -3591,7 +3591,7 @@ namespace Orts.Simulation.AIs
 
             if (AITrainBrakePercent < 100)
             {
-                AITrainBrakePercent += stepSize;
+                AITrainBrakePercent += stepSize * timeS;
                 if (AITrainBrakePercent > 100)
                     AITrainBrakePercent = 100;
             }
@@ -3621,7 +3621,7 @@ namespace Orts.Simulation.AIs
 
             if (AITrainBrakePercent > 0)
             {
-                AITrainBrakePercent -= stepSize;
+                AITrainBrakePercent -= stepSize * timeS;
                 if (AITrainBrakePercent < 0)
                     AdjustControlsBrakeOff();
             }
@@ -3714,7 +3714,7 @@ namespace Orts.Simulation.AIs
 
             if (AITrainThrottlePercent < 100)
             {
-                AITrainThrottlePercent += stepSize;
+                AITrainThrottlePercent += stepSize * timeS;
                 if (AITrainThrottlePercent > 100)
                     AITrainThrottlePercent = 100;
             }
@@ -3744,7 +3744,7 @@ namespace Orts.Simulation.AIs
 
             if (AITrainThrottlePercent > 0)
             {
-                AITrainThrottlePercent -= stepSize;
+                AITrainThrottlePercent -= stepSize * timeS;
                 if (AITrainThrottlePercent < 0)
                     AITrainThrottlePercent = 0;
             }

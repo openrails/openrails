@@ -126,7 +126,7 @@ namespace Orts.Viewer3D.Processes
                     else if (!token.IsResponding)
                         hungTokens.Add(token);
 
-                if (hungTokens.Count > 0)
+                /*if (hungTokens.Count > 0)
                 {
                     // Report every hung thread as a fatal error.
                     foreach (var token in hungTokens)
@@ -141,7 +141,7 @@ namespace Orts.Viewer3D.Processes
                         Debugger.Break();
                     else
                         Environment.Exit(1);
-                }
+                }*/
             }
         }
     }
