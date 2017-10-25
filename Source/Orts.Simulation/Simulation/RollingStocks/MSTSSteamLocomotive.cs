@@ -192,7 +192,9 @@ namespace Orts.Simulation.RollingStocks
         public float BoilerPressurePSI;     // Gauge pressure - what the engineer sees.
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
-        public float FireRatio;
+        public float FireRatio;     // Ratio of actual firemass to ideal firemass
+        float TempFireHeatLossPercent;
+        float FireHeatLossPercent;  // Percentage loss of heat due to too much or too little air for combustion
         float FlueTempK = 775;      // Initial FlueTemp (best @ 475)
         float MaxFlueTempK;         // FlueTemp at full boiler performance
         public bool SafetyIsOn;
@@ -2311,12 +2313,38 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Typically If the fire is too thick the air cannot pass through it. If the fire is too thin, excessive air passes through the firebed and holes
+            // will be formed.In both cases the firebox temperature will be considerably reduced.
+            // The information provided on pg 26 of BRITISH TRANSPORT COMMISSION - Handbook for Railway Steam Locomotive Enginemen - 
+            // https://archive.org/details/HandbookForRailwaySteamLocomotiveEnginemen  has been used to model this aspect. Two formula have been developed from this information.
+            // The % over or under the ideal value will be assumed to be the change in air combustion volume
+            // Calculate the current firemass to the ideal firemass required for this type of locomotive
             FireRatio = FireMassKG / IdealFireMassKG;
+            
+            float TempFireHeatRatio = 1.0f; // Initially set ratio equal to 1.0
 
-            if (FireRatio < 1.0f)  // maximise burnrate when FireMass = IdealFireMass, else allow a reduction in efficiency
-                BurnRateRawKGpS *= FireRatio;
+            if (FireRatio < 1.0f)
+            {
+                // If the coal mass drops below the ideal assume that "too much air" will be applied to the fire
+                TempFireHeatRatio -= FireRatio; // Calculate air volume away from ideal mass
+                TempFireHeatLossPercent = (0.0058f * TempFireHeatRatio * TempFireHeatRatio + 0.035f * TempFireHeatRatio); // Convert to a multiplier between 0 and 1
+                TempFireHeatLossPercent = MathHelper.Clamp(TempFireHeatLossPercent, 0.0f, 1.0f); // Prevent % from being a negative number
+            }
+            else if (FireRatio > 1.0)
+            {
+                // If coal mass greater then ideal, assume too little air will get through the fire
+                TempFireHeatRatio -= (FireRatio - 1.0f); // Calculate air volume away from ideal mass - must be a number between 0 and 1
+                TempFireHeatLossPercent = (0.0434f * TempFireHeatRatio * TempFireHeatRatio - 0.1276f * TempFireHeatRatio);  // Convert to a multiplier between 0 and 1
+                TempFireHeatLossPercent = MathHelper.Clamp(TempFireHeatLossPercent, 0.0f, 1.0f); // Prevent % from being a negative number
+            }
             else
-                BurnRateRawKGpS *= 2 - FireRatio;
+            {
+                // If FireRatio is equal to 1.0, then ideal state has been reached
+                FireHeatLossPercent = 1.0f;
+            }
+
+            FireHeatLossPercent = 1.0f - TempFireHeatLossPercent;
+            FireHeatLossPercent = MathHelper.Clamp(FireHeatLossPercent, 0.0f, FireHeatLossPercent); // Prevent % from being a negative number
 
             // test for fusible plug
             if (FusiblePlugIsBlown)
@@ -2816,8 +2844,8 @@ namespace Orts.Simulation.RollingStocks
                 MaxBoilerHeatRatio = MathHelper.Clamp(MaxBoilerHeatRatio, 0.001f, 1.0f); // Keep Max Boiler Heat ratio within bounds
             }
 
-            // Calculate the amount of heat produced by the fire - this is naturally limited by the Grate Limit (see above)
-            FireHeatTxfKW = FuelCalorificKJpKG * FuelBurnRateKGpS;
+            // Calculate the amount of heat produced by the fire - this is naturally limited by the Grate Limit (see above), and also by the combustion oxygen
+            FireHeatTxfKW = FuelCalorificKJpKG * FuelBurnRateKGpS * FireHeatLossPercent;
 
             // Provide information message only to user if grate limit is exceeded.
             if (GrateCombustionRateLBpFt2 > GrateLimitLBpFt2)
@@ -2876,7 +2904,7 @@ namespace Orts.Simulation.RollingStocks
             #region Boiler Pressure calculation
             // works on the principle that boiler pressure will go up or down based on the change in water temperature, which is impacted by the heat gain or loss to the boiler
             WaterVolL = WaterFraction * BoilerVolumeFT3 * 28.31f;   // idealy should be equal to water flow in and out. 1ft3 = 28.31 litres of water
-                                                                    //            BkW_Diff = (((BoilerHeatInBTUpS - BoilerHeatOutBTUpS) * 3600) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
+            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
             if (PreviousBoilerHeatSmoothedBTU != 0.0)
             {
                 BkW_Diff = (pS.TopH((BoilerHeatSmoothedBTU - PreviousBoilerHeatSmoothedBTU)) * 0.0002931f);            // Calculate difference in boiler rating, ie heat in - heat out - 1 BTU = 0.0002931 kWh, divide by 3600????
@@ -4874,7 +4902,8 @@ namespace Orts.Simulation.RollingStocks
                     Inject1SteamHeatLossBTU = ActInject1SteamUsedLbpS * (BoilerSteamHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Calculate heat loss for injection steam, ie steam heat to water delivery temperature
 
                     // Calculate heat loss for water injected
-                    Inject1WaterHeatLossBTU = Injector1Fraction * InjectorFlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
+                    // Loss of boiler heat due to water injection - loss is the diff between steam and water Heat
+                    Inject1WaterHeatLossBTU = Injector1Fraction * InjectorFlowRateLBpS * (BoilerWaterHeatBTUpLB - WaterHeatPSItoBTUpLB[Injector1WaterTempPressurePSI]); 
 
                     // calculate Water steam heat based on injector water delivery temp
                     BoilerMassLB += elapsedClockSeconds * Injector1Fraction * InjectorFlowRateLBpS;   // Boiler Mass increase by Injector 1
@@ -5374,7 +5403,7 @@ namespace Orts.Simulation.RollingStocks
                 if (IdealFireMassKG > 0)
                     status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Fire mass"), FireMassKG / IdealFireMassKG * 100);
                 else
-                    status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Fire ratio"), FireRatio * 100);
+                    status.AppendFormat("{0} = {1:F0}%\n", Simulator.Catalog.GetString("Fire Heat Loss"), FireHeatLossPercent * 100);
             }
 
             status.AppendFormat("{0}{5} = {3:F0}% {1}, {4:F0}% {2}{5}\n", Simulator.Catalog.GetString("Fuel levels"), Simulator.Catalog.GetString("coal"), Simulator.Catalog.GetString("water"), 100 * coalPercent, 100 * waterPercent, fuelSafety);
@@ -5673,8 +5702,8 @@ namespace Orts.Simulation.RollingStocks
                 );
 
 #if DEBUG_LOCO_BURN_AI
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12:N0}\t{13}\t{14:N0}\t{15}\t{16:N0}\t{17}\t{18:N0}\t{19}\t{20:N0}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\n",
-                "DbgBurn:",
+            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12:N0}\t{13}\t{14:N0}\t{15}\t{16:N0}\t{17}\t{18:N0}\t{19}\t{20:N0}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\n {27}\t{28}\t{29:N3}\n",
+                "DbgBurn1:",
                 "BoilHeat",
                 FullBoilerHeat ? "Yes" : "No",
                 "H/R",
@@ -5700,7 +5729,10 @@ namespace Orts.Simulation.RollingStocks
                 "BstReset",
                 FuelBoostReset ? "Yes" : "No",
                 "ShAny",
-                ShovelAnyway  );
+                ShovelAnyway,
+                "DbgBurn2:",
+                "FHLoss",
+                FireHeatLossPercent);
 #endif
 
             status.AppendFormat("{0}\t{1}\t{6}/{12}\t\t({7:N0} {13})\t{2}\t{8}/{12}\t\t{3}\t{9}\t\t{4}\t{10}/{12}\t\t{5}\t{11}\n",
