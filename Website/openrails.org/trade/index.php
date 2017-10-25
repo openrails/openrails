@@ -19,7 +19,7 @@ Open Rails is free software and the result of hours of time and talent freely gi
 rolling stock and static content such as buildings have been published free of charge.
 </p><p>
 However, the Open Rails platform can also support commercial offerings in many forms, most obviously models. The Open Rails team has
-worked with vendors such as <a href="http://www.makingtracks-online.co.uk" target="_blank">Making Tracks</a> both to improve Open Rails and to improve the vendor's models. The more products which are available, both free and commercial, the better for everyone.
+worked with vendors such as Making Tracks both to improve Open Rails and to improve the vendor's models. The more products which are available, both free and commercial, the better for everyone.
 </p><p>
 Another possibility is for digital tools to support the Open Rails product, such as Markus Gelbmann's free <a href="http://www.elvastower.com/forums/index.php?/files/file/1821-diesel-power-updater-dpu-vx30/" target="_blank">Diesel Power Updater</a> which
 modifies an MSTS Eng file to suit Open Rails.
@@ -31,15 +31,15 @@ modeling people or road traffic or moving water. A specialist could deliver and 
       <div class="col-md-6">
 <h2>Vendors Supporting Open Rails</h2>
 <p>
-These vendors sell or distribute products suitable for Open Rails:
+These vendors sell or create products suitable for Open Rails:
 </p>
 <ul>
   <li><a href="http://www.3dtrains.com" target="_blank">3DTrains</a> - USA</li>
   <li><a href="http://www.conbuilder.com" target="_blank">ConBuilder</a> - Utility Suite</li>
   <li><a href="http://dekosoft.com/trains">Dekosoft Trains</a> - USA</li>
-  <li><a href="http://www.makingtracks-online.co.uk" target="_blank">Making Tracks</a> - UK</li>
   <li><a href="http://pikku.msts.cz/openrails.html">Pikku Locomotive Works</a> - Czechoslovakia</li>
   <li><a href="http://www.streamlines.ca">Stream Lines</a> - Canada</li>
+  <li><a href="http://www.gabriele90.com/">Gabriele 90</a> - Italy</li>
 </ul>
 <p>&nbsp;</p>
 <h2>Vendors Supporting MSTS</h2>
