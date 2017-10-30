@@ -1264,7 +1264,8 @@ namespace Orts.Simulation.RollingStocks
             if (BoilerVolumeCheck > 15) // If boiler volume is not in ENG file or less then a viable figure (ie high ratio figure), then set to a default value
             {
                 BoilerVolumeFT3 = Me2.ToFt2(EvaporationAreaM2) / 8.3f; // Default rate for evaporation rate. Assume a default ratio of evaporation area * 1/8.3
-                Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3); // Advise player that Boiler Volume is missing from or incorrect in ENG file
+                // Advise player that Boiler Volume is missing from or incorrect in ENG file
+                Trace.TraceWarning("Boiler Volume not found in ENG file, or doesn't appear to be a valid figure, and has been set to {0} Ft^3", BoilerVolumeFT3); 
             }
 
             MaxBoilerHeatPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 6.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
@@ -1285,7 +1286,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     // Calculate maximum superheat steam reference temperature based upon heating area of superheater - from Superheat Engineering Data by Elesco
                     // SuperTemp = (SuperHeatArea x HeatTransmissionCoeff * (MeanGasTemp - MeanSteamTemp)) / (SteamQuantity * MeanSpecificSteamHeat)
-                    // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x FlueTempK x SFactor) / SteamQuantity
+                    // Formula has been simplified as follows: SuperTemp = (SuperHeatArea x SFactor) / SteamQuantity
                     // SFactor is a "loose reprentation" =  (HeatTransmissionCoeff / MeanSpecificSteamHeat) - Av figure calculate by comparing a number of "known" units for superheat.
                     MaxSuperheatRefTempF = (Me2.ToFt2(SuperheatAreaM2) * SuperheatKFactor) / pS.TopH(TheoreticalMaxSteamOutputLBpS);
                 }
@@ -1304,7 +1305,10 @@ namespace Orts.Simulation.RollingStocks
                 HasSuperheater = true;
                 MaxSuperheatRefTempF = 250.0f; // Assume a superheating temp of 250degF
                 SuperheatTempRatio = MaxSuperheatRefTempF / SuperheatTempLbpHtoDegF[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
-                SuperheatAreaM2 = Me2.FromFt2((MaxSuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (C.ToF(C.FromK(MaxFlueTempK)) * SuperheatKFactor)); // Back calculate Superheat area for display purposes only.
+                // Reverse calculate Superheat area.
+                SuperheatAreaM2 = Me2.FromFt2((MaxSuperheatRefTempF * pS.TopH(TheoreticalMaxSteamOutputLBpS)) / (SuperheatKFactor));
+                // Advise player that Superheat Area is missing from ENG file
+                Trace.TraceWarning("Superheat Area not found in ENG file, and has been set to {0} Ft^2", Me2.ToFt2(SuperheatAreaM2));
                 CylinderClearancePC = 0.09f;
             }
             else // Default to saturated type of locomotive
