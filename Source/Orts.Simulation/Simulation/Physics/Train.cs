@@ -182,22 +182,22 @@ namespace Orts.Simulation.Physics
         // Temperature in deg Celcius
         static float[] WorldTemperatureWinter = new float[]
         {
-            0.9f, 8.7f, 12.4f, 17.2f, 20.9f, 24.0f, 22.8f, 18.2f, 11.1f, 1.1f, -10.2f, -6.1f
+            0.9f, 8.7f, 12.4f, 17.2f, 20.9f, 25.9f, 22.8f, 18.2f, 11.1f, 1.1f, -10.2f, -18.7f
          };
 
         static float[] WorldTemperatureAutumn = new float[]
         {
-            7.5f, 13.7f, 18.8f, 22.0f, 24.0f, 24.3f, 25.0f, 21.6f, 21.0f, 14.3f, 6.0f, 3.8f
+            7.5f, 13.7f, 18.8f, 22.0f, 24.0f, 26.0f, 25.0f, 21.6f, 21.0f, 14.3f, 6.0f, 3.8f
          };
 
         static float[] WorldTemperatureSpring = new float[]
         {
-            8.5f, 13.1f, 17.6f, 18.6f, 24.6f, 24.1f, 26.8f, 23.4f, 18.5f, 12.6f, 6.1f, 1.7f
+            8.5f, 13.1f, 17.6f, 18.6f, 24.6f, 25.9f, 26.8f, 23.4f, 18.5f, 12.6f, 6.1f, 1.7f
          };
 
         static float[] WorldTemperatureSummer = new float[]
         {
-            13.4f, 18.3f, 22.8f, 24.3f, 24.4f, 23.4f, 25.2f, 22.5f, 26.6f, 24.8f, 19.4f, 14.3f
+            13.4f, 18.3f, 22.8f, 24.3f, 24.4f, 25.0f, 25.2f, 22.5f, 26.6f, 24.8f, 19.4f, 14.3f
          };
 
         public static Interpolator WorldWinterLatitudetoTemperatureC()
