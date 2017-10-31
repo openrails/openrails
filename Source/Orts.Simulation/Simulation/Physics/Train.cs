@@ -18583,8 +18583,13 @@ namespace Orts.Simulation.Physics
                             else if (car is MSTSSteamLocomotive)
                             {
                                 (car as MSTSSteamLocomotive).Variable1 = car.AbsSpeedMpS / car.DriverWheelRadiusM / MathHelper.Pi * 5;
-                                (car as MSTSDieselLocomotive).Variable2 = 0.7f;
+                                (car as MSTSSteamLocomotive).Variable2 = 0.7f;
                             }
+                        }
+                        else if (car is MSTSLocomotive)
+                        {
+                            (car as MSTSLocomotive).Variable1 = 0;
+                            (car as MSTSLocomotive).Variable2 = 0;
                         }
                     }
 #if INDIVIDUAL_CONTROL
