@@ -157,7 +157,7 @@ namespace Orts.Viewer3D
 
                             Logger.Data(pS.TopH(steamloco.CylinderSteamUsageLBpS).ToString("F0"));
                             Logger.Data(pS.TopH(steamloco.WaterConsumptionLbpS).ToString("F0"));
-                            Logger.Data(Kg.ToLb(pS.TopH(steamloco.FuelBurnRateKGpS)).ToString("F0"));
+                            Logger.Data(Kg.ToLb(pS.TopH(steamloco.FuelBurnRateSmoothedKGpS)).ToString("F0"));
 
 
                             Logger.Data(steamloco.SuperheaterSteamUsageFactor.ToString("F2"));
