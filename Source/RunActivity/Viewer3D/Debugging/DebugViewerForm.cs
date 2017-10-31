@@ -830,13 +830,13 @@ namespace Orts.Viewer3D.Debugging
 					if (t.LeadLocomotive != null)
 					{
 						worldPos = t.LeadLocomotive.WorldPosition;
-						name = GetTrainName(t.LeadLocomotive.CarID);
+						name = t.GetTrainName(t.LeadLocomotive.CarID);
 						firstCar = t.LeadLocomotive;
 					}
 					else if (t.Cars != null && t.Cars.Count > 0)
 					{
 						worldPos = t.Cars[0].WorldPosition;
-						name = GetTrainName(t.Cars[0].CarID);
+						name = t.GetTrainName(t.Cars[0].CarID);
 						if (t.TrainType == Train.TRAINTYPE.AI)
 							name = t.Number.ToString() + ":" +t.Name;
 						firstCar = t.Cars[0];
@@ -1012,13 +1012,6 @@ namespace Orts.Viewer3D.Debugging
 		  return position * spacing;
 	  }
 	  
-	  static string GetTrainName(string ID)
-	  {
-		  int location = ID.LastIndexOf('-');
-		  if (location < 0) return ID;
-		  return ID.Substring(0, location - 1);
-	  }
-
 	    const float SignalErrorDistance = 100;
         const float SignalWarningDistance = 500;
         const float DisplayDistance = 1000;

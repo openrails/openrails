@@ -11581,6 +11581,18 @@ namespace Orts.Simulation.Physics
             TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, ((MSTSLocomotive)Simulator.PlayerLocomotive).MaxSpeedMpS);
         }
 
+        /// <summary>
+        /// Gets the train name from one CarID; used for remote trains
+        /// </summary>
+        ///
+
+        public string GetTrainName(string ID)
+        {
+            int location = ID.LastIndexOf('-');
+            if (location < 0) return ID;
+            return ID.Substring(0, location - 1);
+        }
+
         //================================================================================================//
 
         /// <summary>
@@ -12037,7 +12049,14 @@ namespace Orts.Simulation.Physics
             //  10, "Consist"
             statusString[iColumn] = "PLAYER";
             if (!Simulator.TimetableMode && this != Simulator.OriginalPlayerTrain) statusString[iColumn] = Name.Substring(0, Math.Min(Name.Length, 7));
-            if (TrainType == TRAINTYPE.REMOTE) statusString[iColumn] = "REMOTE";
+            if (TrainType == TRAINTYPE.REMOTE)
+            {
+                var trainName = "";
+                if (LeadLocomotive != null) trainName = GetTrainName(LeadLocomotive.CarID);
+                else if (Cars != null && Cars.Count > 0) trainName = GetTrainName(Cars[0].CarID);
+                else trainName = "REMOTE";
+                statusString[iColumn] = trainName.Substring(0, Math.Min(trainName.Length, 7));
+            }
 
             iColumn++;
             //  11, "Path"
