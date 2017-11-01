@@ -969,17 +969,17 @@ this mode of operation:
 
 - Cylinder Cocks -- allows water condensation to be exhausted from the
   cylinders.
-  (Open Rails Keys: toggle C)
+  (Open Rails Keys: toggle ``<C>``)
 - Regulator -- controls the pressure of the steam injected into the
   cylinders.
-  (Open Rails Keys: D = increase, A = decrease)
+  (Open Rails Keys: ``<D>`` = increase, ``<A>`` = decrease)
 - Reverser -- controls the valve gear and when the steam is "cutoff".
   Typically it is expressed as a fraction of the cylinder stroke.
-  (Open Rails Keys: W = increase, S = decrease). Continued operation
+  (Open Rails Keys: ``<W>`` = increase, ``<S>`` = decrease). Continued operation
   of the W or S key will eventually reverse the direction of travel
   for the locomotive.
 - Brake -- controls the operation of the brakes.
-  (Open Rails Keys: ' = increase, ; = decrease)
+  (Open Rails Keys: ``<'>`` = increase, ``<;>`` = decrease)
 
 Recommended Option Settings
 ...........................
@@ -1030,7 +1030,7 @@ cut-off values as possible, so the reverser should be operated at low
 values, especially running at high speeds.
 
 When running a steam locomotive keep an eye on the following key
-parameters in the Heads up Display (HUD -- F5) as they will give the driver
+parameters in the Heads up Display (HUD -- ``<F5>``) as they will give the driver
 an indication of the current status and performance of the locomotive with
 regard to the heat conversion (Boiler and Fire) and work done (Cylinder)
 processes. Also bear in mind the above driving tips.
@@ -1069,6 +1069,36 @@ finally be reached where the locomotive cannot go any faster without the
 steam usage exceeding the steam generation. This point determines the
 maximum speed of the locomotive and will vary depending upon load and
 track conditions
+
+The AI Fireman in Open Rails is not proactive, ie it cannot look ahead for 
+gradients, etc, and therefore will only add fuel to the fire once the train 
+is on the gradient. This reactive approach can result in a boiler pressure 
+drop whilst the fire is building up. Similarly if the steam usage is dropped 
+(due to a throttle decrease, such as approaching a station) then the fire 
+takes time to reduce in heat, thus the boiler pressure can become excessive.
+
+To give the player a little bit more control over this, and to facilitate 
+the maintaining of the boiler pressure the following key controls have been 
+added to the AI Fireman function:
+
+AIFireOn - (``<Alt+H>``) - Forces the AI fireman to start building 
+the fire up (increases boiler heat & pressure, etc) - typically used just 
+before leaving a station to maintain pressure as steam consumption increases. 
+This function will be turned off if AIFireOff, AIFireReset are triggered or 
+if boiler pressure or BoilerHeat exceeds the boiler limit.
+
+AIFireOff - (``<Ctrl+H>``) - Forces the AI fireman to stop adding 
+to the fire (allows boiler heat to decrease as fire drops) - typically used 
+approaching a station to allow the fire heat to decrease, and thus stopping 
+boiler pressure from exceeding the maximum. This function will be turned off 
+if AIFireOn, AIFireReset are triggered or if boiler pressure or BoilerHeat 
+drops too low.
+
+AIFireReset - (``<Ctrl+Alt+H>``) - turns off both of the above 
+functions when desired.
+
+If theses controls are not used, then the AI fireman operates in the same 
+fashion as previously. 
 
 Steam Locomotive Carriage Steam Heat Modelling
 ''''''''''''''''''''''''''''''''''''''''''''''
