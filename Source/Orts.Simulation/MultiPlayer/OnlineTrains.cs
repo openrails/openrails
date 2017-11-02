@@ -154,6 +154,7 @@ namespace Orts.MultiPlayer
             if (player.con.Contains("tilted")) train.IsTilting = true;
             int direction = player.dir;
             train.travelled = player.Travelled;
+            train.TrainMaxSpeedMpS = player.trainmaxspeed;
 
             if (MPManager.IsServer())
             {
@@ -253,6 +254,10 @@ namespace Orts.MultiPlayer
                 train.LeadNextLocomotive();
                 if (train.LeadLocomotive != null) p.LeadingLocomotiveID = train.LeadLocomotive.CarID;
                 else p.LeadingLocomotiveID = "NA";
+            }
+            if (MPManager.IsServer())
+            {
+                train.InitializeSignals(false);
             }
             p.Train = train;
 

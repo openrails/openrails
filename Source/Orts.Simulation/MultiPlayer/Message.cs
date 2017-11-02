@@ -254,6 +254,7 @@ namespace Orts.MultiPlayer
         public int pantofirst, pantosecond;
         public string frontorrearcab;
         public int headlight;
+        public float trainmaxspeed;
         public string leadingID;
         public string[] cars;
         public string[] ids;
@@ -287,13 +288,14 @@ namespace Orts.MultiPlayer
                 X = float.Parse(data[5], CultureInfo.InvariantCulture);
                 Z = float.Parse(data[6], CultureInfo.InvariantCulture);
                 Travelled = float.Parse(data[7], CultureInfo.InvariantCulture);
-                seconds = double.Parse(data[8], CultureInfo.InvariantCulture);
-                season = int.Parse(data[9]);
-                weather = int.Parse(data[10]);
-                pantofirst = int.Parse(data[11]);
-                pantosecond = int.Parse(data[12]);
-                frontorrearcab = data[13];
-                headlight = int.Parse(data[14]);
+                trainmaxspeed = float.Parse(data[8], CultureInfo.InvariantCulture);
+                seconds = double.Parse(data[9], CultureInfo.InvariantCulture);
+                season = int.Parse(data[10]);
+                weather = int.Parse(data[11]);
+                pantofirst = int.Parse(data[12]);
+                pantosecond = int.Parse(data[13]);
+                frontorrearcab = data[14];
+                headlight = int.Parse(data[15]);
                 //user = areas[0].Trim();
                 con = areas[2].Trim();
                 route = areas[3].Trim();
@@ -371,6 +373,7 @@ namespace Orts.MultiPlayer
             {
                 dir = (int)t.RearTDBTraveller.Direction; num = tn; TileX = t.RearTDBTraveller.TileX;
                 TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.travelled;
+                trainmaxspeed = t.TrainMaxSpeedMpS;
             }
             seconds = MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
             pantofirst = pantosecond = 0;
@@ -406,7 +409,7 @@ namespace Orts.MultiPlayer
         public override string ToString()
         {
             string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
-                + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + frontorrearcab + " " + headlight + " \r" +
+                + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + trainmaxspeed.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + frontorrearcab + " " + headlight + " \r" +
                 leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
             for (var i = 0; i < cars.Length; i++)
             {
@@ -524,7 +527,7 @@ namespace Orts.MultiPlayer
                         {
                             t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
                             t.expectedTDir = this.dir; t.expectedDIr = (int)t.MUDirection;
-                            t.updateMSGReceived = true; t.expectedTravelled = t.travelled;
+                            t.updateMSGReceived = true; t.expectedTravelled = t.travelled; t.TrainMaxSpeedMpS = this.trainmaxspeed;
                         }
                     }
                     MPManager.Simulator.ClockTime = this.seconds;
