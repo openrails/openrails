@@ -11756,7 +11756,9 @@ namespace Orts.Simulation.Physics
             statusString[iColumn] = FormatStrings.FormatDistanceDisplay(DistanceTravelledM, metric);
             iColumn++;
             //  2, "Speed"
-            statusString[iColumn] = FormatStrings.FormatSpeed(SpeedMpS, metric);
+            var trainSpeed = TrainType == Train.TRAINTYPE.REMOTE ? targetSpeedMpS : SpeedMpS;
+            statusString[iColumn] = FormatStrings.FormatSpeed(trainSpeed, metric);
+            if (Math.Abs(trainSpeed) > Math.Abs(AllowedMaxSpeedMpS)) statusString[iColumn] += "!!!";
             iColumn++;
             //  3, "Max"
             statusString[iColumn] = FormatStrings.FormatSpeedLimit(AllowedMaxSpeedMpS, metric);
