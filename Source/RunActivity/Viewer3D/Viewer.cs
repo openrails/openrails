@@ -180,6 +180,7 @@ namespace Orts.Viewer3D
         public int CabXOffsetPixels { get; set; }
         public int CabExceedsDisplay; // difference between cabview texture vertical resolution and display vertical resolution
         public int CabExceedsDisplayHorizontally; // difference between cabview texture horizontal resolution and display vertical resolution
+        public float CabTextureInverseRatio = 0.75f; // default of inverse of cab texture ratio 
 
         public CommandLog Log { get { return Simulator.Log; } }
 
@@ -583,7 +584,7 @@ namespace Orts.Viewer3D
 
         public void AdjustCabHeight(int windowWidth, int windowHeight)
         {
-            float CabTextureInverseRatio = 0.75f;
+            CabTextureInverseRatio = 0.75f; // start setting it to default
             // MSTS cab views are designed for 4:3 aspect ratio. This is the default. However a check is done with the actual
             // cabview texture. If this has a different aspect ratio, that one is considered
             // For wider screens (e.g. 16:9), the height of the cab view before adjustment exceeds the height of the display.
@@ -623,26 +624,7 @@ namespace Orts.Viewer3D
             CabYOffsetPixels = -CabExceedsDisplay / 2; // Initial value is halfway. User can adjust with arrow keys.
             CabWidthPixels = windowWidth + CabExceedsDisplayHorizontally;
             CabXOffsetPixels = CabExceedsDisplayHorizontally / 2;
-
-            if (Settings.Cab2DStretch == 0 && CabExceedsDisplay > 0)
-            {
-                // We must modify FOV to get correct lookout
-                if (CabCamera.IsAvailable)
-                {
-                    CabCamera.FieldOfView = MathHelper.ToDegrees((float) (2 * Math.Atan ((float)windowHeight / windowWidth / CabTextureInverseRatio *Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV/2)))));
-                    CabCamera.RotationRatio = (float)(0.962314f * 2 * Math.Tan(MathHelper.ToRadians(CabCamera.FieldOfView / 2)) / windowHeight);
-                }
-            }
-            else if (CabExceedsDisplayHorizontally > 0)
-            {
-                if (CabCamera.IsAvailable)
-                {
-                    var halfFOVHorizontalRadians = (float)(Math.Atan((float)windowWidth / windowHeight * Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV / 2))));
-                    CabCamera.RotationRatioHorizontal = (float)(0.962314f * 2 * windowWidth / windowHeight * Math.Tan(MathHelper.ToRadians(Settings.ViewingFOV / 2)) / windowWidth);
-                }
-            }
-            if (CabCamera.IsAvailable)
-                CabCamera.InitialiseRotation(Simulator.PlayerLocomotive);
+            if (CabCamera.IsAvailable) CabCamera.Initialize();
         }
 
         public float ComputeCabTextureInverseRatio(string cabTextureFileName)

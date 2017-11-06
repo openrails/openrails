@@ -1544,10 +1544,32 @@ namespace Orts.Viewer3D
 
         public override void Reset()
         {
-            base.Reset();
+            FieldOfView = Viewer.Settings.ViewingFOV;
+            RotationXRadians = RotationYRadians = XRadians = YRadians = ZRadians = 0;
             Viewer.CabYOffsetPixels = (Viewer.DisplaySize.Y - Viewer.CabHeightPixels) / 2;
             Viewer.CabXOffsetPixels = (Viewer.CabWidthPixels - Viewer.DisplaySize.X) / 2;
+            if (attachedCar != null)
+            {
+                Initialize();
+            }
+            ScreenChanged();
             OnActivate(true);
+        }
+
+        public void Initialize()
+        {
+            if (Viewer.Settings.Cab2DStretch == 0 && Viewer.CabExceedsDisplay > 0)
+            {
+                // We must modify FOV to get correct lookout
+                    FieldOfView = MathHelper.ToDegrees((float)(2 * Math.Atan((float)Viewer.DisplaySize.Y / Viewer.DisplaySize.X / Viewer.CabTextureInverseRatio * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)))));
+                    RotationRatio = (float)(0.962314f * 2 * Math.Tan(MathHelper.ToRadians(FieldOfView / 2)) / Viewer.DisplaySize.Y);
+            }
+            else if (Viewer.CabExceedsDisplayHorizontally > 0)
+            {
+                    var halfFOVHorizontalRadians = (float)(Math.Atan((float)Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2))));
+                    RotationRatioHorizontal = (float)(0.962314f * 2 * Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)) / Viewer.DisplaySize.X);
+            }
+            InitialiseRotation(attachedCar);
         }
 
         protected override void OnActivate(bool sameCamera)
