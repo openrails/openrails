@@ -224,6 +224,14 @@ Overhead wire
 
 This option will enable or disable display of the overhead wire.
 
+.. _options-double-overhead-wires:
+
+Double overhead wires
+---------------------
+
+MSTS uses a single wire for electrified routes; you may check this box so 
+that OR will show the two overhead wires that are more common.
+
 .. _options-vsync:
 
 Vertical sync
@@ -384,181 +392,18 @@ already at a value that allows running the locomotive. If the option is
 not selected, you will have to wait until the water temperature reaches a 
 high enough value.
 
-.. _options-keyboard:
+.. _options-autopilot:
 
-Keyboard Options
-================
+Autopilot
+---------
 
-In this panel you will find listed the keyboard keys that are associated 
-with all OR commands.
+With this option enabled and when in activity mode, it is possible to stay 
+in the cab of the player train, but to let Open Rails move the train, 
+respecting path, signals, speeds and station stops.
 
-.. image:: images/options-keyboard.png
-
-You can modify them by clicking on a field and pressing the new desired 
-key. Three symbols will appear at the right of the field: with the first 
-one you validate the change, with the second one you cancel it, with the 
-third one you return to the default value. 
-
-By clicking on *Check* OR verifies that the changes made are compatible, 
-that is, that there is no key that is used for more than one command.
-
-By clicking on *Defaults* all changes that were made are reset, and the 
-default values are reloaded.
-
-By clicking on *Export* a printable text file ``Open Rails 
-Keyboard.txt`` is generated on the desktop, showing all links between 
-commands and keys.
-
-Data Logger Options
-===================
-
-By selecting the option *Start logging with the simulation start* or by 
-pressing ``<F12>`` a file with the name dump.csv is generated in the 
-configured Open Rails logging folder (placed on the Desktop by default). 
-This file can be used for later analysis.
-
-.. image:: images/options-logger.png
-
-Evaluation Options
-==================
-
-When data logging is started (see preceding paragraph), data selected in 
-this panel are logged, allowing a later evaluation on how the activity was 
-executed by the player.
-
-.. image:: images/options-evaluation.png
-
-.. _options-Content:
-
-Content Options
-===============
-
-This window allows you to add, remove or modify access to additional MSTS 
-installations or miniroute installations for Open Rails. Installations 
-located on other drives, or on a USB key, can be added even if they are 
-not always available.
-
-.. image:: images/options-content.png
-
-Click on the *Add* button, and locate the desired installation. OR will 
-automatically enter a proposed name in the *Name:* window that will 
-appear in the *Installation set:* window on the main menu form. Modify 
-the name if desired, then Click *OK* to add the new path and name to 
-Open Rails. 
-
-To remove an entry (note that this does not remove the installation 
-itself!) select the entry in the window, and click *Delete*, then *OK* 
-to close the window. To modify an entry, use the *Browse...* button to 
-access the location; make the necessary changes, and then *Save* the 
-changes.
-
-.. _options-updater:
-
-Updater Options
-===============
-
-These options control which OR version update channel is active (see also 
-:ref:`here <updating-or>`). The various options available are self-explanatory.
-
-.. image:: images/options-updater.png
-
-.. _options-experimental:
-
-Experimental Options
-====================
-
-Some experimental features being introduced in Open Rails may be turned on 
-and off through the *Experimental* tab of the Options window, as 
-described below:
-
-.. image:: images/options-experimental.png
-
-Super-elevation
----------------
-
-If the value set for *Level* is greater than zero, OR supports super 
-elevation for long curved tracks. The value *Minimum Length* determines 
-the length of the shortest curve to have super-elevation. You need to 
-choose the correct gauge for your route, otherwise some tracks may not be 
-properly shown.
-
-When superelevation is selected, two viewing effects occur at runtime:
-
-1. If an external camera view is selected, the tracks and the running 
-   train will be shown inclined towards the internal part of the curve.
-2. When the cab view is selected, the external world will be 
-   shown as inclined towards the external part of the curve.
-
-.. image:: images/options-superelevation_1.png
-.. image:: images/options-superelevation_2.png
-
-OR implements super elevated tracks using Dynamic Tracks. You can change 
-the appearance of tracks by creating a ``<route folder>/TrackProfiles/
-TrProfile.stf`` file. The document ``How to Provide Track Profiles for 
-Open Rails Dynamic Track.docm`` describing the creation of track profiles 
-can be found in the OpenRails ``/Source/Documentation/`` folder. Forum 
-discussions about track profiles can also be found on `Elvas Tower 
-<http://www.elvastower.com/forums/index.php?/topic/21119-superelevation/
-page__view__findpost__p__115247>`_.
-
-Automatically tune settings to keep performance level
------------------------------------------------------
-
-When this option is selected OR attempts to maintain the selected Target 
-frame rate FPS ( Frames per second). To do this it decreases or increases 
-the viewing distance of the standard terrain. If the option is selected, 
-also select the desired FPS in the *Target frame rate* window.
-
-.. _options-double-overhead-wires:
-
-Double overhead wires
----------------------
-
-MSTS uses a single wire for electrified routes; you may check this box so 
-that OR will show the two overhead wires that are more common.
-
-.. _options-shape-warnings:
-
-Show shape warnings
--------------------
-
-When this option is selected, when OR is loading the shape (.s) files it 
-will report errors in syntax and structure (even if these don't cause 
-runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop. 
-
-.. _options-forced-red:
-
-Forced red at station stops
----------------------------
-
-In case a signal is present beyond a station platform and in the same 
-track section (no switches in between), OR will set the signal to red 
-until the train has stopped and then hold it as red from that time up to 
-two minutes before starting time. This is useful in organizing train meets 
-and takeovers, however it does not always correspond to reality nor to 
-MSTS operation. So with this option the player can decide which behavior 
-the start signal will have. This option is checked by default. Unchecking 
-the option has an effect on simulation behavior only if no
-:ref:`Timetable mode <timetable>` operation is under way.
-
-Load day/night textures only when needed
-----------------------------------------
-
-As a default OR loads night textures together with the day textures both at 
-daytime and nighttime. When this option is selected, to reduce loading time and reduce 
-memory used, night textures are not loaded in the daytime and are only 
-loaded at sunset (if the game continues through sunset time); analogously day 
-textures are not loaded in the nighttime if the related night textures are 
-available, and are only loaded at sunrise (if the game continues through sunrise 
-time).
-
-Signal light glow
------------------
-
-When this option is set, a glowing effect is added to signal semaphores 
-when seen at distance, so that they are visible at a greater distance. 
-There are routes where this effect has already been natively introduced; 
-for these, this option is not recommended. 
+It is possible to switch the player train between autopilot mode and 
+player driven mode at run time. The Autopilot mode is described
+:ref:`here <driving-autopilot>`.
 
 .. _options-ai-shunting:
 
@@ -596,18 +441,195 @@ The following additional shunting functions are available:
     detailed description of this feature can be found in the 
     :ref:`related paragraph <operation-absoluteWP>` in the chapter *Open Rails Train Operation*.
 
-.. _options-autopilot:
+.. _options-forced-red:
 
-Autopilot
----------
+Forced red at station stops
+---------------------------
 
-With this option enabled and when in activity mode, it is possible to stay 
-in the cab of the player train, but to let Open Rails move the train, 
-respecting path, signals, speeds and station stops.
+In case a signal is present beyond a station platform and in the same 
+track section (no switches in between), OR will set the signal to red 
+until the train has stopped and then hold it as red from that time up to 
+two minutes before starting time. This is useful in organizing train meets 
+and takeovers, however it does not always correspond to reality nor to 
+MSTS operation. So with this option the player can decide which behavior 
+the start signal will have. This option is checked by default. Unchecking 
+the option has an effect on simulation behavior only if no
+:ref:`Timetable mode <timetable>` operation is under way.
 
-It is possible to switch the player train between autopilot mode and 
-player driven mode at run time. The Autopilot mode is described
-:ref:`here <driving-autopilot>`.
+.. _options-open-doors-ai:
+
+Open/close doors on AI trains
+-----------------------------
+
+This option enables door open/close at station stops on AI trains having passenger 
+trainsets with door animation. Doors are opened 4 seconds after train stop and closed 
+10 seconds before train start. Due to the fact that not all routes have been built with 
+correct indication of the platform side with respect to the track, this option can be 
+individually disabled or enabled on a per-route basis, as explained 
+:ref:`here <features-route-open-doors-ai>`.
+With option enabled, doors open and 
+close automatically also when a player train is in :ref:`autopilot mode <driving-autopilot>`.
+The option is active only in activity mode.
+
+
+
+.. _options-keyboard:
+
+Keyboard Options
+================
+
+.. image:: images/options-keyboard.png
+
+In this panel you will find listed the keyboard keys that are associated 
+with all OR commands.
+
+You can modify them by clicking on a field and pressing the new desired 
+key. Three symbols will appear at the right of the field: with the first 
+one you validate the change, with the second one you cancel it, with the 
+third one you return to the default value. 
+
+By clicking on *Check* OR verifies that the changes made are compatible, 
+that is, that there is no key that is used for more than one command.
+
+By clicking on *Defaults* all changes that were made are reset, and the 
+default values are reloaded.
+
+By clicking on *Export* a printable text file ``Open Rails 
+Keyboard.txt`` is generated on the desktop, showing all links between 
+commands and keys.
+
+Data Logger Options
+===================
+
+.. image:: images/options-logger.png
+
+By selecting the option *Start logging with the simulation start* or by 
+pressing ``<F12>`` a file with the name dump.csv is generated in the 
+configured Open Rails logging folder (placed on the Desktop by default). 
+This file can be used for later analysis.
+
+Evaluation Options
+==================
+
+.. image:: images/options-evaluation.png
+
+When data logging is started (see preceding paragraph), data selected in 
+this panel are logged, allowing a later evaluation on how the activity was 
+executed by the player.
+
+.. _options-Content:
+
+Content Options
+===============
+
+.. image:: images/options-content.png
+
+This window allows you to add, remove or modify access to additional MSTS 
+installations or miniroute installations for Open Rails. Installations 
+located on other drives, or on a USB key, can be added even if they are 
+not always available.
+
+Click on the *Add* button, and locate the desired installation. OR will 
+automatically enter a proposed name in the *Name:* window that will 
+appear in the *Installation set:* window on the main menu form. Modify 
+the name if desired, then Click *OK* to add the new path and name to 
+Open Rails. 
+
+To remove an entry (note that this does not remove the installation 
+itself!) select the entry in the window, and click *Delete*, then *OK* 
+to close the window. To modify an entry, use the *Browse...* button to 
+access the location; make the necessary changes, and then *Save* the 
+changes.
+
+.. _options-updater:
+
+Updater Options
+===============
+
+.. image:: images/options-updater.png
+
+These options control which OR version update channel is active (see also 
+:ref:`here <updating-or>`). The various options available are self-explanatory.
+
+.. _options-experimental:
+
+Experimental Options
+====================
+
+.. image:: images/options-experimental.png
+
+Some experimental features being introduced in Open Rails may be turned on 
+and off through the *Experimental* tab of the Options window, as 
+described below.
+
+Super-elevation
+---------------
+
+If the value set for *Level* is greater than zero, OR supports super 
+elevation for long curved tracks. The value *Minimum Length* determines 
+the length of the shortest curve to have super-elevation. You need to 
+choose the correct gauge for your route, otherwise some tracks may not be 
+properly shown.
+
+When superelevation is selected, two viewing effects occur at runtime:
+
+1. If an external camera view is selected, the tracks and the running 
+   train will be shown inclined towards the internal part of the curve.
+2. When the cab view is selected, the external world will be 
+   shown as inclined towards the external part of the curve.
+
+.. image:: images/options-superelevation_1.png
+.. image:: images/options-superelevation_2.png
+
+OR implements super elevated tracks using Dynamic Tracks. You can change 
+the appearance of tracks by creating a ``<route folder>/TrackProfiles/
+TrProfile.stf`` file. The document ``How to Provide Track Profiles for 
+Open Rails Dynamic Track.docm`` describing the creation of track profiles 
+can be found in the OpenRails ``/Source/Documentation/`` folder. Forum 
+discussions about track profiles can also be found on `Elvas Tower 
+<http://www.elvastower.com/forums/index.php?/topic/21119-superelevation/
+page__view__findpost__p__115247>`_.
+
+Automatically tune settings to keep performance level
+-----------------------------------------------------
+
+When this option is selected OR attempts to maintain the selected Target 
+frame rate FPS ( Frames per second). To do this it decreases or increases 
+the viewing distance of the standard terrain. If the option is selected, 
+also select the desired FPS in the *Target frame rate* window.
+
+.. _options-location-linked-passing-path:
+
+Location-linked passing path processing
+---------------------------------------
+
+When this option is NOT selected, ORTS acts similarly to MSTS. That is, if 
+two trains meet whose paths share some track section in a station, but are 
+both provided with passing paths as defined with the MSTS Activity Editor, 
+one of them will run through the passing path, therefore allowing the 
+meet. Passing paths in this case are only available to the trains whose 
+path has passing paths.
+
+When this option is selected, ORTS makes available to all trains the main 
+and the passing path of the player train. Moreover, it takes into account 
+the train length in selecting which path to assign to a train in case of a 
+meet.
+
+.. admonition:: For content developers
+
+    A more detailed description of this feature can be 
+    found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
+    in the chapter  *Open Rails Train Operation*.
+
+
+.. _options-shape-warnings:
+
+Show shape warnings
+-------------------
+
+When this option is selected, when OR is loading the shape (.s) files it 
+will report errors in syntax and structure (even if these don't cause 
+runtime errors) in the :ref:`Log file <driving-logfile>` ``OpenRailsLog.txt`` on the desktop. 
 
 .. _options-etcs:
 
@@ -636,6 +658,76 @@ system ETCS.
             Units ( KM_PER_HOUR )
         )
 
+Load day/night textures only when needed
+----------------------------------------
+
+As a default OR loads night textures together with the day textures both at 
+daytime and nighttime. When this option is selected, to reduce loading time and reduce 
+memory used, night textures are not loaded in the daytime and are only 
+loaded at sunset (if the game continues through sunset time); analogously day 
+textures are not loaded in the nighttime if the related night textures are 
+available, and are only loaded at sunrise (if the game continues through sunrise 
+time).
+
+Signal light glow
+-----------------
+
+When this option is set, a glowing effect is added to signal semaphores 
+when seen at distance, so that they are visible at a greater distance. 
+There are routes where this effect has already been natively introduced; 
+for these, this option is not recommended. 
+
+Correct questionable braking parameters
+---------------------------------------
+
+When this option is selected, Open Rails corrects some braking parameters 
+if they are out of a reasonable range or if they are incoherent. This is 
+due to the fact that many existing .eng files have such issues, that are 
+not a problem for MSTS, which has a much simpler braking model, but that 
+are a problem for OR, which has a more sophisticated braking model. The 
+problem usually is that the train brakes require a long time to release, 
+and in some times do not release at all.
+
+The following checks and corrections are performed if the option is 
+checked (only for single-pipe brake system):
+
+- if the compressor restart pressure is smaller or very near to the max 
+  system pressure, the compressor restart pressure and if necessary the max 
+  main reservoir pressure are increased;
+- if the main reservoir volume is smaller than 0.3 m\ :sup:`3` and the 
+  engine mass is higher than 20 tons, the reservoir volume is raised to 0.78 
+  m\ :sup:`3`;
+- the charging rate of the reservoir is derived from the .eng parameter 
+  ``AirBrakesAirCompressorPowerRating`` (if this generates a value greater 
+  than 0.5 psi/s) instead of using a default value.
+
+.. _options-act-randomization:
+
+Activity randomization
+----------------------
+The related ``Level`` box may be set to integer values from 0 to three.
+When 0 is selected, no randomization is inserted.
+When a value greater than zero is selected, some activity parameters are randomly 
+changed, therefore causing different behaviors of the activity at every run.
+Level 1 generates a moderate randomization, level 2 a significant randomization 
+and level 3 a high randomization, that may be unrealistic in some cases.
+This feature is described in greater detail :ref:`here 
+<driving-act-randomization>`.
+
+.. _options-actweather-randomization:
+
+Activity weather randomization
+------------------------------
+
+The ``Level`` box works as the one for activity randomization, and has the 
+same range. When a level greater than 1 is selected, the initial weather is 
+randomized, and moreover it changes during activity execution.
+The randomization is not performed if at activity start the train is within a 
+lat/lon rectangle corresponding to the arid zone of North America (lat from 
+105 to 120 degrees west and lon from 30 to 45 degrees north).
+The randomization is not performed either if the activity contains weather 
+change events.
+
 Extend object maximum viewing distance to horizon
 -------------------------------------------------
 
@@ -653,28 +745,6 @@ Open Rails is capable of loading both ACE and DDS textures. If only one of
 the two is present, it is loaded. If both are present, the ACE texture is 
 loaded unless this option has been selected.
 
-.. _options-location-linked-passing-path:
-
-Location-linked passing path processing
----------------------------------------
-
-When this option is NOT selected, ORTS acts similarly to MSTS. That is, if 
-two trains meet whose paths share some track section in a station, but are 
-both provided with passing paths as defined with the MSTS Activity Editor, 
-one of them will run through the passing path, therefore allowing the 
-meet. Passing paths in this case are only available to the trains whose 
-path has passing paths.
-
-When this option is selected, ORTS makes available to all trains the main 
-and the passing path of the player train. Moreover, it takes into account 
-the train length in selecting which path to assign to a train in case of a 
-meet.
-
-.. admonition:: For content developers
-
-    A more detailed description of this feature can be 
-    found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
-    in the chapter  *Open Rails Train Operation*.
 
 MSTS Environments
 -----------------
@@ -726,41 +796,4 @@ size of the box can be set by the entries in the height, width and length
 boxes. The X and Z values are centered on the camera location, and falling 
 particles *spawn* and fall from the top of the box.
 
-Correct questionable braking parameters
----------------------------------------
 
-When this option is selected, Open Rails corrects some braking parameters 
-if they are out of a reasonable range or if they are incoherent. This is 
-due to the fact that many existing .eng files have such issues, that are 
-not a problem for MSTS, which has a much simpler braking model, but that 
-are a problem for OR, which has a more sophisticated braking model. The 
-problem usually is that the train brakes require a long time to release, 
-and in some times do not release at all.
-
-The following checks and corrections are performed if the option is 
-checked (only for single-pipe brake system):
-
-- if the compressor restart pressure is smaller or very near to the max 
-  system pressure, the compressor restart pressure and if necessary the max 
-  main reservoir pressure are increased;
-- if the main reservoir volume is smaller than 0.3 m\ :sup:`3` and the 
-  engine mass is higher than 20 tons, the reservoir volume is raised to 0.78 
-  m\ :sup:`3`;
-- the charging rate of the reservoir is derived from the .eng parameter 
-  ``AirBrakesAirCompressorPowerRating`` (if this generates a value greater 
-  than 0.5 psi/s) instead of using a default value.
-
-.. _options-open-doors-ai:
-
-Open/close doors on AI trains
------------------------------
-
-This option enables door open/close at station stops on AI trains having passenger 
-trainsets with door animation. Doors are opened 4 seconds after train stop and closed 
-10 seconds before train start. Due to the fact that not all routes have been built with 
-correct indication of the platform side with respect to the track, this option can be 
-individually disabled or enabled on a per-route basis, as explained 
-:ref:`here <features-route-open-doors-ai>`.
-With option enabled, doors open and 
-close automatically also when a player train is in :ref:`autopilot mode <driving-autopilot>`.
-The option is active only in activity mode.

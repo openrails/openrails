@@ -1220,6 +1220,14 @@ effects in the game.
 Moreover, pressing ``<Alt+P>`` can change the weather from clear to raining to 
 snowing and back to clear.
 
+Randomized Weather in activities
+--------------------------------
+
+By activating the related experimental option as described :ref:`here 
+<options-actweather-randomization>` the player may experience an initial weather 
+that varies every time the activity is executed, and that varies in a random way 
+during activity execution.
+
 Season
 ------
 
@@ -1227,6 +1235,87 @@ In activity mode Open Rails software determines the season, and its
 related alternative textures to display from the Season parameter in the 
 MSTS Activity file. In other modes the player can select the season in the 
 start menu.
+
+.. _driving-act-randomization:
+
+Activity randomization
+======================
+
+By activating the related experimental option as described :ref:`here 
+<options-act-randomization>` the player may experience slightly or 
+significantly different activity behaviours in every different activity 
+run.
+It must be stated that it is not guaranteed that every randomization 
+leads to a realistic and/or manageable activity. However it must be 
+considered that using features like :ref:`player train switching 
+<driving-trainlist>` and :ref:`manually setting switches and signals 
+<driving-dispatcher>` many situations can be solved. This even 
+contributes to generate a pleasant activity run.
+
+Following activity features are randomized:
+
+- diesel locomotive compressor blowdown: when this occurs a message is 
+  displayed, output power and force go to zero, and the smoke gets white 
+  (to have a diesel smoke colour change dieselsmoke.ace must be replaced 
+  with a better one; there is some freely available from the website of 
+  some payware trainset providers. Moreover 
+  the parameter of the third parameter line in the Exhaust1 block within 
+  the .eng file of the diesel loco should have at least the value of 0.3, 
+  which by the way improves in general the lookout of the smoke). Wheh 
+  this event occurs, the train should be stopped as soon as possible, 
+  the defect loco should be put out of the MU chain and then switched off 
+  (these two operations can be done with the Car operations window). 
+  The defect loco is evidenced in red in the train operations window.
+
+- diesel or electric locomotive bogie unpowered; when this occurs a message 
+  is displayed, and output power and force are halved. The defect loco is again 
+  evidenced in red in the train operations window. The total traction time is 
+  accumulated. In the first 30, 15, 10 traction minutes (for randomization 
+  levels 1, 2, 3) no locomotive failures occur. After that for each loco and 
+  at every simulator update (which has the same frequency as the FPS) a 
+  random number between 0 and 199999 is generated. If it is higher than 
+  199998, 199992, 199899 for the three randomization levels the failure is 
+  generated. The failure may also occur on the player loco. No more than a 
+  faulty loco is possible on a train.
+
+- freight car with brakes stuck: in this case the total braking time and 
+  the total countinuous braking time are accumulated. In this case the time 
+  with surely no failures varies from 20 to about 7 minutes for the total 
+  braking time and from 10 to about 3.5 minutes for the total continuous 
+  braking time. After such time for each car a random number between 0 
+  and 199999 is generated at every simulator update. If the number is 
+  higher than 199996, 199992, and 199969 for the three randomization 
+  levels the failure is generated. The car will brake continuously, 
+  will be shown in red in the train operations window and will squeal 
+  if an .sms file named BrakesStuck.sms is present in the 
+  ``<Train Simulator\Sound>`` directory. `Here 
+  <http://www.interazioni-educative.it/Varie/BrakesStuckSound.zip>`_ 
+  an example of such file. 
+  Of course when this event occurs it is advisable to uncouple the 
+  wagon as soon as possible from the train. No more than a car will 
+  fail.
+
+All these train failures occur only on the player train.
+
+- AI train efficiency: the initial AI train efficiency (which 
+  determines max accelerations and decelerations and in some cases 
+  also max speed) is randomized, that is it may be increased or 
+  decreased around its preset value for a maximum of 20%, only 
+  in respectively 70% , 60% and 50% of cases when randomization level 
+  is 3, 2 or 1, and the increase and decrease is 
+  computed with a pseudonormal distribution curve, that is smaller 
+  changes are more likely than bigger changes.
+  The same AI train efficiency randomization occurs after every station stop.
+
+- station depart time: in the same 70% , 60% and 50% of cases the number of 
+  passengers boarding at a station are increased or decreased of a random 
+  amount that depends also from randomization level. Departure time therefore 
+  may be anticipated or, more often, delayed.
+
+- waiting point delay: in the same 70% , 60% and 50% of cases a 
+  waiting point delay is introduced, that can have a maximum value of 25 seconds 
+  for the standard WPs and 5 minutes for the absolute WPs. Such maximum 
+  values depend also from randomization level.
 
 Screenshot - Print Screen
 =========================
