@@ -72,6 +72,8 @@ namespace Orts.Simulation.AIs
         public float doorOpenDelay = -1f;
         public float doorCloseAdvance = -1f;
 
+        public float PathLength;
+
 
         public enum AI_MOVEMENT_STATE
         {
@@ -131,7 +133,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Constructor
-        /// <\summary>
+        /// </summary>
 
         public AITrain(Simulator simulator, Service_Definition sd, AI ai, AIPath path, float efficiency,
                 string name, Traffic_Service_Definition trafficService, float maxVelocityA)
@@ -144,6 +146,10 @@ namespace Orts.Simulation.AIs
             TrainType = TRAINTYPE.AI_NOTSTARTED;
             StartTime = ServiceDefinition.Time;
             Efficiency = efficiency;
+            if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null) // randomize efficiency
+            {
+                RandomizeEfficiency(ref Efficiency);
+            }
             Name = String.Copy(name);
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
@@ -162,7 +168,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// convert route and build station list
-        /// <\summary>
+        /// </summary>
 
         public void CreateRoute()
         {
@@ -181,7 +187,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// convert route and build station list
-        /// <\summary>
+        /// </summary>
 
         public void CreateRoute(bool usePosition)
         {
@@ -204,7 +210,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Restore
-        /// <\summary>
+        /// </summary>
 
         public AITrain(Simulator simulator, BinaryReader inf, AI airef)
             : base(simulator, inf)
@@ -297,7 +303,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Save
-        /// <\summary>
+        /// </summary>
 
         public override void Save(BinaryWriter outf)
         {
@@ -336,7 +342,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Set starting conditions when speed > 0 
-        /// <\summary>
+        /// </summary>
         /// 
 
         public override void InitializeMoving() // TODO
@@ -446,6 +452,7 @@ namespace Orts.Simulation.AIs
                     {
                         // <CScomment> gets efficiency from .act file to override TrainMaxSpeedMpS computed from .srv efficiency
                         var sectionEfficiency = ServiceDefinition.ServiceList[0].Efficiency;
+                        if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0) RandomizeEfficiency(ref sectionEfficiency);
                         if (sectionEfficiency > 0)
                             TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, MaxVelocityA * sectionEfficiency);
                     }
@@ -508,7 +515,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Check initial station
-        /// <\summary>
+        /// </summary>
 
         public virtual bool CheckInitialStation()
         {
@@ -604,13 +611,28 @@ namespace Orts.Simulation.AIs
             return (ControlMode == TRAIN_CONTROL.INACTIVE ? AI_MOVEMENT_STATE.AI_STATIC : MovementState);
         }
 
+ 
         //================================================================================================//
         /// <summary>
-        /// Update
-        /// Update function for a single AI train.
+        /// Get AI Movement State
         /// </summary>
+        /// 
+        private void RandomizeEfficiency (ref float efficiency)
+        {
+            efficiency *= 100;
+            var incOrDecEfficiency = DateTime.Now.Millisecond % 2 == 0 ? true : false;
+            if (incOrDecEfficiency) efficiency = Math.Min(100, efficiency + RandomizedDelayWithThreshold(20)); // increment it
+            else if (efficiency > 50) efficiency = Math.Max(50, efficiency - RandomizedDelayWithThreshold(20)); // decrement it
+            efficiency /= 100;
+        }
 
-        public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
+    //================================================================================================//
+    /// <summary>
+    /// Update
+    /// Update function for a single AI train.
+    /// </summary>
+
+    public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
             if (!CheckTrain)
@@ -980,7 +1002,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Update for pre-update state
-        /// <\summary>
+        /// </summary>
 
         public virtual void AIPreUpdate(float elapsedClockSeconds)
         {
@@ -1063,7 +1085,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Set reversal point action
-        /// <\summary>
+        /// </summary>
 
         public virtual void SetReversalAction()
         {
@@ -1095,7 +1117,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// change in authority state - check action
-        /// <\summary>
+        /// </summary>
 
         public virtual void CheckRequiredAction()
         {
@@ -1136,7 +1158,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Check all signal objects
-        /// <\summary>
+        /// </summary>
 
         public void CheckSignalObjects()
         {
@@ -1272,7 +1294,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Check for next station
-        /// <\summary>
+        /// </summary>
 
         public virtual void SetNextStationAction(bool fromAutopilotSwitch = false)
         {
@@ -1370,7 +1392,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Calculate actual distance and trigger distance for next station
-        /// <\summary>
+        /// </summary>
 
         public float[] CalculateDistancesToNextStation(StationStop thisStation, float presentSpeedMpS, bool reschedule)
         {
@@ -1454,7 +1476,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Override Switch to Signal control
-        /// <\summary>
+        /// </summary>
 
         public override void SwitchToSignalControl(SignalObject thisSignal)
         {
@@ -1475,7 +1497,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Override Switch to Node control
-        /// <\summary>
+        /// </summary>
 
         public override void SwitchToNodeControl(int thisSectionIndex)
         {
@@ -1551,7 +1573,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Update train in stopped state
-        /// <\summary>
+        /// </summary>
 
         public virtual AITrain.AI_MOVEMENT_STATE UpdateStoppedState(float elapsedClockSeconds)
         {
@@ -1860,7 +1882,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Train is at station
-        /// <\summary>
+        /// </summary>
 
         public virtual void UpdateStationState(float elapsedClockSeconds, int presentTime)
         {
@@ -2035,6 +2057,7 @@ namespace Orts.Simulation.AIs
                 if (actualServiceItemIdx >= 0 && ServiceDefinition.ServiceList.Count >= actualServiceItemIdx + 2)
                 {
                     var sectionEfficiency = ServiceDefinition.ServiceList[actualServiceItemIdx + 1].Efficiency;
+                    if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0) RandomizeEfficiency(ref sectionEfficiency);
                     if (sectionEfficiency > 0)
                     {
                         TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, MaxVelocityA * sectionEfficiency);
@@ -2166,7 +2189,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Train is braking
-        /// <\summary>
+        /// </summary>
 
         public virtual void UpdateBrakingState(float elapsedClockSeconds, int presentTime)
         {
@@ -2969,7 +2992,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Train is accelerating
-        /// <\summary>
+        /// </summary>
 
         public virtual void UpdateAccelState(float elapsedClockSeconds)
         {
@@ -2993,7 +3016,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Train is following
-        /// <\summary>
+        /// </summary>
 
         public virtual void UpdateFollowingState(float elapsedClockSeconds, int presentTime)
         {
@@ -3362,7 +3385,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Train is running at required speed
-        /// <\summary>
+        /// </summary>
 
         public virtual void UpdateRunningState(float elapsedClockSeconds)
         {
@@ -3495,7 +3518,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Start Moving
-        /// <\summary>
+        /// </summary>
 
         public virtual void StartMoving(AI_START_MOVEMENT reason)
         {
@@ -3539,7 +3562,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Set correct state for train allready in section when entering occupied section
-        /// <\summary>
+        /// </summary>
 
         public void UpdateTrainOnEnteringSection(TrackCircuitSection thisSection, Dictionary<Train, float> trainsInSection)
         {
@@ -3580,7 +3603,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Train control routines
-        /// <\summary>
+        /// </summary>
 
         public void AdjustControlsBrakeMore(float reqDecelMpSS, float timeS, int stepSize)
         {
@@ -3777,7 +3800,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Set first car and player loco throttle and brake percent in accordance with their AI train ones
-        /// <\summary>
+        /// </summary>
         ///
         public void SetPercentsFromTrainToTrainset()
         {
@@ -3806,7 +3829,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Update AllowedMaxSpeedMps after station stop
-        /// <\summary>
+        /// </summary>
         /// 
 
         public void RecalculateAllowedMaxSpeed()
@@ -3822,7 +3845,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Create waiting point list
-        /// <\summary>
+        /// </summary>
 
         public override void BuildWaitingPointList(float clearingDistanceM)
         {
@@ -3965,7 +3988,12 @@ namespace Orts.Simulation.AIs
                     else
                     {
                         AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
-                        action.SetDelay(waitingPoint[2]);
+                        var randomizedDelay = waitingPoint[2];
+                        if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0)
+                        {
+                            RandomizedWPDelay(ref randomizedDelay);
+                        }
+                        action.SetDelay(randomizedDelay);
                         AuxActionsContain.Add(action);
                         if (insertSigDelegate && (waitingPoint[2] != 60002 || !Simulator.Settings.ExtendedAIShunting) && signalIndex[iWait] > -1)
                         {
@@ -3973,9 +4001,9 @@ namespace Orts.Simulation.AIs
                             signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
                             delegateAction.SetEndSignalIndex(signalIndex[iWait]);
 
-                            if (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000)
+                            if (randomizedDelay >= 30000 && randomizedDelay < 40000)
                             {
-                                delegateAction.Delay = waitingPoint[2];
+                                delegateAction.Delay = randomizedDelay;
                                 delegateAction.IsAbsolute = true;
                             }
                             else delegateAction.Delay = 0;
@@ -3988,13 +4016,18 @@ namespace Orts.Simulation.AIs
                 else if (insertSigDelegate && signalIndex[iWait] > -1)
                 {
                     AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
-                    action.SetDelay( (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000)? waitingPoint[2] : 0);
+                    var randomizedDelay = waitingPoint[2];
+                    if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0)
+                    {
+                        RandomizedWPDelay(ref randomizedDelay);
+                    }
+                    action.SetDelay( (randomizedDelay >= 30000 && randomizedDelay < 40000)? randomizedDelay : 0);
                     AuxActionsContain.Add(action);
                     AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction, action);
                     signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
                     delegateAction.SetEndSignalIndex(signalIndex[iWait]);
-                    delegateAction.Delay = waitingPoint[2];
-                    if (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000) delegateAction.IsAbsolute = true;
+                    delegateAction.Delay = randomizedDelay;
+                    if (randomizedDelay >= 30000 && randomizedDelay < 40000) delegateAction.IsAbsolute = true;
                     delegateAction.SetSignalObject(signalRef.SignalObjects[signalIndex[iWait]]);
 
                     AuxActionsContain.Add(delegateAction);
@@ -4003,10 +4036,11 @@ namespace Orts.Simulation.AIs
             }
         }
 
+
         //================================================================================================//
         /// <summary>
         /// Initialize brakes for AI trains
-        /// <\summary>
+        /// </summary>
 
         public override void InitializeBrakes()
         {
@@ -4041,7 +4075,7 @@ namespace Orts.Simulation.AIs
         /// returns :
         /// [0] : true : end of route, false : not end of route
         /// [1] : true : train still exists, false : train is removed and no longer exists
-        /// <\summary>
+        /// </summary>
 
         public virtual bool[] ProcessEndOfPath(int presentTime)
         {
@@ -4425,7 +4459,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Couple AI train to static train
-        /// <\summary>
+        /// </summary>
         /// 
 
         public void CoupleAIToStatic(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
@@ -4515,7 +4549,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Couple AI train to living train (AI or player) and leave cars to it; both remain alive in this case
-        /// <\summary>
+        /// </summary>
         /// 
 
         public void LeaveCarsToLivingTrain(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
@@ -4589,7 +4623,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Coupling AI train steals cars to coupled AI train
-        /// <\summary>
+        /// </summary>
 
         public void StealCarsToLivingTrain(Train attachTrain, bool thisTrainFront, bool attachTrainFront)
         {
@@ -4663,7 +4697,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Uncouple and perform housekeeping
-        /// <\summary>
+        /// </summary>
         /// 
         public void TerminateCoupling(Train attachTrain, bool thisTrainFront, bool attachTrainFront, float passedLength)
         {
@@ -4899,7 +4933,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Remove train
-        /// <\summary>
+        /// </summary>
 
         public override void RemoveTrain()
         {
@@ -4934,7 +4968,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Suspend train because incorporated in other train
-        /// <\summary>
+        /// </summary>
 
         public virtual void SuspendTrain(Train incorporatingTrain)
         {
@@ -4956,7 +4990,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Insert action item
-        /// <\summary>
+        /// </summary>
 
         public void CreateTrainAction(float presentSpeedMpS, float reqSpeedMpS, float distanceToTrainM,
                 ObjectItemInfo thisItem, AIActionItem.AI_ACTION_TYPE thisAction)
@@ -5078,7 +5112,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Insert action item for end-of-route
-        /// <\summary>
+        /// </summary>
 
         public virtual void SetEndOfRouteAction()
         {
@@ -5114,7 +5148,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Reset action list
-        /// <\summary>
+        /// </summary>
 
         public void ResetActions(bool setEndOfPath, bool fromAutopilotSwitch = false)
         {
@@ -5199,7 +5233,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Perform stored actions
-        /// <\summary>
+        /// </summary>
 
         public override void PerformActions(List<DistanceTravelledItem> nowActions)
         {
@@ -5248,7 +5282,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Set pending speed limits
-        /// <\summary>
+        /// </summary>
 
         public void SetAIPendingSpeedLimit(ActivateSpeedLimit speedInfo)
         {
@@ -5295,7 +5329,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// Process pending actions
-        /// <\summary>
+        /// </summary>
 
         public void ProcessActionItem(AIActionItem thisItem)
         {
@@ -5994,7 +6028,7 @@ namespace Orts.Simulation.AIs
         /// 8   Distance :
         ///     Distance to
         /// 11  Train Name
-        /// <\summary>
+        /// </summary>
 
         public virtual String[] AddMovementState(String[] stateString, bool metric)
         {
@@ -6173,7 +6207,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// When in autopilot mode, switches to player control
-        /// <\summary>
+        /// </summary>
         /// 
         public bool SwitchToPlayerControl()
         {
@@ -6216,7 +6250,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// When in autopilot mode, switches to autopilot control
-        /// <\summary>
+        /// </summary>
         /// 
         public bool SwitchToAutopilotControl()
         {
@@ -6268,7 +6302,7 @@ namespace Orts.Simulation.AIs
         //================================================================================================//
         /// <summary>
         /// AddPathInfo:  Used to construct a single line for path debug in HUD Windows
-        /// <\summary>
+        /// </summary>
 
         public String[] AddPathInfo(String[] stateString, bool metric)
         {
@@ -6568,7 +6602,7 @@ namespace Orts.Simulation.AIs
     //================================================================================================//
     /// <summary>
     /// AIActionItem class : class to hold info on next restrictive action
-    /// <\summary>
+    /// </summary>
 
 
     public class AIActionItem : Train.DistanceTravelledItem

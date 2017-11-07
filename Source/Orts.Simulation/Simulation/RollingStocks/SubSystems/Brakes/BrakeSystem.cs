@@ -89,6 +89,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract void SetRetainer(RetainerSetting setting);
         public abstract void InitializeMoving(); // starting conditions when starting speed > 0
         public abstract void LocoInitializeMoving(); // starting conditions when starting speed > 0
+        public abstract bool IsBraking(); // return true if the wagon is braking above a certain threshold
     }
 
     public enum RetainerSetting

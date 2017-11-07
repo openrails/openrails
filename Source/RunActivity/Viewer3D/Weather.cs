@@ -48,6 +48,9 @@ namespace Orts.Viewer3D
 
         public bool weatherChangeOn = false;
         public DynamicWeather dynamicWeather;
+        public bool RandomizedWeather;
+        public bool DesertZone; // we are in a desert zone, so no randomized weather change...
+        private float[,] DesertZones = { { 30, 45, -120, -105 } }; // minlat, maxlat, minlong, maxlong
 
         // Variables used for wind calculations
         Vector2 WindSpeedInternalMpS;
@@ -84,6 +87,22 @@ namespace Orts.Viewer3D
             SetInitialWeatherParameters();
             UpdateWeatherParameters();
 
+            // add here randomized weather
+            if (Viewer.Settings.ActWeatherRandomizationLevel > 0 && Viewer.Simulator.ActivityRun != null && !Viewer.Simulator.ActivityRun.WeatherChangesPresent)
+            {
+                RandomizedWeather = RandomizeInitialWeather();
+                dynamicWeather = new DynamicWeather();
+                if (RandomizedWeather)
+                {
+                    UpdateSoundSources();
+                    UpdateVolume();
+                    // We have a pause in weather change, depending from randomization level
+                    dynamicWeather.stableWeatherTimer = ( 4.0f - Viewer.Settings.ActWeatherRandomizationLevel) * 600 + Simulator.Random.Next(300) - 150;
+                    weatherChangeOn = true;
+                }
+
+            }
+
             Viewer.Simulator.WeatherChanged += (object sender, EventArgs e) =>
             {
                 SetInitialWeatherParameters();
@@ -98,6 +117,7 @@ namespace Orts.Viewer3D
             outf.Write(Weather.OvercastFactor);
             outf.Write(Weather.PricipitationIntensityPPSPM2);
             outf.Write(Weather.PrecipitationLiquidity);
+            outf.Write(RandomizedWeather);
             outf.Write(weatherChangeOn);
             if (weatherChangeOn)
             {
@@ -119,6 +139,7 @@ namespace Orts.Viewer3D
             Weather.OvercastFactor = inf.ReadSingle();
             Weather.PricipitationIntensityPPSPM2 = inf.ReadSingle();
             Weather.PrecipitationLiquidity = inf.ReadSingle();
+            RandomizedWeather = inf.ReadBoolean();
             weatherChangeOn = inf.ReadBoolean();
             if (weatherChangeOn)
             {
@@ -196,11 +217,74 @@ namespace Orts.Viewer3D
             Weather.WindSpeedMpS = WindSpeedInternalMpS;
         }
 
+        private bool RandomizeInitialWeather()
+        {
+            CheckDesertZone();
+            if (DesertZone) return false;
+            // First define overcast
+            var randValue = Simulator.Random.Next(170);
+            var intermValue = randValue >= 50 ? (float)(randValue - 50f) : (float)randValue;
+            Weather.OvercastFactor = intermValue >= 20 ? (float)(intermValue - 20f)/100f: (float)intermValue/100f; // give more probability to less overcast
+            Viewer.Simulator.WeatherType = Orts.Formats.Msts.WeatherType.Clear;
+            // Then check if we are in precipitation zone
+            if (Weather.OvercastFactor > 0.5)
+            {
+                randValue = Simulator.Random.Next(75);
+                if (randValue > 40)
+                {
+                    Weather.PricipitationIntensityPPSPM2 = (float)(randValue - 40f) / 1000f;
+                    if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex <= 0xFFFF)
+                        Weather.PricipitationIntensityPPSPM2 = Math.Min(Weather.PricipitationIntensityPPSPM2, 0.010f);
+                    if (Viewer.Simulator.Season == SeasonType.Winter)
+                    {
+                        Viewer.Simulator.WeatherType = Orts.Formats.Msts.WeatherType.Snow;
+                        Weather.PrecipitationLiquidity = 0;
+                    }
+                    else
+                    {
+                        Viewer.Simulator.WeatherType = Orts.Formats.Msts.WeatherType.Rain;
+                        Weather.PrecipitationLiquidity = 1;
+                    }
+                }
+            }
+            // and now define visibility
+            randValue = Simulator.Random.Next(2000);
+            if (Weather.PricipitationIntensityPPSPM2 > 0 || Weather.OvercastFactor > 0.7f )
+            // use first digit to define power of ten and the other three to define the multiplying number
+                Weather.FogDistance =  Math.Max ( 100, (float)Math.Pow(10 , ((int)(randValue / 1000) + 2)) * (float)((randValue % 1000 + 1) / 100f));
+            else
+                Weather.FogDistance = Math.Max(500, (float)Math.Pow(10, (int)((randValue / 1000) + 3)) * (float)((randValue % 1000 + 1) / 100f));
+            return true;
+        }
+
         // TODO: Add several other weather conditions, such as PartlyCloudy, LightRain, 
         // HeavySnow, etc. to the Options dialog as dropdown list boxes. Transfer user's
         // selection to RunActivity and make appropriate adjustments to the weather here.
         // This class will eventually be expanded to interpret dynamic weather scripts and
         // make game-time weather transitions.
+
+        private void CheckDesertZone()
+        {
+            // Compute player train lat/lon in degrees 
+            double latitude = 0;
+            double longitude = 0;
+            var location = Viewer.PlayerLocomotive.Train.FrontTDBTraveller;
+            new Orts.Common.WorldLatLon().ConvertWTC(location.TileX, location.TileZ, location.Location, ref latitude, ref longitude);
+            float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
+            float LongitudeDeg = MathHelper.ToDegrees((float)longitude);
+
+            // Compare player train lat/lon with array of desert zones
+            for (int i = 0; i < DesertZones.Length / 4; i++)
+            {
+                if (LatitudeDeg > DesertZones[i,0] && LatitudeDeg < DesertZones[i,1] && LongitudeDeg > DesertZones[i,2] && LongitudeDeg < DesertZones[i,3]
+                     && Viewer.PlayerLocomotive.Train.FrontTDBTraveller.Location.Y < 1000 ||
+                     LatitudeDeg > DesertZones[i, 0] + 1 && LatitudeDeg < DesertZones[i, 1] -1 && LongitudeDeg > DesertZones[i, 2] + 1 && LongitudeDeg < DesertZones[i, 3] -1)
+                {
+                    DesertZone = true;
+                    return;
+                }
+            } 
+        }
 
         [CallOnThread("Updater")]
         public virtual void Update(ElapsedTime elapsedTime)
@@ -357,6 +441,8 @@ namespace Orts.Viewer3D
             {
                 dynamicWeather.WeatherChange_Update(elapsedTime, this);
             }
+            if (RandomizedWeather && !weatherChangeOn) // time to prepare a new weather change
+                dynamicWeather.WeatherChange_NextRandomization(elapsedTime, this);
         }
 
         public class DynamicWeather
@@ -366,8 +452,10 @@ namespace Orts.Viewer3D
             public float overcastTimer = 0;
             public float fogChangeRate = 0;
             public float fogTimer = 0;
+            public float stableWeatherTimer = 0;
             public float precipitationIntensityChangeRate = 0;
             public float precipitationIntensityTimer = 0;
+            public float precipitationIntensityDelayTimer = -1;
             public float precipitationLiquidityChangeRate = 0;
             public float precipitationLiquidityTimer = 0;
             public float ORTSOvercast = -1;
@@ -399,6 +487,8 @@ namespace Orts.Viewer3D
                 outf.Write(ORTSPrecipitationLiquidity);
                 outf.Write(fogDistanceIncreasing);
                 outf.Write(ORTSFogTransitionTimeS);
+                outf.Write(stableWeatherTimer);
+                outf.Write(precipitationIntensityDelayTimer);
             }
 
             public void Restore(BinaryReader inf)
@@ -417,6 +507,8 @@ namespace Orts.Viewer3D
                 ORTSPrecipitationLiquidity = inf.ReadSingle();
                 fogDistanceIncreasing = inf.ReadBoolean();
                 ORTSFogTransitionTimeS = inf.ReadInt32();
+                stableWeatherTimer = inf.ReadSingle();
+                precipitationIntensityDelayTimer = inf.ReadSingle();
             }
 
             public void ResetWeatherTargets()
@@ -508,11 +600,11 @@ namespace Orts.Viewer3D
                     }
                     if (fogTimer == 0) ORTSFog = -1;
                 }
-                if (ORTSPrecipitationIntensity >= 0)
+                if (ORTSPrecipitationIntensity >= 0 && precipitationIntensityDelayTimer == -1)
                 {
                     precipitationIntensityTimer -= elapsedTime.ClockSeconds;
                     if (precipitationIntensityTimer <= 0) precipitationIntensityTimer = 0;
-                    else wChangeOn = true;
+                    else if (weatherControl.RandomizedWeather == false ) wChangeOn = true;
                     var oldPricipitationIntensityPPSPM2 = weatherControl.Weather.PricipitationIntensityPPSPM2;
                     weatherControl.Weather.PricipitationIntensityPPSPM2 = ORTSPrecipitationIntensity - precipitationIntensityTimer * precipitationIntensityChangeRate;
                     if (weatherControl.Weather.PricipitationIntensityPPSPM2 > 0)
@@ -534,6 +626,15 @@ namespace Orts.Viewer3D
                         }
                     }
                     if (precipitationIntensityTimer == 0) ORTSPrecipitationIntensity = -1;
+                }
+                else if (ORTSPrecipitationIntensity >= 0 && precipitationIntensityDelayTimer > 0)
+                {
+                    precipitationIntensityDelayTimer -= elapsedTime.ClockSeconds;
+                    if (precipitationIntensityDelayTimer <= 0)
+                    {
+                        precipitationIntensityDelayTimer = -1; // OK, now rain/snow can start
+                        precipitationIntensityTimer = overcastTimer; // going in parallel now
+                    }
                 }
                 if (ORTSPrecipitationLiquidity >= 0)
                 {
@@ -562,7 +663,96 @@ namespace Orts.Viewer3D
                     }
                     if (precipitationLiquidityTimer == 0) ORTSPrecipitationLiquidity = -1;
                 }
+                if (stableWeatherTimer > 0)
+                {
+                    stableWeatherTimer -= elapsedTime.ClockSeconds;
+                    if (stableWeatherTimer <= 0)
+                        stableWeatherTimer = 0;
+                    else wChangeOn = true;
+                }
                 weatherControl.weatherChangeOn = wChangeOn;
+            }
+
+            public void WeatherChange_NextRandomization(ElapsedTime elapsedTime, WeatherControl weatherControl) // start next randomization
+            {
+                // define how much time transition will last
+                var weatherChangeTimer = (4 - weatherControl.Viewer.Settings.ActWeatherRandomizationLevel) * 600 +
+                    Simulator.Random.Next((4 - weatherControl.Viewer.Settings.ActWeatherRandomizationLevel) * 600);
+                // begin with overcast
+                var randValue = Simulator.Random.Next(170);
+                var intermValue = randValue >= 50 ? (float)(randValue - 50f) : (float)randValue;
+                ORTSOvercast = intermValue >= 20 ? (float)(intermValue - 20f) / 100f : (float)intermValue / 100f; // give more probability to less overcast
+                ORTSOvercastTransitionTimeS = weatherChangeTimer;
+                overcastTimer = (float)ORTSOvercastTransitionTimeS;
+                overcastChangeRate = overcastTimer > 0 ? (MathHelper.Clamp(ORTSOvercast, 0, 1.0f) - weatherControl.Weather.OvercastFactor) / ORTSOvercastTransitionTimeS : 0;
+                // Then check if we are in precipitation zone
+                if (ORTSOvercast > 0.5)
+                {
+                    randValue = Simulator.Random.Next(75);
+                    if (randValue > 40)
+                    {
+                        ORTSPrecipitationIntensity = (float)(randValue - 40f) / 1000f;
+                        if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex <= 0xFFFF)
+                            ORTSPrecipitationIntensity = Math.Min(ORTSPrecipitationIntensity, 0.010f);
+                        if (weatherControl.Viewer.Simulator.Season == SeasonType.Winter)
+                        {
+                            weatherControl.Weather.PrecipitationLiquidity = 0;
+                        }
+                        else
+                        {
+                            weatherControl.Weather.PrecipitationLiquidity = 1;
+                        }
+                    }
+                }
+                if (weatherControl.Weather.PricipitationIntensityPPSPM2 > 0 && ORTSPrecipitationIntensity == -1)
+                {
+                    ORTSPrecipitationIntensity = 0;
+                    // must return to zero before overcast < 0.5
+                    ORTSPrecipitationIntensityTransitionTimeS = (int)((0.5 - weatherControl.Weather.OvercastFactor) / overcastChangeRate);
+                }
+                if (weatherControl.Weather.PricipitationIntensityPPSPM2 == 0 && ORTSPrecipitationIntensity > 0 && weatherControl.Weather.OvercastFactor < 0.5)
+                {
+                    // we will have precipitation now, but it must start after overcast is over 0.5
+                    precipitationIntensityDelayTimer = (0.5f - weatherControl.Weather.OvercastFactor) / overcastChangeRate;
+                }
+
+                if (ORTSPrecipitationIntensity > 0)
+                {
+                    ORTSPrecipitationIntensityTransitionTimeS = weatherChangeTimer;
+                }
+                if (ORTSPrecipitationIntensity >= 0)
+                { 
+                    precipitationIntensityTimer = (float)ORTSPrecipitationIntensityTransitionTimeS;
+                    // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
+                    // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
+                    if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF)
+                        precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
+                            - weatherControl.Weather.PricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
+                    else
+                        precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2_16)
+                            - weatherControl.Weather.PricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
+                }
+
+                // and now define visibility
+                randValue = Simulator.Random.Next(2000);
+                if (ORTSPrecipitationIntensity > 0 || ORTSOvercast > 0.7f)
+                    // use first digit to define power of ten and the other three to define the multiplying number
+                    ORTSFog = Math.Max(100, (float)Math.Pow(10, ((int)(randValue / 1000) + 2)) * (float)((randValue % 1000 + 1) / 100f));
+                else
+                    ORTSFog = Math.Max(500, (float)Math.Pow(10, (int)((randValue / 1000) + 3)) * (float)((randValue % 1000 + 1) / 100f));
+                ORTSFogTransitionTimeS = weatherChangeTimer;
+                fogTimer = (float)ORTSFogTransitionTimeS;
+                var fogFinalValue = MathHelper.Clamp(ORTSFog, 10, 100000);
+                fogDistanceIncreasing = false;
+                fogChangeRate = fogTimer > 0 ? (fogFinalValue - weatherControl.Weather.FogDistance) / (ORTSFogTransitionTimeS * ORTSFogTransitionTimeS) : 0;
+                if (fogFinalValue > weatherControl.Weather.FogDistance)
+                {
+                    fogDistanceIncreasing = true;
+                    fogChangeRate = -fogChangeRate;
+                    ORTSFog = weatherControl.Weather.FogDistance;
+                }
+
+                weatherControl.weatherChangeOn = true;
             }
         }
     }

@@ -192,6 +192,8 @@ namespace ORTS.Settings
         public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
+        [Default(false)]
+        public bool Autopilot { get; set; }
 
         // Data logger settings:
         [Default("comma")]
@@ -277,8 +279,6 @@ namespace ORTS.Settings
         public bool ConditionalLoadOfDayOrNightTextures { get; set; }
         [Default(false)]
         public bool ExtendedAIShunting { get; set; }
-        [Default(false)]
-        public bool Autopilot { get; set; }
         [Default(100)]
         public int PrecipitationBoxHeight { get; set; }
         [Default(500)]
@@ -293,6 +293,10 @@ namespace ORTS.Settings
         public bool UseWeatherFile { get; set; }
         [Default("")]
         public string LastUsedWeatherFile { get; set; }
+        [Default(0)]
+        public int ActRandomizationLevel { get; set; }
+        [Default(0)]
+        public int ActWeatherRandomizationLevel { get; set; }
 
         // Hidden settings:
         [Default(0)]

@@ -78,6 +78,9 @@ namespace Orts.Simulation
 
         public List<TempSpeedPostItem> TempSpeedPostItems;
 
+        public int RandomizabilityPerCent = 0; // 0 -> hardly randomizable ; 100 -> well randomizable
+        public bool WeatherChangesPresent; // tested in case of randomized activities to state wheter weather should be randomized
+
         private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList, List<TempSpeedPostItem> tempSpeedPostItems)
         {
             TempSpeedPostItems = tempSpeedPostItems;
@@ -144,6 +147,7 @@ namespace Orts.Simulation
                 }
                 EventWrapper eventAdded = EventList.Last();
                 eventAdded.OriginalActivationLevel = i.Activation_Level;
+                if (i.ORTSWeatherChange != null) WeatherChangesPresent = true;
             }
 
             StationStopLogActive = false;

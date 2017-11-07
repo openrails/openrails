@@ -379,7 +379,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(t * MaxForceN, AbsWheelSpeedMpS == 0.0f ? (t * MaxForceN) : (t * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
+                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsWheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
                     float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
                     if (DieselEngines.HasGearBox)
@@ -402,7 +402,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     if (t > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
                         t = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS);
+                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
@@ -427,9 +427,9 @@ namespace Orts.Simulation.RollingStocks
  //               MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
-            if (MaxForceN > 0 && MaxContinuousForceN > 0)
+            if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
             {
-                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
+                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
                 float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
                 if (w < 0)
                     w = 0;

@@ -871,10 +871,10 @@ namespace Orts.Simulation.AIs
 
             train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
 
-            if (maxVelocityA > 0 && srvFile.Efficiency > 0)
+            if (maxVelocityA > 0 && train.Efficiency > 0)
             {
                 // <CScomment> this is overridden if there are station stops
-                train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA * srvFile.Efficiency);
+                train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA * train.Efficiency);
             }
 
             // add wagons
@@ -951,6 +951,9 @@ namespace Orts.Simulation.AIs
             if (!isInitialPlayerTrain || train.InitialSpeed != 0) train.AITrainDirectionForward = true;
             train.BrakeLine3PressurePSI = 0;
 
+            // Compute length of path to evaluate possibility of activity randomization
+            if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null)
+                train.PathLength = train.ComputePathLength();
 
             return train;
         }

@@ -173,6 +173,7 @@ namespace ORTS
             comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
             trackDayAmbientLight_ValueChanged(null, null);
+            checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
@@ -185,6 +186,10 @@ namespace ORTS
             checkTunnelResistanceDependent.Checked = Settings.TunnelResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
+            checkAutopilot.Checked = Settings.Autopilot;
+            checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
+            checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
+            checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -303,14 +308,10 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
-            checkDoubleWire.Checked = Settings.DoubleWire;
-            checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
             checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfDayOrNightTextures;
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
-            checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
-            checkAutopilot.Checked = Settings.Autopilot;
             checkCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
             checkLODViewingExtention.Checked = Settings.LODViewingExtention;
             checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
@@ -325,7 +326,8 @@ namespace ORTS
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
-            checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
+            numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
+            numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
         }
 
         static string ParseCategoryFrom(string name)
@@ -452,6 +454,7 @@ namespace ORTS
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
             Settings.WindowSize = comboWindowSize.Text;
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
+            Settings.DoubleWire = checkDoubleWire.Checked;
 
             // Simulation tab
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
@@ -462,6 +465,10 @@ namespace ORTS
             Settings.TunnelResistanceDependent = checkTunnelResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
+            Settings.Autopilot = checkAutopilot.Checked;
+            Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
+            Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
+            Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
 
             // Keyboard tab
             // These are edited live.
@@ -498,13 +505,9 @@ namespace ORTS
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
-            Settings.DoubleWire = checkDoubleWire.Checked;
-            Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.LODBias = trackLODBias.Value;
             Settings.ConditionalLoadOfDayOrNightTextures = checkConditionalLoadOfNightTextures.Checked;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
-            Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
-            Settings.Autopilot = checkAutopilot.Checked;
             Settings.CircularSpeedGauge = checkCircularSpeedGauge.Checked;
             Settings.LODViewingExtention = checkLODViewingExtention.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
@@ -518,7 +521,8 @@ namespace ORTS
             Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
             Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
-            Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
+            Settings.ActRandomizationLevel = (int)numericActRandomizationLevel.Value;
+            Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
 
             Settings.Save();
         }

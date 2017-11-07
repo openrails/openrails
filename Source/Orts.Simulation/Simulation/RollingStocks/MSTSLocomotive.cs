@@ -309,6 +309,8 @@ namespace Orts.Simulation.RollingStocks
 
         public double LastBrakeSoundTime = 0;
 
+        public float PowerReduction = 0;
+
         public MSTSLocomotive(Simulator simulator, string wagPath)
             : base(simulator, wagPath)
         {
@@ -879,6 +881,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(DynamicBrakeController, outf);
             ControllerFactory.Save(SteamHeatController, outf);
             outf.Write(AcceptMUSignals);
+            outf.Write(PowerReduction);
 
             base.Save(outf);
         }
@@ -909,6 +912,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(DynamicBrakeController, inf);
             ControllerFactory.Restore(SteamHeatController, inf);
             AcceptMUSignals = inf.ReadBoolean();
+            PowerReduction = inf.ReadSingle();
             AdhesionFilter.Reset(0.5f);
 
             base.Restore(inf);
@@ -1160,8 +1164,8 @@ namespace Orts.Simulation.RollingStocks
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
                 if (f > 0 && PowerOn)
                 {
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * f;
-                    DynamicBrakeForceN = f;
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * f * (1 - PowerReduction);
+                    DynamicBrakeForceN = f * (1 - PowerReduction);
                 }
                 else
                 {
@@ -1176,7 +1180,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 case Train.TRAINTYPE.AI:
                 case Train.TRAINTYPE.AI_PLAYERHOSTING:
-                    if (!PowerOn)
+                    if (!PowerOn && AcceptMUSignals)
                     {
                         Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
 
@@ -1483,8 +1487,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = MaxForceN * t;
-                    float maxPowerW = MaxPowerW * t * t;
+                    float maxForceN = MaxForceN * t * (1 - PowerReduction);
+                    float maxPowerW = MaxPowerW * t * t * (1 - PowerReduction);
 
                     if (maxForceN * AbsWheelSpeedMpS > maxPowerW)
                         maxForceN = maxPowerW / AbsWheelSpeedMpS;
@@ -1498,7 +1502,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS);
+                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0)
                         MotiveForceN = 0;
                 }
@@ -1507,9 +1511,9 @@ namespace Orts.Simulation.RollingStocks
             else
                 TractiveForceN = 0f;
 
-            if (MaxForceN > 0 && MaxContinuousForceN > 0)
+            if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
             {
-                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN;
+                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
                 float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
                 if (w < 0)
                     w = 0;

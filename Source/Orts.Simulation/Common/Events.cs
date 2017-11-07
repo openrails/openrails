@@ -30,6 +30,7 @@ namespace Orts.Common
         BellOff,
         BellOn,
         BlowerChange,
+        BrakesStuck,
         CabLightSwitchToggle,
         CabRadioOn,
         CabRadioOff,
@@ -323,6 +324,8 @@ namespace Orts.Common
                         case 161: return Event.CabLightSwitchToggle;
                         case 162: return Event.CabRadioOn;
                         case 163: return Event.CabRadioOff;
+
+                        case 164: return Event.BrakesStuck;
                             //
 
                         default: return 0;

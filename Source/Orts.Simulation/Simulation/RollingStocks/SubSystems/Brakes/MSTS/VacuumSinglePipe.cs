@@ -265,9 +265,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     BrakeLine1PressurePSI -= dp * vr;
             }
             float vrp = VacResPressureAdjPSIA();
-            float f = CylPressurePSIA <= vrp ? 0 : Car.MaxBrakeForceN * Math.Min((CylPressurePSIA - vrp) / MaxForcePressurePSI, 1);
-            if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
-                f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
+            float f;
+            if (!Car.BrakesStuck)
+            {
+                f = CylPressurePSIA <= vrp ? 0 : Car.MaxBrakeForceN * Math.Min((CylPressurePSIA - vrp) / MaxForcePressurePSI, 1);
+                if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
+                    f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
+            }
+            else f = Math.Max(Car.MaxBrakeForceN, Car.MaxHandbrakeForceN / 2);
             Car.BrakeRetardForceN = f * Car.BrakeShoeRetardCoefficientFrictionAdjFactor; // calculates value of force applied to wheel, independent of wheel skid
             if (Car.BrakeSkid) // Test to see if wheels are skiding due to excessive brake force
             {
@@ -440,6 +445,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
             Car.Train.EqualReservoirPressurePSIorInHg = P2V(OneAtmospherePSI - MaxForcePressurePSI * (1 - percent / 100));
+        }
+
+        public override bool IsBraking()
+        {
+            if (CylPressurePSIA < MaxForcePressurePSI * 0.7)
+                return true;
+            return false;
         }
     }
 }

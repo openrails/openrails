@@ -61,7 +61,8 @@ namespace Orts.Viewer3D
             }
             else
             {
-                WeatherControl = new AutomaticWeather(viewer, viewer.Simulator.UserWeatherFile, gameTime);
+                WeatherControl = new 
+                    AutomaticWeather(viewer, viewer.Simulator.UserWeatherFile, gameTime);
             }
             // Then drawers.
             if (viewer.Settings.UseMSTSEnv)

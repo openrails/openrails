@@ -58,6 +58,7 @@ namespace Orts.Simulation
     {
         public static GettextResourceManager Catalog { get; private set; }
         public static Random Random { get; private set; }
+        public static double Resolution = 1000000; // resolution for calculation of random value with a pseudo-gaussian distribution
 
         public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;

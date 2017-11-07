@@ -175,6 +175,9 @@ namespace Orts.Viewer3D.RollingStock
             var exhaustParticles = car.Train != null && car.Train.TrainType == Train.TRAINTYPE.STATIC ? 0 : car.ExhaustParticles.SmoothedValue;
             foreach (var drawer in Exhaust)
             {
+                var colorR = car.ExhaustColorR.SmoothedValue / 255f;
+                var colorG = car.ExhaustColorG.SmoothedValue / 255f;
+                var colorB = car.ExhaustColorG.SmoothedValue / 255f;
                 drawer.SetOutput(exhaustParticles, car.ExhaustMagnitude.SmoothedValue, new Color((byte)car.ExhaustColorR.SmoothedValue, (byte)car.ExhaustColorG.SmoothedValue, (byte)car.ExhaustColorB.SmoothedValue));
             }
             

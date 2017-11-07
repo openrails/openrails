@@ -386,6 +386,11 @@ namespace Orts.Simulation.Physics
         public float InitialSpeed = 0;                 // initial speed of train in activity as set in .srv file
         public float InitialThrottlepercent = 25; // initial value of throttle when train starts activity at speed > 0
 
+        public double BrakingTime;              // Total braking time, used to check whether brakes get stuck
+        public float ContinuousBrakingTime;     // Consecutive braking time, used to check whether brakes get stuck
+        public double RunningTime;              // Total running time, used to check whether a locomotive is partly or totally unpowered due to a fault
+        public int UnpoweredLoco = -1;          // car index of unpowered loco
+
         public enum END_AUTHORITY
         {
             END_OF_TRACK,
@@ -686,6 +691,9 @@ namespace Orts.Simulation.Physics
             allowedAbsoluteMaxSpeedSignalMpS = inf.ReadSingle();
             allowedAbsoluteMaxSpeedLimitMpS = inf.ReadSingle();
             allowedAbsoluteMaxTempSpeedLimitMpS = inf.ReadSingle();
+            BrakingTime = inf.ReadDouble();
+            ContinuousBrakingTime = inf.ReadSingle();
+            RunningTime = inf.ReadDouble();
             IncorporatedTrainNo = inf.ReadInt32();
             IncorporatingTrainNo = inf.ReadInt32();
             if (IncorporatedTrainNo > -1)
@@ -1016,6 +1024,9 @@ namespace Orts.Simulation.Physics
             outf.Write(allowedAbsoluteMaxSpeedSignalMpS);
             outf.Write(allowedAbsoluteMaxSpeedLimitMpS);
             outf.Write(allowedAbsoluteMaxTempSpeedLimitMpS);
+            outf.Write(BrakingTime);
+            outf.Write(ContinuousBrakingTime);
+            outf.Write(RunningTime);
             outf.Write(IncorporatedTrainNo);
             outf.Write(IncorporatingTrainNo);
 
@@ -1547,6 +1558,13 @@ namespace Orts.Simulation.Physics
             {
                 CheckStationTask();
             }
+
+
+            if (IsActualPlayerTrain && Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null) // defects might occur
+            {
+                CheckFailures (elapsedClockSeconds);
+            }
+
             // Update train physics, position and movement
 
             physicsUpdate(elapsedClockSeconds);
@@ -4983,6 +5001,53 @@ namespace Orts.Simulation.Physics
                 return lengthToGoM += TCRoute.ReversalInfo[TCRoute.activeSubpath].ReverseReversalOffset -
                     signalRef.TrackCircuitList[TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex].Length;
             }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Compute path length
+        /// <\summary>
+
+        public float ComputePathLength()
+        {
+            float pathLength = 0;
+            int tcRouteSubpathIndex = -1;
+            foreach (var tcRouteSubpath in TCRoute.TCRouteSubpaths)
+            {
+                tcRouteSubpathIndex++;
+                if (tcRouteSubpathIndex > 0 && TCRoute.ReversalInfo[tcRouteSubpathIndex-1].Valid) pathLength += TCRoute.ReversalInfo[tcRouteSubpathIndex-1].ReverseReversalOffset;
+                else if (tcRouteSubpathIndex > 0) pathLength += TCRoute.ReversalInfo[tcRouteSubpathIndex-1].ReverseReversalOffset -
+                    signalRef.TrackCircuitList[TCRoute.ReversalInfo[tcRouteSubpathIndex-1].ReversalSectionIndex].Length;
+                else { } //start point offset?
+                int routeListIndex = 1;
+                TrackCircuitSection thisSection;
+                int reversalRouteIndex = tcRouteSubpath.GetRouteIndex(TCRoute.ReversalInfo[tcRouteSubpathIndex].ReversalSectionIndex, routeListIndex);
+                if (reversalRouteIndex == -1)
+                {
+                    Trace.TraceWarning("Train {0} service {1}, reversal or end point off path; distance to reversal point set to -1", Number, Name);
+                    return -1;
+                }
+                if (routeListIndex <= reversalRouteIndex)
+                {
+                    for (int iElement = routeListIndex; iElement < tcRouteSubpath.Count; iElement++)
+                    {
+                        TCRouteElement thisElement = tcRouteSubpath[iElement];
+                        thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                        if (thisSection.Index == TCRoute.ReversalInfo[tcRouteSubpathIndex].ReversalSectionIndex)
+                        {
+                            break;
+                        }
+                        else pathLength += thisSection.Length;
+                    }
+                    pathLength += TCRoute.ReversalInfo[tcRouteSubpathIndex].ReverseReversalOffset;
+                }
+                else
+                {
+                    pathLength += TCRoute.ReversalInfo[tcRouteSubpathIndex].ReverseReversalOffset -
+                    signalRef.TrackCircuitList[TCRoute.ReversalInfo[tcRouteSubpathIndex].ReversalSectionIndex].Length;
+                }
+            }
+            return pathLength;
         }
 
 
@@ -11482,6 +11547,63 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
+        /// in a certain % of cases depending from randomization level returns a 0 delay
+        /// in the remainder of cases computes a randomized delay using a single-sided pseudo-gaussian distribution
+        /// following Daniel Howard's suggestion here https://stackoverflow.com/questions/218060/random-gaussian-variables
+        /// Parameters: 
+        /// maxDelay maximum added random delay (may be seconds or minutes)
+        /// </summary>Ac
+
+        public int RandomizedDelayWithThreshold(int maxAddedDelay)
+        {
+            if (DateTime.Now.Millisecond % 10 < 6 - Simulator.Settings.ActRandomizationLevel) return 0;
+            return (int)(Simulator.Random.Next(0, (int)(Simulator.Resolution * Simulator.Random.NextDouble()) + 1) / Simulator.Resolution * maxAddedDelay);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Computes a randomized delay using a single-sided pseudo-gaussian distribution
+        /// following Daniel Howard's suggestion here https://stackoverflow.com/questions/218060/random-gaussian-variables
+        /// Parameters: 
+        /// maxDelay maximum added random delay (may be seconds or minutes)
+        /// </summary>
+
+        public int RandomizedDelay(int maxAddedDelay)
+        {
+            return (int)(Simulator.Random.Next(0, (int)(Simulator.Resolution * Simulator.Random.NextDouble()) + 1) / Simulator.Resolution * maxAddedDelay);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Computes a randomized delay for the various types of waiting points.
+        /// </summary>
+
+        public int RandomizedWPDelay(ref int randomizedDelay)
+        {
+            if (randomizedDelay < 30000) // standard WP
+            {
+                randomizedDelay += RandomizedDelayWithThreshold(15 + 5 * Simulator.Settings.ActRandomizationLevel);
+            }
+            else if (randomizedDelay >= 30000 && randomizedDelay < 40000) // absolute WP
+            {
+                randomizedDelay += RandomizedDelayWithThreshold(2 + Simulator.Settings.ActRandomizationLevel);
+                if (randomizedDelay % 100 > 59)
+                {
+                    randomizedDelay += 40;
+                    if ((randomizedDelay / 100) % 100 == 24) randomizedDelay -= 2400;
+                }
+            }
+            else if (randomizedDelay > 40000 && randomizedDelay < 60000) // car detach WP
+            {
+                var additionalDelay = RandomizedDelayWithThreshold(25);
+                if (randomizedDelay % 100 + additionalDelay > 99) randomizedDelay += 99;
+                else randomizedDelay += additionalDelay;
+            }
+            return randomizedDelay;
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Convert player traffic list to station list
         /// <\summary>
 
@@ -14064,6 +14186,195 @@ namespace Orts.Simulation.Physics
                     }
                 mstsWagon.SignalEvent(open? Event.DoorOpen : Event.DoorClose); // hook for sound trigger
             }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check if it's time to have a failed car or locomotive
+        /// </summary>
+        /// 
+
+        public void CheckFailures (float elapsedClockSeconds)
+        {
+            if ( IsFreight ) CheckBrakes(elapsedClockSeconds);
+            CheckLocoPower(elapsedClockSeconds);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check if it's time to have a car with stuck brakes
+        /// </summary>
+
+        public void CheckBrakes (float elapsedClockSeconds)
+        {
+            if (BrakingTime == -1) return;
+            if (BrakingTime == -2)
+            {
+                BrakingTime = -1; // Viewer has seen it, can pass to this value
+                return;
+            }
+            if (SpeedMpS > 0)
+            {
+                for (int iCar = 0; iCar < Cars.Count; iCar++)
+                {
+                    var car = Cars[iCar];
+                    if (!(car is MSTSLocomotive))
+                    {
+                        if (car.BrakeSystem.IsBraking() && BrakingTime >= 0)
+                        {
+                            BrakingTime += elapsedClockSeconds;
+                            ContinuousBrakingTime += elapsedClockSeconds;
+                            if (BrakingTime >= 1200.0f/ Simulator.Settings.ActRandomizationLevel || ContinuousBrakingTime >= 600.0f / Simulator.Settings.ActRandomizationLevel)
+                            {
+                                var randInt = Simulator.Random.Next(200000);
+                                var brakesStuck = false;
+                                if (randInt > 200000 - (Simulator.Settings.ActRandomizationLevel == 1 ? 4 : Simulator.Settings.ActRandomizationLevel == 2 ? 8 : 31))
+                                // a car will have brakes stuck. Select which one
+                                {
+                                    var iBrakesStuckCar = Simulator.Random.Next(Cars.Count);
+                                    var jBrakesStuckCar = iBrakesStuckCar;
+                                    while (Cars[iBrakesStuckCar] is MSTSLocomotive && iBrakesStuckCar < Cars.Count)
+                                        iBrakesStuckCar++;
+                                    if (iBrakesStuckCar != Cars.Count)
+                                    {
+                                        brakesStuck = true;
+                                    }
+                                    else
+                                    {
+                                        while (Cars[jBrakesStuckCar] is MSTSLocomotive && jBrakesStuckCar > Cars.Count)
+                                            jBrakesStuckCar--;
+                                        if (jBrakesStuckCar != -1)
+                                        {
+                                            iBrakesStuckCar = jBrakesStuckCar;
+                                            brakesStuck = true;
+                                        }
+                                    }
+                                    if (brakesStuck)
+                                    {
+                                        Cars[iBrakesStuckCar].BrakesStuck = true;
+                                        BrakingTime = -2; //Check no more, we already have a brakes stuck car
+                                        ContinuousBrakingTime = -iBrakesStuckCar; // let's use it for two purposes
+                                        Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Car " + Cars[iBrakesStuckCar].CarID + " has stuck brakes"));
+                                    }
+                                }
+                            }
+                        }
+                        else ContinuousBrakingTime = 0;
+                        return;
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check if it's time to have an electric or diesel loco with a bogie not powering
+        /// </summary>
+
+        public void CheckLocoPower(float elapsedClockSeconds)
+        {
+            if (RunningTime == -1) return;
+            if (RunningTime == -2)
+            {
+                RunningTime = -1; // Viewer has seen it, can pass to this value
+                return;
+            }
+            if (SpeedMpS > 0)
+            {
+                for (int iCar = 0; iCar < Cars.Count; iCar++)
+                {
+                    var car = Cars[iCar];
+                    if ((car is MSTSElectricLocomotive || car is MSTSDieselLocomotive) && car.Parts.Count >= 2 &&
+                        ((car as MSTSLocomotive).ThrottlePercent > 10 || (car as MSTSLocomotive).DynamicBrakePercent > 10))
+                    {
+                        RunningTime += elapsedClockSeconds;
+                        if (RunningTime >= 1800.0f / Simulator.Settings.ActRandomizationLevel)
+                        {
+                            var randInt = Simulator.Random.Next(200000);
+                            var locoUnpowered = false;
+                            if (randInt > 200000 - (Simulator.Settings.ActRandomizationLevel == 1 ? 2 : Simulator.Settings.ActRandomizationLevel == 2 ? 8 : 101))
+                            // a loco will be partly or totally unpowered. Select which one
+                            {
+                                var iLocoUnpoweredCar = Simulator.Random.Next(Cars.Count);
+                                var jLocoUnpoweredCar = iLocoUnpoweredCar;
+                                if (iLocoUnpoweredCar % 2 == 1)
+                                {
+                                    locoUnpowered = SearchBackOfTrain(ref iLocoUnpoweredCar);
+                                    if (!locoUnpowered)
+                                    {
+                                        iLocoUnpoweredCar = jLocoUnpoweredCar;
+                                        locoUnpowered = SearchFrontOfTrain(ref iLocoUnpoweredCar);
+                                    }
+
+                                }
+                                else
+                                {
+                                    locoUnpowered = SearchFrontOfTrain(ref iLocoUnpoweredCar);
+                                    if (!locoUnpowered)
+                                    {
+                                        iLocoUnpoweredCar = jLocoUnpoweredCar;
+                                        locoUnpowered = SearchBackOfTrain(ref iLocoUnpoweredCar);
+                                    }
+                                }
+                              
+                                if (locoUnpowered)
+                                {
+                                    RunningTime = -2; //Check no more, we already have an unpowered loco
+                                    var unpoweredLoco = Cars[iLocoUnpoweredCar] as MSTSLocomotive;
+                                    if (randInt % 2 == 1 || unpoweredLoco is MSTSElectricLocomotive)
+                                    {
+                                        unpoweredLoco.PowerReduction = 0.5f;
+                                        Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Locomotive " + unpoweredLoco.CarID + " partial failure: 1 unpowered bogie"));
+                                    }
+                                    else
+                                    {
+                                        unpoweredLoco.PowerReduction = 1.0f;
+                                        Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Locomotive " + unpoweredLoco.CarID + " compressor blown"));
+                                    }
+                                    UnpoweredLoco = iLocoUnpoweredCar;
+                                }
+                            }
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check first electric or diesel loco searching towards back of train
+        /// </summary>
+        
+        private bool SearchBackOfTrain( ref int iLocoUnpoweredCar)
+        {
+            var locoUnpowered = false;
+            while (iLocoUnpoweredCar < Cars.Count && !((Cars[iLocoUnpoweredCar] is MSTSElectricLocomotive || Cars[iLocoUnpoweredCar] is MSTSDieselLocomotive) && Cars[iLocoUnpoweredCar].Parts.Count >= 2))
+                iLocoUnpoweredCar++;
+            if (iLocoUnpoweredCar != Cars.Count)
+            {
+                locoUnpowered = true;
+            }
+
+            return locoUnpowered;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check first electric or diesel loco searching towards front of train
+        /// </summary>
+
+        private bool SearchFrontOfTrain(ref int iLocoUnpoweredCar)
+        {
+
+            var locoUnpowered = false;
+            while (iLocoUnpoweredCar >= 0 && !((Cars[iLocoUnpoweredCar] is MSTSElectricLocomotive || Cars[iLocoUnpoweredCar] is MSTSDieselLocomotive) && Cars[iLocoUnpoweredCar].Parts.Count >= 2))
+                iLocoUnpoweredCar--;
+            if (iLocoUnpoweredCar != -1)
+            {
+                locoUnpowered = true;
+            }
+            return locoUnpowered;
         }
 
         //================================================================================================//
@@ -18251,7 +18562,12 @@ namespace Orts.Simulation.Physics
                     stopTrain.PassengerCarsNumber : (int)Math.Min((stopTrain.Length - trainPartOutsidePlatformForward - trainPartOutsidePlatformBackward) / stopTrain.Cars.Count() + 0.33,
                     stopTrain.PassengerCarsNumber);
                 }
-                if (passengerCarsWithinPlatform > 0) stopTime = Math.Max(NumSecPerPass * PlatformItem.NumPassengersWaiting / passengerCarsWithinPlatform, DefaultFreightStopTime);
+                if (passengerCarsWithinPlatform > 0)
+                {
+                    var actualNumPassengersWaiting = PlatformItem.NumPassengersWaiting;
+                    if (stopTrain.TrainType != TRAINTYPE.AI_PLAYERHOSTING) RandomizePassengersWaiting(ref actualNumPassengersWaiting, stopTrain);
+                    stopTime = Math.Max(NumSecPerPass * actualNumPassengersWaiting / passengerCarsWithinPlatform, DefaultFreightStopTime);
+                }
                 else stopTime = 0; // no passenger car stopped within platform: sorry, no countdown starts
                 return stopTime;
             }
@@ -18261,13 +18577,43 @@ namespace Orts.Simulation.Physics
             /// CheckScheduleValidity
             /// Quite frequently in MSTS activities AI trains have invalid values (often near midnight), because MSTS does not consider them anyway
             /// As OR considers them, it is wise to discard the least credible values, to avoid AI trains stopping for hours
-            /// <\summary>
+            /// </summary>
             public bool CheckScheduleValidity(Train stopTrain)
             {
                 if (stopTrain.TrainType != Train.TRAINTYPE.AI) return true;
                 if (ArrivalTime == DepartTime && Math.Abs(ArrivalTime - ActualArrival) > 14400) return false;
                 else return true;
             }
+
+            //================================================================================================//
+            /// <summary>
+            /// RandomizePassengersWaiting
+            /// Randomizes number of passengers waiting for train, and therefore boarding time
+            /// Randomization can be upwards or downwards
+            /// </summary>
+
+            private void RandomizePassengersWaiting (ref int actualNumPassengersWaiting, Train stopTrain)
+            {
+                if (stopTrain.Simulator.Settings.ActRandomizationLevel > 0)
+                {
+                    var randms = DateTime.Now.Millisecond % 10;
+                    if (randms >= 6 - stopTrain.Simulator.Settings.ActRandomizationLevel)
+                    {
+                        if (randms < 8)
+                        {
+                            actualNumPassengersWaiting += stopTrain.RandomizedDelay(2 * PlatformItem.NumPassengersWaiting *
+                                stopTrain.Simulator.Settings.ActRandomizationLevel); // real passenger number may be up to 3 times the standard.
+                        }
+                        else
+                        // less passengers than standard
+                        {
+                            actualNumPassengersWaiting -= stopTrain.RandomizedDelay(PlatformItem.NumPassengersWaiting *
+                                stopTrain.Simulator.Settings.ActRandomizationLevel / 6);
+                        }
+                    }
+                }
+            }
+
         }
 
         //================================================================================================//

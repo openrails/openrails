@@ -691,6 +691,10 @@ namespace Orts.Viewer3D
             HandleUserInput(elapsedTime);
             UserInput.Handled();
             Simulator.Update(elapsedTime.ClockSeconds);
+            if (PlayerLocomotive.Train.BrakingTime == -2) // We just had a wagon with stuck brakes
+            {
+                LoadDefectCarSound(PlayerLocomotive.Train.Cars[-(int)PlayerLocomotive.Train.ContinuousBrakingTime], "BrakesStuck.sms");
+            }
             if (MPManager.IsMultiPlayer())
             {
                 MPManager.Instance().PreUpdate();
@@ -786,6 +790,25 @@ namespace Orts.Viewer3D
             if (Simulator.ActivityRun != null) ActivityWindow.PrepareFrame(elapsedTime, true);
 
             WindowManager.PrepareFrame(frame, elapsedTime);
+        }
+
+        private void LoadDefectCarSound(TrainCar car, string filename)
+        {
+            var smsFilePath = Simulator.BasePath + @"\sound\" + filename;
+            if (!File.Exists(smsFilePath))
+            {
+                Trace.TraceWarning("Cannot find defect car sound file {0}", filename);
+                return;
+            }
+
+            try
+            {
+                SoundProcess.AddSoundSource(this, new SoundSource(this, car as MSTSWagon, smsFilePath));
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException(smsFilePath, error));
+            }
         }
 
         [CallOnThread("Updater")]

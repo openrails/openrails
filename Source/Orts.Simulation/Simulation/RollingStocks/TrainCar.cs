@@ -297,6 +297,7 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerForceR; // right hand side value
         public float CouplerForceU; // result
         public bool CouplerOverloaded; //true when coupler force is higher then Break limit
+        public bool BrakesStuck; //true when brakes stuck
 
         // set when model is loaded
         public List<WheelAxle> WheelAxles = new List<WheelAxle>();
@@ -1210,6 +1211,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(Headlight);
             outf.Write(OrgConsist);
             outf.Write(PrevTiltingZRot);
+            outf.Write(BrakesStuck);
         }
 
         // Game restore
@@ -1227,6 +1229,7 @@ namespace Orts.Simulation.RollingStocks
             Headlight = inf.ReadInt32();
             OrgConsist = inf.ReadString();
             PrevTiltingZRot = inf.ReadSingle();
+            BrakesStuck = inf.ReadBoolean();
         }
 
         //================================================================================================//

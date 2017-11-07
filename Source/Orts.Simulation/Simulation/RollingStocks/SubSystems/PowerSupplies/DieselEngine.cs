@@ -642,6 +642,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public Color ExhaustDecelColor = Color.WhiteSmoke;
 
+        public Color ExhaustCompressorBlownColor = Color.Gray;
+
         public float InitialMagnitude = 1.5f;        
         public float MaxMagnitude = 1.5f;
         public float MagnitudeRange;
@@ -866,12 +868,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (DieselPowerTab != null)
             {
-                MaxOutputPowerW = DieselPowerTab[RealRPM] <= MaximalPowerW ? DieselPowerTab[RealRPM] : MaximalPowerW;
+                MaxOutputPowerW = (DieselPowerTab[RealRPM] <= MaximalPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximalPowerW) * (1 - locomotive.PowerReduction);
                 MaxOutputPowerW = MaxOutputPowerW < 0f ? 0f : MaxOutputPowerW;
             }
              else
             {
-                MaxOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximalPowerW;
+                MaxOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximalPowerW * (1 - locomotive.PowerReduction);
             }
 
             if (EngineStatus == Status.Starting)
@@ -911,6 +913,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (ExhaustParticles > 100f)
                 ExhaustParticles = 100f;
+
+            if (locomotive.PowerReduction == 1 && EngineStatus != Status.Stopped)     // Compressor blown, you get much smoke 
+            {
+                ExhaustColor = Color.WhiteSmoke;
+                ExhaustParticles = 40f;
+                ExhaustMagnitude = InitialMagnitude * 2;
+            }
 
             DieselTemperatureDeg += elapsedClockSeconds * (DieselMaxTemperatureDeg - DieselTemperatureDeg) / DieselTempTimeConstantSec;
             switch(EngineCooling)
