@@ -1298,6 +1298,10 @@ namespace Orts.Simulation.AIs
 
         public virtual void SetNextStationAction(bool fromAutopilotSwitch = false)
         {
+            // if train is player driven and is at station, do nothing
+            if (TrainType == TRAINTYPE.AI_PLAYERDRIVEN && this == Simulator.OriginalPlayerTrain && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt &&
+                ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation(this)) return;
+
             // check if station in this subpath
 
             int stationIndex = 0;
@@ -1319,8 +1323,8 @@ namespace Orts.Simulation.AIs
 
             // get distance to station, but not if just after switch to Autopilot and not during station stop
             bool validStop = false;
-            if (!fromAutopilotSwitch || (Simulator.PlayerLocomotive != null && Simulator.ActivityRun != null &&
-                !(Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation(this))))
+            if (!fromAutopilotSwitch || (Simulator.PlayerLocomotive != null && Simulator.ActivityRun != null && !(
+                this == Simulator.OriginalPlayerTrain && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation(this))))
             {
                 while (!validStop)
                 {
