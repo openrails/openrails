@@ -246,7 +246,9 @@ namespace Orts.Viewer3D
                         Weather.PrecipitationLiquidity = 1;
                     }
                 }
+                else Weather.PricipitationIntensityPPSPM2 = 0;
             }
+            else Weather.PricipitationIntensityPPSPM2 = 0;
             // and now define visibility
             randValue = Simulator.Random.Next(2000);
             if (Weather.PricipitationIntensityPPSPM2 > 0 || Weather.OvercastFactor > 0.7f )
