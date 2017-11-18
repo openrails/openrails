@@ -313,21 +313,21 @@ namespace Orts.Common
         static float[] CoalFiredLbspH = new float[]
         {
               10.0f, 1000.0f, 2000.0f, 3000.0f, 4000.0f, 5000.0f, 6000.0f, 7000.0f, 8000.0f,
-              9000.0f, 10000.0f, 11000.0f
+              9000.0f, 10000.0f, 11000.0f, 15000.0f
         };        
 
 // Burnrate - based upon average curve from test results
         static float[] SatSteamEvaporationLbspH = new float[]
         {
               0.0f, 8000.0f, 15000.0f, 21000.0f, 26000.0f, 30000.0f, 31250.0f, 31500.0f, 31750.0f,
-              32000.0f, 32250.0f, 32500.0f
+              32000.0f, 32250.0f, 32500.0f, 200000.0f
         };
 
 // Burnrate - based upon average curve from test results
         static float[] SuperSteamEvaporationLbspH = new float[]
         {
               0.0f, 9000.0f, 16500.0f, 22000.0f, 27000.0f, 31200.0f, 33300.0f, 34000.0f, 34250.0f,
-              34500.0f, 34600.0f, 34700.0f
+              34500.0f, 34600.0f, 34700.0f, 200000.0f
         };      
         
 // Cylinder Condensation - Ref Principles of Locomotive Operation
