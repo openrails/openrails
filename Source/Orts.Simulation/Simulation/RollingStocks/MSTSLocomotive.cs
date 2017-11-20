@@ -1070,6 +1070,9 @@ namespace Orts.Simulation.RollingStocks
 
                     }
                     if (MainResVolumeM3 < 0.3f && MassKG > 20000) MainResVolumeM3 = DefaultMainResVolume;
+
+                    // correct questionable MaxCylPressurePSI
+                    BrakeSystem.CorrectMaxCylPressurePSI(this);
                 }
                 if (MainResChargingRatePSIpS <= 0)
                 {

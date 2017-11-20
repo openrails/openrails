@@ -18,15 +18,14 @@
 // Debug for Airbrake operation - Train Pipe Leak
 //#define DEBUG_TRAIN_PIPE_LEAK
 
-using Orts.Common;
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Parsers.Msts;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
@@ -289,11 +288,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
-            AuxResPressurePSI = maxPressurePSI > BrakeLine1PressurePSI ? maxPressurePSI : BrakeLine1PressurePSI;
             if ((Car as MSTSWagon).EmergencyReservoirPresent || maxPressurePSI > 0)
                 EmergResPressurePSI = maxPressurePSI;
             FullServPressurePSI = fullServPressurePSI;
             AutoCylPressurePSI = immediateRelease ? 0 : Math.Min((maxPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio, MaxCylPressurePSI);
+            AuxResPressurePSI = AutoCylPressurePSI == 0 ? (maxPressurePSI > BrakeLine1PressurePSI ? maxPressurePSI : BrakeLine1PressurePSI)
+                : Math.Max(maxPressurePSI - AutoCylPressurePSI / AuxCylVolumeRatio, BrakeLine1PressurePSI);
             TripleValveState = ValveState.Lap;
             HoldingValve = ValveState.Release;
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
@@ -903,6 +903,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (AutoCylPressurePSI > MaxCylPressurePSI * 0.3)
             return true;
             return false;
+        }
+
+        //Corrects MaxCylPressure (e.g 380.eng) when too high
+        public override void CorrectMaxCylPressurePSI(MSTSLocomotive loco)
+        {
+            if (MaxCylPressurePSI > loco.TrainBrakeController.MaxPressurePSI - MaxCylPressurePSI / AuxCylVolumeRatio)
+            {
+                MaxCylPressurePSI = loco.TrainBrakeController.MaxPressurePSI * AuxCylVolumeRatio / (1 + AuxCylVolumeRatio);
+            }
         }
     }
 }

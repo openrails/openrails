@@ -453,5 +453,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 return true;
             return false;
         }
+
+        public override void CorrectMaxCylPressurePSI(MSTSLocomotive loco)
+        {
+
+        }
     }
 }
