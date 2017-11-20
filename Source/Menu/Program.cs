@@ -86,10 +86,20 @@ namespace ORTS
                         case MainForm.UserAction.SingleplayerNewGame:
                         case MainForm.UserAction.MultiplayerClient:
                         case MainForm.UserAction.MultiplayerServer:
-                            if (MainForm.SelectedActivity is ORTS.Menu.ExploreActivity)
+                            if (MainForm.SelectedActivity is ORTS.Menu.DefaultExploreActivity)
                             {
-                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreActivity;
+                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.DefaultExploreActivity;
                                 parameters.Add(String.Format("-explorer \"{0}\" \"{1}\" {2} {3} {4}",
+                                    exploreActivity.Path.FilePath,
+                                    exploreActivity.Consist.FilePath,
+                                    exploreActivity.StartTime,
+                                    (int)exploreActivity.Season,
+                                    (int)exploreActivity.Weather));
+                            }
+                            else if (MainForm.SelectedActivity is ORTS.Menu.ExploreThroughActivity)
+                            {
+                                var exploreActivity = MainForm.SelectedActivity as ORTS.Menu.ExploreThroughActivity;
+                                parameters.Add(String.Format("-exploreactivity \"{0}\" \"{1}\" {2} {3} {4}",
                                     exploreActivity.Path.FilePath,
                                     exploreActivity.Consist.FilePath,
                                     exploreActivity.StartTime,

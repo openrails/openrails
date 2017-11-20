@@ -56,6 +56,13 @@ namespace Orts.Formats.Msts
                     });}),
                 });
         }
+
+        // Used for explore in activity mode
+        public ServiceFile()
+        {
+            Efficiency = 0.9f;
+            TimeTable = new TimeTable();
+        }
 	} // SRVFile
 
     public class TimeTable
@@ -68,6 +75,12 @@ namespace Orts.Formats.Msts
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("startingspeed", ()=>{ InitialSpeed = stf.ReadFloatBlock(STFReader.UNITS.Any, null); }),
             });
+        }
+
+        // Used for explore in activity mode
+        public TimeTable()
+        {
+
         }
     }
 }

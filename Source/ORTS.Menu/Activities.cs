@@ -41,9 +41,13 @@ namespace ORTS.Menu
 
         protected Activity(string filePath, Folder folder, Route route)
         {
-            if (filePath == null)
+            if (filePath == null && this is DefaultExploreActivity)
             {
                 Name = catalog.GetString("- Explore Route -");
+            }
+            else if (filePath == null && this is ExploreThroughActivity)
+            {
+                Name = catalog.GetString("+ Explore in Activity Mode +");
             }
             else if (File.Exists(filePath))
             {
@@ -96,7 +100,8 @@ namespace ORTS.Menu
             var activities = new List<Activity>();
             if (route != null)
             {
-                activities.Add(new ExploreActivity());
+                activities.Add(new DefaultExploreActivity());
+                activities.Add(new ExploreThroughActivity());
                 var directory = System.IO.Path.Combine(route.Path, "ACTIVITIES");
                 if (Directory.Exists(directory))
                 {
@@ -127,4 +132,10 @@ namespace ORTS.Menu
         {
         }
     }
+
+    public class DefaultExploreActivity : ExploreActivity
+    { }
+
+    public class ExploreThroughActivity : ExploreActivity
+    { }
 }

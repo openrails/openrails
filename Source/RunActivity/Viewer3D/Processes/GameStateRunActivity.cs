@@ -57,6 +57,7 @@ namespace Orts.Viewer3D.Processes
 
         struct savedValues
         {
+            public string pathName;
             public float initialTileX;
             public float initialTileZ;
             public string[] args;
@@ -118,7 +119,7 @@ namespace Orts.Viewer3D.Processes
 
             // Look for required type of action
             var acttype = "";
-            var acttypes = new[] { "activity", "explorer", "timetable" };
+            var acttypes = new[] { "activity", "explorer", "exploreactivity", "timetable" };
             foreach (var possibleActType in acttypes)
                 if (args.Contains("-" + possibleActType) || args.Contains("/" + possibleActType, StringComparer.OrdinalIgnoreCase))
                     acttype = possibleActType;
@@ -371,7 +372,7 @@ namespace Orts.Viewer3D.Processes
                     var values = GetSavedValues(inf);
                     Acttype = values.acttype;
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
+                    Simulator.Restore(inf, values.pathName, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
 
@@ -510,7 +511,7 @@ namespace Orts.Viewer3D.Processes
 
                     var values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
+                    Simulator.Restore(inf, values.pathName, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
                 }
@@ -864,6 +865,7 @@ namespace Orts.Viewer3D.Processes
                     break;
 
                 case "explorer":
+                case "exploreactivity":
                     if (args.Length < 5) throw new InvalidCommandLine("Mode 'explorer' needs 5 arguments: path file, consist file, time (hh[:mm[:ss]]), season (0-3), weather (0-2).");
                     Console.WriteLine("Route      = {0}", GetRouteName(args[0]));
                     Console.WriteLine("Path       = {0} ({1})", GetPathName(args[0]), args[0]);
@@ -916,6 +918,13 @@ namespace Orts.Viewer3D.Processes
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
                     Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+                    break;
+
+                case "exploreactivity":
+                    Simulator = new Simulator(settings, args[0], false);
+                    if (LoadingScreen == null)
+                        LoadingScreen = new LoadingScreenPrimitive(Game);
+                    Simulator.SetExploreThroughActivity(args[0], args[1], args[2], args[3], args[4]);
                     break;
 
                 case "timetable":
@@ -1089,7 +1098,7 @@ namespace Orts.Viewer3D.Processes
             savedValues values = default(savedValues);
             // Skip the heading data used in Menu.exe
             inf.ReadString();    // Route name
-            inf.ReadString();    // Path name
+            values.pathName = inf.ReadString();    // Path name
             inf.ReadInt32();     // Time elapsed in game (secs)
             inf.ReadInt64();     // Date and time in real world
             inf.ReadSingle();    // Current location of player train TileX

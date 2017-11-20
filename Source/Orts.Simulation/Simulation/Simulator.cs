@@ -376,6 +376,25 @@ namespace Orts.Simulation
             WeatherType = (WeatherType)int.Parse(weather);
         }
 
+        public void SetExploreThroughActivity(string path, string consist, string start, string season, string weather)
+        {
+            ActivityFileName = "ea$" + RoutePathName + "$" + DateTime.Today.Year.ToString() + DateTime.Today.Month.ToString() + DateTime.Today.Day.ToString() +
+                DateTime.Today.Hour.ToString() + DateTime.Today.Minute.ToString() + DateTime.Today.Second.ToString();
+            Activity = new ActivityFile();
+            ActivityRun = new Activity(Activity, this);
+            ExplorePathFile = path;
+            ExploreConFile = consist;
+            var time = start.Split(':');
+            TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
+            Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time = StartTime.Hours + StartTime.Minutes * 60 +
+                StartTime.Seconds * 3600;
+            Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name = Path.GetFileNameWithoutExtension(consist);
+            ClockTime = StartTime.TotalSeconds;
+            Season = (SeasonType)int.Parse(season);
+            WeatherType = (WeatherType)int.Parse(weather);
+            IsAutopilotMode = Settings.Autopilot;
+        }
+
         public void Start(CancellationToken cancellation)
         {
             Signals = new Signals(this, SIGCFG, cancellation);
@@ -459,13 +478,14 @@ namespace Orts.Simulation
             if (MPManager.IsMultiPlayer()) MPManager.Stop();
         }
 
-        public void Restore(BinaryReader inf, float initialTileX, float initialTileZ, CancellationToken cancellation)
+        public void Restore(BinaryReader inf, string pathName, float initialTileX, float initialTileZ, CancellationToken cancellation)
         {
             ClockTime = inf.ReadDouble();
             Season = (SeasonType)inf.ReadInt32();
             WeatherType = (WeatherType)inf.ReadInt32();
             TimetableMode = inf.ReadBoolean();
             UserWeatherFile = inf.ReadString();
+            PathName = pathName;
             InitialTileX = initialTileX;
             InitialTileZ = initialTileZ;
             PoolHolder = new Poolholder(inf, this);
@@ -1000,20 +1020,26 @@ namespace Orts.Simulation
             train.Number = 0;
             train.Name = "PLAYER";
 
-            if (Activity == null)
+            string playerServiceFileName;
+            ServiceFile srvFile;
+            if (Activity != null && Activity.Tr_Activity.Serial != -1)
             {
-                patFileName = ExplorePathFile;
-                conFileName = ExploreConFile;
+                playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+                srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+                train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
             }
             else
             {
-                string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
-                ServiceFile srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
-                train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
-                conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
-                patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
-                OriginalPlayerTrain = train;
+                playerServiceFileName = Path.GetFileNameWithoutExtension(ExploreConFile);
+                srvFile = new ServiceFile();
+                srvFile.Name = playerServiceFileName;
+                srvFile.Train_Config = playerServiceFileName;
+                srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
             }
+            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
+            OriginalPlayerTrain = train;
+
 
 
             if (conFileName.Contains("tilted")) train.IsTilting = true;
@@ -1152,13 +1178,29 @@ namespace Orts.Simulation
 
         private AITrain InitializeAPPlayerTrain()
         {
-            string playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
-            ServiceFile srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+            string playerServiceFileName;
+            ServiceFile srvFile;
+            if (Activity != null && Activity.Tr_Activity.Serial != -1)
+            {
+                playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+                srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
+            }
+            else
+            {
+                playerServiceFileName = Path.GetFileNameWithoutExtension(ExploreConFile);
+                srvFile = new ServiceFile();
+                srvFile.Name = playerServiceFileName;
+                srvFile.Train_Config = playerServiceFileName;
+                srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
+            }
+            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
             Service_Definition aPPlayer_Service_Definition = new Service_Definition(playerServiceFileName, player_Traffic_Definition);
+
             AI AI = new AI(this);
-            AITrain train = AI.CreateAITrainDetail(aPPlayer_Service_Definition, aPPlayer_Traffic_Definition, TimetableMode, true);
+            AITrain train = AI.CreateAITrainDetail(aPPlayer_Service_Definition, aPPlayer_Traffic_Definition, srvFile, TimetableMode, true);
             AI = null;
             train.Name = "PLAYER";
             train.Cars[0].Headlight = 0;
@@ -1202,8 +1244,6 @@ namespace Orts.Simulation
                 Train.TCRoutePath dummyRoute = new Train.TCRoutePath(train.Path, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
             }
 
-            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
-            patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             if (conFileName.Contains("tilted")) train.IsTilting = true;
 
             return train;

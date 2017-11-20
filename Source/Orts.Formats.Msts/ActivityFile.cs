@@ -314,6 +314,12 @@ namespace Orts.Formats.Msts
                     STFException.TraceWarning(stf, "Missing Tr_Activity statement");
             }
         }
+
+        // Used for explore in activity mode
+        public ActivityFile()
+        {
+            Tr_Activity = new Tr_Activity();
+        }
     }
 
     public class Tr_Activity {
@@ -330,6 +336,14 @@ namespace Orts.Formats.Msts
             });
             if (!headerOnly && (Tr_Activity_File == null))
                 STFException.TraceWarning(stf, "Missing Tr_Activity_File statement");
+        }
+
+        // Used for explore in activity mode
+        public Tr_Activity()
+        {
+            Serial = -1;
+            Tr_Activity_Header = new Tr_Activity_Header();
+            Tr_Activity_File = new Tr_Activity_File();
         }
     }
 
@@ -377,6 +391,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("fuelcoal", ()=>{ FuelCoal = stf.ReadIntBlock(FuelCoal); }),
                 new STFReader.TokenProcessor("fueldiesel", ()=>{ FuelDiesel = stf.ReadIntBlock(FuelDiesel); }),
             });
+        }
+
+        // Used for explore in activity mode
+        public Tr_Activity_Header()
+        {
         }
     }
 
@@ -454,6 +473,12 @@ namespace Orts.Formats.Msts
             });
         }
 
+        // Used for explore in activity mode
+        public Tr_Activity_File()
+        {
+            Player_Service_Definition = new Player_Service_Definition();
+        }
+
         //public void ClearStaticConsists()
         //{
         //    NextActivityObjectUID = 32786;
@@ -471,6 +496,12 @@ namespace Orts.Formats.Msts
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("player_traffic_definition", ()=>{ Player_Traffic_Definition = new Player_Traffic_Definition(stf); }),
             });
+        }
+
+        // Used for explore in activity mode
+        public Player_Service_Definition()
+        {
+            Player_Traffic_Definition = new Player_Traffic_Definition();
         }
     }
 
@@ -497,6 +528,11 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("platformstartid", ()=>{ platformStartID = stf.ReadIntBlock(null); 
                     Player_Traffic_List.Add(new Player_Traffic_Item(arrivalTime, departTime, skipCount, distanceDownPath, platformStartID)); }),
             });
+        }
+
+        // Used for explore in activity mode
+        public Player_Traffic_Definition()
+        {
         }
     }
 

@@ -167,7 +167,8 @@ namespace ORTS
             }
             else
             {
-                Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : catalog.GetString("Explore Route"));
+                Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name :
+                    activity.Name == "+ " + catalog.GetString("Explore in Activity Mode") + " +" ? catalog.GetString("Explore in Activity Mode") : catalog.GetString("Explore Route"));
                 pathNameDataGridViewTextBoxColumn.Visible = activity.FilePath == null;
             }
 
@@ -197,10 +198,20 @@ namespace ORTS
                 {
                     prefix = Path.GetFileName(Route.Path) + " " + Path.GetFileNameWithoutExtension(Timetable.fileName);
                 }
+                else if (Activity.FilePath != null)
+                {
+                    prefix = Path.GetFileNameWithoutExtension(Activity.FilePath);
+                }
+                else if (Activity.Name == "- " + catalog.GetString("Explore Route") + " -")
+                {
+                    prefix = Path.GetFileName(Route.Path);
+                }
+                // Explore in activity mode
                 else
                 {
-                    prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
+                    prefix = "ea$" + Path.GetFileName(Route.Path) + "$";
                 }
+
 
                 if (Directory.Exists(directory))
                 {

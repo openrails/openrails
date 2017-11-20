@@ -815,7 +815,8 @@ namespace Orts.Simulation.AIs
                     break;
                 }
             }
-            AITrain train = CreateAITrainDetail(sd, trfDef, isTimetableMode, false);
+            ServiceFile srvFile = new ServiceFile(Simulator.RoutePath + @"\SERVICES\" + sd.Name + ".SRV");  // read service file
+            AITrain train = CreateAITrainDetail(sd, trfDef, srvFile, isTimetableMode, false);
             if (train != null)
             {
                 // insert in start list
@@ -831,11 +832,10 @@ namespace Orts.Simulation.AIs
         /// Moves the models down 1000M to make them invisible.
         /// called also in case of autopilot mode
         /// </summary>
-        public AITrain CreateAITrainDetail(Service_Definition sd, Traffic_Service_Definition trfDef, bool isTimetableMode, bool isInitialPlayerTrain)
+        public AITrain CreateAITrainDetail(Service_Definition sd, Traffic_Service_Definition trfDef, ServiceFile srvFile, bool isTimetableMode, bool isInitialPlayerTrain)
         {
-            // read service and consist file
+            // read consist file
 
-            ServiceFile srvFile = new ServiceFile(Simulator.RoutePath + @"\SERVICES\" + sd.Name + ".SRV");
             string consistFileName = Simulator.BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
             ConsistFile conFile = new ConsistFile(consistFileName);
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
@@ -904,6 +904,7 @@ namespace Orts.Simulation.AIs
                     car.UiD = wagon.UiD;
                     if (isInitialPlayerTrain)
                     {
+                        Simulator.PathName = aiPath.pathName;
                         if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
                         else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
                         var mstsDieselLocomotive = car as MSTSDieselLocomotive;
