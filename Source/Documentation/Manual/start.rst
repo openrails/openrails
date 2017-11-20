@@ -93,17 +93,25 @@ Gaming Modes
 One of the plus points of Open Rails is the variety of gaming modes you 
 can select.
 
-Traditional Activity and Explore modes
---------------------------------------
+Activity, Explore and Explore with activity modes
+-------------------------------------------------
 
 As a default you will find the radio button ``Activity`` selected in the 
 start window, as :ref:`above <start-picture>`.
 
-This will allow you to run an activity or run in explore mode.
+This will allow you to run an activity or run on of two types of explore mode.
 
-If you select ``-Explore Route-`` (first entry under ``Activity:``), you will 
+If you select ``- Explore Route -`` (first entry under ``Activity:``), you will 
 also have to select the consist, the path, the starting time, the season 
 and the weather with the relevant buttons.
+
+If you select ``+ Explore in activity mode +`` (second entry under 
+``Activity:``, you will have to select same items as with Explore route, but 
+in this case the game will automatically generate an activity (with the 
+player train only) and will execute it. By exploring the route in this mode 
+you will able to switch to autopilot mode if you like ( see :ref:`here 
+<options-autopilot>` ) and you will have access to some other activity features 
+like :ref:`randomized weather <options-actweather-randomization>` if selected.
 
 To select the consist you have two possibilities: either you click under 
 ``Consist:``, and the whole list of available consists will appear, or you 
