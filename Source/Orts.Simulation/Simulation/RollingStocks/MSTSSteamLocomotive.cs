@@ -1055,7 +1055,7 @@ namespace Orts.Simulation.RollingStocks
             // Determine if Cylinder Port Opening  Factor has been set
             if (CylinderPortOpeningFactor == 0)
             {
-                CylinderPortOpeningFactor = 0.085f; // Set as default if not specified
+                CylinderPortOpeningFactor = 0.10f; // Set as default if not specified
             }
             CylinderPortOpeningFactor = MathHelper.Clamp(CylinderPortOpeningFactor, 0.05f, 0.12f); // Clamp Cylinder Port Opening Factor to between 0.05 & 0.12 so that tables are not exceeded   
 

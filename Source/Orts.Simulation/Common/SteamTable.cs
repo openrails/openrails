@@ -143,19 +143,19 @@ namespace Orts.Common
         // Fire Rate - ie lbs of coal per Square Foot of Grate Area 
         static float[] CoalGrateAreaTableLbspFt2 = new float[]
         {
-            0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f
+            0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f, 180.0f, 200.0f, 220.0f
         };
         
         // Boiler Efficiency - based upon average results from test papers
         static float[] SatBoilerEfficiencyTableX = new float[]
         {
-            0.83f, 0.76f, 0.69f, 0.62f, 0.55f, 0.48f, 0.42f, 0.35f, 0.28f
+            0.80f, 0.749f, 0.69f, 0.63f, 0.571f, 0.512f, 0.452f, 0.393f, 0.334f, 0.274f, 0.215f, 0.156f
         };
 
         // Boiler Efficiency - based upon average results from test papers
         static float[] SuperBoilerEfficiencyTableX = new float[]
         {
-            0.940f, 0.89f, 0.84f, 0.78f, 0.73f, 0.68f, 0.625f, 0.57f, 0.52f
+            0.903f, 0.8484f, 0.7936f, 0.7390f, 0.6843f, 0.6296f, 0.5749f, 0.5202f, 0.4655f, 0.4108f, 0.3561f, 0.3014f
         };
         
         // pressure tables for Injectors temperature and steam usage
@@ -250,23 +250,23 @@ namespace Orts.Common
             360.0f, 375.0f, 384.0f
         };
 
-        // Allowance for drop in initial pressure (steam chest) as speed increases - Ref Principles of Locomotive Operation (To be confirmed)
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
         static float[] WheelRotationRpM = new float[]
         {
-            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f, 400.0f, 450.0f, 500.0f, 550.0f, 600.0f, 650.0f, 700.0f, 750.0f
         };
 
-        // Allowance for drop in initial pressure (steam chest) as speed increases - Ref Principles of Locomotive Operation (To be confirmed) - Saturated
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources - Saturated
         static float[] SatInitialPressureDropRatio = new float[]
         {
-            0.98f, 0.95f, 0.92f, 0.90f, 0.88f, 0.87f, 0.86f, 0.85f 
+            0.98f, 0.965f, 0.95f, 0.935f, 0.92f, 0.905f, 0.89f, 0.875f, 0.87f, 0.8650f, 0.8625f, 0.86f, 0.8575f, 0.855f, 0.8525f, 0.85f 
             
         };
         
        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - (To be confirmed) - Superheated
         static float[] SuperInitialPressureDropRatio = new float[]
         {
-            0.99f, 0.97f, 0.95f, 0.94f, 0.93f, 0.92f, 0.91f, 0.90f
+            0.99f, 0.98f, 0.97f, 0.96f, 0.95f, 0.94f, 0.93f, 0.92f, 0.915f, 0.910f, 0.905f, 0.90f, 0.8975f, 0.8950f, 0.8925f, 0.8900f
         };
         
 // piston speed (feet per minute) - American Locomotive Company
