@@ -402,8 +402,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                     {
                         float TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS;
+                        if (TrainPipePressureDiffPropogationPSI < -0.01f || TrainPipePressureDiffPropogationPSI > 0.01f)
+                        {
                         car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI;
                         car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI;
+                        }
+                        else
+                            car.BrakeSystem.BrakeLine1PressurePSI = car0.BrakeSystem.BrakeLine1PressurePSI;
                     }
                     if (!car.BrakeSystem.FrontBrakeHoseConnected) // Car front brake hose not connected
                     {
