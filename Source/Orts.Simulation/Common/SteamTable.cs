@@ -328,9 +328,17 @@ namespace Orts.Common
         {
               0.0f, 9000.0f, 16500.0f, 22000.0f, 27000.0f, 31200.0f, 33300.0f, 34000.0f, 34250.0f,
               34500.0f, 34600.0f, 34700.0f, 200000.0f
-        };      
-        
-// Cylinder Condensation - Ref Principles of Locomotive Operation
+        };
+
+
+  // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
+        static float[] CondensationWheelRotationRpM = new float[]
+        {
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
+        };
+
+
+        // Cylinder Condensation - Ref Principles of Locomotive Operation
         static float[] CylinderCondensationSimpleFactor = new float[]
         {
               0.335f, 0.27f, 0.21f, 0.17f, 0.15f, 0.16f, 0.19f, 0.23f
@@ -399,7 +407,7 @@ namespace Orts.Common
 // Cylinder condensation Vs Speed (Wheel Revolutions) - Simple locomotive - based upon Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
         public static Interpolator CylinderCondensationSimpleSpeedAdjRpMtoX()
         {
-            return new Interpolator(WheelRotationRpM, CylinderCondensationSimpleFactor);
+            return new Interpolator(CondensationWheelRotationRpM, CylinderCondensationSimpleFactor);
         }
 
 // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
