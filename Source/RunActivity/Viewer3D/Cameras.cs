@@ -1558,7 +1558,7 @@ namespace Orts.Viewer3D
 
         public void Initialize()
         {
-            if (Viewer.Settings.Cab2DStretch == 0 && Viewer.CabExceedsDisplay > 0)
+            if (Viewer.Settings.Cab2DStretch == 0 && Viewer.CabExceedsDisplayHorizontally <= 0)
             {
                 // We must modify FOV to get correct lookout
                     FieldOfView = MathHelper.ToDegrees((float)(2 * Math.Atan((float)Viewer.DisplaySize.Y / Viewer.DisplaySize.X / Viewer.CabTextureInverseRatio * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)))));
