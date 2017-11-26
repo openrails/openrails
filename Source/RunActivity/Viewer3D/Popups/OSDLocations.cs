@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2015, 2017 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -19,8 +19,8 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Orts.Simulation;
 using ORTS.Common;
-using System;
 using System.Collections.Generic;
 
 namespace Orts.Viewer3D.Popups
@@ -38,14 +38,74 @@ namespace Orts.Viewer3D.Popups
             Platforms = 0x1,
             Sidings = 0x2,
             All = 0x3,
+            Auto = 0x7,
         }
-        DisplayState State = DisplayState.All;
+        DisplayState State = DisplayState.Auto;
 
         Dictionary<TrItemLabel, LabelPrimitive> Labels = new Dictionary<TrItemLabel, LabelPrimitive>();
+
+        int StationStopsCount;
+        ActivityTask ActivityCurrentTask;
+        Dictionary<string, bool> Platforms;
+        Dictionary<string, bool> Sidings;
+
+        int PlatformUpdate = 0;
 
         public OSDLocations(WindowManager owner)
             : base(owner, 0, 0, "OSD Locations")
         {
+            UpdateLabelLists();
+            if (Platforms.Count + Sidings.Count == 0) State = DisplayState.All;
+        }
+
+        void UpdateLabelLists()
+        {
+            var tdb = Owner.Viewer.Simulator.TDB.TrackDB;
+            var stationStops = Owner.Viewer.Simulator.PlayerLocomotive.Train.StationStops;
+            var activity = Owner.Viewer.Simulator.ActivityRun;
+
+            // Update every 10s or when the current activity task changes.
+            if (--PlatformUpdate <= 0 || stationStops.Count != StationStopsCount || (activity != null && activity.Current != ActivityCurrentTask))
+            {
+                PlatformUpdate = 40;
+
+                var platforms = new Dictionary<string, bool>();
+                var sidings = new Dictionary<string, bool>();
+
+                foreach (var stop in stationStops)
+                {
+                    var platformId = stop.PlatformReference;
+                    if (0 <= platformId && platformId < tdb.TrItemTable.Length && tdb.TrItemTable[platformId].ItemType == Formats.Msts.TrItem.trItemType.trPLATFORM)
+                    {
+                        platforms[tdb.TrItemTable[platformId].ItemName] = true;
+                    }
+                }
+
+                if (activity != null && activity.EventList != null)
+                {
+                    foreach (var @event in activity.EventList)
+                    {
+                        var eventAction = @event.ParsedObject as Orts.Formats.Msts.EventCategoryAction;
+                        if (eventAction != null)
+                        {
+                            var sidingId1 = eventAction.SidingId;
+                            var sidingId2 = eventAction.WagonList.WorkOrderWagonList.Count > 0 ? eventAction.WagonList.WorkOrderWagonList[0].SidingId : default(uint?);
+                            var sidingId = sidingId1.HasValue ? sidingId1.Value : sidingId2.HasValue ? sidingId2.Value : uint.MaxValue;
+                            if (0 <= sidingId && sidingId < tdb.TrItemTable.Length && tdb.TrItemTable[sidingId].ItemType == Formats.Msts.TrItem.trItemType.trSIDING)
+                            {
+                                sidings[tdb.TrItemTable[sidingId].ItemName] = true;
+                            }
+                        }
+                    }
+                }
+
+                Platforms = platforms;
+                Sidings = sidings;
+
+                StationStopsCount = stationStops.Count;
+                if (activity != null)
+                    ActivityCurrentTask = activity.Current;
+            }
         }
 
         public override bool Interactive
@@ -58,15 +118,19 @@ namespace Orts.Viewer3D.Popups
 
         public override void TabAction()
         {
+            // All -> Platforms -> Sidings -> [if activity/timetable active] Auto -> All -> ...
             if (State == DisplayState.All) State = DisplayState.Platforms;
             else if (State == DisplayState.Platforms) State = DisplayState.Sidings;
-            else if (State == DisplayState.Sidings) State = DisplayState.All;
+            else if (State == DisplayState.Sidings) State = Platforms.Count + Sidings.Count > 0 ? DisplayState.Auto : DisplayState.All;
+            else if (State == DisplayState.Auto) State = DisplayState.All;
         }
 
         public override void PrepareFrame(RenderFrame frame, ORTS.Common.ElapsedTime elapsedTime, bool updateFull)
         {
             if (updateFull)
             {
+                UpdateLabelLists();
+
                 var labels = Labels;
                 var newLabels = new Dictionary<TrItemLabel, LabelPrimitive>(labels.Count);
                 var worldFiles = Owner.Viewer.World.Scenery.WorldFiles;
@@ -77,6 +141,9 @@ namespace Orts.Viewer3D.Popups
                     {
                         foreach (var platform in worldFile.platforms)
                         {
+                            if (State == DisplayState.Auto && Platforms != null && (!Platforms.ContainsKey(platform.ItemName) || !Platforms[platform.ItemName]))
+                                continue;
+
                             // Calculates distance between camera and platform label.
                             var distance = WorldLocation.GetDistance(platform.Location.WorldLocation, cameraLocation).Length();
                             if (distance <= MaximumDistancePlatform)
@@ -97,6 +164,9 @@ namespace Orts.Viewer3D.Popups
                     {
                         foreach (var siding in worldFile.sidings)
                         {
+                            if (State == DisplayState.Auto && Sidings != null && (!Sidings.ContainsKey(siding.ItemName) || !Sidings[siding.ItemName]))
+                                continue;
+
                             // Calculates distance between camera and siding label.
                             var distance = WorldLocation.GetDistance(siding.Location.WorldLocation, cameraLocation).Length();
                             if (distance <= MaximumDistanceSiding)
