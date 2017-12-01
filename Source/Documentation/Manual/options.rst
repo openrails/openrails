@@ -193,6 +193,13 @@ With this option it is possible to enable or disable the display of
 dynamic shadows. Disabling can be helpful if low frame rates are 
 experienced.
 
+Shadow for all shapes
+---------------------
+
+When this option is selected and also the Dynamic shadows option is selected, 
+OR displays a shadow also for the objects that don't have a shadow defined in 
+the .ref file, and also for forest trees. This may reduce game performance.
+
 .. _options-fullscreen:
 
 Fast full-screen Alt+Tab
