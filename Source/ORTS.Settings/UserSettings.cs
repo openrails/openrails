@@ -149,6 +149,8 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DynamicShadows { get; set; }
         [Default(false)]
+        public bool ShadowAllShapes { get; set; }
+        [Default(false)]
         public bool FastFullScreenAltTab { get; set; }
         [Default(false)]
         public bool WindowGlass { get; set; }
@@ -309,8 +311,6 @@ namespace ORTS.Settings
         public string ScreenshotPath { get; set; }
         [Default(0)]
         public int ShaderModel { get; set; }
-        [Default(false)]
-        public bool ShadowAllShapes { get; set; }
         [Default(true)]
         public bool ShadowMapBlur { get; set; }
         [Default(4)]

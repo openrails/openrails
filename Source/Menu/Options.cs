@@ -157,6 +157,7 @@ namespace ORTS
 
             // Video tab
             checkDynamicShadows.Checked = Settings.DynamicShadows;
+            checkShadowAllShapes.Checked = Settings.ShadowAllShapes;
             checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
             checkWindowGlass.Checked = Settings.WindowGlass;
             checkModelInstancing.Checked = Settings.ModelInstancing;
@@ -441,6 +442,7 @@ namespace ORTS
 
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;
+            Settings.ShadowAllShapes = checkShadowAllShapes.Checked;
             Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
             Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.ModelInstancing = checkModelInstancing.Checked;

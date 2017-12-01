@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
@@ -140,6 +140,9 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.label27 = new System.Windows.Forms.Label();
+            this.numericActWeatherRandomizationLevel = new System.Windows.Forms.NumericUpDown();
+            this.label26 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.numericActRandomizationLevel = new System.Windows.Forms.NumericUpDown();
@@ -182,9 +185,7 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.label26 = new System.Windows.Forms.Label();
-            this.label27 = new System.Windows.Forms.Label();
-            this.numericActWeatherRandomizationLevel = new System.Windows.Forms.NumericUpDown();
+            this.checkShadowAllShapes = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -213,6 +214,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageUpdater.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).BeginInit();
@@ -224,7 +226,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -590,6 +591,7 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.checkShadowAllShapes);
             this.tabPageVideo.Controls.Add(this.checkDoubleWire);
             this.tabPageVideo.Controls.Add(this.label15);
             this.tabPageVideo.Controls.Add(this.labelDayAmbientLight);
@@ -625,7 +627,7 @@
             // checkDoubleWire
             // 
             this.checkDoubleWire.AutoSize = true;
-            this.checkDoubleWire.Location = new System.Drawing.Point(6, 121);
+            this.checkDoubleWire.Location = new System.Drawing.Point(307, 29);
             this.checkDoubleWire.Name = "checkDoubleWire";
             this.checkDoubleWire.Size = new System.Drawing.Size(135, 17);
             this.checkDoubleWire.TabIndex = 23;
@@ -654,7 +656,7 @@
             // checkModelInstancing
             // 
             this.checkModelInstancing.AutoSize = true;
-            this.checkModelInstancing.Location = new System.Drawing.Point(6, 75);
+            this.checkModelInstancing.Location = new System.Drawing.Point(6, 98);
             this.checkModelInstancing.Name = "checkModelInstancing";
             this.checkModelInstancing.Size = new System.Drawing.Size(106, 17);
             this.checkModelInstancing.TabIndex = 3;
@@ -681,7 +683,7 @@
             // checkVerticalSync
             // 
             this.checkVerticalSync.AutoSize = true;
-            this.checkVerticalSync.Location = new System.Drawing.Point(6, 149);
+            this.checkVerticalSync.Location = new System.Drawing.Point(6, 121);
             this.checkVerticalSync.Name = "checkVerticalSync";
             this.checkVerticalSync.Size = new System.Drawing.Size(86, 17);
             this.checkVerticalSync.TabIndex = 5;
@@ -730,7 +732,7 @@
             // checkFastFullScreenAltTab
             // 
             this.checkFastFullScreenAltTab.AutoSize = true;
-            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 29);
+            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 52);
             this.checkFastFullScreenAltTab.Name = "checkFastFullScreenAltTab";
             this.checkFastFullScreenAltTab.Size = new System.Drawing.Size(129, 17);
             this.checkFastFullScreenAltTab.TabIndex = 1;
@@ -900,7 +902,7 @@
             // checkWindowGlass
             // 
             this.checkWindowGlass.AutoSize = true;
-            this.checkWindowGlass.Location = new System.Drawing.Point(6, 52);
+            this.checkWindowGlass.Location = new System.Drawing.Point(6, 75);
             this.checkWindowGlass.Name = "checkWindowGlass";
             this.checkWindowGlass.Size = new System.Drawing.Size(151, 17);
             this.checkWindowGlass.TabIndex = 2;
@@ -930,7 +932,7 @@
             // checkWire
             // 
             this.checkWire.AutoSize = true;
-            this.checkWire.Location = new System.Drawing.Point(6, 98);
+            this.checkWire.Location = new System.Drawing.Point(307, 6);
             this.checkWire.Name = "checkWire";
             this.checkWire.Size = new System.Drawing.Size(95, 17);
             this.checkWire.TabIndex = 4;
@@ -1516,27 +1518,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1643,6 +1645,40 @@
             this.tabPageExperimental.TabIndex = 3;
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
+            // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(526, 119);
+            this.label27.Margin = new System.Windows.Forms.Padding(3);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(33, 13);
+            this.label27.TabIndex = 51;
+            this.label27.Text = "Level";
+            // 
+            // numericActWeatherRandomizationLevel
+            // 
+            this.numericActWeatherRandomizationLevel.Location = new System.Drawing.Point(466, 117);
+            this.numericActWeatherRandomizationLevel.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericActWeatherRandomizationLevel.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numericActWeatherRandomizationLevel.Name = "numericActWeatherRandomizationLevel";
+            this.numericActWeatherRandomizationLevel.Size = new System.Drawing.Size(54, 20);
+            this.numericActWeatherRandomizationLevel.TabIndex = 50;
+            this.toolTip1.SetToolTip(this.numericActWeatherRandomizationLevel, "0: no randomization, 1: moderate, 2: significant; 3: high (may be unrealistic)");
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(438, 96);
+            this.label26.Margin = new System.Windows.Forms.Padding(3);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(150, 13);
+            this.label26.TabIndex = 49;
+            this.label26.Text = "Activity weather randomization";
             // 
             // label13
             // 
@@ -2183,39 +2219,15 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // label26
+            // checkShadowAllShapes
             // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(438, 96);
-            this.label26.Margin = new System.Windows.Forms.Padding(3);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(150, 13);
-            this.label26.TabIndex = 49;
-            this.label26.Text = "Activity weather randomization";
-            // 
-            // label27
-            // 
-            this.label27.AutoSize = true;
-            this.label27.Location = new System.Drawing.Point(526, 119);
-            this.label27.Margin = new System.Windows.Forms.Padding(3);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(33, 13);
-            this.label27.TabIndex = 51;
-            this.label27.Text = "Level";
-            // 
-            // numericActWeatherRandomizationLevel
-            // 
-            this.numericActWeatherRandomizationLevel.Location = new System.Drawing.Point(466, 117);
-            this.numericActWeatherRandomizationLevel.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
-            this.numericActWeatherRandomizationLevel.Maximum = new decimal(new int[] {
-            3,
-            0,
-            0,
-            0});
-            this.numericActWeatherRandomizationLevel.Name = "numericActWeatherRandomizationLevel";
-            this.numericActWeatherRandomizationLevel.Size = new System.Drawing.Size(54, 20);
-            this.numericActWeatherRandomizationLevel.TabIndex = 50;
-            this.toolTip1.SetToolTip(this.numericActWeatherRandomizationLevel, "0: no randomization, 1: moderate, 2: significant; 3: high (may be unrealistic)");
+            this.checkShadowAllShapes.AutoSize = true;
+            this.checkShadowAllShapes.Location = new System.Drawing.Point(6, 29);
+            this.checkShadowAllShapes.Name = "checkShadowAllShapes";
+            this.checkShadowAllShapes.Size = new System.Drawing.Size(130, 17);
+            this.checkShadowAllShapes.TabIndex = 24;
+            this.checkShadowAllShapes.Text = "Shadow for all shapes";
+            this.checkShadowAllShapes.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -2272,6 +2284,7 @@
             this.tabPageUpdater.PerformLayout();
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).EndInit();
@@ -2283,7 +2296,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2444,5 +2456,6 @@
         private System.Windows.Forms.Label label27;
         private System.Windows.Forms.NumericUpDown numericActWeatherRandomizationLevel;
         private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox checkShadowAllShapes;
     }
 }
