@@ -194,6 +194,7 @@ namespace Orts.Simulation.RollingStocks
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;     // Ratio of actual firemass to ideal firemass
+        float MaxFiringRateLbpH; // Max coal burnt when steam evaporation (production) rate is maximum
         float TempFireHeatLossPercent;
         float FireHeatLossPercent;  // Percentage loss of heat due to too much or too little air for combustion
         float FlueTempK = 775;      // Initial FlueTemp (best @ 475)
@@ -1203,21 +1204,6 @@ namespace Orts.Simulation.RollingStocks
                 
             }
 
-            // Assign default steam table values if table not in ENG file
-            if (NewBurnRateSteamToCoalLbspH == null)
-            {
-                if (HasSuperheater)
-                {
-                    NewBurnRateSteamToCoalLbspH = SteamTable.SuperNewBurnRateSteamToCoalLbspH();
-                    Trace.TraceInformation("BurnRateSteamToCoalLbspH (Super) - default information read from SteamTables");
-                }
-                else
-                {
-                    NewBurnRateSteamToCoalLbspH = SteamTable.SatNewBurnRateSteamToCoalLbspH();
-                    Trace.TraceInformation("BurnRateSteamToCoalLbspH (Sat) - default information read from SteamTables");
-                }
-            }
-
             // Computed Values
             // Read alternative OR Value for calculation of Ideal Fire Mass
             if (GrateAreaM2 == 0)  // Calculate Grate Area if not present in ENG file
@@ -1372,6 +1358,46 @@ namespace Orts.Simulation.RollingStocks
                 MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
             }
 
+            // Assign default steam table values if table not in ENG file
+            if (NewBurnRateSteamToCoalLbspH == null)
+            {
+                // This will calculate a default burnrate curve based upon the fuel calorific, Max Steam Output, and Boiler Efficiency
+                // Firing Rate = (Max Evap / BE) x Steam Btu/lb @ pressure / Fuel Calorific)
+
+                float BoilerEfficiencyBurnRate = (BoilerEfficiencyGrateAreaLBpFT2toX[0.0f] / 2.0f);
+                MaxFiringRateLbpH = (pS.TopH(TheoreticalMaxSteamOutputLBpS) / BoilerEfficiencyBurnRate) * (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] / KJpKg.ToBTUpLb(FuelCalorificKJpKG));
+
+                // Create a new default burnrate curve locomotive based upon default information
+                float[] TempSteamOutputRate = new float[]
+                    {
+                               0.0f, pS.TopH(TheoreticalMaxSteamOutputLBpS), pS.TopH(TheoreticalMaxSteamOutputLBpS)
+                    };
+
+                float[] TempCoalFiringRate = new float[]
+                    {
+                                0.0f, MaxFiringRateLbpH, (MaxFiringRateLbpH * 1.2f)
+                    };
+               
+            NewBurnRateSteamToCoalLbspH = new Interpolator(TempSteamOutputRate, TempCoalFiringRate);
+
+//                Trace.TraceInformation("Table bot {0}", NewBurnRateSteamToCoalLbspH[0]);
+ //               Trace.TraceInformation("Table top {0} burn {1}", pS.TopH(TheoreticalMaxSteamOutputLBpS), NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)]);
+
+                //                if (HasSuperheater)
+                //                {
+                //                    NewBurnRateSteamToCoalLbspH = SteamTable.SuperNewBurnRateSteamToCoalLbspH();
+                //                    Trace.TraceInformation("BurnRateSteamToCoalLbspH (Super) - default information read from SteamTables");
+                //                }
+                //                else
+                //                {
+                //                    NewBurnRateSteamToCoalLbspH = SteamTable.SatNewBurnRateSteamToCoalLbspH();
+                //                    Trace.TraceInformation("BurnRateSteamToCoalLbspH (Sat) - default information read from SteamTables");
+                //                }
+            }
+            else // If user provided burn curve calculate the Max Firing Rate
+            {
+                MaxFiringRateLbpH = NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)];
+            }
 
             // Calculate Boiler output horsepower - based upon information in Johnsons book - The Steam Locomotive - pg 150
             // In essence the cylinder power and boiler power are calculated, and the smaller of the two are used. Thus in some instances the boiler power may be the limiting factor rather then the cylinder power.
@@ -1629,7 +1655,6 @@ namespace Orts.Simulation.RollingStocks
             DamperFactorManual = TheoreticalMaxSteamOutputLBpS / SpeedEquivMpS; // Calculate a factor for damper control that will vary with speed.
             BlowerSteamUsageFactor = 0.04f * MaxBoilerOutputLBpH / 3600 / MaxBoilerPressurePSI;
             WaterTempNewK = C.ToK(C.FromF(PressureToTemperaturePSItoF[BoilerPressurePSI])); // Initialise new boiler pressure
-            Trace.TraceInformation("Boilerpressure {0} F Deg {1} K Deg {2}", BoilerPressurePSI, PressureToTemperaturePSItoF[BoilerPressurePSI], WaterTempNewK);
             FireMassKG = IdealFireMassKG;
             
             if (ORTSMaxFiringRateKGpS != 0)
@@ -5684,7 +5709,7 @@ namespace Orts.Simulation.RollingStocks
 #endif
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Fireman"));
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}\t{17}\t{18}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}/{18}{17}\t\t{19}\t{20:N0}\n",
                 Simulator.Catalog.GetString("Fire:"),
                 Simulator.Catalog.GetString("Ideal"),
                 FormatStrings.FormatMass(IdealFireMassKG, IsMetric),
@@ -5700,10 +5725,12 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatMass(Kg.FromLb(GrateCombustionRateLBpFt2), IsMetric),
                 FormatStrings.h,
                 IsMetric ? FormatStrings.m2 : FormatStrings.ft2,
-                Simulator.Catalog.GetString("FireOn"),
-                SetFireOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
-                Simulator.Catalog.GetString("FireOff"),
-                SetFireOff ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+                Simulator.Catalog.GetString("Gr Limit"),
+                FormatStrings.FormatMass(Kg.FromLb(GrateLimitLBpFt2), IsMetric),
+                FormatStrings.h,
+                IsMetric ? FormatStrings.m2 : FormatStrings.ft2,
+                Simulator.Catalog.GetString("Max Burn"),
+                MaxFiringRateLbpH
                 );
 
 #if DEBUG_LOCO_BURN_AI
@@ -5783,7 +5810,7 @@ namespace Orts.Simulation.RollingStocks
                     CombinedTenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * 100);
             }
 
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",
                 Simulator.Catalog.GetString("Status:"),
                 Simulator.Catalog.GetString("CoalOut"),
                 CoalIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
@@ -5796,7 +5823,11 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("Boost"),
                 FuelBoost ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 Simulator.Catalog.GetString("GrLimit"),
-                IsGrateLimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+                IsGrateLimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOn"),
+                SetFireOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("FireOff"),
+                SetFireOff ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Performance"));
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
