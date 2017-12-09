@@ -630,10 +630,41 @@ must be added below line::
 
 either in the route's root .trk file or in the "Include" .trk file.
 
-It is not possible to remove trees only from roads and not from tracks.       
+It is not possible to remove trees only from roads and not from tracks.      
 
 
+Multiple level crossing sounds 
+==============================
 
+This feature allows to have level crossing sounds different from the default one 
+for a specific level 
+crossing on a route or for a specific level crossing shape.
+To get a level crossing sound different from the default one for a specific level 
+crossing sound on a route a line 
+like following one has to be inserted in the .w file LevelCrObj block::
+
+  ORTSSoundFileName ( "differentcrossingsound.sms" )
+
+where "differentcrossingsound.sms" must be replaced with the desired .sms file name.
+
+.. caution:: If the route is edited with the MSTS route editor modifying the .w files containing such line, the above line will be deleted.
+
+To avoid this problem, two other possibilities are available to insert the additional 
+line. One is described :ref:`here <features-route-modify-wfiles>`.
+The other one is to use the OR specific TSRE route editor, that natively manages this 
+feature. Also in the latter case if the route is later edited with the MSTS 
+route editor, the above line will be deleted. 
+
+To get a level crossing sound different from the default one for a specific level 
+crossing shape a line like 
+following one must be inserted in the .sd file of the crossing shape::
+
+  ESD_ORTSSoundFileName ( "differentcrossingsound.sms" )
+
+If both lines are present, the first overrides the second. 
+For the first case it is suggested to place the sound file in the sound folder of the 
+route, although it will also be searched in the general Train Simulator Sound folder.
+For the second case there is no suggestion. The file will again be searched in both folders.
 
 
   
