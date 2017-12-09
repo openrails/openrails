@@ -659,9 +659,13 @@ namespace Orts.Viewer3D
             CrossingObj = crossingObj;
             if (!CrossingObj.silent)
             {
-                if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS != null)
+                var soundFileName = "";
+                if (CrossingObj.SoundFileName != "") soundFileName = CrossingObj.SoundFileName;
+                else if (SharedShape.SoundFileName != "") soundFileName = SharedShape.SoundFileName;
+                else if (viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS != null) soundFileName = viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
+                if (soundFileName != "")
                 {
-                    var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
+                    var soundPath = viewer.Simulator.RoutePath + @"\\sound\\" + soundFileName;
                     try
                     {
                         Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
@@ -669,7 +673,7 @@ namespace Orts.Viewer3D
                     }
                     catch
                     {
-                        soundPath = viewer.Simulator.BasePath + @"\\sound\\" + viewer.Simulator.TRK.Tr_RouteFile.DefaultCrossingSMS;
+                        soundPath = viewer.Simulator.BasePath + @"\\sound\\" + soundFileName;
                         try
                         {
                             Sound = new SoundSource(viewer, position.WorldLocation, Events.Source.MSTSCrossing, soundPath);
@@ -1374,6 +1378,8 @@ namespace Orts.Viewer3D
         public bool HasNightSubObj;
         public int RootSubObjectIndex = 0;
         //public bool negativeBogie = false;
+        public string SoundFileName = "";
+
 
         readonly Viewer Viewer;
         public readonly string FilePath;
@@ -1415,7 +1421,7 @@ namespace Orts.Viewer3D
         {
             Trace.Write("S");
             var filePath = FilePath;
-            // commented lines allow reading the animation block from an additiona file in an Openrails subfolder
+            // commented lines allow reading the animation block from an additional file in an Openrails subfolder
 //           string dir = Path.GetDirectoryName(filePath);
 //            string file = Path.GetFileName(filePath);
 //            string orFilePath = dir + @"\openrails\" + file;
@@ -1435,6 +1441,7 @@ namespace Orts.Viewer3D
                 HasNightSubObj = sdFile.shape.ESD_SubObj;
                 if ((textureFlags & Helpers.TextureFlags.Night) != 0 && FilePath.Contains("\\trainset\\"))
                     textureFlags |= Helpers.TextureFlags.Underground;
+                SoundFileName = sdFile.shape.ESD_SoundFileName;
             }
 
             var matrixCount = sFile.shape.matrices.Count;

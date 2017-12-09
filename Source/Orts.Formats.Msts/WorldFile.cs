@@ -792,6 +792,7 @@ namespace Orts.Formats.Msts
         public int crashProbability;
         public bool visible = true;
         public bool silent = false;
+        public string SoundFileName = "";
 
         public LevelCrossingObj(SBR block, int detailLevel)
         {
@@ -817,6 +818,7 @@ namespace Orts.Formats.Msts
             case TokenID.Position: Position = new STFPositionItem(subBlock); break;
             case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
             case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+            case TokenID.ORTSSoundFileName: SoundFileName = subBlock.ReadString(); break;
             default: subBlock.Skip(); break;
         }
     }
