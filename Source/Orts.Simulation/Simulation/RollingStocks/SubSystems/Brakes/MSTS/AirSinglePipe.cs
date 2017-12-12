@@ -31,8 +31,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public class AirSinglePipe : MSTSBrakeSystem
     {
-//        protected float MaxHandbrakeForceN;
-//        protected float MaxBrakeForceN = 89e3f;
         protected TrainCar Car;
         protected float HandbrakePercent;
         protected float CylPressurePSI = 64;
@@ -102,8 +100,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void InitializeFromCopy(BrakeSystem copy)
         {
             AirSinglePipe thiscopy = (AirSinglePipe)copy;
-//            MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
-//            MaxBrakeForceN = thiscopy.MaxBrakeForceN;
             MaxCylPressurePSI = thiscopy.MaxCylPressurePSI;
             AuxCylVolumeRatio = thiscopy.AuxCylVolumeRatio;
             AuxBrakeLineVolumeRatio = thiscopy.AuxBrakeLineVolumeRatio;
@@ -154,13 +150,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             return new string[] {
                 DebugType,
-                this is SingleTransferPipe ? string.Empty : FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true),
+                FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true),
                 FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
-                this is SingleTransferPipe ? string.Empty : FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
+                FormatStrings.FormatPressure(AuxResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.AuxiliaryReservoir], true),
                 (Car as MSTSWagon).EmergencyReservoirPresent ? FormatStrings.FormatPressure(EmergResPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.EmergencyReservoir], true) : string.Empty,
                 TwoPipes ? FormatStrings.FormatPressure(BrakeLine2PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.MainPipe], true) : string.Empty,
                 (Car as MSTSWagon).RetainerPositions == 0 ? string.Empty : RetainerDebugState,
-                this is SingleTransferPipe ? string.Empty : Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
+                Simulator.Catalog.GetString(GetStringAttribute.GetPrettyName(TripleValveState)),
                 string.Empty, // Spacer because the state above needs 2 columns.
                 (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
@@ -204,11 +200,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return MaxApplicationRatePSIpS;
         }
 
-//        public float GetMaxBrakeForceN()
-//        {
-//            return MaxBrakeForceN;
-//        }
-
         public override float GetVacResPressurePSI()
         {
             return 0;
@@ -218,8 +209,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             switch (lowercasetoken)
             {
-//                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-//                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxCylPressurePSI = AutoCylPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "wagon(triplevalveratio": AuxCylVolumeRatio = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(brakedistributorreleaserate":
@@ -309,7 +298,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             else
                 AuxBrakeLineVolumeRatio = 3.1f;
                      
-            //FullCylAirConsumedM3 = MaxCylPressurePSI * MaxBrakeForceN * 0.00000059733491f; //an average volume (M3) of air used in brake cylinder for 1 N brake force.;
             CylVolumeM3 = EmergResVolumeM3 / EmergAuxVolumeRatio / AuxCylVolumeRatio;
         }
 

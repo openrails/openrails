@@ -17,11 +17,21 @@
 
 using ORTS.Common;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
     public class SingleTransferPipe : AirSinglePipe
     {
+
+        readonly static float OneAtmospherePSI = Bar.ToPSI(1);
+
+        // convert pressure in psia to vacuum in inhg
+        public static float P2V(float p)
+        {
+            return Bar.ToInHg(Bar.FromPSI(OneAtmospherePSI - p));
+        }
+
         public SingleTransferPipe(TrainCar car)
             : base(car)
         {
@@ -56,6 +66,49 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (HandbrakePercent > 0)
                 s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
             return s;
+        }
+
+        // This overides the information for each individual wagon in the extended HUD  
+       public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
+        {
+            if (this.Car.CarBrakeSystemType == "vacuum_piped")
+            {       
+
+                return new string[] {
+                DebugType,
+                string.Empty,
+                FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty, // Spacer because the state above needs 2 columns.
+                HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                FrontBrakeHoseConnected ? "I" : "T",
+                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                };
+            }
+            else
+            {
+
+            return new string[] {
+                DebugType,
+                string.Empty,
+                FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true),
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty, // Spacer because the state above needs 2 columns.
+                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                FrontBrakeHoseConnected ? "I" : "T",
+                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                BleedOffValveOpen ? Simulator.Catalog.GetString("Open") : string.Empty,
+                };
+
+           }
         }
 
         public override float GetCylPressurePSI()

@@ -32,11 +32,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
     public class VacuumSinglePipe : MSTSBrakeSystem
     {
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
-        //const float OneAtmosphereKPa = 100;
-        //const float OneAtmosphereInHg = 30;
-//        float MaxHandbrakeForceN;
-//        float MaxBrakeForceN = 89e3f;
-        //float MaxForcePressurePSI = 21 * OneAtmospherePSIA / OneAtmosphereInHg;// relative pressure difference for max brake force
         float MaxForcePressurePSI = KPa.ToPSI(KPa.FromInHg(21));    // relative pressure difference for max brake force
         TrainCar Car;
         float HandbrakePercent;
@@ -53,15 +48,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         bool HasDirectAdmissionValue = false;
         float MaxReleaseRatePSIpS = 2.5f;
         float MaxApplicationRatePSIpS = 2.5f;
-      //  float PipeTimeFactorS = .003f; // copied from air single pipe, probably not accurate
-     //   float ReleaseTimeFactorS = 1.009f; // copied from air single pipe, but close to modern ejector data
-    //    float ApplyChargingRatePSIpS = 4;
         bool TrainBrakePressureChanging = false;
         bool BrakePipePressureChanging = false;
         int SoundTriggerCounter = 0;
         float prevCylPressurePSIA = 0f;
         float prevBrakePipePressurePSI = 0f;
-     //   private float TrainBrakePipeLeakPSIpS;
+
 
 
         public VacuumSinglePipe(TrainCar car)
@@ -79,14 +71,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override void InitializeFromCopy(BrakeSystem copy)
         {
             VacuumSinglePipe thiscopy = (VacuumSinglePipe)copy;
-//            MaxBrakeForceN = thiscopy.MaxBrakeForceN;
-//            MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
             MaxForcePressurePSI = thiscopy.MaxForcePressurePSI;
             MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
             MaxApplicationRatePSIpS = thiscopy.MaxApplicationRatePSIpS;
-          //  ApplyChargingRatePSIpS = thiscopy.ApplyChargingRatePSIpS;
-         //   PipeTimeFactorS = thiscopy.PipeTimeFactorS;
-          //  ReleaseTimeFactorS = thiscopy.ReleaseTimeFactorS;
             NumCylinders = thiscopy.NumCylinders;
             CylVol = thiscopy.CylVol;
             PipeVol = thiscopy.PipeVol;
@@ -165,13 +152,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             switch (lowercasetoken)
             {
-//                case "wagon(maxhandbrakeforce": MaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-//                case "wagon(maxbrakeforce": MaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxForcePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultInHg, null); break;
                 case "wagon(maxreleaserate": MaxReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
-           //     case "wagon(maxapplicationrate": ApplyChargingRatePSIpS = MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
-           //     case "engine(pipetimefactor": PipeTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
-          //      case "engine(releasetimefactor": ReleaseTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
           
                 // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
