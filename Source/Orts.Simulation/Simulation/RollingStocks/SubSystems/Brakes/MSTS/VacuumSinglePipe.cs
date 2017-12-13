@@ -46,6 +46,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         float PipeVol = (float)((2 / 2) * (2 / 2) * 70 * 12 * Math.PI);
         // volume units need to be consistent but otherwise don't matter, defaults are cubic inches
         bool HasDirectAdmissionValue = false;
+        float DirectAdmissionValve = 0.0f;
         float MaxReleaseRatePSIpS = 2.5f;
         float MaxApplicationRatePSIpS = 2.5f;
         bool TrainBrakePressureChanging = false;
@@ -154,7 +155,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 case "wagon(brakecylinderpressureformaxbrakebrakeforce": MaxForcePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultInHg, null); break;
                 case "wagon(maxreleaserate": MaxReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
-          
+                case "wagon(maxapplicationrate": MaxApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultInHgpS, null); break;
+                case "wagon(ortsdirectadmissionvalve": DirectAdmissionValve = stf.ReadFloatBlock(STFReader.UNITS.None, null);
+                    if(DirectAdmissionValve == 1.0f)
+                    {
+                        HasDirectAdmissionValue = true;
+                    }
+                    else
+                    {
+                        HasDirectAdmissionValue = false;
+                    }
+                    break;
                 // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
             }

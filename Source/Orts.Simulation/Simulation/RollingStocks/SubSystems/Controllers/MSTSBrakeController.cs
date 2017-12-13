@@ -67,6 +67,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             return value;
         }
 
+        // Train Brake Controllers
         public override void UpdatePressure(ref float pressureBar, float elapsedClockSeconds, ref float epControllerState)
         {
             var epState = -1f;
@@ -168,6 +169,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             epControllerState = epState;
         }
 
+        // Engine Brake Controllers
         public override void UpdateEngineBrakePressure(ref float pressureBar, float elapsedClockSeconds)
         {
             MSTSNotch notch = NotchController.GetCurrentNotch();
