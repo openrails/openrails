@@ -104,6 +104,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             AuxCylVolumeRatio = thiscopy.AuxCylVolumeRatio;
             AuxBrakeLineVolumeRatio = thiscopy.AuxBrakeLineVolumeRatio;
             EmergResVolumeM3 = thiscopy.EmergResVolumeM3;
+            BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
             RetainerPressureThresholdPSI = thiscopy.RetainerPressureThresholdPSI;
             ReleaseRatePSIpS = thiscopy.ReleaseRatePSIpS;
             MaxReleaseRatePSIpS = thiscopy.MaxReleaseRatePSIpS;
