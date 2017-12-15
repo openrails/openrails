@@ -86,7 +86,7 @@ The main folders in the repository are:
       </ul>
     </div>
   </li><li>
-    <a href=# id="compiling"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Compiling the Open Rails Project</h2></a>
+    <a href=# id="compiling" name="compiling"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Compiling the Open Rails Project</h2></a>
     <div class="accordion_body">
       <p>
 To compile and debug the Open Rails source code, ensure you have the following Microsoft products installed:

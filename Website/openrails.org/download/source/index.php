@@ -54,7 +54,7 @@
         <div class="col-md-6">
 <h2>Inspecting The Source</h2>
 <p>
-Open Rails's source code is arranged as a Visual Studio solution which can be built with the free Visual C# Express 2010, 2012 and 2013 products and the commercial Visual Studio 2010, 2012 and 2013 products.
+Open Rails's source code is organised as a Visual Studio solution - see <a href="http://openrails.org/contribute/developing-code/#compiling">Compiling The Open Rails Project</a> for free and commercial Visual Studio products.
 </p>
 <h2>License Requirements</h2>
 <p>
