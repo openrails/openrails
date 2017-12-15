@@ -1362,7 +1362,7 @@ namespace Orts.Simulation.RollingStocks
             if (NewBurnRateSteamToCoalLbspH == null)
             {
                 // This will calculate a default burnrate curve based upon the fuel calorific, Max Steam Output, and Boiler Efficiency
-                // Firing Rate = (Max Evap / BE) x Steam Btu/lb @ pressure / Fuel Calorific)
+                // Firing Rate = (Max Evap / BE) x (Steam Btu/lb @ pressure / Fuel Calorific)
 
                 float BoilerEfficiencyBurnRate = (BoilerEfficiencyGrateAreaLBpFT2toX[0.0f] / 2.0f);
                 MaxFiringRateLbpH = (pS.TopH(TheoreticalMaxSteamOutputLBpS) / BoilerEfficiencyBurnRate) * (SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI] / KJpKg.ToBTUpLb(FuelCalorificKJpKG));

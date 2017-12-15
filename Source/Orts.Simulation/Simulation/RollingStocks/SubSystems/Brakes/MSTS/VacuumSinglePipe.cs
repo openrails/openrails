@@ -18,6 +18,7 @@
 // Debug for Vacuum operation - Train Pipe Leak
 //#define DEBUG_TRAIN_PIPE_LEAK
 
+using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
@@ -337,6 +338,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var lead = trainCar as MSTSLocomotive;
             var brakePipeTimeFactorS = lead == null ? 0.003f : lead.BrakePipeTimeFactorS;
             // train.BrakeLine1PressurePSI is really vacuum in inHg
+            // 0 psi = 0 InHg, 14.5 psi (atmospheric pressure) = 28 InHg
+            // Brakes applied when vaccum destroyed, ie 0 InHg, Brakes released when vacuum established ie 21 or 25 InHg
             float DesiredPipeVacuum = V2P(train.EqualReservoirPressurePSIorInHg);
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
@@ -353,7 +356,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeLeakLossPSI;
                     }
 
-                    // Vacuum Pipe is < Desired value - increase brake pipe value - release brakes??
+                    // Vacuum Pipe is < Desired value - increase brake pipe pressure (decrease vacuum value) - apply brakes
                     if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                     {
                         //  float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * lead.BrakeSystem.ApplyChargingRatePSIpS;
@@ -363,7 +366,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPSI;
                     }
 
-                    // Vacuum Pipe is < Desired value - decrease brake pipe value - apply brakes??
+                    // Vacuum Pipe is < Desired value - decrease brake pipe value pressure - release brakes
                     else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                     {
                         // lead.BrakeSystem.BrakeLine1PressurePSI *= (1 - TrainPipeTimeVariationS / ReleaseTimeFactorS);
@@ -371,6 +374,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                             lead.BrakeSystem.BrakeLine1PressurePSI = DesiredPipeVacuum;
                     }
+
+                    train.LeadPipePressurePSI = lead.BrakeSystem.BrakeLine1PressurePSI;  // Keep a record of current train pipe pressure in lead locomotive
                 }
 
                 // Propogate lead brake line pressure from lead locomotive along the train to each car
@@ -382,8 +387,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 #if DEBUG_TRAIN_PIPE_LEAK
 
                 Trace.TraceInformation("======================================= Train Pipe Leak (VacuumSinglePipe) ===============================================");
-                Trace.TraceInformation("Charging Rate {0}  ServiceTimeFactor {1}", lead.BrakePipeChargingRatePSIpS, lead.BrakeServiceTimeFactorS);
-                Trace.TraceInformation("Before:  CarID {0}  TrainPipeLeak {1} Lead BrakePipe Pressure {2}", trainCar.CarID, lead.TrainBrakePipeLeakPSIpS, lead.BrakeSystem.BrakeLine1PressurePSI);
+                Trace.TraceInformation("Charging Rate {0}  ServiceTimeFactor {1}", lead.BrakePipeChargingRatePSIorInHgpS, lead.BrakeServiceTimeFactorS);
+                Trace.TraceInformation("Before:  CarID {0}  TrainPipeLeak {1} Lead BrakePipe Pressure {2}", trainCar.CarID, lead.TrainBrakePipeLeakPSIorInHgpS, lead.BrakeSystem.BrakeLine1PressurePSI);
                 Trace.TraceInformation("Brake State {0}", lead.TrainBrakeController.TrainBrakeControllerState);
                 Trace.TraceInformation("Small Ejector {0} Large Ejector {1}", lead.SmallSteamEjectorIsOn, lead.LargeSteamEjectorIsOn);
 
@@ -397,8 +402,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                     {
                         float TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS;
-                        car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI;
-                        car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI;
+
+                        // TODO - Confirm logic - it appears to allow for air flow to coupled car by reducing (increasing) preceeding car brake pipe - this allows time for the train to "recharge".
+                        if (car0 == lead) // If this is the locomotive
+                        {
+                            car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3); ;
+                            car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3); ;
+                            car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, 0.001f, train.LeadPipePressurePSI); // Prevent Lead locomotive pipe pressure increasing above the value calculated above
+                        }
+                        else
+                        {
+                            car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3); ;
+                            car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3); ;
+                        }
                     }
                     if (!car.BrakeSystem.FrontBrakeHoseConnected) // Car front brake hose not connected
                     {
