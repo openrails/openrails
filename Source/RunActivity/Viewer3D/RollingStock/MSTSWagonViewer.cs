@@ -490,8 +490,8 @@ namespace Orts.Viewer3D.RollingStock
             else // set values for simple adhesion
             {
 
-                distanceTravelledM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
-                distanceTravelledDrivenM = MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+                distanceTravelledM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
+                distanceTravelledDrivenM = ((MSTSWagon.Train != null && MSTSWagon.Train.IsPlayerDriven && ((MSTSLocomotive)MSTSWagon).UsingRearCab) ? -1 : 1) * MSTSWagon.SpeedMpS * elapsedTime.ClockSeconds;
                 // Set values of wheel radius - assume that drive wheel and non driven wheel are same sizes
                 if (Car.EngineType == Orts.Simulation.RollingStocks.TrainCar.EngineTypes.Steam) // set values for steam stock
                 {
