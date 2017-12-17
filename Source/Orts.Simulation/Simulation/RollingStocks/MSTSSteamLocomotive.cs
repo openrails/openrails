@@ -356,7 +356,7 @@ namespace Orts.Simulation.RollingStocks
 
         // Steam Ejector
         float SteamEjectorSmallDiameterIn = 0.787402f; // Actual diameter of small ejector (Assume a small ejector of 20mm - Dreadnought)
-        float SteamEjectorSmallSetting;
+        // public float SteamEjectorSmallSetting;
         float SteamEjectorSmallBaseSteamUsageLbpS;
         float SmallEjectorCapacityFactor;
         float EjectorSmallSteamConsumptionLbpS;

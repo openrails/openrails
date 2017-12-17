@@ -182,6 +182,7 @@ namespace Orts.Simulation.RollingStocks
         public bool LargeSteamEjectorIsOn = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public bool VacuumPumpFitted;
+        public float SteamEjectorSmallSetting = 0.0f;
 
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
