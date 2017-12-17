@@ -568,7 +568,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             var brakePipeTimeFactorS = lead == null ? 0.003f : lead.BrakePipeTimeFactorS;
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
-            float TrainPipeLeakLossPSI = TrainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS;
+            float TrainPipeLeakLossPSI = lead == null ? 0.0f : (TrainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS);
 
             // Propagate brake line (1) data if pressure gradient disabled
             if (lead != null && lead.BrakePipeChargingRatePSIorInHgpS >= 1000)

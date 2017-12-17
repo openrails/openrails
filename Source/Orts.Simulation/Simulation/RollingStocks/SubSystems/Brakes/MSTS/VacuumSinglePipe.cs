@@ -343,9 +343,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float DesiredPipeVacuum = V2P(train.EqualReservoirPressurePSIorInHg);
             int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
-            float SmallEjectorFeed = lead.SteamEjectorSmallSetting * (1.5f * lead.TrainBrakePipeLeakPSIorInHgpS); // Set value for small ejector to operate
-            float TrainPipeLeakLossPSI = TrainPipeTimeVariationS * (lead.TrainBrakePipeLeakPSIorInHgpS - SmallEjectorFeed);
-            float MaxVacuumPipeLevelPSI =  Bar.ToPSI(Bar.FromInHg(lead.TrainBrakeController.MaxPressurePSI));
+            float SmallEjectorFeed = lead == null ? 10.0f : (lead.SteamEjectorSmallSetting * (1.5f * lead.TrainBrakePipeLeakPSIorInHgpS)); // Set value for small ejector to operate
+            float TrainPipeLeakLossPSI = lead == null ? 0.0f :(TrainPipeTimeVariationS * (lead.TrainBrakePipeLeakPSIorInHgpS - SmallEjectorFeed));
+            float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : Bar.ToPSI(Bar.FromInHg(lead.TrainBrakeController.MaxPressurePSI));
             for (int i = 0; i < nSteps; i++)
             {
 
