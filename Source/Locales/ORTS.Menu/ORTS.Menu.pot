@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2017-08-18 21:38:02+0200\n"
-"PO-Revision-Date: 2017-08-18 21:38:02+0200\n"
+"POT-Creation-Date: 2017-12-17 12:48:53+0100\n"
+"PO-Revision-Date: 2017-12-17 12:48:53+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -15,7 +15,11 @@ msgstr ""
 msgid "- Explore Route -"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:75
+#: ../../ORTS.Menu/Activities.cs:50
+msgid "+ Explore in Activity Mode +"
+msgstr ""
+
+#: ../../ORTS.Menu/Activities.cs:79
 #: ../../ORTS.Menu/Consists.cs:47
 #: ../../ORTS.Menu/Consists.cs:71
 #: ../../ORTS.Menu/Consists.cs:199
@@ -26,7 +30,7 @@ msgstr ""
 msgid "load error:"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:78
+#: ../../ORTS.Menu/Activities.cs:82
 #: ../../ORTS.Menu/Consists.cs:50
 #: ../../ORTS.Menu/Consists.cs:74
 #: ../../ORTS.Menu/Consists.cs:202
@@ -37,7 +41,7 @@ msgstr ""
 msgid "unnamed:"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:84
+#: ../../ORTS.Menu/Activities.cs:88
 #: ../../ORTS.Menu/Consists.cs:54
 #: ../../ORTS.Menu/Consists.cs:78
 #: ../../ORTS.Menu/Consists.cs:207
@@ -48,7 +52,7 @@ msgstr ""
 msgid "missing:"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:77
+#: ../../ORTS.Menu/Activities.cs:81
 #, csharp-format
 msgid "Activity '{0}' is excluded."
 msgstr ""

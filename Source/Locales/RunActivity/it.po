@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: RunActivity\n"
-"POT-Creation-Date: 2016-12-30 18:36+0100\n"
-"PO-Revision-Date: 2016-12-30 18:43+0100\n"
+"POT-Creation-Date: 2017-12-17 20:14+0100\n"
+"PO-Revision-Date: 2017-12-17 20:47+0100\n"
 "Last-Translator: Roberto Ceccarelli (The Strawberry Field) <strawberry."
 "field@libero.it>\n"
 "Language-Team: Open Rails Dev Team\n"
@@ -10,7 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.11\n"
+"X-Generator: Poedit 2.0.2\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:598
@@ -41,22 +41,22 @@ msgstr "Testa fuori"
 msgid "Cab"
 msgstr "Cabina"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1684
+#: ../../RunActivity/Viewer3D/Cameras.cs:1748
 msgid "Trackside"
 msgstr "Lungolinea"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1840
+#: ../../RunActivity/Viewer3D/Cameras.cs:1926
 msgid "3D Cab"
 msgstr "Cabina 3D"
 
-#: ../../RunActivity/Viewer3D/Materials.cs:166
+#: ../../RunActivity/Viewer3D/Materials.cs:184
 #, csharp-format
 msgid "{0:F0} texture"
 msgid_plural "{0:F0} textures"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Materials.cs:392
+#: ../../RunActivity/Viewer3D/Materials.cs:434
 #, csharp-format
 msgid "{0:F0} material"
 msgid_plural "{0:F0} materials"
@@ -77,56 +77,88 @@ msgid_plural "{0:F0} tiles"
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:657
-#: ../../RunActivity/Viewer3D/Viewer.cs:783
+#: ../../RunActivity/Viewer3D/Viewer.cs:760
+#: ../../RunActivity/Viewer3D/Viewer.cs:949
 msgid "Cab view not available"
 msgstr "Vista cabina non disponibile"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:722
+#: ../../RunActivity/Viewer3D/Viewer.cs:844
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "In MP, usa Alt-F4 per uscire direttamente"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:794
+#: ../../RunActivity/Viewer3D/Viewer.cs:875
+msgid "Automatic platform and siding labels visible."
+msgstr "Nomi marciapiedi e banchine visibili in automatico."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:878
+msgid "Platform and siding labels visible."
+msgstr "Nomi marciapiedi e banchine visibili."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:881
+msgid "Platform labels visible."
+msgstr "Nomi marciapiedi visibili."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:884
+msgid "Siding labels visible."
+msgstr "Nomi banchine visibili."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:890
+msgid "Platform and siding labels hidden."
+msgstr "Nomi marciapiedi e banchine nascosti."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:901
+msgid "Train labels visible."
+msgstr "Nomi treni visibili."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:904
+msgid "Car labels visible."
+msgstr "Nomi carri visibili."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:910
+msgid "Train and car labels hidden."
+msgstr "Nomi treni e carri nascosti."
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:960
 msgid "3D Cab view not available"
 msgstr "Vista cabina 3D non disponibile"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:959
+#: ../../RunActivity/Viewer3D/Viewer.cs:1125
 msgid "Switched to player control"
 msgstr "Attivato controllo player"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:964
+#: ../../RunActivity/Viewer3D/Viewer.cs:1130
 msgid "You can't switch from manual to autopilot mode"
 msgstr "Non puoi passare dal modo manuale al pilota automatico"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:968
+#: ../../RunActivity/Viewer3D/Viewer.cs:1134
 msgid "Switched to autopilot"
 msgstr "Attivato modo pilota automatico"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1362
+#: ../../RunActivity/Viewer3D/Viewer.cs:1728
 msgid "Game saved"
 msgstr "Gioco salvato"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:268
+#: ../../RunActivity/Viewer3D/Viewer.cs:285
 #, csharp-format
 msgid "Allowed speed raised to {0}"
 msgstr "Velocità permessa raggiunta a {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:812
+#: ../../RunActivity/Viewer3D/Viewer.cs:978
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibrazione al livello {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:977
+#: ../../RunActivity/Viewer3D/Viewer.cs:1143
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr "Lista comandi tastiera salvati in '{0}'"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:981
+#: ../../RunActivity/Viewer3D/Viewer.cs:1147
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr "Immagine comandi tastiera salvata in '{0}'"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:843
+#: ../../RunActivity/Viewer3D/Viewer.cs:1009
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -135,7 +167,23 @@ msgstr[0] ""
 msgstr[1] ""
 "{0} punti di osservazione memorizzati. Usa Shift+8 per ripristinare i punti."
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1974
+#: ../../RunActivity/Viewer3D/Weather.cs:135
+msgid ""
+"Restoring wrong weather type : trying to restore dynamic weather but save "
+"contains user controlled weather"
+msgstr ""
+"Ripristino meteo errato: tentativo di ripristinare un meteo dinamico, ma il "
+"salvataggio contiene un meteo utente."
+
+#: ../../RunActivity/Viewer3D/Weather.cs:1391
+msgid ""
+"Restoring wrong weather type : trying to restore user controlled weather but "
+"save contains dynamic weather"
+msgstr ""
+"Ripristino meteo errato: tentativo di ripristinare un meteo utente, ma il "
+"salvataggio contiene un meteo dinamico."
+
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1967
 msgid "Switching Request Sent to the Server"
 msgstr "Richiesta di scambio inviata al Server"
 
@@ -297,7 +345,7 @@ msgstr "Variabile 1"
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:351
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:777
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:779
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:74
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:78
 msgid "Distance"
 msgstr "Distanza"
 
@@ -436,59 +484,59 @@ msgstr "Freno a mano inserito"
 msgid "Handbrake off"
 msgstr "Freno a mano rilasciato"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:116
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:115
 msgid "Power OFF command sent"
 msgstr "Coamndo di spegnimento inviato"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:118
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:117
 msgid "Power ON command sent"
 msgstr "Comando di accensione inviato"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:121
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:120
 msgid "No power command for this type of car!"
 msgstr "Non c'è comando di accensione per questo rotabile"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:137
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:134
 msgid "MU signal connected"
 msgstr "Segnale MU connesso"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:139
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:136
 msgid "MU signal disconnected"
 msgstr "Segnale MU disconnesso"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:142
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:139
 msgid "No MU command for this type of car!"
 msgstr "Questo rotabile non supporta MU"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:151
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:146
 msgid "Front brake hose connected"
 msgstr "Condotta freni anteriore connessa"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:153
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:148
 msgid "Front brake hose disconnected"
 msgstr "Condotta freni anteriore disconnessa"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:160
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:155
 msgid "Front angle cock opened"
 msgstr "Rubinetto freni anteriore aperto"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:162
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:157
 msgid "Front angle cock closed"
 msgstr "Rubinetto freni anteriore chiuso"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:169
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:164
 msgid "Rear angle cock opened"
 msgstr "Rubinetto freni posteriore aperto"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:171
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:166
 msgid "Rear angle cock closed"
 msgstr "Rubinetto freni posteriore chiuso"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:181
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:176
 msgid "Bleed off valve opened"
 msgstr "Valvola spurgo aperta"
 
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:183
+#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:178
 msgid "Bleed off valve closed"
 msgstr "Valvola spurgo chiusa"
 
@@ -526,32 +574,33 @@ msgid "Timetable"
 msgstr "Orario"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:85
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:73
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:77
 msgid "Station"
 msgstr "Stazione"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:86
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:75
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:79
 msgid "Arrive"
 msgstr "Arrivo"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:87
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:89
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:76
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:78
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:80
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:82
 msgid "Actual"
 msgstr "Attuale"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:88
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:77
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:81
 msgid "Depart"
 msgstr "Partenza"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:104
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:206
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:282
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:285
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:268
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:461
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:537
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:540
 msgid "(missed)"
 msgstr "(saltata)"
 
@@ -1231,28 +1280,88 @@ msgctxt "NonSteam"
 msgid "Reverser"
 msgstr "Invertitore"
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:56
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:60
 msgid "Next Station"
 msgstr "Prossima stazione"
 
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:188
+msgid "Waiting for train to attach"
+msgstr "In attesa del treno da attaccare"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:194
+msgid "Waiting for train to attach : "
+msgstr "In attesa del treno da attaccare: "
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:207
+msgid "Waiting for transfer"
+msgstr "In attesa di trasferimento"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:223
+msgid "Train inactive."
+msgstr "Treno inattivo."
+
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:227
+msgid "Train static."
+msgstr "Treno statico."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:231
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:421
+msgid "Train not active."
+msgstr "Treno non attivo."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:233
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:430
+msgid " Activation time : "
+msgstr "Orario di attivazione: "
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:237
+msgid "Train has terminated."
+msgstr "Treno terminato."
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:299
+msgid "Transfer units at next station with train "
+msgstr "Trasferimento unità alla prossima stazione con il treno "
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:309
+msgid "Transfer units with train "
+msgstr "Trasferimento unità con il treno "
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:319
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:325
+msgid "Train is to attach to : "
+msgstr "Il treno si sta attaccando a: "
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:327
+msgid " ; other train not yet ready"
+msgstr "; altro treno non ancora pronto"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:332
+msgid "Train is to pickup train at end of path"
+msgstr "Il treno sta per prelevarne un altro alla fine del percorso"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:337
+msgid "Pick up train ahead"
+msgstr "Prelevato il treno davanti"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:347
+msgid "Transfer units with train ahead"
+msgstr "Trasferimento unità con il treno davanti"
+
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:352
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:482
 msgid "No more stations."
 msgstr "Non ci sono altre stazioni."
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:362
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:617
 msgid "Activity completed."
 msgstr "Activity completata."
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:126
+#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:130
 #, csharp-format
 msgid "Current Delay: {0} minute"
 msgid_plural "Current Delay: {0} minutes"
 msgstr[0] "Ritardo attuale: {0} minuto"
 msgstr[1] "Ritardo attuale: {0} minuti"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:166
-msgid "Train not active."
-msgstr "Treno non attivo."
 
 #: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:96
 #, csharp-format
@@ -1341,28 +1450,87 @@ msgid "Limit:"
 msgstr "Limite:"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:116
-msgid " Milepost   Speed     Dist"
+msgid " Milepost   Limit     Dist"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:33
 msgid "Train List"
-msgstr ""
+msgstr "Lista treni"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:45
 msgid "Number"
-msgstr ""
+msgstr "Numero"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:46
 msgid "Service Name"
-msgstr ""
+msgstr "Nome servizio"
 
 #: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:47
 msgid "Viewed"
+msgstr "Visto"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:166
+msgid "Train in turntable not aligned to a track can't be selected"
 msgstr ""
+"Il treno sulla piattaforma non è allineato con un binario, non può essere "
+"selezionato."
+
+#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:171
+msgid "Player train can't be switched when in turntable not aligned to a track"
+msgstr ""
+"Il treno player non può essere sostituito se su una piattaforma non "
+"allineata ad un binario."
 
 #: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:39
 msgid "Train Operations"
 msgstr "Operazioni Treno"
+
+#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:119
+msgid "In Timetable Mode uncoupling using this window is not allowed"
+msgstr "In Timetable Mode non è ammesso il distacco con questa finestra."
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:44
+msgid "Timetable Detach Menu"
+msgstr "Menu distacchi per Timetable"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:54
+msgid "This train is about to split."
+msgstr "Il treno sta per essere diviso."
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:66
+msgid "Perform Detach"
+msgstr "Esegui distacco"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:90
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:95
+msgid "static consist"
+msgstr "consist statico"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:99
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:104
+msgid "Rear"
+msgstr "Dietro"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:100
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:103
+msgid "Front"
+msgstr "Davanti"
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:109
+msgid "This portion will continue as train : "
+msgstr "Questa parte continuerà come treno: "
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:110
+msgid " portion will form train : "
+msgstr " diventerà il treno: "
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:114
+msgid "This portion will form into train : "
+msgstr "Questa parte formerà il treno: "
+
+#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:115
+msgid " portion will continue as train : "
+msgstr " continuerà come treno: "
 
 #: ../../RunActivity/Viewer3D/Popups/WindowText.cs:152
 msgid ""
@@ -1370,116 +1538,143 @@ msgid ""
 "()=?;:'_[]"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1075
+#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1092
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr ""
 "File di salvataggio dell'activity '*.save' non trovato nella cartella {0}"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:334
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:325
 msgid "freight-grain"
-msgstr ""
+msgstr "carico di grano"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:335
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:326
 msgid "freight-coal"
-msgstr ""
+msgstr "carico di carbone"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:336
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:327
 msgid "freight-gravel"
-msgstr ""
+msgstr "carico di ghiaia"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:337
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:328
 msgid "freight-sand"
-msgstr ""
+msgstr "carico di sabbia"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:338
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:329
 msgid "water"
 msgstr "acqua"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:339
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:330
 msgid "coal"
 msgstr "carbone"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:340
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:331
 msgid "diesel oil"
 msgstr "gasolio"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:341
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:332
 msgid "wood"
 msgstr "legna"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:469
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:333
+msgid "sand"
+msgstr "sabbia"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:334
+msgid "freight-general"
+msgstr "carico generico"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:335
+msgid "freight-livestock"
+msgstr "carico di bestiame"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:336
+msgid "freight-fuel"
+msgstr "carico di carburante"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:337
+msgid "freight-milk"
+msgstr "carico di latte"
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:338
+msgid "mail"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:466
 msgid "Refill: Immediate refill process selected, refilling immediately."
 msgstr "Rifornimento: selezionato rifornimento immediato."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:490
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:487
 msgid "Refill: Electric loco and no pickup. Command rejected"
 msgstr ""
 "Rifornimento: Loco elettrica senza predisposizione al carico. Comando non "
 "eseguito."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:606
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:624
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:603
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:622
 msgid "Incompatible pickup type"
 msgstr "Tipo di carico incompatibile"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:611
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:629
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:609
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:627
 msgid "Starting refill"
 msgstr "Inizio rifornimento"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:497
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:494
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr "Rifornimento: La distanza dal rifornimento {0} è {1}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:505
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:502
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr "Rifornimento: La locomotiva deve essere ferma per rifornire {0}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:511
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:235
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:508
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:242
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr "Rifornimento: La velocità della locomotiva deve superare {0}"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:518
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:241
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:515
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:248
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr "Rifornimento: La velocità della locomotiva non deve superare {0}"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:536
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:557
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:248
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:533
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:554
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:255
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr "Rifornimento: hai fatto il pieno di {0}"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:563
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:560
 #, csharp-format
-msgid "Refill: {0} fuel or freight now unloaded."
-msgstr "Rifornimento: {0} carburante o merce scaricato"
+msgid "Unload: {0} fuel or freight now unloaded."
+msgstr "Scarico: {0} carburante o merce scaricati."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:498
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:495
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
 msgstr[0] "{0} metro"
 msgstr[1] "{0} metri"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:219
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:226
 msgid "No scoop in this loco"
-msgstr ""
+msgstr "Nessun bocchettone di rifornimento in questa locomotiva."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:224
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:231
 msgid "Scoop is broken, can't refill"
-msgstr ""
+msgstr "Bocchettone rotto: impossibile rifornire."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:230
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSSteamLocomotiveViewer.cs:237
 msgid "Scoop broken because activated outside through"
-msgstr ""
+msgstr "Bocchettone rotto perché attivato fuori posto."
+
+#~ msgid "Refill: {0} fuel or freight now unloaded."
+#~ msgstr "Rifornimento: {0} carburante o merce scaricato"
 
 #~ msgid "Passenger boarding completed. Waiting for signal ahead to clear."
 #~ msgstr ""
