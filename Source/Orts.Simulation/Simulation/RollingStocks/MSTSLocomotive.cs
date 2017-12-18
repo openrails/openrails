@@ -228,7 +228,7 @@ namespace Orts.Simulation.RollingStocks
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = .003f;
-        public float BrakeServiceTimeFactorS = 1.009f;
+        public float BrakeServiceTimeFactorS;
         public float BrakeEmergencyTimeFactorS = .1f;
         public float BrakePipeChargingRatePSIorInHgpS;
         public InterpolatorDiesel2D TractiveForceCurves;
@@ -1008,17 +1008,31 @@ namespace Orts.Simulation.RollingStocks
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
 
+            // Initialise Brake Pipe Charging Rate
             if (BrakePipeChargingRatePSIorInHgpS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
             {
-
                 // Set Default BrakePipe Charging Rate depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakePipeChargingRatePSIorInHgpS = 4.0f; // Vacuum brakes
+                    BrakePipeChargingRatePSIorInHgpS = 20.0f; // Vacuum brakes
                 }
                 else
                 {
                     BrakePipeChargingRatePSIorInHgpS = Simulator.Settings.BrakePipeChargingRate; // Air brakes
+                }
+            }
+
+            // Initialise Brake Service Time Factor
+            if (BrakeServiceTimeFactorS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
+            {
+                // Set Default BrakePipe Charging Rate depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    BrakeServiceTimeFactorS = 20.0f; // Vacuum brakes
+                }
+                else
+                {
+                    BrakeServiceTimeFactorS = 1.009f; // Air brakes
                 }
             }
 

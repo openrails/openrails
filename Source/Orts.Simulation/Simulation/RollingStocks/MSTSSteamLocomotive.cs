@@ -4718,11 +4718,14 @@ namespace Orts.Simulation.RollingStocks
 
                 // Calculate small steam ejector steam usage
                 SteamEjectorSmallSetting = SmallEjectorController.CurrentValue;
-                SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
-                SteamEjectorSmallBaseSteamUsageLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorSmallPressurePSI]);
+                /* SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
+                   SteamEjectorSmallBaseSteamUsageLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorSmallPressurePSI]);
 
-                SmallEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorSmallDiameterIn];
-                EjectorSmallSteamConsumptionLbpS = SteamEjectorSmallBaseSteamUsageLbpS * SmallEjectorCapacityFactor;
+                   SmallEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorSmallDiameterIn];
+                   EjectorSmallSteamConsumptionLbpS = SteamEjectorSmallBaseSteamUsageLbpS * SmallEjectorCapacityFactor; */
+                
+                // Based upon Gresham publication - steam consumption for 20mm ejector is 300lbs/hr or 0.083333 lb/s
+                EjectorSmallSteamConsumptionLbpS = 0.083333f * SmallEjectorController.CurrentValue;
 
                 if (SteamEjectorSmallSetting > 0.1f) // Test to see if small steam ejector is on
                 {
@@ -4739,10 +4742,13 @@ namespace Orts.Simulation.RollingStocks
                 // Calculate large steam ejector steam usage if no vacuum pump fitted, and the brake turns the large ejector on
                 if (!VacuumPumpFitted && LargeSteamEjectorIsOn)
                 {
-                    SteamEjectorLargeBaseUsageSteamLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorLargePressurePSI]);
+                    /*                    SteamEjectorLargeBaseUsageSteamLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorLargePressurePSI]);
 
-                    LargeEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorLargeDiameterIn];
-                    EjectorLargeSteamConsumptionLbpS = SteamEjectorLargeBaseUsageSteamLbpS * LargeEjectorCapacityFactor;
+                                        LargeEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorLargeDiameterIn];
+                                        EjectorLargeSteamConsumptionLbpS = SteamEjectorLargeBaseUsageSteamLbpS * LargeEjectorCapacityFactor;  */
+
+                    // Based upon Gresham publication - steam consumption for 20mm ejector is 650lbs/hr or 0.180555 lb/s
+                    EjectorLargeSteamConsumptionLbpS = 0.18055555f;
                 }
                 else
                 {
