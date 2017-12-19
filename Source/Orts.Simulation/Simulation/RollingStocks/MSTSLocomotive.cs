@@ -227,7 +227,7 @@ namespace Orts.Simulation.RollingStocks
         public float MainResChargingRatePSIpS;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
-        public float BrakePipeTimeFactorS = .003f;
+        public float BrakePipeTimeFactorS = 0.0015f;
         public float BrakeServiceTimeFactorS;
         public float BrakeEmergencyTimeFactorS = .1f;
         public float BrakePipeChargingRatePSIorInHgpS;

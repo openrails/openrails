@@ -26,6 +26,7 @@ using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 {
@@ -565,11 +566,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             
             var train = trainCar.Train;
             var lead = trainCar as MSTSLocomotive;
-            var brakePipeTimeFactorS = lead == null ? 0.003f : lead.BrakePipeTimeFactorS;
-            int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
+            var brakePipeTimeFactorS = lead == null ? 0.0015f : lead.BrakePipeTimeFactorS;
+            int nSteps = (int)(elapsedClockSeconds / brakePipeTimeFactorS + 1);
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
             float TrainPipeLeakLossPSI = lead == null ? 0.0f : (TrainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS);
-
             // Propagate brake line (1) data if pressure gradient disabled
             if (lead != null && lead.BrakePipeChargingRatePSIorInHgpS >= 1000)
             {   // pressure gradient disabled
@@ -666,7 +666,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (car == train.Cars[0] || car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                         {
 
-                            float TrainPipePressureDiffPropogationPSI = Math.Min (TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS * 2, p1 - p0);
+                            float TrainPipePressureDiffPropogationPSI = Math.Min (TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS, p1 - p0);
                             // Appears to work on the principle of pressure equalisation, ie trailing car pressure will drop by fraction of total volume determined by lead car.
 
                             // TODO - Confirm logic - it appears to allow for air flow to coupled car by reducing (increasing) preceeding car brake pipe - this allows time for the train to "recharge".
