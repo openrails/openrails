@@ -1327,15 +1327,13 @@ namespace Orts.Simulation
                 case EventType.DropOffWagonsAtLocation:
                     // Dropping off of wagons should only count once disconnected from player train.
                     // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
-                    consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
-                    if (consistTrain != null)
-                        triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
-
-                    //if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
-                    //{
-                    //    triggered = includesWagons(OriginalPlayerTrain, ChangeWagonIdList);
-                    //}
                     // To recognize the dropping off of the cars before the event is activated, this method is used.
+                    if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
+                    {
+                        consistTrain = null;
+                        consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
+                        triggered = (consistTrain != null ? false : true);
+                    }
                     break;
                 case EventType.PickUpPassengers:
                     break;
@@ -1348,7 +1346,6 @@ namespace Orts.Simulation
             }
             return triggered;
         }
-
         /// <summary>
         /// Finds the train that contains exactly the wagons (and maybe loco) in the list in the correct sequence.
         /// </summary>
@@ -1380,15 +1377,21 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                if (trainItem.Cars.Count == wagonIdList.Count)
+                //Engine number
+                int nEngines = 0;
+                foreach (var item in trainItem.Cars)
                 {
-                    // Compare two lists to make sure wagons are present.
-                    bool listsMatch = true;
-                    if (excludesWagons(trainItem, wagonIdList))
-                        listsMatch = false;
-                    if (listsMatch) return trainItem;
+                    if (item.AuxWagonType == "Engine")
+                        nEngines++;
                 }
-            }
+
+                // Compare two lists to make sure wagons are present.
+                bool listsMatch = true;
+                if (excludesWagons(trainItem, wagonIdList))
+                    listsMatch = false;//wagons dropped
+                //a consist require engine + wagons
+                if (listsMatch && nEngines>0) return trainItem;
+             }
             return null;
         }
         /// <summary>
