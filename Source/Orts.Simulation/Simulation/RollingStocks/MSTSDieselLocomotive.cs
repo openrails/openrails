@@ -228,7 +228,7 @@ namespace Orts.Simulation.RollingStocks
             if (DieselEngines[0].GearBox != null) GearBox = DieselEngines[0].GearBox;
             for (int i = 1; i < DieselEngines.Count; i++)
             {
-                if (DieselEngines[i].GearBox == null)
+                if (DieselEngines[i].GearBox == null && locoCopy.DieselEngines[i].GearBox != null)
                     DieselEngines[i].GearBox = new GearBox(GearBox, DieselEngines[i]);
             }
             foreach (DieselEngine de in DieselEngines)
