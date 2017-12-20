@@ -14281,61 +14281,63 @@ namespace Orts.Simulation.Physics
             }
             if (SpeedMpS > 0)
             {
-                for (int iCar = 0; iCar < Cars.Count; iCar++)
+                var oldRunningTime = RunningTime;
+                RunningTime += elapsedClockSeconds;
+                if (Math.Truncate(oldRunningTime) < Math.Truncate(RunningTime)) // Check only every second
                 {
-                    var car = Cars[iCar];
-                    if ((car is MSTSElectricLocomotive || car is MSTSDieselLocomotive) && car.Parts.Count >= 2 &&
-                        ((car as MSTSLocomotive).ThrottlePercent > 10 || (car as MSTSLocomotive).DynamicBrakePercent > 10))
+                    var nLocos = 0;
+                    for (int iCar = 0; iCar < Cars.Count; iCar++)
                     {
-                        RunningTime += elapsedClockSeconds;
-                        if (RunningTime >= 1800.0f / Simulator.Settings.ActRandomizationLevel)
+                        var car = Cars[iCar];
+                        if ((car is MSTSElectricLocomotive || car is MSTSDieselLocomotive) && car.Parts.Count >= 2 &&
+                            ((car as MSTSLocomotive).ThrottlePercent > 10 || (car as MSTSLocomotive).DynamicBrakePercent > 10)) nLocos++;
+                    }
+                    if (nLocos > 0)
+                    {
+                        var randInt = Simulator.Random.Next(2000000 / nLocos);
+                        var locoUnpowered = false;
+                        if (randInt > 2000000 / nLocos - (Simulator.Settings.ActRandomizationLevel == 1 ? 2 : Simulator.Settings.ActRandomizationLevel == 2 ? 8 : 50))
+                        // a loco will be partly or totally unpowered. Select which one
                         {
-                            var randInt = Simulator.Random.Next(200000);
-                            var locoUnpowered = false;
-                            if (randInt > 200000 - (Simulator.Settings.ActRandomizationLevel == 1 ? 2 : Simulator.Settings.ActRandomizationLevel == 2 ? 8 : 101))
-                            // a loco will be partly or totally unpowered. Select which one
+                            var iLocoUnpoweredCar = Simulator.Random.Next(Cars.Count);
+                            var jLocoUnpoweredCar = iLocoUnpoweredCar;
+                            if (iLocoUnpoweredCar % 2 == 1)
                             {
-                                var iLocoUnpoweredCar = Simulator.Random.Next(Cars.Count);
-                                var jLocoUnpoweredCar = iLocoUnpoweredCar;
-                                if (iLocoUnpoweredCar % 2 == 1)
+                                locoUnpowered = SearchBackOfTrain(ref iLocoUnpoweredCar);
+                                if (!locoUnpowered)
                                 {
-                                    locoUnpowered = SearchBackOfTrain(ref iLocoUnpoweredCar);
-                                    if (!locoUnpowered)
-                                    {
-                                        iLocoUnpoweredCar = jLocoUnpoweredCar;
-                                        locoUnpowered = SearchFrontOfTrain(ref iLocoUnpoweredCar);
-                                    }
+                                    iLocoUnpoweredCar = jLocoUnpoweredCar;
+                                    locoUnpowered = SearchFrontOfTrain(ref iLocoUnpoweredCar);
+                                }
 
+                            }
+                            else
+                            {
+                                locoUnpowered = SearchFrontOfTrain(ref iLocoUnpoweredCar);
+                                if (!locoUnpowered)
+                                {
+                                    iLocoUnpoweredCar = jLocoUnpoweredCar;
+                                    locoUnpowered = SearchBackOfTrain(ref iLocoUnpoweredCar);
+                                }
+                            }
+
+                            if (locoUnpowered)
+                            {
+                                RunningTime = -2; //Check no more, we already have an unpowered loco
+                                var unpoweredLoco = Cars[iLocoUnpoweredCar] as MSTSLocomotive;
+                                if (randInt % 2 == 1 || unpoweredLoco is MSTSElectricLocomotive)
+                                {
+                                    unpoweredLoco.PowerReduction = 0.5f;
+                                    Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Locomotive " + unpoweredLoco.CarID + " partial failure: 1 unpowered bogie"));
                                 }
                                 else
                                 {
-                                    locoUnpowered = SearchFrontOfTrain(ref iLocoUnpoweredCar);
-                                    if (!locoUnpowered)
-                                    {
-                                        iLocoUnpoweredCar = jLocoUnpoweredCar;
-                                        locoUnpowered = SearchBackOfTrain(ref iLocoUnpoweredCar);
-                                    }
+                                    unpoweredLoco.PowerReduction = 1.0f;
+                                    Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Locomotive " + unpoweredLoco.CarID + " compressor blown"));
                                 }
-                              
-                                if (locoUnpowered)
-                                {
-                                    RunningTime = -2; //Check no more, we already have an unpowered loco
-                                    var unpoweredLoco = Cars[iLocoUnpoweredCar] as MSTSLocomotive;
-                                    if (randInt % 2 == 1 || unpoweredLoco is MSTSElectricLocomotive)
-                                    {
-                                        unpoweredLoco.PowerReduction = 0.5f;
-                                        Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Locomotive " + unpoweredLoco.CarID + " partial failure: 1 unpowered bogie"));
-                                    }
-                                    else
-                                    {
-                                        unpoweredLoco.PowerReduction = 1.0f;
-                                        Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Locomotive " + unpoweredLoco.CarID + " compressor blown"));
-                                    }
-                                    UnpoweredLoco = iLocoUnpoweredCar;
-                                }
+                                UnpoweredLoco = iLocoUnpoweredCar;
                             }
                         }
-                        return;
                     }
                 }
             }
