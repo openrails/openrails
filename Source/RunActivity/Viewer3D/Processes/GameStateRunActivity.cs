@@ -222,6 +222,9 @@ namespace Orts.Viewer3D.Processes
                                 error.Message,
                                 String.Join("\n", data.Select(d => "\u2022 " + d).ToArray())),
                                 Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        else if (error is Traveller.MissingTrackNodeException)
+                            MessageBox.Show(String.Format("Open Rails detected a track section which is not present in tsection.dat and cannot continue.\n\n" +
+                                "Most likely you don't have the XTracks or Ytracks version needed for this route."));
                         else if (error is FileNotFoundException)
                         {
                             MessageBox.Show(String.Format(

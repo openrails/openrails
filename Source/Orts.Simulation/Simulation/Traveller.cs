@@ -251,7 +251,15 @@ namespace Orts.Simulation
             if (startTrackNode.TrVectorNode.TrVectorSections.Length == 0) throw new ArgumentException("Track node has no vector sections.", "startTrackNode");
             var tvs = startTrackNode.TrVectorNode.TrVectorSections[0];
             if (!InitTrackNode(startTrackNodeIndex, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z))
-                throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
+            {
+                if (TrackSections.MissingTrackSectionWarnings == 0)
+                    throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
+                else
+                {
+                    throw new MissingTrackNodeException();
+                }
+
+            }
         }
 
         /// <summary>
@@ -277,7 +285,15 @@ namespace Orts.Simulation
                 if (startTrackNode.TrVectorNode.TrVectorSections.Length == 0) throw new ArgumentException("Track node has no vector sections.", "startTrackNode");
                 var tvs = startTrackNode.TrVectorNode.TrVectorSections[0];
                 if (!InitTrackNode(startTrackNodeIndex, tvs.TileX, tvs.TileZ, tvs.X, tvs.Z))
-                    throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
+                {
+                    if (TrackSections.MissingTrackSectionWarnings == 0)
+                        throw new InvalidDataException(String.Format("Track node {0} could not be found in the track database.", startTrackNode.UiD));
+                    else
+                    {
+                        throw new MissingTrackNodeException();
+                    }
+                    
+                }
 
                 // Figure out which end of the track node is closest and use that.
                 var target = new WorldLocation(tileX, tileZ, x, 0, z);
@@ -1242,6 +1258,14 @@ namespace Orts.Simulation
             else
             {
                 MoveInTrackSectionStraight(candidate.lon);
+            }
+        }
+
+        public sealed class MissingTrackNodeException : Exception
+        {
+            public MissingTrackNodeException()
+                : base("")
+            {
             }
         }
     }
