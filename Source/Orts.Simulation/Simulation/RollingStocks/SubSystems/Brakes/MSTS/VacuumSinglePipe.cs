@@ -347,6 +347,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float SmallEjectorFeed = lead == null ? 10.0f : (lead.SteamEjectorSmallSetting * (1.5f * lead.TrainBrakePipeLeakPSIorInHgpS)); // Set value for small ejector to operate
             float TrainPipeLeakLossPSI = lead == null ? 0.0f :(TrainPipeTimeVariationS * (lead.TrainBrakePipeLeakPSIorInHgpS - SmallEjectorFeed));
             float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : Bar.ToPSI(Bar.FromInHg(lead.TrainBrakeController.MaxPressurePSI));
+            bool ControllerRunningLock = false; // Stops Running controller from becoming active until BP = EQ Res
+
             for (int i = 0; i < nSteps; i++)
             {
 
@@ -354,9 +356,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     // Calculate train pipe pressure at lead locomotive, and then propogate it along the train.
 
+                    // When brakeController put into Running position the RunningLock prevents ensures that brake pipe matches the Equalising Reservoir (Desired Vacuum) before
+                    // locking the system into the Running position.
+                    if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Running && DesiredPipeVacuum == lead.BrakeSystem.BrakeLine1PressurePSI)
+                     {
+                        ControllerRunningLock = true;
+                     }
+                    else
+                     {
+                        ControllerRunningLock = false;
+                     }
+
                     // Allow for leaking train brakepipe (value is determined for lead locomotive, and then ). 
                     // For diesel and electric locomotives assume that the Vacuum pump is automatic.
-                    if ( lead.EngineType == TrainCar.EngineTypes.Steam && lead.TrainBrakePipeLeakPSIorInHgpS != 0 && lead.BrakeSystem.BrakeLine1PressurePSI + TrainPipeLeakLossPSI < OneAtmospherePSI && lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Running)
+                    if ( lead.EngineType == TrainCar.EngineTypes.Steam && ControllerRunningLock && lead.TrainBrakePipeLeakPSIorInHgpS != 0 && lead.BrakeSystem.BrakeLine1PressurePSI + TrainPipeLeakLossPSI < OneAtmospherePSI && lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Running)
                     {
                         lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeLeakLossPSI; // Pipe pressure will increase (ie vacuum is destroyed) due to leakage
                     }
