@@ -341,7 +341,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // 0 psi = 0 InHg, 14.5 psi (atmospheric pressure) = 29 InHg
             // Brakes applied when vaccum destroyed, ie 0 InHg, Brakes released when vacuum established ie 21 or 25 InHg
             float DesiredPipeVacuum = V2P(train.EqualReservoirPressurePSIorInHg);
-            int nSteps = (int)(elapsedClockSeconds / brakePipeTimeFactorS + 1);
+            int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
+           // int nSteps = (int)(elapsedClockSeconds / brakePipeTimeFactorS + 1); New line to be checked
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
             float SmallEjectorFeed = lead == null ? 10.0f : (lead.SteamEjectorSmallSetting * (1.5f * lead.TrainBrakePipeLeakPSIorInHgpS)); // Set value for small ejector to operate
             float TrainPipeLeakLossPSI = lead == null ? 0.0f :(TrainPipeTimeVariationS * (lead.TrainBrakePipeLeakPSIorInHgpS - SmallEjectorFeed));
@@ -411,7 +412,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                     if (car.BrakeSystem.FrontBrakeHoseConnected && car.BrakeSystem.AngleCockAOpen && car0.BrakeSystem.AngleCockBOpen)
                     {
-                        float TrainPipePressureDiffPropogationPSI = Math.Min(TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS, p1 - p0);
+                 //       float TrainPipePressureDiffPropogationPSI = Math.Min(TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS, p1 - p0); - new line to be checked
+                        float TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / brakePipeTimeFactorS;
 
                         // TODO - Confirm logic - it appears to allow for air flow to coupled car by reducing (increasing) preceeding car brake pipe - this allows time for the train to "recharge".
                         if (car0 == lead) // If this is the locomotive

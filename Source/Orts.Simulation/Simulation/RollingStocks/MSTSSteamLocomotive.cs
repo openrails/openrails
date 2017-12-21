@@ -1379,20 +1379,6 @@ namespace Orts.Simulation.RollingStocks
                     };
                
             NewBurnRateSteamToCoalLbspH = new Interpolator(TempSteamOutputRate, TempCoalFiringRate);
-
-//                Trace.TraceInformation("Table bot {0}", NewBurnRateSteamToCoalLbspH[0]);
- //               Trace.TraceInformation("Table top {0} burn {1}", pS.TopH(TheoreticalMaxSteamOutputLBpS), NewBurnRateSteamToCoalLbspH[pS.TopH(TheoreticalMaxSteamOutputLBpS)]);
-
-                //                if (HasSuperheater)
-                //                {
-                //                    NewBurnRateSteamToCoalLbspH = SteamTable.SuperNewBurnRateSteamToCoalLbspH();
-                //                    Trace.TraceInformation("BurnRateSteamToCoalLbspH (Super) - default information read from SteamTables");
-                //                }
-                //                else
-                //                {
-                //                    NewBurnRateSteamToCoalLbspH = SteamTable.SatNewBurnRateSteamToCoalLbspH();
-                //                    Trace.TraceInformation("BurnRateSteamToCoalLbspH (Sat) - default information read from SteamTables");
-                //                }
             }
             else // If user provided burn curve calculate the Max Firing Rate
             {
@@ -4718,8 +4704,8 @@ namespace Orts.Simulation.RollingStocks
 
                 // Calculate small steam ejector steam usage
                 SteamEjectorSmallSetting = SmallEjectorController.CurrentValue;
-                /* SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
-                   SteamEjectorSmallBaseSteamUsageLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorSmallPressurePSI]);
+                SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
+               /*    SteamEjectorSmallBaseSteamUsageLbpS = pS.FrompH(SteamEjectorSteamUsageLBpHtoPSI[SteamEjectorSmallPressurePSI]);
 
                    SmallEjectorCapacityFactor = SteamEjectorCapacityFactorIntoX[SteamEjectorSmallDiameterIn];
                    EjectorSmallSteamConsumptionLbpS = SteamEjectorSmallBaseSteamUsageLbpS * SmallEjectorCapacityFactor; */
