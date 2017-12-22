@@ -19,7 +19,7 @@ echo date('Y', filemtime("$path/../files/OpenRails-Testing-Source.zip"));
               <img src='/shared/logos/gplv3_logo.png' alt='GPLv3 logo' style="padding-bottom: 0.5em;"/>
             </a>
             <p>
-              You use Open Rails entirely at your own risk. It is intended for entertainment purposes and is not suitable for professional training.
+              You use Open Rails entirely at your own risk. It is intended for entertainment purposes only and is not suitable for professional applications.
             </p>
           </div>
           <div class="col-md-4 footer_column top_right_footer">
@@ -29,7 +29,7 @@ echo date('Y', filemtime("$path/../files/OpenRails-Testing-Source.zip"));
             <ul>
               <li>
                 <a href="http://www.getbootstrap.com/"  target="_blank"
-                  title="The most popular front-end framework for developing responsive, mobile first projects on the web.">
+                  title="The most popular front-end framework for developing responsive, mobile-first projects on the web.">
                   <img src='/shared/logos/bootstrap.png' alt='Bootstrap logo'/> &nbsp; Built with Bootstrap
                 </a><br />
               </li><li>
