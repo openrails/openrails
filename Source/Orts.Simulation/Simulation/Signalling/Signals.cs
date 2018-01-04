@@ -11464,14 +11464,29 @@ namespace Orts.Simulation.Signalling
             }
 
             // test distance
+            var distanceToSignal = enabledTrain.Train.distanceToSignal;
+            if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
+                   enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+                   // find distance of signal
+            {
+                distanceToSignal = -1;
+                foreach (var signalObjectItem in enabledTrain.Train.SignalObjectItems)
+                {
+                    if (signalObjectItem.ObjectDetails.thisRef == thisRef)
+                    {
+                        distanceToSignal = signalObjectItem.distance_to_train;
+                        break;
+                    }
+                }
+            }
 
-            if (Convert.ToInt32(enabledTrain.Train.distanceToSignal) < reqPositionM)
+            if (Convert.ToInt32(distanceToSignal) < reqPositionM && distanceToSignal != -1)
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
                     sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear allowed \n",
-                        enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
+                        enabledTrain.Train.Number, distanceToSignal, reqPositionM);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
@@ -11487,7 +11502,7 @@ namespace Orts.Simulation.Signalling
                 {
                     var sob = new StringBuilder();
                     sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear not allowed \n",
-                        enabledTrain.Train.Number, enabledTrain.Train.distanceToSignal, reqPositionM);
+                        enabledTrain.Train.Number, distanceToSignal, reqPositionM);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
