@@ -466,7 +466,7 @@ namespace ORTS.TrackViewer.Drawing
                 {   // so junction or endnode
                     AddLocationToAvailableList(UidLocation(tn.UiD), availablePointNodeIndexes, tn);
                 }
-                else
+                else if (tn.TrVectorNode.TrVectorSections != null)
                 {   // vector nodes
                     for (int tvsi = 0; tvsi < tn.TrVectorNode.TrVectorSections.Length; tvsi++)
                     {
@@ -487,7 +487,7 @@ namespace ORTS.TrackViewer.Drawing
                     TrackNode tn = roadTrackDB.TrackNodes[tni];
                     if (tn == null) continue;
 
-                    if (tn.TrVectorNode != null)
+                    if (tn.TrVectorNode != null && tn.TrVectorNode.TrVectorSections != null)
                     {
                         for (int tvsi = 0; tvsi < tn.TrVectorNode.TrVectorSections.Length; tvsi++)
                         {
