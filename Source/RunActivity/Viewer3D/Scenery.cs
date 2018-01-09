@@ -99,8 +99,11 @@ namespace Orts.Viewer3D
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
                             tile = LoadWorldFile(TileX + x, TileZ + z, x == 0 && z == 0);
-                        newWorldFiles.Add(tile);
-                        oldWorldFiles.Remove(tile);
+                        if (tile != null)
+                        {
+                            newWorldFiles.Add(tile);
+                            oldWorldFiles.Remove(tile);
+                        }
                     }
                 }
                 foreach (var tile in oldWorldFiles)
@@ -211,7 +214,15 @@ namespace Orts.Viewer3D
         WorldFile LoadWorldFile(int tileX, int tileZ, bool visible)
         {
             Trace.Write("W");
-            return new WorldFile(Viewer, tileX, tileZ, visible);
+            try
+            {
+                return new WorldFile(Viewer, tileX, tileZ, visible);
+            }
+            catch (FileLoadException error)
+            {
+                Trace.WriteLine(error);
+                return null;
+            }
         }
     }
 

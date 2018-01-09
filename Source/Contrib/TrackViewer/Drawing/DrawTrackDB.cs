@@ -25,6 +25,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
+using System.Diagnostics;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -136,8 +137,9 @@ namespace ORTS.TrackViewer.Drawing
                     {
                         WFile = new WorldFile(fileName, Tokens);
                     }
-                    catch
+                    catch (FileLoadException error)
                     {
+                        Trace.WriteLine(error);
                         continue;
                     }
 

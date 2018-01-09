@@ -289,9 +289,9 @@ namespace Orts.Formats.OR
                 {
                     WFile = new WorldFile(fileName, Tokens);
                 }
-                catch (Exception error)
+                catch (FileLoadException error)
                 {
-                    Trace.WriteLine(new FileLoadException(fileName, error));
+                    Trace.WriteLine(error);
                     continue;
                 }
 

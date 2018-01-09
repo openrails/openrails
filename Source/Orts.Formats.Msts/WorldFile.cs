@@ -38,20 +38,27 @@ namespace Orts.Formats.Msts
 
         public WorldFile(string filename, List<TokenID> allowedTokens)
         {
-            // Parse the tile location out of the filename.
-            var p = filename.ToUpper().LastIndexOf("\\WORLD\\W");
-            TileX = int.Parse(filename.Substring(p + 8, 7));
-            TileZ = int.Parse(filename.Substring(p + 15, 7));
-
-            using (var sbr = SBR.Open(filename))
+            try
             {
-                using (var block = sbr.ReadSubBlock())
+                // Parse the tile location out of the filename.
+                var p = filename.ToUpper().LastIndexOf("\\WORLD\\W");
+                TileX = int.Parse(filename.Substring(p + 8, 7));
+                TileZ = int.Parse(filename.Substring(p + 15, 7));
+
+                using (var sbr = SBR.Open(filename))
                 {
-                    Tr_Worldfile = new Tr_Worldfile(block, filename, allowedTokens);
+                    using (var block = sbr.ReadSubBlock())
+                    {
+                        Tr_Worldfile = new Tr_Worldfile(block, filename, allowedTokens);
+                    }
+                    // some w files have additional comments at the end 
+                    //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
+                    sbr.Skip();
                 }
-                // some w files have additional comments at the end 
-                //       eg _Skip ( "TS DB-Utility - Version: 3.4.05(13.10.2009), Filetype='World', Copyright (C) 2003-2009 by ...CarlosHR..." )
-                sbr.Skip();
+            }
+            catch (Exception error)
+            {
+                throw new FileLoadException(filename, error);
             }
         }
 
