@@ -72,28 +72,31 @@ namespace Orts.Viewer3D.Popups
                 var platforms = new Dictionary<string, bool>();
                 var sidings = new Dictionary<string, bool>();
 
-                foreach (var stop in stationStops)
+                if (tdb.TrItemTable != null)
                 {
-                    var platformId = stop.PlatformReference;
-                    if (0 <= platformId && platformId < tdb.TrItemTable.Length && tdb.TrItemTable[platformId].ItemType == Formats.Msts.TrItem.trItemType.trPLATFORM)
+                    foreach (var stop in stationStops)
                     {
-                        platforms[tdb.TrItemTable[platformId].ItemName] = true;
-                    }
-                }
-
-                if (activity != null && activity.EventList != null)
-                {
-                    foreach (var @event in activity.EventList)
-                    {
-                        var eventAction = @event.ParsedObject as Orts.Formats.Msts.EventCategoryAction;
-                        if (eventAction != null)
+                        var platformId = stop.PlatformReference;
+                        if (0 <= platformId && platformId < tdb.TrItemTable.Length && tdb.TrItemTable[platformId].ItemType == Formats.Msts.TrItem.trItemType.trPLATFORM)
                         {
-                            var sidingId1 = eventAction.SidingId;
-                            var sidingId2 = eventAction.WagonList != null && eventAction.WagonList.WorkOrderWagonList.Count > 0 ? eventAction.WagonList.WorkOrderWagonList[0].SidingId : default(uint?);
-                            var sidingId = sidingId1.HasValue ? sidingId1.Value : sidingId2.HasValue ? sidingId2.Value : uint.MaxValue;
-                            if (0 <= sidingId && sidingId < tdb.TrItemTable.Length && tdb.TrItemTable[sidingId].ItemType == Formats.Msts.TrItem.trItemType.trSIDING)
+                            platforms[tdb.TrItemTable[platformId].ItemName] = true;
+                        }
+                    }
+
+                    if (activity != null && activity.EventList != null)
+                    {
+                        foreach (var @event in activity.EventList)
+                        {
+                            var eventAction = @event.ParsedObject as Orts.Formats.Msts.EventCategoryAction;
+                            if (eventAction != null)
                             {
-                                sidings[tdb.TrItemTable[sidingId].ItemName] = true;
+                                var sidingId1 = eventAction.SidingId;
+                                var sidingId2 = eventAction.WagonList != null && eventAction.WagonList.WorkOrderWagonList.Count > 0 ? eventAction.WagonList.WorkOrderWagonList[0].SidingId : default(uint?);
+                                var sidingId = sidingId1.HasValue ? sidingId1.Value : sidingId2.HasValue ? sidingId2.Value : uint.MaxValue;
+                                if (0 <= sidingId && sidingId < tdb.TrItemTable.Length && tdb.TrItemTable[sidingId].ItemType == Formats.Msts.TrItem.trItemType.trSIDING)
+                                {
+                                    sidings[tdb.TrItemTable[sidingId].ItemName] = true;
+                                }
                             }
                         }
                     }
