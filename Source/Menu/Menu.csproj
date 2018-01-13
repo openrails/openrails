@@ -22,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +34,7 @@
     <DocumentationFile>..\..\Program\Menu.xml</DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
     <NoWarn>1591</NoWarn>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>..\Launcher\app.manifest</ApplicationManifest>
@@ -192,7 +194,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
