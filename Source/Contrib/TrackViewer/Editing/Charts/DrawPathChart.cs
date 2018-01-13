@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2015 by the Open Rails project.
+﻿// COPYRIGHT 2015, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -28,7 +28,6 @@ using System.Windows.Shapes;
 
 using Newtonsoft.Json;
 
-using Orts.Formats.Msts;
 using ORTS.Common;
 
 using ORTS.TrackViewer.Drawing;
@@ -60,8 +59,10 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// </summary>
         public DrawPathChart()
         {
-            chartWindow = new PathChartWindow();
-            chartWindow.OnJsonSaveClick = OnJsonSave;
+            chartWindow = new PathChartWindow
+            {
+                OnJsonSaveClick = OnJsonSave
+            };
             TrackViewer.Localize(chartWindow);
         }
 
@@ -76,7 +77,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             this.pathEditor = pathEditor;
             this.pathEditor.ChangedPath += new ChangedPathHandler(OnPathChanged);
 
-            if (pathEditor == null || pathEditor.currentTrainPath == null || pathEditor.currentTrainPath.FirstNode == null)
+            if (pathEditor == null || pathEditor.CurrentTrainPath == null || pathEditor.CurrentTrainPath.FirstNode == null)
             {
                 pathData = null;
                 return;
@@ -99,7 +100,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// </summary>
         public void Open()
         {
-            if (pathEditor == null || pathEditor.currentTrainPath == null)
+            if (pathEditor == null || pathEditor.CurrentTrainPath == null)
             {
                 return;
             }
@@ -152,7 +153,7 @@ namespace ORTS.TrackViewer.Editing.Charts
                 return;
             }
 
-            Trainpath trainpath = pathEditor.currentTrainPath;
+            Trainpath trainpath = pathEditor.CurrentTrainPath;
             if (trainpath.FirstNode == null)
             {
                 Close();
@@ -160,7 +161,7 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
             pathData.Update(trainpath);
             chartWindow.Draw();
-            chartWindow.SetTitle(pathEditor.currentTrainPath.PathName);
+            chartWindow.SetTitle(pathEditor.CurrentTrainPath.PathName);
         }
         
         /// <summary>
@@ -184,11 +185,13 @@ namespace ORTS.TrackViewer.Editing.Charts
         #region Save to JSON
         private void OnJsonSave()
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.OverwritePrompt = true;
-            dlg.FileName = "pathchartdata.js";
-            dlg.DefaultExt = ".js";
-            dlg.Filter = "Javascript Files (.js)|*.js";
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                OverwritePrompt = true,
+                FileName = "pathchartdata.js",
+                DefaultExt = ".js",
+                Filter = "Javascript Files (.js)|*.js"
+            };
             if (dlg.ShowDialog() == true)
             {
                 WriteJson(dlg.FileName);
@@ -202,10 +205,12 @@ namespace ORTS.TrackViewer.Editing.Charts
                 return;
             }
 
-            JsonSerializer serializer = new JsonSerializer();
-            serializer.PreserveReferencesHandling = PreserveReferencesHandling.Objects;
-            serializer.TypeNameHandling = TypeNameHandling.All;
-            serializer.Formatting = Formatting.Indented;
+            JsonSerializer serializer = new JsonSerializer
+            {
+                PreserveReferencesHandling = PreserveReferencesHandling.Objects,
+                TypeNameHandling = TypeNameHandling.All,
+                Formatting = Formatting.Indented
+            };
             using (StreamWriter wr = new StreamWriter(completeFileName))
             {
                 wr.WriteLine("//Define a global variable that contains the data in JSON format");
@@ -323,13 +328,15 @@ namespace ORTS.TrackViewer.Editing.Charts
         protected static void DrawLine(Canvas drawingCanvas, double x1, double y1, double x2, double y2, Color color)
         {
             SolidColorBrush lineBrush = new SolidColorBrush(color);
-            Line line = new Line();
-            line.Stroke = lineBrush;
-            line.StrokeThickness = 1;
-            line.X1 = x1;
-            line.X2 = x2;
-            line.Y1 = y1;
-            line.Y2 = y2;
+            Line line = new Line
+            {
+                Stroke = lineBrush,
+                StrokeThickness = 1,
+                X1 = x1,
+                X2 = x2,
+                Y1 = y1,
+                Y2 = y2
+            };
             RenderOptions.SetEdgeMode(line, EdgeMode.Aliased);
             drawingCanvas.Children.Add(line);
         }
@@ -342,12 +349,16 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="repeatPreviousPoint">True if only vertical and horizontal lines are drawn (from one point to anohter).</param>
         protected void DrawDataPolyLine(Canvas drawingCanvas, Func<PathChartPoint, float> getField, bool repeatPreviousPoint)
         {
-            SolidColorBrush blackBrush = new SolidColorBrush();
-            blackBrush.Color = Colors.Black;
+            SolidColorBrush blackBrush = new SolidColorBrush
+            {
+                Color = Colors.Black
+            };
 
-            Polyline dataPolyLine = new Polyline();
-            dataPolyLine.Stroke = blackBrush;
-            dataPolyLine.StrokeThickness = 1;
+            Polyline dataPolyLine = new Polyline
+            {
+                Stroke = blackBrush,
+                StrokeThickness = 1
+            };
 
             var points = new PointCollection();
             double lastY = ScaledY(0d);
@@ -394,9 +405,11 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="color">The color to use for printing the text</param>
         protected static void DrawText(Canvas drawingCanvas, double leftX, double centerY, string text, Color color)
         {
-            TextBlock textBlock = new TextBlock();
-            textBlock.Text = text;
-            textBlock.Foreground = new SolidColorBrush(color);
+            TextBlock textBlock = new TextBlock
+            {
+                Text = text,
+                Foreground = new SolidColorBrush(color)
+            };
             textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity)); // find out how tall it wants to be
             Canvas.SetLeft(textBlock, leftX);
             Canvas.SetTop(textBlock, centerY - textBlock.DesiredSize.Height / 2); // So no it should be centered vertically
@@ -414,9 +427,11 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="color">The color to use for printing the text</param>
         protected static void DrawTextCentered(Canvas drawingCanvas, double centerX, double centerY, string text, Color color)
         {
-            TextBlock textBlock = new TextBlock();
-            textBlock.Text = text;
-            textBlock.Foreground = new SolidColorBrush(color);
+            TextBlock textBlock = new TextBlock
+            {
+                Text = text,
+                Foreground = new SolidColorBrush(color)
+            };
             textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity)); // find out how tall it wants to be
             Canvas.SetLeft(textBlock, centerX - textBlock.DesiredSize.Width / 2);
             Canvas.SetTop(textBlock, centerY - textBlock.DesiredSize.Height / 2); // So no it should be centered vertically
@@ -434,9 +449,11 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="color">The color to use for printing the text</param>
         protected static void DrawTextVertical(Canvas drawingCanvas, double centerX, double bottomY, string text, Color color)
         {
-            TextBlock textBlock = new TextBlock();
-            textBlock.Text = text;
-            textBlock.Foreground = new SolidColorBrush(color);
+            TextBlock textBlock = new TextBlock
+            {
+                Text = text,
+                Foreground = new SolidColorBrush(color)
+            };
             textBlock.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity)); // find out how tall it wants to be
             Canvas.SetLeft(textBlock, centerX - textBlock.DesiredSize.Height/2);
             Canvas.SetTop(textBlock, bottomY); 

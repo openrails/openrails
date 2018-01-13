@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -99,7 +99,7 @@ namespace ORTS.TrackViewer.Editing
                 selectWait.IsChecked = true;
             }
 
-            optionEnabling();
+            OptionEnabling();
 
         }
 
@@ -111,14 +111,14 @@ namespace ORTS.TrackViewer.Editing
             {
                 // coding is 3HHMM
                 return 30000 +
-                    100 * getIntOrZero(untilTimeHours.Text) + getIntOrZero(untilTimeMinutes.Text);
+                    100 * GetIntOrZero(untilTimeHours.Text) + GetIntOrZero(untilTimeMinutes.Text);
             }
 
             if (selectUncouple.IsChecked == true)
             {
                 // coding is 4NNSS or 5NNSS.
                 return ((keepRear.IsChecked == true) ? 50000 : 40000) +
-                    100 * getIntOrZero(uncoupleCars.Text) + getIntOrZero(uncoupleWaitSeconds.Text);
+                    100 * GetIntOrZero(uncoupleCars.Text) + GetIntOrZero(uncoupleWaitSeconds.Text);
             }
 
             if (selectJoinSplit.IsChecked == true)
@@ -135,7 +135,7 @@ namespace ORTS.TrackViewer.Editing
             if (selectBlowHorn.IsChecked == true)
             {
                 // coding is 60011 to 60020
-                int seconds = getIntOrZero(blowHornSeconds.Text);
+                int seconds = GetIntOrZero(blowHornSeconds.Text);
                 if (seconds < 0)
                 {
                     // we need to allow 0 itself (which we get from an empty string) otherwise it is not even possible to go from '1' to '2' or so.
@@ -153,11 +153,11 @@ namespace ORTS.TrackViewer.Editing
             //if (selectWait.IsChecked == true)
             {
                 // default calculation
-                return 60 * getIntOrZero(waitTimeMinutes.Text) + getIntOrZero(waitTimeSeconds.Text);
+                return 60 * GetIntOrZero(waitTimeMinutes.Text) + GetIntOrZero(waitTimeSeconds.Text);
             }
         }
 
-        int getIntOrZero(string inputText)
+        int GetIntOrZero(string inputText)
         {
             int returnValue; 
             try
@@ -170,12 +170,12 @@ namespace ORTS.TrackViewer.Editing
             return returnValue;
         }
 
-        private void buttonOK_Click(object sender, RoutedEventArgs e)
+        private void ButtonOK_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
         }
 
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
         }
@@ -196,17 +196,17 @@ namespace ORTS.TrackViewer.Editing
         {
             if (e.Key == Key.Return)
             {
-                buttonOK_Click(sender, e);
+                ButtonOK_Click(sender, e);
             }
-            updateWaitTime();
+            UpdateWaitTime();
         }
 
-        private void option_CheckChanged(object sender, RoutedEventArgs e)
+        private void Option_CheckChanged(object sender, RoutedEventArgs e)
         {
-            optionEnabling();
+            OptionEnabling();
         }
 
-        private void optionEnabling()
+        private void OptionEnabling()
         {
             waitTimeMinutes.IsEnabled = false;
             waitTimeSeconds.IsEnabled = false;
@@ -245,10 +245,10 @@ namespace ORTS.TrackViewer.Editing
                 blowHornSeconds.Focus();
             }
 
-            updateWaitTime();
+            UpdateWaitTime();
         }
 
-        private void updateWaitTime()
+        private void UpdateWaitTime()
         {
             try
             {
@@ -260,15 +260,15 @@ namespace ORTS.TrackViewer.Editing
         }
 
 
-        private void twoDigits_TextChanged(object sender, TextChangedEventArgs e)
+        private void TwoDigits_TextChanged(object sender, TextChangedEventArgs e)
         {
             var textBox = sender as TextBox;
-            int ww = getIntOrZero(textBox.Text);
+            int ww = GetIntOrZero(textBox.Text);
             if (ww > 99)
             {
                 textBox.Text = "99";
             }
-            updateWaitTime();
+            UpdateWaitTime();
         }
  
     }

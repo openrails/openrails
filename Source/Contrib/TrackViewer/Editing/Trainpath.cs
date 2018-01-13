@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -26,7 +26,6 @@ using System.Text;
 using System.Windows.Forms;
 
 using Orts.Formats.Msts;
-using ORTS.Common;
 using Orts.Simulation;
 
 namespace ORTS.TrackViewer.Editing
@@ -166,8 +165,10 @@ namespace ORTS.TrackViewer.Editing
         {
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;
-            trainPaths = new List<TrainPathData>();
-            trainPaths.Add(new TrainPathData());
+            trainPaths = new List<TrainPathData>
+            {
+                new TrainPathData()
+            };
         }
 
         /// <summary>
@@ -198,7 +199,7 @@ namespace ORTS.TrackViewer.Editing
             PathFlags = patFile.Flags;
 
             List<TrainpathNode> Nodes = new List<TrainpathNode>();
-            createNodes(patFile, Nodes);
+            CreateNodes(patFile, Nodes);
 
             LinkNodes(patFile, Nodes);
             SetFacingPoints(Nodes);
@@ -227,7 +228,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="patFile">Patfile object containing the various unprocessed Track Path Nodes</param>
         /// <param name="Nodes">The list that is going to be filled with as-of-yet unlinked and almost unprocessed path nodes</param>
-        private void createNodes(PathFile patFile, List<TrainpathNode> Nodes)
+        private void CreateNodes(PathFile patFile, List<TrainpathNode> Nodes)
         {
             foreach (TrPathNode tpn in patFile.TrPathNodes)
                 Nodes.Add(TrainpathNode.CreatePathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], trackDB, tsectionDat));
@@ -724,8 +725,10 @@ namespace ORTS.TrackViewer.Editing
 
         static void ReverseSidingPath(TrainpathNode oldSidingStart)
         {
-            List<TrainpathNode> sidingNodes = new List<TrainpathNode>();
-            sidingNodes.Add(oldSidingStart);
+            List<TrainpathNode> sidingNodes = new List<TrainpathNode>
+            {
+                oldSidingStart
+            };
 
             // Create list of nodes, in new order
             TrainpathNode currentSidingNode = oldSidingStart;

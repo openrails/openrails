@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -48,9 +48,9 @@ namespace ORTS.TrackViewer.Editing
 
         private TrackDB trackDB;
         private TrackSectionsFile tsectionDat;
-        internal ColorScheme colorSchemeSiding { get; set; }
-        internal ColorScheme colorSchemeMain { get; set; }
-        internal ColorScheme colorSchemeLast { get; set; }
+        internal ColorScheme ColorSchemeSiding { get; set; }
+        internal ColorScheme ColorSchemeMain { get; set; }
+        internal ColorScheme ColorSchemeLast { get; set; }
 
         /// <summary>
         /// Constructor
@@ -59,9 +59,9 @@ namespace ORTS.TrackViewer.Editing
         {
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;
-            this.colorSchemeMain = DrawColors.colorsPathMain;
-            this.colorSchemeSiding = DrawColors.colorsPathSiding;
-            this.colorSchemeLast = DrawColors.ShadeColor(DrawColors.otherPathsReferenceColor, 0, 1);
+            this.ColorSchemeMain = DrawColors.colorsPathMain;
+            this.ColorSchemeSiding = DrawColors.colorsPathSiding;
+            this.ColorSchemeLast = DrawColors.ShadeColor(DrawColors.otherPathsReferenceColor, 0, 1);
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace ORTS.TrackViewer.Editing
             if (CurrentMainNode == null)
             {
                 // no path, but there might still be a tail
-                DrawTail(drawArea, colorSchemeMain, null, firstNodeOfTail);
+                DrawTail(drawArea, ColorSchemeMain, null, firstNodeOfTail);
                 return 0;
             }
          
@@ -126,7 +126,7 @@ namespace ORTS.TrackViewer.Editing
                         TrainpathNode nextNodeOnSiding = currentSidingNode.NextSidingNode;
                         if (nextNodeOnSiding != null) // because also this path can run off at the end
                         {
-                            DrawPathOnVectorNode(drawArea, colorSchemeSiding, currentSidingNode, nextNodeOnSiding, currentSidingNode.NextSidingTvnIndex);
+                            DrawPathOnVectorNode(drawArea, ColorSchemeSiding, currentSidingNode, nextNodeOnSiding, currentSidingNode.NextSidingTvnIndex);
                             drawnNodes.Add(nextNodeOnSiding);
                             drawnPathData.AddNode(nextNodeOnSiding);
                             //siding nodes will not be added to drawnPathData
@@ -147,7 +147,7 @@ namespace ORTS.TrackViewer.Editing
                 TrainpathNode nextSidingNode = CurrentMainNode.NextSidingNode;             
                 if (nextSidingNode != null)
                 {
-                    DrawPathOnVectorNode(drawArea, colorSchemeSiding, CurrentMainNode, nextSidingNode, CurrentMainNode.NextSidingTvnIndex);
+                    DrawPathOnVectorNode(drawArea, ColorSchemeSiding, CurrentMainNode, nextSidingNode, CurrentMainNode.NextSidingTvnIndex);
                     drawnNodes.Add(nextSidingNode);
                     drawnPathData.AddNode(nextSidingNode);
                     currentSidingNode = nextSidingNode;
@@ -157,7 +157,7 @@ namespace ORTS.TrackViewer.Editing
                 TrainpathNode nextMainNode = CurrentMainNode.NextMainNode;
                 if (nextMainNode != null)
                 {
-                    DrawPathOnVectorNode(drawArea, colorSchemeMain, CurrentMainNode, nextMainNode, CurrentMainNode.NextMainTvnIndex);
+                    DrawPathOnVectorNode(drawArea, ColorSchemeMain, CurrentMainNode, nextMainNode, CurrentMainNode.NextMainTvnIndex);
                     LastVectorStart = CurrentMainNode;
                     LastVectorEnd = nextMainNode;
                     LastVectorTvn = CurrentMainNode.NextMainTvnIndex;
@@ -178,7 +178,7 @@ namespace ORTS.TrackViewer.Editing
             // Highlight the last drawn tracksection
             if (Properties.Settings.Default.highlightLastPathSection && LastVectorStart != null)
             {
-                DrawPathOnVectorNode(drawArea, colorSchemeLast, LastVectorStart, LastVectorEnd, LastVectorTvn);
+                DrawPathOnVectorNode(drawArea, ColorSchemeLast, LastVectorStart, LastVectorEnd, LastVectorTvn);
             }
 
             //Draw all the nodes themselves
@@ -194,7 +194,7 @@ namespace ORTS.TrackViewer.Editing
                 DrawNodeItself(drawArea, lastNode, true);
             }
 
-            DrawTail(drawArea, colorSchemeMain, drawnNodes.Last(), firstNodeOfTail);
+            DrawTail(drawArea, ColorSchemeMain, drawnNodes.Last(), firstNodeOfTail);
 
             return numberDrawn;
         }
@@ -214,9 +214,9 @@ namespace ORTS.TrackViewer.Editing
             int maxPixelSize = 24;
             float angle = trainpathNode.TrackAngle;
 
-            Color colorMain = isLastNode ? this.colorSchemeLast.TrackStraight : colorSchemeMain.TrackStraight  ;
-            Color colorSiding = this.colorSchemeSiding.TrackStraight;
-            Color colorBroken = this.colorSchemeMain.BrokenNode;
+            Color colorMain = isLastNode ? this.ColorSchemeLast.TrackStraight : ColorSchemeMain.TrackStraight  ;
+            Color colorSiding = this.ColorSchemeSiding.TrackStraight;
+            Color colorBroken = this.ColorSchemeMain.BrokenNode;
 
             switch (trainpathNode.NodeType)
             {

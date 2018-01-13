@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -173,7 +173,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 7f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.nameExtension, size, minPixelSize, colors.None, this.angle);
+                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.NameExtension, size, minPixelSize, colors.None, this.angle);
                 return true;
             }
             return false;
@@ -329,7 +329,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 7;
-                drawArea.DrawTexture(this.WorldLocation, "platform" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "platform" + colors.NameExtension, size, minPixelSize);
                 returnValue = true;
             }
             if (Properties.Settings.Default.showPlatformNames)
@@ -377,7 +377,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "pickup" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "pickup" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;
@@ -413,7 +413,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 7;
-                drawArea.DrawTexture(this.WorldLocation, "hazard" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "hazard" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;
@@ -449,7 +449,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "carspawner" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "carspawner" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;
@@ -598,7 +598,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 4f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "sound" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "sound" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -18,8 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.TrackViewer.UserInterface;
 
@@ -87,21 +85,25 @@ namespace ORTS.TrackViewer.Drawing
             ColorWithHighlights pathMain = new ColorWithHighlights(Color.Yellow, 20);
             pathMain.MakeIntoUserPreference(preferenceChanger, "pathmain", 
                 TrackViewer.catalog.GetString("Select path color (main)"));
-            ColorsGroupTrack pathMainGroup = new ColorsGroupTrack();
-            pathMainGroup.TrackCurved = pathMain;
-            pathMainGroup.TrackStraight = pathMain;
-            pathMainGroup.BrokenNode = brokenNode;
-            pathMainGroup.BrokenPath = brokenPath;
+            ColorsGroupTrack pathMainGroup = new ColorsGroupTrack
+            {
+                TrackCurved = pathMain,
+                TrackStraight = pathMain,
+                BrokenNode = brokenNode,
+                BrokenPath = brokenPath
+            };
             colorsPathMain.TrackColors = pathMainGroup;
 
             ColorWithHighlights pathSiding = new ColorWithHighlights(Color.Orange, 20);
             pathSiding.MakeIntoUserPreference(preferenceChanger, "pathsiding", 
                 TrackViewer.catalog.GetString("Select path color (siding)"));
-            ColorsGroupTrack pathSidingGroup = new ColorsGroupTrack();
-            pathSidingGroup.TrackCurved = pathSiding;
-            pathSidingGroup.TrackStraight = pathSiding;
-            pathSidingGroup.BrokenNode = brokenNode;
-            pathSidingGroup.BrokenPath = brokenPath;
+            ColorsGroupTrack pathSidingGroup = new ColorsGroupTrack
+            {
+                TrackCurved = pathSiding,
+                TrackStraight = pathSiding,
+                BrokenNode = brokenNode,
+                BrokenPath = brokenPath
+            };
             colorsPathSiding.TrackColors = pathSidingGroup;
 
 
@@ -177,7 +179,7 @@ namespace ORTS.TrackViewer.Drawing
 
             itemColor = new ColorWithHighlights(Color.Black, 40);
             itemColor.MakeIntoUserPreference(preferenceChanger, "text", 
-                TrackViewer.catalog.GetString("Select text color"));
+                TrackViewer.catalog.GetString("Select item text color"));
             itemColors.Text = itemColor;
 
             itemColor = new ColorWithHighlights(Color.Blue, 120);
@@ -293,14 +295,18 @@ namespace ORTS.TrackViewer.Drawing
         {
             ColorWithHighlights trackColor = ColorWithHighlights.ReshadeColorWithHighlights(referenceColor, index, count);
 
-            ColorsGroupTrack colorsGroup = new ColorsGroupTrack();
-            colorsGroup.TrackStraight = trackColor;
-            colorsGroup.TrackCurved = trackColor;
-            colorsGroup.BrokenNode = trackColor;
-            colorsGroup.BrokenPath = trackColor;
+            ColorsGroupTrack colorsGroup = new ColorsGroupTrack
+            {
+                TrackStraight = trackColor,
+                TrackCurved = trackColor,
+                BrokenNode = trackColor,
+                BrokenPath = trackColor
+            };
 
-            ColorScheme shadedColorScheme = new ColorScheme();
-            shadedColorScheme.TrackColors = colorsGroup;
+            ColorScheme shadedColorScheme = new ColorScheme
+            {
+                TrackColors = colorsGroup
+            };
 
             return shadedColorScheme;
         }
@@ -383,7 +389,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// An extension in string format that can be used to distinguish texture names
         /// </summary>
-        public string nameExtension { get { return nameExtensions[highlightType]; } }
+        public string NameExtension { get { return nameExtensions[highlightType]; } }
 
         /// <summary>
         /// Store whether this is a normal or highlight variant
@@ -587,8 +593,10 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>Scaled color</returns>
         public static Color Highlighted(Color color, byte offset)
         {
-            Color newColor = new Color();
-            newColor.A = color.A;
+            Color newColor = new Color
+            {
+                A = color.A
+            };
             byte effectiveOffset = (byte)((color.A > 128) ? offset : 0);
             newColor.B = (byte)Math.Min(color.B + effectiveOffset, 255);
             newColor.R = (byte)Math.Min(color.R + effectiveOffset, 255);
@@ -612,13 +620,15 @@ namespace ORTS.TrackViewer.Drawing
         /// <returns>The changed-color</returns>
         public static Color ReshadedColor(Color color, int index, int count)
         {
-            Color newColor = new Color();
-            newColor.A = color.A;
+            Color newColor = new Color
+            {
+                A = color.A,
 
-            newColor.R = ReshadeSingleChannel(color.R, index, count);
-            newColor.G = ReshadeSingleChannel(color.G, index, count);
-            newColor.B = ReshadeSingleChannel(color.B, index, count);
-            
+                R = ReshadeSingleChannel(color.R, index, count),
+                G = ReshadeSingleChannel(color.G, index, count),
+                B = ReshadeSingleChannel(color.B, index, count)
+            };
+
             return newColor;
         }
 

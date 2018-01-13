@@ -58,12 +58,13 @@
 	<li>Jean-Louis Chauvin</li>
 	<li>Jeff Bush</li>
 	<li>Jeffrey Kraus-Yao</li>
+	<li>Jeroen Paasschens</li>
 	<li>Jijun Tang</li>
-	<li>Jim Jendro</li>
 </ul>
 </div>
 <div class="col-md-3">
 <ul>
+	<li>Jim Jendro</li>
 	<li>Jim Ward</li>
 	<li>John Sandford</li>
 	<li>Joseph Hoevet</li>
@@ -82,11 +83,11 @@
 	<li>Pete Peddlesden</li>
 	<li>Peter Gulyas</li>
 	<li>Peter Newell</li>
-	<li>Phil Voxland</li>
 </ul>
 </div>
 <div class="col-md-3">
 <ul>
+	<li>Phil Voxland</li>
 	<li>Remus Iancu</li>
 	<li>Richard Plokhaar</li>
 	<li>Rick Grout</li>

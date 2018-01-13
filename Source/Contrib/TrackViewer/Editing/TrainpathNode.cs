@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -761,7 +761,7 @@ namespace ORTS.TrackViewer.Editing
         {
             TvnIndex = traveller.TrackNodeIndex;
             TrackVectorSectionIndex = traveller.TrackVectorSectionIndex;
-            TrackSectionOffset = traveller.TrackNodeOffset - getSectionStartDistance();
+            TrackSectionOffset = traveller.TrackNodeOffset - GetSectionStartDistance();
             trackAngleForward = traveller.RotY;
         }
 
@@ -769,7 +769,7 @@ namespace ORTS.TrackViewer.Editing
         /// Find the exact distance of the start of the current tracksection (from the beginning of the vector node)
         /// </summary>
         /// <returns></returns>
-        private float getSectionStartDistance()
+        private float GetSectionStartDistance()
         {
             float distanceFromStart = 0;
             TrackNode tn = TrackDB.TrackNodes[TvnIndex];

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -20,7 +20,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Media.Imaging;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Popups;
 
@@ -91,7 +90,7 @@ namespace ORTS.TrackViewer.Drawing
             LoadAndHighlightTexture(graphicsDevice, contentPath, "sound", "Sound");
             LoadAndHighlightTexture(graphicsDevice, contentPath, "playerTrain", "steamTrain",31,31);
 
-            prepareArcDrawing();
+            PrepareArcDrawing();
             fontManager = FontManager.Instance;
 
         }
@@ -505,7 +504,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Some preparation to be able to draw arcs more efficiently
         /// </summary>
-        private static void prepareArcDrawing()
+        private static void PrepareArcDrawing()
         {
             minAngleRad = MathHelper.ToRadians(minAngleDegree);
             arcTableSize = (int)(Math.Ceiling(maxAngleDegree/minAngleDegree)+1);

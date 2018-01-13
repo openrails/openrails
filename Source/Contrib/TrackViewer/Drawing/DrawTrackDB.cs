@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -114,9 +114,11 @@ namespace ORTS.TrackViewer.Drawing
             {
                 signalFileNames = new Dictionary<uint, string>();
                 var WFilePath = this.storedRoutePath + @"\WORLD\";
-                
-                var Tokens = new List<TokenID>();
-                Tokens.Add(TokenID.Signal);
+
+                var Tokens = new List<TokenID>
+                {
+                    TokenID.Signal
+                };
 
                 string[] wfiles;
                 try

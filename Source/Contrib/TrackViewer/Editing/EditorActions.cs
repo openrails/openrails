@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -18,7 +18,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
-using System.Windows.Media.Imaging;
 using System.Linq;
 using System.Text;
 using System.Windows;
@@ -58,7 +57,7 @@ namespace ORTS.TrackViewer.Editing
         protected int MouseY { get; set; }
 
         /// <summary>The tools (strategy) to do modifications to the path</summary>
-        protected ModificationTools modificationTools { get; set; }
+        protected ModificationTools ModificationTools { get; set; }
 
         private AfterEditDelegate afterEditCallback;
         #endregion
@@ -70,10 +69,12 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="pngFileName">The name of the png icon to use</param>
         protected EditorAction(string menuHeader, string pngFileName)
         {
-            ActionMenuItem = new MenuItem();
-            ActionMenuItem.Header = menuHeader;
-            ActionMenuItem.IsCheckable = false;
-            ActionMenuItem.Click += new RoutedEventHandler(contextExecuteAction_Click);
+            ActionMenuItem = new MenuItem
+            {
+                Header = menuHeader,
+                IsCheckable = false
+            };
+            ActionMenuItem.Click += new RoutedEventHandler(ContextExecuteAction_Click);
 
             if (!string.IsNullOrEmpty(pngFileName))
             {
@@ -85,7 +86,7 @@ namespace ORTS.TrackViewer.Editing
                 };
             }
 
-            modificationTools = new ModificationTools();
+            ModificationTools = new ModificationTools();
         }
         
         /// <summary>
@@ -115,7 +116,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="sender">Sender that generates the event, not used</param>
         /// <param name="e">(routed) event arguments, not used</param>
-        private void contextExecuteAction_Click(object sender, RoutedEventArgs e)
+        private void ContextExecuteAction_Click(object sender, RoutedEventArgs e)
         {
             DoAction();
         }
@@ -126,7 +127,7 @@ namespace ORTS.TrackViewer.Editing
         public void DoAction()
         {
             Trainpath.StoreCurrentPath();
-            modificationTools.Reset();
+            ModificationTools.Reset();
             ExecuteAction();
             Trainpath.DetermineIfBroken(); // instead of keeping track of when to do this or not, just do it always.
             UpdateNodeCount();
@@ -137,11 +138,8 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         protected void UpdateNodeCount()
         {
-            if (afterEditCallback != null)
-            {
-                afterEditCallback(NetMainNodesAdded());
-            }
-            modificationTools.Reset();
+            afterEditCallback?.Invoke(NetMainNodesAdded());
+            ModificationTools.Reset();
 
         }
 
@@ -153,7 +151,7 @@ namespace ORTS.TrackViewer.Editing
         /// <remarks> Has a default implementation but can be overriden</remarks>
         protected virtual int NetMainNodesAdded()
         {
-            return modificationTools.NetNodesAdded;
+            return ModificationTools.NetNodesAdded;
         }
     }
     #endregion
@@ -176,15 +174,17 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            Trainpath.FirstNode = new TrainpathVectorNode(ActiveTrackLocation);
-            Trainpath.FirstNode.NodeType = TrainpathNodeType.Start;
-            modificationTools.AddAdditionalNode(Trainpath.FirstNode, true); // make sure also the second node is available and drawn.
+            Trainpath.FirstNode = new TrainpathVectorNode(ActiveTrackLocation)
+            {
+                NodeType = TrainpathNodeType.Start
+            };
+            ModificationTools.AddAdditionalNode(Trainpath.FirstNode, true); // make sure also the second node is available and drawn.
         }
 
         /// <summary>Returns the net amount of main nodes added.</summary>
        protected override int NetMainNodesAdded()
         {
-            return modificationTools.NetNodesAdded + 1; // first node is not counted automatically
+            return ModificationTools.NetNodesAdded + 1; // first node is not counted automatically
         }
     }
     #endregion
@@ -264,7 +264,7 @@ namespace ORTS.TrackViewer.Editing
             Trainpath.FirstNode.NextMainNode = null;
             Trainpath.FirstNode.NextSidingNode = null;
             Trainpath.FirstNode.ReverseOrientation();
-            modificationTools.AddAdditionalNode(Trainpath.FirstNode, true);
+            ModificationTools.AddAdditionalNode(Trainpath.FirstNode, true);
         }
     }
     #endregion
@@ -299,9 +299,9 @@ namespace ORTS.TrackViewer.Editing
             lastNode.NextSidingNode = null;
             lastNode.NextMainNode = null;
 
-            TrainpathVectorNode newNode = modificationTools.AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
+            TrainpathVectorNode newNode = ModificationTools.AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
             newNode.NodeType = TrainpathNodeType.End;
-            modificationTools.CleanAmbiguityNodes(newNode);
+            ModificationTools.CleanAmbiguityNodes(newNode);
             Trainpath.HasEnd = true;
         }
     }
@@ -327,7 +327,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
+            ModificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
             Trainpath.HasEnd = false;
         }
     }
@@ -356,7 +356,7 @@ namespace ORTS.TrackViewer.Editing
         {
             TrainpathNode lastNode = ActiveTrackLocation.PrevNode;
 
-            TrainpathVectorNode newNode = modificationTools.AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
+            TrainpathVectorNode newNode = ModificationTools.AddAdditionalVectorNode(lastNode, ActiveTrackLocation, true);
             newNode.NodeType = TrainpathNodeType.Reverse;
             lastNode.NextMainNode = newNode;
             lastNode.NextSidingNode = null; // should not be needed
@@ -364,7 +364,7 @@ namespace ORTS.TrackViewer.Editing
             newNode.PrevNode = lastNode;
 
             newNode.ReverseOrientation(); // reverse because, well, this is a reverse point.
-            modificationTools.CleanAmbiguityNodes(newNode);
+            ModificationTools.CleanAmbiguityNodes(newNode);
         }
     }
     #endregion
@@ -389,7 +389,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
+            ModificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
         }
     }
     #endregion
@@ -443,7 +443,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            TrainpathVectorNode newNode = modificationTools.AddIntermediateMainNode(ActiveTrackLocation);
+            TrainpathVectorNode newNode = ModificationTools.AddIntermediateMainNode(ActiveTrackLocation);
             newNode.NodeType = TrainpathNodeType.Stop;
             EditWaitMetaData(newNode);
         }
@@ -496,11 +496,11 @@ namespace ORTS.TrackViewer.Editing
             //Assumption, there is no siding next to it. but this might not be true. Not clear if the assumption is needed
             if (ActiveNode.NextMainNode != null)
             {
-                modificationTools.RemoveIntermediatePoint(ActiveNode);
+                ModificationTools.RemoveIntermediatePoint(ActiveNode);
             }
             else
             {
-                modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
+                ModificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode);
             }
         }
     }
@@ -700,7 +700,7 @@ namespace ORTS.TrackViewer.Editing
             if (ReconnectNode == null)
             {   //really take other exit and discard rest of path
                 activeNodeAsJunction.NextMainTvnIndex = NewTvnIndex;
-                modificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode.NextMainNode);
+                ModificationTools.ReplaceNodeAndFollowingByNewNode(ActiveNode.NextMainNode);
                 nodesRemoved = 0; // we do not care.
                 return;
             }
@@ -709,7 +709,7 @@ namespace ORTS.TrackViewer.Editing
             nodesRemoved = Trainpath.GetNodeNumber(ReconnectNode) - Trainpath.GetNodeNumber(ActiveNode);
 
             //we can reconnect, so create a path to reconnection point
-            TrainpathNode lastNodeNewPath = modificationTools.CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, true);
+            TrainpathNode lastNodeNewPath = ModificationTools.CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, true);
 
             //Reconnect.
             lastNodeNewPath.NextMainNode = ReconnectNode;
@@ -719,7 +719,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Returns the net amount of main nodes added.</summary>
         protected override int NetMainNodesAdded()
         {
-            return modificationTools.NetNodesAdded - nodesRemoved;
+            return ModificationTools.NetNodesAdded - nodesRemoved;
         }
     }
     #endregion
@@ -743,7 +743,7 @@ namespace ORTS.TrackViewer.Editing
         protected override void ExecuteAction()
         {
             ActiveNode.NodeType = TrainpathNodeType.SidingStart;
-            TrainpathNode lastNodeSidingPath = modificationTools.CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, false);
+            TrainpathNode lastNodeSidingPath = ModificationTools.CreatePartialPath(ActiveNode, NewTvnIndex, ReconnectNode, false);
 
             //reconnect. At this point, newNode is already the same node as reconnectNode. We will discard it
             lastNodeSidingPath.NextSidingNode = ReconnectNode;
@@ -794,7 +794,7 @@ namespace ORTS.TrackViewer.Editing
             // we do add an extra siding path node, which is not well-connected.
             // We will draw it as broken. It will be recognized as broken as well.
             // Main track is not set to hasSidingNode.
-            TrainpathNode danglingNode = modificationTools.AddAdditionalNode(ActiveNode, NewTvnIndex, false);
+            TrainpathNode danglingNode = ModificationTools.AddAdditionalNode(ActiveNode, NewTvnIndex, false);
             danglingNode.SetBroken(NodeStatus.Dangling);
             ActiveNode.NodeType = TrainpathNodeType.SidingStart;
         }
@@ -1069,13 +1069,13 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            autoConnectTools.CreateFoundConnection(modificationTools, true);
+            autoConnectTools.CreateFoundConnection(ModificationTools, true);
         }
 
         /// <summary>Returns the net amount of main nodes added.</summary>
         protected override int NetMainNodesAdded()
         {
-            return modificationTools.NetNodesAdded - numberOfNodesThatWillBeRemoved;
+            return ModificationTools.NetNodesAdded - numberOfNodesThatWillBeRemoved;
         }
     }
     #endregion
@@ -1109,7 +1109,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            autoConnectTools.CreateFoundConnection(modificationTools, true);
+            autoConnectTools.CreateFoundConnection(ModificationTools, true);
 
             Trainpath.FirstNodeOfTail = null;
             Trainpath.HasEnd = Trainpath.TailHasEnd;
@@ -1164,7 +1164,7 @@ namespace ORTS.TrackViewer.Editing
             if (ActiveNode.HasSidingPath) return false;
             if (ActiveNode.IsBroken) return false;
 
-            findPassingPathStub();
+            FindPassingPathStub();
             if (sidingStartNode == null) return false;
             if (sidingStartNode.NextSidingNode == ActiveNode) return false;  // this happens when we are at the single siding node we just started
             return autoConnectTools.FindConnection(sidingStartNode.NextSidingNode, ActiveNode);
@@ -1174,7 +1174,7 @@ namespace ORTS.TrackViewer.Editing
         /// This action can only be done if there is a passing path stub, that is, a start of a passing path
         /// that contains only a single siding node that is broken and not reconnected.
         /// </summary>
-        void findPassingPathStub() {
+        void FindPassingPathStub() {
             sidingStartNode = null;
             autoConnectTools.ResetDisallowedJunctions();
 
@@ -1216,7 +1216,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            autoConnectTools.CreateFoundConnection(modificationTools, false);
+            autoConnectTools.CreateFoundConnection(ModificationTools, false);
 
             TrainpathNode sidingEnd = ActiveNode;
 
@@ -1346,7 +1346,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Execute the action. This assumes that the action can be executed</summary>
         protected override void ExecuteAction()
         {
-            autoConnectTools.CreateFoundConnection(modificationTools, false);
+            autoConnectTools.CreateFoundConnection(ModificationTools, false);
         }
 
         /// <summary>Returns the net amount of main nodes added.</summary>
@@ -1640,13 +1640,13 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         protected override void InitDragging()
         {
-            modificationTools.Reset();
+            ModificationTools.Reset();
             netNodesDeleted = 0;
 
             if (ActiveNode is TrainpathJunctionNode || (ActiveNode.NodeType == TrainpathNodeType.Other))
             {
                 // we need a new vector node here.
-                nodeBeingDragged = modificationTools.AddIntermediateMainNode(ActiveTrackLocation);
+                nodeBeingDragged = ModificationTools.AddIntermediateMainNode(ActiveTrackLocation);
                 nodeBeingDragged.NodeType = TrainpathNodeType.Temporary;
             }
             else
@@ -1775,8 +1775,8 @@ namespace ORTS.TrackViewer.Editing
             if (connectionIsGood)
             {
                 PrepareNodeCountUpdate(autoConnectReverse.ReconnectTrainpathNode, autoConnectForward.ReconnectTrainpathNode, -1);//Node being dragged is added again.   
-                autoConnectForward.CreateFoundConnection(modificationTools, true);
-                autoConnectReverse.CreateFoundConnection(modificationTools, true, true);
+                autoConnectForward.CreateFoundConnection(ModificationTools, true);
+                autoConnectReverse.CreateFoundConnection(ModificationTools, true, true);
             }
 
             return connectionIsGood;
@@ -1794,7 +1794,7 @@ namespace ORTS.TrackViewer.Editing
             if (connectionIsGood)
             {
                 PrepareNodeCountUpdate(nodeBeingDragged, autoConnectForward.ReconnectTrainpathNode, 0);
-                autoConnectForward.CreateFoundConnection(modificationTools, true);
+                autoConnectForward.CreateFoundConnection(ModificationTools, true);
             }
 
             return connectionIsGood;
@@ -1812,7 +1812,7 @@ namespace ORTS.TrackViewer.Editing
             if (connectionIsGood)
             {
                 PrepareNodeCountUpdate(autoConnectReverse.ReconnectTrainpathNode, nodeBeingDragged, 0);                
-                autoConnectReverse.CreateFoundConnection(modificationTools, true); // note: reverse is not yet done, compare 'normal connection'
+                autoConnectReverse.CreateFoundConnection(ModificationTools, true); // note: reverse is not yet done, compare 'normal connection'
             }
 
             return connectionIsGood;
@@ -1825,7 +1825,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         private void PrepareNodeCountUpdate(TrainpathNode lastUnchangedNodeReverse, TrainpathNode firstUnchangedNodeForward, int deletedNodesCorrection)
         {
-            modificationTools.Reset();
+            ModificationTools.Reset();
             int originalNodeNumberReconnectNodeForward = Trainpath.GetNodeNumber(firstUnchangedNodeForward);
             int originalNodeNumberReconnectNodeReverse = Trainpath.GetNodeNumber(lastUnchangedNodeReverse);
             netNodesDeleted = originalNodeNumberReconnectNodeForward - originalNodeNumberReconnectNodeReverse - 1;
@@ -1844,7 +1844,7 @@ namespace ORTS.TrackViewer.Editing
         {
             if (nodeBeingDragged.NodeType == TrainpathNodeType.Temporary || nodeBeingDragged.NodeType == TrainpathNodeType.Other)
             {
-                modificationTools.RemoveIntermediatePoint(nodeBeingDragged);
+                ModificationTools.RemoveIntermediatePoint(nodeBeingDragged);
             }
             UpdateNodeCount();
         }
@@ -1852,7 +1852,7 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Returns the net amount of main nodes added.</summary>
         protected override int NetMainNodesAdded()
         {
-            return modificationTools.NetNodesAdded - netNodesDeleted;
+            return ModificationTools.NetNodesAdded - netNodesDeleted;
         }
         //todo for dragging:
         // * Passing paths.
@@ -1885,9 +1885,9 @@ namespace ORTS.TrackViewer.Editing
         public void AddMainNode(TrainpathNode currentNode, AfterEditDelegate callback)
         {
             if (currentNode.IsBroken) return;
-            modificationTools.Reset();
-            modificationTools.AddAdditionalNode(currentNode, true);
-            callback(modificationTools.NetNodesAdded);
+            ModificationTools.Reset();
+            ModificationTools.AddAdditionalNode(currentNode, true);
+            callback(ModificationTools.NetNodesAdded);
         }
 
         /// <summary>
@@ -1898,17 +1898,17 @@ namespace ORTS.TrackViewer.Editing
         /// <param name="callback">Callback to call when node has been added</param>
         public void AddMissingDisambiguityNodes(Trainpath trainpath, AfterEditDelegate callback)
         {
-            modificationTools.Reset();
+            ModificationTools.Reset();
 
             TrainpathNode mainNode = trainpath.FirstNode;
             while (mainNode != null)
             {
-                modificationTools.AddDisambiguityNodeIfNeeded(mainNode);
+                ModificationTools.AddDisambiguityNodeIfNeeded(mainNode);
                 mainNode = mainNode.NextMainNode;
             }
 
-            trainpath.IsModified = (modificationTools.NetNodesAdded != 0);
-            callback(modificationTools.NetNodesAdded);
+            trainpath.IsModified = (ModificationTools.NetNodesAdded != 0);
+            callback(ModificationTools.NetNodesAdded);
         }
 
     }

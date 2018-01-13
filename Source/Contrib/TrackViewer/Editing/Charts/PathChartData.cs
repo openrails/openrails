@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2015 by the Open Rails project.
+﻿// COPYRIGHT 2015, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -19,8 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows;
-using System.Windows.Media;
 using Newtonsoft.Json;
 
 using ORTS.Common;

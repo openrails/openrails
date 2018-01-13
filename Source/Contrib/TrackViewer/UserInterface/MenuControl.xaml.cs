@@ -512,19 +512,46 @@ namespace ORTS.TrackViewer.UserInterface
         private void menuShortcuts_Click(object sender, RoutedEventArgs e)
         {
             StringBuilder shortcuts = new StringBuilder();
-            shortcuts.Append(TrackViewer.catalog.GetString("left  arrow:  Shift left\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("down  arrow:  Shift down\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("right arrow:  Shift right\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("up    arrow:  Shift up\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("C:  Shift to center of current path node\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("shift-C:  Shift to center of current mouse location\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("PgUp:  Show more of the path\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("PgDn:  Show less of the path\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("shift-PgUp:  Show the full path\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("shift-PgDn:  Show only start point of path\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Z: Undo in path editor\n"));
-            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Y: Redo in path editor\n"));
-            MessageBox.Show(shortcuts.ToString());
+            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-R\tReload the route\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("Q\tQuit\n"));
+            shortcuts.Append("\n");
+            shortcuts.Append(TrackViewer.catalog.GetString("=\tZoom-in (and keep zooming)\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-=\tZoom-in\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("-\tZoom-out (and keep zooming)\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift--\tZoom-out\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("Z\tZoom to tile\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("M\tToggle zoom center\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("R\tZoom reset\n"));
+            shortcuts.Append("\n");
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-C\t\tShift center to current mouse location\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("left arrow\tShift left\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("down arrow\tShift down\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("right arrow\tShift right\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("up arrow\t\tShift up\n"));
+            shortcuts.Append("\n");
+            shortcuts.Append(TrackViewer.catalog.GetString("F5\tShow speed-limits\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-F5\tShow mileposts\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("F6\tShow terrain\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-F6\tShow DM terrain\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-F6\tShow terrain patch lines\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("F7\tshow signals\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("F8\tShow platforms\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-F8\tShow platform-names\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("F9\tShow sidings\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-F9\tShow siding-names\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("F10\tHighlight tracks\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-F10\tHighlight items\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("F11\tShow path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-F11\tShow raw path\n"));
+            shortcuts.Append("\n");
+            shortcuts.Append(TrackViewer.catalog.GetString("C\t\tShift to center of current path node\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("PgUp\t\tShow more of the path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("PgDn\t\tShow less of the path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-PgUp\tShow the full path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("shift-PgDn\tShow only start point of path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Z\t\tUndo in path editor\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Y\t\tRedo in path editor\n"));
+            MessageBox.Show(shortcuts.ToString(), TrackViewer.catalog.GetString("Keyboard shortcuts"));
         }
 
         private void menuAbout_Click(object sender, RoutedEventArgs e)
@@ -535,15 +562,27 @@ namespace ORTS.TrackViewer.UserInterface
             about.Append("\n");
             about.Append(TrackViewer.catalog.GetString("It is a 'Contribution' to ORTS, and as such\n"));
             about.Append(TrackViewer.catalog.GetString("not an integral part of ORTS."));
-            MessageBox.Show(about.ToString());
+            MessageBox.Show(about.ToString(), "TrackViewer");
         }
 
         private void menuDocumentation_Click(object sender, RoutedEventArgs e)
         {
+            string website = "http://openrails.org/learn/manual-and-tutorials/";
             StringBuilder documentation = new StringBuilder();
-            documentation.Append(TrackViewer.catalog.GetString("Documentation is available") + ": http://openrails.org/learn/manual-and-tutorials/ (" +
-       TrackViewer.catalog.GetString("Right column → OR_Trackviewer") + ")");
-            MessageBox.Show(documentation.ToString());
+            documentation.Append(TrackViewer.catalog.GetString("Documentation is available"));
+            documentation.Append(": ");
+            documentation.Append(website);
+            documentation.Append(" (");
+            documentation.Append(TrackViewer.catalog.GetString("Right column → Open Rails Trackviewer"));
+            documentation.Append(")\n");
+            documentation.Append(TrackViewer.catalog.GetString("Do you want to go to the website?"));
+            MessageBoxResult result = MessageBox.Show(documentation.ToString(),
+                TrackViewer.catalog.GetString("Documentation"),
+                MessageBoxButton.YesNoCancel);
+            if (result.ToString() == "Yes")
+            {
+                System.Diagnostics.Process.Start(website);
+            }
         }
 
         private void menuZoomSave_Click(object sender, RoutedEventArgs e)

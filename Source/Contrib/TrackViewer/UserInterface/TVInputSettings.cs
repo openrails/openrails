@@ -183,11 +183,11 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ToggleShowPlatformNames] = new ORTS.Settings.UserCommandKeyInput(0x42, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleShowSidings] = new ORTS.Settings.UserCommandKeyInput(0x43);
             Commands[(int)TVUserCommands.ToggleShowSidingNames] = new ORTS.Settings.UserCommandKeyInput(0x43, ORTS.Settings.KeyModifiers.Shift);
-            Commands[(int)TVUserCommands.ToggleShowTrainpath] = new ORTS.Settings.UserCommandKeyInput(0x57);
-            Commands[(int)TVUserCommands.ToggleShowPatFile] = new ORTS.Settings.UserCommandKeyInput(0x57, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleHighlightTracks] = new ORTS.Settings.UserCommandKeyInput(0x44);
             Commands[(int)TVUserCommands.ToggleHighlightItems] = new ORTS.Settings.UserCommandKeyInput(0x44, ORTS.Settings.KeyModifiers.Shift);
-            
+            Commands[(int)TVUserCommands.ToggleShowTrainpath] = new ORTS.Settings.UserCommandKeyInput(0x57);
+            Commands[(int)TVUserCommands.ToggleShowPatFile] = new ORTS.Settings.UserCommandKeyInput(0x57, ORTS.Settings.KeyModifiers.Shift);
+
 
             Commands[(int)TVUserCommands.ExtendPath] = new ORTS.Settings.UserCommandKeyInput(0x49);
             Commands[(int)TVUserCommands.ExtendPathFull] = new ORTS.Settings.UserCommandKeyInput(0x49, ORTS.Settings.KeyModifiers.Shift);

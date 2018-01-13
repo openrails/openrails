@@ -1,4 +1,4 @@
-// COPYRIGHT 2014, 2015 by the Open Rails project.
+// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -19,21 +19,12 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Graphics.Color;
-using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
-using Microsoft.Xna.Framework.Net;
-using Microsoft.Xna.Framework.Storage;
 
 using System.Windows.Forms;
-using System.Drawing;
 using System.Reflection;
 using GNU.Gettext;
 using ORTS.Menu;
@@ -59,7 +50,7 @@ namespace ORTS.TrackViewer
     {
         #region Public members
         /// <summary>String showing the date of the program</summary>
-        public readonly static string TrackViewerVersion = "2015/05/26";
+        public readonly static string TrackViewerVersion = "2018/01/09";
         /// <summary>Path where the content (like .png files) is stored</summary>
         public string ContentPath { get; private set; }
         /// <summary>Folder where MSTS is installed (or at least, where the files needed for tracks, routes and paths are stored)</summary>
@@ -190,11 +181,13 @@ namespace ORTS.TrackViewer
             drawWorldTiles = new DrawWorldTiles();
             drawScaleRuler = new DrawScaleRuler();
             DrawArea = new DrawArea(drawScaleRuler);
-            drawAreaInset = new ShadowDrawArea(null);
-            drawAreaInset.StrictChecking = true;
-            
+            drawAreaInset = new ShadowDrawArea(null)
+            {
+                StrictChecking = true
+            };
+
             fontManager = FontManager.Instance;
-            setSubwindowSizes();
+            SetSubwindowSizes();
 
             this.IsMouseVisible = true;
 
@@ -209,7 +202,7 @@ namespace ORTS.TrackViewer
             }
             InstallFolder = new Folder("default", Properties.Settings.Default.installDirectory);
 
-            findRoutes(InstallFolder);
+            FindRoutes(InstallFolder);
 
             drawPathChart = new DrawPathChart();
             
@@ -219,7 +212,7 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Set the sizes of the various subwindows that they can use to draw upon. 
         /// </summary>
-        void setSubwindowSizes()
+        void SetSubwindowSizes()
         {
             int insetRatio = 10; 
 
@@ -457,7 +450,7 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsPressed(TVUserCommands.ToggleHighlightItems)) menuControl.MenuToggleHighlightItems();
 
 
-            if (TVUserInput.IsPressed(TVUserCommands.Debug)) runDebug();
+            if (TVUserInput.IsPressed(TVUserCommands.Debug)) RunDebug();
 
             base.Update(gameTime);
             
@@ -576,7 +569,7 @@ namespace ORTS.TrackViewer
             {   // if something went wrong during fast window switching, let's not continue
                 return;
             }
-            setSubwindowSizes();
+            SetSubwindowSizes();
         }
 
         /// <summary>
@@ -643,7 +636,7 @@ namespace ORTS.TrackViewer
             }
 
             Folder newInstallFolder = new Folder("installFolder", folderPath);
-            bool foundroutes = findRoutes(newInstallFolder);
+            bool foundroutes = FindRoutes(newInstallFolder);
             if (!foundroutes)
             {
                 MessageBox.Show(catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
@@ -668,7 +661,7 @@ namespace ORTS.TrackViewer
         /// Find the available routes, and if possible load the first one.
         /// </summary>
         /// <returns>True if the route loading was successfull</returns>
-        private bool findRoutes(Folder newInstallFolder)
+        private bool FindRoutes(Folder newInstallFolder)
         {
             if (newInstallFolder == null) return false;
             List<Route> newRoutes = Route.GetRoutes(newInstallFolder).OrderBy(r => r.ToString()).ToList();
@@ -751,7 +744,7 @@ namespace ORTS.TrackViewer
             DrawMultiplePaths = null;
             try
             {
-                findPaths();
+                FindPaths();
             }
             catch { }
 
@@ -788,7 +781,7 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Find the paths (.pat files) belonging to the current route, and update the menu
         /// </summary>
-        private void findPaths()
+        private void FindPaths()
         {
             List<Path> newPaths = Path.GetPaths(CurrentRoute, true).OrderBy(r => r.Name).ToList();
             Paths = new Collection<Path>(newPaths);
@@ -917,7 +910,7 @@ namespace ORTS.TrackViewer
         #endregion 
         
         #region Debug methods
-        void runDebug()
+        void RunDebug()
         {
             //Properties.Settings.Default.statusShowFPS = true;
             //ReloadRoute();

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -299,7 +299,7 @@ namespace ORTS.TrackViewer.Drawing
                 //It seems that this implementation has quite some copying of data of vertices, but I am not sure how to prevent this.
                 var vertices = new List<VertexPositionTexture>();
 
-                foreach (int zoomSize in getZoomSizesToShow(false))
+                foreach (int zoomSize in GetZoomSizesToShow(false))
                 {
                     foreach (TerrainTile2D terrainTile in terrainTiles.Values)
                     {
@@ -323,7 +323,7 @@ namespace ORTS.TrackViewer.Drawing
 
         }
 
-        private List<int> getZoomSizesToShow(bool lowToHigh)
+        private List<int> GetZoomSizesToShow(bool lowToHigh)
         {
             List<int> zoomSizesToShow = new List<int>();
             if (this.terrainDMIsVisible)
@@ -397,7 +397,7 @@ namespace ORTS.TrackViewer.Drawing
                 return;
             }
 
-            foreach (int zoomSize in getZoomSizesToShow(false))
+            foreach (int zoomSize in GetZoomSizesToShow(false))
             {
                 for (int tileX = visibleTileXmin; tileX <= visibleTileXmax; tileX++)
                 {
@@ -417,7 +417,7 @@ namespace ORTS.TrackViewer.Drawing
         private void UpdateStatusInformation(WorldLocation location)
         {
             this.StatusInformation = "unknown";
-            foreach (int zoomSize in getZoomSizesToShow(true))
+            foreach (int zoomSize in GetZoomSizesToShow(true))
             {
                 uint storeIndex = this.locationTranslator.TileIndex(location.TileX, location.TileZ, zoomSize);
                 if (terrainTiles.ContainsKey(storeIndex))

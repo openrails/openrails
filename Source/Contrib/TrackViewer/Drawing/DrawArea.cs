@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014,2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -89,7 +89,7 @@ namespace ORTS.TrackViewer.Drawing
         #endregion
 
         #region private properties
-        private double fullScale { get; set; }
+        private double FullScale { get; set; }
         /// <summary>Ratio used for shifting (percentage shift per update)</summary>
         private static float shiftRatioDefault = 0.10f; 
 
@@ -130,9 +130,9 @@ namespace ORTS.TrackViewer.Drawing
         public virtual void SetScreenSize(int areaOffsetX, int areaOffsetY, int areaWidth, int areaHeight)
         {
             // we also need to reset the fullscale;
-            double fullScaleX = fullScale * areaWidth / this.AreaW;
-            double fullScaleY = fullScale * areaHeight / this.AreaH;
-            fullScale = Math.Min(fullScaleX, fullScaleY);
+            double fullScaleX = FullScale * areaWidth / this.AreaW;
+            double fullScaleY = FullScale * areaHeight / this.AreaH;
+            FullScale = Math.Min(fullScaleX, fullScaleY);
             this.AreaOffsetX = areaOffsetX;
             this.AreaOffsetY = areaOffsetY;
             this.AreaW = areaWidth;
@@ -210,7 +210,7 @@ namespace ORTS.TrackViewer.Drawing
             Scale = Math.Min(scaleX, scaleY);
             metersPerPixel.ApproximateTo(1.0f / Scale);
             Scale = metersPerPixel.InverseScaleValue;
-            fullScale = Scale;
+            FullScale = Scale;
             // center the window. Equation we use is areaX = scale * (worldX - offsetX)
             // or offsetX = worldX - areaX/scale. 
             OffsetX = (maxX + minX) / 2 - AreaW / 2 / Scale;
@@ -281,7 +281,7 @@ namespace ORTS.TrackViewer.Drawing
             if (scaleSteps > 0)
             {
                 // prevent too much zooming out, scale is in pixels/meter
-                double minScale = fullScale / 2;
+                double minScale = FullScale / 2;
                 double maxRatio = Scale / minScale;
                 int maxSteps = metersPerPixel.StepsNeededForRatio(maxRatio);
                 if (maxSteps <= 0)
@@ -356,7 +356,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             double otherScale = otherArea.Scale;
             double otherScaleCorrected = otherScale * this.AreaW / otherArea.AreaW; // Correct for different screen size
-            Scale = Math.Max(fullScale, otherScaleCorrected/maxScaleRatio);
+            Scale = Math.Max(FullScale, otherScaleCorrected/maxScaleRatio);
             // center on the same center as otherArea
             // other.screenW/2 = otherScale * (WorldX - other.offsetX)
             // this.screenW/2  = this.Scale * (WorldX - this.offsetX);

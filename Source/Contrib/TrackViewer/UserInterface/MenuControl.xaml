@@ -5,7 +5,7 @@
     <DockPanel Height="22" Width="Auto" Margin="0" VerticalAlignment="Top">
         <Menu Height="22" Name="menuMain" Width="Auto">
             <MenuItem Header="File">
-                <MenuItem Header="(Re)load route" Name="menuReloadRoute" Click="menuReloadRoute_Click" />
+                <MenuItem Header="(Re)load route (ctrl-R)" Name="menuReloadRoute" Click="menuReloadRoute_Click" />
                 <Separator/>
                 <MenuItem Header="Select install folder" Name="menuInstallFolder" Click="menuInstallFolder_Click"/>
                 <MenuItem Header="Select route" Name="menuSelectRoute"/>
@@ -32,7 +32,7 @@
                 <Separator/>
                 <MenuItem Header="Paths">
                     <MenuItem Header="Show path (F11)" Name="menuShowTrainpath" IsCheckable="True" Click="UpdateMenuSettings"/>
-                    <MenuItem Header="Show raw path from .pat file (shift F11)" Name="menuShowPATfile" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show raw path from .pat file (shift-F11)" Name="menuShowPATfile" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
                 <MenuItem Header="Track Coloring">
                     <MenuItem Header="Color tracks" Name="menuColorTracks" IsCheckable="True" Click="UpdateMenuSettings"/>
@@ -51,8 +51,8 @@
                 <Separator/>
                 <MenuItem Header="Zoom in (=)" Name="menuZoomIn" Click="menuZoomIn_Click"/> 
                 <MenuItem Header="Zoom out (-)" Name="menuZoomOut" Click="menuZoomOut_Click"/>
-                <MenuItem Header="Zoom to tile (z)" Name="menuZoomToTile" Click="menuZoomToTile_Click"/>
-                <MenuItem Header="Zoom reset (r)" Name="menuZoomReset" Click="menuZoomReset_Click"/>
+                <MenuItem Header="Zoom to tile (Z)" Name="menuZoomToTile" Click="menuZoomToTile_Click"/>
+                <MenuItem Header="Zoom reset (R)" Name="menuZoomReset" Click="menuZoomReset_Click"/>
                 <Separator/>
                 <MenuItem Header="Anti aliasing (needs restart)" Name="menuDoAntiAliasing" IsCheckable="True" Click="menuDoAntiAliasing_Click"/>
             </MenuItem>
@@ -84,7 +84,7 @@
                 </MenuItem>
                 <MenuItem Header="Posts">
                     <MenuItem Header="Show speed limits (F5)" Name="menuShowSpeedLimits" IsCheckable="True" Click="UpdateMenuSettings"/>
-                    <MenuItem Header="Show mileposts (shift F5)" Name="menuShowMileposts" IsCheckable="True" Click="UpdateMenuSettings"/>
+                    <MenuItem Header="Show mileposts (shift-F5)" Name="menuShowMileposts" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
                 <MenuItem Header="Roads">
                     <MenuItem Header="Draw roads" Name="menuDrawRoads" IsCheckable="True" Click="UpdateMenuSettings"/>
@@ -105,7 +105,7 @@
                           Click="UpdateMenuSettings"/>
             </MenuItem>
             <MenuItem Header="Preferences" Name="menuPreferences">
-                <MenuItem Header="Zooming is centered on mouse (m)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
+                <MenuItem Header="Zooming is centered on mouse (M)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"
                           Click="UpdateMenuSettings"/>
                 <MenuItem Header="Use miles i.s.o. meters" Name="menuUseMilesNotMeters" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <MenuItem Header="Select language">
@@ -124,7 +124,7 @@
                 <Separator/>
                 <MenuItem Header="Save path" Name="menuSavePath" IsCheckable="False" Click="menuSavePath_Click"/>
                 <MenuItem Header="Save visited stations" Name="menuSaveStations" IsCheckable="False" Click="menuSaveStations_Click"/>
-                <MenuItem Header="Show chart (in development)" Name="menuShowChart" IsCheckable="False" Click="menuShowChart_Click"/>
+                <MenuItem Header="Show chart" Name="menuShowChart" IsCheckable="False" Click="menuShowChart_Click"/>
                 <Separator/>
                 <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="menuEnableEditing_Click"/>
                 <MenuItem Header="New path" Name="menuNewPath" IsCheckable="False" Click="menuNewPath_Click"/>

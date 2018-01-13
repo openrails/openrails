@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -54,7 +54,7 @@ namespace ORTS.TrackViewer.Editing
     {
         #region Public members
         /// <summary>The current path that we are editing</summary>
-        public Trainpath currentTrainPath { get; private set; }
+        public Trainpath CurrentTrainPath { get; private set; }
         /// <summary>Editing is active or not</summary>
         public bool EditingIsActive { 
             get {return _editingIsActive;}
@@ -66,15 +66,15 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Name of the file with the .pat definition</summary>
         public string FileName { get; private set; }
         /// <summary>Does the editor have a path</summary>
-        public bool HasValidPath { get { return (currentTrainPath.FirstNode != null); } }
+        public bool HasValidPath { get { return (CurrentTrainPath.FirstNode != null); } }
         /// <summary>Does the editor have a path that is broken</summary>
-        public bool HasBrokenPath { get { return currentTrainPath.IsBroken; } }
+        public bool HasBrokenPath { get { return CurrentTrainPath.IsBroken; } }
         /// <summary>Does the editor have a path that has an end</summary>
-        public bool HasEndingPath { get { return currentTrainPath.HasEnd; } }
+        public bool HasEndingPath { get { return CurrentTrainPath.HasEnd; } }
         /// <summary>Does the editor have a path that has been modified</summary>
-        public bool HasModifiedPath { get { return currentTrainPath.IsModified; } }
+        public bool HasModifiedPath { get { return CurrentTrainPath.IsModified; } }
         /// <summary>Does the editor have a path that has a stored tail</summary>
-        public bool HasStoredTail { get { return (currentTrainPath.FirstNodeOfTail != null); } }
+        public bool HasStoredTail { get { return (CurrentTrainPath.FirstNodeOfTail != null); } }
 
         // some redirections to the drawPath
         /// <summary>Return current node (last drawn) node</summary>
@@ -161,9 +161,9 @@ namespace ORTS.TrackViewer.Editing
         public PathEditor(RouteData routeData, DrawTrackDB drawTrackDB, string pathsDirectory)
             :this(routeData, drawTrackDB)
         {
-            currentTrainPath = new Trainpath(trackDB, tsectionDat);
-            FileName = currentTrainPath.PathId + ".pat";
-            currentTrainPath.FilePath = System.IO.Path.Combine(pathsDirectory, FileName);
+            CurrentTrainPath = new Trainpath(trackDB, tsectionDat);
+            FileName = CurrentTrainPath.PathId + ".pat";
+            CurrentTrainPath.FilePath = System.IO.Path.Combine(pathsDirectory, FileName);
             EditingIsActive = true;
             OnPathChanged();
         }
@@ -178,7 +178,7 @@ namespace ORTS.TrackViewer.Editing
             :this(routeData, drawTrackDB)
         {
             FileName = path.FilePath.Split('\\').Last();
-            currentTrainPath = new Trainpath(trackDB, tsectionDat, path.FilePath);
+            CurrentTrainPath = new Trainpath(trackDB, tsectionDat, path.FilePath);
             EditingIsActive = false;
             OnPathChanged();
         }
@@ -192,40 +192,48 @@ namespace ORTS.TrackViewer.Editing
         private void CreateContextMenuEntries()
         {
             // active node actions
-            editorActionsActiveNode = new List<EditorAction>();
-            editorActionsActiveNode.Add(new EditorActionTakeOtherExit());
-            editorActionsActiveNode.Add(new EditorActionTakeOtherExitPassingPath());
-            editorActionsActiveNode.Add(new EditorActionAddPassingPath());
-            editorActionsActiveNode.Add(new EditorActionStartPassingPath());
-            editorActionsActiveNode.Add(new EditorActionReconnectPassingPath());
-            editorActionsActiveNode.Add(new EditorActionRemoveEnd());
-            editorActionsActiveNode.Add(new EditorActionRemoveReverse());
-            editorActionsActiveNode.Add(new EditorActionRemoveWait());
-            editorActionsActiveNode.Add(new EditorActionEditWait());
-            editorActionsActiveNode.Add(new EditorActionRemovePassingPath());
-            editorActionsActiveNode.Add(new EditorActionOtherStartDirection());
-            editorActionsActiveNode.Add(new EditorActionRemoveStart());
-            editorActionsActiveNode.Add(new EditorActionRemoveRestOfPath());
-            editorActionsActiveNode.Add(new EditorActionCutAndStoreTail());
-            editorActionsActiveNode.Add(new EditorActionAutoConnectTail());
-            editorActionsActiveNode.Add(new EditorActionRemoveStartKeepTail());
-            
+            editorActionsActiveNode = new List<EditorAction>
+            {
+                new EditorActionTakeOtherExit(),
+                new EditorActionTakeOtherExitPassingPath(),
+                new EditorActionAddPassingPath(),
+                new EditorActionStartPassingPath(),
+                new EditorActionReconnectPassingPath(),
+                new EditorActionRemoveEnd(),
+                new EditorActionRemoveReverse(),
+                new EditorActionRemoveWait(),
+                new EditorActionEditWait(),
+                new EditorActionRemovePassingPath(),
+                new EditorActionOtherStartDirection(),
+                new EditorActionRemoveStart(),
+                new EditorActionRemoveRestOfPath(),
+                new EditorActionCutAndStoreTail(),
+                new EditorActionAutoConnectTail(),
+                new EditorActionRemoveStartKeepTail()
+            };
+
             // active track location actions
-            editorActionsActiveTrack = new List<EditorAction>();
-            editorActionsActiveTrack.Add(new EditorActionAddEnd());
-            editorActionsActiveTrack.Add(new EditorActionAddReverse());
-            editorActionsActiveTrack.Add(new EditorActionAddWait());
-            editorActionsActiveTrack.Add(new EditorActionAddStart());
+            editorActionsActiveTrack = new List<EditorAction>
+            {
+                new EditorActionAddEnd(),
+                new EditorActionAddReverse(),
+                new EditorActionAddWait(),
+                new EditorActionAddStart()
+            };
 
             // Actions related to broken nodes/paths
-            editorActionsBroken = new List<EditorAction>();
-            editorActionsBroken.Add(new EditorActionFixInvalidNode());
-            editorActionsBroken.Add(new EditorActionAutoFixBrokenNodes());
-            editorActionsBroken.Add(new EditorActionDrawToNextBrokenPoint(DrawUntilHere));
-            
+            editorActionsBroken = new List<EditorAction>
+            {
+                new EditorActionFixInvalidNode(),
+                new EditorActionAutoFixBrokenNodes(),
+                new EditorActionDrawToNextBrokenPoint(DrawUntilHere)
+            };
+
             // Various other actions
-            editorActionsOthers = new List<EditorAction>();
-            editorActionsOthers.Add(new EditorActionDrawUntilHere(DrawUntilHere));
+            editorActionsOthers = new List<EditorAction>
+            {
+                new EditorActionDrawUntilHere(DrawUntilHere)
+            };
         }
 
         /// <summary>
@@ -234,12 +242,14 @@ namespace ORTS.TrackViewer.Editing
         private void CreateMouseClickEntries()
         {
             // the order in which the actions are defined determines the order in which they are tried
-            editorActionsMouseClicked = new List<EditorAction>();
-            editorActionsMouseClicked.Add(new EditorActionAddStart());
-            editorActionsMouseClicked.Add(new EditorActionTakeOtherExit());
-            editorActionsMouseClicked.Add(new EditorActionTakeOtherExitPassingPath());
-            editorActionsMouseClicked.Add(new EditorActionAutoFixBrokenNodes());
-            editorActionsMouseClicked.Add(new EditorActionRemovePassingPath());
+            editorActionsMouseClicked = new List<EditorAction>
+            {
+                new EditorActionAddStart(),
+                new EditorActionTakeOtherExit(),
+                new EditorActionTakeOtherExitPassingPath(),
+                new EditorActionAutoFixBrokenNodes(),
+                new EditorActionRemovePassingPath()
+            };
             //editorActionsMouseClicked.Add(new EditorActionDrawUntilHere(DrawUntilHere));
 
             // no longer possible because these nodes will be dragged. Can be added when using Alt instead of control?
@@ -247,7 +257,7 @@ namespace ORTS.TrackViewer.Editing
             //editorActionsMouseClicked.Add(new EditorActionEditWait());
             //editorActionsMouseClicked.Add(new EditorActionRemoveEnd());
             //editorActionsMouseClicked.Add(new EditorActionRemoveReverse());
-            
+
         }
 
         /// <summary>
@@ -260,8 +270,10 @@ namespace ORTS.TrackViewer.Editing
             separatorActiveTrack = new Separator();
             separatorBroken = new Separator();
 
-            noActionPossibleMenuItem = new MenuItem();
-            noActionPossibleMenuItem.Header = "No action possible\nPerhaps paths are not drawn.";
+            noActionPossibleMenuItem = new MenuItem
+            {
+                Header = "No action possible\nPerhaps paths are not drawn."
+            };
             contextMenu.Items.Add(noActionPossibleMenuItem);
 
             foreach (EditorAction action in editorActionsActiveNode)
@@ -305,7 +317,7 @@ namespace ORTS.TrackViewer.Editing
 
             foreach (EditorAction action in editorActionsActiveNode)
             {
-                bool actionCanBeExecuted = action.MenuState(currentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
                     mouseX, mouseY);
                 someNodeActionIsPossible = someNodeActionIsPossible || actionCanBeExecuted;
             }
@@ -313,7 +325,7 @@ namespace ORTS.TrackViewer.Editing
 
             foreach (EditorAction action in editorActionsActiveTrack)
             {
-                bool actionCanBeExecuted = action.MenuState(currentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
                     mouseX, mouseY);
                 someTrackActionIsPossible = someTrackActionIsPossible || actionCanBeExecuted;
             }
@@ -321,7 +333,7 @@ namespace ORTS.TrackViewer.Editing
 
             foreach (EditorAction action in editorActionsBroken)
             {
-                bool actionCanBeExecuted = action.MenuState(currentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
                     mouseX, mouseY);
                 someBrokenActionIsPossible = someBrokenActionIsPossible || actionCanBeExecuted;
             }
@@ -329,7 +341,7 @@ namespace ORTS.TrackViewer.Editing
 
             foreach (EditorAction action in editorActionsOthers)
             {
-                bool actionCanBeExecuted = action.MenuState(currentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
                     mouseX, mouseY);
                 someOtherActionIsPossible = someOtherActionIsPossible || actionCanBeExecuted;
             }
@@ -352,7 +364,7 @@ namespace ORTS.TrackViewer.Editing
         {
             foreach (EditorActionMouseDrag mouseDragAction in mouseDragActions)
             {
-                if (mouseDragAction.MenuState(currentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                if (mouseDragAction.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
                         mouseX, mouseY))
                 {
                     activeMouseDragAction = mouseDragAction;
@@ -363,7 +375,7 @@ namespace ORTS.TrackViewer.Editing
 
             foreach (EditorAction action in editorActionsMouseClicked)
             {
-                bool actionCanBeExecuted = action.MenuState(currentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
                     mouseX, mouseY);
                 if (actionCanBeExecuted)
                 {
@@ -456,7 +468,7 @@ namespace ORTS.TrackViewer.Editing
         {
             DrawnPathData drawnPathData = new DrawnPathData();
             
-            int numberDrawn = drawPath.Draw(drawArea, currentTrainPath.FirstNode, currentTrainPath.FirstNodeOfTail, numberToDraw, 
+            int numberDrawn = drawPath.Draw(drawArea, CurrentTrainPath.FirstNode, CurrentTrainPath.FirstNodeOfTail, numberToDraw, 
                 drawnPathData);
 
             if (numberDrawn < numberToDraw)
@@ -537,7 +549,7 @@ namespace ORTS.TrackViewer.Editing
             uint tni = drawTrackDB.ClosestTrack.TrackNode.Index;
             int tni_int = (int)tni;
 
-            if (!drawnPathData.TrackHasBeenDrawn(tni_int) && currentTrainPath.FirstNode != null && activeMouseDragAction == null)
+            if (!drawnPathData.TrackHasBeenDrawn(tni_int) && CurrentTrainPath.FirstNode != null && activeMouseDragAction == null)
             {
                 activeTrackLocation.Location = WorldLocation.None;
                 return;
@@ -555,7 +567,7 @@ namespace ORTS.TrackViewer.Editing
             activeTrackLocation.TrackSectionOffset = distance;
             activeTrackLocation.Location = location;
 
-            if ( (currentTrainPath.FirstNode != null) && (activeMouseDragAction == null) ) 
+            if ( (CurrentTrainPath.FirstNode != null) && (activeMouseDragAction == null) ) 
             {   //Only in case this is not the first path.
                 TrainpathNode prevNode = FindPrevNodeOfActiveTrack(drawnPathData, tni_int);
                 if (prevNode == null || prevNode.HasSidingPath)
@@ -612,7 +624,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         void SnapAllJunctionNodes()
         {
-            TrainpathNode mainNode = currentTrainPath.FirstNode;
+            TrainpathNode mainNode = CurrentTrainPath.FirstNode;
             while (mainNode != null)
             {
                 //siding path. For this routine we do not care if junctions are done twice
@@ -641,7 +653,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         void AddMissingDisambiguityNodes()
         {
-            nonInteractiveAction.AddMissingDisambiguityNodes(currentTrainPath, UpdateAfterEdits);
+            nonInteractiveAction.AddMissingDisambiguityNodes(CurrentTrainPath, UpdateAfterEdits);
         }
 
         #endregion
@@ -652,26 +664,26 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void EditMetaData()
         {
-            string[] metadata = { currentTrainPath.PathId, currentTrainPath.PathName, currentTrainPath.PathStart, currentTrainPath.PathEnd };
-            bool isPlayerPath = (currentTrainPath.PathFlags & PathFlags.NotPlayerPath) == 0;
+            string[] metadata = { CurrentTrainPath.PathId, CurrentTrainPath.PathName, CurrentTrainPath.PathStart, CurrentTrainPath.PathEnd };
+            bool isPlayerPath = (CurrentTrainPath.PathFlags & PathFlags.NotPlayerPath) == 0;
             PathMetadataDialog metadataDialog = new PathMetadataDialog(metadata, isPlayerPath);
             TrackViewer.Localize(metadataDialog);
             if (metadataDialog.ShowDialog() == true)
             {
                 metadata = metadataDialog.GetMetadata();
-                currentTrainPath.PathId = metadata[0];
-                currentTrainPath.PathName = metadata[1];
-                currentTrainPath.PathStart = metadata[2];
-                currentTrainPath.PathEnd = metadata[3];
+                CurrentTrainPath.PathId = metadata[0];
+                CurrentTrainPath.PathName = metadata[1];
+                CurrentTrainPath.PathStart = metadata[2];
+                CurrentTrainPath.PathEnd = metadata[3];
 
                 isPlayerPath = (metadata[4] == true.ToString());
                 if (isPlayerPath)
                 {
-                    currentTrainPath.PathFlags &= ~PathFlags.NotPlayerPath; // unset the nonplayerpath flag
+                    CurrentTrainPath.PathFlags &= ~PathFlags.NotPlayerPath; // unset the nonplayerpath flag
                 }
                 else
                 {
-                    currentTrainPath.PathFlags |= PathFlags.NotPlayerPath; // set the nonplayerpath flag
+                    CurrentTrainPath.PathFlags |= PathFlags.NotPlayerPath; // set the nonplayerpath flag
                 }
             }
         }
@@ -681,7 +693,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void SavePath()
         {
-            SavePatFile.WritePatFile(currentTrainPath);
+            SavePatFile.WritePatFile(CurrentTrainPath);
         }
 
         /// <summary>
@@ -689,7 +701,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void SaveStationNames()
         {
-            string[] stationNames = currentTrainPath.StationNames();
+            string[] stationNames = CurrentTrainPath.StationNames();
             SaveStationNames saveStationNames = new Editing.SaveStationNames();
             saveStationNames.SaveToFile(stationNames);
         }
@@ -701,24 +713,24 @@ namespace ORTS.TrackViewer.Editing
         public void ReversePath()
         {
             if (! CanReverse()) return;
-            currentTrainPath.StoreCurrentPath();
-            currentTrainPath.ReversePath();
+            CurrentTrainPath.StoreCurrentPath();
+            CurrentTrainPath.ReversePath();
             EditMetaData();
         }
 
         private bool CanReverse()
         {
-            if (currentTrainPath.IsBroken)
+            if (CurrentTrainPath.IsBroken)
             {
                 MessageBox.Show(TrackViewer.catalog.GetString("Reversing broken paths is not supported"));
                 return false;
             }
-            if (currentTrainPath.FirstNode == null)
+            if (CurrentTrainPath.FirstNode == null)
             {
                 MessageBox.Show(TrackViewer.catalog.GetString("Reversing a path without start node is not supported"));
                 return false;
             }
-            if (!currentTrainPath.HasEnd)
+            if (!CurrentTrainPath.HasEnd)
             {
                 MessageBox.Show(TrackViewer.catalog.GetString("Reversing a path without end node is not supported"));
                 return false;
@@ -738,7 +750,7 @@ namespace ORTS.TrackViewer.Editing
             ++numberToDraw;
             if (EditingIsActive)
             {
-                allowAddingNodes = !currentTrainPath.HasEnd;
+                allowAddingNodes = !CurrentTrainPath.HasEnd;
             }
             else
             {
@@ -784,7 +796,7 @@ namespace ORTS.TrackViewer.Editing
         public void Undo()
         {
             if (activeMouseDragAction != null) return; // do not support Undo while dragging
-            currentTrainPath.Undo();
+            CurrentTrainPath.Undo();
             CloseContextMenu();
         }
 
@@ -794,7 +806,7 @@ namespace ORTS.TrackViewer.Editing
         public void Redo()
         {
             if (activeMouseDragAction != null) return; // do not support Redo while dragging
-            currentTrainPath.Redo();
+            CurrentTrainPath.Redo();
             CloseContextMenu();
             OnPathChanged();
         }
@@ -809,8 +821,7 @@ namespace ORTS.TrackViewer.Editing
 
         void OnPathChanged()
         {
-            if (ChangedPath != null)
-                ChangedPath();
+            ChangedPath?.Invoke();
         }
         #endregion
     }

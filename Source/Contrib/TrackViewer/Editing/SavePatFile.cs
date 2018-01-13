@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -108,12 +108,14 @@ namespace ORTS.TrackViewer.Editing
         /// <returns>Boolean describing whether user wants to write to file or not.</returns>
         static bool GetFileName(Trainpath trainpath)
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.OverwritePrompt = true;
-            dlg.InitialDirectory = Path.GetDirectoryName(trainpath.FilePath);
-            dlg.FileName = trainpath.PathId;
-            dlg.DefaultExt = ".pat";
-            dlg.Filter = "PAT Files (.pat)|*.pat";
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                OverwritePrompt = true,
+                InitialDirectory = Path.GetDirectoryName(trainpath.FilePath),
+                FileName = trainpath.PathId,
+                DefaultExt = ".pat",
+                Filter = "PAT Files (.pat)|*.pat"
+            };
             if (dlg.ShowDialog() == true)
             {
                 fullFilePath = dlg.FileName;
@@ -323,12 +325,14 @@ namespace ORTS.TrackViewer.Editing
 
         static string GetFileName()
         {
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.OverwritePrompt = true;
-            //dlg.InitialDirectory = Path.GetDirectoryName(trainpath.FilePath);
-            dlg.FileName = "stations.txt";
-            dlg.DefaultExt = ".txt";
-            dlg.Filter = "Text documents (.txt)|*.txt";
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                OverwritePrompt = true,
+                //dlg.InitialDirectory = Path.GetDirectoryName(trainpath.FilePath);
+                FileName = "stations.txt",
+                DefaultExt = ".txt",
+                Filter = "Text documents (.txt)|*.txt"
+            };
             if (dlg.ShowDialog() == true)
             {
                 return dlg.FileName;
