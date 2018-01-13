@@ -120,6 +120,7 @@
                     <ComboBox Name="menuSelectPathCombobox" SelectionChanged="menuSelectPathCombobox_SelectionChanged"/>
                 </MenuItem>
                 <MenuItem Header="Show other paths" Name="menuShowOtherPaths" IsCheckable="False" Click="menuShowOtherPaths_Click"/>
+                <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <Separator/>
                 <MenuItem Header="Save path" Name="menuSavePath" IsCheckable="False" Click="menuSavePath_Click"/>
                 <MenuItem Header="Save visited stations" Name="menuSaveStations" IsCheckable="False" Click="menuSaveStations_Click"/>

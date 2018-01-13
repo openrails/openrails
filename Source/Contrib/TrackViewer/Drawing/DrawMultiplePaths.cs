@@ -119,6 +119,7 @@ namespace ORTS.TrackViewer.Drawing
                 Trainpath trainpath = selectedTrainpaths[index];
                 drawPaths[trainpath].colorSchemeMain = shadedColor;
                 drawPaths[trainpath].colorSchemeSiding = shadedColor;
+                drawPaths[trainpath].colorSchemeLast = shadedColor;
             }
         }
  

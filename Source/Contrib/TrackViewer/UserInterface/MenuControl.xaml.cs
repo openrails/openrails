@@ -126,6 +126,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             menuShowPATfile.IsChecked = Properties.Settings.Default.showPATfile;
             menuShowTrainpath.IsChecked = Properties.Settings.Default.showTrainpath;
+            menuHighlightLastPathSection.IsChecked = Properties.Settings.Default.highlightLastPathSection;
 
             menuStatusShowVectorSection.IsChecked = Properties.Settings.Default.statusShowVectorSections;
             menuStatusShowPATfile.IsChecked = Properties.Settings.Default.statusShowPATfile;
@@ -210,6 +211,7 @@ namespace ORTS.TrackViewer.UserInterface
 
             Properties.Settings.Default.showPATfile = menuShowPATfile.IsChecked;
             Properties.Settings.Default.showTrainpath = menuShowTrainpath.IsChecked;
+            Properties.Settings.Default.highlightLastPathSection = menuHighlightLastPathSection.IsChecked;
 
             Properties.Settings.Default.statusShowVectorSections = menuStatusShowVectorSection.IsChecked;
             Properties.Settings.Default.statusShowPATfile = menuStatusShowPATfile.IsChecked && menuShowPATfile.IsChecked;
@@ -240,6 +242,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuShowOtherPaths.IsEnabled = (trackViewer.CurrentRoute != null);
+            menuHighlightLastPathSection.IsEnabled = (trackViewer.PathEditor != null);
             menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
             menuSaveStations.IsEnabled = (trackViewer.PathEditor != null);
             menuShowChart.IsEnabled = (trackViewer.PathEditor != null);

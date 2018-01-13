@@ -510,7 +510,8 @@ namespace ORTS.TrackViewer.Editing
             {
                 float distanceSquared = CloseToMouse.GetGroundDistanceSquared(node.Location, drawArea.MouseLocation);
                 // by using '<=' instead of '<' we should get the latest one, which overrides earlier ones
-                if (distanceSquared <= closestMouseDistanceSquared)
+                // To prevent numerical issues, we add a small number (smaller than two junctions would normally be together
+                if (distanceSquared <= closestMouseDistanceSquared + 0.1f)
                 {
                     closestMouseDistanceSquared = distanceSquared;
                     closestNode = node;

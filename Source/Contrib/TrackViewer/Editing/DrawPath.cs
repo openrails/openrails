@@ -50,6 +50,7 @@ namespace ORTS.TrackViewer.Editing
         private TrackSectionsFile tsectionDat;
         internal ColorScheme colorSchemeSiding { get; set; }
         internal ColorScheme colorSchemeMain { get; set; }
+        internal ColorScheme colorSchemeLast { get; set; }
 
         /// <summary>
         /// Constructor
@@ -60,6 +61,7 @@ namespace ORTS.TrackViewer.Editing
             this.tsectionDat = tsectionDat;
             this.colorSchemeMain = DrawColors.colorsPathMain;
             this.colorSchemeSiding = DrawColors.colorsPathSiding;
+            this.colorSchemeLast = DrawColors.ShadeColor(DrawColors.otherPathsReferenceColor, 0, 1);
         }
 
         /// <summary>
@@ -102,10 +104,13 @@ namespace ORTS.TrackViewer.Editing
             }
          
             drawnNodes.Add(CurrentMainNode);
-            drawnPathData.AddNode(CurrentMainNode); 
-            
+            drawnPathData.AddNode(CurrentMainNode);
+
             // We want to draw only a certain number of nodes. And if there is a siding, for the siding
             // we also want to draw the same number of nodes from where it splits from the main track
+            TrainpathNode LastVectorStart= null;
+            TrainpathNode LastVectorEnd = null;
+            int LastVectorTvn = 0;
             int numberDrawn = 1;
             while (numberDrawn < numberToDraw)
             {
@@ -153,6 +158,9 @@ namespace ORTS.TrackViewer.Editing
                 if (nextMainNode != null)
                 {
                     DrawPathOnVectorNode(drawArea, colorSchemeMain, CurrentMainNode, nextMainNode, CurrentMainNode.NextMainTvnIndex);
+                    LastVectorStart = CurrentMainNode;
+                    LastVectorEnd = nextMainNode;
+                    LastVectorTvn = CurrentMainNode.NextMainTvnIndex;
                     drawnNodes.Add(nextMainNode);
                     drawnPathData.AddNode(nextMainNode);
                     drawnPathData.NoteAsDrawn(CurrentMainNode, nextMainNode);
@@ -167,9 +175,23 @@ namespace ORTS.TrackViewer.Editing
                 }
             }
 
+            // Highlight the last drawn tracksection
+            if (Properties.Settings.Default.highlightLastPathSection && LastVectorStart != null)
+            {
+                DrawPathOnVectorNode(drawArea, colorSchemeLast, LastVectorStart, LastVectorEnd, LastVectorTvn);
+            }
+
             //Draw all the nodes themselves
+            TrainpathNode lastNode = null;
             foreach (TrainpathNode node in drawnNodes) {
-                DrawNodeItself(drawArea, node);
+                DrawNodeItself(drawArea, node, false);
+                lastNode = node;
+            }
+
+            // Highlight the last drawn node
+            if (Properties.Settings.Default.highlightLastPathSection && lastNode != null)
+            {
+                DrawNodeItself(drawArea, lastNode, true);
             }
 
             DrawTail(drawArea, colorSchemeMain, drawnNodes.Last(), firstNodeOfTail);
@@ -184,14 +206,15 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="drawArea">area to Draw upon</param>
         /// <param name="trainpathNode">current node for which we need to draw our texture</param>
-        private void DrawNodeItself(DrawArea drawArea, TrainpathNode trainpathNode)
+        /// <param name="isLastNode">Is this the last node that will be drawn?</param>
+        private void DrawNodeItself(DrawArea drawArea, TrainpathNode trainpathNode, bool isLastNode)
         {
             float pathPointSize = 7f; // in meters
             int minPixelSize = 7;
             int maxPixelSize = 24;
             float angle = trainpathNode.TrackAngle;
 
-            Color colorMain = this.colorSchemeMain.TrackStraight;
+            Color colorMain = isLastNode ? this.colorSchemeLast.TrackStraight : colorSchemeMain.TrackStraight  ;
             Color colorSiding = this.colorSchemeSiding.TrackStraight;
             Color colorBroken = this.colorSchemeMain.BrokenNode;
 
@@ -418,7 +441,7 @@ namespace ORTS.TrackViewer.Editing
             {
                 drawArea.DrawDashedLine(1f, colors.BrokenPath, lastDrawnNode.Location, firstTailNode.Location);
             }
-            DrawNodeItself(drawArea, firstTailNode);
+            DrawNodeItself(drawArea, firstTailNode, false);
             drawArea.DrawTexture(firstTailNode.Location, "ring", 8f, 7, colors.BrokenPath);
 
         }
