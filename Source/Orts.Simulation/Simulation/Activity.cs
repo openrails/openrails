@@ -1318,10 +1318,11 @@ namespace Orts.Simulation
                     }
                     break;
                 case EventType.AssembleTrainAtLocation:
-                    consistTrain = matchesConsist(ChangeWagonIdList);
-                    if (consistTrain != null)
+                    if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
+                        consistTrain = null;
+                        consistTrain = matchesConsist(ChangeWagonIdList);
+                        triggered = (consistTrain != null ? true : false);
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
@@ -1359,9 +1360,18 @@ namespace Orts.Simulation
                 {
                     // Compare two lists to make sure wagons are in expected sequence.
                     bool listsMatch = true;
+                    //both lists with the same order
                     for (int i = 0; i < trainItem.Cars.Count; i++)
                     {
                         if (trainItem.Cars.ElementAt(i).CarID != wagonIdList.ElementAt(i)) { listsMatch = false; break; }
+                    }
+                    if (!listsMatch)
+                    {//different order list
+                        listsMatch = true;
+                        for (int i = trainItem.Cars.Count; i > 0; i--)
+                        {
+                            if (trainItem.Cars.ElementAt(i-1).CarID != wagonIdList.ElementAt(trainItem.Cars.Count-i)) { listsMatch = false; break; }
+                        }
                     }
                     if (listsMatch) return trainItem;
                 }
@@ -1377,21 +1387,29 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                //Engine number
-                int nEngines = 0;
+                bool lEngine = false;
+                int nCars = 0;//all cars other than WagonIdList.
+                int nWagonListCars = 0;//individual wagon drop.
                 foreach (var item in trainItem.Cars)
                 {
-                    if (item.AuxWagonType == "Engine")
-                        nEngines++;
+                    if (item.AuxWagonType == "Engine") lEngine = true;
+                    if (!wagonIdList.Contains(item.CarID)) nCars++;
+                    if (wagonIdList.Contains(item.CarID)) nWagonListCars++;
                 }
-
                 // Compare two lists to make sure wagons are present.
                 bool listsMatch = true;
-                if (excludesWagons(trainItem, wagonIdList))
-                    listsMatch = false;//wagons dropped
-                //a consist require engine + wagons
-                if (listsMatch && nEngines>0) return trainItem;
-             }
+                //support individual wagonIdList drop
+                if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
+                {
+                    if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
+                    
+                    //a consist require engine + wagons
+                    if (listsMatch && lEngine) return trainItem;
+                }
+                else if (lEngine)
+                    //TODO: Maybe, it would be necessary to avoid detach cars that are not included in wagonIdList.
+                    return trainItem;
+            }
             return null;
         }
         /// <summary>
@@ -1407,7 +1425,8 @@ namespace Orts.Simulation
             {
                 if (train.Cars.Find(car => car.CarID == item) == null) return false;
             }
-            return true;
+            // train speed < 1
+            return (Math.Abs(train.SpeedMpS) == 0 ? true : false);
         }
         /// <summary>
         /// Like MSTS, do not check for unlisted wagons as the wagon list may be shortened for convenience to contain
@@ -1418,11 +1437,20 @@ namespace Orts.Simulation
         /// <returns>True if all listed wagons are not part of the given train.</returns>
         static bool excludesWagons(Train train, List<string> wagonIdList)
         {
+            bool lNotFound = false;
             foreach (var item in wagonIdList)
             {
-                if (train.Cars.Find(car => car.CarID == item) == null) return true;
+                //take in count each item in wagonIdList 
+                if (train.Cars.Find(car => car.CarID == item) == null)
+                {
+                    lNotFound = true; //wagon not part of the train
+                }
+                else
+                {
+                    lNotFound = false; break;//wagon still part of the train
+                }
             }
-            return false;
+            return (lNotFound? true:false);
         }
         /// <summary>
         /// Like platforms, checking that one end of the train is within the siding.
