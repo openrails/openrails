@@ -242,7 +242,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
             menuReversePath.IsEnabled = menuEnableEditing.IsChecked;
-            
+            menuExtendPath.IsEnabled = (trackViewer.PathEditor != null) && menuEnableEditing.IsChecked;
         }
 
         private void menuSetAllItems(bool isChecked)
@@ -374,6 +374,8 @@ namespace ORTS.TrackViewer.UserInterface
             paths.Insert(0, TrackViewer.catalog.GetString("<Select path>"));
             menuSelectPathCombobox.ItemsSource = paths;
             menuSelectPathCombobox.SelectedItem = menuSelectPathCombobox.Items.GetItemAt(0).ToString();
+            menuExtendPathCombobox.ItemsSource = paths;
+            menuExtendPathCombobox.SelectedItem = menuExtendPathCombobox.Items.GetItemAt(0).ToString();
         }
 
         /// <summary>
@@ -489,6 +491,25 @@ namespace ORTS.TrackViewer.UserInterface
             }
         }
 
+        /// <summary>
+        /// The user has selected a path. Find out which one and use it to extend the path
+        /// </summary>
+        private void menuExtendPathCombobox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string selectedPath = menuExtendPathCombobox.SelectedItem as string;
+            if (selectedPath == null) return;
+            foreach (ORTS.Menu.Path path in trackViewer.Paths)
+            {
+                if (MakePathMenyEntryName(path) == selectedPath)
+                {
+                    menuPathEditor.IsSubmenuOpen = false;
+                    trackViewer.PathEditor.ExtendWithPath(path);
+                    UpdateMenuSettings();
+                    menuExtendPathCombobox.SelectedIndex = 0;  // make sure we can select again next time.
+                    return;
+                }
+            }
+        }
 
         /// <summary>
         /// Convert a path (based on a .pat file) to a header for the menu

@@ -131,6 +131,10 @@
                 <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="menuEnableEditing_Click"/>
                 <MenuItem Header="New path" Name="menuNewPath" IsCheckable="False" Click="menuNewPath_Click"/>
                 <Separator/>
+                <MenuItem Header="Extend with other path" Name="menuExtendPath" IsCheckable="False"
+                          SubmenuOpened="menuNeedingMouseOpened" SubmenuClosed="menuNeedingMouseClosed">
+                    <ComboBox Name="menuExtendPathCombobox" SelectionChanged="menuExtendPathCombobox_SelectionChanged"/>
+                </MenuItem>
                 <MenuItem Header="Edit path metadata" Name="menuEditMetadata" IsCheckable="False" Click="menuEditMetadata_Click"/>
                 <MenuItem Header="Reverse path" Name="menuReversePath" IsCheckable="False" Click="menuReversePath_Click"/>
             </MenuItem>

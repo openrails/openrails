@@ -689,6 +689,76 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
+        /// Take a new path indicating a .pat file, load that path and make it into a tail.
+        /// Then try to reconnect the tail. This will then extend the current path with the loaded path
+        /// </summary>
+        /// <param name="path">The path that needs to be loaded to act as an extension</param>
+        public void ExtendWithPath(ORTS.Menu.Path path)
+        {
+            //If everything works as expected, up to three steps are taken that can all be 'Undo'ne:
+            // * Remove End
+            // * Add tail
+            // * Reconnect tail
+
+            FileName = path.FilePath.Split('\\').Last();
+            Trainpath newPath = new Trainpath(trackDB, tsectionDat, path.FilePath);
+
+            // We have a current path and a new path.
+            // First check if the new path is usable
+            TrainpathNode newStart = newPath.FirstNode;
+            if (newPath.FirstNode == null || newPath.FirstNode.NextMainNode == null) {
+                MessageBox.Show(TrackViewer.catalog.GetString("The selected path contains no or only 1 node. The current path was not extended."));
+                return;
+            }
+
+            TrainpathNode lastNode = CurrentTrainPath.FirstNode;
+            while (lastNode.NextMainNode != null) {
+                lastNode = lastNode.NextMainNode;
+            }
+            if (CurrentTrainPath.HasEnd)
+            {
+                //We need to remove the end and remember the node for reconnection.
+                //If the end node and the firstnode of the new path are very close together we must make
+                //sure that the junctionnode that will added to replace the end node is not past the firstnode.
+                TrainpathNode endNode = lastNode;
+                lastNode = endNode.PrevNode;
+
+                EditorActionRemoveEnd actionRemove = new EditorActionRemoveEnd();
+                bool endCanBeRemoved = actionRemove.MenuState(CurrentTrainPath, endNode, null, UpdateAfterEdits, 0, 0);
+                if (endCanBeRemoved)
+                {
+                    //This should always be possible, but we should call MenuState anyway because of some initialization it might be doing
+                    actionRemove.DoAction();
+                    CurrentTrainPath.HasEnd = false;
+                }
+
+            }
+
+            //Add the tail
+            // The new path contains a startNode that we no longer need, so the tail connects to the next node
+            CurrentTrainPath.StoreCurrentPath();
+            CurrentTrainPath.FirstNodeOfTail = newPath.FirstNode.NextMainNode;
+            CurrentTrainPath.TailHasEnd = newPath.HasEnd;
+
+            //Now we try to reconnect the tail automatically
+            EditorActionAutoConnectTail action = new EditorActionAutoConnectTail();
+            bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, lastNode, null, UpdateAfterEdits, 0, 0);
+
+            if (actionCanBeExecuted)
+            {
+                action.DoAction();
+                MessageBox.Show(TrackViewer.catalog.GetString("The selected path has been added as tail and then reconnected."));
+            }
+            else
+            {
+                MessageBox.Show(TrackViewer.catalog.GetString("The selected path has been added as tail. It was not possible to reconnect automatically."));
+            }
+
+            //Make sure all of the path is drawn, so that also the tail is visible
+            ExtendPathFull();
+        }
+
+        /// <summary>
         /// Save the path to file, converting the internal representation to .pat file format
         /// </summary>
         public void SavePath()
