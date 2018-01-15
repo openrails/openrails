@@ -27,9 +27,9 @@ namespace ORTS.TrackViewer
         /// The main entry point for the application.
         /// </summary>
         [STAThread]  // Needed for Windows Presentation Foundation (used for the menu)
-        static void Main()
+        static void Main(string[] args)
         {
-            using (TrackViewer trackViewer = new TrackViewer())
+            using (TrackViewer trackViewer = new TrackViewer(args))
             {
                 // code below is modified version from what is found in GameStateRunActivity.cs
                 if (Debugger.IsAttached) // Separate code path during debugging, so IDE stops at the problem and not at the message.

@@ -123,6 +123,8 @@ namespace ORTS.TrackViewer
 
         /// <summary>The fontmanager that we use to draw strings</summary>
         private FontManager fontManager;
+        /// <summary>The command-line arguments</summary>
+        private string[] commandLineArgs;
         #endregion
 
         #region Constructor and Initialization methods
@@ -130,8 +132,10 @@ namespace ORTS.TrackViewer
         /// <summary>
         /// Constructor. This is where it all starts.
         /// </summary>
-        public TrackViewer()
+        public TrackViewer(string[] args)
         {
+            this.commandLineArgs = args;
+
             graphics = new GraphicsDeviceManager(this);
             ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
            
@@ -453,7 +457,8 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsPressed(TVUserCommands.Debug)) RunDebug();
 
             base.Update(gameTime);
-            
+
+            HandleCommandLineArgs();
         }
         
         /// <summary>
@@ -607,6 +612,89 @@ namespace ORTS.TrackViewer
         #endregion
 
         #region Folder and Route methods
+        void HandleCommandLineArgs()
+        {
+            if (this.commandLineArgs.Length == 0) return;
+            string givenPathOrFile = this.commandLineArgs[0];
+            this.commandLineArgs = new string[0]; // discard the arguments, no longer needed
+
+            // given_path_or_file should be something like
+            // * C:\...\MSTS\Routes\USA2                        , for a directory
+            // * C:\...\MSTS\Routes\USA2\usa2.trk               , for a .trk file
+            // * C:\...\MSTS\Routes\USA2\marias.tdb             , for a .tdb file
+            // * C:\...\MSTS\Routes\USA2\marias.rdb             , for a .rdb file
+            // * C:\...\MSTS\Routes\USA2\PATHS\longhale.pat     , for a .pat file
+
+            //Let's first see if it exists and whether it is a file or directory
+            string routeFolder = givenPathOrFile;
+            bool givenFileIsPat = false;
+            if (System.IO.Directory.Exists(givenPathOrFile))
+            {
+                // It is a directory
+            }
+            else if (System.IO.File.Exists(givenPathOrFile))
+            {
+                // It is a file
+                var extension = System.IO.Path.GetExtension(givenPathOrFile).ToLower();
+                switch (extension)
+                {
+                    case ".trk":
+                        routeFolder = System.IO.Path.GetDirectoryName(givenPathOrFile);
+                        break;
+                    case ".tdb":
+                        routeFolder = System.IO.Path.GetDirectoryName(givenPathOrFile);
+                        break;
+                    case ".rdb":
+                        routeFolder = System.IO.Path.GetDirectoryName(givenPathOrFile);
+                        Properties.Settings.Default.drawRoads = true;
+                        menuControl.InitUserSettings();
+                        break;
+                    case ".pat":
+                        routeFolder = System.IO.Directory.GetParent(System.IO.Path.GetDirectoryName(givenPathOrFile).ToString()).ToString();
+                        givenFileIsPat = true;
+                        break;
+
+                    default:
+                        MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\nExtension {0} is not supported"), extension));
+                        return;
+                }
+            }
+            else 
+            {
+                //Obviously, this should only happen when ran on the command line, not when a file is opened using 
+                MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\n{0} does not exist"), givenPathOrFile));
+                return;
+            }
+
+            string installFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(routeFolder).ToString()).ToString();
+            if (!SetSelectedInstallFolder(installFolder)) {
+                MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\nWhile trying to open {0} the folder {1} was inferred as (MSTS or similar) install folder but does not contain expected files"), givenPathOrFile, installFolder));
+                return;
+            }
+
+            foreach (ORTS.Menu.Route route in this.Routes)
+            {
+                //MessageBox.Show(route.Path);
+
+                if (route.Path.ToUpper() == routeFolder.ToUpper())
+                {
+                    SetRoute(route);
+
+                    if (!givenFileIsPat) { return; }
+                    foreach (Path availablePath in Paths)
+                    {
+                        if (availablePath.FilePath.ToUpper() == givenPathOrFile.ToUpper())
+                        {
+                            SetPath(availablePath);
+                            return;
+                        }
+                    }
+                }
+            }
+
+            MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\n{0} somehow could not be translated into a loadable route"), givenPathOrFile));
+        }
+
         /// <summary>
         /// Open up a dialog so the user can select the install directory 
         /// (which should contain a sub-directory called ROUTES).
@@ -635,11 +723,16 @@ namespace ORTS.TrackViewer
                 return false;
             }
 
+            return SetSelectedInstallFolder(folderPath);
+        }
+
+        private bool SetSelectedInstallFolder(string folderPath)
+        {
             Folder newInstallFolder = new Folder("installFolder", folderPath);
             bool foundroutes = FindRoutes(newInstallFolder);
             if (!foundroutes)
             {
-                MessageBox.Show(catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
+                MessageBox.Show(folderPath + ": " + catalog.GetString("Directory is not a valid install directory.\nThe install directory needs to contain ROUTES, GLOBAL, ..."));
                 return false;
             }
 
