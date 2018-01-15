@@ -164,6 +164,7 @@ namespace ORTS.TrackViewer.UserInterface
                 statusTrItemLocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
                     "{0,3:F3} ", closestPoint.Z);
                 AddSignalStatus(trackViewer, closestPoint.Description, closestPoint.Index);
+                AddNamesStatus(trackViewer, closestPoint.Index);
             }
         }
 
@@ -330,7 +331,24 @@ namespace ORTS.TrackViewer.UserInterface
                     statusAdditional.Text += "signal shape = ";
                     statusAdditional.Text += trackViewer.RouteData.GetSignalFilename(index);
                 }
+            }
+        }
 
+        /// <summary>
+        /// Add information from platform and station name
+        /// </summary>
+        /// <param name="trackViewer"></param>
+        private void AddNamesStatus(TrackViewer trackViewer, uint index)
+        {
+            if (Properties.Settings.Default.statusShowNames)
+            {
+                TrItem item = trackViewer.RouteData.TrackDB.TrItemTable[index];
+                PlatformItem platform = item as PlatformItem;
+                if (platform != null)
+                {
+                    statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                        "{0} ({1})",  platform.Station, platform.ItemName);
+                }
             }
         }
 

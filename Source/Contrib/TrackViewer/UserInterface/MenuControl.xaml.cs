@@ -25,19 +25,10 @@ using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 //using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 
-using System.Collections.ObjectModel;
-using ORTS.TrackViewer.Properties;
 using ORTS.TrackViewer.Drawing; // for colors
 namespace ORTS.TrackViewer.UserInterface
 {
@@ -133,6 +124,7 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowTrainpath.IsChecked = Properties.Settings.Default.statusShowTrainpath;
             menuStatusShowTerrain.IsChecked = Properties.Settings.Default.statusShowTerrain;
             menuStatusShowSignal.IsChecked = Properties.Settings.Default.statusShowSignal;
+            menuStatusShowNames.IsChecked = Properties.Settings.Default.statusShowNames;
 
 
             menuDrawRoads.IsChecked = Properties.Settings.Default.drawRoads;
@@ -218,6 +210,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.statusShowTrainpath = menuStatusShowTrainpath.IsChecked && menuShowTrainpath.IsChecked;
             Properties.Settings.Default.statusShowTerrain = menuStatusShowTerrain.IsChecked && (menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked);
             Properties.Settings.Default.statusShowSignal = menuStatusShowSignal.IsChecked && menuShowSignals.IsChecked;
+            Properties.Settings.Default.statusShowNames = menuStatusShowNames.IsChecked;
 
             Properties.Settings.Default.drawRoads = menuDrawRoads.IsChecked;
             Properties.Settings.Default.showCarSpawners = menuShowCarSpawners.IsChecked;

@@ -103,6 +103,8 @@
                           Click="UpdateMenuSettings"/>
                 <MenuItem Header="Show signal info" Name="menuStatusShowSignal" IsCheckable="True" IsChecked="False"
                           Click="UpdateMenuSettings"/>
+                <MenuItem Header="Show platform/station names" Name="menuStatusShowNames" IsCheckable="True" IsChecked="False"
+                          Click="UpdateMenuSettings"/>
             </MenuItem>
             <MenuItem Header="Preferences" Name="menuPreferences">
                 <MenuItem Header="Zooming is centered on mouse (M)" Name="menuZoomIsCenteredOnMouse" IsCheckable="True" IsChecked="True"

@@ -597,5 +597,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["highlightLastPathSection"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowNames {
+            get {
+                return ((bool)(this["statusShowNames"]));
+            }
+            set {
+                this["statusShowNames"] = value;
+            }
+        }
     }
 }
