@@ -479,18 +479,17 @@ namespace ORTS.TrackViewer.Editing
 
         #region Methods giving info on path
         /// <summary>
-        /// Determine if the path is broken or not
+        /// Find all broken nodes of a path
         /// </summary>
-        /// <returns>A collection containing integers that tell how far to draw the path to go to the broken node</returns>
-        public Collection<int> DetermineIfBroken()
+        /// <returns>A collection of the broken nodes</returns>
+        public Collection<TrainpathNode> GetBrokenNodes()
         {
+            var brokenNodes = new Collection<TrainpathNode>();
+
             if (FirstNode == null)
             {
-                IsBroken = false;
-                return new Collection<int>();
+                return brokenNodes;
             }
-
-            var brokenNodes = new List<TrainpathNode>();
 
             TrainpathNode currentMainNode = FirstNode;
             while (currentMainNode.NextMainNode != null)
@@ -536,15 +535,17 @@ namespace ORTS.TrackViewer.Editing
                 brokenNodes.Add(currentMainNode);
             }
 
-            this.IsBroken = (brokenNodes.Count > 0);
-
-            Collection<int> brokenNodeIndexes = new Collection<int>();
-            foreach (TrainpathNode node in brokenNodes)
-            {
-                brokenNodeIndexes.Add(GetNodeNumber(node));
-            }
-            return brokenNodeIndexes;
+            return brokenNodes;
         }
+
+        /// <summary>
+        /// Determine if the path is broken or not and store it internally
+        /// </summary>
+        public void DetermineIfBroken()
+        {
+            this.IsBroken = (GetBrokenNodes().Count > 0);
+        }
+
 
         /// <summary>
         /// Calculate the number of this node in the total path. FirstNode is 1. 

@@ -1971,8 +1971,9 @@ namespace ORTS.TrackViewer.Editing
         protected override void ExecuteAction()
         {
             int NumberOfActiveNode = Trainpath.GetNodeNumber(ActiveNode);
-            Collection<int> brokenNodeNumbers = Trainpath.DetermineIfBroken();
+            var brokenNodeNumbers = (from node in Trainpath.GetBrokenNodes() select Trainpath.GetNodeNumber(node));
             var brokenNodeNumbersAfterActive = (from i in brokenNodeNumbers where i > NumberOfActiveNode select i);
+
             int newNumberToDraw;
             if (brokenNodeNumbersAfterActive.Count() > 0)
             {   // take the first node after this node

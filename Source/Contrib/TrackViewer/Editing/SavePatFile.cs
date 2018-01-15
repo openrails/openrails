@@ -36,10 +36,10 @@ namespace ORTS.TrackViewer.Editing
         static List<string> trpathnodes;
         const uint nonext = 4294967295;
         static Dictionary<int, int> pdpOfJunction;
-        static string fullFilePath;
 
         /// <summary>
         /// Write the path to file. This will need to confirm to the MSTS definition for .pat files.
+        /// The user will be prompted for the path and possibly other things just to make sure
         /// </summary>
         /// <param name="trainpath">The path itself, that needs to be written</param>
         public static void WritePatFile(Trainpath trainpath)
@@ -62,10 +62,21 @@ namespace ORTS.TrackViewer.Editing
 
             if (GetFileName(trainpath))
             {
-                CreatePDPsAndTrpathNodes(trainpath);
-                WriteToFile(trainpath);
-                trainpath.IsModified = false;
+                WritePatFileDirect(trainpath);
             }
+        }
+
+        /// <summary>
+        /// Write the path to file. This will need to confirm to the MSTS definition for .pat files.
+        /// No additional user checks on filename, etc.
+        /// </summary>
+        /// <param name="trainpath">The path itself, that needs to be written</param>
+        public static void WritePatFileDirect(Trainpath trainpath)
+        {
+            CreatePDPsAndTrpathNodes(trainpath);
+            WriteToFile(trainpath);
+            trainpath.IsModified = false;
+
         }
 
         static void DisplayNoPathAvailable()
@@ -118,8 +129,7 @@ namespace ORTS.TrackViewer.Editing
             };
             if (dlg.ShowDialog() == true)
             {
-                fullFilePath = dlg.FileName;
-                trainpath.FilePath = fullFilePath;
+                trainpath.FilePath = dlg.FileName;
                 return true;
             }
             return false;
@@ -268,7 +278,7 @@ namespace ORTS.TrackViewer.Editing
         /// <remarks>Output will be in unicode, and also in US-EN</remarks>
         private static void WriteToFile(Trainpath trainpath)
         {
-            System.IO.StreamWriter file = new System.IO.StreamWriter(fullFilePath, false, System.Text.Encoding.Unicode);
+            System.IO.StreamWriter file = new System.IO.StreamWriter(trainpath.FilePath, false, System.Text.Encoding.Unicode);
             file.WriteLine("SIMISA@@@@@@@@@@JINX0P0t______");
             file.WriteLine("");
             file.WriteLine("Serial ( 1 )");

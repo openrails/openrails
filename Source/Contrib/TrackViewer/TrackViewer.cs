@@ -20,6 +20,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Color = Microsoft.Xna.Framework.Graphics.Color;
@@ -686,6 +687,7 @@ namespace ORTS.TrackViewer
                         if (availablePath.FilePath.ToUpper() == givenPathOrFile.ToUpper())
                         {
                             SetPath(availablePath);
+                            menuControl.InitUserSettings();
                             return;
                         }
                     }
@@ -1002,6 +1004,123 @@ namespace ORTS.TrackViewer
 
         #endregion 
         
+        #region RestoreBrokenPaths
+        /// <summary>
+        /// Attempt to Auto Restore all broken paths
+        /// </summary>
+        public void AutoRestorePaths()
+        {
+            DialogResult dialogResult = MessageBox.Show(
+                        catalog.GetString("This will open every single .pat file for this route, (try to) fix all broken nodes, and save the modified path. ") + 
+                        catalog.GetString("Potentially it will therefore change all .pat files on disc.") + "\n" +
+                        catalog.GetString("This can be useful when a route has been changed and you want all paths to be corrected.") + "\n\n" +
+                        catalog.GetString("Do you want to continue?"), 
+                        catalog.GetString("Trackviewer Path Editor"), MessageBoxButtons.OKCancel, 
+                        System.Windows.Forms.MessageBoxIcon.Question);
+            if (dialogResult != DialogResult.OK) { return; }
+
+            //Close all paths that are drawn.
+            if (!CanDiscardModifiedPath()) return;
+            PathEditor = null;
+            DrawMultiplePaths?.ClearAll();
+
+            List<string> pathsUnmodifiedFine = new List<string>() { "" };
+            List<string> pathsUnmodifiedBroken = new List<string>(){""};
+            List<string> pathsModifiedFine = new List<string>(){""};
+            List<string> pathsModifiedBroken = new List<string>(){""};
+            List<PathEditor> modifiedPaths = new List<PathEditor>();
+
+            // Loop through all available paths and fix each of them
+            foreach (ORTS.Menu.Path path in Paths)
+            {
+                DrawLoadingMessage(catalog.GetString("Processing .pat file ") + path.FilePath);
+                string pathName = ORTS.TrackViewer.UserInterface.MenuControl.MakePathMenyEntryName(path);
+                PathEditor pathFixer = new PathEditor(this.RouteData, this.DrawTrackDB, path);
+                bool fixSucceeded = pathFixer.AutoFixAllBrokenNodes();
+                if (pathFixer.HasModifiedPath)
+                {
+                    if (pathFixer.HasBrokenPath)
+                    {
+                        pathsModifiedBroken.Add(pathName);
+                    }
+                    else
+                    {
+                        pathsModifiedFine.Add(pathName);
+                    }
+                    modifiedPaths.Add(pathFixer);
+                }
+                else
+                {
+                    if (pathFixer.HasBrokenPath)
+                    {
+                        pathsUnmodifiedBroken.Add(pathName);
+                    }
+                    else
+                    {
+                        pathsUnmodifiedFine.Add(pathName);
+                    }
+                }
+            }
+
+            var resultString = new StringBuilder();
+            resultString.Append(catalog.GetString("Result of fixing all paths"));
+
+            if (pathsModifiedBroken.Count > 1)
+            {
+                resultString.Append("\n\n");
+                resultString.Append(catalog.GetString("Paths that are modified but still broken (these could not be fixed completely, apparently)"));
+                resultString.Append(string.Join("\n* ", pathsModifiedBroken.ToArray()));
+            }
+
+            if (pathsModifiedFine.Count > 1)
+            {
+                resultString.Append("\n\n");
+                resultString.Append(catalog.GetString("Paths that are modified and are fine now"));
+                resultString.Append(string.Join("\n* ", pathsModifiedFine.ToArray()));
+            }
+
+            if (pathsUnmodifiedBroken.Count > 1)
+            {
+                resultString.Append("\n\n");
+                resultString.Append(catalog.GetString("Paths that are unmodified but still broken (these could not be fixed apparently)"));
+                resultString.Append(string.Join("\n* ", pathsUnmodifiedBroken.ToArray()));
+            }
+
+            if (pathsUnmodifiedFine.Count > 1)
+            {
+                resultString.Append("\n\n");
+                resultString.Append(catalog.GetString("Paths that are unmodified and fine:"));
+                resultString.Append(string.Join("\n* ", pathsUnmodifiedFine.ToArray()));
+            }
+
+            MessageBoxButtons buttonsToShow = MessageBoxButtons.OK;
+            if (modifiedPaths.Count > 0)
+            {
+                resultString.Append("\n\n");
+                resultString.Append(catalog.GetString("Some modified paths need to be saved which will overwrite the existing file"));
+                resultString.Append("\n\n");
+                resultString.Append(catalog.GetString("Do you want confirm the save for each individual file?"));
+                buttonsToShow = MessageBoxButtons.YesNoCancel;
+            }
+
+            dialogResult = MessageBox.Show(resultString.ToString(), catalog.GetString("Trackviewer Path Editor"), buttonsToShow);
+            if (dialogResult == DialogResult.No)
+            {
+                foreach (PathEditor modifiedPath in modifiedPaths) {
+                    SavePatFile.WritePatFileDirect(modifiedPath.CurrentTrainPath);
+                }
+            }
+
+            if (dialogResult == DialogResult.Yes)
+            {
+                foreach (PathEditor modifiedPath in modifiedPaths) {
+                    SavePatFile.WritePatFile(modifiedPath.CurrentTrainPath);
+                }
+            }
+
+        }
+        #endregion
+
         #region Debug methods
         void RunDebug()
         {
@@ -1014,6 +1133,7 @@ namespace ORTS.TrackViewer
             //DrawArea.ZoomToTile();
             //DrawArea.Zoom(-18);
             //CenterAroundTrackNode(30);
+            //menuControl.InitUserSettings();
             //ReversePath();
             
         }

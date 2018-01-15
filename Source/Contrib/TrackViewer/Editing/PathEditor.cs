@@ -658,7 +658,7 @@ namespace ORTS.TrackViewer.Editing
 
         #endregion
 
-        #region Metadata, saving, reversing
+        #region Metadata, saving, reversing, fix all
         /// <summary>
         /// Popup a dialog to enable to user to edit the path meta data
         /// </summary>
@@ -807,6 +807,42 @@ namespace ORTS.TrackViewer.Editing
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Try to fix all broken nodes. Even if a node cannot be fixed, do try to fix the others.
+        /// </summary>
+        /// <returns>Whether all nodes were fixed and hence the path is now fine</returns>
+        public bool AutoFixAllBrokenNodes()
+        {
+            bool fixSucceeded = true;
+            int nodeToTry = 0;
+            Collection<TrainpathNode> brokenNodes = CurrentTrainPath.GetBrokenNodes();
+            EditorActionAutoFixBrokenNodes actionFixBroken = new EditorActionAutoFixBrokenNodes();
+            EditorActionFixInvalidNode actionFixInvalid = new EditorActionFixInvalidNode();
+
+            while (CurrentTrainPath.IsBroken && (nodeToTry < brokenNodes.Count))
+            {
+                brokenNodes = CurrentTrainPath.GetBrokenNodes();
+                TrainpathNode nodeToFix = brokenNodes[nodeToTry];
+                bool canExecuteBroken = actionFixBroken.MenuState(CurrentTrainPath, nodeToFix, null, UpdateAfterEdits, 0, 0);
+                bool canExecuteInvalid = actionFixInvalid.MenuState(CurrentTrainPath, nodeToFix, null, UpdateAfterEdits, 0, 0);
+                if (canExecuteBroken)
+                {
+                    actionFixBroken.DoAction();
+                    brokenNodes = CurrentTrainPath.GetBrokenNodes();
+                }
+                else if (canExecuteInvalid)
+                {
+                    actionFixInvalid.DoAction();
+                    brokenNodes = CurrentTrainPath.GetBrokenNodes();
+                }
+                else {
+                    fixSucceeded = false;
+                    nodeToTry++;
+                }
+            }
+            return fixSucceeded;
         }
 
         #endregion

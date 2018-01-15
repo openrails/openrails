@@ -137,6 +137,9 @@
                 </MenuItem>
                 <MenuItem Header="Edit path metadata" Name="menuEditMetadata" IsCheckable="False" Click="menuEditMetadata_Click"/>
                 <MenuItem Header="Reverse path" Name="menuReversePath" IsCheckable="False" Click="menuReversePath_Click"/>
+                <Separator/>
+                <MenuItem Header="Auto-fix all broken nodes" Name="menuAutoFixAllNodes" IsCheckable="false" Click="menuAutoFixAllNodes_Click"/>
+                <MenuItem Header="Auto-fix all broken paths" Name="menuAutoFixAllPaths" IsCheckable="false" Click="menuAutoRestorePaths_Click"/>
             </MenuItem>
             <MenuItem Header="Terrain">
                 <MenuItem Header="Show terrain textures (F6)" Name="menuShowTerrain" IsCheckable="True" Click="menuShowTerrain_Click"/>

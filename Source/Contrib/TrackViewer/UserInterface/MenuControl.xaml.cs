@@ -231,7 +231,6 @@ namespace ORTS.TrackViewer.UserInterface
             menuStatusShowTerrain.IsEnabled = menuShowTerrain.IsChecked || menuShowDMTerrain.IsChecked;
             menuStatusShowSignal.IsEnabled = menuShowSignals.IsChecked;
 
-
             menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuShowOtherPaths.IsEnabled = (trackViewer.CurrentRoute != null);
@@ -243,6 +242,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
             menuReversePath.IsEnabled = menuEnableEditing.IsChecked;
             menuExtendPath.IsEnabled = (trackViewer.PathEditor != null) && menuEnableEditing.IsChecked;
+            menuAutoFixAllNodes.IsEnabled = menuEnableEditing.IsChecked && (trackViewer.PathEditor != null);
+            menuAutoFixAllPaths.IsEnabled = (trackViewer.CurrentRoute != null);
         }
 
         private void menuSetAllItems(bool isChecked)
@@ -929,6 +930,11 @@ namespace ORTS.TrackViewer.UserInterface
             trackViewer.PathEditor.EditMetaData();
         }
 
+        private void menuAutoRestorePaths_Click(object sender, RoutedEventArgs e)
+        {
+            trackViewer.AutoRestorePaths();
+        }
+
         #region IDisposable
         private bool disposed;
         /// <summary>
@@ -1035,6 +1041,10 @@ namespace ORTS.TrackViewer.UserInterface
             this.trackViewer.ShowPathChart();
         }
 
+        private void menuAutoFixAllNodes_Click(object sender, RoutedEventArgs e)
+        {
+            this.trackViewer.PathEditor.AutoFixAllBrokenNodes();
+    }
     }
 
     #region IPreferenceChanger
