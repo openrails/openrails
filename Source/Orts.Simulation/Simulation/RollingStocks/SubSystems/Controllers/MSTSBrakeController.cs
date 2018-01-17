@@ -72,7 +72,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             var epState = -1f;
 
-          
+           
+                      
             if (EmergencyBrakingPushButton() || TCSEmergencyBraking())
             {
                 pressureBar -= EmergencyRateBarpS() * elapsedClockSeconds;
@@ -133,6 +134,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                                 pressureBar -= MinReductionBar();
                                 epState = -1;
                             }
+                            break;
+                        case ControllerState.VacContServ:
+                            // Continuous service position for vacuum brakes - allows brake to be adjusted up and down continuously between the ON and OFF position
+                            pressureBar = (1- x) * MaxPressureBar();                               
                             break;
                         case ControllerState.EPApply:
                         case ControllerState.GSelfLapH:

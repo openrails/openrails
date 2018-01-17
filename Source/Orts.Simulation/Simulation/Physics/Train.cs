@@ -133,6 +133,12 @@ namespace Orts.Simulation.Physics
         public RetainerSetting RetainerSetting = RetainerSetting.Exhaust;
         public int RetainerPercent = 100;
         public float TotalTrainBrakePipeVolumeM3; // Total volume of train brake pipe
+        public float TotalTrainBrakeCylinderVolumeM3; // Total volume of train brake cylinders
+        public float TotalTrainBrakeSystemVolumeM3; // Total volume of train brake system
+        public float TotalCurrentTrainBrakeSystemVolumeM3; // Total current volume of train brake system
+        public bool EQEquippedVacLoco = false;          // Flag for locomotives fitted with vacuum brakes that have an Equalising reservoir fitted
+        public float PreviousCarCount;                  // Keeps track of the last number of cars in the train consist (for vacuum brakes)
+
         public int FirstCarUiD;                          // UiD of first car in the train
         public float HUDWagonBrakeCylinderPSI;         // Display value for wagon HUD
         public float HUDLocomotiveBrakeCylinderPSI;    // Display value for locomotive HUD

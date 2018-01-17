@@ -207,6 +207,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             return 0;
         }
 
+        public override float GetVacResVolume()
+        {
+            return 0;
+        }
+        public override float GetVacBrakeCylNumber()
+        {
+            return 0;
+        }
+
         public override void Parse(string lowercasetoken, STFReader stf)
         {
             switch (lowercasetoken)
@@ -674,7 +683,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             {
                                 car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
                                 car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
-                                car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, 0.001f, train.LeadPipePressurePSI); // Prevent Lead locomotive pipe pressure increasing above the value calculated above
+                                car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, 0.001f, lead.TrainBrakeController.MaxPressurePSI); // Prevent Lead locomotive pipe pressure increasing above the value calculated above
                             }
                            else
                             {
@@ -688,16 +697,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             if (car.BrakeSystem.AngleCockAOpen) //  AND Front brake cock opened
                             {
                                 car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeTimeVariationS * p1 / brakePipeTimeFactorS;
+
                             }
 
                             if (car0.BrakeSystem.AngleCockBOpen && car != car0) //  AND Rear cock of wagon opened, and car is not the first wagon
                             {
                                 car0.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeTimeVariationS * p0 / brakePipeTimeFactorS;
+
                             }
                         }
                         if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen) // Last car in train and rear cock of wagon open
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipeTimeVariationS * p1 / brakePipeTimeFactorS;
+
                         }
                         p0 = car.BrakeSystem.BrakeLine1PressurePSI;
                         car0 = car;

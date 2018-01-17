@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using ORTS.Common;
+using Orts.Parsers.Msts;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -38,6 +40,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             DebugType = "-";
         }
 
+        public override void Parse(string lowercasetoken, STFReader stf)
+        {
+            switch (lowercasetoken)
+            {
+                // OpenRails specific parameters
+                case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+            }
+        }
+
         public override void Initialize(bool handbrakeOn, float maxPressurePSI, float fullServPressurePSI, bool immediateRelease)
         {
             base.Initialize(handbrakeOn, 0, 0, true);
@@ -45,33 +56,65 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             EmergResPressurePSI = 0;
             (Car as MSTSWagon).RetainerPositions = 0;
             (Car as MSTSWagon).EmergencyReservoirPresent = false;
+            // Calculate brake pipe size depending upon whether vacuum or air braked
+            if (Car.CarBrakeSystemType == "vacuum_piped")
+            {
+                BrakePipeVolumeM3 = (0.050f * 0.050f * (float)Math.PI / 4f) * Math.Max(5.0f, (1 + Car.CarLengthM)); // Using (2") pipe
+            }
+            else // air braked by default
+            {
+                BrakePipeVolumeM3 = (0.032f * 0.032f * (float)Math.PI / 4f) * Math.Max(5.0f, (1 + Car.CarLengthM)); // Using DN32 (1-1/4") pipe
+            }
         }
 
         public override void InitializeFromCopy(BrakeSystem copy)
         {
             SingleTransferPipe thiscopy = (SingleTransferPipe)copy;
-    //        MaxHandbrakeForceN = thiscopy.MaxHandbrakeForceN;
+            BrakePipeVolumeM3 = thiscopy.BrakePipeVolumeM3;
         }
 
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            return string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true));
+            // display differently depending upon whether vacuum or air braked system
+            if (Car.CarBrakeSystemType == "vacuum_piped")
+            {
+                return string.Format(" BP {0}", FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
+            }
+            else  // air braked by default
+            {
+                return string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true));
+            }
         }
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            var s = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], false));
-            if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
-                s += " EOT " + lastCarBrakeSystem.GetStatus(units);
-            if (HandbrakePercent > 0)
-                s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
-            return s;
+            // display differently depending upon whether vacuum or air braked system
+            if (Car.CarBrakeSystemType == "vacuum_piped")
+            {
+                string s = string.Format(" V {0}", FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.InHg, PressureUnit.InHg, true));
+                if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
+                    s += " EOT " + lastCarBrakeSystem.GetStatus(units);
+                if (HandbrakePercent > 0)
+                    s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
+                return s;
+            }
+            else // air braked by default
+            {
+                var s = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], false));
+                if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
+                    s += " EOT " + lastCarBrakeSystem.GetStatus(units);
+                if (HandbrakePercent > 0)
+                    s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
+                return s;
+            }
+            
         }
 
         // This overides the information for each individual wagon in the extended HUD  
        public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            if (this.Car.CarBrakeSystemType == "vacuum_piped")
+            // display differently depending upon whether vacuum or air braked system
+            if (Car.CarBrakeSystemType == "vacuum_piped")
             {       
 
                 return new string[] {
@@ -79,17 +122,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 string.Empty,
                 FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
-                string.Empty,
                 string.Empty, // Spacer because the state above needs 2 columns.
                 HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
                 };
             }
-            else
+            else  // air braked by default
             {
 
             return new string[] {

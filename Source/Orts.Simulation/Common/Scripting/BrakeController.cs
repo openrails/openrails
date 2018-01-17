@@ -212,7 +212,8 @@ namespace ORTS.Scripting.Api
         Overcharge,         // Overcharge
         EBPB,               // Emergency Braking Push Button
         TCSEmergency,       // TCS Emergency Braking
-        TCSFullServ         // TCS Full Service Braking
+        TCSFullServ,        // TCS Full Service Braking
+        VacContServ         // TrainBrakesControllerVacuumContinuousServiceStart
     };
 
     public static class ControllerStateDictionary
@@ -240,7 +241,8 @@ namespace ORTS.Scripting.Api
             {ControllerState.Overcharge, Catalog.GetString("Overcharge")},
             {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
             {ControllerState.TCSEmergency, Catalog.GetString("TCS Emergency Braking")},
-            {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")}
+            {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")},
+            {ControllerState.VacContServ, Catalog.GetString("Vac. Cont. Service")}
         };
     }
 }

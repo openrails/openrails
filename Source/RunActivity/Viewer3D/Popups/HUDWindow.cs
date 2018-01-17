@@ -589,6 +589,7 @@ namespace Orts.Viewer3D.Popups
                             (Viewer.PlayerLocomotive as MSTSLocomotive).SmallSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
                             Viewer.Catalog.GetString("Pressure"),
                             FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).SteamEjectorSmallPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true)));
+
                     }
                     else
                     {
@@ -609,6 +610,21 @@ namespace Orts.Viewer3D.Popups
                         FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
                         Viewer.Catalog.GetString("Compressor"),
                         (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                }
+
+                // Only displayed on vacuum brake trains - to be extended to air braked trains??
+                if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
+                {
+                    // Lines to show brake system volumes 
+                    TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}",
+                    Viewer.Catalog.GetString("Brake Sys Vol"),
+                    Viewer.Catalog.GetString("Train Pipe"),
+                    FormatStrings.FormatVolume(train.TotalTrainBrakePipeVolumeM3, mstsLocomotive.IsMetric),
+                    Viewer.Catalog.GetString("Brake Cyl"),
+                    FormatStrings.FormatVolume(train.TotalTrainBrakeCylinderVolumeM3, mstsLocomotive.IsMetric),
+                    Viewer.Catalog.GetString("Air Vol"),
+                    FormatStrings.FormatVolume(train.TotalCurrentTrainBrakeSystemVolumeM3, mstsLocomotive.IsMetric)
+                    ));
                 }
             }
             else
@@ -637,32 +653,60 @@ namespace Orts.Viewer3D.Popups
                 }
             }
             TableAddLine(table);
-
-            TableSetCells(table, 0,
-                Viewer.Catalog.GetString("Car"),
-                Viewer.Catalog.GetString("Type"),
-                Viewer.Catalog.GetString("BrkCyl"),
-                Viewer.Catalog.GetString("BrkPipe"),
-                Viewer.Catalog.GetString("AuxRes"),
-                Viewer.Catalog.GetString("ErgRes"),
-                Viewer.Catalog.GetString("MRPipe"),
-                Viewer.Catalog.GetString("RetValve"),
-                Viewer.Catalog.GetString("TripleValve"),
-                Viewer.Catalog.GetString(""),
-                Viewer.Catalog.GetString("Handbrk"),
-                Viewer.Catalog.GetString("Conn"),
-                Viewer.Catalog.GetString("AnglCock"),
-                Viewer.Catalog.GetString("BleedOff"));
-            TableAddLine(table);
-
-            var n = train.Cars.Count; // Number of lines to show
-            for (var i = 0; i < n; i++)
+            // Different display depending upon whether vacuum braked or air braked
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
             {
-                var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
-                var car = train.Cars[j];
-                TableSetCell(table, 0, "{0}", train.Cars[j].CarID);
-                TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
+                TableSetCells(table, 0,
+                                Viewer.Catalog.GetString("Car"),
+                                Viewer.Catalog.GetString("Type"),
+                                Viewer.Catalog.GetString("BrkCyl"),
+                                Viewer.Catalog.GetString("BrkPipe"),
+                                Viewer.Catalog.GetString("VacRes"),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString("Handbrk"),
+                                Viewer.Catalog.GetString("Conn"),
+                                Viewer.Catalog.GetString("AnglCock")
+                                );
                 TableAddLine(table);
+
+                var n = train.Cars.Count; // Number of lines to show
+                for (var i = 0; i < n; i++)
+                {
+                    var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
+                    var car = train.Cars[j];
+                    TableSetCell(table, 0, "{0}", train.Cars[j].CarID);
+                    TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
+                    TableAddLine(table);
+                }
+            }
+            else  // default air braked
+            {
+                TableSetCells(table, 0,
+                                Viewer.Catalog.GetString("Car"),
+                                Viewer.Catalog.GetString("Type"),
+                                Viewer.Catalog.GetString("BrkCyl"),
+                                Viewer.Catalog.GetString("BrkPipe"),
+                                Viewer.Catalog.GetString("AuxRes"),
+                                Viewer.Catalog.GetString("ErgRes"),
+                                Viewer.Catalog.GetString("MRPipe"),
+                                Viewer.Catalog.GetString("RetValve"),
+                                Viewer.Catalog.GetString("TripleValve"),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString("Handbrk"),
+                                Viewer.Catalog.GetString("Conn"),
+                                Viewer.Catalog.GetString("AnglCock"),
+                                Viewer.Catalog.GetString("BleedOff"));
+                TableAddLine(table);
+
+                var n = train.Cars.Count; // Number of lines to show
+                for (var i = 0; i < n; i++)
+                {
+                    var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
+                    var car = train.Cars[j];
+                    TableSetCell(table, 0, "{0}", train.Cars[j].CarID);
+                    TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
+                    TableAddLine(table);
+                }
             }
         }
 

@@ -183,6 +183,9 @@ namespace Orts.Simulation.RollingStocks
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public bool VacuumPumpFitted;
         public float SteamEjectorSmallSetting = 0.0f;
+        public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
+        public float SmallEjectorFeedFraction = 0.35f;
+        public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
 
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
@@ -229,7 +232,7 @@ namespace Orts.Simulation.RollingStocks
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = 0.0015f;
         public float BrakeServiceTimeFactorS;
-        public float BrakeEmergencyTimeFactorS = .1f;
+        public float BrakeEmergencyTimeFactorS;
         public float BrakePipeChargingRatePSIorInHgpS;
         public InterpolatorDiesel2D TractiveForceCurves;
         public InterpolatorDiesel2D DynamicBrakeForceCurves;
@@ -750,6 +753,20 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
                     break;
+
+                case "engine(brakestrainbraketype":
+                    foreach (var brakestrainbraketype in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
+                    {
+                        switch (brakestrainbraketype)
+                            {
+                                case "vacuum_single_pipe_eq":
+                                    VacuumBrakeEQFitted = true;
+                                    break;
+                                 default:
+                                    break;
+                            }
+                    }
+                    break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
                 case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
@@ -758,6 +775,9 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(maxsteamheatingpressure": MaxSteamHeatPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsonlinecabradio": OnLineCabRadio = stf.ReadBoolBlock(false); break;
                 case "engine(ortsonlinecabradiourl": OnLineCabRadioURL = stf.ReadString(); break;
+                case "engine(vacuumbrakesminboilerpressuremaxvacuum": MaxVaccuumMaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
+                    MaxVaccuumMaxPressurePSI = MathHelper.Clamp(MaxVaccuumMaxPressurePSI, 70.0f, 130.0f); // Prevents parameter going outside of bounds
+                    break;
                 default: base.Parse(lowercasetoken, stf); break;
                     
             }
@@ -834,6 +854,8 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
             LocomotiveName = locoCopy.LocomotiveName;
+            MaxVaccuumMaxPressurePSI = locoCopy.MaxVaccuumMaxPressurePSI;
+            VacuumBrakeEQFitted = locoCopy.VacuumBrakeEQFitted;
 
             MoveParamsToAxle();
 
@@ -1014,7 +1036,7 @@ namespace Orts.Simulation.RollingStocks
                 // Set Default BrakePipe Charging Rate depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakePipeChargingRatePSIorInHgpS = 20.0f; // Vacuum brakes
+                    BrakePipeChargingRatePSIorInHgpS = 0.55f; // Vacuum brakes
                 }
                 else
                 {
@@ -1022,17 +1044,60 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            // Initialise Brake Service Time Factor
-            if (BrakeServiceTimeFactorS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
+            // Initialise Brake Emergency Time Factor
+            if (BrakeEmergencyTimeFactorS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.
             {
-                // Set Default BrakePipe Charging Rate depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
+                // Set Default Brake Emergency Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakeServiceTimeFactorS = 20.0f; // Vacuum brakes
+                    BrakeEmergencyTimeFactorS = 10.0f; // Vacuum brakes
+                }
+                else
+                {
+                    BrakeEmergencyTimeFactorS = 0.1f; // Air brakes
+                }
+            }
+
+            // Initialise Brake Service Time Factor
+            if (BrakeServiceTimeFactorS == 0) // Check to see if BrakeServiceTimeFactorS has been set in the ENG file.
+            {
+                // Set Default Brake Service Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    BrakeServiceTimeFactorS = 10.0f; // Vacuum brakes
                 }
                 else
                 {
                     BrakeServiceTimeFactorS = 1.009f; // Air brakes
+                }
+            }
+
+            // Initialise Brake Time Factor
+            if (BrakePipeTimeFactorS == 0) // Check to see if BrakePipeTimeFactorS has been set in the ENG file.
+            {
+                // Set Default Brake Pipe Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    BrakePipeTimeFactorS = 0.18f; // Vacuum brakes
+                }
+                else
+                {
+                    BrakePipeTimeFactorS = 0.0015f; // Air brakes
+                }
+            }
+
+            // Initialise Train Pipe Leak Rate
+            if (TrainBrakePipeLeakPSIorInHgpS == 0) // Check to see if TrainBrakePipeLeakPSIorInHgpS has been set in the ENG file.
+            {
+                // Set Default Train Brake Pipe Leak depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
+                // Default currently set to zero - means that by default function is off, and a value must be entered into the ENG file to get it to work
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Vacuum brakes
+                }
+                else
+                {
+                    TrainBrakePipeLeakPSIorInHgpS = 0.0f; // Air brakes
                 }
             }
 
@@ -1650,6 +1715,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
             }
+
 
 
         }
