@@ -825,6 +825,8 @@ namespace ORTS.TrackViewer.Drawing
         private int stepIndex;
         /// <summary>The power of ten to be used</summary>
         private int powerOfTen;
+        /// <summary>Limit the maximum zoom allowed</summary>
+        private const int minPowerOfTen = -5;
 
         /// <summary>Return the value of the scale (should be (some round number) * 10^(some integer power)</summary>
         public double ScaleValue { get { return discreteSteps[stepIndex] * Math.Pow(10.0, (double)powerOfTen); } }
@@ -849,6 +851,11 @@ namespace ORTS.TrackViewer.Drawing
             {
                 stepIndex += discreteSteps.Count();
                 powerOfTen --;
+                if (powerOfTen < minPowerOfTen)
+                {
+                    powerOfTen = minPowerOfTen;
+                    stepIndex = 0;
+                }
             }
             return ScaleValue / previousValue;
         }

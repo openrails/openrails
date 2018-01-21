@@ -229,10 +229,7 @@ namespace ORTS.TrackViewer.Editing.Charts
 
         private void SaveJson_Click(object sender, RoutedEventArgs e)
         {
-            if (OnJsonSaveClick != null)
-            {
-                OnJsonSaveClick();
-            }
+            OnJsonSaveClick?.Invoke();
         }
         #endregion
     }

@@ -87,9 +87,6 @@ namespace ORTS.TrackViewer
         /// <summary>The routines to draw the .pat file</summary>
         public DrawPATfile DrawPATfile { get; private set; }
 
-        /// <summary>This is set when the Menu has mouse control</summary>
-        public bool MenuHasMouse { get; set; }
-
         #endregion
         
         #region Private members
@@ -325,7 +322,7 @@ namespace ORTS.TrackViewer
                 if (TVUserInput.IsDown(TVUserCommands.ZoomIn)) { drawPathChart.Zoom(-1); skipDrawAmount = 0; }
                 if (TVUserInput.IsDown(TVUserCommands.ZoomOut)) { drawPathChart.Zoom(1); skipDrawAmount = 0; } 
             }
-            else
+            else if (!this.menuControl.IsKeyboardFocusWithin)
             {
                 if (TVUserInput.IsDown(TVUserCommands.ShiftLeft)) { DrawArea.ShiftLeft(); skipDrawAmount = 0; }
                 if (TVUserInput.IsDown(TVUserCommands.ShiftRight)) { DrawArea.ShiftRight(); skipDrawAmount = 0; }
@@ -408,7 +405,8 @@ namespace ORTS.TrackViewer
                 drawPathChart.DrawDynamics();
             }
 
-            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick) && !this.MenuHasMouse && !this.drawPathChart.IsActived)
+            bool otherWindowHasMouse = menuControl.HasMouse() || drawPathChart.IsActived; 
+            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick) && !otherWindowHasMouse) 
             {
                 if (TVUserInput.IsMouseMoved() && TVUserInput.IsMouseLeftButtonDown())
                 {
@@ -453,6 +451,16 @@ namespace ORTS.TrackViewer
             if (TVUserInput.IsPressed(TVUserCommands.ToggleShowPatFile)) menuControl.MenuToggleShowPatFile();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleHighlightTracks)) menuControl.MenuToggleHighlightTracks();
             if (TVUserInput.IsPressed(TVUserCommands.ToggleHighlightItems)) menuControl.MenuToggleHighlightItems();
+
+            //keyboard shortcuts for menu
+            if (TVUserInput.IsPressed(TVUserCommands.MenuFile)) { menuControl.menuFile.Focus(); menuControl.menuFile.IsSubmenuOpen = true; }
+            if (TVUserInput.IsPressed(TVUserCommands.MenuView)) { menuControl.menuView.Focus(); menuControl.menuView.IsSubmenuOpen = true; }
+            if (TVUserInput.IsPressed(TVUserCommands.MenuTrackItems)) { menuControl.menuTrackItems.Focus(); menuControl.menuTrackItems.IsSubmenuOpen = true; }
+            if (TVUserInput.IsPressed(TVUserCommands.MenuPreferences)) { menuControl.menuPreferences.Focus(); menuControl.menuPreferences.IsSubmenuOpen = true; }
+            if (TVUserInput.IsPressed(TVUserCommands.MenuStatusbar)) { menuControl.menuStatusbar.Focus(); menuControl.menuStatusbar.IsSubmenuOpen = true; }
+            if (TVUserInput.IsPressed(TVUserCommands.MenuPathEditor)) { menuControl.menuPathEditor.Focus(); menuControl.menuPathEditor.IsSubmenuOpen = true; }
+            if (TVUserInput.IsPressed(TVUserCommands.MenuTerrain)) { menuControl.menuTerrain.Focus(); menuControl.menuTerrain.IsSubmenuOpen = true; }
+            if (TVUserInput.IsPressed(TVUserCommands.MenuHelp)) { menuControl.menuHelp.Focus(); menuControl.menuHelp.IsSubmenuOpen = true; }
 
 
             if (TVUserInput.IsPressed(TVUserCommands.Debug)) RunDebug();

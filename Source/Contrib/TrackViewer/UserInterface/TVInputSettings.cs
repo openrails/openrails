@@ -120,6 +120,22 @@ namespace ORTS.TrackViewer.UserInterface
         EditorRedo,
         /// <summary>command for undo in editor</summary>
         EditorUndo,
+        /// <summary>Menu shortcut</summary>
+        MenuFile,
+        /// <summary>Menu shortcut</summary>
+        MenuTrackItems,
+        /// <summary>Menu shortcut</summary>
+        MenuView,
+        /// <summary>Menu shortcut</summary>
+        MenuStatusbar,
+        /// <summary>Menu shortcut</summary>
+        MenuPreferences,
+        /// <summary>Menu shortcut</summary>
+        MenuPathEditor,
+        /// <summary>Menu shortcut</summary>
+        MenuTerrain,
+        /// <summary>Menu shortcut</summary>
+        MenuHelp,
     }
 
     /* not used, because ORTS.Settings.KeyModifiers is used
@@ -203,6 +219,15 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.EditorTakesMouseClick] = new UserCommandModifierInput(Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorUndo] = new ORTS.Settings.UserCommandKeyInput(0x2C, ORTS.Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorRedo] = new ORTS.Settings.UserCommandKeyInput(0x15, ORTS.Settings.KeyModifiers.Control);
+
+            Commands[(int)TVUserCommands.MenuFile] = new ORTS.Settings.UserCommandKeyInput(0x21, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuView] = new ORTS.Settings.UserCommandKeyInput(0x2F, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuTrackItems] = new ORTS.Settings.UserCommandKeyInput(0x17, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuStatusbar] = new ORTS.Settings.UserCommandKeyInput(0x1F, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuPreferences] = new ORTS.Settings.UserCommandKeyInput(0x19, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuPathEditor] = new ORTS.Settings.UserCommandKeyInput(0x12, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuTerrain] = new ORTS.Settings.UserCommandKeyInput(0x14, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuHelp] = new ORTS.Settings.UserCommandKeyInput(0x23, ORTS.Settings.KeyModifiers.Alt);
         }
 
     }

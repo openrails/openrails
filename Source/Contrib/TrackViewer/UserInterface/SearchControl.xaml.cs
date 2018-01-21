@@ -89,7 +89,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// If the search button has been clicked, validate the input and call the trackViewewer callback
         /// </summary>
-        private void buttonSearch_Click(object sender, RoutedEventArgs e)
+        private void ButtonSearch_Click(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -117,7 +117,7 @@ namespace ORTS.TrackViewer.UserInterface
             }
         }
 
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
@@ -139,7 +139,7 @@ namespace ORTS.TrackViewer.UserInterface
         {
             if (e.Key == Key.Return)
             {
-                buttonSearch_Click(sender, e);
+                ButtonSearch_Click(sender, e);
             }
         }
     }

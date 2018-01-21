@@ -33,15 +33,17 @@ namespace ORTS.TrackViewer.Editing
             pathName.Text  = metadata[1];
             pathStart.Text = metadata[2];
             pathEnd.Text   = metadata[3];
-            pathIsPlayerPath.IsChecked = isPlayerPath; 
+            pathIsPlayerPath.IsChecked = isPlayerPath;
+            pathID.Focus();
+            pathID.SelectAll();
         }
 
-        private void buttonOK_Click(object sender, RoutedEventArgs e)
+        private void ButtonOK_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = true;
         }
 
-        private void buttonCancel_Click(object sender, RoutedEventArgs e)
+        private void ButtonCancel_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
         }
@@ -55,6 +57,10 @@ namespace ORTS.TrackViewer.Editing
             string[] metadata = { pathID.Text, pathName.Text, pathStart.Text, pathEnd.Text, pathIsPlayerPath.IsChecked.ToString() };
             return metadata;
         }
- 
+
+        private void PathX_GotFocus(object sender, RoutedEventArgs e)
+        {
+            ((TextBox)sender).SelectAll();
+        }
     }
 }

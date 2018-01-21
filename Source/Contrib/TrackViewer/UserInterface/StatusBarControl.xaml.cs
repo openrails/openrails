@@ -61,12 +61,12 @@ namespace ORTS.TrackViewer.UserInterface
             StatusbarHeight = (int) tvStatusbar.Height;
 
             //ElementHost object helps us to connect a WPF User Control.
-            elementHost = new ElementHost();
-            elementHost.Location = new System.Drawing.Point(0, 0);
-            //elementHost.Name = "elementHost";
-            elementHost.TabIndex = 1;
-            //elementHost.Text = "elementHost";
-            elementHost.Child = this;
+            elementHost = new ElementHost
+            {
+                Location = new System.Drawing.Point(0, 0),
+                TabIndex = 1,
+                Child = this
+            };
             System.Windows.Forms.Control.FromHandle(trackViewer.Window.Handle).Controls.Add(elementHost);
 
         }
