@@ -92,6 +92,9 @@
     <Compile Include="Drawing\Labels\StorableLabels.cs" />
     <Compile Include="Drawing\ShadowDrawArea.cs" />
     <Compile Include="Editing\AutoConnectTools.cs" />
+    <Compile Include="Editing\AutoFixAllPaths.xaml.cs">
+      <DependentUpon>AutoFixAllPaths.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Editing\Charts\PathChartWindow.xaml.cs">
       <DependentUpon>PathChartWindow.xaml</DependentUpon>
     </Compile>
@@ -143,6 +146,10 @@
     <Compile Include="UserInterface\TVUserInput.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Editing\AutoFixAllPaths.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Drawing\Labels\EditLabel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
