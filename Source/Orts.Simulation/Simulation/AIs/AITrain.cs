@@ -3365,13 +3365,17 @@ namespace Orts.Simulation.AIs
                         }
                         else
                         {
-                            if (SpeedMpS > (OtherTrain.SpeedMpS + hysterisMpS) ||
+                            // check whether trains are running same direction or not
+                            bool runningAgainst = false;
+                            if (PresentPosition[0].TCSectionIndex == OtherTrain.PresentPosition[0].TCSectionIndex &&
+                                PresentPosition[0].TCDirection != OtherTrain.PresentPosition[0].TCDirection) runningAgainst = true;
+                            if ((SpeedMpS > (OtherTrain.SpeedMpS + hysterisMpS) && !runningAgainst)||
                                 SpeedMpS > (maxFollowSpeedMpS + hysterisMpS) ||
-                                       distanceToTrain < (keepDistanceTrainM - clearingDistanceM))
+                                distanceToTrain < (keepDistanceTrainM - clearingDistanceM))
                             {
                                 AdjustControlsBrakeMore(0.5f * MaxAccelMpSS, elapsedClockSeconds, 10);
                             }
-                            else if (SpeedMpS < (OtherTrain.SpeedMpS - hysterisMpS) &&
+                            else if ((SpeedMpS < (OtherTrain.SpeedMpS - hysterisMpS) && !runningAgainst) &&
                                        SpeedMpS < maxFollowSpeedMpS &&
                                        distanceToTrain > (keepDistanceTrainM + clearingDistanceM))
                             {

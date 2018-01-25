@@ -5175,6 +5175,11 @@ namespace Orts.Simulation.Physics
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
                 if (!thisSection.CircuitState.ThisTrainOccupying(routedForward))
                 {
+                    if (!Simulator.TimetableMode && thisSection.CircuitState.HasOtherTrainsOccupying(routedForward))
+                    {
+                        SwitchToNodeControl(sectionIndex);
+                        EndAuthorityType[0] = END_AUTHORITY.TRAIN_AHEAD;
+                    }
                     thisSection.SetOccupied(routedForward, routeListIndex[1]);
 
                     // additional actions for child classes
