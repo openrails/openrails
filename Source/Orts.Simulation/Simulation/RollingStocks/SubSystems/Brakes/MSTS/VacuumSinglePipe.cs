@@ -641,14 +641,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / TempbrakePipeTimeFactorS;
                         }
+
+
                         // Start propagating pressure along train BP by averaging pressure across each car down the train
+                        if (car0 == lead) // For the locomotive, only decrease the next car. 
+                            // If previous car BP pressure is increased then the total proagation time is increased, as there is a "fight" between the lead BP pressure, and the propagation BP pressure as it evens out along the train
+                        {
+                            car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
+                            car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                        }
+                        else  // For all other "normal" cars
+                        {
                             car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
                             car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
                             car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * CarBrakeSytemVolumeM3;
                             car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+
+                        }
                     }
-
-
 
                     // The following section adjusts the brake pipe pressure if the BP is disconnected or broken, eg when shunting, etc. 
                     // If it has broken then brake pipe pressure will rise (vacuum goes to 0 InHg), and brakes will apply
