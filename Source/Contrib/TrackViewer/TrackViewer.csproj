@@ -85,6 +85,11 @@
     <Compile Include="Drawing\DrawTerrain.cs" />
     <Compile Include="Drawing\DrawTrackDB.cs" />
     <Compile Include="Drawing\DrawWorldTiles.cs" />
+    <Compile Include="Drawing\Labels\DrawLabels.cs" />
+    <Compile Include="Drawing\Labels\EditLabel.xaml.cs">
+      <DependentUpon>EditLabel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Drawing\Labels\StorableLabels.cs" />
     <Compile Include="Drawing\ShadowDrawArea.cs" />
     <Compile Include="Editing\AutoConnectTools.cs" />
     <Compile Include="Editing\Charts\PathChartWindow.xaml.cs">
@@ -138,6 +143,10 @@
     <Compile Include="UserInterface\TVUserInput.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Drawing\Labels\EditLabel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Editing\Charts\PathChartWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

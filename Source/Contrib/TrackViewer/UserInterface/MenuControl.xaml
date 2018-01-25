@@ -45,6 +45,11 @@
                     <MenuItem Header="Show scale ruler" Name="menuShowScaleRuler" IsCheckable="True" Click="UpdateMenuSettings"/>
                     <MenuItem Header="Show longitude/latitude" Name="menuShowLonLat" IsCheckable="True" Click="UpdateMenuSettings"/>
                 </MenuItem>
+                <MenuItem Header="Labels">
+                    <MenuItem Header="Show labels" Name="menuShowLabels" IsCheckable="True" Click="UpdateMenuSettings" ToolTip="For adding a label, press L"/>
+                    <MenuItem Header="Load labels" Name="menuLoadLabels" IsCheckable="False" Click="MenuLoadLabels_Click"/>
+                    <MenuItem Header="Save labels" Name="menuSaveLabels" IsCheckable="False" Click="MenuSaveLabels_Click"/>
+                </MenuItem>
                 <Separator/>
                 <MenuItem Header="Save current zoom" Name="menuZoomSave" Click="MenuZoomSave_Click"/>
                 <MenuItem Header="Restore saved zoom" Name="menuZoomRestore" Click="MenuZoomRestore_Click"/>

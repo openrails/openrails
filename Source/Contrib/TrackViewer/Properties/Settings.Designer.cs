@@ -609,5 +609,17 @@ namespace ORTS.TrackViewer.Properties {
                 this["statusShowNames"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool showLabels {
+            get {
+                return ((bool)(this["showLabels"]));
+            }
+            set {
+                this["showLabels"] = value;
+            }
+        }
     }
 }

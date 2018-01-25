@@ -139,6 +139,8 @@ namespace ORTS.TrackViewer.UserInterface
 
             menuZoomIsCenteredOnMouse.IsChecked = Properties.Settings.Default.zoomIsCenteredOnMouse;
 
+            menuShowLabels.IsChecked = Properties.Settings.Default.showLabels;
+
             // Terrain should be off by default. We do not want to burden people with having this load always
             menuShowTerrain.IsChecked = false;
             menuShowDMTerrain.IsChecked = false;
@@ -222,6 +224,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showLonLat = menuShowLonLat.IsChecked;
             Properties.Settings.Default.useMilesNotMeters = menuUseMilesNotMeters.IsChecked;
 
+            Properties.Settings.Default.showLabels = menuShowLabels.IsChecked;
             Properties.Settings.Default.zoomIsCenteredOnMouse = menuZoomIsCenteredOnMouse.IsChecked;
 
             Properties.Settings.Default.Save();
@@ -541,6 +544,7 @@ namespace ORTS.TrackViewer.UserInterface
             shortcuts.Append(TrackViewer.catalog.GetString("Z\tZoom to tile\n"));
             shortcuts.Append(TrackViewer.catalog.GetString("M\tToggle zoom center\n"));
             shortcuts.Append(TrackViewer.catalog.GetString("R\tZoom reset\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("L\tAdd label\n"));
             shortcuts.Append("\n");
             shortcuts.Append(TrackViewer.catalog.GetString("shift-C\t\tShift center to current mouse location\n"));
             shortcuts.Append(TrackViewer.catalog.GetString("left arrow\tShift left\n"));
@@ -920,7 +924,7 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void MenuReversePath_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.PathEditor.ReversePath();
+            trackViewer.PathEditor.ReversePath(trackViewer.Window.ClientBounds.Left + 50, trackViewer.Window.ClientBounds.Top + 20);
             UpdateMenuSettings();
         }
 
@@ -937,7 +941,7 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void MenuEditMetadata_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.PathEditor.EditMetaData();
+            trackViewer.PathEditor.EditMetaData(trackViewer.Window.ClientBounds.Left + 50, trackViewer.Window.ClientBounds.Top + 20);
         }
 
         private void MenuAutoRestorePaths_Click(object sender, RoutedEventArgs e)
@@ -1004,6 +1008,9 @@ namespace ORTS.TrackViewer.UserInterface
             this.hasMouseItself = false;
         }
 
+        /// <summary>
+        /// Determine whether the menu or a child window has captured the mouse for its actions
+        /// </summary>
         public bool HasMouse()
         {
             bool otherPathsWindowHasMouse = (this.otherPathsWindow) != null && this.otherPathsWindow.IsActive;
@@ -1060,6 +1067,16 @@ namespace ORTS.TrackViewer.UserInterface
         {
             this.trackViewer.PathEditor.AutoFixAllBrokenNodes();
     }
+
+        private void MenuLoadLabels_Click(object sender, RoutedEventArgs e)
+        {
+            this.trackViewer.LoadLabels();
+        }
+
+        private void MenuSaveLabels_Click(object sender, RoutedEventArgs e)
+        {
+            this.trackViewer.SaveLabels();
+        }
     }
 
     #region IPreferenceChanger

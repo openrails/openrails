@@ -198,6 +198,10 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
         }
 
+        /// <summary>
+        /// Write out the path chart date to a json file
+        /// </summary>
+        /// <param name="completeFileName">The filename to write to</param>
         public void WriteJson(string completeFileName)
         {
             if (!this.pathData.HasPath)

@@ -31,6 +31,7 @@ using GNU.Gettext;
 using ORTS.Menu;
 using ORTS.Common;
 using ORTS.TrackViewer.Drawing;
+using ORTS.TrackViewer.Drawing.Labels;
 using ORTS.TrackViewer.UserInterface;
 using ORTS.TrackViewer.Editing;
 using ORTS.TrackViewer.Editing.Charts;
@@ -106,6 +107,7 @@ namespace ORTS.TrackViewer
         /// <summary>The routines to draw the terrain textures</summary>
         public DrawTerrain drawTerrain; //todo, get it private again: statusbar
 
+        DrawLabels drawLabels;
 
         /// <summary>The menu at the top</summary>
         MenuControl menuControl;
@@ -172,7 +174,9 @@ namespace ORTS.TrackViewer
             Control.FromHandle(Window.Handle).Controls.Add(new TextBox() { Top = -100 });
 
             statusBarControl = new StatusBarControl(this);
+            TrackViewer.Localize(statusBarControl);
             menuControl = new MenuControl(this);
+            TrackViewer.Localize(menuControl);
             menuControl.PopulateLanguages();
             DrawColors.Initialize(menuControl);
             
@@ -338,6 +342,7 @@ namespace ORTS.TrackViewer
                 skipDrawAmount = 0;
             }
 
+
             if (TVUserInput.IsPressed(TVUserCommands.Quit)) this.Quit();
             if (TVUserInput.IsPressed(TVUserCommands.ReloadRoute)) this.ReloadRoute();
 
@@ -374,19 +379,21 @@ namespace ORTS.TrackViewer
                 if (TVUserInput.IsMouseXButton2Pressed()) PathEditor.Redo();
             }
 
+            var mouseLocationAbsoluteX = Window.ClientBounds.Left + TVUserInput.MouseLocationX;
+            var mouseLocationAbsoluteY = Window.ClientBounds.Top  + TVUserInput.MouseLocationY;
             if (PathEditor != null && PathEditor.EditingIsActive)
             {
                 if (TVUserInput.IsMouseRightButtonPressed())
                 {
                     PathEditor.OnLeftMouseRelease(); // any action done with left mouse is cancelled now
-                    PathEditor.PopupContextMenu(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
+                    PathEditor.PopupContextMenu(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
                 }
 
                 if (TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick))
                 {
                     if (TVUserInput.IsMouseLeftButtonPressed())
                     {
-                        PathEditor.OnLeftMouseClick(TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
+                        PathEditor.OnLeftMouseClick(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
                     }
                     if (TVUserInput.IsMouseLeftButtonDown())
                     {
@@ -403,6 +410,38 @@ namespace ORTS.TrackViewer
                     PathEditor.OnLeftMouseCancel();
                 }
                 drawPathChart.DrawDynamics();
+            }
+            else if (drawLabels != null)
+            {
+                if (TVUserInput.IsPressed(TVUserCommands.AddLabel))
+                {
+                    drawLabels.AddLabel(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
+                }
+
+                if (TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick))
+                {
+                    if (TVUserInput.IsMouseLeftButtonPressed())
+                    {
+                        drawLabels.OnLeftMouseClick();
+                    }
+                    if (TVUserInput.IsMouseLeftButtonDown())
+                    {
+                        drawLabels.OnLeftMouseMoved();
+                    }
+                    if (TVUserInput.IsMouseLeftButtonReleased())
+                    {
+                        drawLabels.OnLeftMouseRelease();
+                    }
+                }
+                if (TVUserInput.IsReleased(TVUserCommands.EditorTakesMouseClick))
+                {
+                    drawLabels.OnLeftMouseCancel();
+                }
+
+                if (TVUserInput.IsMouseRightButtonPressed())
+                {
+                    drawLabels.PopupContextMenu(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
+                }
             }
 
             bool otherWindowHasMouse = menuControl.HasMouse() || drawPathChart.IsActived; 
@@ -528,6 +567,7 @@ namespace ORTS.TrackViewer
 
             drawScaleRuler.Draw();
             drawLongitudeLatitude.Draw(DrawArea.MouseLocation);
+            drawLabels.Draw(DrawArea);
 
             DebugWindow.DrawAll();
 
@@ -823,6 +863,7 @@ namespace ORTS.TrackViewer
             {
                 RouteData = new RouteData(newRoute.Path, messageHandler);
                 DrawTrackDB = new DrawTrackDB(this.RouteData, messageHandler);
+                drawLabels = new DrawLabels(fontManager.DefaultFont.Height);
                 CurrentRoute = newRoute;
 
                 Properties.Settings.Default.defaultRoute = CurrentRoute.Path.Split('\\').Last();
@@ -928,7 +969,7 @@ namespace ORTS.TrackViewer
             drawPathChart.SetPathEditor(this.RouteData, this.PathEditor);
             DrawPATfile = null;
             PathEditor.EditingIsActive = true;
-            PathEditor.EditMetaData();
+            PathEditor.EditMetaData(Window.ClientBounds.Left + 50, Window.ClientBounds.Top + 20);
         }
 
         /// <summary>
@@ -1127,6 +1168,9 @@ namespace ORTS.TrackViewer
             }
 
         }
+
+        internal void LoadLabels() => drawLabels?.LoadLabels();
+        internal void SaveLabels() => drawLabels?.SaveLabels();
         #endregion
 
         #region Debug methods

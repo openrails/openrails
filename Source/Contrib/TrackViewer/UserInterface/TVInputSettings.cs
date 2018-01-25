@@ -80,6 +80,8 @@ namespace ORTS.TrackViewer.UserInterface
         ReducePathFull,
         /// <summary>command for debugging the key map</summary>
         DebugDumpKeymap,
+        /// <summary>command for adding a label</summary>
+        AddLabel,
         /// <summary>command for quitting the application</summary>
         Quit,
         /// <summary>command for performing debug steps</summary>
@@ -204,12 +206,12 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ToggleShowTrainpath] = new ORTS.Settings.UserCommandKeyInput(0x57);
             Commands[(int)TVUserCommands.ToggleShowPatFile] = new ORTS.Settings.UserCommandKeyInput(0x57, ORTS.Settings.KeyModifiers.Shift);
 
-
             Commands[(int)TVUserCommands.ExtendPath] = new ORTS.Settings.UserCommandKeyInput(0x49);
             Commands[(int)TVUserCommands.ExtendPathFull] = new ORTS.Settings.UserCommandKeyInput(0x49, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ReducePath] = new ORTS.Settings.UserCommandKeyInput(0x51);
             Commands[(int)TVUserCommands.ReducePathFull] = new ORTS.Settings.UserCommandKeyInput(0x51, ORTS.Settings.KeyModifiers.Shift);
 
+            Commands[(int)TVUserCommands.AddLabel]   = new ORTS.Settings.UserCommandKeyInput(0x26);
             Commands[(int)TVUserCommands.Quit]       = new ORTS.Settings.UserCommandKeyInput(0x10);
             Commands[(int)TVUserCommands.Debug]      = new ORTS.Settings.UserCommandKeyInput(0x34);
             Commands[(int)TVUserCommands.DebugDumpKeymap] = new ORTS.Settings.UserCommandKeyInput(0x3B, ORTS.Settings.KeyModifiers.Alt);

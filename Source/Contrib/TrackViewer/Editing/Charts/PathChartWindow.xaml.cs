@@ -210,6 +210,10 @@ namespace ORTS.TrackViewer.Editing.Charts
             }
         }
 
+        /// <summary>
+        /// Shift the chartwindow (when zoomed)
+        /// </summary>
+        /// <param name="shiftSteps">The number of zoom steps (negative for shifting left)</param>
         public void Shift(int shiftSteps)
         {
             double shiftSize = Math.Min(ChartScrollbar.Maximum / 10, ChartScrollbar.ViewportSize * 0.5);
@@ -225,6 +229,9 @@ namespace ORTS.TrackViewer.Editing.Charts
         #endregion
 
         #region Save JSON
+        /// <summary>
+        /// Action that can be set to act as a callback when the save .json button is clicked
+        /// </summary>
         public Action OnJsonSaveClick { get; set; }
 
         private void SaveJson_Click(object sender, RoutedEventArgs e)

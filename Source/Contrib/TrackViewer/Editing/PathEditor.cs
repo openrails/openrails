@@ -306,8 +306,8 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Popup the context menu at the given location. Also disable updates related to mouse movement while menu is open.
         /// </summary>
-        /// <param name="mouseX"></param>
-        /// <param name="mouseY"></param>
+        /// <param name="mouseX">The absolute x-location of the mouse on the screen so we can place a dialog properly</param>
+        /// <param name="mouseY">The absolute y-location of the mouse on the screen so we can place a dialog properly</param>
         public void PopupContextMenu(int mouseX, int mouseY)
         {
             bool someNodeActionIsPossible = false;
@@ -662,11 +662,17 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>
         /// Popup a dialog to enable to user to edit the path meta data
         /// </summary>
-        public void EditMetaData()
+        /// <param name="popupX">The screen x-location of where the popup needs to be placed</param>
+        /// <param name="popupY">The screen y-location of where the popup needs to be placed</param>
+        public void EditMetaData(int popupX, int popupY)
         {
             string[] metadata = { CurrentTrainPath.PathId, CurrentTrainPath.PathName, CurrentTrainPath.PathStart, CurrentTrainPath.PathEnd };
             bool isPlayerPath = (CurrentTrainPath.PathFlags & PathFlags.NotPlayerPath) == 0;
-            PathMetadataDialog metadataDialog = new PathMetadataDialog(metadata, isPlayerPath);
+            PathMetadataDialog metadataDialog = new PathMetadataDialog(metadata, isPlayerPath)
+            {
+                Left = popupX,
+                Top = popupY
+            };
             TrackViewer.Localize(metadataDialog);
             if (metadataDialog.ShowDialog() == true)
             {
@@ -780,12 +786,14 @@ namespace ORTS.TrackViewer.Editing
         /// Reverse the path including metadata, but first check if the path is clean enough.
         /// Note that reversing is like any other action, in the sense that it allows an undo.
         /// </summary>
-        public void ReversePath()
+        /// <param name="popupX">The screen x-location of where the edit metadata popup needs to be placed</param>
+        /// <param name="popupY">The screen y-location of where the edit metadata popup needs to be placed</param>
+        public void ReversePath(int popupX, int popupY)
         {
             if (! CanReverse()) return;
             CurrentTrainPath.StoreCurrentPath();
             CurrentTrainPath.ReversePath();
-            EditMetaData();
+            EditMetaData(popupX, popupY);
         }
 
         private bool CanReverse()

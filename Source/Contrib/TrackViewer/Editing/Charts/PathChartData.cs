@@ -278,7 +278,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         /// <param name="height">Height to store in the point</param>
         /// <param name="tvsi">The section index in the track vector node</param>
         /// <param name="sectionOffsetStart">Offset of the start of this section (in forward direction of track, not of path)</param>
-        /// <param name="sectionOffsetStart">Offset of the end of this section (in forward direction of track, not of path)</param>
+        /// <param name="sectionOffsetEnd">Offset of the end of this section (in forward direction of track, not of path)</param>
         private void AddPointAndTrackItems(List<PathChartPoint> newPoints, TrVectorNode vectorNode, IEnumerable<ChartableTrackItem> trackItems,
             bool isForward, float height, int tvsi, float sectionOffsetStart, float sectionOffsetEnd)
         {
