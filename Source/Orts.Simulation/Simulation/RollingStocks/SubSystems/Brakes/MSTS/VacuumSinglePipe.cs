@@ -652,7 +652,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / TempbrakePipeTimeFactorS;
                         }
 
-                        // Check to see if BP pressure is an invalid number, typically when coupling new cars
+                        // Check to see if BP Pie Diff pressure is an invalid number, typically when coupling new cars
                         if (float.IsNaN(TrainPipePressureDiffPropogationPSI))
                         {
                             if (car.Train.Cars.Count > car.Train.PreviousCarCount && car.Train.PreviousCarCount != 0)
@@ -661,10 +661,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             }
                         }
 
-/*                        if (train.Cars.Count > train.PreviousCarCount && train.PreviousCarCount != 0)
+                        if (train.Cars.Count > train.PreviousCarCount && train.PreviousCarCount != 0)
                         {
-                            Trace.TraceInformation("Test Before - Carid {0} BP Pressure {1} Diff {2} Volume {3}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI, TrainPipePressureDiffPropogationPSI, Car0BrakeSytemVolumeM30);
-                        }  */
+//                            Trace.TraceInformation("Test Before - Carid {0} BP Pressure {1} Diff {2} Volume {3}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI, TrainPipePressureDiffPropogationPSI, Car0BrakeSytemVolumeM30);
+                        }  
 
                         // Start propagating pressure along train BP by averaging pressure across each car down the train
                         if (car0 == lead) // For the locomotive, only decrease the next car. 
@@ -677,6 +677,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
                             car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                            // These lines allow pressure propagation from the rear of the train twoards the front
                             car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * CarBrakeSytemVolumeM3;
                             car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
 
@@ -715,8 +716,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                             //  Set brake pipe pressure at leading car to match, thus increasing the pressure in all trucks along the train
                             // this will result in application of the brakes
-                            train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.BrakeLine1PressurePSI;
-
+ //                           train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.BrakeLine1PressurePSI;
+//                            Trace.TraceInformation("Front - Carid {0} Car BP {1}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI);
                         }
 
                         if (car0.BrakeSystem.AngleCockBOpen && car != car0)  //  AND Rear cock of wagon opened, and car is not the previous wagon
@@ -733,7 +734,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p0) / TempbrakePipeTimeFactorS;
                             }
 
-                            train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = car0.BrakeSystem.BrakeLine1PressurePSI;
+//                            train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = car0.BrakeSystem.BrakeLine1PressurePSI;
                         }
                     }
 
@@ -756,7 +757,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // When valve is closed then pressure will be able to drop, and return to normal
                     if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)  
                     {
-                        if ((car.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p1) / TempbrakePipeTimeFactorS)) > OneAtmospherePSI)
+//                        Trace.TraceInformation("Last (A) - Carid {0} Car BP {1} Time Factor {2} Variation {3} p1 {4}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI, TempbrakePipeTimeFactorS, TrainPipeTimeVariationS, p1);
+                        // Test to make sure that BP pressure stays within reasonable bounds
+                        if (TempbrakePipeTimeFactorS == 0)
+                        {
+                            car.BrakeSystem.BrakeLine1PressurePSI = p1;
+                        }
+                         else if (  (car.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p1) / TempbrakePipeTimeFactorS)) > OneAtmospherePSI)
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                         }
@@ -766,7 +773,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
                         //  Set brake pipe pressure at leading car to match, thus increasing the pressure in all trucks along the train
                         // this will result in application of the brakes
-                        train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.BrakeLine1PressurePSI;
+//                        train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = car.BrakeSystem.BrakeLine1PressurePSI;
+//                        Trace.TraceInformation("Last (B) - Carid {0} Car BP {1}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI);
 
                     }
 
