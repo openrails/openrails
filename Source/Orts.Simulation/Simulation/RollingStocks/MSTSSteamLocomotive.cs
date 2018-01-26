@@ -1356,12 +1356,12 @@ namespace Orts.Simulation.RollingStocks
                 // Create a new default burnrate curve locomotive based upon default information
                 float[] TempSteamOutputRate = new float[]
                     {
-                               0.0f, pS.TopH(TheoreticalMaxSteamOutputLBpS), pS.TopH(TheoreticalMaxSteamOutputLBpS)
+                               0.0f, pS.TopH(TheoreticalMaxSteamOutputLBpS), pS.TopH(TheoreticalMaxSteamOutputLBpS * 1.1f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 1.2f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 1.3f), pS.TopH(TheoreticalMaxSteamOutputLBpS * 1.4f)
                     };
 
                 float[] TempCoalFiringRate = new float[]
                     {
-                                0.0f, MaxFiringRateLbpH, (MaxFiringRateLbpH * 1.2f)
+                                0.0f, MaxFiringRateLbpH, (MaxFiringRateLbpH * 1.5f), (MaxFiringRateLbpH * 2.0f), (MaxFiringRateLbpH * 3.0f), (MaxFiringRateLbpH * 4.0f)
                     };
                
             NewBurnRateSteamToCoalLbspH = new Interpolator(TempSteamOutputRate, TempCoalFiringRate);
@@ -4997,7 +4997,7 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     // The damper burn effect is created by the cylinder exhaust steam, and the opening state of the damper. 1.2 included as a small increase to compensate for calculation losses
-                    DamperBurnEffect = DamperController.CurrentValue * CylinderSteamUsageLBpS *1.2f; 
+                    DamperBurnEffect = DamperController.CurrentValue * CylinderSteamUsageLBpS * 1.2f; 
                 }
                 DamperBurnEffect = MathHelper.Clamp(DamperBurnEffect, 0.0f, TheoreticalMaxSteamOutputLBpS * 1.5f); // set damper maximum to the max generation rate
             }
