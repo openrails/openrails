@@ -370,7 +370,7 @@ simulation falls back to use MSTS parameters.
 |         1250    300000          |                                    |
 |     )                           |                                    |
 |     DieselConsumptionTab (      | Diesel fuel consumption table      |
-|         0       0               |    RPM   Specific consumption l/rpm|
+|         0       0               |  RPM   Vs consumption l/h/rpm      |
 |         510     10              |                                    |
 |         1250    245             |                                    |
 |     )                           |                                    |
