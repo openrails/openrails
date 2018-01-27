@@ -123,6 +123,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuHighlightLastPathSection2.IsChecked = Properties.Settings.Default.highlightLastPathSection;
             menuShowCurrentEditorAction.IsChecked = Properties.Settings.Default.showEditorAction;
             menuShowCurrentEditorAction2.IsChecked = Properties.Settings.Default.showEditorAction;
+            menuPgupExtendsPath.IsChecked = Properties.Settings.Default.pgupExtendsPath;
+            menuPgupExtendsPath2.IsChecked = Properties.Settings.Default.pgupExtendsPath;
 
             menuStatusShowVectorSection.IsChecked = Properties.Settings.Default.statusShowVectorSections;
             menuStatusShowPATfile.IsChecked = Properties.Settings.Default.statusShowPATfile;
@@ -212,6 +214,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showTrainpath = menuShowTrainpath.IsChecked;
             Properties.Settings.Default.highlightLastPathSection = menuHighlightLastPathSection.IsChecked;
             Properties.Settings.Default.showEditorAction = menuShowCurrentEditorAction.IsChecked;
+            Properties.Settings.Default.pgupExtendsPath = menuPgupExtendsPath.IsChecked;
 
             Properties.Settings.Default.statusShowVectorSections = menuStatusShowVectorSection.IsChecked;
             Properties.Settings.Default.statusShowPATfile = menuStatusShowPATfile.IsChecked && menuShowPATfile.IsChecked;
@@ -258,6 +261,8 @@ namespace ORTS.TrackViewer.UserInterface
             menuHighlightLastPathSection2.IsEnabled = menuHighlightLastPathSection.IsEnabled;
             menuShowCurrentEditorAction.IsEnabled = menuEnableEditing.IsChecked;
             menuShowCurrentEditorAction2.IsEnabled = menuShowCurrentEditorAction.IsEnabled;
+            menuPgupExtendsPath.IsEnabled = menuEnableEditing.IsChecked;
+            menuPgupExtendsPath2.IsEnabled = menuEnableEditing.IsChecked;
         }
 
         private void MenuSetAllItems(bool isChecked)
@@ -1118,6 +1123,18 @@ namespace ORTS.TrackViewer.UserInterface
         {
             menuShowCurrentEditorAction.IsChecked = menuShowCurrentEditorAction2.IsChecked;
             MenuShowCurrentEditorAction_Click(null, null);
+        }
+
+        private void MenuPgupExtendsPathAction_Click(object sender, RoutedEventArgs e)
+        {
+            menuPgupExtendsPath2.IsChecked = menuPgupExtendsPath.IsChecked;
+            UpdateMenuSettings();
+        }
+
+        private void MenuPgupExtendsPathAction2_Click(object sender, RoutedEventArgs e)
+        {
+            menuPgupExtendsPath.IsChecked = menuPgupExtendsPath2.IsChecked;
+            MenuPgupExtendsPathAction_Click(null, null);
         }
     }
 

@@ -179,6 +179,20 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
+        /// Add zero or more additional main nodes
+        /// </summary>
+        /// <param name="lastNode">currently last node</param>
+        /// <param name="numberOfNodesToAdd">The number of nodes to add</param>
+        public void AddAdditionalMainNodes(TrainpathNode lastNode, int numberOfNodesToAdd)
+        {
+            int wantedNetNodesAdded = NetNodesAdded + numberOfNodesToAdd;
+            while (NetNodesAdded < wantedNetNodesAdded && lastNode != null)
+            {
+                lastNode = AddAdditionalNode(lastNode, true);
+            }
+        }
+
+        /// <summary>
         /// Create a (still unlinked) node halfway through the next section (so halfway between this
         /// and the next junction. Needed specially for disambiguity.
         /// </summary>

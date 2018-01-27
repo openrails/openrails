@@ -104,7 +104,7 @@ namespace ORTS.TrackViewer.Editing
 
         const int practicalInfinityInt = int.MaxValue/2; // large, but not close to overflow
         int numberToDraw = practicalInfinityInt; // number of nodes to draw, start with all
-        bool allowAddingNodes;  // if at end of path, do we allow adding a node to the path.
+        int maxNodesToAdd;  // if at end of path, how many nodes do we allow to be added
 
         ContextMenu contextMenu;
         /// <summary>If context menu is open, updating active node and track is disabled</summary>
@@ -518,10 +518,9 @@ namespace ORTS.TrackViewer.Editing
             {
                 // Apparently we were not able to draw all nodes. Reset maximum number to draw, and possibly add a node
                 numberToDraw = numberDrawn;
-                if (EditingIsActive && allowAddingNodes 
-                    && (CurrentNode != null) && (CurrentNode.NodeType != TrainpathNodeType.End))
+                if (EditingIsActive && (CurrentNode != null) && (CurrentNode.NodeType != TrainpathNodeType.End))
                 {
-                    nonInteractiveAction.AddMainNode(CurrentNode, UpdateAfterEdits);
+                    nonInteractiveAction.AddMainNodes(CurrentNode, maxNodesToAdd, UpdateAfterEdits);
                 }
             }
 
@@ -905,14 +904,7 @@ namespace ORTS.TrackViewer.Editing
         public void ExtendPath()
         {
             ++numberToDraw;
-            if (EditingIsActive)
-            {
-                allowAddingNodes = !CurrentTrainPath.HasEnd;
-            }
-            else
-            {
-                allowAddingNodes = false;
-            }
+            maxNodesToAdd = CurrentTrainPath.HasEnd ? 0 : 1;
             CloseContextMenu();
         }
 
@@ -921,7 +913,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void ExtendPathFull()
         {
-            allowAddingNodes = false;
+            maxNodesToAdd = EditorAction.NodesToAddForLongExtend();
             numberToDraw = practicalInfinityInt;
             CloseContextMenu();
         }

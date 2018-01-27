@@ -123,6 +123,7 @@
                 <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection" IsCheckable="True" Click="MenuHighlightLastPathSection_Click"/>
                 <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="MenuEnableEditing_Click"/>
                 <MenuItem Header="Show current mouse action" Name="menuShowCurrentEditorAction" IsCheckable="True" IsChecked="False" Click="MenuShowCurrentEditorAction_Click"/>
+                <MenuItem Header="Shift-PgUp also extends path" Name="menuPgupExtendsPath" IsCheckable="True" IsChecked="True" Click="MenuPgupExtendsPathAction_Click"/>
                 <Separator/>
             </MenuItem>
             <MenuItem Header="Path-_Editor" Name="menuPathEditor" >
@@ -149,6 +150,7 @@
                 <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection2" IsCheckable="True" Click="MenuHighlightLastPathSection2_Click"/>
                 <MenuItem Header="Enable editing" Name="menuEnableEditing2" IsCheckable="True" IsChecked="False" Click="MenuEnableEditing2_Click"/>
                 <MenuItem Header="Show current mouse action" Name="menuShowCurrentEditorAction2" IsCheckable="True" IsChecked="False" Click="MenuShowCurrentEditorAction2_Click"/>
+                <MenuItem Header="Shift-PgUp also extends path" Name="menuPgupExtendsPath2" IsCheckable="True" IsChecked="True" Click="MenuPgupExtendsPathAction2_Click"/>
                 <Separator/>
                 <MenuItem Header="Auto-fix all broken nodes" Name="menuAutoFixAllNodes" IsCheckable="false" Click="MenuAutoFixAllNodes_Click"/>
                 <MenuItem Header="Auto-fix all broken paths" Name="menuAutoFixAllPaths" IsCheckable="false" Click="MenuAutoRestorePaths_Click"/>

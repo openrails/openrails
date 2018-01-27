@@ -26,6 +26,18 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string installDirectory {
+            get {
+                return ((string)(this["installDirectory"]));
+            }
+            set {
+                this["installDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string defaultRoute {
             get {
                 return ((string)(this["defaultRoute"]));
@@ -37,13 +49,49 @@ namespace ORTS.TrackViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string installDirectory {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool doAntiAliasing {
             get {
-                return ((string)(this["installDirectory"]));
+                return ((bool)(this["doAntiAliasing"]));
             }
             set {
-                this["installDirectory"] = value;
+                this["doAntiAliasing"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showScaleRuler {
+            get {
+                return ((bool)(this["showScaleRuler"]));
+            }
+            set {
+                this["showScaleRuler"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool useMilesNotMeters {
+            get {
+                return ((bool)(this["useMilesNotMeters"]));
+            }
+            set {
+                this["useMilesNotMeters"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool showWorldTiles {
+            get {
+                return ((bool)(this["showWorldTiles"]));
+            }
+            set {
+                this["showWorldTiles"] = value;
             }
         }
         
@@ -62,12 +110,155 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showLonLat {
+            get {
+                return ((bool)(this["showLonLat"]));
+            }
+            set {
+                this["showLonLat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showGridLines {
+            get {
+                return ((bool)(this["showGridLines"]));
+            }
+            set {
+                this["showGridLines"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double zoomOffsetX {
+            get {
+                return ((double)(this["zoomOffsetX"]));
+            }
+            set {
+                this["zoomOffsetX"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double zoomOffsetZ {
+            get {
+                return ((double)(this["zoomOffsetZ"]));
+            }
+            set {
+                this["zoomOffsetZ"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
+        public double zoomScale {
+            get {
+                return ((double)(this["zoomScale"]));
+            }
+            set {
+                this["zoomScale"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool zoomIsCenteredOnMouse {
+            get {
+                return ((bool)(this["zoomIsCenteredOnMouse"]));
+            }
+            set {
+                this["zoomIsCenteredOnMouse"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string zoomRoutePath {
+            get {
+                return ((string)(this["zoomRoutePath"]));
+            }
+            set {
+                this["zoomRoutePath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("PaleGreen")]
+        public string backgroundColorName {
+            get {
+                return ((string)(this["backgroundColorName"]));
+            }
+            set {
+                this["backgroundColorName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection preferences {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["preferences"]));
+            }
+            set {
+                this["preferences"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("en")]
+        public string language {
+            get {
+                return ((string)(this["language"]));
+            }
+            set {
+                this["language"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool colorTracks {
             get {
                 return ((bool)(this["colorTracks"]));
             }
             set {
                 this["colorTracks"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showTrackHighlights {
+            get {
+                return ((bool)(this["showTrackHighlights"]));
+            }
+            set {
+                this["showTrackHighlights"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showItemHighlights {
+            get {
+                return ((bool)(this["showItemHighlights"]));
+            }
+            set {
+                this["showItemHighlights"] = value;
             }
         }
         
@@ -122,6 +313,18 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool showStationNames {
+            get {
+                return ((bool)(this["showStationNames"]));
+            }
+            set {
+                this["showStationNames"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool showCrossings {
             get {
                 return ((bool)(this["showCrossings"]));
@@ -169,25 +372,13 @@ namespace ORTS.TrackViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool statusShowVectorSections {
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showAllSignals {
             get {
-                return ((bool)(this["statusShowVectorSections"]));
+                return ((bool)(this["showAllSignals"]));
             }
             set {
-                this["statusShowVectorSections"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool statusShowPATfile {
-            get {
-                return ((bool)(this["statusShowPATfile"]));
-            }
-            set {
-                this["statusShowPATfile"] = value;
+                this["showAllSignals"] = value;
             }
         }
         
@@ -206,60 +397,12 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showPATfile {
+        public bool showEndNodes {
             get {
-                return ((bool)(this["showPATfile"]));
+                return ((bool)(this["showEndNodes"]));
             }
             set {
-                this["showPATfile"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public double zoomOffsetX {
-            get {
-                return ((double)(this["zoomOffsetX"]));
-            }
-            set {
-                this["zoomOffsetX"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public double zoomOffsetZ {
-            get {
-                return ((double)(this["zoomOffsetZ"]));
-            }
-            set {
-                this["zoomOffsetZ"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("-1")]
-        public double zoomScale {
-            get {
-                return ((double)(this["zoomScale"]));
-            }
-            set {
-                this["zoomScale"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string zoomRoutePath {
-            get {
-                return ((string)(this["zoomRoutePath"]));
-            }
-            set {
-                this["zoomRoutePath"] = value;
+                this["showEndNodes"] = value;
             }
         }
         
@@ -290,24 +433,24 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showRoadCrossings {
+        public bool showCrossovers {
             get {
-                return ((bool)(this["showRoadCrossings"]));
+                return ((bool)(this["showCrossovers"]));
             }
             set {
-                this["showRoadCrossings"] = value;
+                this["showCrossovers"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool doAntiAliasing {
+        public bool showRoadCrossings {
             get {
-                return ((bool)(this["doAntiAliasing"]));
+                return ((bool)(this["showRoadCrossings"]));
             }
             set {
-                this["doAntiAliasing"] = value;
+                this["showRoadCrossings"] = value;
             }
         }
         
@@ -349,73 +492,25 @@ namespace ORTS.TrackViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showScaleRuler {
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowVectorSections {
             get {
-                return ((bool)(this["showScaleRuler"]));
+                return ((bool)(this["statusShowVectorSections"]));
             }
             set {
-                this["showScaleRuler"] = value;
+                this["statusShowVectorSections"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool useMilesNotMeters {
+        public bool showPATfile {
             get {
-                return ((bool)(this["useMilesNotMeters"]));
+                return ((bool)(this["showPATfile"]));
             }
             set {
-                this["useMilesNotMeters"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showWorldTiles {
-            get {
-                return ((bool)(this["showWorldTiles"]));
-            }
-            set {
-                this["showWorldTiles"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showEndNodes {
-            get {
-                return ((bool)(this["showEndNodes"]));
-            }
-            set {
-                this["showEndNodes"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("PaleGreen")]
-        public string backgroundColorName {
-            get {
-                return ((string)(this["backgroundColorName"]));
-            }
-            set {
-                this["backgroundColorName"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool statusShowTrainpath {
-            get {
-                return ((bool)(this["statusShowTrainpath"]));
-            }
-            set {
-                this["statusShowTrainpath"] = value;
+                this["showPATfile"] = value;
             }
         }
         
@@ -434,6 +529,54 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowPATfile {
+            get {
+                return ((bool)(this["statusShowPATfile"]));
+            }
+            set {
+                this["statusShowPATfile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool highlightLastPathSection {
+            get {
+                return ((bool)(this["highlightLastPathSection"]));
+            }
+            set {
+                this["highlightLastPathSection"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showEditorAction {
+            get {
+                return ((bool)(this["showEditorAction"]));
+            }
+            set {
+                this["showEditorAction"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowTrainpath {
+            get {
+                return ((bool)(this["statusShowTrainpath"]));
+            }
+            set {
+                this["statusShowTrainpath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool statusShowFPS {
             get {
                 return ((bool)(this["statusShowFPS"]));
@@ -445,120 +588,13 @@ namespace ORTS.TrackViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showLonLat {
-            get {
-                return ((bool)(this["showLonLat"]));
-            }
-            set {
-                this["showLonLat"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool zoomIsCenteredOnMouse {
-            get {
-                return ((bool)(this["zoomIsCenteredOnMouse"]));
-            }
-            set {
-                this["zoomIsCenteredOnMouse"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showCrossovers {
+        public bool statusShowNames {
             get {
-                return ((bool)(this["showCrossovers"]));
+                return ((bool)(this["statusShowNames"]));
             }
             set {
-                this["showCrossovers"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showGridLines {
-            get {
-                return ((bool)(this["showGridLines"]));
-            }
-            set {
-                this["showGridLines"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showTrackHighlights {
-            get {
-                return ((bool)(this["showTrackHighlights"]));
-            }
-            set {
-                this["showTrackHighlights"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showItemHighlights {
-            get {
-                return ((bool)(this["showItemHighlights"]));
-            }
-            set {
-                this["showItemHighlights"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showAllSignals {
-            get {
-                return ((bool)(this["showAllSignals"]));
-            }
-            set {
-                this["showAllSignals"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection preferences {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["preferences"]));
-            }
-            set {
-                this["preferences"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showStationNames {
-            get {
-                return ((bool)(this["showStationNames"]));
-            }
-            set {
-                this["showStationNames"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("en")]
-        public string language {
-            get {
-                return ((string)(this["language"]));
-            }
-            set {
-                this["language"] = value;
+                this["statusShowNames"] = value;
             }
         }
         
@@ -589,48 +625,24 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool highlightLastPathSection {
-            get {
-                return ((bool)(this["highlightLastPathSection"]));
-            }
-            set {
-                this["highlightLastPathSection"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool statusShowNames {
-            get {
-                return ((bool)(this["statusShowNames"]));
-            }
-            set {
-                this["statusShowNames"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool showEditorAction {
-            get {
-                return ((bool)(this["showEditorAction"]));
-            }
-            set {
-                this["showEditorAction"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool showLabels {
             get {
                 return ((bool)(this["showLabels"]));
             }
             set {
                 this["showLabels"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool pgupExtendsPath {
+            get {
+                return ((bool)(this["pgupExtendsPath"]));
+            }
+            set {
+                this["pgupExtendsPath"] = value;
             }
         }
     }

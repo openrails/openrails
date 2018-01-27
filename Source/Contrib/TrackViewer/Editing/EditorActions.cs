@@ -62,6 +62,8 @@ namespace ORTS.TrackViewer.Editing
         private AfterEditDelegate afterEditCallback;
         #endregion
 
+        public static int NodesToAddForLongExtend() { return Properties.Settings.Default.pgupExtendsPath ? 100 : 0; }
+
         /// <summary>
         /// Constructor. Creates the menuitem to be used in the context menu.
         /// </summary>
@@ -183,7 +185,8 @@ namespace ORTS.TrackViewer.Editing
             {
                 NodeType = TrainpathNodeType.Start
             };
-            ModificationTools.AddAdditionalNode(Trainpath.FirstNode, true); // make sure also the second node is available and drawn.
+            int maxNodesToAdd = 1 + EditorAction.NodesToAddForLongExtend();
+            ModificationTools.AddAdditionalMainNodes(Trainpath.FirstNode, maxNodesToAdd); // make sure also the second and possible additional nodes are available and drawn.
         }
 
         /// <summary>Returns the net amount of main nodes added.</summary>
@@ -269,7 +272,8 @@ namespace ORTS.TrackViewer.Editing
             Trainpath.FirstNode.NextMainNode = null;
             Trainpath.FirstNode.NextSidingNode = null;
             Trainpath.FirstNode.ReverseOrientation();
-            ModificationTools.AddAdditionalNode(Trainpath.FirstNode, true);
+            int maxNodesToAdd = 1 + EditorAction.NodesToAddForLongExtend();
+            ModificationTools.AddAdditionalMainNodes(Trainpath.FirstNode, maxNodesToAdd); // make sure also the second and possible additional nodes are available and drawn.
         }
     }
     #endregion
@@ -1883,15 +1887,16 @@ namespace ORTS.TrackViewer.Editing
         protected override void ExecuteAction() {}
 
         /// <summary>
-        /// Add an additional main node (to the end of the current path)
+        /// Add additional main nodes (to the end of the current path)
         /// </summary>
         /// <param name="currentNode">Node after which to add a node</param>
+        /// <param name="numberOfNodes">The number of nodes to add</param>
         /// <param name="callback">Callback to call when node has been added</param>
-        public void AddMainNode(TrainpathNode currentNode, AfterEditDelegate callback)
+        public void AddMainNodes(TrainpathNode currentNode, int numberOfNodes, AfterEditDelegate callback)
         {
             if (currentNode.IsBroken) return;
             ModificationTools.Reset();
-            ModificationTools.AddAdditionalNode(currentNode, true);
+            ModificationTools.AddAdditionalMainNodes(currentNode, numberOfNodes);
             callback(ModificationTools.NetNodesAdded);
         }
 
