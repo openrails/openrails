@@ -120,6 +120,9 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowPATfile.IsChecked = Properties.Settings.Default.showPATfile;
             menuShowTrainpath.IsChecked = Properties.Settings.Default.showTrainpath;
             menuHighlightLastPathSection.IsChecked = Properties.Settings.Default.highlightLastPathSection;
+            menuHighlightLastPathSection2.IsChecked = Properties.Settings.Default.highlightLastPathSection;
+            menuShowCurrentEditorAction.IsChecked = Properties.Settings.Default.showEditorAction;
+            menuShowCurrentEditorAction2.IsChecked = Properties.Settings.Default.showEditorAction;
 
             menuStatusShowVectorSection.IsChecked = Properties.Settings.Default.statusShowVectorSections;
             menuStatusShowPATfile.IsChecked = Properties.Settings.Default.statusShowPATfile;
@@ -208,6 +211,7 @@ namespace ORTS.TrackViewer.UserInterface
             Properties.Settings.Default.showPATfile = menuShowPATfile.IsChecked;
             Properties.Settings.Default.showTrainpath = menuShowTrainpath.IsChecked;
             Properties.Settings.Default.highlightLastPathSection = menuHighlightLastPathSection.IsChecked;
+            Properties.Settings.Default.showEditorAction = menuShowCurrentEditorAction.IsChecked;
 
             Properties.Settings.Default.statusShowVectorSections = menuStatusShowVectorSection.IsChecked;
             Properties.Settings.Default.statusShowPATfile = menuStatusShowPATfile.IsChecked && menuShowPATfile.IsChecked;
@@ -239,16 +243,21 @@ namespace ORTS.TrackViewer.UserInterface
             menuSelectPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuNewPath.IsEnabled = (trackViewer.CurrentRoute != null);
             menuShowOtherPaths.IsEnabled = (trackViewer.CurrentRoute != null);
-            menuHighlightLastPathSection.IsEnabled = (trackViewer.PathEditor != null);
             menuSavePath.IsEnabled = (trackViewer.PathEditor != null);
             menuSaveStations.IsEnabled = (trackViewer.PathEditor != null);
             menuShowChart.IsEnabled = (trackViewer.PathEditor != null);
-            menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
             menuEditMetadata.IsEnabled = menuEnableEditing.IsChecked;
             menuReversePath.IsEnabled = menuEnableEditing.IsChecked;
             menuExtendPath.IsEnabled = (trackViewer.PathEditor != null) && menuEnableEditing.IsChecked;
             menuAutoFixAllNodes.IsEnabled = menuEnableEditing.IsChecked && (trackViewer.PathEditor != null);
             menuAutoFixAllPaths.IsEnabled = (trackViewer.CurrentRoute != null);
+
+            menuEnableEditing.IsEnabled = (trackViewer.PathEditor != null);
+            menuEnableEditing2.IsEnabled = menuEnableEditing.IsEnabled;
+            menuHighlightLastPathSection.IsEnabled = (trackViewer.PathEditor != null);
+            menuHighlightLastPathSection2.IsEnabled = menuHighlightLastPathSection.IsEnabled;
+            menuShowCurrentEditorAction.IsEnabled = menuEnableEditing.IsChecked;
+            menuShowCurrentEditorAction2.IsEnabled = menuShowCurrentEditorAction.IsEnabled;
         }
 
         private void MenuSetAllItems(bool isChecked)
@@ -572,6 +581,8 @@ namespace ORTS.TrackViewer.UserInterface
             shortcuts.Append(TrackViewer.catalog.GetString("PgDn\t\tShow less of the path\n"));
             shortcuts.Append(TrackViewer.catalog.GetString("shift-PgUp\tShow the full path\n"));
             shortcuts.Append(TrackViewer.catalog.GetString("shift-PgDn\tShow only start point of path\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("E\t\tPlace end-point\n"));
+            shortcuts.Append(TrackViewer.catalog.GetString("W\t\tPlace a wait-point\n"));
             shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Z\t\tUndo in path editor\n"));
             shortcuts.Append(TrackViewer.catalog.GetString("ctrl-Y\t\tRedo in path editor\n"));
             shortcuts.Append("\n");
@@ -910,8 +921,15 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void MenuEnableEditing_Click(object sender, RoutedEventArgs e)
         {
+            menuEnableEditing2.IsChecked = menuEnableEditing.IsChecked;
             trackViewer.PathEditor.EditingIsActive = menuEnableEditing.IsChecked;
             UpdateMenuSettings();
+        }
+
+        private void MenuEnableEditing2_Click(object sender, RoutedEventArgs e)
+        {
+            menuEnableEditing.IsChecked = menuEnableEditing2.IsChecked;
+            MenuEnableEditing_Click(null, null);
         }
 
         private void MenuNewPath_Click(object sender, RoutedEventArgs e)
@@ -924,7 +942,7 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void MenuReversePath_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.PathEditor.ReversePath(trackViewer.Window.ClientBounds.Left + 50, trackViewer.Window.ClientBounds.Top + 20);
+            trackViewer.ReversePath();
             UpdateMenuSettings();
         }
 
@@ -941,7 +959,7 @@ namespace ORTS.TrackViewer.UserInterface
 
         private void MenuEditMetadata_Click(object sender, RoutedEventArgs e)
         {
-            trackViewer.PathEditor.EditMetaData(trackViewer.Window.ClientBounds.Left + 50, trackViewer.Window.ClientBounds.Top + 20);
+            trackViewer.EditMetaData();
         }
 
         private void MenuAutoRestorePaths_Click(object sender, RoutedEventArgs e)
@@ -1066,7 +1084,7 @@ namespace ORTS.TrackViewer.UserInterface
         private void MenuAutoFixAllNodes_Click(object sender, RoutedEventArgs e)
         {
             this.trackViewer.PathEditor.AutoFixAllBrokenNodes();
-    }
+        }
 
         private void MenuLoadLabels_Click(object sender, RoutedEventArgs e)
         {
@@ -1076,6 +1094,30 @@ namespace ORTS.TrackViewer.UserInterface
         private void MenuSaveLabels_Click(object sender, RoutedEventArgs e)
         {
             this.trackViewer.SaveLabels();
+        }
+
+        private void MenuHighlightLastPathSection_Click(object sender, RoutedEventArgs e)
+        {
+            menuHighlightLastPathSection2.IsChecked = menuHighlightLastPathSection.IsChecked;
+            UpdateMenuSettings();
+        }
+
+        private void MenuHighlightLastPathSection2_Click(object sender, RoutedEventArgs e)
+        {
+            menuHighlightLastPathSection.IsChecked = menuHighlightLastPathSection2.IsChecked;
+            MenuHighlightLastPathSection_Click(null, null);
+        }
+
+        private void MenuShowCurrentEditorAction_Click(object sender, RoutedEventArgs e)
+        {
+            menuShowCurrentEditorAction2.IsChecked = menuShowCurrentEditorAction.IsChecked;
+            UpdateMenuSettings();
+        }
+
+        private void MenuShowCurrentEditorAction2_Click(object sender, RoutedEventArgs e)
+        {
+            menuShowCurrentEditorAction.IsChecked = menuShowCurrentEditorAction2.IsChecked;
+            MenuShowCurrentEditorAction_Click(null, null);
         }
     }
 

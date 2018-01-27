@@ -60,8 +60,6 @@ namespace ORTS.TrackViewer.Editing
             get {return _editingIsActive;}
             set { _editingIsActive = value; OnActiveOrPathChanged(); }
         }
-        /// <summary>If context menu is open, updating active node and track is disabled</summary>
-        public bool EnableMouseUpdate { get; set; }
 
         /// <summary>Name of the file with the .pat definition</summary>
         public string FileName { get; private set; }
@@ -76,6 +74,9 @@ namespace ORTS.TrackViewer.Editing
         /// <summary>Does the editor have a path that has a stored tail</summary>
         public bool HasStoredTail { get { return (CurrentTrainPath.FirstNodeOfTail != null); } }
 
+        /// <summary>A description of the current action that will be done when the mouse is clicked</summary>
+        public string CurrentActionDescription { get; private set; } = "";
+
         // some redirections to the drawPath
         /// <summary>Return current node (last drawn) node</summary>
         public TrainpathNode CurrentNode { get { return drawPath.CurrentMainNode; } }
@@ -87,14 +88,12 @@ namespace ORTS.TrackViewer.Editing
         DrawTrackDB drawTrackDB; // We need to know what has been drawn, especially to get track closest to mouse
         TrackDB trackDB;
         TrackSectionsFile tsectionDat;
-
         
         DrawPath drawPath;      // drawing of the path itself
 
         TrainpathNode activeNode;           // active Node (if present) for which actions can be performed
         TrainpathVectorNode activeTrackLocation;  // dynamic node that follows the mouse and is on track, but is not part of path
 
-        List<EditorAction> editorActionsMouseClicked;
         List<EditorAction> editorActionsActiveNode;
         List<EditorAction> editorActionsActiveTrack;
         List<EditorAction> editorActionsBroken;
@@ -108,16 +107,25 @@ namespace ORTS.TrackViewer.Editing
         bool allowAddingNodes;  // if at end of path, do we allow adding a node to the path.
 
         ContextMenu contextMenu;
+        /// <summary>If context menu is open, updating active node and track is disabled</summary>
+        bool enableMouseUpdate;
         MenuItem noActionPossibleMenuItem;
 
         // Editor actions that are not via the menu
         EditorActionNonInteractive nonInteractiveAction;
-        EditorActionMouseDragVectorNode editorActionMouseDragVector;
-        EditorActionMouseDragAutoConnect editorActionMouseDragAuto;
-        List<EditorActionMouseDrag> mouseDragActions;   // list of mouse drag actions in the order we will test them
         EditorActionMouseDrag activeMouseDragAction;
+        EditorAction activeMouseClickAction;
+        List<EditorActionMouseDrag> editorDragActionsMouseClicked;
+        List<EditorAction> editorActionsMouseClicked;
+
+        // Editor actions that are via keyboard commands
+        EditorActionAddEnd possibleAddEndAction;
+        EditorActionAddEnd activeAddEndAction;
+        EditorActionAddWait possibleAddWaitAction;
+        EditorActionAddWait activeAddWaitAction;
 
         bool _editingIsActive;
+        bool _draggingIsActive;
         #endregion
 
         #region Constructors
@@ -134,12 +142,12 @@ namespace ORTS.TrackViewer.Editing
 
             TrackExtensions.Initialize(trackDB.TrackNodes, tsectionDat); // we might be calling this more than once, but so be it.
 
-            EnableMouseUpdate = true;
+            enableMouseUpdate = true;
 
             drawPath = new DrawPath(trackDB, tsectionDat);
 
             CreateNonMenuActions();
-            CreateMouseClickEntries();
+            CreateDirectActions();
             CreateContextMenuEntries();
             CreateContextMenu();
         }
@@ -148,9 +156,6 @@ namespace ORTS.TrackViewer.Editing
         {
             activeTrackLocation = new TrainpathVectorNode(trackDB, tsectionDat);
             nonInteractiveAction = new EditorActionNonInteractive();
-            editorActionMouseDragVector = new EditorActionMouseDragVectorNode();
-            editorActionMouseDragAuto = new EditorActionMouseDragAutoConnect();
-            mouseDragActions = new List<EditorActionMouseDrag>() { editorActionMouseDragAuto };
         }
 
         /// <summary>
@@ -237,27 +242,33 @@ namespace ORTS.TrackViewer.Editing
         }
 
         /// <summary>
-        /// Create the list of actions that can be performed on a mouse click.
+        /// Create the lists of actions that can be performed on a mouse click or with a keystroke
         /// </summary>
-        private void CreateMouseClickEntries()
+        private void CreateDirectActions()
         {
+            // the order in which the actions are defined determines the order in which they are tried
+            editorDragActionsMouseClicked = new List<EditorActionMouseDrag>
+            {
+                //new EditorActionMouseDragVectorNode(), // No longer needed since the DragAutoConnect handles this directly
+                new EditorActionMouseDragAutoConnect()
+            };
+
             // the order in which the actions are defined determines the order in which they are tried
             editorActionsMouseClicked = new List<EditorAction>
             {
                 new EditorActionAddStart(),
+                new EditorActionOtherStartDirection(),
                 new EditorActionTakeOtherExit(),
                 new EditorActionTakeOtherExitPassingPath(),
                 new EditorActionAutoFixBrokenNodes(),
-                new EditorActionRemovePassingPath()
+                new EditorActionRemovePassingPath(),
+                new EditorActionEditWait(),
+                new EditorActionRemoveReverse(),
+                new EditorActionRemoveEnd(),
             };
-            //editorActionsMouseClicked.Add(new EditorActionDrawUntilHere(DrawUntilHere));
 
-            // no longer possible because these nodes will be dragged. Can be added when using Alt instead of control?
-            //editorActionsMouseClicked.Add(new EditorActionOtherStartDirection());
-            //editorActionsMouseClicked.Add(new EditorActionEditWait());
-            //editorActionsMouseClicked.Add(new EditorActionRemoveEnd());
-            //editorActionsMouseClicked.Add(new EditorActionRemoveReverse());
-
+            possibleAddEndAction = new EditorActionAddEnd();
+            possibleAddWaitAction = new EditorActionAddWait();
         }
 
         /// <summary>
@@ -352,37 +363,67 @@ namespace ORTS.TrackViewer.Editing
 
             contextMenu.PlacementRectangle = new Rect((double)mouseX, (double)mouseY, 20, 20);
             contextMenu.IsOpen = true;
-            EnableMouseUpdate = false;
+            enableMouseUpdate = false;
         }
 
         /// <summary>
-        /// See whether an action is possible based on mouse click and perform it.
+        /// Determine which action would be taken if, subsequently, the left-mouse button will be clicked
         /// </summary>
-        /// <param name="mouseX"></param>
-        /// <param name="mouseY"></param>
-        public void OnLeftMouseClick(int mouseX, int mouseY)
+        /// <param name="wantDragAction">Do we want a drag-action?</param>
+        /// <param name="wantClickAction">Do we want a click-action?</param>
+        /// <param name="mouseX">The current location of the mouse in x-direction</param>
+        /// <param name="mouseY">The current location of the mouse in y-direction</param>
+        public void DeterminePossibleActions(bool wantDragAction, bool wantClickAction, int mouseX, int mouseY)
         {
-            foreach (EditorActionMouseDrag mouseDragAction in mouseDragActions)
+            CurrentActionDescription = "";
+            activeMouseDragAction = null;
+            activeMouseClickAction = null;
+            if (wantDragAction)
             {
-                if (mouseDragAction.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
-                        mouseX, mouseY))
+                foreach (EditorActionMouseDrag mouseDragAction in editorDragActionsMouseClicked)
                 {
-                    activeMouseDragAction = mouseDragAction;
-                    activeMouseDragAction.StartDragging();
-                    return;
+                    if (mouseDragAction.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                            mouseX, mouseY))
+                    {
+                        CurrentActionDescription = mouseDragAction.ToString();
+                        activeMouseDragAction = mouseDragAction;
+                        return;
+                    }
+                }
+            }
+            else if (wantClickAction)
+            {
+                foreach (EditorAction action in editorActionsMouseClicked)
+                {
+                    bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
+                        mouseX, mouseY);
+                    if (actionCanBeExecuted)
+                    {
+                        CurrentActionDescription = action.ToString();
+                        activeMouseClickAction = action;
+                        return;
+                    }
                 }
             }
 
-            foreach (EditorAction action in editorActionsMouseClicked)
+            //direct key actions
+            activeAddEndAction = possibleAddEndAction.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits, mouseX, mouseY) ?
+                possibleAddEndAction : null;
+            activeAddWaitAction = possibleAddWaitAction.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits, mouseX, mouseY) ?
+                possibleAddWaitAction : null;
+        }
+
+        /// <summary>
+        /// Perform the previously-selected action when the mouse is clicked
+        /// </summary>
+        public void OnLeftMouseClick()
+        {
+            if (activeMouseDragAction != null)
             {
-                bool actionCanBeExecuted = action.MenuState(CurrentTrainPath, activeNode, activeTrackLocation, UpdateAfterEdits,
-                    mouseX, mouseY);
-                if (actionCanBeExecuted)
-                {
-                    action.DoAction();
-                    break;
-                }
+                _draggingIsActive = true;
+                activeMouseDragAction.StartDragging();
             }
+            activeMouseClickAction?.DoAction();
         }
 
         /// <summary>
@@ -390,8 +431,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void OnLeftMouseMoved()
         {
-            if (activeMouseDragAction == null) return;
-            activeMouseDragAction.Dragging();
+            activeMouseDragAction?.Dragging();
         }
 
         /// <summary>
@@ -404,6 +444,7 @@ namespace ORTS.TrackViewer.Editing
             activeMouseDragAction.EndDragging();
             activeMouseDragAction = null;
             OnPathChanged();
+            _draggingIsActive = false;
         }
 
         /// <summary>
@@ -412,11 +453,13 @@ namespace ORTS.TrackViewer.Editing
         public void OnLeftMouseCancel()
         {
             if (activeMouseDragAction == null) return;
-
             activeMouseDragAction.CancelDragging();
             activeMouseDragAction = null;
+            _draggingIsActive = false;
         }
 
+        public void PlaceEndPoint() => activeAddEndAction?.DoAction();
+        public void PlaceWaitPoint() => activeAddWaitAction?.DoAction();
 
 
         /// <summary>
@@ -433,7 +476,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         void ContextMenu_Closed(object sender, RoutedEventArgs e)
         {
-            EnableMouseUpdate = true;
+            enableMouseUpdate = true;
         }
 
         /// <summary>
@@ -487,7 +530,7 @@ namespace ORTS.TrackViewer.Editing
                 return;
             }
 
-            if (EnableMouseUpdate)
+            if (enableMouseUpdate)
             {
                 FindActiveNode(drawArea, drawnPathData);
                 FindActiveTrackLocation(drawnPathData);
@@ -606,7 +649,7 @@ namespace ORTS.TrackViewer.Editing
 
         #endregion
 
-        #region Actions to take when editing is enabled
+        #region Actions to take when editing is first enabled
         /// <summary>
         /// Once the editing becomes active for this path, we make sure the path is 'clean' according to our standards
         /// </summary>
@@ -909,7 +952,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void Undo()
         {
-            if (activeMouseDragAction != null) return; // do not support Undo while dragging
+            if (_draggingIsActive) return; // do not support Undo while dragging
             CurrentTrainPath.Undo();
             CloseContextMenu();
         }
@@ -919,7 +962,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         public void Redo()
         {
-            if (activeMouseDragAction != null) return; // do not support Redo while dragging
+            if (_draggingIsActive) return; // do not support Redo while dragging
             CurrentTrainPath.Redo();
             CloseContextMenu();
             OnPathChanged();

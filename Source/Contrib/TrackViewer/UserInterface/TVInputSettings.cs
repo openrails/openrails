@@ -78,6 +78,10 @@ namespace ORTS.TrackViewer.UserInterface
         ReducePath,
         /// <summary>command for showing only start node of a train path</summary>
         ReducePathFull,
+        /// <summary>command for placing the end point of a path</summary>
+        PlaceEndPoint,
+        /// <summary>command for placing a wait point for a path</summary>
+        PlaceWaitPoint,
         /// <summary>command for debugging the key map</summary>
         DebugDumpKeymap,
         /// <summary>command for adding a label</summary>
@@ -116,8 +120,10 @@ namespace ORTS.TrackViewer.UserInterface
         ToggleShowPatchLines,
         /// <summary>command for allowing slow zoom with mouse</summary>
         MouseZoomSlow,
-        /// <summary>command for redo in editor</summary>
-        EditorTakesMouseClick,
+        /// <summary>Key modifier for drag actions</summary>
+        EditorTakesMouseClickDrag,
+        /// <summary>Key modifier for click actions</summary>
+        EditorTakesMouseClickAction,
         /// <summary>command for redo in editor</summary>
         EditorRedo,
         /// <summary>command for undo in editor</summary>
@@ -210,6 +216,8 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ExtendPathFull] = new ORTS.Settings.UserCommandKeyInput(0x49, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ReducePath] = new ORTS.Settings.UserCommandKeyInput(0x51);
             Commands[(int)TVUserCommands.ReducePathFull] = new ORTS.Settings.UserCommandKeyInput(0x51, ORTS.Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.PlaceEndPoint] = new ORTS.Settings.UserCommandKeyInput(0x12);
+            Commands[(int)TVUserCommands.PlaceWaitPoint] = new ORTS.Settings.UserCommandKeyInput(0x11);
 
             Commands[(int)TVUserCommands.AddLabel]   = new ORTS.Settings.UserCommandKeyInput(0x26);
             Commands[(int)TVUserCommands.Quit]       = new ORTS.Settings.UserCommandKeyInput(0x10);
@@ -218,7 +226,8 @@ namespace ORTS.TrackViewer.UserInterface
 
             Commands[(int)TVUserCommands.MouseZoomSlow] = new UserCommandModifierInput(Settings.KeyModifiers.Shift);
 
-            Commands[(int)TVUserCommands.EditorTakesMouseClick] = new UserCommandModifierInput(Settings.KeyModifiers.Control);
+            Commands[(int)TVUserCommands.EditorTakesMouseClickAction] = new UserCommandModifierInput(Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.EditorTakesMouseClickDrag] = new UserCommandModifierInput(Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorUndo] = new ORTS.Settings.UserCommandKeyInput(0x2C, ORTS.Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorRedo] = new ORTS.Settings.UserCommandKeyInput(0x15, ORTS.Settings.KeyModifiers.Control);
 

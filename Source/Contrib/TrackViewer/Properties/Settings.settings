@@ -149,6 +149,9 @@
     <Setting Name="statusShowNames" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="showEditorAction" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
     <Setting Name="showLabels" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>

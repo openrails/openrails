@@ -100,6 +100,8 @@ namespace ORTS.TrackViewer
         DrawScaleRuler drawScaleRuler;
         /// <summary>For drawing real world longitude and latitude</summary>
         DrawLongitudeLatitude drawLongitudeLatitude;
+        /// <summary>For drawing the action that the editor might be taking</summary>
+        DrawEditorAction drawEditorAction;
         /// <summary>The routines to draw the world tiles</summary>
         DrawWorldTiles drawWorldTiles;
         /// <summary>The routines to draw the grade of a path</summary>
@@ -237,7 +239,7 @@ namespace ORTS.TrackViewer
             int halfHeight = (int)(fontManager.DefaultFont.Height / 2);
             drawScaleRuler.SetLocationAndSize(halfHeight, ScreenH - statusbarHeight - halfHeight, 2*halfHeight);
             drawLongitudeLatitude = new DrawLongitudeLatitude(halfHeight, menuHeight);
-
+            drawEditorAction = new DrawEditorAction(halfHeight, menuHeight + 2 * halfHeight);
         }
  
         /// <summary>
@@ -389,23 +391,27 @@ namespace ORTS.TrackViewer
                     PathEditor.PopupContextMenu(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
                 }
 
-                if (TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick))
+                PathEditor.DeterminePossibleActions(TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClickDrag), TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClickAction),
+                    TVUserInput.MouseLocationX, TVUserInput.MouseLocationY);
+
+                if (TVUserInput.IsPressed(TVUserCommands.PlaceEndPoint)) PathEditor.PlaceEndPoint();
+                if (TVUserInput.IsPressed(TVUserCommands.PlaceWaitPoint)) PathEditor.PlaceWaitPoint();
+
+
+                if (TVUserInput.IsMouseLeftButtonPressed())
                 {
-                    if (TVUserInput.IsMouseLeftButtonPressed())
-                    {
-                        PathEditor.OnLeftMouseClick(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
-                    }
-                    if (TVUserInput.IsMouseLeftButtonDown())
-                    {
-                        PathEditor.OnLeftMouseMoved(); // to make sure it is reactive enough, don't even care if mouse is really moved
-                    }
-                    if (TVUserInput.IsMouseLeftButtonReleased())
-                    {
-                        PathEditor.OnLeftMouseRelease();
-                    }
+                    PathEditor.OnLeftMouseClick();
+                }
+                if (TVUserInput.IsMouseLeftButtonDown())
+                {
+                    PathEditor.OnLeftMouseMoved(); // to make sure it is reactive enough, don't even care if mouse is really moved
+                }
+                if (TVUserInput.IsMouseLeftButtonReleased())
+                {
+                    PathEditor.OnLeftMouseRelease();
                 }
 
-                if (TVUserInput.IsReleased(TVUserCommands.EditorTakesMouseClick))
+                if (TVUserInput.IsReleased(TVUserCommands.EditorTakesMouseClickDrag))
                 {
                     PathEditor.OnLeftMouseCancel();
                 }
@@ -418,7 +424,7 @@ namespace ORTS.TrackViewer
                     drawLabels.AddLabel(mouseLocationAbsoluteX, mouseLocationAbsoluteY);
                 }
 
-                if (TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick))
+                if (TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClickDrag))
                 {
                     if (TVUserInput.IsMouseLeftButtonPressed())
                     {
@@ -433,7 +439,7 @@ namespace ORTS.TrackViewer
                         drawLabels.OnLeftMouseRelease();
                     }
                 }
-                if (TVUserInput.IsReleased(TVUserCommands.EditorTakesMouseClick))
+                if (TVUserInput.IsReleased(TVUserCommands.EditorTakesMouseClickDrag))
                 {
                     drawLabels.OnLeftMouseCancel();
                 }
@@ -445,7 +451,7 @@ namespace ORTS.TrackViewer
             }
 
             bool otherWindowHasMouse = menuControl.HasMouse() || drawPathChart.IsActived; 
-            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClick) && !otherWindowHasMouse) 
+            if (!TVUserInput.IsDown(TVUserCommands.EditorTakesMouseClickDrag) && !otherWindowHasMouse) 
             {
                 if (TVUserInput.IsMouseMoved() && TVUserInput.IsMouseLeftButtonDown())
                 {
@@ -556,6 +562,7 @@ namespace ORTS.TrackViewer
             if (DrawMultiplePaths != null ) DrawMultiplePaths.Draw(DrawArea);
             if (DrawPATfile != null && Properties.Settings.Default.showPATfile) DrawPATfile.Draw(DrawArea);
             if (PathEditor != null && Properties.Settings.Default.showTrainpath) PathEditor.Draw(DrawArea);
+            drawEditorAction.Draw(PathEditor);
 
             DrawTrackDB.DrawRoadTrackItems(DrawArea);
             DrawTrackDB.DrawTrackItems(DrawArea);
@@ -658,6 +665,11 @@ namespace ORTS.TrackViewer
             drawTerrain.SetPatchLineVisibility(showPatchLines);
             return true;
         }
+
+        internal void LoadLabels() => drawLabels?.LoadLabels();
+        internal void SaveLabels() => drawLabels?.SaveLabels();
+        internal void EditMetaData() => PathEditor?.EditMetaData(Window.ClientBounds.Left + 50, Window.ClientBounds.Top + 20);
+        internal void ReversePath() => PathEditor?.ReversePath(Window.ClientBounds.Left + 50, Window.ClientBounds.Top + 20);
         #endregion
 
         #region Folder and Route methods
@@ -969,7 +981,7 @@ namespace ORTS.TrackViewer
             drawPathChart.SetPathEditor(this.RouteData, this.PathEditor);
             DrawPATfile = null;
             PathEditor.EditingIsActive = true;
-            PathEditor.EditMetaData(Window.ClientBounds.Left + 50, Window.ClientBounds.Top + 20);
+            EditMetaData();
         }
 
         /// <summary>
@@ -1077,9 +1089,6 @@ namespace ORTS.TrackViewer
             TrackViewer.Localize(fixer);
             fixer.FixallAndShowResults(Paths, (message) => DrawLoadingMessage(message));
         }
-
-        internal void LoadLabels() => drawLabels?.LoadLabels();
-        internal void SaveLabels() => drawLabels?.SaveLabels();
         #endregion
 
         #region Debug methods

@@ -119,6 +119,11 @@
                     <ComboBox Name="comboBoxLanguage" SelectionChanged="ComboBoxLanguage_SelectionChanged"
                               DisplayMemberPath="Name" SelectedValuePath="Code"/>
                 </MenuItem>
+                <Separator/>
+                <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection" IsCheckable="True" Click="MenuHighlightLastPathSection_Click"/>
+                <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="MenuEnableEditing_Click"/>
+                <MenuItem Header="Show current mouse action" Name="menuShowCurrentEditorAction" IsCheckable="True" IsChecked="False" Click="MenuShowCurrentEditorAction_Click"/>
+                <Separator/>
             </MenuItem>
             <MenuItem Header="Path-_Editor" Name="menuPathEditor" >
                 <MenuItem Header="==Supporting MSTS paths only==" Foreground="Blue" IsEnabled="False"/>
@@ -127,13 +132,11 @@
                     <ComboBox Name="menuSelectPathCombobox" SelectionChanged="MenuSelectPathCombobox_SelectionChanged"/>
                 </MenuItem>
                 <MenuItem Header="Show other paths" Name="menuShowOtherPaths" IsCheckable="False" Click="MenuShowOtherPaths_Click"/>
-                <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection" IsCheckable="True" Click="UpdateMenuSettings"/>
                 <Separator/>
                 <MenuItem Header="Save path" Name="menuSavePath" IsCheckable="False" Click="MenuSavePath_Click"/>
                 <MenuItem Header="Save visited stations" Name="menuSaveStations" IsCheckable="False" Click="MenuSaveStations_Click"/>
                 <MenuItem Header="Show chart" Name="menuShowChart" IsCheckable="False" Click="MenuShowChart_Click"/>
                 <Separator/>
-                <MenuItem Header="Enable editing" Name="menuEnableEditing" IsCheckable="True" IsChecked="False" Click="MenuEnableEditing_Click"/>
                 <MenuItem Header="New path" Name="menuNewPath" IsCheckable="False" Click="MenuNewPath_Click"/>
                 <Separator/>
                 <MenuItem Header="Extend with other path" Name="menuExtendPath" IsCheckable="False"
@@ -142,6 +145,10 @@
                 </MenuItem>
                 <MenuItem Header="Edit path metadata" Name="menuEditMetadata" IsCheckable="False" Click="MenuEditMetadata_Click"/>
                 <MenuItem Header="Reverse path" Name="menuReversePath" IsCheckable="False" Click="MenuReversePath_Click"/>
+                <Separator/>
+                <MenuItem Header="Highlight last-drawn section" Name="menuHighlightLastPathSection2" IsCheckable="True" Click="MenuHighlightLastPathSection2_Click"/>
+                <MenuItem Header="Enable editing" Name="menuEnableEditing2" IsCheckable="True" IsChecked="False" Click="MenuEnableEditing2_Click"/>
+                <MenuItem Header="Show current mouse action" Name="menuShowCurrentEditorAction2" IsCheckable="True" IsChecked="False" Click="MenuShowCurrentEditorAction2_Click"/>
                 <Separator/>
                 <MenuItem Header="Auto-fix all broken nodes" Name="menuAutoFixAllNodes" IsCheckable="false" Click="MenuAutoFixAllNodes_Click"/>
                 <MenuItem Header="Auto-fix all broken paths" Name="menuAutoFixAllPaths" IsCheckable="false" Click="MenuAutoRestorePaths_Click"/>

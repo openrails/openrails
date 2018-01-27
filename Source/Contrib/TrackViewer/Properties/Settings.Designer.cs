@@ -612,6 +612,18 @@ namespace ORTS.TrackViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool showEditorAction {
+            get {
+                return ((bool)(this["showEditorAction"]));
+            }
+            set {
+                this["showEditorAction"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool showLabels {
             get {

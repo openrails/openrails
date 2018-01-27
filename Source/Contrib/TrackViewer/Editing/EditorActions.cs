@@ -153,6 +153,11 @@ namespace ORTS.TrackViewer.Editing
         {
             return ModificationTools.NetNodesAdded;
         }
+
+        public override string ToString()
+        {
+            return this.ActionMenuItem.Header.ToString();
+        }
     }
     #endregion
     
@@ -1449,7 +1454,7 @@ namespace ORTS.TrackViewer.Editing
         TrainpathVectorNode nodeBeingDragged;               // link to the node (new) that is being dragged.
 
         /// <summary>Constructor</summary>
-        public EditorActionMouseDragVectorNode() : base("", "") { }
+        public EditorActionMouseDragVectorNode() : base("Drag a special node", "") { }
 
         /// <summary>Can the action be executed given the current path and active nodes?</summary>
         protected override bool CanExecuteAction()
@@ -1614,7 +1619,7 @@ namespace ORTS.TrackViewer.Editing
         //private DebugWindow debugWindow;
         /// <summary>Constructor</summary>
         public EditorActionMouseDragAutoConnect()
-            : base("", "")
+            : base("Drag any node", "")
         {
             //debugWindow = new DebugWindow(10, 20);
         }

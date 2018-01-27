@@ -80,6 +80,7 @@
     <Compile Include="Drawing\DrawableTrackItem.cs" />
     <Compile Include="Drawing\DrawArea.cs" />
     <Compile Include="Drawing\DrawColors.cs" />
+    <Compile Include="Drawing\DrawLongitudeLatitude.cs" />
     <Compile Include="Drawing\DrawMultiplePaths.cs" />
     <Compile Include="Drawing\DrawScaleRuler.cs" />
     <Compile Include="Drawing\DrawTerrain.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="Editing\Charts\PathChartWindow.xaml.cs">
       <DependentUpon>PathChartWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Editing\DrawEditorAction.cs" />
     <Compile Include="Editing\DrawPATfile.cs" />
     <Compile Include="Editing\DrawPath.cs" />
     <Compile Include="Editing\Charts\DrawPathChart.cs" />
