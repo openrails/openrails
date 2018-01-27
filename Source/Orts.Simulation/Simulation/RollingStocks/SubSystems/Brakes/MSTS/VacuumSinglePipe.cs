@@ -391,7 +391,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 // If vehicle is not a vacuum piped vehicle then calculate both volume of train pipe and BC, otherwise for vacuum piped vehicles only calculate train pipe
                 if (car.CarBrakeSystemType != "vacuum_piped")
                 {
-                    TempTotalTrainBrakeCylinderVolumeM3 += car.BrakeSystem.GetCylVolumeM3(); // Calculate total brake cylinder volume of train
+                    TempTotalTrainBrakeCylinderVolumeM3 += car.BrakeSystem.GetVacBrakeCylNumber() * car.BrakeSystem.GetCylVolumeM3(); // Calculate total brake cylinder volume of train
 
                     float BrakeCylFraction = 1.0f - (car.BrakeSystem.GetCylPressurePSI() / (MaxVacuumPipeLevelPSI));
                     BrakeCylFraction = MathHelper.Clamp(BrakeCylFraction, 0.01f, 1.0f); // Keep fraction within bounds
@@ -573,8 +573,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                 float  p0 = car0.BrakeSystem.BrakeLine1PressurePSI;
                 p0 = MathHelper.Clamp(p0, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
-                float brakePipeVolumeM30 = car0.BrakeSystem.BrakePipeVolumeM3;
-                float Car0brakeCylVolumeM30 = car0.BrakeSystem.GetCylVolumeM3();
+                float Car0brakePipeVolumeM3 = car0.BrakeSystem.BrakePipeVolumeM3;
+                float Car0brakeCylVolumeM3 = car0.BrakeSystem.GetCylVolumeM3();
                 float Car0numBrakeCyl = car0.BrakeSystem.GetVacBrakeCylNumber();
 
 #if DEBUG_TRAIN_PIPE_LEAK
@@ -592,28 +592,32 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float Car0BrakeSytemVolumeM30 = 0.0f;
                     float CarBrakeSytemVolumeM3 = 0.0f;
                     float CarnumBrakeCyl = car.BrakeSystem.GetVacBrakeCylNumber();
-                    float CarbrakeCylVolumeM30 = car.BrakeSystem.GetCylVolumeM3();
+                    float CarbrakeCylVolumeM3 = car.BrakeSystem.GetCylVolumeM3();
+                    float CarbrakePipeVolumeM3 = car.BrakeSystem.BrakePipeVolumeM3;
 
-                    // This section calculates the current brake system volumes on each vehicle and uses these volumes in the propagating the vacuum along the train
+                    // This section calculates the current brake system volumes on each vehicle
+                    // These volumes are converted to a fraction which then is used to proportion the change in vacuum to each car along the train
                     // If the vehicle has a brake cylinder fitted then calculate the car brake system volume ( brake cylinder and BP). 
                     //This value is used later to average the pressure during propogation along the train.
                     if (car.CarBrakeSystemType == "vacuum_piped")
                     {
-                        Car0BrakeSytemVolumeM30 = brakePipeVolumeM30 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                        Car0BrakeSytemVolumeM30 = Car0brakePipeVolumeM3 / (Car0brakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
                     }
                     else
                     {
-                        Car0BrakeSytemVolumeM30 = ((Car0numBrakeCyl * Car0brakeCylVolumeM30) + brakePipeVolumeM30) / ((Car0numBrakeCyl * Car0brakeCylVolumeM30) + (CarnumBrakeCyl * CarbrakeCylVolumeM30) + brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                        Car0BrakeSytemVolumeM30 = ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + Car0brakePipeVolumeM3) / ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + (CarnumBrakeCyl * CarbrakeCylVolumeM3) + Car0brakePipeVolumeM3 + CarbrakePipeVolumeM3);
                     }
 
                     if (car.CarBrakeSystemType == "vacuum_piped") // If no brake cylinder fitted, then only use the BP volume
                     {
-                        CarBrakeSytemVolumeM3 = car.BrakeSystem.BrakePipeVolumeM3 / (brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                        CarBrakeSytemVolumeM3 = CarbrakePipeVolumeM3 / (Car0brakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
                     }
                     else
                     {
-                        CarBrakeSytemVolumeM3 = ((CarnumBrakeCyl * CarbrakeCylVolumeM30) + car.BrakeSystem.BrakePipeVolumeM3) / ((Car0numBrakeCyl * Car0brakeCylVolumeM30) + (CarnumBrakeCyl * CarbrakeCylVolumeM30) + brakePipeVolumeM30 + car.BrakeSystem.BrakePipeVolumeM3);
+                        CarBrakeSytemVolumeM3 = ((CarnumBrakeCyl * CarbrakeCylVolumeM3) + CarbrakePipeVolumeM3) / ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + (CarnumBrakeCyl * CarbrakeCylVolumeM3) + Car0brakePipeVolumeM3 + CarbrakePipeVolumeM3);
                     }
+
+//                    Trace.TraceInformation("Volume - CarID {0} Car {1} Car0 {2}", car.CarID, CarBrakeSytemVolumeM3, Car0BrakeSytemVolumeM30);
 
                     float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                     p1 = MathHelper.Clamp(p1, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
@@ -782,8 +786,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
                     car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
                     train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(train.Cars[0].BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
-                    p0 = car.BrakeSystem.BrakeLine1PressurePSI;
+                    // Prepare to move values along one car in the train
                     car0 = car;
+                    p0 = car.BrakeSystem.BrakeLine1PressurePSI;
+                    Car0brakePipeVolumeM3 = CarbrakePipeVolumeM3;
+                    Car0brakeCylVolumeM3 = CarbrakeCylVolumeM3;
+                    Car0numBrakeCyl = CarnumBrakeCyl;
                 }
                 // Record the current number of cars in the train. This will allow comparison to determine if other cars are coupled to the train
                 train.PreviousCarCount = train.Cars.Count;
