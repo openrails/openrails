@@ -421,25 +421,39 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float TempTrainBrakePipeChargingRatePSIorInHgpS = 0.0f;
                     float TempBrakeServiceTimeFactorS = 0.0f;
                     float TempBrakeEmergencyTimeFactorS = 0.0f;
+                    float TempbrakePipeTimeMultFactor = 0.0f;
 
+                    // BrakePipeChargingRatePSIorInHgpS - trains of less then 200ft^3 will have higher charging rates, ie less time to charge BP
+                    // BrakeServiceTimeFactorS / BrakeEmergencyTimeFactorS  - trains of less then 200ft^3 will have lower factors, ie less time to discharge BP
                     if (train.TotalCurrentTrainBrakeSystemVolumeM3 < Me3.FromFt3(200))
                     {
                         TempTrainBrakePipeChargingRatePSIorInHgpS = (200.0f / Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3)) * lead.BrakePipeChargingRatePSIorInHgpS;
                         TempBrakeServiceTimeFactorS = ( Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3) / 200.0f) * lead.BrakeServiceTimeFactorS;
                         TempBrakeEmergencyTimeFactorS = (Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3) / 200.0f) * lead.BrakeEmergencyTimeFactorS;
-                        float TempbrakePipeTimeMultFactor = Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3) / 200.0f;
-                        TempbrakePipeTimeMultFactor = MathHelper.Clamp(TempbrakePipeTimeMultFactor, 0.5f, 1.5f); // Keep fraction within bounds
-                        TempbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
+                        /*        TempbrakePipeTimeMultFactor = Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3) / 200.0f;
+                                TempbrakePipeTimeMultFactor = MathHelper.Clamp(TempbrakePipeTimeMultFactor, 0.5f, 1.5f); // Keep fraction within bounds
+                                TempbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS; */
+                        TempbrakePipeTimeFactorS = brakePipeTimeFactorS;
                     }
                     else
                     {
                         TempTrainBrakePipeChargingRatePSIorInHgpS = ( Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3) / 200.0f ) * lead.BrakePipeChargingRatePSIorInHgpS;
                         TempBrakeServiceTimeFactorS = ( 200.0f / Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3)) * lead.BrakeServiceTimeFactorS;
                         TempBrakeEmergencyTimeFactorS = (200.0f / Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3)) * lead.BrakeEmergencyTimeFactorS;
-                        float TempbrakePipeTimeMultFactor = 200.0f / Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3);
-                        TempbrakePipeTimeMultFactor = MathHelper.Clamp(TempbrakePipeTimeMultFactor, 0.5f, 1.5f); // Keep fraction within bounds
-                        TempbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
+                        /*        TempbrakePipeTimeMultFactor = 200.0f / Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3);
+                                TempbrakePipeTimeMultFactor = MathHelper.Clamp(TempbrakePipeTimeMultFactor, 0.5f, 1.5f); // Keep fraction within bounds */
+                  //      TempbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
+                        TempbrakePipeTimeFactorS = brakePipeTimeFactorS;
                     }
+/*
+                    Trace.TraceInformation("Base BPCR - {0} Temp {1}", lead.BrakePipeChargingRatePSIorInHgpS, TempTrainBrakePipeChargingRatePSIorInHgpS);
+
+                    Trace.TraceInformation("Base Service Time - {0} Temp {1}", lead.BrakeServiceTimeFactorS, TempBrakeServiceTimeFactorS);
+
+                    Trace.TraceInformation("Base Emergency Service Time - {0} Temp {1}", lead.BrakeEmergencyTimeFactorS, TempBrakeEmergencyTimeFactorS);
+
+                    Trace.TraceInformation("Base BPTF - {0} Temp {1} Mult {2}", brakePipeTimeFactorS, TempbrakePipeTimeFactorS, TempbrakePipeTimeMultFactor);
+                    */
 
                     // When brakeController put into Running position the RunningLock ensures that brake pipe matches the Equalising Reservoir (Desired Vacuum) before
                     // locking the system into the Running position.
