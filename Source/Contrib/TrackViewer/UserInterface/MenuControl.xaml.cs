@@ -924,6 +924,12 @@ namespace ORTS.TrackViewer.UserInterface
             settingsDictionary.Save();
         }
 
+        public void SetEnableEditing(bool enabled)
+        {
+            menuEnableEditing.IsChecked = enabled;
+            MenuEnableEditing_Click(null, null);
+        }
+
         private void MenuEnableEditing_Click(object sender, RoutedEventArgs e)
         {
             menuEnableEditing2.IsChecked = menuEnableEditing.IsChecked;

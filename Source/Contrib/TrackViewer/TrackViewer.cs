@@ -986,7 +986,7 @@ namespace ORTS.TrackViewer
             PathEditor = new PathEditor(this.RouteData, this.DrawTrackDB, pathsDirectory);
             drawPathChart.SetPathEditor(this.RouteData, this.PathEditor);
             DrawPATfile = null;
-            PathEditor.EditingIsActive = true;
+            menuControl.SetEnableEditing(true);
             EditMetaData();
         }
 
@@ -1105,11 +1105,10 @@ namespace ORTS.TrackViewer
             //SetPath(Paths[21]);
             //drawPathChart.Open();
             //NewPath();
-            //PathEditor.EditingIsActive = true;
+            //menuControl.SetEnableEditing(true);
             //DrawArea.ZoomToTile();
             //DrawArea.Zoom(-18);
             //CenterAroundTrackNode(30);
-            //menuControl.InitUserSettings();
             //ReversePath();
 
         }

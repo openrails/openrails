@@ -293,6 +293,7 @@ namespace ORTS.TrackViewer.Editing
             if (Trainpath.FirstNode == null) return false;
             if (Trainpath.HasEnd) return false;
             return (ActiveTrackLocation.Location != WorldLocation.None
+                 && ActiveTrackLocation.PrevNode != null
                  && !ActiveTrackLocation.PrevNode.HasSidingPath
                  && Trainpath.FirstNodeOfTail == null);
         }
@@ -357,6 +358,7 @@ namespace ORTS.TrackViewer.Editing
             if (Trainpath.FirstNode == null) return false;
             if (Trainpath.HasEnd) return false;
             return (ActiveTrackLocation.Location != WorldLocation.None
+                && ActiveTrackLocation.PrevNode != null
                 && !ActiveTrackLocation.PrevNode.HasSidingPath);
         }
 
@@ -446,6 +448,7 @@ namespace ORTS.TrackViewer.Editing
         {
             if (Trainpath.FirstNode == null) return false;
             return (ActiveTrackLocation.Location != WorldLocation.None
+                && ActiveTrackLocation.PrevNode != null
                 && !ActiveTrackLocation.PrevNode.HasSidingPath);
         }
 
