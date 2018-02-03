@@ -26,6 +26,11 @@ namespace ORTS.TrackViewer.Editing
     public class DrawEditorAction
     {
         Vector2 lowerLeft;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="xLowerLeft">Location of the text on screen in the x-direction</param>
+        /// <param name="yLowerLeft">Location of the text on screen in the y-direction</param>
         public DrawEditorAction(int xLowerLeft, int yLowerLeft)
         {
             lowerLeft = new Vector2(xLowerLeft, yLowerLeft);

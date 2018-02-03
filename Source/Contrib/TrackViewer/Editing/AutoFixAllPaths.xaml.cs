@@ -44,12 +44,22 @@ namespace ORTS.TrackViewer.Editing
             };
         List<PathEditor> modifiedPaths;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="routeData">The route information that contains track data base and track section data</param>
+        /// <param name="drawTrackDB">The drawn tracks to know about where the mouse is</param>
         public AutoFixAllPaths(RouteData routeData, DrawTrackDB drawTrackDB)
         {
             this.routeData = routeData;
             this.drawTrackDB = drawTrackDB;
         }
 
+        /// <summary>
+        /// Load all the paths, fix them, and ask the user what to do whit the fixed paths
+        /// </summary>
+        /// <param name="Paths">The list of paths that are availabel and that need to be checked and possibly fixed</param>
+        /// <param name="callback">Callback that will be called showing the current processing that is being done</param>
         public void FixallAndShowResults(Collection<Path> Paths, Action<string> callback )
         {
             _Fixall(Paths, callback);

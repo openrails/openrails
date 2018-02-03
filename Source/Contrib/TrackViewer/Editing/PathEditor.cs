@@ -458,7 +458,9 @@ namespace ORTS.TrackViewer.Editing
             _draggingIsActive = false;
         }
 
+        /// <summary> Place an end point at the current active track location </summary>
         public void PlaceEndPoint() => activeAddEndAction?.DoAction();
+        /// <summary> Place a wait point at the current active track location </summary>
         public void PlaceWaitPoint() => activeAddWaitAction?.DoAction();
 
 

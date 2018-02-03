@@ -151,6 +151,13 @@ namespace ORTS.TrackViewer.UserInterface
             menuShowDMTerrain.IsChecked = false;
             menuShowPatchLines.IsChecked = false;
 
+            reductionNone.IsChecked = (Convert.ToInt32(reductionNone.Tag.ToString()) == Properties.Settings.Default.terrainReductionFactor);
+            reductionAuto.IsChecked = (Convert.ToInt32(reductionAuto.Tag.ToString()) == Properties.Settings.Default.terrainReductionFactor);
+            reduction2.IsChecked = (Convert.ToInt32(reduction2.Tag.ToString()) == Properties.Settings.Default.terrainReductionFactor);
+            reduction4.IsChecked = (Convert.ToInt32(reduction4.Tag.ToString()) == Properties.Settings.Default.terrainReductionFactor);
+            reduction8.IsChecked = (Convert.ToInt32(reduction8.Tag.ToString()) == Properties.Settings.Default.terrainReductionFactor);
+            reduction16.IsChecked = (Convert.ToInt32(reduction16.Tag.ToString()) == Properties.Settings.Default.terrainReductionFactor);
+
             UpdateMenuSettings();  // to be sure some other settings are done correctly
 
             menuDoAntiAliasing.IsChecked = Properties.Settings.Default.doAntiAliasing;
@@ -843,6 +850,17 @@ namespace ORTS.TrackViewer.UserInterface
             UpdateMenuSettings();
             trackViewer.SetPatchLineVisibility(menuShowPatchLines.IsChecked);
         }
+
+        private void TerrainReductionOption_CheckChanged(object sender, RoutedEventArgs e)
+        {
+            RadioButton reductionOptionButton = sender as RadioButton;
+            object tag = reductionOptionButton.Tag;
+            var value = Convert.ToInt32(tag.ToString());
+            Properties.Settings.Default.terrainReductionFactor = value;
+            UpdateMenuSettings();
+            trackViewer.SetTerrainReduction();
+            menuTerrain.IsSubmenuOpen = false;
+        }
         #endregion
 
         private void MenuSearchTrackNode_Click(object sender, RoutedEventArgs e)
@@ -924,9 +942,12 @@ namespace ORTS.TrackViewer.UserInterface
             settingsDictionary.Save();
         }
 
-        public void SetEnableEditing(bool enabled)
+        /// <summary>
+        /// Enable editing and make sure this is visible in the menu as well.
+        /// </summary>
+        public void SetEnableEditing()
         {
-            menuEnableEditing.IsChecked = enabled;
+            menuEnableEditing.IsChecked = true;
             MenuEnableEditing_Click(null, null);
         }
 

@@ -30,6 +30,7 @@ using System.Reflection;
 using GNU.Gettext;
 using ORTS.Menu;
 using ORTS.Common;
+using Orts.Common;
 using ORTS.TrackViewer.Drawing;
 using ORTS.TrackViewer.Drawing.Labels;
 using ORTS.TrackViewer.UserInterface;
@@ -544,6 +545,10 @@ namespace ORTS.TrackViewer
             if (DrawTrackDB == null) return;
 
             spriteBatch.Begin();
+            //spriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
+            //GraphicsDevice.SamplerStates[0].MagFilter = TextureFilter.Point;
+            //GraphicsDevice.SamplerStates[0].MinFilter = TextureFilter.Point;
+            //GraphicsDevice.SamplerStates[0].MipFilter = TextureFilter.Point;
             if (drawTerrain != null) { drawTerrain.Draw(DrawArea); }
             drawWorldTiles.Draw(DrawArea);
             DrawArea.DrawTileGrid();
@@ -676,6 +681,7 @@ namespace ORTS.TrackViewer
         internal void SaveLabels() => drawLabels?.SaveLabels();
         internal void EditMetaData() => PathEditor?.EditMetaData(Window.ClientBounds.Left + 50, Window.ClientBounds.Top + 20);
         internal void ReversePath() => PathEditor?.ReversePath(Window.ClientBounds.Left + 50, Window.ClientBounds.Top + 20);
+        internal void SetTerrainReduction() => drawTerrain?.SetTerrainReduction();
         #endregion
 
         #region Folder and Route methods
@@ -796,6 +802,7 @@ namespace ORTS.TrackViewer
 
         private bool SetSelectedInstallFolder(string folderPath)
         {
+            drawTerrain?.Clear();
             Folder newInstallFolder = new Folder("installFolder", folderPath);
             bool foundroutes = FindRoutes(newInstallFolder);
             if (!foundroutes)
@@ -876,6 +883,8 @@ namespace ORTS.TrackViewer
 
             DrawLoadingMessage(catalog.GetString("Loading route..."));
             MessageDelegate messageHandler = new MessageDelegate(DrawLoadingMessage);
+
+            drawTerrain?.Clear();
 
             try
             {
@@ -986,7 +995,7 @@ namespace ORTS.TrackViewer
             PathEditor = new PathEditor(this.RouteData, this.DrawTrackDB, pathsDirectory);
             drawPathChart.SetPathEditor(this.RouteData, this.PathEditor);
             DrawPATfile = null;
-            menuControl.SetEnableEditing(true);
+            menuControl.SetEnableEditing();
             EditMetaData();
         }
 

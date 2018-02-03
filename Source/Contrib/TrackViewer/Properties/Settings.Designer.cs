@@ -25,6 +25,18 @@ namespace ORTS.TrackViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CallUpgrade {
+            get {
+                return ((bool)(this["CallUpgrade"]));
+            }
+            set {
+                this["CallUpgrade"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string installDirectory {
             get {
@@ -493,12 +505,12 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool statusShowVectorSections {
+        public bool showLabels {
             get {
-                return ((bool)(this["statusShowVectorSections"]));
+                return ((bool)(this["showLabels"]));
             }
             set {
-                this["statusShowVectorSections"] = value;
+                this["showLabels"] = value;
             }
         }
         
@@ -529,18 +541,6 @@ namespace ORTS.TrackViewer.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool statusShowPATfile {
-            get {
-                return ((bool)(this["statusShowPATfile"]));
-            }
-            set {
-                this["statusShowPATfile"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool highlightLastPathSection {
             get {
                 return ((bool)(this["highlightLastPathSection"]));
@@ -559,6 +559,54 @@ namespace ORTS.TrackViewer.Properties {
             }
             set {
                 this["showEditorAction"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool pgupExtendsPath {
+            get {
+                return ((bool)(this["pgupExtendsPath"]));
+            }
+            set {
+                this["pgupExtendsPath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int terrainReductionFactor {
+            get {
+                return ((int)(this["terrainReductionFactor"]));
+            }
+            set {
+                this["terrainReductionFactor"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowVectorSections {
+            get {
+                return ((bool)(this["statusShowVectorSections"]));
+            }
+            set {
+                this["statusShowVectorSections"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool statusShowPATfile {
+            get {
+                return ((bool)(this["statusShowPATfile"]));
+            }
+            set {
+                this["statusShowPATfile"] = value;
             }
         }
         
@@ -619,42 +667,6 @@ namespace ORTS.TrackViewer.Properties {
             }
             set {
                 this["statusShowSignal"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool showLabels {
-            get {
-                return ((bool)(this["showLabels"]));
-            }
-            set {
-                this["showLabels"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool pgupExtendsPath {
-            get {
-                return ((bool)(this["pgupExtendsPath"]));
-            }
-            set {
-                this["pgupExtendsPath"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool CallUpgrade {
-            get {
-                return ((bool)(this["CallUpgrade"]));
-            }
-            set {
-                this["CallUpgrade"] = value;
             }
         }
     }

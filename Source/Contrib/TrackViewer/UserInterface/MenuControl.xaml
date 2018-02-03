@@ -159,7 +159,15 @@
                 <MenuItem Header="Show terrain textures (F6)" Name="menuShowTerrain" IsCheckable="True" Click="MenuShowTerrain_Click"/>
                 <MenuItem Header="Show DM terrain textures (ctrl-F6)" Name="menuShowDMTerrain" IsCheckable="True" Click="MenuShowTerrain_Click"/>
                 <MenuItem Header="Show patch lines (shift-F6)" Name="menuShowPatchLines" IsCheckable="True" Click="MenuShowPatchLines_Click"/>
-                
+                <Separator/>
+                <MenuItem Header="Memory reduction options" Name="menuTerrainMemoryOptions">
+                    <RadioButton GroupName="reductionOptions" Name="reductionNone" Content="No reduction" Checked="TerrainReductionOption_CheckChanged" Tag="1"/>
+                    <RadioButton GroupName="reductionOptions" Name="reductionAuto" Content="Automatic reduction" Checked="TerrainReductionOption_CheckChanged" Tag="0"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction2" Content="Reduce by linear factor 2" Checked="TerrainReductionOption_CheckChanged" Tag="2"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction4" Content="Reduce by linear factor 4" Checked="TerrainReductionOption_CheckChanged" Tag="4"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction8" Content="Reduce by linear factor 8" Checked="TerrainReductionOption_CheckChanged" Tag="8"/>
+                    <RadioButton GroupName="reductionOptions" Name="reduction16" Content="Reduce by linear factor 16" Checked="TerrainReductionOption_CheckChanged" Tag="16"/>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_Help" Name="menuHelp">
                 <MenuItem Header="Shortcuts" Name="menuShortcuts" IsCheckable="False" Click="MenuShortcuts_Click"/>

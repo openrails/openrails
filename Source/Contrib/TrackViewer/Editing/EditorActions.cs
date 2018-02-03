@@ -62,6 +62,10 @@ namespace ORTS.TrackViewer.Editing
         private AfterEditDelegate afterEditCallback;
         #endregion
 
+        /// <summary>
+        /// Function that gives the amoung of nodes that will be added when extending the path significantly
+        /// </summary>
+        /// <returns>Depending on a preference, either 0 or a lot</returns>
         public static int NodesToAddForLongExtend() { return Properties.Settings.Default.pgupExtendsPath ? 100 : 0; }
 
         /// <summary>
@@ -156,6 +160,9 @@ namespace ORTS.TrackViewer.Editing
             return ModificationTools.NetNodesAdded;
         }
 
+        /// <summary>
+        /// The string representation is the same as the header which will end up in the action menu.
+        /// </summary>
         public override string ToString()
         {
             return this.ActionMenuItem.Header.ToString();

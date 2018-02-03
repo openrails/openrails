@@ -141,10 +141,22 @@ namespace ORTS.TrackViewer.Drawing
                 TextureEnabled = true,
                 World = Matrix.Identity
             };
-            this.vertexDeclaration = new VertexDeclaration(device, VertexPositionTexture.VertexElements);
+            Clear();
+        }
 
-            textureManager = new TerrainTextureManager(this.terrtexPath, this.device, this.messageDelegate);
+        /// <summary>
+        /// Clear all stored data for this drawTerrain, getting rid of all textures and other loaded things.
+        /// </summary>
+        public void Clear()
+        {
+            vertexDeclaration?.Dispose();
+            textureManager?.Dispose();
+            loadedTerrainTiles.Clear();
+            terrainTiles.Clear();
 
+            vertexDeclaration = new VertexDeclaration(device, VertexPositionTexture.VertexElements);
+            textureManager = new TerrainTextureManager(terrtexPath, device, messageDelegate);
+            SetTerrainReduction();
             DiscardVertexBuffers();
         }
 
@@ -181,6 +193,34 @@ namespace ORTS.TrackViewer.Drawing
         public void SetPatchLineVisibility(bool isVisible)
         {
             this.showPatchLines = isVisible;
+        }
+
+        /// <summary>
+        /// Set the reduction for all the textures that are loaded. The input is a user setting, not an argument
+        /// </summary>
+        public void SetTerrainReduction()
+        {
+            int wantedScaleFactor = Properties.Settings.Default.terrainReductionFactor;
+            int newScaleFactor = wantedScaleFactor;
+            if (wantedScaleFactor == 0)
+            {
+                newScaleFactor = 1;
+                //Some way to determine the scaling automatically. We use the loaded .ace files
+                //The scaling below keeps the memory more or less constant
+                if (textureManager.Count() > 100) { newScaleFactor = 2; }
+                if (textureManager.Count() > 400) { newScaleFactor = 4; }
+                if (textureManager.Count() > 1600) { newScaleFactor = 8; }
+                if (textureManager.Count() > 6400) { newScaleFactor = 16; }
+            }
+            if (newScaleFactor < textureManager.CurrentScaleFactor)
+            {
+                //The wanted scale factor is less than what it was. We do not have the original data anymore, though.
+                //So we need to reload everything
+                this.Clear();
+                EnsureAllTilesAreLoaded();
+                CreateVertexBuffers();
+            }
+            textureManager.SetCurrentScaleFactor(newScaleFactor);
         }
         #endregion
 
@@ -249,6 +289,7 @@ namespace ORTS.TrackViewer.Drawing
 
             var newTerrainTile = new TerrainTile2D(newTile, textureManager, locationTranslator);
             terrainTiles.Add(storeIndex, newTerrainTile);
+            SetTerrainReduction();
         }
 
         /// <summary>
@@ -351,8 +392,8 @@ namespace ORTS.TrackViewer.Drawing
         {
             vertexBuffers = new Dictionary<string, VertexBuffer>();
             vertexBufferCounts = new Dictionary<string, int>();
-        }        
-        #endregion 
+        }
+        #endregion
 
         #region Drawing
         /// <summary>
@@ -368,7 +409,7 @@ namespace ORTS.TrackViewer.Drawing
 
             foreach (string textureName in vertexBuffers.Keys)
             {
-                basicEffect.Texture = textureManager[textureName];
+                basicEffect.Texture = textureManager[textureName].Texture;
                 basicEffect.Begin();
                 foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
                 {
@@ -411,7 +452,7 @@ namespace ORTS.TrackViewer.Drawing
                     }
                 }
             }
-            
+
         }
 
         private void UpdateStatusInformation(WorldLocation location)
@@ -523,7 +564,7 @@ namespace ORTS.TrackViewer.Drawing
             // We also snap the tileX and tileZ to multiples of the size.
             TileName.Snap(ref tileX, ref tileZ, zoomFromInt[zoomSize]);
 
-            uint index = ((uint)zoomSize << 26) + ((uint)(tileX-referenceTileX + 4096) << 13) + (uint)(tileZ-this.referenceTileZ + 4096);
+            uint index = ((uint)zoomSize << 26) + ((uint)(tileX - referenceTileX + 4096) << 13) + (uint)(tileZ - this.referenceTileZ + 4096);
 
             //debug (I guess a unit test would have been better)
             //uint indexX = (uint)(tileX - referenceTileX + 4096);
@@ -532,7 +573,7 @@ namespace ORTS.TrackViewer.Drawing
             //string debugZ = Convert.ToString(indexZ, 2);
             //string debugString = Convert.ToString(index, 2);
             //if (tileX > referenceTileX)
-            
+
             return index;
         }
     }
@@ -543,9 +584,11 @@ namespace ORTS.TrackViewer.Drawing
     /// The manager that loads and stores the various terrain textures. Since normally the textures are shared over multiple tiles,
     /// we want to store them only once.
     /// </summary>
-    class TerrainTextureManager : Dictionary<string, Texture2D>
+    class TerrainTextureManager : Dictionary<string, ReducableTexture2D>, IDisposable
     {
-        private int loadedAceFilesCounter=0;
+        public int CurrentScaleFactor { get; private set; } = 1;
+
+        private int loadedAceFilesCounter = 0;
         private HashSet<string> unloadableTerrainTextures;
         private string terrtexPath;
         private MessageDelegate messageDelegate;
@@ -557,7 +600,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="terrtexPath">Directory path where the textures are located</param>
         /// <param name="device">The graphics device used to import textures into Texture2D</param>
         /// <param name="messageDelegate">The delegate used to draw an on-screen message to the user during longer loading sessions</param>
-        public TerrainTextureManager(string terrtexPath, GraphicsDevice device, MessageDelegate messageDelegate) : base() {
+        public TerrainTextureManager(string terrtexPath, GraphicsDevice device, MessageDelegate messageDelegate) : base()
+        {
             this.unloadableTerrainTextures = new HashSet<string>();
             this.device = device;
             this.messageDelegate = messageDelegate;
@@ -586,16 +630,72 @@ namespace ORTS.TrackViewer.Drawing
                 //The message delegate has quite some overhead, so print it only so often to keep the user informed
                 if (loadedAceFilesCounter % 100 == 0)
                 {
-                    messageDelegate(String.Format(TrackViewer.catalog.GetString("Loading terrain ace-files {0}-{1}"), loadedAceFilesCounter, loadedAceFilesCounter+99));
+                    messageDelegate(String.Format(TrackViewer.catalog.GetString("Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"), loadedAceFilesCounter, loadedAceFilesCounter + 99, CurrentScaleFactor));
                 }
                 loadedAceFilesCounter++;
-                this[filename] = Orts.Formats.Msts.AceFile.Texture2DFromFile(this.device, path);
+                var originalTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(this.device, path);
+                var reducableTexture = new ReducableTexture2D(device, originalTexture);
+                reducableTexture.ReduceToFactor(CurrentScaleFactor);
+                this[filename] = reducableTexture;
                 return true;
             }
 
             unloadableTerrainTextures.Add(filename);
             return false;
         }
+
+        /// <summary>
+        /// Set a new scale factor. Since already loaded textures will be rescaled as needed, this can actually take some time
+        /// Hence this is more then just the change of a property
+        /// </summary>
+        /// <param name="newScaleFactor">The new scale factor to be used</param>
+        public void SetCurrentScaleFactor(int newScaleFactor)
+        {
+            int oldScaleFactor = CurrentScaleFactor;
+            CurrentScaleFactor = newScaleFactor;
+            if (CurrentScaleFactor <= oldScaleFactor) { return; }
+
+            //We need to rescale all already loaded ace files
+            messageDelegate(String.Format(TrackViewer.catalog.GetString("Rescaling previously loaded ace-files")));
+            foreach (string filename in this.Keys)
+            {
+                this[filename].ReduceToFactor(newScaleFactor);
+            }
+        }
+
+        #region IDisposable
+        private bool disposed;
+
+        /// <summary>
+        /// Finalizer
+        /// </summary>
+        ~TerrainTextureManager()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Implementing IDisposable
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (disposed) { return; }
+            disposed = true;
+            if (!disposing) { return; }
+            unloadableTerrainTextures = null;
+            foreach (string filename in this.Keys)
+            {
+                this[filename].Dispose();
+            }
+            this.Clear();
+        }
+        #endregion
     }
     #endregion
 
@@ -673,7 +773,7 @@ namespace ORTS.TrackViewer.Drawing
                 for (int z = 0; z < tile.PatchCount; ++z)
                 {
                     var patch = tile.GetPatch(x, z);
-                    this.textureNames[x,z] = CreateVerticesFromPatch(tile, patch);
+                    this.textureNames[x, z] = CreateVerticesFromPatch(tile, patch);
                 }
             }
 
@@ -780,8 +880,186 @@ namespace ORTS.TrackViewer.Drawing
             }
         }
     }
-#endregion
+    #endregion
 
-    
-   
+    #region ReducableTexture2D
+    /// <summary>
+    /// Wrapper class around a Texture2D that allows reduction of memory consumption, by reducing the size of the texture
+    /// When asked for a reduced version of a texture will be used, in place of the original texture.
+    /// Multiple reductions are possible
+    /// </summary>
+    class ReducableTexture2D : IDisposable
+    {
+        /// <summary>The actual texture that this is a wrapper for</summary>
+        public Texture2D Texture { get; private set; }
+        /// <summary>The scaling factor that this texture already has had</summary>
+        public int ScaledBy { get; private set; }
+
+        private static GraphicsDevice device;
+        private static SpriteBatch spriteBatch;
+
+        //we keep a cache of renderTargets. So we do not have to create them over and over again
+        private static Dictionary<int, Dictionary<int, RenderTarget2D>> renderTargets = new Dictionary<int, Dictionary<int, RenderTarget2D>>();
+        //We keep a cache of available arrays for color data.
+        //This saves quite a bit of creating and destroying temporary arrays.
+        private static Dictionary<int, Color[]> colorData = new Dictionary<int, Color[]>();
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="graphicsDevice">The graphics device that can be used for texture reduction</param>
+        /// <param name="originalTexture">The orignal texture that we wrap around (the ScaledBy=1 texture)</param>
+        public ReducableTexture2D(GraphicsDevice graphicsDevice, Texture2D originalTexture)
+        {
+            if (device == null)
+            {
+                device = graphicsDevice;
+                spriteBatch = new SpriteBatch(device);
+            }
+
+            Texture = originalTexture;
+            ScaledBy = 1;
+        }
+
+        /// <summary>
+        /// Reduce the size of the texture
+        /// </summary>
+        /// <param name="requestedScaleFactor">linear reduction scale, scaling from the original texture.</param>
+        public void ReduceToFactor(int requestedScaleFactor)
+        {
+            if (!IsPowerOfTwo(requestedScaleFactor))
+            {
+                throw new InvalidDataException("Only scaling with a power of 2 is supported to make sure multiple reductions keep making sense");
+            }
+
+            int additionalScaleNeeded = DetermineAdditionalScaleNeeded(requestedScaleFactor);
+            if (additionalScaleNeeded <= 1)
+            {
+                // We already have the requested scale
+                return;
+            }
+
+            int newWidth = Texture.Width / additionalScaleNeeded;
+            int newHeight = Texture.Height / additionalScaleNeeded;
+            try
+            {
+                var renderTarget = GetRenderTarget(newWidth, newHeight);
+                device.SetRenderTarget(0, renderTarget);
+                device.Clear(Color.White);
+                spriteBatch.Begin();
+                var fullTarget = new Rectangle(0, 0, newWidth, newHeight);
+                spriteBatch.Draw(Texture, fullTarget, Color.White);
+                spriteBatch.End();
+                device.SetRenderTarget(0, null);
+
+                //The rendered texture is not very stable: it is in memory of the renderTarget which depends on the video buffer
+                //Rescaling the screen or so makes it invalid. So we really copy out the data and put it in a new texture.
+                var scaledTexture = GetStableTextureFromRenderTarget(renderTarget);
+                Texture.Dispose();
+                Texture = scaledTexture;
+            }
+            catch { }
+
+            //Note, even if the scaling did not work, we do report that the texture has been scaled
+            //Otherwise users might be trying over and over again on the not-yet scaled textures
+            ScaledBy *= additionalScaleNeeded;
+        }
+
+        public int DetermineAdditionalScaleNeeded(int requestedScaleFactor)
+        {
+            if (requestedScaleFactor < ScaledBy) { return 1; }
+
+            int additionalScaleNeeded = requestedScaleFactor / ScaledBy;
+            var pp = device.PresentationParameters;
+            //We must make sure the backbuffer can handle it.
+            while (Texture.Width / additionalScaleNeeded > pp.BackBufferWidth || Texture.Height / additionalScaleNeeded > pp.BackBufferHeight)
+            {
+                additionalScaleNeeded *= 2;
+            }
+            return additionalScaleNeeded;
+        }
+
+        private static bool IsPowerOfTwo(int x)
+        {
+            return (x != 0) && ((x & (x - 1)) == 0);
+        }
+
+        private Texture2D GetStableTextureFromRenderTarget(RenderTarget2D renderTarget)
+        {
+            var renderedTexture = renderTarget.GetTexture();
+            int width = renderedTexture.Width;
+            int height = renderedTexture.Height;
+            var scaledTexture = new Texture2D(device, width, height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            Color[] data = GetColorDataArray(width * height);
+            renderedTexture.GetData<Color>(data);
+            scaledTexture.SetData(data);
+            return scaledTexture;
+        }
+
+        private static Color[] GetColorDataArray(int totalSize)
+        {
+            if (!colorData.ContainsKey(totalSize))
+            {
+                colorData[totalSize] = new Color[totalSize];
+            }
+            return colorData[totalSize];
+        }
+
+        private static RenderTarget2D GetRenderTarget(int width, int height)
+        {
+            if (renderTargets.ContainsKey(width) && renderTargets[width].ContainsKey(height))
+            {
+                return renderTargets[width][height];
+            }
+            var newTarget = GetNewRenderTarget(width, height);
+            if (!renderTargets.ContainsKey(width))
+            {
+                renderTargets[width] = new Dictionary<int, RenderTarget2D>();
+            }
+            renderTargets[width][height] = newTarget;
+            return newTarget;
+        }
+
+        private static RenderTarget2D GetNewRenderTarget(int width, int height)
+        {
+            //todo Handle situations where backbuffer is not large enough to support width and height
+            var renderTarget =
+                    new RenderTarget2D(device, width, height,
+                        1, SurfaceFormat.Color, device.DepthStencilBuffer.MultiSampleType, device.DepthStencilBuffer.MultiSampleQuality);
+            return renderTarget;
+
+        }
+
+        #region IDisposable
+        private bool disposed;
+
+        /// <summary>
+        /// Finalizer
+        /// </summary>
+        ~ReducableTexture2D()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Implementing IDisposable
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (disposed) { return; }
+            disposed = true;
+            if (!disposing) { return; }
+            Texture?.Dispose();
+            Texture = null;
+            // There are no unmanaged resources to release,
+        }
+        #endregion
+    }
+    #endregion
 }

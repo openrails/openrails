@@ -578,7 +578,6 @@ namespace ORTS.TrackViewer.Drawing
             catch {
                 graphicsDevice.SetRenderTarget(0, null); // return control to main render target
             }
-            graphicsDevice.SetRenderTarget(0, null); 
         }
 
         /// <summary>
