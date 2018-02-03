@@ -72,7 +72,7 @@ namespace Orts.Viewer3D
                     else if (Path.GetExtension(path) == ".ace")
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
-
+                        
                         if (Viewer.Settings.PreferDDSTexture && File.Exists(alternativeTexture))
                         {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
@@ -450,7 +450,7 @@ namespace Orts.Viewer3D
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
             SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
-
+            
             // Headlight illumination
             if (Viewer.PlayerLocomotiveViewer != null
                 && Viewer.PlayerLocomotiveViewer.lightDrawer != null
@@ -687,9 +687,11 @@ namespace Orts.Viewer3D
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.DontLoadNightTextures && !viewer.DontLoadDayTextures) 
                 || TexturePath.Contains(@"\trainset\")))
             {
-                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
-                if (!String.IsNullOrEmpty(nightTexturePath))
-                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer, texturePath);
+                if (!String.IsNullOrEmpty(nightTexturePath) && nightTexturePath.Contains(".dds"))
+                    DDSLib.DDSFromFile(nightTexturePath, viewer.GraphicsDevice, true, out NightTexture);
+                else if (!String.IsNullOrEmpty(nightTexturePath) && nightTexturePath.Contains(".ace"))
+                        NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
                 Texture = Viewer.TextureManager.Get(texturePath, true);
             }
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadNightTextures)
@@ -700,7 +702,7 @@ namespace Orts.Viewer3D
 
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadDayTextures)
             {
-                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
                 if (NightTexture != SharedMaterialManager.MissingTexture)
@@ -726,7 +728,7 @@ namespace Orts.Viewer3D
             bool oneMore = false;
             if (((Options & SceneryMaterialOptions.NightTexture) != 0) && (NightTexture == SharedMaterialManager.MissingTexture))               
             {
-                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, TexturePath);
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer, TexturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                 { 
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());

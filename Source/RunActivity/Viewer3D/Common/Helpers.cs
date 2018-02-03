@@ -47,14 +47,36 @@ namespace Orts.Viewer3D.Common
             return GetRouteTextureFile(simulator, Helpers.TextureFlags.Spring | Helpers.TextureFlags.Autumn | Helpers.TextureFlags.Winter | Helpers.TextureFlags.SpringSnow | Helpers.TextureFlags.AutumnSnow | Helpers.TextureFlags.WinterSnow, textureName);
         }
 
-        public static string GetNightTextureFile(Simulator simulator, string textureFilePath)
+        public static string GetNightTextureFile(Viewer viewer, string textureFilePath)
         {
             var texturePath = Path.GetDirectoryName(textureFilePath);
             var textureName = Path.GetFileName(textureFilePath);
-            if (File.Exists(texturePath + @"\Night\" + textureName)) return texturePath + @"\Night\" + textureName;
-            texturePath = Path.GetDirectoryName(texturePath);
-            if (File.Exists(texturePath + @"\Night\" + textureName)) return texturePath + @"\Night\" + textureName;
-            return null;
+            var nightTexturePath = texturePath + @"\Night\";
+
+            if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".dds" && File.Exists(nightTexturePath + textureName))
+            {
+                return nightTexturePath + textureName;
+            }
+            else if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".ace")
+            {
+                var alternativeTexture = Path.ChangeExtension(nightTexturePath + textureName, ".dds");
+                if (viewer.Settings.PreferDDSTexture && !String.IsNullOrEmpty(alternativeTexture.ToLower()) && File.Exists(alternativeTexture))
+                {
+                    return alternativeTexture;
+                }
+                else if (File.Exists(nightTexturePath + textureName))
+                {
+                    return nightTexturePath + textureName;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static string GetRouteTextureFile(Simulator simulator, TextureFlags textureFlags, string textureName)
