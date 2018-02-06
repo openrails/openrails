@@ -687,12 +687,10 @@ namespace Orts.Viewer3D
             if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.DontLoadNightTextures && !viewer.DontLoadDayTextures) 
                 || TexturePath.Contains(@"\trainset\")))
             {
-                var nightTexturePath = Helpers.GetNightTextureFile(Viewer, texturePath);
-                if (!String.IsNullOrEmpty(nightTexturePath) && nightTexturePath.Contains(".dds"))
-                    DDSLib.DDSFromFile(nightTexturePath, viewer.GraphicsDevice, true, out NightTexture);
-                else if (!String.IsNullOrEmpty(nightTexturePath) && nightTexturePath.Contains(".ace"))
-                        NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
-                Texture = Viewer.TextureManager.Get(texturePath, true);
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
+                if (!String.IsNullOrEmpty(nightTexturePath))
+                    NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
+               Texture = Viewer.TextureManager.Get(texturePath, true);
             }
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadNightTextures)
             {
@@ -702,7 +700,7 @@ namespace Orts.Viewer3D
 
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadDayTextures)
             {
-                var nightTexturePath = Helpers.GetNightTextureFile(Viewer, texturePath);
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
                 if (NightTexture != SharedMaterialManager.MissingTexture)
@@ -728,7 +726,7 @@ namespace Orts.Viewer3D
             bool oneMore = false;
             if (((Options & SceneryMaterialOptions.NightTexture) != 0) && (NightTexture == SharedMaterialManager.MissingTexture))               
             {
-                var nightTexturePath = Helpers.GetNightTextureFile(Viewer, TexturePath);
+                var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, TexturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                 { 
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
