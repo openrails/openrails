@@ -182,6 +182,8 @@ namespace Orts.Simulation.RollingStocks
         public bool LargeSteamEjectorIsOn = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public bool VacuumPumpFitted;
+        public float EjectorSmallSteamConsumptionLbpS;
+        public float EjectorLargeSteamConsumptionLbpS;
         public float SteamEjectorSmallSetting = 0.0f;
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
@@ -219,7 +221,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        // wag file data
+        // ENG file data
         public string CabSoundFileName;
         public string CVFFileName;
         public float MaxMainResPressurePSI = 130;
@@ -231,6 +233,7 @@ namespace Orts.Simulation.RollingStocks
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = 0.0015f;
+        public float BrakePipeDischargeTimeFactor;
         public float BrakeServiceTimeFactorS;
         public float BrakeEmergencyTimeFactorS;
         public float BrakePipeChargingRatePSIorInHgpS;
@@ -703,6 +706,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "engine(ortsbrakepipedischargetimefactor": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); break;
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
@@ -835,6 +839,7 @@ namespace Orts.Simulation.RollingStocks
             MainResPressurePSI = MaxMainResPressurePSI;
             MainResVolumeM3 = locoCopy.MainResVolumeM3;
             MainResChargingRatePSIpS = locoCopy.MainResChargingRatePSIpS;
+            BrakePipeDischargeTimeFactor = locoCopy.BrakePipeDischargeTimeFactor;
 
             DynamicBrakeBlended = locoCopy.DynamicBrakeBlended;
             DynamicBrakeBlendingEnabled = locoCopy.DynamicBrakeBlendingEnabled;
@@ -1043,6 +1048,20 @@ namespace Orts.Simulation.RollingStocks
                     BrakePipeChargingRatePSIorInHgpS = Simulator.Settings.BrakePipeChargingRate; // Air brakes
                 }
             }
+
+            // Initialise BrakePipeDischargeTimeFactor
+            if (BrakePipeDischargeTimeFactor == 0)
+            {
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    BrakePipeDischargeTimeFactor = 1.5f; // Vacuum brakes
+                }
+                else
+                {
+                    BrakePipeDischargeTimeFactor = 1.5f; // Air brakes
+                }
+            }
+            
 
             // Initialise Brake Emergency Time Factor
             if (BrakeEmergencyTimeFactorS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.

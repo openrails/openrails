@@ -352,8 +352,8 @@ namespace Orts.Simulation.RollingStocks
 
 
         // Steam Ejector
-        float EjectorSmallSteamConsumptionLbpS;
-        float EjectorLargeSteamConsumptionLbpS;
+        float TempEjectorSmallSteamConsumptionLbpS;
+        float TempEjectorLargeSteamConsumptionLbpS;
         float EjectorTotalSteamConsumptionLbpS;
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
@@ -749,6 +749,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsmaxindicatedhorsepower": MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                     MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
                     break;
+                case "engine(vacuumbrakeslargeejectorusagerate": EjectorLargeSteamConsumptionLbpS = pS.FrompH(Kg.FromLb(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null))); break;
+                case "engine(vacuumbrakessmallejectorusagerate": EjectorSmallSteamConsumptionLbpS = pS.FrompH(Kg.FromLb(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null))); break;
                 case "engine(ortssuperheatcutoffpressurefactor": SuperheatCutoffPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -843,6 +845,8 @@ namespace Orts.Simulation.RollingStocks
             MaxSuperheatRefTempF = locoCopy.MaxSuperheatRefTempF;
             MaxIndicatedHorsePowerHP = locoCopy.MaxIndicatedHorsePowerHP;
             SuperheatCutoffPressureFactor = locoCopy.SuperheatCutoffPressureFactor;
+            EjectorSmallSteamConsumptionLbpS = locoCopy.EjectorSmallSteamConsumptionLbpS;
+            EjectorLargeSteamConsumptionLbpS = locoCopy.EjectorLargeSteamConsumptionLbpS;
             ShovelMassKG = locoCopy.ShovelMassKG;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
             MaxTenderWaterMassKG = locoCopy.MaxTenderWaterMassKG;
@@ -1059,8 +1063,20 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Initialise vacuum brake small ejector steam consumption, read from ENG file if user input
+            if (EjectorSmallSteamConsumptionLbpS == 0)
+            {
+                EjectorSmallSteamConsumptionLbpS = pS.FrompH(300.0f); // Use a value of 300 lb/hr as default
+            }
+
+            // Initialise vacuum brake large ejector steam consumption, read from ENG file if user input
+            if (EjectorLargeSteamConsumptionLbpS == 0)
+            {
+                EjectorLargeSteamConsumptionLbpS = pS.FrompH(650.0f); // Based upon Gresham publication - steam consumption for 20mm ejector is 650lbs/hr or 0.180555 lb/s
+            }
+
             // ******************  Test Locomotive and Gearing type *********************** 
-           
+
             if (SteamEngineType == SteamEngineTypes.Compound)
             {
                 //  Initialise Compound locomotive
@@ -4691,7 +4707,7 @@ namespace Orts.Simulation.RollingStocks
                 // Calculate small steam ejector steam usage
                 SteamEjectorSmallSetting = SmallEjectorController.CurrentValue;
                 SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
-                 EjectorSmallSteamConsumptionLbpS = 0.083333f * SmallEjectorController.CurrentValue;
+                 TempEjectorSmallSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * SmallEjectorController.CurrentValue;
 
                 if (SteamEjectorSmallSetting > 0.1f) // Test to see if small steam ejector is on
                 {
@@ -4709,15 +4725,15 @@ namespace Orts.Simulation.RollingStocks
                 if (!VacuumPumpFitted && LargeSteamEjectorIsOn)
                 {
 
-                    // Based upon Gresham publication - steam consumption for 20mm ejector is 650lbs/hr or 0.180555 lb/s
-                    EjectorLargeSteamConsumptionLbpS = 0.18055555f;
+                    //
+                    TempEjectorLargeSteamConsumptionLbpS = EjectorLargeSteamConsumptionLbpS;
                 }
                 else
                 {
-                    EjectorLargeSteamConsumptionLbpS = 0.0f;
+                    TempEjectorLargeSteamConsumptionLbpS = 0.0f;
                 }
                 // Calculate Total steamconsumption for Ejectors
-                EjectorTotalSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS + EjectorLargeSteamConsumptionLbpS;
+                EjectorTotalSteamConsumptionLbpS = TempEjectorSmallSteamConsumptionLbpS + TempEjectorLargeSteamConsumptionLbpS;
 
                 BoilerMassLB -= elapsedClockSeconds * EjectorTotalSteamConsumptionLbpS; // Reduce boiler mass to reflect steam usage by compressor
                 BoilerHeatBTU -= elapsedClockSeconds * EjectorTotalSteamConsumptionLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor

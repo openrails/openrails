@@ -186,7 +186,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     break;
                 // OpenRails specific parameters
                 case "wagon(brakepipevolume": BrakePipeVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
-                case "wagon(ortsauxilaryrescapacity": VacResVolM3 = stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null); break;
+                case "wagon(ortsauxilaryrescapacity": VacResVolM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "wagon(ortsbrakecylindersize": float BrakeCylSizeM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null);
                     BrakeCylVolM3 = Me3.FromIn3((float)((Me.ToIn(BrakeCylSizeM) / 2) * (Me.ToIn(BrakeCylSizeM) / 2) * 4.5 * Math.PI)); // Calculate brake cylinder volume based upon size of BC, 4.5" of piston travel
                     break;
@@ -697,7 +697,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             // The brake pipe is evacuated at a quicker rate then it is cahrged at - PressDiff increased to represent this
                             if (TrainPipePressureDiffPropogationPSI < 0)
-                                TrainPipePressureDiffPropogationPSI *= 1.5f;
+                                TrainPipePressureDiffPropogationPSI *= lead.BrakePipeDischargeTimeFactor;
                             //Trace.TraceInformation("Diff {0} Brake Posn {1}", TrainPipePressureDiffPropogationPSI, lead.TrainBrakeController.TrainBrakeControllerState);
                         }
 
