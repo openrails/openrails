@@ -47,7 +47,7 @@ namespace Orts.Viewer3D.Common
             return GetRouteTextureFile(simulator, Helpers.TextureFlags.Spring | Helpers.TextureFlags.Autumn | Helpers.TextureFlags.Winter | Helpers.TextureFlags.SpringSnow | Helpers.TextureFlags.AutumnSnow | Helpers.TextureFlags.WinterSnow, textureName);
         }
 
-        public static string GetNightTextureFile(Viewer viewer, string textureFilePath)
+        public static string GetNightTextureFile(Simulator simulator, string textureFilePath)
         {
             var texturePath = Path.GetDirectoryName(textureFilePath);
             var textureName = Path.GetFileName(textureFilePath);
@@ -60,7 +60,7 @@ namespace Orts.Viewer3D.Common
             else if (!String.IsNullOrEmpty(nightTexturePath + textureName) && Path.GetExtension(nightTexturePath + textureName) == ".ace")
             {
                 var alternativeTexture = Path.ChangeExtension(nightTexturePath + textureName, ".dds");
-                if (viewer.Settings.PreferDDSTexture && !String.IsNullOrEmpty(alternativeTexture.ToLower()) && File.Exists(alternativeTexture))
+                if (simulator.Settings.PreferDDSTexture && !String.IsNullOrEmpty(alternativeTexture.ToLower()) && File.Exists(alternativeTexture))
                 {
                     return alternativeTexture;
                 }
