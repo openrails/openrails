@@ -193,6 +193,8 @@ namespace Orts.Simulation.RollingStocks
         public float VacuumPumpChargingRateInHgpS;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
 
+        public bool EngineBrakeFitted = false;
+
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
         public float LocomotiveCoefficientFrictionHUD;
@@ -688,6 +690,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(brake_engine":
                 case "engine(ortsenginebrakecontroller":
                     EngineBrakeController.Parse(lowercasetoken, stf);
+                    EngineBrakeFitted = true;
                     break;
 
                 case "engine(ortstraincontrolsystem":

@@ -398,7 +398,7 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Retainers"), "{0}% {1}", playerTrain.RetainerPercent, Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(playerTrain.RetainerSetting)));
-            if (engineBrakeStatus != null)
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeFitted) // ideally this test should be using "engineBrakeStatus != null", but this currently does not work, as a controller is defined by default
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Engine brake"), "{0}", engineBrakeStatus);
             if (dynamicBrakeStatus != null)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Dynamic brake"), "{0}", dynamicBrakeStatus);
