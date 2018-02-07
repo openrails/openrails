@@ -48,9 +48,6 @@
 // Debug for Sound Variables
 //#define DEBUG_STEAM_SOUND_VARIABLES
 
-// Debug for Steam Ejector
-//#define DEBUG_STEAM_EJECTOR
-
 // Debug for Steam Performance Data @ 5mph increments
 //#define DEBUG_STEAM_PERFORMANCE
 
@@ -72,6 +69,7 @@ using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
+using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using ORTS.Common;
 using System;
 using System.Diagnostics;
@@ -355,6 +353,7 @@ namespace Orts.Simulation.RollingStocks
         float TempEjectorSmallSteamConsumptionLbpS;
         float TempEjectorLargeSteamConsumptionLbpS;
         float EjectorTotalSteamConsumptionLbpS;
+        public float VacuumPumpOutputFt3pM;
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
         float CompCylDiaIN = 9.5f;
@@ -749,8 +748,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsmaxindicatedhorsepower": MaxIndicatedHorsePowerHP = stf.ReadFloatBlock(STFReader.UNITS.Power, null);
                     MaxIndicatedHorsePowerHP = W.ToHp(MaxIndicatedHorsePowerHP);  // Convert input to HP for use internally in this module
                     break;
-                case "engine(vacuumbrakeslargeejectorusagerate": EjectorLargeSteamConsumptionLbpS = pS.FrompH(Kg.FromLb(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null))); break;
-                case "engine(vacuumbrakessmallejectorusagerate": EjectorSmallSteamConsumptionLbpS = pS.FrompH(Kg.FromLb(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null))); break;
+                case "engine(vacuumbrakeslargeejectorusagerate": EjectorLargeSteamConsumptionLbpS = pS.FrompH(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null)); break;
+                case "engine(vacuumbrakessmallejectorusagerate": EjectorSmallSteamConsumptionLbpS = pS.FrompH(stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null)); break;
                 case "engine(ortssuperheatcutoffpressurefactor": SuperheatCutoffPressureFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(shovelcoalmass": ShovelMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(maxtendercoalmass": MaxTenderCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
@@ -1073,6 +1072,16 @@ namespace Orts.Simulation.RollingStocks
             if (EjectorLargeSteamConsumptionLbpS == 0)
             {
                 EjectorLargeSteamConsumptionLbpS = pS.FrompH(650.0f); // Based upon Gresham publication - steam consumption for 20mm ejector is 650lbs/hr or 0.180555 lb/s
+            }
+
+            // Check to see if a small ejector is fitted
+            if (SmallEjectorController == null)
+            {
+                SmallEjectorFitted = false;
+            }
+            else
+            {
+                SmallEjectorFitted = true;
             }
 
             // ******************  Test Locomotive and Gearing type *********************** 
@@ -4705,11 +4714,11 @@ namespace Orts.Simulation.RollingStocks
             {
 
                 // Calculate small steam ejector steam usage
-                SteamEjectorSmallSetting = SmallEjectorController.CurrentValue;
-                SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
-                 TempEjectorSmallSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * SmallEjectorController.CurrentValue;
+                    SteamEjectorSmallSetting = SmallEjectorController.CurrentValue;
+                    SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
+                    TempEjectorSmallSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * SmallEjectorController.CurrentValue;
 
-                if (SteamEjectorSmallSetting > 0.1f) // Test to see if small steam ejector is on
+                if (SteamEjectorSmallSetting > 0.1f && SmallEjectorFitted) // Test to see if small steam ejector is on, provided a small ejector is fitted
                 {
                     SmallSteamEjectorIsOn = true;
                     // calculate small ejector fration (maximum of 35% of train pipe charging rate) to be used in vacuum brakes 
@@ -4721,11 +4730,9 @@ namespace Orts.Simulation.RollingStocks
                     SmallSteamEjectorIsOn = false;
                     SmallEjectorFeedFraction = 0.0f;
                 }
-                 // Calculate large steam ejector steam usage if no vacuum pump fitted, and the brake turns the large ejector on
-                if (!VacuumPumpFitted && LargeSteamEjectorIsOn)
+                 // Calculate large steam ejector steam usage, and the brake turns the large ejector on
+                if (LargeSteamEjectorIsOn)
                 {
-
-                    //
                     TempEjectorLargeSteamConsumptionLbpS = EjectorLargeSteamConsumptionLbpS;
                 }
                 else
@@ -4739,6 +4746,13 @@ namespace Orts.Simulation.RollingStocks
                 BoilerHeatBTU -= elapsedClockSeconds * EjectorTotalSteamConsumptionLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
                 BoilerHeatOutBTUpS += EjectorTotalSteamConsumptionLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
                 TotalSteamUsageLBpS += EjectorTotalSteamConsumptionLbpS;
+
+                // Vacuum pump calculations
+                // Assume 5in dia vacuum pump. Forward and backward stroke evacuates air
+                VacuumPumpOutputFt3pM =   Me3.ToFt3(Me3.FromIn3( (Me.ToIn(CylinderStrokeM) * 2.5f * 2.5f)   )) * (float)Math.PI * 1.9f * pS.TopM(DrvWheelRevRpS); 
+                VacuumPumpChargingRateInHgpS = (VacuumPumpOutputFt3pM / 138.0f) * 0.344f; // This is based upon a ratio from RM ejector - 0.344InHGpS to evacuate 138ft3 in a minute
+
+
             }
 
             // Calculate cylinder cock steam Usage if turned on
@@ -5578,7 +5592,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("MEP"),
                 FormatStrings.FormatPressure(HPCylinderMEPPSI, PressureUnit.PSI, MainPressureUnit, true)
                 );
-                
+
                 // Display steam indicator pressures in LP cylinder
                 status.AppendFormat("{0}\t\t\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\n",
                 Simulator.Catalog.GetString("PressLP:"),
@@ -5654,7 +5668,7 @@ namespace Orts.Simulation.RollingStocks
                 CylinderSpeedCondensationFactor);
 #endif
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive())  
+            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive())
             {
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive
                 // Display Steam Heat info
@@ -5987,40 +6001,55 @@ namespace Orts.Simulation.RollingStocks
 
 #endif
 
-#if DEBUG_STEAM_EJECTOR
-
-            status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
-            Simulator.Catalog.GetString("Steam Ejector"),
-            pS.TopH(EjectorTotalSteamConsumptionLbpS),
-            FormatStrings.h);
-
-            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
-            Simulator.Catalog.GetString("Small:"),
-            Simulator.Catalog.GetString("Size"),
-            SteamEjectorSmallDiameterIn,
-            Simulator.Catalog.GetString("Press"),
-            SteamEjectorSmallPressurePSI,
-            Simulator.Catalog.GetString("Cons"),
-            pS.TopH(EjectorSmallSteamConsumptionLbpS));
-
-            if (!VacuumPumpFitted) // only display large ejector if vacuum pump fitted.
+            // If vacuum braked display information on ejectors
+            if ((BrakeSystem is VacuumSinglePipe))
             {
-                status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\n",
+
+                status.AppendFormat("\n\t\t\t === {0} === \t\t{1}/{2}\n",
+                Simulator.Catalog.GetString("Ejector / Vacuum Pump"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
+                FormatStrings.h);
+
+                status.AppendFormat("{0}\t{1}\t{2:N2}/t{3}\t{4}\t{5}",
                 Simulator.Catalog.GetString("Large:"),
-                Simulator.Catalog.GetString("Size"),
-                SteamEjectorLargeDiameterIn,
-                Simulator.Catalog.GetString("Press"),
-                SteamEjectorLargePressurePSI,
-                Simulator.Catalog.GetString("Cons"),
-                pS.TopH(EjectorLargeSteamConsumptionLbpS),
+                Simulator.Catalog.GetString("StCons"),
+                FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorLargeSteamConsumptionLbpS)), IsMetric),
+                FormatStrings.h,
                 Simulator.Catalog.GetString("Lg Ej"),
-                LargeSteamEjectorIsOn);
+                LargeSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+                );
+
+                if (SmallEjectorFitted) // only display small ejector if fitted.
+                {
+                    status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}/{5}\t{6}\t{7}",
+                    Simulator.Catalog.GetString("Small:"),
+                    Simulator.Catalog.GetString("Press"),
+                    FormatStrings.FormatPressure(SteamEjectorSmallPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                    Simulator.Catalog.GetString("StCons"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorSmallSteamConsumptionLbpS)), IsMetric),
+                    FormatStrings.h,
+                    Simulator.Catalog.GetString("Sm Ej"),
+                    SmallSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+                    );
+                }
+
+                if (VacuumPumpFitted) // only display vacuum pump if fitted.
+                {
+                    status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\n",
+                    Simulator.Catalog.GetString("Vac:"),
+                    Simulator.Catalog.GetString("Out"),
+                    VacuumPumpOutputFt3pM,
+                    Simulator.Catalog.GetString("Rate"),
+                    VacuumPumpChargingRateInHgpS
+                    );
+                }
+
+
             }
 
-#endif
-
-            return status.ToString();
-        }
+                return status.ToString();
+            }
+        
 
         // Gear Box
 

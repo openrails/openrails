@@ -180,13 +180,17 @@ namespace Orts.Simulation.RollingStocks
         // Vacuum Braking parameters
         public bool SmallSteamEjectorIsOn = false;
         public bool LargeSteamEjectorIsOn = false;
+        public bool VacuumPumpOperating = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public bool VacuumPumpFitted;
+        public bool SmallEjectorFitted;
+        public float VacuumPumpResistanceN;
         public float EjectorSmallSteamConsumptionLbpS;
         public float EjectorLargeSteamConsumptionLbpS;
         public float SteamEjectorSmallSetting = 0.0f;
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
+        public float VacuumPumpChargingRateInHgpS;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
 
         // Set values for display in HUD
@@ -699,6 +703,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(airbrakescompressorrestartpressure": CompressorRestartPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "engine(vacuumbrakesvacuumpumpresistance": VacuumPumpResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
@@ -826,6 +831,7 @@ namespace Orts.Simulation.RollingStocks
             PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
+            VacuumPumpResistanceN = locoCopy.VacuumPumpResistanceN;
 
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
             EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
@@ -1062,6 +1068,11 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             
+            // Initialise the resistance of the vacuum pump
+            if (VacuumPumpResistanceN == 0)
+            {
+                VacuumPumpResistanceN = 120.0f;
+            }
 
             // Initialise Brake Emergency Time Factor
             if (BrakeEmergencyTimeFactorS == 0) // Check to see if BrakeEmergencyTimeFactorS has been set in the ENG file.
@@ -1735,6 +1746,11 @@ namespace Orts.Simulation.RollingStocks
                 LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
             }
 
+            // If diesel or electric locomotive, assume vacuum pump (exhauster) is continually running.
+            if (!(this is MSTSSteamLocomotive))
+            {
+                VacuumPumpOperating = true;
+            }
 
 
         }

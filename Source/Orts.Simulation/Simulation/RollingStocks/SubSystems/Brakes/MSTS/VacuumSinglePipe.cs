@@ -368,9 +368,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // The resulting air pressures are then converted to a respective vacuum value where - 14.5psi (atmospheric pressure) = 0 InHg, and approx 4.185psi = 21 InHg.
             // Brakes are applied when vaccum is destroyed, ie 0 InHg, Brakes released when vacuum established ie 21 or 25 InHg
             float DesiredPipeVacuum = V2P(train.EqualReservoirPressurePSIorInHg);
-//            int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
-
-            float SmallEjectorFeedRate = lead == null ? 10.0f : (lead.BrakePipeChargingRatePSIorInHgpS * lead.SmallEjectorFeedFraction ); // Set value for small ejector to operate - fraction set in locomotive
+            //            int nSteps = (int)(elapsedClockSeconds * 2 / brakePipeTimeFactorS + 1);
+            
+            float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.BrakePipeChargingRatePSIorInHgpS * lead.SmallEjectorFeedFraction ); // Set value for small ejector to operate - fraction set in locomotive
             float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : Bar.ToPSI(Bar.FromInHg(lead.TrainBrakeController.MaxPressurePSI));
            
             float TempTrainPipePSI = lead == null ? 5.0f : lead.BrakeSystem.BrakeLine1PressurePSI;
@@ -378,7 +378,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float TempTotalTrainBrakeCylinderVolumeM3 = 0.0f;
             float TempCurrentBrakeCylinderVolumeM3 = 0.0f;
             float TempCurrentBrakePipeVolumeM3 = 0.0f;
-            float TempbrakePipeTimeFactorS = 0.0f;
+            float AdjbrakePipeTimeFactorS = 0.0f;
+            float AdjBrakePipeDischargeTimeFactor = 0.0f;
 
             train.EQEquippedVacLoco = lead == null ? false : lead.VacuumBrakeEQFitted;
 
@@ -435,28 +436,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     // Calculate brake system volume of the train, and then adjust accordingly the BP charging, discharging and propogation rates.
                     // The reference brake system is assumed to be 200ft^3, as ejector specifications suggest that a standard ejector can evacuate a brake system to 21InHg in about 60 seconds
-                    float TempTrainBrakePipeChargingRatePSIorInHgpS = 0.0f;
-                    float TempBrakeServiceTimeFactorS = 0.0f;
-                    float TempBrakeEmergencyTimeFactorS = 0.0f;
+                    float AdjTrainBrakePipeChargingRatePSIorInHgpS = 0.0f;
+                    float AdjSmallEjectorChargingRateInHgpS = 0.0f;
+                    float AdjVacuumPumpChargingRateInHgpS = 0.0f;
+                    float AdjBrakeServiceTimeFactorS = 0.0f;
+                    float AdjBrakeEmergencyTimeFactorS = 0.0f;
                     float TempbrakePipeTimeMultFactor = 0.0f;
 
                     // BrakePipeChargingRatePSIorInHgpS - trains of less then 200ft^3 will have higher charging rates, ie less time to charge BP
                     // BrakeServiceTimeFactorS / BrakeEmergencyTimeFactorS  - trains of less then 200ft^3 will have lower factors, ie less time to discharge BP
                     if (train.TotalTrainBrakeSystemVolumeM3 < Me3.FromFt3(200))
                     {
-                        TempTrainBrakePipeChargingRatePSIorInHgpS = ( Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakePipeChargingRatePSIorInHgpS;
-                        TempBrakeServiceTimeFactorS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeServiceTimeFactorS;
-                        TempBrakeEmergencyTimeFactorS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeEmergencyTimeFactorS;
+                        AdjTrainBrakePipeChargingRatePSIorInHgpS = ( Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakePipeChargingRatePSIorInHgpS;
+                        AdjSmallEjectorChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.VacuumPumpChargingRateInHgpS;
+                        AdjVacuumPumpChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * SmallEjectorChargingRateInHgpS;
+                        AdjBrakeServiceTimeFactorS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeServiceTimeFactorS;
+                        AdjBrakeEmergencyTimeFactorS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeEmergencyTimeFactorS;
                         TempbrakePipeTimeMultFactor = train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f);
-                        TempbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
+                        AdjbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
+                        AdjBrakePipeDischargeTimeFactor = TempbrakePipeTimeMultFactor * lead.BrakePipeDischargeTimeFactor;
                     }
                     else
                     {
-                        TempTrainBrakePipeChargingRatePSIorInHgpS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakePipeChargingRatePSIorInHgpS;
-                        TempBrakeServiceTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeServiceTimeFactorS;
-                        TempBrakeEmergencyTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeEmergencyTimeFactorS;
+                        AdjTrainBrakePipeChargingRatePSIorInHgpS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakePipeChargingRatePSIorInHgpS;
+                        AdjSmallEjectorChargingRateInHgpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * SmallEjectorChargingRateInHgpS;
+                        AdjVacuumPumpChargingRateInHgpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.VacuumPumpChargingRateInHgpS;
+                        AdjBrakeServiceTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeServiceTimeFactorS;
+                        AdjBrakeEmergencyTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeEmergencyTimeFactorS;
                         TempbrakePipeTimeMultFactor = Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3;
-                        TempbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;                                                                                        
+                        AdjbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
+                        AdjBrakePipeDischargeTimeFactor = TempbrakePipeTimeMultFactor * lead.BrakePipeDischargeTimeFactor;
                     }
 /*                    
                                         Trace.TraceInformation("Base BPCR - {0} Temp {1}", lead.BrakePipeChargingRatePSIorInHgpS, TempTrainBrakePipeChargingRatePSIorInHgpS);
@@ -496,7 +505,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Emergency)
                         {
                             // In emergency position brake pipe vacuum is reduced based upon the emergency time factor
-                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / TempBrakeEmergencyTimeFactorS);
+                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorS);
 
                             if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                 lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
@@ -505,7 +514,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                             {
                             // Vacuum Pipe is < Desired value - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
-                                lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / TempBrakeServiceTimeFactorS);
+                                lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                                     lead.BrakeSystem.BrakeLine1PressurePSI = DesiredPipeVacuum;
                             }
@@ -513,7 +522,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                             {
                                 // Vacuum Pipe is < Desired value - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
-                                float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * TempTrainBrakePipeChargingRatePSIorInHgpS;
+                                float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * AdjTrainBrakePipeChargingRatePSIorInHgpS;
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipePressureDiffPSI < DesiredPipeVacuum)
                                     TrainPipePressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - DesiredPipeVacuum;
                                 lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;
@@ -527,15 +536,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
 
                             // Allow for leaking train brakepipe (value is determined for lead locomotive) 
-                            // For diesel and electric locomotives assume that the Vacuum pump is automatic, and therefore leakage has no discernable impact.
-                            lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeLeakLossPSI - (TrainPipeTimeVariationS * SmallEjectorFeedRate); // Pipe pressure will increase (ie vacuum is destroyed) due to leakage, but is compensated by small ejector
+                            // For diesel and electric locomotives assume that the Vacuum pump is automatic, and therefore bp leakage has no discernable impact.
+                            if (!lead.SmallEjectorFitted)
+                            {
+                                AdjSmallEjectorChargingRateInHgpS = 0.0f; // If small ejector not fitted, then set input from ejector to zero
+                            }
+
+
+                            if (lead.VacuumPumpFitted && lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * AdjVacuumPumpChargingRateInHgpS) > OneAtmospherePSI)
+                            {
+                                AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is being maintained
+                            }
+
+                            if (!lead.VacuumPumpFitted)
+                            {
+                                AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is not present
+                            }
+
+                            // Pipe pressure will increase (ie vacuum is destroyed) due to leakage, but is compensated by small ejector and/or the vacuum pump
+                            lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeLeakLossPSI - (TrainPipeTimeVariationS * (AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS)); 
+                            
+
+                            
+ 
                         }
 
                         // If no leakage, ie not in Running position, adjust the train pipe up and down as appropriate.
                         // Brake Controller is in Emergency position - fast increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
                         else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Emergency)
                             {
-                                lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / TempBrakeEmergencyTimeFactorS);
+                                lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorS);
 
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                     lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
@@ -545,7 +575,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // Brake Controller is in Apply position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
                             else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Apply)
                             {
-                                    lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / TempBrakeServiceTimeFactorS);
+                                    lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
                                     if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                         lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                             }
@@ -553,7 +583,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // Brake Controller is in Release position - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
                             else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                             {
-                                float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * TempTrainBrakePipeChargingRatePSIorInHgpS;
+                                float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * AdjTrainBrakePipeChargingRatePSIorInHgpS;
                                 lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;
                             }
 
@@ -571,7 +601,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
                                 {
                                 // Vacuum Pipe is < Desired value - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
-                                  lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / TempBrakeServiceTimeFactorS);
+                                  lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
                                     if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                         lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                                 }
@@ -580,7 +610,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                                     {
                                         // Vacuum Pipe is > Desired value - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
-                                        float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * TempTrainBrakePipeChargingRatePSIorInHgpS;
+                                        float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * AdjTrainBrakePipeChargingRatePSIorInHgpS;
                                         if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipePressureDiffPSI < DesiredPipeVacuum)
                                             TrainPipePressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - DesiredPipeVacuum;
                                         lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;
@@ -673,13 +703,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                                 }  */
 
                         float TrainPipePressureDiffPropogationPSI;
-                        if (TempbrakePipeTimeFactorS == 0) // Check to make sure that TrainPipePressureDiffPropogationPSI is calculated as a valid number, ie not NaN
+                        if (AdjbrakePipeTimeFactorS == 0) // Check to make sure that TrainPipePressureDiffPropogationPSI is calculated as a valid number, ie not NaN
                         {
                             TrainPipePressureDiffPropogationPSI = 0.0f;
                         }
                         else
                         {
-                            TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / TempbrakePipeTimeFactorS;
+                            TrainPipePressureDiffPropogationPSI = TrainPipeTimeVariationS * (p1 - p0) / AdjbrakePipeTimeFactorS;
 //                            TrainPipePressureDiffPropogationPSI = MathHelper.Clamp(TrainPipePressureDiffPropogationPSI, 0.0f - 1.0f, 1.0f);
                         }
 
@@ -697,7 +727,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
                             // The brake pipe is evacuated at a quicker rate then it is cahrged at - PressDiff increased to represent this
                             if (TrainPipePressureDiffPropogationPSI < 0)
-                                TrainPipePressureDiffPropogationPSI *= lead.BrakePipeDischargeTimeFactor;
+                                TrainPipePressureDiffPropogationPSI *= AdjBrakePipeDischargeTimeFactor;
                             //Trace.TraceInformation("Diff {0} Brake Posn {1}", TrainPipePressureDiffPropogationPSI, lead.TrainBrakeController.TrainBrakeControllerState);
                         }
 
@@ -745,13 +775,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 //                            Trace.TraceInformation("Test #1 - Carid {0} Car BP {1}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI);
 
                             // release vacuum pressure if train brake pipe is "open". Make sure that we stay within bound
-                            if ( (car.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p1) / TempbrakePipeTimeFactorS)) > OneAtmospherePSI)
+                            if ( (car.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p1) / AdjbrakePipeTimeFactorS)) > OneAtmospherePSI)
                             {
                                 car.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                             }
                             else
                             {
-                                car.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p1) / TempbrakePipeTimeFactorS;
+                                car.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p1) / AdjbrakePipeTimeFactorS;
                             }
 
                             //  Set brake pipe pressure at leading car to match, thus increasing the pressure in all trucks along the train
@@ -765,13 +795,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         {
 
                             // release vacuum pressure if train brake pipe is "open". Make sure that we stay within bound
-                            if ((car0.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p0) / TempbrakePipeTimeFactorS)) > OneAtmospherePSI)
+                            if ((car0.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p0) / AdjbrakePipeTimeFactorS)) > OneAtmospherePSI)
                             {
                                 car0.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                             }
                             else
                             {
-                                car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p0) / TempbrakePipeTimeFactorS;
+                                car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p0) / AdjbrakePipeTimeFactorS;
                             }
 
 //                            train.Cars[0].BrakeSystem.BrakeLine1PressurePSI = car0.BrakeSystem.BrakeLine1PressurePSI;
@@ -782,13 +812,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (car0.BrakeSystem.AngleCockAOpen && car == train.Cars[0])
                     {
                         // release vacuum pressure if train brake pipe is "open". Make sure that we stay within bound
-                        if ((car0.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p0) / TempbrakePipeTimeFactorS)) > OneAtmospherePSI)
+                        if ((car0.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p0) / AdjbrakePipeTimeFactorS)) > OneAtmospherePSI)
                         {
                             car0.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                         }
                         else
                         {
-                            car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p0) / TempbrakePipeTimeFactorS;
+                            car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p0) / AdjbrakePipeTimeFactorS;
                         }
 
                     }
@@ -799,17 +829,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
 //                        Trace.TraceInformation("Last (A) - Carid {0} Car BP {1} Time Factor {2} Variation {3} p1 {4}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI, TempbrakePipeTimeFactorS, TrainPipeTimeVariationS, p1);
                         // Test to make sure that BP pressure stays within reasonable bounds
-                        if (TempbrakePipeTimeFactorS == 0)
+                        if (AdjbrakePipeTimeFactorS == 0)
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI = p1;
                         }
-                         else if (  (car.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p1) / TempbrakePipeTimeFactorS)) > OneAtmospherePSI)
+                         else if (  (car.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * (p1) / AdjbrakePipeTimeFactorS)) > OneAtmospherePSI)
                         {
                             car.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
                         }
                         else
                         {
-                            car.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p1) / TempbrakePipeTimeFactorS;
+                            car.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * (p1) / AdjbrakePipeTimeFactorS;
                         }
                         //  Set brake pipe pressure at leading car to match, thus increasing the pressure in all trucks along the train
                         // this will result in application of the brakes
