@@ -2774,15 +2774,29 @@ namespace Orts.Simulation.RollingStocks
             if (EngineBrakeController == null)
                 return null;
             // If brake type is only a state, and no numerical fraction application is displayed in the HUD, then display Brake Cylinder (BC) pressure
-
-            if (String.IsNullOrEmpty(EngineBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application, if no fraction display BC pressure
+                if (String.IsNullOrEmpty(EngineBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application, if no fraction display BC pressure
             {
-                return string.Format("{0} BC {1} {2}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure( Train.HUDLocomotiveBrakeCylinderPSI, PressureUnit.PSI, MainPressureUnit, true), BailOff ? " BailOff" : "");
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    return string.Format("{0} BC {1}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(VacuumSinglePipe.P2V(Train.HUDLocomotiveBrakeCylinderPSI), PressureUnit.InHg, PressureUnit.InHg, true));
+                }
+                else
+                {
+                    return string.Format("{0} BC {1} {2}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Train.HUDLocomotiveBrakeCylinderPSI, PressureUnit.PSI, MainPressureUnit, true), BailOff ? " BailOff" : "");
+                }
+                    
                 // Fraction not found so display BC                
             }
             else
             {
-                return string.Format("{0}{1}", EngineBrakeController.GetStatus(), BailOff ? " BailOff" : "");  // Fraction found so don't display BC
+                if ((BrakeSystem is VacuumSinglePipe))
+                {
+                    return string.Format("{0}", EngineBrakeController.GetStatus());  // Fraction found so don't display BC
+                }
+                else
+                {
+                    return string.Format("{0}{1}", EngineBrakeController.GetStatus(), BailOff ? " BailOff" : "");  // Fraction found so don't display BC
+                }
             }
         }
         #endregion

@@ -4721,8 +4721,9 @@ namespace Orts.Simulation.RollingStocks
                 if (SteamEjectorSmallSetting > 0.1f && SmallEjectorFitted) // Test to see if small steam ejector is on, provided a small ejector is fitted
                 {
                     SmallSteamEjectorIsOn = true;
-                    // calculate small ejector fration (maximum of 35% of train pipe charging rate) to be used in vacuum brakes 
-                    SmallEjectorFeedFraction = (0.35f / MaxVaccuumMaxPressurePSI) * BoilerPressurePSI * SmallEjectorController.CurrentValue;
+                    // calculate small ejector fraction (maximum of the ratio of steam consumption for small and large ejector of train pipe charging rate - 
+                    //assumes consumption rates have been set correctly to relative sizes) to be used in vacuum brakes 
+                    SmallEjectorFeedFraction = ((EjectorLargeSteamConsumptionLbpS/(EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS)) / MaxVaccuumMaxPressurePSI) * BoilerPressurePSI * SmallEjectorController.CurrentValue;
                     SmallEjectorFeedFraction = MathHelper.Clamp(SmallEjectorFeedFraction, 0.0f, 0.35f);
                 }
                 else
@@ -4751,7 +4752,10 @@ namespace Orts.Simulation.RollingStocks
                 // Assume 5in dia vacuum pump. Forward and backward stroke evacuates air
                 VacuumPumpOutputFt3pM =   Me3.ToFt3(Me3.FromIn3( (Me.ToIn(CylinderStrokeM) * 2.5f * 2.5f)   )) * (float)Math.PI * 1.9f * pS.TopM(DrvWheelRevRpS); 
                 VacuumPumpChargingRateInHgpS = (VacuumPumpOutputFt3pM / 138.0f) * 0.344f; // This is based upon a ratio from RM ejector - 0.344InHGpS to evacuate 138ft3 in a minute
-
+                if ( AbsSpeedMpS < 0.1) // Stop vacuum pump if locomotive speed is nearly stationary - acts as a check to control elsewhere
+                {
+                    VacuumPumpOperating = false;
+                }
 
             }
 
