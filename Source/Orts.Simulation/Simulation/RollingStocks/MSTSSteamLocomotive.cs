@@ -4696,6 +4696,7 @@ namespace Orts.Simulation.RollingStocks
             // Only calculate compressor consumption if it is not a vacuum controlled steam engine
             if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
             {
+                // Air brake system
                 // Calculate Air Compressor steam Usage if turned on
                 if (CompressorIsOn)
                 {
@@ -4710,21 +4711,32 @@ namespace Orts.Simulation.RollingStocks
                     CompSteamUsageLBpS = 0.0f;    // Set steam usage to zero if compressor is turned off
                 }
             }
-            else // Train is vacuum brake controlled, and steam ejector is used
+            else // Train is vacuum brake controlled, and steam ejector and vacuum pump are possibly used
             {
 
                 // Calculate small steam ejector steam usage
                     SteamEjectorSmallSetting = SmallEjectorController.CurrentValue;
                     SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
-                    TempEjectorSmallSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * SmallEjectorController.CurrentValue;
+                // Steam consumption for small ejector is assumed to be @ 120 psi steam pressure, therefore pressure will vary up and down from this reference figure.
+                float TempSteamPressure = SteamEjectorSmallPressurePSI / 120.0f;
+                TempEjectorSmallSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * TempSteamPressure;
 
                 if (SteamEjectorSmallSetting > 0.1f && SmallEjectorFitted) // Test to see if small steam ejector is on, provided a small ejector is fitted
                 {
                     SmallSteamEjectorIsOn = true;
                     // calculate small ejector fraction (maximum of the ratio of steam consumption for small and large ejector of train pipe charging rate - 
                     //assumes consumption rates have been set correctly to relative sizes) to be used in vacuum brakes 
-                    SmallEjectorFeedFraction = ((EjectorLargeSteamConsumptionLbpS/(EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS)) / MaxVaccuumMaxPressurePSI) * BoilerPressurePSI * SmallEjectorController.CurrentValue;
-                    SmallEjectorFeedFraction = MathHelper.Clamp(SmallEjectorFeedFraction, 0.0f, 0.35f);
+                    // Ejector charging rate (vacuum output) will reach a maximum at the value of VacuumBrakesMinBoilerPressureMaxVacuum. Values of up to 
+                    // maximum output (1.0) are possible depending upon th steam setting of the small ejector. Over this value output is limited to 1.05 output.
+                    if (SteamEjectorSmallPressurePSI < MaxVaccuumMaxPressurePSI)
+                    {
+                        SmallEjectorFeedFraction = (1.0f / MaxVaccuumMaxPressurePSI) * SteamEjectorSmallPressurePSI * (EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS));
+                    }
+                    else
+                    {
+                        SmallEjectorFeedFraction = 1.05f * (EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS));
+                    }
+
                 }
                 else
                 {
@@ -4748,13 +4760,16 @@ namespace Orts.Simulation.RollingStocks
                 BoilerHeatOutBTUpS += EjectorTotalSteamConsumptionLbpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by compressor
                 TotalSteamUsageLBpS += EjectorTotalSteamConsumptionLbpS;
 
-                // Vacuum pump calculations
-                // Assume 5in dia vacuum pump. Forward and backward stroke evacuates air
-                VacuumPumpOutputFt3pM =   Me3.ToFt3(Me3.FromIn3( (Me.ToIn(CylinderStrokeM) * 2.5f * 2.5f)   )) * (float)Math.PI * 1.9f * pS.TopM(DrvWheelRevRpS); 
-                VacuumPumpChargingRateInHgpS = (VacuumPumpOutputFt3pM / 138.0f) * 0.344f; // This is based upon a ratio from RM ejector - 0.344InHGpS to evacuate 138ft3 in a minute
-                if ( AbsSpeedMpS < 0.1) // Stop vacuum pump if locomotive speed is nearly stationary - acts as a check to control elsewhere
+                if (VacuumPumpFitted)
                 {
-                    VacuumPumpOperating = false;
+                    // Vacuum pump calculations
+                    // Assume 5in dia vacuum pump. Forward and backward stroke evacuates air
+                    VacuumPumpOutputFt3pM = Me3.ToFt3(Me3.FromIn3((Me.ToIn(CylinderStrokeM) * 2.5f * 2.5f))) * (float)Math.PI * 1.9f * pS.TopM(DrvWheelRevRpS);
+                    VacuumPumpChargingRateInHgpS = (VacuumPumpOutputFt3pM / 138.0f) * 0.344f; // This is based upon a ratio from RM ejector - 0.344InHGpS to evacuate 138ft3 in a minute
+                    if (AbsSpeedMpS < 0.1) // Stop vacuum pump if locomotive speed is nearly stationary - acts as a check to control elsewhere
+                    {
+                        VacuumPumpOperating = false;
+                    }
                 }
 
             }
