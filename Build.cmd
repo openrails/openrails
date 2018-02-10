@@ -27,6 +27,7 @@ CALL :list-or-check-tool "lazbuild.exe" "Lazarus compiler"
 CALL :list-or-check-tool "strip.exe" "Lazarus command-line tool"
 CALL :list-or-check-tool "xunit.console.x86.exe" "XUnit command-line tool"
 CALL :list-or-check-tool "editbin.exe" "Microsoft Visual Studio editbin command-line tool"
+CALL :list-or-check-tool "rcedit-x86.exe" "rcedit tool from electron"
 CALL :list-or-check-tool "OfficeToPDF.exe" "Office-to-PDF conversion tool"
 CALL :list-or-check-tool "7za.exe" "7-zip command-line tool"
 CALL :list-or-check-tool "iscc.exe" "Inno Setup 5 compiler"
@@ -110,6 +111,22 @@ IF "%ERRORLEVEL%" == "9009" GOTO :error
 CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
 editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
 ECHO Created large address aware version of RunActivity.exe.
+
+REM Copy version number from OpenRails.exe into all other 1st party files
+SET VersionInfoVersion=0.0.0.0
+IF NOT "%Version%" == "" (
+	SET VersionInfoVersion=%Version%.%Revision%
+) ELSE (
+	FOR /F "usebackq tokens=1" %%V IN (`rcedit-x86.exe "Program\OpenRails.exe" --get-version-string FileVersion`) DO SET VersionInfoVersion=%%V
+)
+IF "%VersionInfoVersion%" == "0.0.0.0" (
+	>&2 ECHO ERROR: No VersionInfoVersion found in "Program\OpenRails.exe".
+	GOTO :error
+)
+FOR %%F IN ("Program\*.exe", "Program\Orts.*.dll", "Program\Contrib.*.dll", "Program\Tests.dll") DO (
+	rcedit-x86.exe "%%~F" --set-product-version %VersionInfoVersion% --set-file-version %VersionInfoVersion% --set-version-string ProductVersion %VersionInfoVersion% --set-version-string FileVersion %VersionInfoVersion% || GOTO :error
+)
+ECHO Set product and file version information to "%VersionInfoVersion%".
 
 IF NOT "%Mode%" == "Unstable" (
 	REM Restart the Office Click2Run service as this frequently breaks builds.
