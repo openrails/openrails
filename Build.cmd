@@ -163,9 +163,9 @@ IF "%Mode%" == "Stable" (
 )
 
 REM *** Special build step: signs binaries ***
-REM IF NOT "%JENKINS_TOOLS%" == "" (
-REM 	%JENKINS_TOOLS%\build.cmd || GOTO :error
-REM )
+IF NOT "%JENKINS_TOOLS%" == "" (
+	FOR /R "Program" %%F IN (*.exe *.dll) DO CALL "%JENKINS_TOOLS%\sign.cmd" "%%~F" || GOTO :error
+)
 
 REM Create binary and source zips.
 CALL :delete "OpenRails-%Mode%*.zip" || GOTO :error
