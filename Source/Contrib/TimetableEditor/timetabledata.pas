@@ -5,7 +5,7 @@ unit timetabledata;
 interface
 
 uses
-  Classes, SysUtils,FileUtil,charencstreams, zipper, tteobjects;
+  Classes, SysUtils, FileUtil, LazUTF8, charencstreams, zipper, tteobjects;
 
 type
   timearray = array[0..2] of integer;
@@ -201,7 +201,7 @@ var i: integer;
     rpath: tstringlist;
 begin
   rpath:=tstringlist.create;
-  split('\',utf8tosys(path),rpath);
+  split('\',UTF8ToSys(path),rpath);
   routepath:='';
   i:=0;
   while ansilowercase(rpath[i]) <> 'routes' do begin
@@ -374,7 +374,7 @@ begin
       for n:=0 to paths.Count -1 do begin
         fces:=tcharencstream.create;
         fces.reset;
-        fces.LoadFromFile(utf8tosys(routepath+'paths\'+paths[n]));
+        fces.LoadFromFile(UTF8ToSys(routepath+'paths\'+paths[n]));
         tmp.text:=fces.utf8text;
         fces.free;
         for t:=0 to tmp.count -1 do begin
@@ -464,7 +464,7 @@ begin
     tmp:=tstringlist.create;
     fCES := TCharEncStream.Create;
     fCES.Reset;
-    fCES.loadfromfile(utf8tosys(consistspath+'\'+consistslist[i]+'.con'));
+    fCES.loadfromfile(UTF8ToSys(consistspath+'\'+consistslist[i]+'.con'));
     tmp.text:=fces.UTF8Text;
     fces.free;
     found:=false;
@@ -508,7 +508,7 @@ begin
     tmp:=tstringlist.create;
     fCES := TCharEncStream.Create;
     fCES.Reset;
-    fCES.LoadFromFile(utf8tosys(pathspath+'\'+pathslist[i]+'.pat'));
+    fCES.LoadFromFile(UTF8ToSys(pathspath+'\'+pathslist[i]+'.pat'));
     tmp.text := fces.UTF8Text;
     fces.free;
     found:=false;
@@ -696,13 +696,13 @@ res:=false;
   end;
   try
 
-    zips.FileName:=utf8tosys(filename);
+    zips.FileName:=UTF8ToSys(filename);
     zips.entries.addfileentry(ttfilename);
     for i:=0 to zpaths.count -1 do begin
-      zips.Entries.AddFileEntry(utf8tosys(zpaths[i]),utf8tosys(zpaths[i]));
+      zips.Entries.AddFileEntry(UTF8ToSys(zpaths[i]),UTF8ToSys(zpaths[i]));
     end;
     for i:=0 to zcons.count -1 do begin
-      zips.Entries.addfileentry(utf8tosys(zcons[i]),utf8tosys(zcons[i]));
+      zips.Entries.addfileentry(UTF8ToSys(zcons[i]),UTF8ToSys(zcons[i]));
     end;
     zips.ZipAllFiles;
     res:=true;

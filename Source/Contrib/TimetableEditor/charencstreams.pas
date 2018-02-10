@@ -74,7 +74,7 @@ function GetSystemEncoding: string;
 
 implementation
 
-uses LCLProc, LConvEncoding, Math;
+uses LazUTF8, LConvEncoding, Math;   
 
 procedure GetSupportedANSIEncodings(List: TStrings);
 begin

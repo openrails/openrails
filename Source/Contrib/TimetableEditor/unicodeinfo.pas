@@ -45,7 +45,7 @@ unit unicodeinfo;
 interface
 
 uses
-  Classes, SysUtils, LCLProc;
+  Classes, SysUtils, LazUTF8;
 
 const
   UTF8PROC_NULLTERM = 1 shl 0;
