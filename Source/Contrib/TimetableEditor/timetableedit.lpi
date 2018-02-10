@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <ProjectOptions>
-    <Version Value="9"/>
+    <Version Value="10"/>
     <PathDelim Value="\"/>
     <General>
       <SessionStorage Value="InProjectDir"/>
@@ -17,7 +17,7 @@
     </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <StringTable CompanyName="Open Rails" FileDescription="Open Rails Timetable Editor (Contributed)" LegalCopyright="Copyright © 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018" ProductName="Open Rails" ProductVersion=""/>
+      <StringTable Comments="Open Rails Transport Simulator" CompanyName="Open Rails" FileDescription="Open Rails Timetable Editor (Contributed)" LegalCopyright="Copyright © 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018" ProductName="Open Rails"/>
     </VersionInfo>
     <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
@@ -39,7 +39,6 @@
       <Unit0>
         <Filename Value="timetableedit.lpr"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="timetableedit"/>
       </Unit0>
       <Unit1>
         <Filename Value="unit1.pas"/>
@@ -55,7 +54,6 @@
         <ComponentName Value="Form5"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="stations"/>
       </Unit2>
       <Unit3>
         <Filename Value="about.pas"/>
@@ -63,7 +61,6 @@
         <ComponentName Value="Form2"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="about"/>
       </Unit3>
       <Unit4>
         <Filename Value="applanguage.pas"/>
@@ -76,7 +73,6 @@
         <ComponentName Value="Form3"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="trains"/>
       </Unit5>
       <Unit6>
         <Filename Value="dispose.pas"/>
@@ -84,7 +80,6 @@
         <ComponentName Value="Form6"/>
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
-        <UnitName Value="dispose"/>
       </Unit6>
     </Units>
   </ProjectOptions>
@@ -105,12 +100,6 @@
         </Win32>
       </Options>
     </Linking>
-    <Other>
-      <CompilerMessages>
-        <MsgFileName Value=""/>
-      </CompilerMessages>
-      <CompilerPath Value="$(CompPath)"/>
-    </Other>
   </CompilerOptions>
   <Debugging>
     <Exceptions Count="3">
