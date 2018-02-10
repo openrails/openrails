@@ -138,7 +138,7 @@ IF NOT "%Mode%" == "Unstable" (
 
 	REM Compile the documentation.
 	FOR /R "Source\Documentation" %%F IN (*.doc *.docx *.docm *.xls *.xlsx *.xlsm *.odt) DO ECHO %%~F && OfficeToPDF.exe /bookmarks /print "%%~F" "Program\Documentation\%%~nF.pdf" || GOTO :error
-	PUSHD "Source\Documentation\Manual" && CALL make.bat clean && POPD || GOTO :error
+	PUSHD "Source\Documentation\Manual" && CALL make.bat clean & POPD || GOTO :error
 	PUSHD "Source\Documentation\Manual" && CALL make.bat latexpdf && POPD || GOTO :error
 
 	REM Copy the documentation.
