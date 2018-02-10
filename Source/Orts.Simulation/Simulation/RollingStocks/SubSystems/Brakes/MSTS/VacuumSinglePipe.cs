@@ -273,24 +273,26 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     BrakeLine1PressurePSI += dp * vr;
                     CylPressurePSIA = VacResPressurePSIA;
                 }
-                else if (BrakeLine1PressurePSI < CylPressurePSIA) // Increase BP pressure, hence vacuum brakes are being applied
+                else if (BrakeLine1PressurePSI < CylPressurePSIA) // Increase BP pressure, hence vacuum brakes are being released
                 {
-                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                    float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
                     float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
                     if (CylPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
                         dp = (CylPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
                     CylPressurePSIA -= dp;
                     BrakeLine1PressurePSI += dp * vr;
+//                    Trace.TraceInformation("Release");
                 }
-                else if (BrakeLine1PressurePSI > CylPressurePSIA)  // Decrease BP pressure, hence vacuum brakes are being released
+                else if (BrakeLine1PressurePSI > CylPressurePSIA)  // Decrease BP pressure, hence vacuum brakes are being applied
                 {
-                    float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
+                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
                     float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
                     if (CylPressurePSIA + dp > BrakeLine1PressurePSI - dp * vr)
                         dp = (BrakeLine1PressurePSI - CylPressurePSIA) / (1 + vr);
                     CylPressurePSIA += dp;
                     if (!HasDirectAdmissionValue)
                         BrakeLine1PressurePSI -= dp * vr;
+//                    Trace.TraceInformation("Apply");
                 }
             }
 
