@@ -190,6 +190,7 @@ namespace Orts.Simulation.RollingStocks
         public float SteamEjectorSmallSetting = 0.0f;
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
+        public float LargeEjectorFeedFraction = 1.0f;
         public float VacuumPumpChargingRateInHgpS;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
 

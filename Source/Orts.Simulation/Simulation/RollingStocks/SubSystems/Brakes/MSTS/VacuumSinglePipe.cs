@@ -572,9 +572,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 AdjSmallEjectorChargingRateInHgpS = 0.0f; // If small ejector not fitted, then set input from ejector to zero
                             }
 
-
-                            if (lead.VacuumPumpFitted && lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * AdjVacuumPumpChargingRateInHgpS) > OneAtmospherePSI &&
-                                lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI - (MaxVacuumPipeLevelPSI - KPa.ToPSI(KPa.FromInHg(3))))
+                            // Zero vacuum pump (trun off) if BP is at full vacuum, or if Vacuum drops below 3rom max operating vacuum
+                            if (lead.VacuumPumpFitted && (lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * AdjVacuumPumpChargingRateInHgpS) > OneAtmospherePSI ||
+                                P2V( lead.BrakeSystem.BrakeLine1PressurePSI) < P2V( OneAtmospherePSI - (MaxVacuumPipeLevelPSI - KPa.ToPSI(KPa.FromInHg(3)))) ))
                             {
                                 AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is being maintained, ie pump is off
                                 lead.VacuumPumpOperating = false;
@@ -583,11 +583,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             {
                                 lead.VacuumPumpOperating = true;
                             }
-
-
-                            if (!lead.VacuumPumpFitted)
+                            else
                             {
-                                AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is not present
+                                AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is not fitted
                                 lead.VacuumPumpOperating = false;
                             }
 

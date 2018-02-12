@@ -354,6 +354,7 @@ namespace Orts.Simulation.RollingStocks
         float TempEjectorLargeSteamConsumptionLbpS;
         float EjectorTotalSteamConsumptionLbpS;
         public float VacuumPumpOutputFt3pM;
+        float SmallEjectorBrakePipeChargingRatePSIorInHgpS;
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
         float CompCylDiaIN = 9.5f;
@@ -4727,14 +4728,18 @@ namespace Orts.Simulation.RollingStocks
                     // calculate small ejector fraction (maximum of the ratio of steam consumption for small and large ejector of train pipe charging rate - 
                     //assumes consumption rates have been set correctly to relative sizes) to be used in vacuum brakes 
                     // Ejector charging rate (vacuum output) will reach a maximum at the value of VacuumBrakesMinBoilerPressureMaxVacuum. Values of up to 
-                    // maximum output (1.0) are possible depending upon th steam setting of the small ejector. Over this value output is limited to 1.05 output.
+                    // maximum output (1.0) are possible depending upon th steam setting of the small ejector. After maximum is reached the ejector output starts to decrease.
+                    // two straight line graphs are used to calculate rising and falling output either side of the maximum vacuum point. These straigh lines are based upon BR ejector test reports
+                    // Curves are lower - y = 1.7735x - 0.6122 and upper - y = -0.1179x + 1.1063
                     if (SteamEjectorSmallPressurePSI < MaxVaccuumMaxPressurePSI)
                     {
-                        SmallEjectorFeedFraction = (1.0f / MaxVaccuumMaxPressurePSI) * SteamEjectorSmallPressurePSI * (EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS));
+                        SmallEjectorFeedFraction = ((1.7735f  * (SteamEjectorSmallPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * (EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS));
+
                     }
                     else
                     {
-                        SmallEjectorFeedFraction = 1.05f * (EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS));
+                        //  The fraction is dropped slightly as pressure increases to simulate decrease in vacuum evacuation as ejector pressure increases above the kneepoint of curve
+                        SmallEjectorFeedFraction = ((1.1063f  - (0.1179f * (SteamEjectorSmallPressurePSI / MaxVaccuumMaxPressurePSI))) ) * EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
                     }
 
                 }
@@ -4743,7 +4748,24 @@ namespace Orts.Simulation.RollingStocks
                     SmallSteamEjectorIsOn = false;
                     SmallEjectorFeedFraction = 0.0f;
                 }
-                 // Calculate large steam ejector steam usage, and the brake turns the large ejector on
+
+                // Large ejector will suffer performance efficiency impacts if boiler steam pressure falls below max vacuum point.
+                if (BoilerPressurePSI < MaxVaccuumMaxPressurePSI)
+                {
+                    LargeEjectorFeedFraction = ((1.7735f * (BoilerPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f));
+                }
+                else
+                {
+                    //  Provided BP is greater then max vacuum pressure large ejector will operate at full efficiency
+                    LargeEjectorFeedFraction = 1.0f;
+                }
+
+                LargeEjectorFeedFraction = MathHelper.Clamp(LargeEjectorFeedFraction, 0.0f, 1.0f); // Keep within bounds
+                SmallEjectorFeedFraction = MathHelper.Clamp(SmallEjectorFeedFraction, 0.0f, 1.0f); // Keep within bounds
+                // Calculate for display purposes
+                SmallEjectorBrakePipeChargingRatePSIorInHgpS = SmallEjectorFeedFraction * BrakePipeChargingRatePSIorInHgpS;
+
+                // Calculate large steam ejector steam usage, and the brake turns the large ejector on
                 if (LargeSteamEjectorIsOn)
                 {
                     TempEjectorLargeSteamConsumptionLbpS = EjectorLargeSteamConsumptionLbpS;
@@ -6029,24 +6051,30 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
                 FormatStrings.h);
 
-                status.AppendFormat("{0}\t{1}\t{2:N2}/t{3}\t{4}\t{5}",
+                status.AppendFormat("{0}\t{1}\t{2:N2}/{3}\t{4}\t{5:N2}\t{6}\t{7}",
                 Simulator.Catalog.GetString("Large:"),
                 Simulator.Catalog.GetString("StCons"),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorLargeSteamConsumptionLbpS)), IsMetric),
                 FormatStrings.h,
+                Simulator.Catalog.GetString("Rate"),
+                BrakePipeChargingRatePSIorInHgpS,
+                //                FormatStrings.FormatPressure(BrakePipeChargingRatePSIorInHgpS, PressureUnit.InHg, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Lg Ej"),
                 LargeSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
 
                 if (SmallEjectorFitted) // only display small ejector if fitted.
                 {
-                    status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}/{5}\t{6}\t{7}",
+                    status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}/{5}\t{6}\t{7:N2}\t{8}\t{9}",
                     Simulator.Catalog.GetString("Small:"),
                     Simulator.Catalog.GetString("Press"),
                     FormatStrings.FormatPressure(SteamEjectorSmallPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                     Simulator.Catalog.GetString("StCons"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorSmallSteamConsumptionLbpS)), IsMetric),
                     FormatStrings.h,
+                    Simulator.Catalog.GetString("Rate"),
+                    // FormatStrings.FormatPressure(SmallEjectorBrakePipeChargingRatePSIorInHgpS, PressureUnit.InHg, MainPressureUnit, true),
+                    SmallEjectorBrakePipeChargingRatePSIorInHgpS,
                     Simulator.Catalog.GetString("Sm Ej"),
                     SmallSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                     );
