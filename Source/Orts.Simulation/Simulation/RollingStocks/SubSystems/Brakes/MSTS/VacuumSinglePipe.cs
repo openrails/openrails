@@ -900,10 +900,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 int continuousFromInclusive = 0;
                 int continuousToExclusive = train.Cars.Count;
 
-                for (int i = 0; i < train.Cars.Count; i++)
-                {
-                    // Next section forces wagons not condidered to be locomotives or tenders out of this calculation and thus their Brakeline3 values set to zero. This used above to identify which BC to change
-                    BrakeSystem brakeSystem = train.Cars[i].BrakeSystem;
+            for (int i = 0; i < train.Cars.Count; i++)
+            {
+
+                if (lead != null)
+                  {
+
+                // Next section forces wagons not condidered to be locomotives or tenders out of this calculation and thus their Brakeline3 values set to zero. This used above to identify which BC to change
+                BrakeSystem brakeSystem = train.Cars[i].BrakeSystem;
                 if (lead.EngineBrakeFitted)
                 {
 
@@ -935,45 +939,45 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
 
                         //                    Trace.TraceInformation("CarID {0}", trainCar.CarID);
-                        if (lead != null)
+
+                        //                           float DesiredEngineBrakeVacuum = lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
+
+                        //                        Trace.TraceInformation("Train Controller State {0}  Engine Brake Controller {1}", lead.TrainBrakeController.TrainBrakeControllerState, lead.EngineBrakeController.TrainBrakeControllerState);
+                        //                        Trace.TraceInformation("BP3#1 - {0}", lead.BrakeSystem.BrakeLine3PressurePSI);
+                        //                        Trace.TraceInformation("EngineBrake - Apply {0} Release {1}", lead.EngineBrakeController.ApplyRatePSIpS, lead.EngineBrakeController.ReleaseRatePSIpS);
+
+                        // Engine Brake Controller is in Apply position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
+                        if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.Apply)
                         {
- //                           float DesiredEngineBrakeVacuum = lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
-
-                            //                        Trace.TraceInformation("Train Controller State {0}  Engine Brake Controller {1}", lead.TrainBrakeController.TrainBrakeControllerState, lead.EngineBrakeController.TrainBrakeControllerState);
-                            //                        Trace.TraceInformation("BP3#1 - {0}", lead.BrakeSystem.BrakeLine3PressurePSI);
-                            //                        Trace.TraceInformation("EngineBrake - Apply {0} Release {1}", lead.EngineBrakeController.ApplyRatePSIpS, lead.EngineBrakeController.ReleaseRatePSIpS);
-
-                            // Engine Brake Controller is in Apply position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
-                            if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.Apply)
-                            {
-                                brakeSystem.BrakeLine3PressurePSI += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS;
-                                if (brakeSystem.BrakeLine3PressurePSI > OneAtmospherePSI)
-                                    brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI;
-                            }
-
-                            // Engine Brake Controller is in Apply position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
-                            if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.Emergency)
-                            {
-                                brakeSystem.BrakeLine3PressurePSI += elapsedClockSeconds * lead.EngineBrakeController.EmergencyRatePSIpS;
-                                if (brakeSystem.BrakeLine3PressurePSI > OneAtmospherePSI)
-                                    brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI;
-                            }
-
-                            // Engine Brake Controller is in Release position - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
-                            else if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.Release)
-                            {
-                                float EnginePipePressureDiffPSI = elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
-                                brakeSystem.BrakeLine3PressurePSI -= EnginePipePressureDiffPSI;
-                                if (brakeSystem.BrakeLine3PressurePSI < OneAtmospherePSI - MaxVacuumPipeLevelPSI)
-                                    brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
-                            }
+                            brakeSystem.BrakeLine3PressurePSI += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS;
+                            if (brakeSystem.BrakeLine3PressurePSI > OneAtmospherePSI)
+                                brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI;
                         }
+
+                        // Engine Brake Controller is in Apply position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
+                        if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.Emergency)
+                        {
+                            brakeSystem.BrakeLine3PressurePSI += elapsedClockSeconds * lead.EngineBrakeController.EmergencyRatePSIpS;
+                            if (brakeSystem.BrakeLine3PressurePSI > OneAtmospherePSI)
+                                brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI;
+                        }
+
+                        // Engine Brake Controller is in Release position - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
+                        else if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.Release)
+                        {
+                            float EnginePipePressureDiffPSI = elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
+                            brakeSystem.BrakeLine3PressurePSI -= EnginePipePressureDiffPSI;
+                            if (brakeSystem.BrakeLine3PressurePSI < OneAtmospherePSI - MaxVacuumPipeLevelPSI)
+                                brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
+                        }
+
                     }
                 }
                 else
                 {
                     brakeSystem.BrakeLine3PressurePSI = 0; // Set engine brake line to zero if no engine brake fitted
                 }
+              }
             }
 
         }
