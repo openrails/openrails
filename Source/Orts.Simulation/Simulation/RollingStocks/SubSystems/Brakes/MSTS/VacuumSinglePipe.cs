@@ -404,7 +404,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // The resulting air pressures are then converted to a respective vacuum value where - 14.5psi (atmospheric pressure) = 0 InHg, and approx 4.185psi = 21 InHg.
             // Brakes are applied when vaccum is destroyed, ie 0 InHg, Brakes released when vacuum established ie 21 or 25 InHg
             float DesiredPipeVacuum = V2P(train.EqualReservoirPressurePSIorInHg);
-            float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.BrakePipeChargingRatePSIorInHgpS * lead.SmallEjectorFeedFraction ); // Set value for small ejector to operate - fraction set in locomotive
+            float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS ); // Set value for small ejector to operate - fraction set in steam locomotive
+            float LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.LargeEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for large ejector to operate - fraction set in steam locomotive
             float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : Bar.ToPSI(Bar.FromInHg(lead.TrainBrakeController.MaxPressurePSI));
            
             float TempTrainPipePSI = lead == null ? 5.0f : lead.BrakeSystem.BrakeLine1PressurePSI;
@@ -459,7 +460,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             nSteps = (int)( ( elapsedClockSeconds * nStepsFraction ) / brakePipeTimeFactorS + 1);
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
-            float TrainPipeLeakLossPSI = lead == null ? 0.0f : (TrainPipeTimeVariationS * lead.TrainBrakePipeLeakPSIorInHgpS);
+            float TrainPipeLeakLossPSI = lead == null ? 0.0f : (lead.TrainBrakePipeLeakPSIorInHgpS);
 
 //            Trace.TraceInformation("BP1 #1 - ID {0} BP {1}", trainCar.CarID, lead.BrakeSystem.BrakeLine1PressurePSI);
                 
@@ -473,21 +474,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     // Calculate brake system volume of the train, and then adjust accordingly the BP charging, discharging and propogation rates.
                     // The reference brake system is assumed to be 200ft^3, as ejector specifications suggest that a standard ejector can evacuate a brake system to 21InHg in about 60 seconds
-                    float AdjTrainBrakePipeChargingRatePSIorInHgpS = 0.0f;
+                    float AdjLargeEjectorChargingRateInHgpS = 0.0f;
                     float AdjSmallEjectorChargingRateInHgpS = 0.0f;
                     float AdjVacuumPumpChargingRateInHgpS = 0.0f;
                     float AdjBrakeServiceTimeFactorS = 0.0f;
                     float AdjBrakeEmergencyTimeFactorS = 0.0f;
+                    float AdjTrainPipeLeakLossPSI = 0.0f;
                     float TempbrakePipeTimeMultFactor = 0.0f;
                     float TempTotalLossPSI = 0.0f;
+                    float NetBPLossGainPSI = 0.0f;   // The net value of the losses and gains in the brake pipe : ie Net = Lg Ejector + Sm Ejector + Vac Pump - Loss : used in RELEASE type functions
 
                     // BrakePipeChargingRatePSIorInHgpS - trains of less then 200ft^3 will have higher charging rates, ie less time to charge BP
                     // BrakeServiceTimeFactorS / BrakeEmergencyTimeFactorS  - trains of less then 200ft^3 will have lower factors, ie less time to discharge BP
                     if (train.TotalTrainBrakeSystemVolumeM3 < Me3.FromFt3(200))
                     {
-                        AdjTrainBrakePipeChargingRatePSIorInHgpS = ( Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakePipeChargingRatePSIorInHgpS;
+                        AdjLargeEjectorChargingRateInHgpS = ( Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * LargeEjectorChargingRateInHgpS;
                         AdjSmallEjectorChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * SmallEjectorChargingRateInHgpS;
                         AdjVacuumPumpChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.VacuumPumpChargingRateInHgpS;
+                        AdjTrainPipeLeakLossPSI = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.TrainBrakePipeLeakPSIorInHgpS;
                         AdjBrakeServiceTimeFactorS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeServiceTimeFactorS;
                         AdjBrakeEmergencyTimeFactorS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeEmergencyTimeFactorS;
                         TempbrakePipeTimeMultFactor = train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f);
@@ -496,23 +500,61 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     else
                     {
-                        AdjTrainBrakePipeChargingRatePSIorInHgpS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakePipeChargingRatePSIorInHgpS;
+                        AdjLargeEjectorChargingRateInHgpS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * LargeEjectorChargingRateInHgpS;
                         AdjSmallEjectorChargingRateInHgpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * SmallEjectorChargingRateInHgpS;
                         AdjVacuumPumpChargingRateInHgpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.VacuumPumpChargingRateInHgpS;
+                        AdjTrainPipeLeakLossPSI = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.TrainBrakePipeLeakPSIorInHgpS;
                         AdjBrakeServiceTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeServiceTimeFactorS;
                         AdjBrakeEmergencyTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeEmergencyTimeFactorS;
                         TempbrakePipeTimeMultFactor = Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3;
                         AdjbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
                         AdjBrakePipeDischargeTimeFactor = TempbrakePipeTimeMultFactor * lead.BrakePipeDischargeTimeFactor;
                     }
-/*                    
-                                        Trace.TraceInformation("Base BPCR - {0} Temp {1}", lead.BrakePipeChargingRatePSIorInHgpS, TempTrainBrakePipeChargingRatePSIorInHgpS);
 
-                                        Trace.TraceInformation("Base Service Time - {0} Temp {1}", lead.BrakeServiceTimeFactorS, TempBrakeServiceTimeFactorS);
+                    // This section determines whether small ejector or vacuum pump is going to counteract brake pipe leakage - only applies to steam locomotives
 
-                                        Trace.TraceInformation("Base Emergency Service Time - {0} Temp {1}", lead.BrakeEmergencyTimeFactorS, TempBrakeEmergencyTimeFactorS); */
+                    if (lead.EngineType == TrainCar.EngineTypes.Steam)
+                    { 
+                        if (!lead.SmallEjectorFitted)
+                        {
+                            AdjSmallEjectorChargingRateInHgpS = 0.0f; // If small ejector not fitted, then set input from ejector to zero
+                        }
 
-//                    Trace.TraceInformation("Base BPTF - {0} Temp {1} Mult {2} Total Vol {3}", brakePipeTimeFactorS, TempbrakePipeTimeFactorS, TempbrakePipeTimeMultFactor, Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3));
+                        // Zero vacuum pump (trun off) if BP is at full vacuum, or if Vacuum drops below 3rom max operating vacuum
+                        if (lead.VacuumPumpFitted && (lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * AdjVacuumPumpChargingRateInHgpS) > OneAtmospherePSI ||
+                            P2V(lead.BrakeSystem.BrakeLine1PressurePSI) < P2V(OneAtmospherePSI - (MaxVacuumPipeLevelPSI - KPa.ToPSI(KPa.FromInHg(3))))))
+                        {
+                            AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is being maintained, ie pump is off
+                            lead.VacuumPumpOperating = false;
+                        }
+                        else if (lead.VacuumPumpFitted)
+                        {
+                            lead.VacuumPumpOperating = true;
+                        }
+                        else
+                        {
+                            AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is not fitted
+                            lead.VacuumPumpOperating = false;
+                        }
+
+//                            Trace.TraceInformation("#2 Small Ejector Rate {0} Vac Pump {1} Charge Rate {2}", AdjSmallEjectorChargingRateInHgpS, AdjVacuumPumpChargingRateInHgpS, AdjTrainBrakePipeChargingRatePSIorInHgpS);
+
+                        TempTotalLossPSI = (AdjTrainPipeLeakLossPSI -  (AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS));
+                    }
+
+                    // Calculate the net loss/gain in terms of charging the BP - applies in regard to RELEASE type brake positions
+                    NetBPLossGainPSI = (AdjLargeEjectorChargingRateInHgpS + AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS) - AdjTrainPipeLeakLossPSI;
+  
+                    lead.HUDNetBPLossGainPSI = (LargeEjectorChargingRateInHgpS + SmallEjectorChargingRateInHgpS + lead.VacuumPumpChargingRateInHgpS) - lead.TrainBrakePipeLeakPSIorInHgpS;
+
+                    /*                    
+                                                            Trace.TraceInformation("Base BPCR - {0} Temp {1}", lead.BrakePipeChargingRatePSIorInHgpS, TempTrainBrakePipeChargingRatePSIorInHgpS);
+
+                                                            Trace.TraceInformation("Base Service Time - {0} Temp {1}", lead.BrakeServiceTimeFactorS, TempBrakeServiceTimeFactorS);
+
+                                                            Trace.TraceInformation("Base Emergency Service Time - {0} Temp {1}", lead.BrakeEmergencyTimeFactorS, TempBrakeEmergencyTimeFactorS); */
+
+                    //                    Trace.TraceInformation("Base BPTF - {0} Temp {1} Mult {2} Total Vol {3}", brakePipeTimeFactorS, TempbrakePipeTimeFactorS, TempbrakePipeTimeMultFactor, Me3.ToFt3(train.TotalTrainBrakeSystemVolumeM3));
 
                     // When brakeController put into Running position the RunningLock ensures that brake pipe matches the Equalising Reservoir (Desired Vacuum) before
                     // locking the system into the Running position.
@@ -553,7 +595,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                         {
                             // Vacuum Pipe is < Desired value - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
-                            float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * AdjTrainBrakePipeChargingRatePSIorInHgpS;
+                            float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * NetBPLossGainPSI;
                             if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipePressureDiffPSI < DesiredPipeVacuum)
                                 TrainPipePressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - DesiredPipeVacuum;
                             lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;
@@ -563,45 +605,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     else  // No equalising reservoir fitted
                     {
-                        if (lead.EngineType == TrainCar.EngineTypes.Steam)
-                        {
-                            // This section determines whether small ejector or vacuum pump is going to counteract brake pipe leakage - only applies to steam locomotives
 
-                            if (!lead.SmallEjectorFitted)
-                            {
-                                AdjSmallEjectorChargingRateInHgpS = 0.0f; // If small ejector not fitted, then set input from ejector to zero
-                            }
-
-                            // Zero vacuum pump (trun off) if BP is at full vacuum, or if Vacuum drops below 3rom max operating vacuum
-                            if (lead.VacuumPumpFitted && (lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * AdjVacuumPumpChargingRateInHgpS) > OneAtmospherePSI ||
-                                P2V( lead.BrakeSystem.BrakeLine1PressurePSI) < P2V( OneAtmospherePSI - (MaxVacuumPipeLevelPSI - KPa.ToPSI(KPa.FromInHg(3)))) ))
-                            {
-                                AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is being maintained, ie pump is off
-                                lead.VacuumPumpOperating = false;
-                            }
-                            else if (lead.VacuumPumpFitted)
-                            {
-                                lead.VacuumPumpOperating = true;
-                            }
-                            else
-                            {
-                                AdjVacuumPumpChargingRateInHgpS = 0.0f; // Set vacuum pump to zero, as vacuum is not fitted
-                                lead.VacuumPumpOperating = false;
-                            }
-
-                            //                            Trace.TraceInformation("#2 Small Ejector Rate {0} Vac Pump {1} Charge Rate {2}", AdjSmallEjectorChargingRateInHgpS, AdjVacuumPumpChargingRateInHgpS, AdjTrainBrakePipeChargingRatePSIorInHgpS);
-
-                            TempTotalLossPSI = TrainPipeLeakLossPSI - (TrainPipeTimeVariationS * (AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS));
-                        }
-
-                        if (lead.EngineType == TrainCar.EngineTypes.Steam && lead.TrainBrakePipeLeakPSIorInHgpS != 0 && (lead.BrakeSystem.BrakeLine1PressurePSI + TempTotalLossPSI) < OneAtmospherePSI && lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Running)
+                        if (lead.EngineType == TrainCar.EngineTypes.Steam && lead.TrainBrakePipeLeakPSIorInHgpS != 0 && (lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * TempTotalLossPSI)) < OneAtmospherePSI && lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Running)
                         {
 
                             //                            Trace.TraceInformation("#1 Small Ejector Rate {0} Vac Pump {1} Charge Rate {2} Charge Fraction {3} Lge Ejector Rate {4} Sm Ej Charge {5}", AdjSmallEjectorChargingRateInHgpS, AdjVacuumPumpChargingRateInHgpS, AdjTrainBrakePipeChargingRatePSIorInHgpS, lead.SmallEjectorFeedFraction, lead.BrakePipeChargingRatePSIorInHgpS, SmallEjectorChargingRateInHgpS);
 
                             // Allow for leaking train brakepipe (value is determined for lead locomotive) 
                             // For diesel and electric locomotives assume that the Vacuum pump is automatic, and therefore bp leakage has no discernable impact.
-                            lead.BrakeSystem.BrakeLine1PressurePSI += TempTotalLossPSI;
+                            lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * TempTotalLossPSI;
                     
 //                            Trace.TraceInformation("BP - {0} Loss {1} Ejector {2} Total {3}", lead.BrakeSystem.BrakeLine1PressurePSI, TrainPipeLeakLossPSI, AdjSmallEjectorChargingRateInHgpS, TempTotalLossPSI);
                         }
@@ -628,14 +640,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // Brake Controller is in Release position - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
                             else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                             {
-                                float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * AdjTrainBrakePipeChargingRatePSIorInHgpS;
+                                float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * NetBPLossGainPSI;
                                 lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;
                             }
 
                             // Brake Controller is in Lap position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 due to leakage - applying brakes
-                            else if (lead.TrainBrakePipeLeakPSIorInHgpS != 0 && (lead.BrakeSystem.BrakeLine1PressurePSI + TrainPipeLeakLossPSI) < OneAtmospherePSI && lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Lap)
+                            else if (lead.TrainBrakePipeLeakPSIorInHgpS != 0 && (lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * TrainPipeLeakLossPSI)) < OneAtmospherePSI && lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Lap)
                             {
-                                lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeLeakLossPSI; // Pipe pressure will increase (ie vacuum is destroyed) due to leakage, no compensation as BP is isolated from everything
+                                lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * TrainPipeLeakLossPSI; // Pipe pressure will increase (ie vacuum is destroyed) due to leakage, no compensation as BP is isolated from everything
                             }
 
                             else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)
@@ -655,7 +667,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                                     {
                                         // Vacuum Pipe is > Desired value - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
-                                        float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * AdjTrainBrakePipeChargingRatePSIorInHgpS;
+                                        float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * NetBPLossGainPSI;
                                         if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipePressureDiffPSI < DesiredPipeVacuum)
                                             TrainPipePressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - DesiredPipeVacuum;
                                         lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;

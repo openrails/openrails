@@ -354,7 +354,6 @@ namespace Orts.Simulation.RollingStocks
         float TempEjectorLargeSteamConsumptionLbpS;
         float EjectorTotalSteamConsumptionLbpS;
         public float VacuumPumpOutputFt3pM;
-        float SmallEjectorBrakePipeChargingRatePSIorInHgpS;
 
         // Air Compressor Characteristics - assume 9.5in x 10in Compressor operating at 120 strokes per min.          
         float CompCylDiaIN = 9.5f;
@@ -4752,18 +4751,24 @@ namespace Orts.Simulation.RollingStocks
                 // Large ejector will suffer performance efficiency impacts if boiler steam pressure falls below max vacuum point.
                 if (BoilerPressurePSI < MaxVaccuumMaxPressurePSI)
                 {
-                    LargeEjectorFeedFraction = ((1.7735f * (BoilerPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f));
+                    LargeEjectorFeedFraction = ((1.7735f * (BoilerPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
                 }
                 else
                 {
                     //  Provided BP is greater then max vacuum pressure large ejector will operate at full efficiency
-                    LargeEjectorFeedFraction = 1.0f;
+                    LargeEjectorFeedFraction = 1.0f * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
+                }
+
+                if(!LargeSteamEjectorIsOn)
+                {
+                    LargeEjectorFeedFraction = 0.0f;
                 }
 
                 LargeEjectorFeedFraction = MathHelper.Clamp(LargeEjectorFeedFraction, 0.0f, 1.0f); // Keep within bounds
                 SmallEjectorFeedFraction = MathHelper.Clamp(SmallEjectorFeedFraction, 0.0f, 1.0f); // Keep within bounds
                 // Calculate for display purposes
                 SmallEjectorBrakePipeChargingRatePSIorInHgpS = SmallEjectorFeedFraction * BrakePipeChargingRatePSIorInHgpS;
+                LargeEjectorBrakePipeChargingRatePSIorInHgpS = LargeEjectorFeedFraction * BrakePipeChargingRatePSIorInHgpS;
 
                 // Calculate large steam ejector steam usage, and the brake turns the large ejector on
                 if (LargeSteamEjectorIsOn)
@@ -4791,6 +4796,7 @@ namespace Orts.Simulation.RollingStocks
                     if (AbsSpeedMpS < 0.1) // Stop vacuum pump if locomotive speed is nearly stationary - acts as a check to control elsewhere
                     {
                         VacuumPumpOperating = false;
+                        VacuumPumpChargingRateInHgpS = 0.0f;
                     }
                 }
 
@@ -6057,7 +6063,7 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorLargeSteamConsumptionLbpS)), IsMetric),
                 FormatStrings.h,
                 Simulator.Catalog.GetString("Rate"),
-                BrakePipeChargingRatePSIorInHgpS,
+                LargeEjectorBrakePipeChargingRatePSIorInHgpS,
                 //                FormatStrings.FormatPressure(BrakePipeChargingRatePSIorInHgpS, PressureUnit.InHg, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Lg Ej"),
                 LargeSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
@@ -6082,14 +6088,23 @@ namespace Orts.Simulation.RollingStocks
 
                 if (VacuumPumpFitted) // only display vacuum pump if fitted.
                 {
-                    status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\n",
+                    status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6}",
                     Simulator.Catalog.GetString("Vac:"),
                     Simulator.Catalog.GetString("Out"),
                     VacuumPumpOutputFt3pM,
                     Simulator.Catalog.GetString("Rate"),
-                    VacuumPumpChargingRateInHgpS
+                    VacuumPumpChargingRateInHgpS,
+                    Simulator.Catalog.GetString("Pump"),
+                    VacuumPumpOperating ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                     );
                 }
+
+                status.AppendFormat("\t{0}\t{1:N2}\t{2}\t{3:N2}\n",
+                    Simulator.Catalog.GetString("Leak:"),
+                    TrainBrakePipeLeakPSIorInHgpS,
+                    Simulator.Catalog.GetString("Net:"),
+                    HUDNetBPLossGainPSI
+                    );
 
 
             }

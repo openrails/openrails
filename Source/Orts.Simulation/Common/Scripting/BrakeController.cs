@@ -195,7 +195,7 @@ namespace ORTS.Scripting.Api
         Running,            // TrainBrakesControllerRunningStart 
         Neutral,            // TrainBrakesControllerNeutralhandleOffStart
         SelfLap,            // TrainBrakesControllerSelfLapStart 
-        Lap,                // TrainBrakesControllerHoldLapStart  and TrainBrakesControllerHoldStart
+        Lap,                // TrainBrakesControllerHoldLapStart 
         Apply,              // TrainBrakesControllerApplyStart 
         EPApply,            // TrainBrakesControllerEPApplyStart 
         GSelfLap,           // TrainBrakesControllerGraduatedSelfLapLimitedStart
@@ -206,7 +206,8 @@ namespace ORTS.Scripting.Api
         Emergency,          // TrainBrakesControllerEmergencyStart
 
         // Extra MSTS values
-        MinimalReductionStart,  // TrainBrakesControllerMinimalReductionStart,
+        MinimalReduction,  // TrainBrakesControllerMinimalReductionStart,
+        Hold,                   // TrainBrakesControllerHoldStart
 
         // OR values
         Overcharge,         // Overcharge
@@ -237,7 +238,8 @@ namespace ORTS.Scripting.Api
             {ControllerState.Suppression, Catalog.GetString("Suppression")},
             {ControllerState.ContServ, Catalog.GetString("Cont. Service")},
             {ControllerState.FullServ, Catalog.GetString("Full Service")},
-            {ControllerState.MinimalReductionStart, Catalog.GetString("Minimum Reduction")},
+            {ControllerState.MinimalReduction, Catalog.GetString("Minimum Reduction")},
+            {ControllerState.Hold, Catalog.GetString("Hold")},
             {ControllerState.Overcharge, Catalog.GetString("Overcharge")},
             {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
             {ControllerState.TCSEmergency, Catalog.GetString("TCS Emergency Braking")},

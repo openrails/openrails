@@ -45,7 +45,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "fullquickreleasestart": Type = ControllerState.FullQuickRelease; break;
                 case "runningstart": Type = ControllerState.Running; break;
                 case "selflapstart": Type = ControllerState.SelfLap; break;
-                case "holdstart": Type = ControllerState.Lap; break;
+                case "holdstart": Type = ControllerState.Hold; break;
                 case "holdlappedstart": Type = ControllerState.Lap; break;
                 case "neutralhandleoffstart": Type = ControllerState.Neutral; break;
                 case "graduatedselflaplimitedstart": Type = ControllerState.GSelfLap; break;
@@ -55,7 +55,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "suppressionstart": Type = ControllerState.Suppression; break;
                 case "fullservicestart": Type = ControllerState.FullServ; break;
                 case "emergencystart": Type = ControllerState.Emergency; break;
-                case "minimalreductionstart": Type = ControllerState.MinimalReductionStart; break;
+                case "minimalreductionstart": Type = ControllerState.MinimalReduction; break;
                 case "epapplystart": Type = ControllerState.EPApply; break;
                 case "epholdstart": Type = ControllerState.SelfLap; break;
                 case "vacuumcontinuousservicestart": Type = ControllerState.VacContServ; break;
