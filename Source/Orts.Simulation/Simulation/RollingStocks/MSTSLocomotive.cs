@@ -791,9 +791,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(maxsteamheatingpressure": MaxSteamHeatPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(ortsonlinecabradio": OnLineCabRadio = stf.ReadBoolBlock(false); break;
                 case "engine(ortsonlinecabradiourl": OnLineCabRadioURL = stf.ReadString(); break;
-                case "engine(vacuumbrakesminboilerpressuremaxvacuum": MaxVaccuumMaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
-                    MaxVaccuumMaxPressurePSI = MathHelper.Clamp(MaxVaccuumMaxPressurePSI, 70.0f, 130.0f); // Prevents parameter going outside of bounds
-                    break;
+                case "engine(vacuumbrakesminboilerpressuremaxvacuum": MaxVaccuumMaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 default: base.Parse(lowercasetoken, stf); break;
                     
             }

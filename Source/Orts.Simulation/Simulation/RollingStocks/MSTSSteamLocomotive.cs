@@ -4732,13 +4732,12 @@ namespace Orts.Simulation.RollingStocks
                     // Curves are lower - y = 1.7735x - 0.6122 and upper - y = -0.1179x + 1.1063
                     if (SteamEjectorSmallPressurePSI < MaxVaccuumMaxPressurePSI)
                     {
-                        SmallEjectorFeedFraction = ((1.7735f  * (SteamEjectorSmallPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * (EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS));
-
+                        SmallEjectorFeedFraction = ((1.6122f  * (SteamEjectorSmallPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * (EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS));
                     }
                     else
                     {
                         //  The fraction is dropped slightly as pressure increases to simulate decrease in vacuum evacuation as ejector pressure increases above the kneepoint of curve
-                        SmallEjectorFeedFraction = ((1.1063f  - (0.1179f * (SteamEjectorSmallPressurePSI / MaxVaccuumMaxPressurePSI))) ) * EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
+                        SmallEjectorFeedFraction = ((1.1063f  - (0.1063f * (SteamEjectorSmallPressurePSI / MaxVaccuumMaxPressurePSI))) ) * EjectorSmallSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
                     }
 
                 }
@@ -4751,7 +4750,7 @@ namespace Orts.Simulation.RollingStocks
                 // Large ejector will suffer performance efficiency impacts if boiler steam pressure falls below max vacuum point.
                 if (BoilerPressurePSI < MaxVaccuumMaxPressurePSI)
                 {
-                    LargeEjectorFeedFraction = ((1.7735f * (BoilerPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
+                    LargeEjectorFeedFraction = ((1.6122f * (BoilerPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
                 }
                 else
                 {
