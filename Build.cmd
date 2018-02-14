@@ -146,8 +146,8 @@ IF NOT "%Mode%" == "Unstable" (
 	ROBOCOPY /MIR /NJH /NJS "Source\Documentation\SampleFiles" "Program\Documentation\SampleFiles"
 	IF %ERRORLEVEL% GEQ 8 GOTO :error
 
-	REM Copy the manual separately.
-	CALL :copy "Program\Documentation\Manual.pdf" "OpenRails-%Mode%-Manual.pdf" || GOTO :error
+	REM Copy the documentation separately.
+	FOR /R "Program\Documentation" %%F IN (*.pdf) DO CALL :copy "%%~F" "OpenRails-%Mode%-%%~nxF" || GOTO :error
 )
 
 IF "%Mode%" == "Stable" (
