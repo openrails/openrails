@@ -88,7 +88,7 @@ PUSHD Source\Contrib\TimetableEditor && CALL Build.cmd && POPD || GOTO :error
 
 REM Get Subversion revision.
 SET Revision=000
-FOR /F "usebackq tokens=1" %%R IN (`svn --non-interactive info --show-item revision Source`) DO SET Revision=%%R
+FOR /F "usebackq tokens=1" %%R IN (`svn --non-interactive info --show-item revision .`) DO SET Revision=%%R
 IF "%Revision%" == "000" (
 	>&2 ECHO WARNING: No Subversion revision found.
 )
