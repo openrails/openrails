@@ -247,6 +247,7 @@ namespace Orts.Simulation.RollingStocks
         public float HUDNetBPLossGainPSI;
         public float SmallEjectorBrakePipeChargingRatePSIorInHgpS;
         public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
+        public float ExhausterBrakePipeChargingRatePSIorInHgpS;
         public InterpolatorDiesel2D TractiveForceCurves;
         public InterpolatorDiesel2D DynamicBrakeForceCurves;
         public float DynamicBrakeSpeed1MpS = MpS.FromKpH(5);
@@ -1052,12 +1053,18 @@ namespace Orts.Simulation.RollingStocks
                 // Set Default BrakePipe Charging Rate depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakePipeChargingRatePSIorInHgpS = 0.55f; // Vacuum brakes
+                    BrakePipeChargingRatePSIorInHgpS = 0.34f; // Vacuum brakes
                 }
                 else
                 {
                     BrakePipeChargingRatePSIorInHgpS = Simulator.Settings.BrakePipeChargingRate; // Air brakes
                 }
+            }
+
+            // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
+            if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
+            {
+                ExhausterBrakePipeChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS;
             }
 
             // Initialise BrakePipeDischargeTimeFactor
@@ -1085,7 +1092,7 @@ namespace Orts.Simulation.RollingStocks
                 // Set Default Brake Emergency Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakeEmergencyTimeFactorS = 10.0f; // Vacuum brakes
+                    BrakeEmergencyTimeFactorS = 1.0f; // Vacuum brakes
                 }
                 else
                 {
@@ -1099,7 +1106,7 @@ namespace Orts.Simulation.RollingStocks
                 // Set Default Brake Service Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakeServiceTimeFactorS = 10.0f; // Vacuum brakes
+                    BrakeServiceTimeFactorS = 5.0f; // Vacuum brakes
                 }
                 else
                 {
@@ -1113,7 +1120,7 @@ namespace Orts.Simulation.RollingStocks
                 // Set Default Brake Pipe Time Factor depending upon whether locomotive has Vacuum or air brakes - overwritten by ENG file setting.
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    BrakePipeTimeFactorS = 0.18f; // Vacuum brakes
+                    BrakePipeTimeFactorS = 0.018f; // Vacuum brakes
                 }
                 else
                 {
