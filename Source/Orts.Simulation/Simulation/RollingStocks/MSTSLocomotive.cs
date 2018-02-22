@@ -193,6 +193,11 @@ namespace Orts.Simulation.RollingStocks
         public float LargeEjectorFeedFraction = 1.0f;
         public float VacuumPumpChargingRateInHgpS;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
+        public float HUDNetBPLossGainPSI;
+        public float SmallEjectorBrakePipeChargingRatePSIorInHgpS;
+        public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
+        public float ExhausterHighSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
+        public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
 
         public bool EngineBrakeFitted = false;
 
@@ -244,10 +249,6 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeServiceTimeFactorS;
         public float BrakeEmergencyTimeFactorS;
         public float BrakePipeChargingRatePSIorInHgpS;
-        public float HUDNetBPLossGainPSI;
-        public float SmallEjectorBrakePipeChargingRatePSIorInHgpS;
-        public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
-        public float ExhausterBrakePipeChargingRatePSIorInHgpS;
         public InterpolatorDiesel2D TractiveForceCurves;
         public InterpolatorDiesel2D DynamicBrakeForceCurves;
         public float DynamicBrakeSpeed1MpS = MpS.FromKpH(5);
@@ -1064,7 +1065,14 @@ namespace Orts.Simulation.RollingStocks
             // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
             if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
             {
-                ExhausterBrakePipeChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS;
+                ExhausterHighSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS;
+                ExhausterLowSBPChargingRatePSIorInHgpS = BrakePipeChargingRatePSIorInHgpS / 5.0f; // Low speed exhauster setting is 1/5 of high speed
+            }
+            else
+            {
+                // Default to zero if not used.
+                ExhausterHighSBPChargingRatePSIorInHgpS = 0.0f;
+                ExhausterLowSBPChargingRatePSIorInHgpS = 0.0f;
             }
 
             // Initialise BrakePipeDischargeTimeFactor
