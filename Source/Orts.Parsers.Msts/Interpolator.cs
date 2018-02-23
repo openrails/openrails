@@ -128,6 +128,15 @@ namespace Orts.Parsers.Msts
             x = X[maxi];
             return Y[maxi];
         }
+        public bool HasNegativeValue()
+        {
+            for (int i = 1; i < Size; i++)
+            {
+                if (Y[i] < 0)
+                    return true;
+            }
+            return false;
+        }
         public void ScaleX(float factor)
         {
             for (int i = 0; i < Size; i++)
@@ -246,6 +255,7 @@ namespace Orts.Parsers.Msts
         Interpolator[] Y;
         int Size;       // number of values populated
         int PrevIndex;  // used to speed up repeated evaluations with similar x values
+        bool HasNegativeValues; // set when negative Y values present (e.g. in old triphase locos)
         public InterpolatorDiesel2D(int n)
         {
             X = new float[n];
@@ -435,6 +445,22 @@ namespace Orts.Parsers.Msts
                 z += b * Y[PrevIndex + 1][y];
             return z;
         }
+
+        public void HasNegativeValue()
+        {
+            for (int i = 0; i < Size; i++)
+            {
+                var size = Y[i].GetSize();
+                for (int j = 0; j < size; j++)
+                {
+                    if (Y[i].HasNegativeValue())
+                    {
+                        HasNegativeValues = true;
+                        return;
+                    }
+                }
+            }
+        }
         public Interpolator this[float x]
         {
             set
@@ -451,6 +477,7 @@ namespace Orts.Parsers.Msts
             for (int i = 0; i < Size; i++)
                 X[i] *= factor;
         }
+        public bool AcceptsNegativeValues() { return HasNegativeValues; }
     }
 
      /// <summary>

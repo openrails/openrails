@@ -721,7 +721,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipedischargetimefactor": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-                case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); break;
+                case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); TractiveForceCurves.HasNegativeValue();  break;
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
                 case "engine(ortscontinuousforcetimefactor": ContinuousForceTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -1636,7 +1636,7 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
-                    if (MotiveForceN < 0)
+                    if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
                 TractiveForceN = MotiveForceN;
