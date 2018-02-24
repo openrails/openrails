@@ -395,11 +395,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 //Increasing, check if the notch has changed
                 if ((direction > 0) && (CurrentNotch < Notches.Count - 1) && (IntermediateValue >= Notches[CurrentNotch + 1].Value))
                 {
+                    // steamer_ctn - The following code was added in relation to reported bug  #1200226. However it seems to prevent the brake controller from ever being moved to EMERGENCY position.
+                    // Bug conditions indicated in the bug report have not been able to be duplicated, ie there doesn't appear to be a "safety stop" when brake key(s) held down continuously
+                    // Code has been reverted pending further investigation or reports of other issues
                     // Prevent TrainBrake to continuously switch to emergency
-                    if (Notches[CurrentNotch + 1].Type == ControllerState.Emergency)
-                        IntermediateValue = Notches[CurrentNotch + 1].Value - StepSize;
-                    else
-                        CurrentNotch++;
+                    //      if (Notches[CurrentNotch + 1].Type == ControllerState.Emergency)
+                    //         IntermediateValue = Notches[CurrentNotch + 1].Value - StepSize;
+                    //      else
+                    CurrentNotch++;
                 }
                 //decreasing, again check if the current notch has changed
                 else if((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
