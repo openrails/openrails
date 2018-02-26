@@ -71,6 +71,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract float GetVacResPressurePSI();
         public abstract float GetVacResVolume();
         public abstract float GetVacBrakeCylNumber();
+        public bool CarBPIntact;
 
         public abstract void Save(BinaryWriter outf);
 
