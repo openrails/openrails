@@ -5923,7 +5923,7 @@ namespace Orts.Simulation.Physics
             {
                 // can only be performed if train is stationary
 
-                if (Math.Abs(SpeedMpS) > 0.01)
+                if (Math.Abs(SpeedMpS) > 0.03)
                     return (endOfRoute);
 
                 // check position in relation to present end of path

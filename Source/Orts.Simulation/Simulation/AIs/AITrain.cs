@@ -2631,7 +2631,7 @@ namespace Orts.Simulation.AIs
 
                 else if (nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.REVERSAL)
                 {
-                    if (Math.Abs(SpeedMpS) < 0.01f && nextActionInfo.ActivateDistanceM - DistanceTravelledM < 10.0f)
+                    if (Math.Abs(SpeedMpS) < 0.03f && nextActionInfo.ActivateDistanceM - DistanceTravelledM < 10.0f)
                         MovementState = AI_MOVEMENT_STATE.STOPPED;
                 }
 

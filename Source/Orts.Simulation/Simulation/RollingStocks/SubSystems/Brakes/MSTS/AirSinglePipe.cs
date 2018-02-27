@@ -887,7 +887,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             if (percent < 0) percent = 0;
             if (percent > 100) percent = 100;
-            Car.Train.EqualReservoirPressurePSIorInHg = Math.Max(EmergResPressurePSI, 90) - (Math.Max(EmergResPressurePSI, 90) - FullServPressurePSI) * percent / 100;
+            Car.Train.EqualReservoirPressurePSIorInHg = 90 - (90 - FullServPressurePSI) * percent / 100;
         }
 
         // used when switching from autopilot to player driven mode, to move from default values to values specific for the trainset
