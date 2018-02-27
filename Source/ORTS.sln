@@ -53,6 +53,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConverter", "Contrib\Da
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataValidator", "Contrib\DataValidator\DataValidator.csproj", "{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentChecker", "ContentChecker\ContentChecker.csproj", "{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -159,6 +161,10 @@ Global
 		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Release|Mixed Platforms.Build.0 = Release|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Release|Mixed Platforms.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
