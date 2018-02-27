@@ -5180,11 +5180,39 @@ namespace Orts.Simulation.Physics
                     {
                         SwitchToNodeControl(sectionIndex);
                         EndAuthorityType[0] = END_AUTHORITY.TRAIN_AHEAD;
+                        ChangeControlModeOtherTrains(thisSection);
                     }
                     thisSection.SetOccupied(routedForward, routeListIndex[1]);
 
                     // additional actions for child classes
                     UpdateSectionState_Additional(sectionIndex);
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Change control mode of other trains in same section if needed
+        /// </summary>
+
+        public void ChangeControlModeOtherTrains(TrackCircuitSection thisSection)
+        {
+            int otherdirection = -1;
+            int owndirection = routedForward.TrainRouteDirectionIndex;
+            foreach (KeyValuePair<TrainRouted, int> trainToCheckInfo in thisSection.CircuitState.TrainOccupy)
+            {
+                Train OtherTrain = trainToCheckInfo.Key.Train;
+                if (OtherTrain.ControlMode == TRAIN_CONTROL.AUTO_SIGNAL) // train is still in signal mode, might need adjusting
+                {
+                    otherdirection = trainToCheckInfo.Value;
+
+                    if (owndirection >= 0 && otherdirection >= 0) // both trains found
+                    {
+                        if (owndirection != otherdirection) // opposite directions - this train is now ahead of train in section
+                        {
+                            OtherTrain.SwitchToNodeControl(thisSection.Index);
+                        }
+                    }
                 }
             }
         }
