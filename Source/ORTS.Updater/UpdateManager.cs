@@ -17,6 +17,7 @@
 
 using Ionic.Zip;
 using Newtonsoft.Json;
+using ORTS.Common;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace ORTS.Updater
 {
@@ -411,11 +413,11 @@ namespace ORTS.Updater
         {
             var files = Directory.GetFiles(PathUpdateStage, "*", SearchOption.AllDirectories);
 
-            var expectedSubjects = new HashSet<string>();
+            var expectedCertificates = new HashSet<X509Certificate2>();
             try
             {
                 foreach (var cert in GetCertificatesFromFile(FileUpdater))
-                    expectedSubjects.Add(cert.Subject);
+                    expectedCertificates.Add(cert);
             }
             catch (CryptographicException)
             {
@@ -432,8 +434,18 @@ namespace ORTS.Updater
                     files[i].EndsWith(".sys", StringComparison.OrdinalIgnoreCase))
                 {
                     var certificates = GetCertificatesFromFile(files[i]);
-                    if (!certificates.Any(c => expectedSubjects.Contains(c.Subject)))
-                        throw new InvalidDataException("Cryptographic signatures don't match. Expected a common subject in old subjects:\n\n" + FormatCertificateSubjectList(expectedSubjects) + "\n\nAnd new subjects:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
+                    if (!certificates.Any(c => IsMatchingCertificate(expectedCertificates, c)))
+                    {
+                        switch (MessageBox.Show("The downloaded update has no matching cryptographic certificates; proceed with update?\n\nCurrent version's certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate version's certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n\nProceed with update?", Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo))
+                        {
+                            case DialogResult.Yes:
+                                foreach (var cert in certificates)
+                                    expectedCertificates.Add(cert);
+                                break;
+                            case DialogResult.No:
+                                throw new InvalidDataException("Cryptographic certificates don't match.\n\nCurrent certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
+                        }
+                    }
                 }
             }
 
@@ -501,14 +513,36 @@ namespace ORTS.Updater
             return directory.Substring(basePath.Length + 1);
         }
 
-        static string FormatCertificateSubjectList(IEnumerable<string> subjects)
-        {
-            return string.Join("\n", subjects.Select(s => "- " + s).ToArray());
-        }
-
         static string FormatCertificateSubjectList(IEnumerable<X509Certificate2> certificates)
         {
-            return FormatCertificateSubjectList(certificates.Select(c => c.Subject));
+            if (certificates.Count() == 0)
+                return "<none>";
+
+            return string.Join("\n", certificates.Select(c => "- " + FormatCertificateSubject(c)).ToArray());
+        }
+
+        static string FormatCertificateSubject(X509Certificate2 certificate)
+        {
+            return "Subject of certificate:\n    " + FormatCertificateDistinguishedName(certificate.SubjectName) + "\n  Issued by:\n    " + FormatCertificateDistinguishedName(certificate.IssuerName) + (certificate.Verify() ? "\n  Verified" : "\n  Not verified");
+        }
+
+        static string FormatCertificateDistinguishedName(X500DistinguishedName name)
+        {
+            return string.Join("\n    ", name.Format(true).Split('\n').Where(line => line.Length > 0).Reverse().ToArray());
+        }
+
+        static bool IsMatchingCertificate(HashSet<X509Certificate2> expectedCertificates, X509Certificate2 certificate)
+        {
+            var certMatch = FormatCertificateForMatching(certificate);
+            return expectedCertificates.Any(cert => FormatCertificateForMatching(cert) == certMatch);
+        }
+
+        static string FormatCertificateForMatching(X509Certificate2 certificate)
+        {
+            var subjectLines = certificate.SubjectName.Format(true).Split('\n');
+            var commonName = subjectLines.FirstOrDefault(line => line.StartsWith("CN="));
+            var country = subjectLines.FirstOrDefault(line => line.StartsWith("C="));
+            return certificate.Verify() + "\n" + commonName + "\n" + country;
         }
 
         static List<X509Certificate2> GetCertificatesFromFile(string filename)

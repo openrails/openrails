@@ -79,7 +79,8 @@ REM Recreate Program directory for output.
 CALL :recreate "Program" || GOTO :error
 
 REM Build main program.
-MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=Release || GOTO :error
+REM Disable warning CS1591 "Missing XML comment for publicly visible type or member".
+MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=Release /p:NoWarn=1591 || GOTO :error
 
 REM Build contributed Timetable Editor.
 PUSHD Source\Contrib\TimetableEditor && CALL Build.cmd && POPD || GOTO :error
@@ -206,7 +207,7 @@ GOTO :EOF
 
 :delete
 ECHO Delete "%~1"
-DEL /F /Q "%~1"
+IF EXIST "%~1" DEL /F /Q "%~1"
 GOTO :EOF
 
 REM Reports that an error occurred.
