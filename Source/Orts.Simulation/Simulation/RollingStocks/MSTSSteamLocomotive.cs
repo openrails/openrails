@@ -585,7 +585,9 @@ namespace Orts.Simulation.RollingStocks
         float SpeedTotalTangCrankWheelForceLbf; 		// Tangential force on wheel - at speed
         float StartStaticWheelFrictionForceLbf;  // Static force on wheel due to adhesion
         float SpeedStaticWheelFrictionForceLbf;  // Static force on wheel  - at speed
-        float StartPistonForceLbf;    // Max force exerted by piston.
+        float StartPistonForceLeftLbf;    // Max force exerted by piston.
+        float StartPistonForceMiddleLbf;
+        float StartPistonForceRightLbf;
         float StartTangentialWheelTreadForceLbf; // Tangential force at the wheel tread.
         float SpeedTangentialWheelTreadForceLbf;
         float ReciprocatingWeightLb = 580.0f;  // Weight of reciprocating parts of the rod driving gears
@@ -629,9 +631,9 @@ namespace Orts.Simulation.RollingStocks
         float SpeedCrankAngleLeft;
         float SpeedCrankAngleRight;
         float SpeedCrankAngleMiddle;
-        float SpeedCrankCylinderPositionLeft;
-        float SpeedCrankCylinderPositionMiddle;
-        float SpeedCrankCylinderPositionRight;
+        float CrankCylinderPositionLeft;
+        float CrankCylinderPositionMiddle;
+        float CrankCylinderPositionRight;
         float ExcessBalanceForceLeft;
         float ExcessBalanceForceMiddle;
         float ExcessBalanceForceRight;
@@ -4290,14 +4292,14 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (!CylinderCompoundOn) // Bypass Valve closed - in Compound Mode
                 {
-                    StartPistonForceLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * HPCompPressure_a_AtmPSI; // Piston force is equal to pressure in piston and piston area
+                    StartPistonForceLeftLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * HPCompPressure_a_AtmPSI; // Piston force is equal to pressure in piston and piston area
                     SlipInitialPressureAtmPSI = HPCompPressure_a_AtmPSI;
                     SlipCutoffPressureAtmPSI = HPCompPressure_b_AtmPSI;
                     SlipCylinderReleasePressureAtmPSI = HPCompPressure_f_AtmPSI;
                 }
                 else  // Simple mode
                 {
-                    StartPistonForceLbf = Me2.ToIn2(Me2.FromFt2(LPCylinderPistonAreaFt2)) * LPPressure_a_AtmPSI; // Piston force is equal to pressure in piston and piston area
+                    StartPistonForceLeftLbf = Me2.ToIn2(Me2.FromFt2(LPCylinderPistonAreaFt2)) * LPPressure_a_AtmPSI; // Piston force is equal to pressure in piston and piston area
                     SlipInitialPressureAtmPSI = LPPressure_a_AtmPSI;
                     SlipCutoffPressureAtmPSI = LPPressure_b_AtmPSI;
                     SlipCylinderReleasePressureAtmPSI = LPPressure_c_AtmPSI;
@@ -4305,7 +4307,7 @@ namespace Orts.Simulation.RollingStocks
             }
             else // simple locomotive
             {
-                StartPistonForceLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * Pressure_a_AtmPSI; // Piston force is equal to pressure in piston and piston area
+                StartPistonForceLeftLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * Pressure_a_AtmPSI; // Piston force is equal to pressure in piston and piston area
                 SlipInitialPressureAtmPSI = Pressure_a_AtmPSI;
                 SlipCutoffPressureAtmPSI = Pressure_b_AtmPSI;
                 SlipCylinderReleasePressureAtmPSI = Pressure_c_AtmPSI;
@@ -4334,9 +4336,9 @@ namespace Orts.Simulation.RollingStocks
                 SpeedTangentialCrankForceFactorMiddle = (float)Math.Abs(((float)Math.Sin(SpeedCrankAngleMiddle) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(SpeedCrankAngleMiddle) * (float)Math.Cos(SpeedCrankAngleMiddle))));
                 SpeedTangentialCrankForceFactorRight = (float)Math.Abs(((float)Math.Sin(SpeedCrankAngleRight) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(SpeedCrankAngleRight) * (float)Math.Cos(SpeedCrankAngleRight))));
                 SpeedVerticalThrustForceMiddle = 0.0f;
-                SpeedCrankCylinderPositionLeft = 30.0f / 180.0f;
-                SpeedCrankCylinderPositionMiddle = ((30.0f + 120.0f + 120.0f) - 180.0f) / 180.0f;
-                SpeedCrankCylinderPositionRight = (30.0f + 120.0f) / 180.0f;
+                CrankCylinderPositionLeft = 30.0f / 180.0f;
+                CrankCylinderPositionMiddle = ((30.0f + 120.0f + 120.0f) - 180.0f) / 180.0f;
+                CrankCylinderPositionRight = (30.0f + 120.0f) / 180.0f;
             }
             else // if 2 cylinder
             {
@@ -4355,51 +4357,51 @@ namespace Orts.Simulation.RollingStocks
                 SpeedTangentialCrankForceFactorLeft = ((float)Math.Sin(SpeedCrankAngleLeft) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(SpeedCrankAngleLeft) * (float)Math.Cos(SpeedCrankAngleLeft)));
                 SpeedTangentialCrankForceFactorRight = ((float)Math.Sin(SpeedCrankAngleRight) + ((CrankRadiusFt / ConnectRodLengthFt) * (float)Math.Sin(SpeedCrankAngleRight) * (float)Math.Cos(SpeedCrankAngleRight)));
                 SpeedVerticalThrustForceMiddle = 0.0f;
-                SpeedCrankCylinderPositionLeft = 45.0f / 180.0f;
-                SpeedCrankCylinderPositionMiddle = 0.0f;
-                SpeedCrankCylinderPositionRight = (45.0f + 90.0f) / 180.0f;
+                CrankCylinderPositionLeft = 45.0f / 180.0f;
+                CrankCylinderPositionMiddle = 0.0f;
+                CrankCylinderPositionRight = (45.0f + 90.0f) / 180.0f;
 
             }
 
-            // Calculate the starting force at the crank exerted on the drive wheel
-            StartTangentialCrankWheelForceLbf = Math.Abs(StartPistonForceLbf * StartTangentialCrankForceFactorLeft) + Math.Abs(StartPistonForceLbf * StartTangentialCrankForceFactorMiddle) + Math.Abs(StartPistonForceLbf * StartTangentialCrankForceFactorRight);
+
 
      // Calculate cylinder presssure at "maximum" cranking value
+     // If cutoff hasn't reached point in piston movement, then pressure will be less
 
             // Left hand crank position cylinder pressure
-            if (cutoff > SpeedCrankCylinderPositionLeft )  // If cutoff is greater then crank position, then pressure will be before cutoff
+            if (cutoff > CrankCylinderPositionLeft )  // If cutoff is greater then crank position, then pressure will be before cutoff
             {
-                CrankLeftCylinderPressure = (SlipCutoffPressureAtmPSI / cutoff) * SpeedCrankCylinderPositionLeft;
+                CrankLeftCylinderPressure = (SlipCutoffPressureAtmPSI / cutoff) * CrankCylinderPositionLeft;
                 CrankLeftCylinderPressure = MathHelper.Clamp(SlipCutoffPressureAtmPSI, 0, Pressure_a_AtmPSI);
             }
             else // Pressure will be in the expansion section of the cylinder
             {
                 // Crank pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
-                CrankLeftCylinderPressure = (SlipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (SpeedCrankCylinderPositionLeft + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
+                CrankLeftCylinderPressure = (SlipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (CrankCylinderPositionLeft + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
             }
 
             // Right hand cranking position cylinder pressure
-            if (CylinderExhaustOpenFactor > SpeedCrankCylinderPositionRight) // if exhaust opening is greating then cranking position, then pressure will be before release 
+            if (CylinderExhaustOpenFactor > CrankCylinderPositionRight) // if exhaust opening is greating then cranking position, then pressure will be before release 
             {
-                CrankRightCylinderPressure = (SlipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (SpeedCrankCylinderPositionRight + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
+                CrankRightCylinderPressure = (SlipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (CrankCylinderPositionRight + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
             }
             else  // Pressure will be after release
             {
-                CrankRightCylinderPressure = (SlipCylinderReleasePressureAtmPSI / CylinderExhaustOpenFactor) * SpeedCrankCylinderPositionRight;
+                CrankRightCylinderPressure = (SlipCylinderReleasePressureAtmPSI / CylinderExhaustOpenFactor) * CrankCylinderPositionRight;
             }
 
             if (NumCylinders == 3)
             {
                 // Middle crank position cylinder pressure
-                if (cutoff > SpeedCrankCylinderPositionLeft)  // If cutoff is greater then crank position, then pressure will be before cutoff
+                if (cutoff > CrankCylinderPositionLeft)  // If cutoff is greater then crank position, then pressure will be before cutoff
                 {
-                    CrankMiddleCylinderPressure = (SlipCutoffPressureAtmPSI / cutoff) * SpeedCrankCylinderPositionMiddle;
+                    CrankMiddleCylinderPressure = (SlipCutoffPressureAtmPSI / cutoff) * CrankCylinderPositionMiddle;
                     CrankMiddleCylinderPressure = MathHelper.Clamp(SlipCutoffPressureAtmPSI, 0, Pressure_a_AtmPSI);
                 }
                 else // Pressure will be in the expansion section of the cylinder
                 {
                     // Crank pressure = Cutoff Pressure x Cylinder Volume (at cutoff point) / cylinder volume (at release)
-                    CrankMiddleCylinderPressure = (SlipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (SpeedCrankCylinderPositionMiddle + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
+                    CrankMiddleCylinderPressure = (SlipCutoffPressureAtmPSI) * (cutoff + CylinderClearancePC) / (CrankCylinderPositionMiddle + CylinderClearancePC);  // Check factor to calculate volume of cylinder for new volume at exhaust
                 }
             }
             else
@@ -4407,7 +4409,12 @@ namespace Orts.Simulation.RollingStocks
 
                 CrankMiddleCylinderPressure = 0.0f;
             }
-   // Calculate piston force for the relevant cylinder cranking positions
+
+        // Calculate piston force for the relevant cylinder cranking positions
+            StartPistonForceLeftLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * CrankLeftCylinderPressure;
+            StartPistonForceMiddleLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * CrankMiddleCylinderPressure;
+            StartPistonForceRightLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * CrankRightCylinderPressure;
+
             SpeedPistonForceLeftLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * CrankLeftCylinderPressure;
             SpeedPistonForceMiddleLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * CrankMiddleCylinderPressure;
             SpeedPistonForceRightLbf = Me2.ToIn2(Me2.FromFt2(CylinderPistonAreaFt2)) * CrankRightCylinderPressure;
@@ -4427,9 +4434,25 @@ namespace Orts.Simulation.RollingStocks
             float ConnectRodInertiaFactorRight = -1.603f * ((float)Math.Cos(StartCrankAngleRight)) + (((CrankRadiusFt * RodCoGFt) / (ConnectRodLengthFt * ConnectRodLengthFt)) * ((float)Math.Cos(2.0f * StartCrankAngleRight)));
             float ConnectRodInertiaForceRight = ConnectRodInertiaFactorRight * ConnectingRodWeightLb * Me.ToIn(CylinderStrokeM) * ((MpS.ToMpH(absSpeedMpS) * MpS.ToMpH(absSpeedMpS)) / (Me.ToIn(DrvWheelDiaM) * Me.ToIn(DrvWheelDiaM)));
 
-            SpeedTangentialCrankWheelForceLeftLbf = SpeedPistonForceLeftLbf + ReciprocatingInertiaForceLeft + ConnectRodInertiaForceLeft;
-            SpeedTangentialCrankWheelForceMiddleLbf = SpeedPistonForceMiddleLbf + ReciprocatingInertiaForceMiddle + ConnectRodInertiaForceMiddle;
-            SpeedTangentialCrankWheelForceRightLbf = SpeedPistonForceRightLbf + ReciprocatingInertiaForceRight + ConnectRodInertiaForceRight;
+                if (cutoff == 0 || throttle == 0)
+                {
+                    // Zero starting force if cutoff is 0
+                    StartTangentialCrankWheelForceLbf = 0.0f;
+
+                    SpeedTangentialCrankWheelForceLeftLbf = 0.0f;
+                    SpeedTangentialCrankWheelForceMiddleLbf = 0.0f;
+                    SpeedTangentialCrankWheelForceRightLbf = 0.0f;
+
+                }
+                else
+                {
+                    // Calculate the starting force at the crank exerted on the drive wheel
+                    StartTangentialCrankWheelForceLbf = Math.Abs(StartPistonForceLeftLbf * StartTangentialCrankForceFactorLeft) + Math.Abs(StartPistonForceMiddleLbf * StartTangentialCrankForceFactorMiddle) + Math.Abs(StartPistonForceRightLbf * StartTangentialCrankForceFactorRight);
+
+                    SpeedTangentialCrankWheelForceLeftLbf = SpeedPistonForceLeftLbf + ReciprocatingInertiaForceLeft + ConnectRodInertiaForceLeft;
+                    SpeedTangentialCrankWheelForceMiddleLbf = SpeedPistonForceMiddleLbf + ReciprocatingInertiaForceMiddle + ConnectRodInertiaForceMiddle;
+                    SpeedTangentialCrankWheelForceRightLbf = SpeedPistonForceRightLbf + ReciprocatingInertiaForceRight + ConnectRodInertiaForceRight;
+                }
 
             if(NumCylinders == 2)
             {
@@ -4461,9 +4484,9 @@ namespace Orts.Simulation.RollingStocks
                 StartVerticalThrustForceMiddle = 0.0f;
             }   
 
-            StartVerticalThrustForceLeft = StartPistonForceLbf * StartVerticalThrustFactorLeft;
-            StartVerticalThrustForceMiddle = StartPistonForceLbf * StartVerticalThrustFactorMiddle;
-            StartVerticalThrustForceRight = StartPistonForceLbf * StartVerticalThrustFactorRight;
+            StartVerticalThrustForceLeft = StartPistonForceLeftLbf * StartVerticalThrustFactorLeft;
+            StartVerticalThrustForceMiddle = StartPistonForceLeftLbf * StartVerticalThrustFactorMiddle;
+            StartVerticalThrustForceRight = StartPistonForceLeftLbf * StartVerticalThrustFactorRight;
 
             /// Calculation of Adhesion Friction Force @ Speed
             /// Vertical thrust of the connecting rod will reduce or increase the effect of the adhesive weight of the locomotive
@@ -4524,15 +4547,26 @@ namespace Orts.Simulation.RollingStocks
                 StartStaticWheelFrictionForceLbf = (Kg.ToLb(DrvWheelWeightKg) - StartVerticalThrustForceLeft - StartVerticalThrustForceMiddle - StartVerticalThrustForceRight) * Train.LocomotiveCoefficientFriction;
             }
 
-            if (absSpeedMpS < 1.0)  // For low speed use the starting values
+            // Transition between Starting slip calculations, and slip at speed. Incremental values applied between 1 and 10mph.
+
+            if (absSpeedMpS < 0.45)  // For low speed use the starting values
             {
                 SteamStaticWheelForce = StartStaticWheelFrictionForceLbf;
                 SteamTangentialWheelForce = StartTangentialWheelTreadForceLbf;
             }
-            else // for high speed use "running values"
+            else if (absSpeedMpS > 4.5) // for high speed use "running values"
             {
                 SteamStaticWheelForce = SpeedStaticWheelFrictionForceLbf;
                 SteamTangentialWheelForce = SpeedTangentialWheelTreadForceLbf;
+            }
+            else
+            {
+                // incremental straight line used model static value between 1 and 10mph
+                float LineGrad = (SpeedStaticWheelFrictionForceLbf - StartStaticWheelFrictionForceLbf) / (4.5f - 0.5f);
+                SteamStaticWheelForce = LineGrad * absSpeedMpS + StartStaticWheelFrictionForceLbf;
+
+                SteamTangentialWheelForce = SpeedTangentialWheelTreadForceLbf;
+
             }
 
             SteamStaticWheelForce = MathHelper.Clamp(SteamStaticWheelForce, 0.1f, SteamStaticWheelForce);  // Ensure static wheelforce never goes negative - as this will induce wheel slip incorrectly
@@ -5932,7 +5966,7 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Catalog.GetString("MForceN"),
                     FormatStrings.FormatForce(MotiveForceN, IsMetric),
                     Simulator.Catalog.GetString("Piston"),
-                    FormatStrings.FormatForce(N.FromLbf(StartPistonForceLbf), IsMetric),
+                    FormatStrings.FormatForce(N.FromLbf(StartPistonForceLeftLbf), IsMetric),
                     Simulator.Catalog.GetString("Tang(c)"),
                     FormatStrings.FormatForce(N.FromLbf(StartTangentialCrankWheelForceLbf), IsMetric),
                     Simulator.Catalog.GetString("Tang(t)"),
