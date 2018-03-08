@@ -1523,7 +1523,7 @@ namespace Orts.Simulation
             if (e.TriggerOnStop)
             {
                 // Is train still moving?
-                if (Math.Abs(Simulator.PlayerLocomotive.SpeedMpS) > 0.012f)
+                if (Math.Abs(Simulator.PlayerLocomotive.SpeedMpS) > 0.032f)
                 {
                     return triggered;
                 }
