@@ -139,6 +139,8 @@ namespace Orts.Common
         Uncouple,
         UncoupleB, // NOTE: Currently not used in Open Rails.
         UncoupleC, // NOTE: Currently not used in Open Rails.
+        VacuumExhausterOn,
+        VacuumExhausterOff,
         VigilanceAlarmOff,
         VigilanceAlarmOn,
         VigilanceAlarmReset,
@@ -326,6 +328,9 @@ namespace Orts.Common
                         case 163: return Event.CabRadioOff;
 
                         case 164: return Event.BrakesStuck;
+
+                        case 165: return Event.VacuumExhausterOn;
+                        case 166: return Event.VacuumExhausterOff;
                             //
 
                         default: return 0;

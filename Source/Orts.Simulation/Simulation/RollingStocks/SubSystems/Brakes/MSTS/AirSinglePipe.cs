@@ -639,6 +639,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 {
                                     lead.BrakeSystem.BrakeLine1PressurePSI += PressureDiffEqualToPipePSI;  // Increase brake pipe pressure to cover loss
                                     lead.MainResPressurePSI = lead.MainResPressurePSI - (PressureDiffEqualToPipePSI * lead.BrakeSystem.BrakePipeVolumeM3 / lead.MainResVolumeM3);   // Decrease main reservoir pressure
+                                    Trace.TraceInformation("Brakes - MR Air {0} Diff {1} BPVol {2} MainRes {3}", lead.MainResPressurePSI, PressureDiffEqualToPipePSI, lead.BrakeSystem.BrakePipeVolumeM3, lead.MainResVolumeM3);
                                 }
                                     // else in LAP psoition brake pipe is isolated, and thus brake pipe pressure decreases, but reservoir remains at same pressure
                             }

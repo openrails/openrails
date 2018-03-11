@@ -28,12 +28,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
 
-        // convert pressure in psia to vacuum in inhg
-        public static float P2V(float p)
-        {
-            return Bar.ToInHg(Bar.FromPSI(OneAtmospherePSI - p));
-        }
-
         public SingleTransferPipe(TrainCar car)
             : base(car)
         {
@@ -78,7 +72,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // display differently depending upon whether vacuum or air braked system
             if (Car.CarBrakeSystemType == "vacuum_piped")
             {
-                return string.Format(" BP {0}", FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
+                return string.Format(" BP {0}", FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
             }
             else  // air braked by default
             {
@@ -120,7 +114,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 return new string[] {
                 DebugType,
                 string.Empty,
-                FormatStrings.FormatPressure(P2V(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
+                FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 string.Empty,
                 string.Empty, // Spacer because the state above needs 2 columns.
                 HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,

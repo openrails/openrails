@@ -383,7 +383,7 @@ namespace ORTS.Common
     /// <summary>
     /// Liquid volume conversions from and to Litres
     /// </summary>
-    public static class L 
+    public static class L
     {
         /// <summary>Convert from UK Gallons to litres</summary>
         public static float FromGUK(float gallonUK) { return gallonUK * 4.54609f; }
@@ -393,6 +393,19 @@ namespace ORTS.Common
         public static float FromGUS(float gallonUS) { return gallonUS * 3.78541f; }
         /// <summary>Convert from litres to US Gallons</summary>
         public static float ToGUS(float litre) { return litre * (1.0f / 3.78541f); }
+    }
+
+
+    /// <summary>
+    /// convert vacuum values to psia for vacuum brakes
+    /// </summary>
+    public static class Vac 
+    {
+        readonly static float OneAtmospherePSI = Bar.ToPSI(1);
+        /// <summary>vacuum in inhg to pressure in psia</summary>
+        public static float ToPress(float vac) { return OneAtmospherePSI - Bar.ToPSI(Bar.FromInHg(vac)); }
+        /// <summary>convert pressure in psia to vacuum in inhg</summary>
+        public static float FromPress(float press) { return Bar.ToInHg(Bar.FromPSI(OneAtmospherePSI - press)); }
     }
 
     /// <summary>

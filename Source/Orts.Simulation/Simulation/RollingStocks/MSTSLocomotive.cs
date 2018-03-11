@@ -141,6 +141,8 @@ namespace Orts.Simulation.RollingStocks
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
 
+        // Vacuum Reservoir and Exhauster Settings
+
         // Steam heating Flags
         public bool IsSteamInitial = true;        // To initialise steam heat
         public bool IsSteamHeatFirstTime = true;  // Flag for first pass at steam heating.
@@ -178,6 +180,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrackSanderSandConsumptionFt3pH = 1.01f;
 
         // Vacuum Braking parameters
+        readonly static float OneAtmospherePSI = Bar.ToPSI(1);
         public bool SmallSteamEjectorIsOn = false;
         public bool LargeSteamEjectorIsOn = false;
         public bool VacuumPumpOperating = false;
@@ -191,7 +194,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
         public float LargeEjectorFeedFraction = 1.0f;
-        public float VacuumPumpChargingRateInHgpS;
+        public float VacuumPumpChargingRateInHgpS = 0.0f;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
         public float HUDNetBPLossGainPSI;
         public float SmallEjectorBrakePipeChargingRatePSIorInHgpS;
@@ -200,6 +203,13 @@ namespace Orts.Simulation.RollingStocks
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
 
         public bool EngineBrakeFitted = false;
+        public bool VacuumExhausterIsOn = false;
+        public float VacuumBrakesMainResVolumeM3 = Me3.FromFt3(200.0f); // Main vacuum reservoir
+        public float VacuumBrakesMainResMaxVacuumInHg = Vac.ToPress(23);
+        public float VacuumBrakesExhausterRestartVacuumInHg = Vac.ToPress(21);
+        public float VacuumBrakesMainResChargingRateInHgpS = 0.2f;
+        public float VacuumMainResVacuumInHg = Vac.ToPress(23); // Vacuum currently in Main Reservoir
+
 
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
@@ -713,6 +723,12 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(airbrakesaircompressorpowerrating": CompressorChargingRateM3pS = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
                 case "engine(trainpipeleakrate": TrainBrakePipeLeakPSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(vacuumbrakesvacuumpumpresistance": VacuumPumpResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+
+                case "engine(ortsvacuumbrakesmainresvolume": VacuumBrakesMainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
+                case "engine(ortsvacuumbrakesmainresmaxvacuum": VacuumBrakesMainResMaxVacuumInHg = OneAtmospherePSI - stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break; // convert to PSIA for vacuum brakes
+                case "engine(ortsvacuumbrakesexhausterrestartvacuum": VacuumBrakesExhausterRestartVacuumInHg = OneAtmospherePSI - stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break; // convert to PSIA for vacuum brakes
+                case "engine(ortsvacuumbrakesmainreschargingrate": VacuumBrakesMainResChargingRateInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+
                 case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakeapplicationrate": EngineBrakeApplyRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
@@ -839,6 +855,10 @@ namespace Orts.Simulation.RollingStocks
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
             VacuumPumpResistanceN = locoCopy.VacuumPumpResistanceN;
+            VacuumBrakesMainResVolumeM3 = locoCopy.VacuumBrakesMainResVolumeM3;
+            VacuumBrakesMainResMaxVacuumInHg = locoCopy.VacuumBrakesMainResMaxVacuumInHg;
+            VacuumBrakesExhausterRestartVacuumInHg = locoCopy.VacuumBrakesExhausterRestartVacuumInHg;
+            VacuumBrakesMainResChargingRateInHgpS = locoCopy.VacuumBrakesMainResChargingRateInHgpS;
 
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
             EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
@@ -911,6 +931,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(OdometerVisible);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorIsOn);
+            outf.Write(VacuumMainResVacuumInHg);
+            outf.Write(VacuumExhausterIsOn);
             outf.Write(TrainBrakePipeLeakPSIorInHgpS);
             outf.Write(AverageForceN);
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
@@ -942,6 +964,8 @@ namespace Orts.Simulation.RollingStocks
             OdometerVisible = inf.ReadBoolean();
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
+            VacuumMainResVacuumInHg = inf.ReadSingle();
+            VacuumExhausterIsOn = inf.ReadBoolean();
             TrainBrakePipeLeakPSIorInHgpS = inf.ReadSingle();
             AverageForceN = inf.ReadSingle();
             LocomotiveAxle.Reset(Simulator.GameTime, inf.ReadSingle());
@@ -1403,7 +1427,16 @@ namespace Orts.Simulation.RollingStocks
             // If the train is vacuumed braked then no need to update the compressor, but udate the ejector instead
               if (BrakeSystem is VacuumSinglePipe)
                  {
-                     UpdateSteamEjector(elapsedClockSeconds);
+                    
+                    if (VacuumBrakeEQFitted) // Only update exhauster/main reservoir on locomotives fitted ith an EQ reservoir
+                    {
+                    UpdateVacuumExhauster(elapsedClockSeconds);
+                    }
+                    else
+                    {
+                        UpdateSteamEjector(elapsedClockSeconds);
+                    }
+                
                  }
                  else
                  {
@@ -1772,6 +1805,24 @@ namespace Orts.Simulation.RollingStocks
                 VacuumPumpOperating = true;
             }
 
+
+        }
+
+        /// <summary>
+        /// This function updates periodically the state of the vacuum exhauster on a vacuum braked system with a EQ reservoir.
+        /// Resevoir vacuum is maintained in "atmospheric pressure" and converted to vacuum
+        /// Vacuum reservoir should normally be maintained at approx 26InHg (4.185 psi)
+        /// </summary>
+        protected virtual void UpdateVacuumExhauster(float elapsedClockSeconds)
+        {
+            if (VacuumMainResVacuumInHg > VacuumBrakesExhausterRestartVacuumInHg && AuxPowerOn && !VacuumExhausterIsOn)
+                SignalEvent(Event.VacuumExhausterOn);
+            else if ((VacuumMainResVacuumInHg < VacuumBrakesMainResMaxVacuumInHg || !AuxPowerOn) && VacuumExhausterIsOn)
+                SignalEvent(Event.VacuumExhausterOff);
+
+            if (VacuumExhausterIsOn)
+                VacuumMainResVacuumInHg -= elapsedClockSeconds * VacuumBrakesMainResChargingRateInHgpS;
+//            Trace.TraceInformation("Locomotive - MR Vacuum {0} Restart {1} Max Vac {2} Charging Rate {3}", VacuumMainResVacuumInHg, VacuumBrakesExhausterRestartVacuumInHg, VacuumBrakesMainResMaxVacuumInHg, VacuumBrakesMainResChargingRateInHgpS);
 
         }
 
@@ -2795,7 +2846,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    return string.Format("{0} BC {1}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(VacuumSinglePipe.P2V(Train.HUDLocomotiveBrakeCylinderPSI), PressureUnit.InHg, PressureUnit.InHg, true));
+                    return string.Format("{0} BC {1}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Vac.FromPress(Train.HUDLocomotiveBrakeCylinderPSI), PressureUnit.InHg, PressureUnit.InHg, true));
                 }
                 else
                 {
@@ -3152,6 +3203,9 @@ namespace Orts.Simulation.RollingStocks
 
                 case Event.CompressorOn: { CompressorIsOn = true; break; }
                 case Event.CompressorOff: { CompressorIsOn = false; break; }
+                case Event.VacuumExhausterOn: { VacuumExhausterIsOn = true; break; }
+                case Event.VacuumExhausterOff : { VacuumExhausterIsOn = false; break; }
+
                 case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
                 case Event.TrainBrakePressureDecrease:
                 case Event.TrainBrakePressureIncrease:
@@ -3651,7 +3705,7 @@ namespace Orts.Simulation.RollingStocks
             else if (cvc.Units == CABViewControlUnits.KGS_PER_SQUARE_CM)
                 data *= 70.307e-3f;
             else if (cvc.Units == CABViewControlUnits.INCHES_OF_MERCURY)
-                data = VacuumSinglePipe.P2V(data);
+                data = Vac.FromPress(data);
             return data;
         }
 
