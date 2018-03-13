@@ -5491,7 +5491,7 @@ namespace Orts.Simulation.RollingStocks
             var boilerPressureSafety = boilerPressurePercent <= 0.25 ? "!!!" : boilerPressurePercent <= 0.5 ? "???" : "";
             var boilerWaterSafety = WaterFraction < WaterMinLevel || WaterFraction > WaterMaxLevel ? "!!!" : WaterFraction < WaterMinLevelSafe || WaterFraction > WaterMaxLevelSafe ? "???" : "";
             var coalPercent = TenderCoalMassKG / MaxTenderCoalMassKG;
-            var waterPercent = TenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG) / WaterLBpUKG);
+            var waterPercent = CombinedTenderWaterVolumeUKG / (Kg.ToLb((MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG));
             var fuelSafety = CoalIsExhausted || WaterIsExhausted ? "!!!" : coalPercent <= 0.105 || waterPercent <= 0.105 ? "???" : "";
             var status = new StringBuilder();
 
@@ -5870,7 +5870,7 @@ namespace Orts.Simulation.RollingStocks
                     TenderCoalMassKG / MaxTenderCoalMassKG * 100,
                     Simulator.Catalog.GetString("Water(C)"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
-                    CombinedTenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * 100,
+                    CombinedTenderWaterVolumeUKG / (Kg.ToLb((MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)) * 100,
                     Simulator.Catalog.GetString("Water(T)"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(TenderWaterVolumeUKG), IsMetric, IsUK),
                     Simulator.Catalog.GetString("Water(A)"),
@@ -5885,7 +5885,7 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
                     TenderCoalMassKG / MaxTenderCoalMassKG * 100,
                     FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
-                    CombinedTenderWaterVolumeUKG / (Kg.ToLb(MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * 100);
+                    CombinedTenderWaterVolumeUKG / (Kg.ToLb((MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)) * 100);
             }
 
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",
