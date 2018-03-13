@@ -553,13 +553,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         // Full Quick release - assumption that exhauster is in high speed mode
                         EQReleaseNetBPLossGainPSI = (AdjHighSExhausterChargingRateInHgpS + AdjLargeEjectorChargingRateInHgpS + AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS) - AdjTrainPipeLeakLossPSI;
-//                        EQReleaseNetBPLossGainPSI = (AdjHighSExhausterChargingRateInHgpS) - AdjTrainPipeLeakLossPSI;
                     }
                     else
                     {
                         // Release - assumption that exhauster is in low speed mode
                         EQReleaseNetBPLossGainPSI = (AdjLowSExhausterChargingRateInHgpS + AdjLargeEjectorChargingRateInHgpS + AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS) - AdjTrainPipeLeakLossPSI;
-                  //      EQReleaseNetBPLossGainPSI = (AdjLowSExhausterChargingRateInHgpS) - AdjTrainPipeLeakLossPSI;
                     }
 
 
@@ -606,23 +604,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // Vacuum Pipe is < Desired value - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
 
                             float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * EQReleaseNetBPLossGainPSI; // Exhauster needs to be considered
-                            // If Diff is going to take BP vacuum below desired value, then only do the difference
+
+                            // If Diff is going to take BP vacuum below desired pipe vacuum value, then only do the difference between the two
                             if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipePressureDiffPSI < DesiredPipeVacuum)
                             {
                                 TrainPipePressureDiffPSI = lead.BrakeSystem.BrakeLine1PressurePSI - DesiredPipeVacuum;
- //                               Trace.TraceInformation("Test#1");
                             }
-                                
 
-                            // If 
-                            if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipePressureDiffPSI < lead.VacuumMainResVacuumInHg)
+
+                            // If Diff is going to take BP vacuum below the value in the Main Reservoir, then only do the difference between the two (remember this is in PSIA)
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI - TrainPipePressureDiffPSI < lead.VacuumMainResVacuumPSIAorInHg)
                             {
-                                TrainPipePressureDiffPSI = lead.VacuumMainResVacuumInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
-//                                Trace.TraceInformation("Test#2 - Diff {0} Main Res {1} BP {2}", TrainPipePressureDiffPSI, lead.VacuumMainResVacuumInHg, lead.BrakeSystem.BrakeLine1PressurePSI);
+                                TrainPipePressureDiffPSI = lead.VacuumMainResVacuumPSIAorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
                             }
                                 
 
-                            if (TrainPipePressureDiffPSI < 0 || lead.VacuumMainResVacuumInHg > lead.BrakeSystem.BrakeLine1PressurePSI)
+                            if (TrainPipePressureDiffPSI < 0 || lead.VacuumMainResVacuumPSIAorInHg > lead.BrakeSystem.BrakeLine1PressurePSI)
                                 TrainPipePressureDiffPSI = 0;
 
                             // Adjust brake pipe pressure based upon pressure differential
@@ -634,12 +631,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             {
                                     lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;  // Increase brake pipe pressure to cover loss
                                 float VolDiffM3 = (train.TotalTrainBrakeSystemVolumeM3 / lead.VacuumBrakesMainResVolumeM3);
-                                lead.VacuumMainResVacuumInHg += TrainPipePressureDiffPSI * VolDiffM3;
-                                if (lead.VacuumMainResVacuumInHg > OneAtmospherePSI)
-                                    lead.VacuumMainResVacuumInHg = OneAtmospherePSI; // Ensure Main Res does not go negative
-
-
-//                                Trace.TraceInformation("Brakes - MR Vacuum {0} Diff {1} BPVol {2} MainRes {3} ExhRate {4} VolDiff {5}", lead.VacuumMainResVacuumInHg, TrainPipePressureDiffPSI, lead.BrakeSystem.BrakePipeVolumeM3, lead.VacuumBrakesMainResVolumeM3, lead.ExhausterHighSBPChargingRatePSIorInHgpS, VolDiffM3);
+                                lead.VacuumMainResVacuumPSIAorInHg += TrainPipePressureDiffPSI * VolDiffM3;
+                                if (lead.VacuumMainResVacuumPSIAorInHg > OneAtmospherePSI)
+                                    lead.VacuumMainResVacuumPSIAorInHg = OneAtmospherePSI; // Ensure Main Res does not go negative
                             }
                                 // else in LAP psoition brake pipe is isolated, and thus brake pipe pressure decreases, but reservoir remains at same pressure
                             
@@ -727,7 +721,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                     }
                                  }
                             }
-
                     }
                     // Keep brake line within relevant limits - ie between 21 or 25 InHg and Atmospheric pressure.
                     lead.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(lead.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
@@ -824,21 +817,58 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 TrainPipePressureDiffPropogationPSI *= AdjBrakePipeDischargeTimeFactor;
                         }
 
-                        // Start propagating pressure along train BP by averaging pressure across each car down the train
-                        if (car0 == lead && train.TrainBPIntact) // For the locomotive, only decrease the next car. 
-                            // If previous car BP pressure is increased then the total proagation time is increased, as there is a "fight" between the lead BP pressure, and the propagation BP pressure as it evens out along the train
+                        // The locomotive BP should not be changed during the propagation process, as it is calculated above, and acts as the reference. This ensures that the BP vacuum setting calculated
+                        // above for the locomotive remains as an accurate timing value
+                        // Two scenarios considered, one locomotive is lead vehicle, or locomotive is in the train consist somewhere
+                        if (train.Cars[0] == lead) // locomotive at head of train
                         {
-                            car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
-                            car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
-                        }
-                        else  // For all other "normal" cars
-                        {   
-                            car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
-                            car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
-                            // These lines allow pressure propagation from the rear of the train twoards the front
-                            car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * CarBrakeSytemVolumeM3;
-                            car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                            if (car != lead) // Don't change BP pressure on the locomotive car in either direction if the locomotive is at the head of the train
+                            {
+                                // Start propagating pressure along train BP by averaging pressure across each car down the train
+                                if ((car0 == lead) && train.TrainBPIntact) // For the car after the locomotive, only decrease the car itself, and not the locomotive. 
+                                    // If previous car BP pressure is increased then the total proagation time is increased, as there is a "fight" between the lead BP pressure, 
+                                    // and the propagation BP pressure as it evens out along the train
+                                {
+                                    car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
+                                    car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
 
+                                }
+                                else  // For all other "normal" cars
+                                {
+                                    car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
+                                    car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                                    // These lines allow pressure propagation from the rear of the train twoards the front
+                                    car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * CarBrakeSytemVolumeM3;
+                                    car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                                }
+                            }
+                        }
+                        else // if the locomotive is located elsewhere in train then we need to disable change to BP pressure on the locomotive car but maintain forward and rearwards pressure propagation on adjoining cars
+                        {
+                            // Start propagating pressure along train BP by averaging pressure across each car down the train
+                            if ((car0 == lead) && train.TrainBPIntact) // For the car after the locomotive, only decrease the car itself, and not the locomotive. 
+                                                                       // If previous car BP pressure is increased then the total proagation time is increased, 
+                                                                       // as there is a "fight" between the lead BP pressure, and the propagation BP pressure as it evens out along the train
+                            {
+                                car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
+                                car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                            }
+
+                            else if ((car == lead) && train.TrainBPIntact) // For the locomotive, as it is not the lead car, it needs to change the pressure of the car in front of it.
+                            {
+                                // These lines allow pressure propagation from the rear of the train twoards the front
+                                car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * CarBrakeSytemVolumeM3;
+                                car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+
+                            }
+                            else  // For all other "normal" cars
+                            {
+                                car.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPropogationPSI * Car0BrakeSytemVolumeM30;
+                                car.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                                // These lines allow pressure propagation from the rear of the train twoards the front
+                                car0.BrakeSystem.BrakeLine1PressurePSI += TrainPipePressureDiffPropogationPSI * CarBrakeSytemVolumeM3;
+                                car0.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(car0.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                            }
                         }
                     }
 
@@ -911,7 +941,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // When valve is closed then pressure will be able to drop, and return to normal
                     if (car == train.Cars[train.Cars.Count - 1] && car.BrakeSystem.AngleCockBOpen)  
                     {
-               //        Trace.TraceInformation("Last Car (A) - Carid {0} Car BP {1} Time Factor {2} Variation {3} p1 {4}", car.CarID, car.BrakeSystem.BrakeLine1PressurePSI, AdjbrakePipeTimeFactorS, TrainPipeTimeVariationS, p1);
                         // Test to make sure that BP pressure stays within reasonable bounds
                         if (AdjbrakePipeTimeFactorS == 0)
                         {
@@ -954,17 +983,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (train.Cars[i].BrakeSystem.CarBPIntact == false)
                 {
                     train.TrainBPIntact = false;
-//                    Trace.TraceInformation("BP Condition {0}", train.TrainBPIntact);
                     break;
                 }
                 else
                 {
                     train.TrainBPIntact = true;
-//                    Trace.TraceInformation("BP Condition {0}", train.TrainBPIntact);
                 }
             }
 
-            //            Trace.TraceInformation("BP1 #2 - ID {0} BP {1}", trainCar.CarID, lead.BrakeSystem.BrakeLine1PressurePSI);
             // **************  Engine Brake *************
             // Propagate engine brake pipe (#3) data
             
@@ -985,7 +1011,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 BrakeSystem brakeSystem = train.Cars[i].BrakeSystem;
                 if (lead.EngineBrakeFitted)
                 {
-
 
                     if (i < first && (!train.Cars[i + 1].BrakeSystem.FrontBrakeHoseConnected || !brakeSystem.AngleCockBOpen || !train.Cars[i + 1].BrakeSystem.AngleCockAOpen))
                     {
@@ -1012,14 +1037,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     else
                     {
-
-                        //                    Trace.TraceInformation("CarID {0}", trainCar.CarID);
-
-                        //                           float DesiredEngineBrakeVacuum = lead.EngineBrakeController.UpdateEngineBrakePressure(ref BrakeLine3PressurePSI, elapsedClockSeconds);
-
-                        //                        Trace.TraceInformation("Train Controller State {0}  Engine Brake Controller {1}", lead.TrainBrakeController.TrainBrakeControllerState, lead.EngineBrakeController.TrainBrakeControllerState);
-                        //                        Trace.TraceInformation("BP3#1 - {0}", lead.BrakeSystem.BrakeLine3PressurePSI);
-                        //                        Trace.TraceInformation("EngineBrake - Apply {0} Release {1}", lead.EngineBrakeController.ApplyRatePSIpS, lead.EngineBrakeController.ReleaseRatePSIpS);
 
                         // Engine Brake Controller is in Apply position - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
                         if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.Apply)

@@ -204,11 +204,11 @@ namespace Orts.Simulation.RollingStocks
 
         public bool EngineBrakeFitted = false;
         public bool VacuumExhausterIsOn = false;
-        public float VacuumBrakesMainResVolumeM3 = Me3.FromFt3(200.0f); // Main vacuum reservoir
-        public float VacuumBrakesMainResMaxVacuumInHg = Vac.ToPress(23);
-        public float VacuumBrakesExhausterRestartVacuumInHg = Vac.ToPress(21);
-        public float VacuumBrakesMainResChargingRateInHgpS = 0.2f;
-        public float VacuumMainResVacuumInHg = Vac.ToPress(23); // Vacuum currently in Main Reservoir
+        public float VacuumBrakesMainResVolumeM3 = Me3.FromFt3(200.0f); // Main vacuum reservoir volume
+        public float VacuumBrakesMainResMaxVacuumPSIAorInHg = Vac.ToPress(23);
+        public float VacuumBrakesExhausterRestartVacuumPSIAorInHg = Vac.ToPress(21);
+        public float VacuumBrakesMainResChargingRatePSIAorInHgpS = 0.2f;
+        public float VacuumMainResVacuumPSIAorInHg = Vac.ToPress(23); // Vacuum currently in Main Reservoir
 
 
         // Set values for display in HUD
@@ -725,9 +725,9 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(vacuumbrakesvacuumpumpresistance": VacuumPumpResistanceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
 
                 case "engine(ortsvacuumbrakesmainresvolume": VacuumBrakesMainResVolumeM3 = Me3.FromFt3(stf.ReadFloatBlock(STFReader.UNITS.VolumeDefaultFT3, null)); break;
-                case "engine(ortsvacuumbrakesmainresmaxvacuum": VacuumBrakesMainResMaxVacuumInHg = OneAtmospherePSI - stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break; // convert to PSIA for vacuum brakes
-                case "engine(ortsvacuumbrakesexhausterrestartvacuum": VacuumBrakesExhausterRestartVacuumInHg = OneAtmospherePSI - stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break; // convert to PSIA for vacuum brakes
-                case "engine(ortsvacuumbrakesmainreschargingrate": VacuumBrakesMainResChargingRateInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsvacuumbrakesmainresmaxvacuum": VacuumBrakesMainResMaxVacuumPSIAorInHg = OneAtmospherePSI - stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break; // convert to PSIA for vacuum brakes
+                case "engine(ortsvacuumbrakesexhausterrestartvacuum": VacuumBrakesExhausterRestartVacuumPSIAorInHg = OneAtmospherePSI - stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break; // convert to PSIA for vacuum brakes
+                case "engine(ortsvacuumbrakesmainreschargingrate": VacuumBrakesMainResChargingRatePSIAorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
 
                 case "engine(ortsmainreschargingrate": MainResChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsenginebrakereleaserate": EngineBrakeReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
@@ -856,9 +856,9 @@ namespace Orts.Simulation.RollingStocks
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
             VacuumPumpResistanceN = locoCopy.VacuumPumpResistanceN;
             VacuumBrakesMainResVolumeM3 = locoCopy.VacuumBrakesMainResVolumeM3;
-            VacuumBrakesMainResMaxVacuumInHg = locoCopy.VacuumBrakesMainResMaxVacuumInHg;
-            VacuumBrakesExhausterRestartVacuumInHg = locoCopy.VacuumBrakesExhausterRestartVacuumInHg;
-            VacuumBrakesMainResChargingRateInHgpS = locoCopy.VacuumBrakesMainResChargingRateInHgpS;
+            VacuumBrakesMainResMaxVacuumPSIAorInHg = locoCopy.VacuumBrakesMainResMaxVacuumPSIAorInHg;
+            VacuumBrakesExhausterRestartVacuumPSIAorInHg = locoCopy.VacuumBrakesExhausterRestartVacuumPSIAorInHg;
+            VacuumBrakesMainResChargingRatePSIAorInHgpS = locoCopy.VacuumBrakesMainResChargingRatePSIAorInHgpS;
 
             EmergencyCausesPowerDown = locoCopy.EmergencyCausesPowerDown;
             EmergencyCausesThrottleDown = locoCopy.EmergencyCausesThrottleDown;
@@ -931,7 +931,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(OdometerVisible);
             outf.Write(MainResPressurePSI);
             outf.Write(CompressorIsOn);
-            outf.Write(VacuumMainResVacuumInHg);
+            outf.Write(VacuumMainResVacuumPSIAorInHg);
             outf.Write(VacuumExhausterIsOn);
             outf.Write(TrainBrakePipeLeakPSIorInHgpS);
             outf.Write(AverageForceN);
@@ -964,7 +964,7 @@ namespace Orts.Simulation.RollingStocks
             OdometerVisible = inf.ReadBoolean();
             MainResPressurePSI = inf.ReadSingle();
             CompressorIsOn = inf.ReadBoolean();
-            VacuumMainResVacuumInHg = inf.ReadSingle();
+            VacuumMainResVacuumPSIAorInHg = inf.ReadSingle();
             VacuumExhausterIsOn = inf.ReadBoolean();
             TrainBrakePipeLeakPSIorInHgpS = inf.ReadSingle();
             AverageForceN = inf.ReadSingle();
@@ -1815,15 +1815,13 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateVacuumExhauster(float elapsedClockSeconds)
         {
-            if (VacuumMainResVacuumInHg > VacuumBrakesExhausterRestartVacuumInHg && AuxPowerOn && !VacuumExhausterIsOn)
+            if (VacuumMainResVacuumPSIAorInHg > VacuumBrakesExhausterRestartVacuumPSIAorInHg && AuxPowerOn && !VacuumExhausterIsOn)
                 SignalEvent(Event.VacuumExhausterOn);
-            else if ((VacuumMainResVacuumInHg < VacuumBrakesMainResMaxVacuumInHg || !AuxPowerOn) && VacuumExhausterIsOn)
+            else if ((VacuumMainResVacuumPSIAorInHg < VacuumBrakesMainResMaxVacuumPSIAorInHg || !AuxPowerOn) && VacuumExhausterIsOn)
                 SignalEvent(Event.VacuumExhausterOff);
 
             if (VacuumExhausterIsOn)
-                VacuumMainResVacuumInHg -= elapsedClockSeconds * VacuumBrakesMainResChargingRateInHgpS;
-//            Trace.TraceInformation("Locomotive - MR Vacuum {0} Restart {1} Max Vac {2} Charging Rate {3}", VacuumMainResVacuumInHg, VacuumBrakesExhausterRestartVacuumInHg, VacuumBrakesMainResMaxVacuumInHg, VacuumBrakesMainResChargingRateInHgpS);
-
+                VacuumMainResVacuumPSIAorInHg -= elapsedClockSeconds * VacuumBrakesMainResChargingRatePSIAorInHgpS;
         }
 
         /// <summary>
