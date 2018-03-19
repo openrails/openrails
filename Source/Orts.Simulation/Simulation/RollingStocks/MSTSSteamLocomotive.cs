@@ -760,7 +760,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
-                case "engine(enginecontrollers(smallejectororcompressor": SmallEjectorController.Parse(stf); break;
+                case "engine(enginecontrollers(smallejector": SmallEjectorController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
                 case "engine(enginecontrollers(blower": BlowerController.Parse(stf); break;

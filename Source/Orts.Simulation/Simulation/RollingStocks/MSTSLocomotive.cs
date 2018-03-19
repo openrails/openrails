@@ -207,7 +207,7 @@ namespace Orts.Simulation.RollingStocks
         public float VacuumBrakesMainResVolumeM3 = Me3.FromFt3(200.0f); // Main vacuum reservoir volume
         public float VacuumBrakesMainResMaxVacuumPSIAorInHg = Vac.ToPress(23);
         public float VacuumBrakesExhausterRestartVacuumPSIAorInHg = Vac.ToPress(21);
-        public float VacuumBrakesMainResChargingRatePSIAorInHgpS = 0.2f;
+        public float VacuumBrakesMainResChargingRatePSIAorInHgpS = Bar.ToPSI(Bar.FromInHg(0.2f));
         public float VacuumMainResVacuumPSIAorInHg = Vac.ToPress(23); // Vacuum currently in Main Reservoir
 
 
@@ -736,7 +736,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
-                case "engine(ortsbrakepipedischargetimefactor": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsbrakepipedischargetimemult": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); TractiveForceCurves.HasNegativeValue();  break;
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
                 case "engine(ortsdynamicbrakeforcecurves": DynamicBrakeForceCurves = new InterpolatorDiesel2D(stf, false); break;
