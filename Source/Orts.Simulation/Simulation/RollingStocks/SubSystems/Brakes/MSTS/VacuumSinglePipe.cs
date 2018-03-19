@@ -393,7 +393,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float DesiredPipeVacuum = Vac.ToPress(train.EqualReservoirPressurePSIorInHg);
             float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS ); // Set value for small ejector to operate - fraction set in steam locomotive
             float LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.LargeEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for large ejector to operate - fraction set in steam locomotive
-            float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : Bar.ToPSI(Bar.FromInHg(lead.TrainBrakeController.MaxPressurePSI));
+            float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
            
             float TempTrainPipePSI = lead == null ? 5.0f : lead.BrakeSystem.BrakeLine1PressurePSI;
             float TempTotalTrainBrakePipeVolumeM3 = 0.0f; // initialise train brake pipe volume
@@ -402,6 +402,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float TempCurrentBrakePipeVolumeM3 = 0.0f;
             float AdjbrakePipeTimeFactorS = 0.0f;
             float AdjBrakePipeDischargeTimeFactor = 0.0f;
+
+            // Test validity of MaxVacuumPipeLevelPSI, it should be less then 12.5 psi (approx 25 InHg)
+            if (MaxVacuumPipeLevelPSI > 12.5)
+            {
+                MaxVacuumPipeLevelPSI = Bar.ToPSI(Bar.FromInHg(21));
+            }
+
+//            Trace.TraceInformation("Test - {0}  Max {1}", lead.TrainBrakeController.MaxPressurePSI, MaxVacuumPipeLevelPSI);
 
             train.EQEquippedVacLoco = lead == null ? false : lead.VacuumBrakeEQFitted;
 
@@ -812,7 +820,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
                         else
                         {
-                            // The brake pipe is evacuated at a quicker rate then it is cahrged at - PressDiff increased to represent this
+                            // The brake pipe is evacuated at a quicker rate then it is charged at - PressDiff increased to represent this
                             if (TrainPipePressureDiffPropogationPSI < 0)
                                 TrainPipePressureDiffPropogationPSI *= AdjBrakePipeDischargeTimeFactor;
                         }

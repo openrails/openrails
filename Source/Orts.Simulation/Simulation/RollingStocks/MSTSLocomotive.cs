@@ -1146,6 +1146,13 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Check TrainBrakesControllerMaxSystemPressure parameter for "correct" value 
+            // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi, and if no units are entered then a InHG value can be incorrectly converted.
+            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 12.5)
+            {
+                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being read as {0} Inhg, - defaulted to value of 21 InHg", Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+            }
+
             // Initialise Brake Time Factor
             if (BrakePipeTimeFactorS == 0) // Check to see if BrakePipeTimeFactorS has been set in the ENG file.
             {
