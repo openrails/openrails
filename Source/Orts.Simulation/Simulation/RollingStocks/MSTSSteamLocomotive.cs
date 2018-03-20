@@ -258,7 +258,8 @@ namespace Orts.Simulation.RollingStocks
         // steam performance reporting
         public float SteamPerformanceTimeS = 0.0f; // Records the time since starting movement
         public float CumulativeWaterConsumptionLbs = 0.0f;
-        public float CumulativeSteamConsumptionLbs = 0.0f;
+        public float CumulativeCylinderSteamConsumptionLbs = 0.0f;
+        float CummulativeTotalSteamConsumptionLbs = 0.0f;
 
         int LocoIndex;
         public float LocoTenderFrictionForceN; // Combined friction of locomotive and tender
@@ -3003,6 +3004,9 @@ namespace Orts.Simulation.RollingStocks
             BoilerPressurePSI = MathHelper.Clamp(BoilerPressurePSI, 0.000f, (MaxBoilerPressurePSI + 7.0f)); // Clamp Boiler pressure to maximum safety valve pressure
 
             ApplyBoilerPressure();
+
+            // Calculate cummulative steam consumption
+            CummulativeTotalSteamConsumptionLbs += PreviousTotalSteamUsageLBpS * elapsedClockSeconds;
         }
 
         private void ApplyBoilerPressure()
@@ -3015,6 +3019,7 @@ namespace Orts.Simulation.RollingStocks
             // Save values for use in UpdateFiring() and HUD
             PreviousBoilerHeatOutBTUpS = BoilerHeatOutBTUpS;
             PreviousTotalSteamUsageLBpS = TotalSteamUsageLBpS;
+
             // Reset for next pass
             BoilerHeatOutBTUpS = 0.0f;
             TotalSteamUsageLBpS = 0.0f;
@@ -4082,8 +4087,8 @@ namespace Orts.Simulation.RollingStocks
             BoilerHeatBTU -= elapsedClockSeconds * CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); //  Boiler Heat will be reduced by heat required to replace the cylinder steam usage, ie create steam from hot water. 
             TotalSteamUsageLBpS += CylinderSteamUsageLBpS;
             BoilerHeatOutBTUpS += CylinderSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
-            CumulativeSteamConsumptionLbs += CylinderSteamUsageLBpS * elapsedClockSeconds;
-
+            CumulativeCylinderSteamConsumptionLbs += CylinderSteamUsageLBpS * elapsedClockSeconds;
+//            Trace.TraceInformation("Steam - Cumm {0} Cyl {1} tim {2}", CumulativeSteamConsumptionLbs, CylinderSteamUsageLBpS, elapsedClockSeconds);
         }
 
         private void UpdateMotion(float elapsedClockSeconds, float cutoff, float absSpeedMpS)
@@ -5878,14 +5883,19 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-                status.AppendFormat("{0}\t{1}\t{3}\t{4:N0}%\t{2}\t{5}\t\t{6:N0}%\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3:N0}%\t{4}\t{5}\t\t{6:N0}%\t{7}\t{8:N0}\t{9}\t\t{10:N0}\n",
                     Simulator.Catalog.GetString("Tender:"),
                     Simulator.Catalog.GetString("Coal"),
-                    Simulator.Catalog.GetString("Water"),
                     FormatStrings.FormatMass(TenderCoalMassKG, IsMetric),
                     TenderCoalMassKG / MaxTenderCoalMassKG * 100,
+                    Simulator.Catalog.GetString("Water"),
                     FormatStrings.FormatFuelVolume(L.FromGUK(CombinedTenderWaterVolumeUKG), IsMetric, IsUK),
-                    CombinedTenderWaterVolumeUKG / (Kg.ToLb((MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)) * 100);
+                    CombinedTenderWaterVolumeUKG / (Kg.ToLb((MaxTenderWaterMassKG + Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG)) * 100,
+                    Simulator.Catalog.GetString("Steam"),
+                    FormatStrings.FormatMass(CumulativeCylinderSteamConsumptionLbs, IsMetric),
+                                        Simulator.Catalog.GetString("TotSteam"),
+                    FormatStrings.FormatMass(CummulativeTotalSteamConsumptionLbs, IsMetric)
+                    );
             }
 
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",

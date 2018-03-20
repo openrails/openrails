@@ -161,7 +161,7 @@ namespace Orts.Viewer3D
 
 
                             Logger.Data(steamloco.SuperheaterSteamUsageFactor.ToString("F2"));
-                            Logger.Data(steamloco.CumulativeSteamConsumptionLbs.ToString("F0"));
+                            Logger.Data(steamloco.CumulativeCylinderSteamConsumptionLbs.ToString("F0"));
                             Logger.Data(steamloco.CumulativeWaterConsumptionLbs.ToString("F0"));
 
                             Logger.Data(steamloco.CutoffPressureDropRatio.ToString("F2"));
