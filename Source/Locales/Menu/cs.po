@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
-"POT-Creation-Date: 2015-09-09 17:46+0200\n"
-"PO-Revision-Date: 2015-09-09 17:51+0200\n"
+"POT-Creation-Date: 2018-03-23 16:04+0100\n"
+"PO-Revision-Date: 2018-03-23 16:04+0100\n"
 "Last-Translator: Altmann <altmann@bk.ru>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.4\n"
+"X-Generator: Poedit 2.0.2\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
 #: ../../Menu/ImportExportSaveForm.cs:52
@@ -114,7 +114,7 @@ msgstr "Sněžení"
 msgid "Rain"
 msgstr "Déšť"
 
-#: ../../Menu/MainForm.cs:155 ../../Menu/Options.cs:569
+#: ../../Menu/MainForm.cs:155 ../../Menu/Options.cs:583
 msgid "Easy"
 msgstr "Jednoduché"
 
@@ -122,7 +122,7 @@ msgstr "Jednoduché"
 msgid "Medium"
 msgstr "Střední"
 
-#: ../../Menu/MainForm.cs:157 ../../Menu/Options.cs:575
+#: ../../Menu/MainForm.cs:157 ../../Menu/Options.cs:589
 msgid "Hard"
 msgstr "Těžké"
 
@@ -154,11 +154,11 @@ msgstr "Sobota"
 msgid "Sunday"
 msgstr "Neděle"
 
-#: ../../Menu/MainForm.cs:270
+#: ../../Menu/MainForm.cs:298
 msgid "Update check failed"
 msgstr "Kontrola aktualizace selhala"
 
-#: ../../Menu/MainForm.cs:452
+#: ../../Menu/MainForm.cs:481
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
@@ -166,16 +166,16 @@ msgstr ""
 "Uživatelské jméno musí mít 4-10 znaků, nesmí obsahovat mezeru, ', \" nebo - "
 "a nesmí začínat číslicí."
 
-#: ../../Menu/MainForm.cs:1028
+#: ../../Menu/MainForm.cs:1062
 msgid "Activity Briefing"
 msgstr "Infromace o aktivitě"
 
-#: ../../Menu/MainForm.cs:272
+#: ../../Menu/MainForm.cs:300
 #, csharp-format
 msgid "Update to {0}"
 msgstr "Aktualizovat na {0}"
 
-#: ../../Menu/MainForm.cs:465
+#: ../../Menu/MainForm.cs:494
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -186,7 +186,7 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:473
+#: ../../Menu/MainForm.cs:502
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -197,180 +197,194 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:1017
+#: ../../Menu/MainForm.cs:1051
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Trať: {0}"
 
-#: ../../Menu/MainForm.cs:1023 ../../Menu/MainForm.cs:1049
+#: ../../Menu/MainForm.cs:1057 ../../Menu/MainForm.cs:1090
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Lokomotiva: {0}"
 
-#: ../../Menu/MainForm.cs:1027
+#: ../../Menu/MainForm.cs:1061
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Aktivita: {0}"
 
-#: ../../Menu/MainForm.cs:1035
-#, csharp-format
-msgid "Timetable set: {0}"
-msgstr "Nast. jízdního řádu: {0}"
-
-#: ../../Menu/MainForm.cs:1039
-#, csharp-format
-msgid "Timetable: {0}"
-msgstr "Jízdní řád: {0}"
-
-#: ../../Menu/MainForm.cs:1043
-#, csharp-format
-msgid "Train: {0}"
-msgstr "Vlak: {0}"
-
-#: ../../Menu/MainForm.cs:1046
-#, csharp-format
-msgid "Consist: {0}"
-msgstr "Sestava: {0}"
-
-#: ../../Menu/MainForm.cs:1054
+#: ../../Menu/MainForm.cs:1066 ../../Menu/MainForm.cs:1095
 #, csharp-format
 msgid "Path: {0}"
 msgstr "Trať: {0}"
 
-#: ../../Menu/MainForm.Designer.cs:117
+#: ../../Menu/MainForm.cs:1067
+#, csharp-format
+msgid "Starting at: {0}"
+msgstr "Začátek trasy: {0}"
+
+#: ../../Menu/MainForm.cs:1068
+#, csharp-format
+msgid "Heading to: {0}"
+msgstr "Konec trasy: {0}"
+
+#: ../../Menu/MainForm.cs:1076
+#, csharp-format
+msgid "Timetable set: {0}"
+msgstr "Nast. jízdního řádu: {0}"
+
+#: ../../Menu/MainForm.cs:1080
+#, csharp-format
+msgid "Timetable: {0}"
+msgstr "Jízdní řád: {0}"
+
+#: ../../Menu/MainForm.cs:1084
+#, csharp-format
+msgid "Train: {0}"
+msgstr "Vlak: {0}"
+
+#: ../../Menu/MainForm.cs:1087
+#, csharp-format
+msgid "Consist: {0}"
+msgstr "Sestava: {0}"
+
+#: ../../Menu/MainForm.Designer.cs:119
 msgid "Windowed"
 msgstr "V okně"
 
-#: ../../Menu/MainForm.Designer.cs:127
+#: ../../Menu/MainForm.Designer.cs:129
 msgid "Start"
 msgstr "Spustit"
 
-#: ../../Menu/MainForm.Designer.cs:139 ../../Menu/MainForm.Designer.cs:875
+#: ../../Menu/MainForm.Designer.cs:141 ../../Menu/MainForm.Designer.cs:893
 msgid "Open Rails"
 msgstr "Open Rails"
 
-#: ../../Menu/MainForm.Designer.cs:157
+#: ../../Menu/MainForm.Designer.cs:159
 msgid "Logging"
 msgstr "Logování"
 
-#: ../../Menu/MainForm.Designer.cs:166 ../../Menu/Options.Designer.cs:2063
+#: ../../Menu/MainForm.Designer.cs:168 ../../Menu/Options.Designer.cs:2247
 msgid "Options"
 msgstr "Nastavení"
 
-#: ../../Menu/MainForm.Designer.cs:176
+#: ../../Menu/MainForm.Designer.cs:178
 msgid "Resume/ Replay..."
 msgstr "Přerušit/ Přehrát"
 
-#: ../../Menu/MainForm.Designer.cs:185
+#: ../../Menu/MainForm.Designer.cs:187
 msgid "Tools ▼"
 msgstr "Nástroje ▼"
 
-#: ../../Menu/MainForm.Designer.cs:220
+#: ../../Menu/MainForm.Designer.cs:222
 msgid "Route:"
 msgstr "Trať:"
 
-#: ../../Menu/MainForm.Designer.cs:239
+#: ../../Menu/MainForm.Designer.cs:241
 msgid "Host/port:"
 msgstr "IP adresa/port:"
 
-#: ../../Menu/MainForm.Designer.cs:250
+#: ../../Menu/MainForm.Designer.cs:252
 msgid "User name:"
 msgstr "Uživ. jméno:"
 
-#: ../../Menu/MainForm.Designer.cs:260
+#: ../../Menu/MainForm.Designer.cs:262
 msgid "Client"
 msgstr "Klient"
 
-#: ../../Menu/MainForm.Designer.cs:270
+#: ../../Menu/MainForm.Designer.cs:272
 msgid "Server"
 msgstr "Server"
 
-#: ../../Menu/MainForm.Designer.cs:295
+#: ../../Menu/MainForm.Designer.cs:297
 msgid "Multiplayer"
 msgstr "Síťová hra"
 
-#: ../../Menu/MainForm.Designer.cs:307
+#: ../../Menu/MainForm.Designer.cs:309
 msgid "Singleplayer"
 msgstr "Jeden hráč"
 
-#: ../../Menu/MainForm.Designer.cs:317
+#: ../../Menu/MainForm.Designer.cs:319
 msgid "Installation profile:"
 msgstr "Instalační profil:"
 
-#: ../../Menu/MainForm.Designer.cs:365
+#: ../../Menu/MainForm.Designer.cs:366
+msgid "Documents ▼"
+msgstr ""
+
+#: ../../Menu/MainForm.Designer.cs:378
 msgid "Mode:"
 msgstr "Režim:"
 
-#: ../../Menu/MainForm.Designer.cs:376 ../../Menu/TestingForm.Designer.cs:192
+#: ../../Menu/MainForm.Designer.cs:389 ../../Menu/TestingForm.Designer.cs:192
 msgid "Activity"
 msgstr "Aktivita"
 
-#: ../../Menu/MainForm.Designer.cs:386
+#: ../../Menu/MainForm.Designer.cs:399
 msgid "Timetable"
 msgstr "Jízdní řád"
 
-#: ../../Menu/MainForm.Designer.cs:426
+#: ../../Menu/MainForm.Designer.cs:439
 msgid "Activity:"
 msgstr "Aktivita:"
 
-#: ../../Menu/MainForm.Designer.cs:449
+#: ../../Menu/MainForm.Designer.cs:462
 msgid "Locomotive:"
 msgstr "Lokomotiva:"
 
-#: ../../Menu/MainForm.Designer.cs:486
+#: ../../Menu/MainForm.Designer.cs:499
 msgid "Consist:"
 msgstr "Složení soupravy:"
 
-#: ../../Menu/MainForm.Designer.cs:497
+#: ../../Menu/MainForm.Designer.cs:510
 msgid "Starting at:"
 msgstr "Začátek trasy:"
 
-#: ../../Menu/MainForm.Designer.cs:521
+#: ../../Menu/MainForm.Designer.cs:534
 msgid "Heading to:"
 msgstr "Konec trasy:"
 
-#: ../../Menu/MainForm.Designer.cs:545
+#: ../../Menu/MainForm.Designer.cs:558
 msgid "Duration:"
 msgstr "Dobra trvání:"
 
-#: ../../Menu/MainForm.Designer.cs:556
+#: ../../Menu/MainForm.Designer.cs:569
 msgid "Time:"
 msgstr "Čas:"
 
-#: ../../Menu/MainForm.Designer.cs:605 ../../Menu/MainForm.Designer.cs:752
+#: ../../Menu/MainForm.Designer.cs:618 ../../Menu/MainForm.Designer.cs:765
 msgid "Weather:"
 msgstr "Počasí:"
 
-#: ../../Menu/MainForm.Designer.cs:629
+#: ../../Menu/MainForm.Designer.cs:642
 msgid "Difficulty:"
 msgstr "Obtížnost:"
 
-#: ../../Menu/MainForm.Designer.cs:652 ../../Menu/MainForm.Designer.cs:775
+#: ../../Menu/MainForm.Designer.cs:665 ../../Menu/MainForm.Designer.cs:788
 msgid "Season:"
 msgstr "Roční doba:"
 
-#: ../../Menu/MainForm.Designer.cs:684
+#: ../../Menu/MainForm.Designer.cs:697
 msgid "Train:"
 msgstr "Vlak:"
 
-#: ../../Menu/MainForm.Designer.cs:705
+#: ../../Menu/MainForm.Designer.cs:718
 msgid "Timetable:"
 msgstr "Jízdní řád:"
 
-#: ../../Menu/MainForm.Designer.cs:728
+#: ../../Menu/MainForm.Designer.cs:741
 msgid "Day:"
 msgstr "Den:"
 
-#: ../../Menu/MainForm.Designer.cs:806
+#: ../../Menu/MainForm.Designer.cs:819
 msgid "Timetable set:"
 msgstr "Nastavení jízdního řádu:"
 
-#: ../../Menu/MainForm.Designer.cs:826 ../../Menu/Options.cs:247
+#: ../../Menu/MainForm.Designer.cs:839 ../../Menu/Options.cs:264
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr "Testovací"
 
-#: ../../Menu/MainForm.Designer.cs:843
+#: ../../Menu/MainForm.Designer.cs:856
 msgid "What's new?"
 msgstr "Co je nového?"
 
@@ -414,99 +428,99 @@ msgstr "palec rtuti"
 msgid "kgf/cm²"
 msgstr "kgf/cm²"
 
-#: ../../Menu/Options.cs:187
+#: ../../Menu/Options.cs:200
 msgid "comma"
 msgstr "čárka"
 
-#: ../../Menu/Options.cs:188
+#: ../../Menu/Options.cs:201
 msgid "semicolon"
 msgstr "středník"
 
-#: ../../Menu/Options.cs:189
+#: ../../Menu/Options.cs:202
 msgid "tab"
 msgstr "tabelátor"
 
-#: ../../Menu/Options.cs:190
+#: ../../Menu/Options.cs:203
 msgid "space"
 msgstr "mezera"
 
-#: ../../Menu/Options.cs:196
+#: ../../Menu/Options.cs:209
 msgid "route"
 msgstr "trať"
 
-#: ../../Menu/Options.cs:197
+#: ../../Menu/Options.cs:210
 msgid "m/s"
 msgstr "m/s"
 
-#: ../../Menu/Options.cs:198
+#: ../../Menu/Options.cs:211
 msgid "km/h"
 msgstr "km/h"
 
-#: ../../Menu/Options.cs:199
+#: ../../Menu/Options.cs:212
 msgid "mph"
 msgstr "mil/h"
 
-#: ../../Menu/Options.cs:213 ../../Menu/ResumeForm.Designer.cs:156
+#: ../../Menu/Options.cs:230 ../../Menu/ResumeForm.Designer.cs:156
 msgid "Time"
 msgstr "Čas"
 
-#: ../../Menu/Options.cs:214
+#: ../../Menu/Options.cs:231
 msgid "Train Speed"
 msgstr "Rychlost vlaku"
 
-#: ../../Menu/Options.cs:215
+#: ../../Menu/Options.cs:232
 msgid "Max. Speed"
 msgstr "Max. rychlost"
 
-#: ../../Menu/Options.cs:216
+#: ../../Menu/Options.cs:233
 msgid "Signal State"
 msgstr "Stav signalizace"
 
-#: ../../Menu/Options.cs:217
+#: ../../Menu/Options.cs:234
 msgid "Track Elevation"
 msgstr "Převýšení tratě"
 
-#: ../../Menu/Options.cs:218
+#: ../../Menu/Options.cs:235
 msgid "Direction"
 msgstr "Směr"
 
-#: ../../Menu/Options.cs:219
+#: ../../Menu/Options.cs:236
 msgid "Control Mode"
 msgstr "Režim řízení"
 
-#: ../../Menu/Options.cs:220
+#: ../../Menu/Options.cs:237
 msgid "Distance Travelled"
 msgstr "Ujetá vzdálenost"
 
-#: ../../Menu/Options.cs:221
+#: ../../Menu/Options.cs:238
 msgid "Throttle %"
 msgstr "Kontrolér %"
 
-#: ../../Menu/Options.cs:222
+#: ../../Menu/Options.cs:239
 msgid "Brake Cyl Press"
 msgstr "Tlak v brzd. válcích"
 
-#: ../../Menu/Options.cs:223
+#: ../../Menu/Options.cs:240
 msgid "Dyn Brake %"
 msgstr "Dynamická brzda %"
 
-#: ../../Menu/Options.cs:224
+#: ../../Menu/Options.cs:241
 msgid "Gear Setting"
 msgstr "Nastavení převodů"
 
-#: ../../Menu/Options.cs:246
+#: ../../Menu/Options.cs:263
 msgid "Stable (recommended)"
 msgstr "Stabilní (doporučeno)"
 
-#: ../../Menu/Options.cs:248
+#: ../../Menu/Options.cs:265
 msgid "Unstable"
 msgstr "Nestabilní"
 
-#: ../../Menu/Options.cs:249
+#: ../../Menu/Options.cs:266
 msgid "None"
 msgstr "Žádné"
 
-#: ../../Menu/Options.cs:252
+#: ../../Menu/Options.cs:269
 msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
@@ -514,28 +528,28 @@ msgstr ""
 "Nepravidelné aktualizace na oficiální, ručně vybrané verze. Doporučeno pro "
 "většinu uživatelů."
 
-#: ../../Menu/Options.cs:253
+#: ../../Menu/Options.cs:270
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
 "Týdenní aktualizace, které mohou obsahovat znatelné chyby. Pro příznivce "
 "projektu."
 
-#: ../../Menu/Options.cs:254
+#: ../../Menu/Options.cs:271
 msgid "Daily updates which may contain serious defects. For developers only."
 msgstr ""
 "Denní aktualizace, které mohou obsahovat závažné nedostatky. Pouze pro "
 "vývojáře."
 
-#: ../../Menu/Options.cs:255
+#: ../../Menu/Options.cs:272
 msgid "No updates."
 msgstr "Neaktualizovat."
 
-#: ../../Menu/Options.cs:382
+#: ../../Menu/Options.cs:399
 msgid "Click to change this key"
 msgstr "Klikněte pro změnu klávesy"
 
-#: ../../Menu/Options.cs:398
+#: ../../Menu/Options.cs:415
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
@@ -543,11 +557,11 @@ msgstr ""
 "Máte zadánu jednu klávesu pro dva stejné příkazy. Chcete pokračovat?\n"
 "\n"
 
-#: ../../Menu/Options.cs:510
+#: ../../Menu/Options.cs:534
 msgid "Remove all custom key assignments?"
 msgstr "Odstranit uživatelské nastavení ovládání?"
 
-#: ../../Menu/Options.cs:521
+#: ../../Menu/Options.cs:545
 msgid ""
 "A listing of all keyboard commands and keys has been placed here:\n"
 "\n"
@@ -555,35 +569,35 @@ msgstr ""
 "Výpis všech příkazů zadávaných z klávesnice a kláves bylo umístěno sem:\n"
 "\n"
 
-#: ../../Menu/Options.cs:530
+#: ../../Menu/Options.cs:554
 msgid "No errors found."
 msgstr "Nebyly nalezeny žádné chyby."
 
-#: ../../Menu/Options.cs:567
+#: ../../Menu/Options.cs:581
 msgid "Very easy"
 msgstr "Velmi snadné"
 
-#: ../../Menu/Options.cs:571
+#: ../../Menu/Options.cs:585
 msgid "MSTS Compatible"
 msgstr "Kompatibilní s MSTS"
 
-#: ../../Menu/Options.cs:573
+#: ../../Menu/Options.cs:587
 msgid "Normal"
 msgstr "Normální"
 
-#: ../../Menu/Options.cs:577
+#: ../../Menu/Options.cs:591
 msgid "Very Hard"
 msgstr "Velmi těžké"
 
-#: ../../Menu/Options.cs:579
+#: ../../Menu/Options.cs:593
 msgid "Good luck!"
 msgstr "Hodně štěstí!"
 
-#: ../../Menu/Options.cs:639
+#: ../../Menu/Options.cs:653
 msgid "Select an installation profile (MSTS folder) to add:"
 msgstr "Vyberte instalační profil (MSTS složku), který chcete přidat:"
 
-#: ../../Menu/Options.cs:545
+#: ../../Menu/Options.cs:559
 #, csharp-format
 msgid ""
 "{0:F0}° vertical FOV is the same as:\n"
@@ -594,430 +608,473 @@ msgstr ""
 "{1: F0}° horizontální zorné pole na 4:3\n"
 "{2: F0}° horizontální zorné pole na 16:9"
 
-#: ../../Menu/Options.cs:589
+#: ../../Menu/Options.cs:603
 #, csharp-format
 msgid "{0}%"
 msgstr "{0}%"
 
-#: ../../Menu/Options.cs:595
+#: ../../Menu/Options.cs:609
 #, csharp-format
 msgid "No detail (-{0}%)"
 msgstr "Bez detailů (-{0}%)"
 
-#: ../../Menu/Options.cs:597
+#: ../../Menu/Options.cs:611
 #, csharp-format
 msgid "Less detail (-{0}%)"
 msgstr "Méně detailů (-{0}%)"
 
-#: ../../Menu/Options.cs:599
+#: ../../Menu/Options.cs:613
 #, csharp-format
 msgid "Default detail (+{0}%)"
 msgstr "Výchozí detaily (+{0}%)"
 
-#: ../../Menu/Options.cs:601
+#: ../../Menu/Options.cs:615
 #, csharp-format
 msgid "More detail (+{0}%)"
 msgstr "Více detailů (+{0}%)"
 
-#: ../../Menu/Options.cs:603
+#: ../../Menu/Options.cs:617
 #, csharp-format
 msgid "All detail (+{0}%)"
 msgstr "Všechny detaily (+{0}%)"
 
-#: ../../Menu/Options.Designer.cs:221
+#: ../../Menu/Options.Designer.cs:238
 msgid "OK"
 msgstr "OK"
 
-#: ../../Menu/Options.Designer.cs:255
+#: ../../Menu/Options.Designer.cs:272
 msgid "Brake pipe charging rate (PSI/s)"
 msgstr "Rychlost plnění brzdového potrubí (PSI/s)"
 
-#: ../../Menu/Options.Designer.cs:264
+#: ../../Menu/Options.Designer.cs:281
 msgid "Graduated release air brakes"
 msgstr "Postupně odbrzditelné vzduchové brzdy"
 
-#: ../../Menu/Options.Designer.cs:275 ../../Menu/TestingForm.Designer.cs:87
+#: ../../Menu/Options.Designer.cs:292 ../../Menu/TestingForm.Designer.cs:87
 msgid "Cancel"
 msgstr "Storno"
 
-#: ../../Menu/Options.Designer.cs:285
+#: ../../Menu/Options.Designer.cs:302
 msgid "Alerter in cab"
 msgstr "Živák v kabině"
 
-#: ../../Menu/Options.Designer.cs:295
+#: ../../Menu/Options.Designer.cs:313
 msgid "Control confirmations"
 msgstr "Potvrzení ovládání"
 
-#: ../../Menu/Options.Designer.cs:305
+#: ../../Menu/Options.Designer.cs:323
 msgid "Dispatcher window"
 msgstr "Dispečerská aplikace"
 
-#: ../../Menu/Options.Designer.cs:352
+#: ../../Menu/Options.Designer.cs:371
 msgid "General"
 msgstr "Obecné"
 
-#: ../../Menu/Options.Designer.cs:362
+#: ../../Menu/Options.Designer.cs:381
+#, fuzzy
+#| msgid "Speed units"
+msgid "Speed control"
+msgstr "Jednotky pro rychlost"
+
+#: ../../Menu/Options.Designer.cs:391
 msgid "Disable TCS scripts"
 msgstr "Zakázat TCS skripty"
 
-#: ../../Menu/Options.Designer.cs:373
+#: ../../Menu/Options.Designer.cs:402
 msgid "Other units"
 msgstr "Ostatní jednotky"
 
-#: ../../Menu/Options.Designer.cs:383
+#: ../../Menu/Options.Designer.cs:412
 msgid "Pressure unit"
 msgstr "Jednotka tlaku"
 
-#: ../../Menu/Options.Designer.cs:401
+#: ../../Menu/Options.Designer.cs:430
 msgid "Large address aware binaries (for all 64bit and 3GB tuning on 32bit)"
 msgstr ""
 "Binární soubory \"large address aware\" (pro všechna 64bitová a 3GB ladění "
 "na 32bit)"
 
-#: ../../Menu/Options.Designer.cs:421
+#: ../../Menu/Options.Designer.cs:450
 msgid "Language"
 msgstr "Jazyk"
 
-#: ../../Menu/Options.Designer.cs:440
+#: ../../Menu/Options.Designer.cs:469
 msgid "Also in external views"
 msgstr "Také v externích pohledech"
 
-#: ../../Menu/Options.Designer.cs:450
+#: ../../Menu/Options.Designer.cs:479
 msgid "Retainer valve on all cars"
 msgstr "Pojistný ventil brzd na všech vozech"
 
-#: ../../Menu/Options.Designer.cs:465
+#: ../../Menu/Options.Designer.cs:496
 msgid "Audio"
 msgstr "Zvuky"
 
-#: ../../Menu/Options.Designer.cs:499
+#: ../../Menu/Options.Designer.cs:525
+msgid "% external sound heard internally"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:558
 msgid "% sound volume"
 msgstr "Hlasitost %"
 
-#: ../../Menu/Options.Designer.cs:509
+#: ../../Menu/Options.Designer.cs:568
 msgid "Sound detail level"
 msgstr "Úroveň detailů zvuků"
 
-#: ../../Menu/Options.Designer.cs:530
+#: ../../Menu/Options.Designer.cs:589
 msgid "MSTS Bin compatible sound"
 msgstr "Zvuky kompatibilní s MSTS Bin"
 
-#: ../../Menu/Options.Designer.cs:563
+#: ../../Menu/Options.Designer.cs:624
 msgid "Video"
 msgstr "Obraz"
 
-#: ../../Menu/Options.Designer.cs:574
-msgid "Ambient daylight brightness:"
-msgstr "Jas okolního denního světla:"
-
-#: ../../Menu/Options.Designer.cs:592
-msgid "Model instancing"
-msgstr "Instance modelu"
-
-#: ../../Menu/Options.Designer.cs:619
-msgid "Vertical sync"
-msgstr "Vertikální synchronizace"
-
-#: ../../Menu/Options.Designer.cs:630
-msgid "Viewing distance (km)"
-msgstr "Zobrazovaná vzdálenost (km)"
-
-#: ../../Menu/Options.Designer.cs:668
-msgid "Fast full-screen alt-tab"
-msgstr "Rychlý full-screen pomocí alt-tab"
-
-#: ../../Menu/Options.Designer.cs:678
-msgid "Distant mountains"
-msgstr "Vzdálené hory"
-
-#: ../../Menu/Options.Designer.cs:689
-msgid "Viewing distance (m)"
-msgstr "Zobrazovací vzdálenost (m)"
-
-#: ../../Menu/Options.Designer.cs:726
-msgid "XXX"
-msgstr "XXX"
-
-#: ../../Menu/Options.Designer.cs:759
-msgid "Viewing vertical FOV"
-msgstr "Vertikální pohled"
-
-#: ../../Menu/Options.Designer.cs:783
-msgid "% cab 2D stretch"
-msgstr "% roztažení 2D kabiny"
-
-#: ../../Menu/Options.Designer.cs:793
-msgid "World object density"
-msgstr "Hustota objektů"
-
-#: ../../Menu/Options.Designer.cs:838
-msgid "Glass on in-game windows"
-msgstr "Efekt \"skla\" na oknech ve hře"
-
-#: ../../Menu/Options.Designer.cs:849
-msgid "Window size"
-msgstr "Velikost okna"
-
-#: ../../Menu/Options.Designer.cs:858
-msgid "Dynamic shadows"
-msgstr "Dynamické stíny"
-
-#: ../../Menu/Options.Designer.cs:868
-msgid "Overhead wire"
-msgstr "Zobrazení troleje"
-
-#: ../../Menu/Options.Designer.cs:887
-msgid "Simulation"
-msgstr "Simulace"
-
-#: ../../Menu/Options.Designer.cs:897
-msgid "Steam locomotive hot start"
-msgstr "Roztopená parní lokomotiva při startu"
-
-#: ../../Menu/Options.Designer.cs:907
-msgid "Curve dependent speed limit"
-msgstr "Rychlostní limit, závislý na oblouku"
-
-#: ../../Menu/Options.Designer.cs:917
-msgid "Curve dependent resistance"
-msgstr "Odpor, závislý na oblouku"
-
-#: ../../Menu/Options.Designer.cs:927
-msgid "Tunnel dependent resistance"
-msgstr "Odpor v tunelech"
-
-#: ../../Menu/Options.Designer.cs:937
-msgid "Override non-electrified route line-voltage"
-msgstr "Obejít chybějící napájení na neelektrifikovaných tratích"
-
-#: ../../Menu/Options.Designer.cs:948
-msgid "Adhesion moving average filter size"
-msgstr "Velikost filtru klouzavého průměru adheze"
-
-#: ../../Menu/Options.Designer.cs:975
-msgid "Break couplers"
-msgstr "Povolit poruchy tažného zařízení"
-
-#: ../../Menu/Options.Designer.cs:985
-msgid "Advanced adhesion model"
-msgstr "Pokročilý model adheze"
-
-#: ../../Menu/Options.Designer.cs:1000
-msgid "Keyboard"
-msgstr "Klávesnice"
-
-#: ../../Menu/Options.Designer.cs:1010
-msgid "Export"
-msgstr "Export"
-
-#: ../../Menu/Options.Designer.cs:1023
-msgid "Defaults"
-msgstr "Výchozí"
-
-#: ../../Menu/Options.Designer.cs:1035
-msgid "Check"
-msgstr "Kontrola"
-
-#: ../../Menu/Options.Designer.cs:1067
-msgid "Data logger"
-msgstr "Logování dat"
-
-#: ../../Menu/Options.Designer.cs:1098
-msgid "Speed units"
-msgstr "Jednotky pro rychlost"
-
-#: ../../Menu/Options.Designer.cs:1120
-msgid "Log miscellaneous data"
-msgstr "Logovat různé údaje"
-
-#: ../../Menu/Options.Designer.cs:1130
-msgid "Log performance data"
-msgstr "Logovat údaje o výkonu/grafice"
-
-#: ../../Menu/Options.Designer.cs:1140
-msgid "Start logging with the simulation start"
-msgstr "Spustit logování se začátkem simulace"
-
-#: ../../Menu/Options.Designer.cs:1151
-msgid "Separator"
-msgstr "Oddělovač"
-
-#: ../../Menu/Options.Designer.cs:1160
-msgid "Log physics data"
-msgstr "Logovat fyzikální data"
-
-#: ../../Menu/Options.Designer.cs:1175
-msgid "Evaluation"
-msgstr "Hodnocení"
-
-#: ../../Menu/Options.Designer.cs:1195
-msgid "Interval (sec)"
-msgstr "Interval (sek)"
-
-#: ../../Menu/Options.Designer.cs:1204
-msgid "Log station stops"
-msgstr "Logovat zastávky/stanice"
-
-#: ../../Menu/Options.Designer.cs:1237
-msgid "Log train speed"
-msgstr "Logovat rychlost vlaku"
-
-#: ../../Menu/Options.Designer.cs:1252
-msgid "Content"
-msgstr "Obsah"
-
-#: ../../Menu/Options.Designer.cs:1275 ../../Menu/ResumeForm.Designer.cs:218
-msgid "Delete"
-msgstr "Smazat"
-
-#: ../../Menu/Options.Designer.cs:1293
-msgid "Installation profile"
-msgstr "Instalační profil"
-
-#: ../../Menu/Options.Designer.cs:1302
-msgid "Browse..."
-msgstr "Procházet..."
-
-#: ../../Menu/Options.Designer.cs:1323
-msgid "Name:"
-msgstr "Název:"
-
-#: ../../Menu/Options.Designer.cs:1332
-msgid "Path:"
-msgstr "Cesta:"
-
-#: ../../Menu/Options.Designer.cs:1351
-msgid "Add"
-msgstr "Přidat"
-
-#: ../../Menu/Options.Designer.cs:1439
-msgid "Updater"
-msgstr "Aktualizace"
-
-#: ../../Menu/Options.Designer.cs:1450
-msgid "Update mode:"
-msgstr "Způsob aktualizací:"
-
-#: ../../Menu/Options.Designer.cs:1501
-msgid "Experimental"
-msgstr "Experimentální"
-
-#: ../../Menu/Options.Designer.cs:1512
-msgid "Precipitation box length (m)"
-msgstr "Kolizní kvádr - délka (m)"
-
-#: ../../Menu/Options.Designer.cs:1549
-msgid "Precipitation box width (m)"
-msgstr "Kolizní kvádr - šířka (m)"
-
-#: ../../Menu/Options.Designer.cs:1586
-msgid "Precipitation box height (m)"
-msgstr "Kolizní kvádr - výška (m)"
-
-#: ../../Menu/Options.Designer.cs:1623
-msgid "Adhesion factor random change:"
-msgstr "Náhodná změna faktoru adheze:"
-
-#: ../../Menu/Options.Designer.cs:1633
-msgid "Adhesion factor correction:"
-msgstr "Faktor korekce adheze"
-
-#: ../../Menu/Options.Designer.cs:1643
-msgid "Level of detail bias:"
-msgstr "Úroveň vykreslení detailů:"
-
-#: ../../Menu/Options.Designer.cs:1679
-msgid "Show shape warnings"
-msgstr "Zobazit varování pro shape"
-
-#: ../../Menu/Options.Designer.cs:1704
-msgid "Autopilot"
-msgstr "Autopilot"
-
-#: ../../Menu/Options.Designer.cs:1714
-msgid "Extended AI train shunting"
-msgstr "Rozšířené AI posunovaní vlaků"
-
-#: ../../Menu/Options.Designer.cs:1724
-msgid "Load night textures only when needed"
-msgstr "Načítat noční textury pouze v případě potřeby"
-
-#: ../../Menu/Options.Designer.cs:1734
-msgid "Forced red at station stops"
-msgstr "Vynucovat červenou při zastavení ve stanici"
-
-#: ../../Menu/Options.Designer.cs:1752
-msgid "Level:"
-msgstr "Úroveň:"
-
-#: ../../Menu/Options.Designer.cs:1792
-msgid "Adhesion proportional to rain/snow/fog"
-msgstr "Adheze úměrná dešti/sněhu/mlze"
-
-#: ../../Menu/Options.Designer.cs:1803
-msgid "ETCS circular speed gauge"
-msgstr "Měřidlo cirkulační rychlosti ETCS"
-
-#: ../../Menu/Options.Designer.cs:1813
-msgid "Signal light glow"
-msgstr "Záře signalizace"
-
-#: ../../Menu/Options.Designer.cs:1823
-msgid "MSTS environments"
-msgstr "Prostředí MSTS"
-
-#: ../../Menu/Options.Designer.cs:1833
-msgid "Location-linked passing path processing"
-msgstr "Zpracování trasy, vázané na lokalitu"
-
-#: ../../Menu/Options.Designer.cs:1844
-msgid "Target frame rate"
-msgstr "Cílová obnovovací frekvence (FPS)"
-
-#: ../../Menu/Options.Designer.cs:1882
-msgid "Automatically tune settings to keep performance level"
-msgstr "Autom. upravit nastavení pro udržení zadaného FPS hry"
-
-#: ../../Menu/Options.Designer.cs:1892
+#: ../../Menu/Options.Designer.cs:634
 msgid "Double overhead wires"
 msgstr "Trolej s nosným lanem"
 
-#: ../../Menu/Options.Designer.cs:1902
-msgid "Extend object maximum viewing distance to horizon"
-msgstr "Zvětšit vzdálenost hranice vykreslování až k horizontu"
+#: ../../Menu/Options.Designer.cs:645
+msgid "Ambient daylight brightness:"
+msgstr "Jas okolního denního světla:"
 
-#: ../../Menu/Options.Designer.cs:1913
-msgid "Gauge (mm)"
-msgstr "Rozchod kolejí (mm)"
+#: ../../Menu/Options.Designer.cs:663
+msgid "Model instancing"
+msgstr "Instance modelu"
 
-#: ../../Menu/Options.Designer.cs:1951
-msgid "Minimum length (m)"
-msgstr "Minimální délka (m)"
+#: ../../Menu/Options.Designer.cs:690
+msgid "Vertical sync"
+msgstr "Vertikální synchronizace"
 
-#: ../../Menu/Options.Designer.cs:1990
+#: ../../Menu/Options.Designer.cs:701
+msgid "Viewing distance (km)"
+msgstr "Zobrazovaná vzdálenost (km)"
+
+#: ../../Menu/Options.Designer.cs:739
+msgid "Fast full-screen alt-tab"
+msgstr "Rychlý full-screen pomocí alt-tab"
+
+#: ../../Menu/Options.Designer.cs:749
+msgid "Distant mountains"
+msgstr "Vzdálené hory"
+
+#: ../../Menu/Options.Designer.cs:761
+msgid "Viewing distance (m)"
+msgstr "Zobrazovací vzdálenost (m)"
+
+#: ../../Menu/Options.Designer.cs:798
+msgid "XXX"
+msgstr "XXX"
+
+#: ../../Menu/Options.Designer.cs:831
+msgid "Viewing vertical FOV"
+msgstr "Vertikální pohled"
+
+#: ../../Menu/Options.Designer.cs:855
+msgid "% cab 2D stretch"
+msgstr "% roztažení 2D kabiny"
+
+#: ../../Menu/Options.Designer.cs:865
+msgid "World object density"
+msgstr "Hustota objektů"
+
+#: ../../Menu/Options.Designer.cs:909
+msgid "Glass on in-game windows"
+msgstr "Efekt \"skla\" na oknech ve hře"
+
+#: ../../Menu/Options.Designer.cs:920
+msgid "Window size (type WIDTHxHEIGHT for custom size)"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:929
+msgid "Dynamic shadows"
+msgstr "Dynamické stíny"
+
+#: ../../Menu/Options.Designer.cs:939
+msgid "Overhead wire"
+msgstr "Zobrazení troleje"
+
+#: ../../Menu/Options.Designer.cs:959
+msgid "Simulation"
+msgstr "Simulace"
+
+#: ../../Menu/Options.Designer.cs:974
+#, fuzzy
+#| msgid "Activity Details"
+msgid "Activity Options"
+msgstr "A szolgálat részletei"
+
+#: ../../Menu/Options.Designer.cs:984
+msgid "Open/close doors in AI trains"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:995
+msgid "Forced red at station stops"
+msgstr "Vynucovat červenou při zastavení ve stanici"
+
+#: ../../Menu/Options.Designer.cs:1006
+msgid "Extended AI train shunting"
+msgstr "Rozšířené AI posunovaní vlaků"
+
+#: ../../Menu/Options.Designer.cs:1017
+msgid "Autopilot"
+msgstr "Autopilot"
+
+#: ../../Menu/Options.Designer.cs:1027
+msgid "Steam locomotive hot start"
+msgstr "Roztopená parní lokomotiva při startu"
+
+#: ../../Menu/Options.Designer.cs:1037
+msgid "Curve dependent speed limit"
+msgstr "Rychlostní limit, závislý na oblouku"
+
+#: ../../Menu/Options.Designer.cs:1047
+msgid "Curve dependent resistance"
+msgstr "Odpor, závislý na oblouku"
+
+#: ../../Menu/Options.Designer.cs:1057
+msgid "Tunnel dependent resistance"
+msgstr "Odpor v tunelech"
+
+#: ../../Menu/Options.Designer.cs:1067
+msgid "Override non-electrified route line-voltage"
+msgstr "Obejít chybějící napájení na neelektrifikovaných tratích"
+
+#: ../../Menu/Options.Designer.cs:1078
+msgid "Adhesion moving average filter size"
+msgstr "Velikost filtru klouzavého průměru adheze"
+
+#: ../../Menu/Options.Designer.cs:1105
+msgid "Break couplers"
+msgstr "Povolit poruchy tažného zařízení"
+
+#: ../../Menu/Options.Designer.cs:1115
+msgid "Advanced adhesion model"
+msgstr "Pokročilý model adheze"
+
+#: ../../Menu/Options.Designer.cs:1131
+msgid "Keyboard"
+msgstr "Klávesnice"
+
+#: ../../Menu/Options.Designer.cs:1141
+msgid "Export"
+msgstr "Export"
+
+#: ../../Menu/Options.Designer.cs:1154
+msgid "Defaults"
+msgstr "Výchozí"
+
+#: ../../Menu/Options.Designer.cs:1166
+msgid "Check"
+msgstr "Kontrola"
+
+#: ../../Menu/Options.Designer.cs:1199
+msgid "Data logger"
+msgstr "Logování dat"
+
+#: ../../Menu/Options.Designer.cs:1230
+msgid "Speed units"
+msgstr "Jednotky pro rychlost"
+
+#: ../../Menu/Options.Designer.cs:1252
+msgid "Log miscellaneous data"
+msgstr "Logovat různé údaje"
+
+#: ../../Menu/Options.Designer.cs:1262
+msgid "Log performance data"
+msgstr "Logovat údaje o výkonu/grafice"
+
+#: ../../Menu/Options.Designer.cs:1272
+msgid "Start logging with the simulation start"
+msgstr "Spustit logování se začátkem simulace"
+
+#: ../../Menu/Options.Designer.cs:1283
+msgid "Separator"
+msgstr "Oddělovač"
+
+#: ../../Menu/Options.Designer.cs:1292
+msgid "Log physics data"
+msgstr "Logovat fyzikální data"
+
+#: ../../Menu/Options.Designer.cs:1302
+#, fuzzy
+#| msgid "Log performance data"
+msgid "Log Steam performance data"
+msgstr "Logovat údaje o výkonu/grafice"
+
+#: ../../Menu/Options.Designer.cs:1317
+msgid "Evaluation"
+msgstr "Hodnocení"
+
+#: ../../Menu/Options.Designer.cs:1337
+msgid "Interval (sec)"
+msgstr "Interval (sek)"
+
+#: ../../Menu/Options.Designer.cs:1346
+msgid "Log station stops"
+msgstr "Logovat zastávky/stanice"
+
+#: ../../Menu/Options.Designer.cs:1379
+msgid "Log train speed"
+msgstr "Logovat rychlost vlaku"
+
+#: ../../Menu/Options.Designer.cs:1395
+msgid "Content"
+msgstr "Obsah"
+
+#: ../../Menu/Options.Designer.cs:1418 ../../Menu/ResumeForm.Designer.cs:218
+msgid "Delete"
+msgstr "Smazat"
+
+#: ../../Menu/Options.Designer.cs:1436
+msgid "Installation profile"
+msgstr "Instalační profil"
+
+#: ../../Menu/Options.Designer.cs:1445
+msgid "Browse..."
+msgstr "Procházet..."
+
+#: ../../Menu/Options.Designer.cs:1466
+msgid "Name:"
+msgstr "Název:"
+
+#: ../../Menu/Options.Designer.cs:1475
+msgid "Path:"
+msgstr "Cesta:"
+
+#: ../../Menu/Options.Designer.cs:1494
+msgid "Add"
+msgstr "Přidat"
+
+#: ../../Menu/Options.Designer.cs:1582
+msgid "Updater"
+msgstr "Aktualizace"
+
+#: ../../Menu/Options.Designer.cs:1593
+msgid "Update mode:"
+msgstr "Způsob aktualizací:"
+
+#: ../../Menu/Options.Designer.cs:1646
+msgid "Experimental"
+msgstr "Experimentální"
+
+#: ../../Menu/Options.Designer.cs:1657 ../../Menu/Options.Designer.cs:1701
+#: ../../Menu/Options.Designer.cs:2174
 msgid "Level"
 msgstr "Úroveň"
 
-#: ../../Menu/Options.Designer.cs:2002
+#: ../../Menu/Options.Designer.cs:1681
+msgid "Activity weather randomization"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:1691
+#, fuzzy
+#| msgid "Activity Briefing"
+msgid "Activity randomization"
+msgstr "Infromace o aktivitě"
+
+#: ../../Menu/Options.Designer.cs:1724
+msgid "Correct questionable braking parameters"
+msgstr "Opravit sporné brzdné parametry"
+
+#: ../../Menu/Options.Designer.cs:1735
+msgid "Precipitation box length (m)"
+msgstr "Kolizní kvádr - délka (m)"
+
+#: ../../Menu/Options.Designer.cs:1772
+msgid "Precipitation box width (m)"
+msgstr "Kolizní kvádr - šířka (m)"
+
+#: ../../Menu/Options.Designer.cs:1809
+msgid "Precipitation box height (m)"
+msgstr "Kolizní kvádr - výška (m)"
+
+#: ../../Menu/Options.Designer.cs:1846
+msgid "Adhesion factor random change:"
+msgstr "Náhodná změna faktoru adheze:"
+
+#: ../../Menu/Options.Designer.cs:1856
+msgid "Adhesion factor correction:"
+msgstr "Faktor korekce adheze"
+
+#: ../../Menu/Options.Designer.cs:1866
+msgid "Level of detail bias:"
+msgstr "Úroveň vykreslení detailů:"
+
+#: ../../Menu/Options.Designer.cs:1902
+msgid "Show shape warnings"
+msgstr "Zobazit varování pro shape"
+
+#: ../../Menu/Options.Designer.cs:1927
+#, fuzzy
+#| msgid "Load night textures only when needed"
+msgid "Load day/night textures only when needed"
+msgstr "Načítat noční textury pouze v případě potřeby"
+
+#: ../../Menu/Options.Designer.cs:1945
+msgid "Level:"
+msgstr "Úroveň:"
+
+#: ../../Menu/Options.Designer.cs:1985
+msgid "Adhesion proportional to rain/snow/fog"
+msgstr "Adheze úměrná dešti/sněhu/mlze"
+
+#: ../../Menu/Options.Designer.cs:1996
+msgid "ETCS circular speed gauge"
+msgstr "Měřidlo cirkulační rychlosti ETCS"
+
+#: ../../Menu/Options.Designer.cs:2006
+msgid "Signal light glow"
+msgstr "Záře signalizace"
+
+#: ../../Menu/Options.Designer.cs:2016
+msgid "MSTS environments"
+msgstr "Prostředí MSTS"
+
+#: ../../Menu/Options.Designer.cs:2026
+msgid "Location-linked passing path processing"
+msgstr "Zpracování trasy, vázané na lokalitu"
+
+#: ../../Menu/Options.Designer.cs:2037
+msgid "Target frame rate"
+msgstr "Cílová obnovovací frekvence (FPS)"
+
+#: ../../Menu/Options.Designer.cs:2075
+msgid "Automatically tune settings to keep performance level"
+msgstr "Autom. upravit nastavení pro udržení zadaného FPS hry"
+
+#: ../../Menu/Options.Designer.cs:2086
+msgid "Extend object maximum viewing distance to horizon"
+msgstr "Zvětšit vzdálenost hranice vykreslování až k horizontu"
+
+#: ../../Menu/Options.Designer.cs:2097
+msgid "Gauge (mm)"
+msgstr "Rozchod kolejí (mm)"
+
+#: ../../Menu/Options.Designer.cs:2135
+msgid "Minimum length (m)"
+msgstr "Minimální délka (m)"
+
+#: ../../Menu/Options.Designer.cs:2186
 msgid ""
 "Experimental features that may slow down the game, use at your own risk."
 msgstr ""
 "Experimentální funkce, které mohou zpomalit hru, použítí na vlastní "
 "nebezpečí."
 
-#: ../../Menu/Options.Designer.cs:2026
+#: ../../Menu/Options.Designer.cs:2210
 msgid "Super-elevation"
 msgstr "Převýšení kolejnic v oblouku"
 
-#: ../../Menu/Options.Designer.cs:2035
+#: ../../Menu/Options.Designer.cs:2219
 msgid "Load DDS textures in preference to ACE"
 msgstr "Načtení DDS textury přednostně před ACE"
 
-#: ../../Menu/Options.Designer.cs:2045
-msgid "Correct questionable braking parameters"
-msgstr "Opravit sporné brzdné parametry"
+#: ../../Menu/Options.Designer.cs:2229
+msgid "Shadow for all shapes"
+msgstr ""
 
-#: ../../Menu/Options.Designer.cs:1110
+#: ../../Menu/Options.Designer.cs:1242
 msgid ""
 "Use data logger to record your simulation data (in-game command: F12).\r\n"
 "Please remember that the size of the dump file grows with the simulation "
@@ -1026,7 +1083,7 @@ msgstr ""
 "Použijte logování k uložení vašich dat (ve hře klávesou: F12).\r\n"
 "Uvědomte si, že velikost souboru výpisu roste s délkou času simulace!"
 
-#: ../../Menu/Options.Designer.cs:1265
+#: ../../Menu/Options.Designer.cs:1408
 msgid ""
 "Installation profiles tell Open Rails where to look for game content. Add "
 "each full and mini-route MSTS installation."
@@ -1034,55 +1091,67 @@ msgstr ""
 "Instalační profily určují, kde se nachází vozidla a tratě pro Open Rails. "
 "Přidejte si další instalace tratí i minitratí z MSTS."
 
-#: ../../Menu/Options.Designer.cs:1414
+#: ../../Menu/Options.Designer.cs:1557
 msgid "Name"
 msgstr "Název"
 
-#: ../../Menu/Options.Designer.cs:1422 ../../Menu/ResumeForm.Designer.cs:148
+#: ../../Menu/Options.Designer.cs:1565 ../../Menu/ResumeForm.Designer.cs:148
 msgid "Path"
 msgstr "Cesta"
 
-#: ../../Menu/Options.Designer.cs:484
+#: ../../Menu/Options.Designer.cs:510
+msgid ""
+"Min 0 Max 100. Higher: louder sound\r\n"
+"\r\n"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:543
 msgid "Sound Volume 0-100"
 msgstr "Hlasitost zvuku 0-100"
 
-#: ../../Menu/Options.Designer.cs:608
+#: ../../Menu/Options.Designer.cs:679
 msgid "Default is 100%"
 msgstr "Výchozí je 100%"
 
-#: ../../Menu/Options.Designer.cs:654 ../../Menu/Options.Designer.cs:1868
+#: ../../Menu/Options.Designer.cs:725 ../../Menu/Options.Designer.cs:2061
 msgid "Distance to see mountains"
 msgstr "Na jakou vzdálenost je vidět hory"
 
-#: ../../Menu/Options.Designer.cs:1024
+#: ../../Menu/Options.Designer.cs:1155
 msgid "Load the factory default key assignments."
 msgstr "Načíst původní sadu klávesových zkratek."
 
-#: ../../Menu/Options.Designer.cs:1036
+#: ../../Menu/Options.Designer.cs:1167
 msgid "Check for incorrect key assignments."
 msgstr "Zkontrolovat nesprávné přiřazení klávesových zkratek"
 
-#: ../../Menu/Options.Designer.cs:1694
+#: ../../Menu/Options.Designer.cs:1671 ../../Menu/Options.Designer.cs:1715
+msgid ""
+"0: no randomization, 1: moderate, 2: significant; 3: high (may be "
+"unrealistic)"
+msgstr ""
+
+#: ../../Menu/Options.Designer.cs:1917
 msgid "Default is 0%"
 msgstr "Výchozí je 0%"
 
-#: ../../Menu/Options.Designer.cs:1765
+#: ../../Menu/Options.Designer.cs:1958
 msgid "Default is 10%"
 msgstr "Výchozí je 10%"
 
-#: ../../Menu/Options.Designer.cs:1781
+#: ../../Menu/Options.Designer.cs:1974
 msgid "Default is 130%"
 msgstr "Výchozí je 130%"
 
-#: ../../Menu/Options.Designer.cs:1975
+#: ../../Menu/Options.Designer.cs:2159
 msgid "Shortest curve to have elevation"
 msgstr "Nejkratší oblouk s převýšením kolejnic"
 
-#: ../../Menu/Options.Designer.cs:2016
+#: ../../Menu/Options.Designer.cs:2200
 msgid "0: no elevation, 1: 9cm max; 10: 18cm max"
 msgstr "0: žádné, 1: 9cm max; 10: 18cm max"
 
-#: ../../Menu/Options.Designer.cs:772
+#: ../../Menu/Options.Designer.cs:844
 msgid ""
 "0 to clip cab view, 100 to stretch it. For cab views that match the display, "
 "use 100."
@@ -1090,7 +1159,7 @@ msgstr ""
 "0 pro pevný pohled, 100 pro natažený. Pokud poměr stran kabiny odpovídá "
 "poměru stran okna, zadejte 100."
 
-#: ../../Menu/Options.Designer.cs:1011
+#: ../../Menu/Options.Designer.cs:1142
 msgid ""
 "Generate a listing of your keyboard assignments.  \r\n"
 "The output is placed on your desktop."
@@ -1098,11 +1167,15 @@ msgstr ""
 "Uloží seznam všech klávesových zkratek do textového souboru.  \r\n"
 "Soubor bude uložen na ploše vašeho počítače."
 
-#: ../../Menu/ResumeForm.cs:139
-msgid "Explore Route"
-msgstr "Prozkoumat trať"
+#: ../../Menu/ResumeForm.cs:140
+msgid "Explore in Activity Mode"
+msgstr ""
 
-#: ../../Menu/ResumeForm.cs:208
+#: ../../Menu/ResumeForm.cs:140 ../../Menu/ResumeForm.cs:174
+msgid "Explore Route"
+msgstr "Prozkoumat trasu"
+
+#: ../../Menu/ResumeForm.cs:219
 msgid ""
 "To prevent crashes and unexpected behaviour, Open Rails invalidates games "
 "saved from older versions if they fail to restore.\n"
@@ -1110,7 +1183,7 @@ msgstr ""
 "Chcete-li zabránit pádům a neočekávanému chování, Open Rails označuje "
 "uložení z předchozích verzí, která se nepodaří načíst jako neplatná.\n"
 
-#: ../../Menu/ResumeForm.cs:196
+#: ../../Menu/ResumeForm.cs:207
 #, csharp-format
 msgid ""
 "Warning: Save {0} found from a route with an unexpected name:\n"
@@ -1121,12 +1194,12 @@ msgstr ""
 "{1}.\n"
 "\n"
 
-#: ../../Menu/ResumeForm.cs:210
+#: ../../Menu/ResumeForm.cs:221
 #, csharp-format
 msgid "{0} of {1} saves for this route are no longer valid."
 msgstr "{0} z {1} uložení pro tuto trať již není platných."
 
-#: ../../Menu/ResumeForm.cs:220
+#: ../../Menu/ResumeForm.cs:231
 #, csharp-format
 msgid ""
 "Restoring from a save made by version {1} of {0} may be incompatible with "
@@ -1139,7 +1212,7 @@ msgstr ""
 "\n"
 "Pokračovat?"
 
-#: ../../Menu/ResumeForm.cs:377
+#: ../../Menu/ResumeForm.cs:388
 #, csharp-format
 msgid "{0} invalid saves have been deleted."
 msgstr "Bylo smazáno {0} neplatných uložení."
@@ -1267,6 +1340,9 @@ msgstr "Načíst"
 #: ../../Menu/TestingForm.Designer.cs:238
 msgid "FPS"
 msgstr "FPS"
+
+#~ msgid "Window size"
+#~ msgstr "Velikost okna"
 
 #~ msgid "open"
 #~ msgstr "open"
@@ -1516,9 +1592,6 @@ msgstr "FPS"
 
 #~ msgid "Route Details"
 #~ msgstr "Pálya részletei"
-
-#~ msgid "Activity Details"
-#~ msgstr "A szolgálat részletei"
 
 #~ msgid "Environment"
 #~ msgstr "Környezet"
