@@ -904,11 +904,11 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(BoilerMassLB);
             outf.Write(BoilerPressurePSI);
             outf.Write(WaterTempNewK);
+            outf.Write(WaterFraction);
             outf.Write(EvaporationLBpS);
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
             outf.Write(SteamGearPosition);
-            outf.Write(WaterFraction);
             outf.Write(ScoopIsBroken);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
