@@ -765,23 +765,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // These volumes are converted to a fraction which then is used to proportion the change in vacuum to each car along the train
                     // If the vehicle has a brake cylinder fitted then calculate the car brake system volume ( brake cylinder and BP). 
                     //This value is used later to average the pressure during propogation along the train.
-                    if (car.CarBrakeSystemType == "vacuum_piped")
-                    {
+  //                  if (car.CarBrakeSystemType == "vacuum_piped")
+  //                  {
                         Car0BrakeSytemVolumeM30 = Car0brakePipeVolumeM3 / (Car0brakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
-                    }
-                    else
-                    {
-                        Car0BrakeSytemVolumeM30 = ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + Car0brakePipeVolumeM3) / ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + (CarnumBrakeCyl * CarbrakeCylVolumeM3) + Car0brakePipeVolumeM3 + CarbrakePipeVolumeM3);
-                    }
+  //                  }
+  //                  else
+  //                  {
+  //                      Car0BrakeSytemVolumeM30 = ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + Car0brakePipeVolumeM3) / ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + (CarnumBrakeCyl * CarbrakeCylVolumeM3) + Car0brakePipeVolumeM3 + CarbrakePipeVolumeM3);
+  //                  }
 
-                    if (car.CarBrakeSystemType == "vacuum_piped") // If no brake cylinder fitted, then only use the BP volume
-                    {
+  //                  if (car.CarBrakeSystemType == "vacuum_piped") // If no brake cylinder fitted, then only use the BP volume
+  //                  {
                         CarBrakeSytemVolumeM3 = CarbrakePipeVolumeM3 / (Car0brakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
-                    }
-                    else
-                    {
+///                   }
+//                    else
+//                    {
                         CarBrakeSytemVolumeM3 = ((CarnumBrakeCyl * CarbrakeCylVolumeM3) + CarbrakePipeVolumeM3) / ((Car0numBrakeCyl * Car0brakeCylVolumeM3) + (CarnumBrakeCyl * CarbrakeCylVolumeM3) + Car0brakePipeVolumeM3 + CarbrakePipeVolumeM3);
-                    }
+//                    }
 
                     float p1 = car.BrakeSystem.BrakeLine1PressurePSI;
                     p1 = MathHelper.Clamp(p1, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
