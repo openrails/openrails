@@ -230,10 +230,10 @@ namespace Orts.Common
             0.526f, 0.42f, 0.345f, 0.29f, 0.245f, 0.213f, 0.181f, 0.159f, 0.142f, 0.125f, 0.11f
         };
 
-        // Superheat required to prevent cylinder condensation fraction per cutoff fraction (upper and lower ends extrapolated) - Ref Elseco Superheater manual
+        // Superheat required to prevent cylinder condensation fraction per cutoff fraction (upper and lower ends extrapolated) - Ref Elseco Superheater Engineering Data manual
         static float[] SuperheatCondenstationLimitTableDegF = new float[]
         {
-            282.0f, 253.0f, 214.0f, 190.0f, 166.0f, 146.0f, 128.0f, 114.0f, 98.0f, 84.0f, 70.0f
+            265.0f, 245.0f, 223.0f, 190.0f, 166.0f, 145.0f, 128.0f, 110.0f, 100.0f, 75.0f, 60.0f
         };
 
         // Steam to Cylinders - lbs per sec - from BTC Test Results for Std 8
