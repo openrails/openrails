@@ -1904,6 +1904,102 @@ Backspace key must be pressed again to cancel the emergency application,
 then normal operation can be resumed. When the button is active, the F5
 HUD will display *Emergency Brake Push Button* in the *Train Brake* line.
 
+.. _physics-vacuum:
+
+Vacuum Brakes
+-------------
+
+Vacuum braking has been implemented in Open Rails in one of the two following forms:
+
+- Direct Vacuum - in this form, while ever the Brake Pipe (BP) is connected to the ejectors 
+  or vacuum pump, depending upon the operating capacity of the ejectors, a vacuum will be 
+  maintained or created. Typically this will be when the brake controller is in a Brake Off position.
+
+- Equalising Reservoir (EQ) - in this form a main vacuum reservoir is fitted to the locomotive, 
+  along with the equalising reservoir. Typically the main reservoir is maintained at a sufficiently 
+  high enough vacuum to create the vacuum in the BP to release the brakes. The BP vacuum will 
+  equalise at the vacuum set by the driver on the equalising reservoir.
+
+In general, brakes (in particular a system with an equalising reservoir) will have three 
+potential timings that impact the application or the releasing of the brakes.
+
+i) In the equalising reservoir as the brake controller is varied
+ii) In the train brake pipe as the vacuum is increased or decreased
+iii) In the brake cylinder as it is applied or released.
+
+In the case of brakes without an equalising reservoir only items ii) and iii) are valid 
+in the above list.
+
+The OR code attempts to model the above three items, however some compromises may need 
+to be made, and it is suggested that the best outcome will be achieved when an overall timing 
+approach is considered, rather than considering each of the individual components in isolation.
+
+To enable the Equalising Reservoir option above BrakesTrainBrakeType must be set 
+to ``vacuum_single_pipe_eq`` in the engine section of the ENG file.
+
+Following is a list of specific OR parameters and their default values. The default 
+values can be overwritten by including the following parameters into the relevant 
+wagon section of the WAG or ENG file.
+
+- ``wagon(BrakePipeVolume`` -- Volume of brake pipe fitted to car in cubic feet 
+  (default calculated from car length, and assumption of 2in BP).
+- ``wagon(ORTSAuxilaryResCapacity`` -- Volume of auxiliary vacuum reservoir 
+  (coupled to brake cylinder) in cubic feet (default calculated on basis of 24in reservoir).
+- ``wagon(ORTSBrakeCylinderSize`` -- Size of brake cylinders fitted to wagon in inches 
+  (default assumes a 18in brake cylinder).
+- ``wagon(ORTSNumberBrakeCylinders`` -- Number of brake cylinders fitted to wagon, 
+  as an integer number (default 2).
+- ``wagon(ORTSDirectAdmissionValve`` -- Car has direct admission valves fitted, 
+  0 = No, 1 = Yes (default No).
+- ``wagon(ORTSBrakeShoeFriction`` -- defines the friction curve for the brake shoe 
+  with speed (default curve for cast iron brake shoes included in OR).
+
+Other standard brake parameters such as MaxBrakeForce, MaxReleaseRate , MaxApplicationRate, 
+BrakeCylinderPressureForMaxBrakeBrakeForce can be used as well.
+
+Additionaly the following are defined in the engine section of the ENG file:
+
+- ``engine(ORTSBrakePipeChargingRate`` -- sets the rate at which the brake pipe charges in InHg per second 
+  (default 0.32) This value should be calculated on the basis of feeding into a 200ft^3 brake system, 
+  as OR will adjust the value depending upon the connected volume of the brake cylinders and brake pipe.
+
+- ``engine(ORTSBrakeServiceTimeFactor`` -- Time for lead engine brake pipe pressure to drop in seconds (default 10.0)
+
+- ``engine(ORTSBrakeEmergencyTimeFactor`` -- Time for lead engine brake pipe pressure to drop under 
+  emergency conditions, in seconds (default 1.0)
+
+- ``engine(ORTSBrakePipeTimeFactor`` -- Controls propagation increase time along train pipe as vacuum 
+  increases, ie when brakes released, in seconds (default 0.02)
+
+- ``engine(TrainPipeLeakRate`` -- Rate at which the train brake pipe leaks at, in InHg per second (default no leakage)
+
+- ``engine(ORTSVacuumBrakesMainResVolume`` -- The volume of the main vacuum brake reservoir in cubic feet 
+  (default 110.0 , EQ operation only)
+
+- ``engine(ORTSVacuumBrakesMainResMaxVacuum`` -- The maximum vacuum in the main vacuum brake reservoir. 
+  When this pressure is reached the exhauster will automatically stop running, in InHg. (default 23 , EQ 
+  operation only)
+
+- ``engine(ORTSVacuumBrakesExhausterRestartVacuum`` -- pressure below which the exhauster will start to 
+  operate to recharge the main reservoir, in InHg (default 21 , EQ operation only)
+
+- ``engine(ORTSVacuumBrakesMainResChargingRate`` -- rate at which the main vacuum reservoir charges at, 
+  in InHg per second (default 0.2, EQ operation only)
+
+**Note: It is strongly recommended that UoM be used whenever units such as InHg, etc are specificed in the above parameters.**
+
+Other standard brake parameters such as VacuumBrakesHasVacuumPump, VacuumBrakesMinBoilerPressureMaxVacuum, 
+VacuumBrakesSmallEjectorUsageRate, VacuumBrakesLargeEjectorUsageRate can be defined as well.
+
+When defining the Brake Controllers for vacuum braked locomotives, only the following BrakesController 
+tokens should be used - TrainBrakesControllerFullQuickReleaseStart, TrainBrakesControllerReleaseStart, 
+TrainBrakesControllerRunningStart, TrainBrakesControllerApplyStart, TrainBrakesControllerHoldLappedStart, 
+TrainBrakesControllerVacuumContinuousServiceStart, TrainBrakesControllerEmergencyStart, 
+EngineBrakesControllerReleaseStart, EngineBrakesControllerRunningStart, EngineBrakesControllerApplyStart.
+
+Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted to air braked locomotives.
+
+
 Dynamically Evolving Tractive Force
 ===================================
 
