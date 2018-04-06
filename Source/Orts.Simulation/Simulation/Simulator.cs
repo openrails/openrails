@@ -1103,7 +1103,7 @@ namespace Orts.Simulation
                     var mstsSteamLocomotive = car as MSTSSteamLocomotive;
                     if (Activity != null && mstsSteamLocomotive != null)
                     {
-                        mstsSteamLocomotive.TenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
+                        mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
                         mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
                     }
                 }

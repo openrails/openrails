@@ -1429,7 +1429,7 @@ namespace Orts.Simulation.RollingStocks
                         // If = 0, then locomotive must be a tank type locomotive. A tank locomotive has the fuel (coal and water) onboard.
                         // Thus the loco weight changes as boiler level goes up and down, and coal mass varies with the fire mass. Also onboard fuel (coal and water ) will vary as used.
                         {
-                            MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG + SteamLocomotiveIdentification.TenderCoalMassKG + Kg.FromLb(SteamLocomotiveIdentification.TenderWaterVolumeUKG * WaterLBpUKG);
+                            MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG + SteamLocomotiveIdentification.TenderCoalMassKG + Kg.FromLb(SteamLocomotiveIdentification.CombinedTenderWaterVolumeUKG * WaterLBpUKG);
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
                             // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
@@ -1507,7 +1507,7 @@ namespace Orts.Simulation.RollingStocks
                     // Find the associated steam locomotive for this tender
                     if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
 
-                    MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderCoalMassKG + Kg.FromLb( (TendersSteamLocomotive.TenderWaterVolumeUKG * WaterLBpUKG));
+                    MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderCoalMassKG + Kg.FromLb( (TendersSteamLocomotive.CombinedTenderWaterVolumeUKG * WaterLBpUKG));
                     MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
 
                     // Update wagon parameters sensitive to wagon mass change
