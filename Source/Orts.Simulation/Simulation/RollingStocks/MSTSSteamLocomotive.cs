@@ -2171,7 +2171,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (HasTenderCoupled) // If a tender is coupled then water is available
             {
-                CombinedTenderWaterVolumeUKG -= Kg.FromLb(InjectorBoilerInputLB) / WaterLBpUKG;  // Adjust water usage in tender
+                CombinedTenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG;  // Adjust water usage in tender
             }
             else // if no tender coupled then check whether a tender is required
             {
@@ -2181,7 +2181,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else  // Tender is not required (ie tank locomotive) - therefore water will be carried on the locomotive (and possibly on aux tender)
                 {
-                    CombinedTenderWaterVolumeUKG -= Kg.FromLb(InjectorBoilerInputLB) / WaterLBpUKG;  // Adjust water usage in tender
+                    CombinedTenderWaterVolumeUKG -= InjectorBoilerInputLB / WaterLBpUKG;  // Adjust water usage in tender
                 }
             }
 
