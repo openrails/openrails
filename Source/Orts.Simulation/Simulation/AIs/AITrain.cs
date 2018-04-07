@@ -6269,6 +6269,15 @@ namespace Orts.Simulation.AIs
             LeadLocomotiveIndex = -1;
             TrainType = TRAINTYPE.AI_PLAYERHOSTING;
             InitializeBrakes();
+            foreach (TrainCar car in Cars)
+            {
+                if (car is MSTSLocomotive)
+                {
+                    var loco = car as MSTSLocomotive;
+                    if (loco.EngineBrakeController != null) loco.SetEngineBrakePercent(0);
+                    if (loco.DynamicBrakeController != null) loco.DynamicBrakePercent = -1;
+                }
+            }
 
             if (FirstCar != null)
             {
