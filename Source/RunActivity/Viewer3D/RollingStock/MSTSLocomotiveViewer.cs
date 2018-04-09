@@ -867,7 +867,11 @@ namespace Orts.Viewer3D.RollingStock
             {
                 // Light on: use light texture when dark, if available.
                 if (isDark)
+                {
                     tmp = PLightTextures[FileName];
+                    if (tmp == null)
+                        tmp = PNightTextures[FileName];
+                }
                 // Both light and day textures should be used as-is in this situation.
                 isNightTexture = true;
             }
@@ -909,7 +913,12 @@ namespace Orts.Viewer3D.RollingStock
             {
                 // Light on: use light texture when dark, if available.
                 if (isDark)
+                {
                     retval = LightTextures[FileName];
+                    if (retval == SharedMaterialManager.MissingTexture)
+                        retval = NightTextures[FileName];
+                }
+
                 // Both light and day textures should be used as-is in this situation.
                 isNightTexture = true;
             }
