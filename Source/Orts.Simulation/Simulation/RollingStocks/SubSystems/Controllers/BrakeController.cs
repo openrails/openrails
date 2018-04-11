@@ -123,7 +123,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             get
             {
-                return Notches[CurrentNotch].Type;
+                return Notches.Count > 0 ? Notches[CurrentNotch].Type : ControllerState.Dummy;
             }
         }
 
