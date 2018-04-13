@@ -1,5 +1,5 @@
 @ECHO OFF
-SETLOCAL ENABLEDELAYEDEXPANSION
+SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 
 ECHO  ##############################################################################
 ECHO  #         ___                             ____            _   _              #
@@ -10,31 +10,52 @@ ECHO  #        \___/  ^| .__/   \___^| ^|_^| ^|_^|   ^|_^| \_\  \__,_^| ^|_^| ^|
 ECHO  #               ^|_^|                                                          #
 ECHO  ##############################################################################
 ECHO.
-ECHO This script will build Open Rails. There are three kinds of build:
-ECHO   - Unstable - doesn't include documentation or installers
-ECHO   - Testing  - includes documentation but not installers
-ECHO   - Stable   - includes documentation and installers
+ECHO This script will build Open Rails. Syntax:
 ECHO.
-ECHO The following tools must be available in %%PATH%%:
+ECHO %0 MODE
+ECHO.
+ECHO   MODE          Selects the mode to build with:
+ECHO     unstable      Doesn't include documentation or installers
+ECHO     testing       Includes documentation but not installers
+ECHO     stable        Includes documentation and installers
+ECHO.
 
 REM Check for necessary tools.
+ECHO The following tools must be available in %%PATH%% for the build to work:
+ECHO [UTS] indicates which build modes need the tool: unstable, testing, and stable.
 SET CheckToolInPath.Missing=0
 SET CheckToolInPath.Check=0
 :check-tools
-CALL :list-or-check-tool "svn.exe" "Subversion command-line tool"
-CALL :list-or-check-tool "MSBuild.exe" "Microsoft Visual Studio build tool"
-CALL :list-or-check-tool "lazbuild.exe" "Lazarus compiler"
-CALL :list-or-check-tool "strip.exe" "Lazarus command-line tool"
-CALL :list-or-check-tool "xunit.console.x86.exe" "XUnit command-line tool"
-CALL :list-or-check-tool "editbin.exe" "Microsoft Visual Studio editbin command-line tool"
-CALL :list-or-check-tool "rcedit-x86.exe" "rcedit tool from electron"
-CALL :list-or-check-tool "OfficeToPDF.exe" "Office-to-PDF conversion tool"
-CALL :list-or-check-tool "7za.exe" "7-zip command-line tool"
-CALL :list-or-check-tool "iscc.exe" "Inno Setup 5 compiler"
+CALL :list-or-check-tool "svn.exe" "[UTS] Subversion tool"
+CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool"
+CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
+CALL :list-or-check-tool "strip.exe" "[UTS] Lazarus tool"
+CALL :list-or-check-tool "xunit.console.x86.exe" "[UTS] XUnit tool"
+CALL :list-or-check-tool "editbin.exe" "[UTS] Microsoft Visual Studio editbin tool"
+CALL :list-or-check-tool "rcedit-x86.exe" "[UTS] Electron rcedit tool"
+CALL :list-or-check-tool "7za.exe" "[UTS] 7-zip tool"
+CALL :list-or-check-tool "OfficeToPDF.exe" "[TS] Office-to-PDF conversion tool"
+CALL :list-or-check-tool "iscc.exe" "[S] Inno Setup 5 compiler"
 IF "%CheckToolInPath.Check%" == "0" (
 	ECHO.
 	SET CheckToolInPath.Check=1
 	GOTO :check-tools
+)
+
+REM Parse command line
+SET Mode=-
+SET Flag.Changelog=0
+SET Flag.Updater=0
+:parse-command-line
+IF /I "%~1" == "unstable" SET Mode=Unstable
+IF /I "%~1" == "testing"  SET Mode=Testing
+IF /I "%~1" == "stable"   SET Mode=Stable
+SHIFT /1
+IF NOT "%~1" == "" GOTO :parse-command-line
+IF "%Mode%" == "-" (
+	>&2 ECHO ERROR: No build mode specified.
+	ECHO Run "Build.cmd MODE" where MODE is "unstable", "testing" or "stable".
+	EXIT /B 1
 )
 IF %CheckToolInPath.Missing% GTR 0 (
 	TIMEOUT /T 10
@@ -44,17 +65,6 @@ REM Check for necessary directory.
 IF NOT EXIST "Source\ORTS.sln" (
 	>&2 ECHO ERROR: Unexpected current directory.
 	ECHO Run "Build.cmd" in the parent directory of "ORTS.sln" ^(the directory "Build.cmd" is in^).
-	EXIT /B 1
-)
-
-REM Get requested build mode.
-SET Mode=-
-IF "%~1" == "unstable" SET Mode=Unstable
-IF "%~1" == "testing"  SET Mode=Testing
-IF "%~1" == "stable"   SET Mode=Stable
-IF "%Mode%" == "-" (
-	>&2 ECHO ERROR: No build mode specified.
-	ECHO Run "Build.cmd MODE" where MODE is "unstable", "testing" or "stable".
 	EXIT /B 1
 )
 
