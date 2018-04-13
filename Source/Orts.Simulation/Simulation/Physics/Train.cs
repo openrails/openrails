@@ -15242,7 +15242,7 @@ namespace Orts.Simulation.Physics
 
                 // search for loops
 
-                LoopSearch();
+                LoopSearch(orgSignals);
 
 #if DEBUG_TEST
                 for (int iSub = 0; iSub < TCRouteSubpaths.Count; iSub++)
@@ -16067,7 +16067,7 @@ namespace Orts.Simulation.Physics
             // search for loops
             //
 
-            public void LoopSearch()
+            public void LoopSearch(Signals orgSignals)
             {
                 List<List<int[]>> loopList = new List<List<int[]>>();
 
@@ -16183,9 +16183,13 @@ namespace Orts.Simulation.Physics
                         LoopEnd.Insert(iRoute, thisRoute[loopDetails[0]].TCSectionIndex);
 
                         // create dummy reversal lists
-                        // shift waiting points and revesal lists
+                        // shift waiting points and reversal lists
                         TCReversalInfo dummyReversal = new TCReversalInfo();
                         dummyReversal.Valid = false;
+                        dummyReversal.ReversalSectionIndex = thisRoute[thisRoute.Count - 1].TCSectionIndex;
+                        dummyReversal.ReversalIndex = thisRoute.Count - 1;
+                        TrackCircuitSection thisSection = orgSignals.TrackCircuitList[thisRoute[thisRoute.Count - 1].TCSectionIndex];
+                        dummyReversal.ReverseReversalOffset = thisSection.Length;
                         ReversalInfo.Insert(iRoute, dummyReversal);
 
                         foreach (int[] thisWaitingPoint in WaitingPoints)
