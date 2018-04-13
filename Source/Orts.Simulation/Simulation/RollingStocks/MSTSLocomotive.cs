@@ -2108,11 +2108,15 @@ namespace Orts.Simulation.RollingStocks
                 if (Simulator.WeatherType == WeatherType.Rain) // Wet weather
                 {
                     if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for precipitation presence - base friction value will be approximately between 0.15 and 0.2
-                        // ie base value between 0.606 and 0.45 - note lowest friction will be with lightest precipitation value.
+                        // ie base value between 0.607 and 0.45 
+                        // note lowest friction will be for drizzle rain; friction will increase for precipitation both higher and lower than drizzle rail
                     {
                        float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
                 // precipitation will calculate a value between 0.15 (light rain) and 0.2 (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
-                       BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.45f), 0.607f);
+                        if (pric >= 0.5)
+                            BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.45f), 0.607f);
+                        else
+                            BaseFrictionCoefficientFactor = 0.4539f + 1.0922f * (0.5f - pric);
                     }
                     else // if not proportional to precipitation use fixed friction value approximately equal to 0.2, thus factor will be 0.6 x friction coefficient of 0.33
                     {
