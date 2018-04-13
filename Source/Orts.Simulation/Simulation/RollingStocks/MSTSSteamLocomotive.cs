@@ -902,6 +902,8 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(BoilerHeatInBTUpS);
             outf.Write(TenderCoalMassKG);
             outf.Write(CombinedTenderWaterVolumeUKG);
+            outf.Write(CumulativeWaterConsumptionLbs);
+            outf.Write(SteamIsAuxTenderCoupled);
             outf.Write(CylinderSteamUsageLBpS);
             outf.Write(BoilerHeatBTU);
             outf.Write(BoilerMassLB);
@@ -934,6 +936,8 @@ namespace Orts.Simulation.RollingStocks
             BoilerHeatInBTUpS = inf.ReadSingle();
             TenderCoalMassKG = inf.ReadSingle();
             CombinedTenderWaterVolumeUKG = inf.ReadSingle();
+            CumulativeWaterConsumptionLbs = inf.ReadSingle();
+            SteamIsAuxTenderCoupled = inf.ReadBoolean();
             CylinderSteamUsageLBpS = inf.ReadSingle();
             BoilerHeatBTU = inf.ReadSingle();
             BoilerMassLB = inf.ReadSingle();

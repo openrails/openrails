@@ -703,6 +703,7 @@ namespace Orts.Simulation.Physics
             RunningTime = inf.ReadDouble();
             IncorporatedTrainNo = inf.ReadInt32();
             IncorporatingTrainNo = inf.ReadInt32();
+            IsAuxTenderCoupled = inf.ReadBoolean();
             if (IncorporatedTrainNo > -1)
             {
                 Train train = GetOtherTrainByNumber(IncorporatedTrainNo);
@@ -1036,6 +1037,7 @@ namespace Orts.Simulation.Physics
             outf.Write(RunningTime);
             outf.Write(IncorporatedTrainNo);
             outf.Write(IncorporatingTrainNo);
+            outf.Write(IsAuxTenderCoupled);
 
             outf.Write((int)TrainType);
             outf.Write(IsTilting);
