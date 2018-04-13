@@ -86,6 +86,18 @@ IF "%Mode%" == "Stable" (
 	)
 )
 
+REM Get code revision.
+SET Revision=000
+IF EXIST ".svn" (
+	FOR /F "usebackq tokens=1" %%R IN (`svn --non-interactive info --show-item revision .`) DO SET Revision=%%R
+)
+IF EXIST ".git" (
+	FOR /F "usebackq tokens=1" %%R IN (`git describe --always`) DO SET Revision=%%R
+)
+IF "%Revision%" == "000" (
+	>&2 ECHO WARNING: No Subversion or Git revision found.
+)
+
 REM Recreate Program directory for output.
 CALL :recreate "Program" || GOTO :error
 
@@ -95,13 +107,6 @@ MSBuild Source\ORTS.sln /t:Clean;Build /p:Configuration=Release /p:NoWarn=1591 |
 
 REM Build contributed Timetable Editor.
 PUSHD Source\Contrib\TimetableEditor && CALL Build.cmd && POPD || GOTO :error
-
-REM Get Subversion revision.
-SET Revision=000
-FOR /F "usebackq tokens=1" %%R IN (`svn --non-interactive info --show-item revision .`) DO SET Revision=%%R
-IF "%Revision%" == "000" (
-	>&2 ECHO WARNING: No Subversion revision found.
-)
 
 REM Set update channel.
 >>Program\Updater.ini ECHO Channel=string:%Mode% || GOTO :error
