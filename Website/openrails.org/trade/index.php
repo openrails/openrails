@@ -38,7 +38,7 @@ These vendors sell or create products suitable for Open Rails:
   <li><a href="http://www.conbuilder.com" target="_blank">ConBuilder</a> - Utility Suite</li>
   <li><a href="http://dekosoft.com/trains">Dekosoft Trains</a> - USA</li>
   <li><a href="http://pikku.msts.cz/openrails.html">Pikku Locomotive Works</a> - Czechoslovakia</li>
-  <li><a href="http://www.streamlines.ca">Stream Lines</a> - Canada</li>
+  <li><a href="http://www.trainsimulations.net/">TrainSimulations</a> - Canada</li>
   <li><a href="http://www.gabriele90.com/">Gabriele 90</a> - Italy</li>
 </ul>
 <p>&nbsp;</p>
