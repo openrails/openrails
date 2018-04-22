@@ -31,7 +31,7 @@
 //#define DEBUG_LOCO_STEAM_USAGE
 
 // Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
-//#define DEBUG_LOCO_STEAM_HEAT_HUD
+#define DEBUG_LOCO_STEAM_HEAT_HUD
 
 // Debug for Auxiliary Tender
 //#define DEBUG_AUXTENDER
@@ -764,7 +764,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
-                case "engine(enginecontrollers(smallejector": SmallEjectorController.Parse(stf); break;
+                case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
                 case "engine(enginecontrollers(blower": BlowerController.Parse(stf); break;

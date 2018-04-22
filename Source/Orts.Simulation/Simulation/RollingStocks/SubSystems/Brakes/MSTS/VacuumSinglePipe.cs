@@ -440,21 +440,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             train.TotalCurrentTrainBrakeSystemVolumeM3 = TempCurrentBrakeCylinderVolumeM3 + TempCurrentBrakePipeVolumeM3;
 
             // This section sets up the nimber of iterative steps that the proagation process goes through. nSteps is tied to the volume ratio so that instability is not introduced
-            // If nSteps is small and BrakeServiceTimeFactorS is small that instability will be introduced, and BP will fluctuate to different values
+            // If nSteps is small and BrakeServiceTimeFactorS is small then instability will be introduced, and BP will fluctuate to different values
             int nSteps;
             float nStepsFraction;
-
-            if (train.TotalTrainBrakeSystemVolumeM3 < Me3.FromFt3(200))
-            {
-                nStepsFraction = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3);
-            }
-            else
-            {
-                nStepsFraction = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f));
-            }
-            nSteps = (int)( ( elapsedClockSeconds * nStepsFraction ) / brakePipeTimeFactorS + 1);
+            nStepsFraction = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3);
+            float nStepsWhole = (elapsedClockSeconds * nStepsFraction) / brakePipeTimeFactorS + 1;
+            nSteps = (int)( nStepsWhole);
             float TrainPipeTimeVariationS = elapsedClockSeconds / nSteps;
             float TrainPipeLeakLossPSI = lead == null ? 0.0f : (lead.TrainBrakePipeLeakPSIorInHgpS);
+
+//            Trace.TraceInformation("Timing - nSteps {0} TPVariation {1} Elapsed Seconds {2} Calc Sec {3} nSteps Fraction {4}", nSteps, TrainPipeTimeVariationS, elapsedClockSeconds, TrainPipeTimeVariationS * nSteps, nStepsFraction);
+//            Trace.TraceInformation("TPVariationTime {0:N3} Elapsed Clock {1:N3}", TrainPipeTimeVariationS, elapsedClockSeconds);
 
             // For each iterative step, calculate lead locomotive pressures, and propagate them along the train
             // Train brake pipe volume will be calculated, and used to vary timing response parameters, thus simulating variations in train length
@@ -480,36 +476,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float LapNetBPLossGainPSI = 0.0f;   // The net value of the losses and gains in the brake pipe for lap position: eg Net = Lg Ejector + Sm Ejector + Vac Pump - BP Loss
                     float EQReleaseNetBPLossGainPSI = 0.0f;   // The net value of the losses and gains in the brake pipe for EQ release position: eg Net = Lg Ejector + Sm Ejector + Vac Pump - BP Loss
 
+//                    train.TotalTrainBrakeSystemVolumeM3 = Me3.FromFt3(100);
+
+
                     // BrakePipeChargingRatePSIorInHgpS - trains of less then 200ft^3 will have higher charging rates, ie less time to charge BP
                     // BrakeServiceTimeFactorS / BrakeEmergencyTimeFactorS  - trains of less then 200ft^3 will have lower factors, ie less time to discharge BP
-                    if (train.TotalTrainBrakeSystemVolumeM3 < Me3.FromFt3(200))
-                    {
                         AdjLargeEjectorChargingRateInHgpS = ( Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * LargeEjectorChargingRateInHgpS;
                         AdjSmallEjectorChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * SmallEjectorChargingRateInHgpS;
                         AdjVacuumPumpChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.VacuumPumpChargingRateInHgpS;
                         AdjHighSExhausterChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.ExhausterHighSBPChargingRatePSIorInHgpS;
                         AdjLowSExhausterChargingRateInHgpS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.ExhausterLowSBPChargingRatePSIorInHgpS;
-                        AdjTrainPipeLeakLossPSI = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.TrainBrakePipeLeakPSIorInHgpS;
+                        AdjTrainPipeLeakLossPSI = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.TrainBrakePipeLeakPSIorInHgpS;
                         AdjBrakeServiceTimeFactorS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeServiceTimeFactorS;
                         AdjBrakeEmergencyTimeFactorS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeEmergencyTimeFactorS;
                         TempbrakePipeTimeMultFactor = train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f);
                         AdjbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
                         AdjBrakePipeDischargeTimeFactor = TempbrakePipeTimeMultFactor * lead.BrakePipeDischargeTimeFactor;
-                    }
-                    else
-                    {
-                        AdjLargeEjectorChargingRateInHgpS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * LargeEjectorChargingRateInHgpS;
-                        AdjSmallEjectorChargingRateInHgpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * SmallEjectorChargingRateInHgpS;
-                        AdjVacuumPumpChargingRateInHgpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.VacuumPumpChargingRateInHgpS;
-                        AdjHighSExhausterChargingRateInHgpS = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.ExhausterHighSBPChargingRatePSIorInHgpS;
-                        AdjLowSExhausterChargingRateInHgpS = (train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.ExhausterLowSBPChargingRatePSIorInHgpS;
-                        AdjTrainPipeLeakLossPSI = ( train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.TrainBrakePipeLeakPSIorInHgpS;
-                        AdjBrakeServiceTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeServiceTimeFactorS;
-                        AdjBrakeEmergencyTimeFactorS = (Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeEmergencyTimeFactorS;
-                        TempbrakePipeTimeMultFactor = Me3.FromFt3(200.0f) / train.TotalTrainBrakeSystemVolumeM3;
-                        AdjbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
-                        AdjBrakePipeDischargeTimeFactor = TempbrakePipeTimeMultFactor * lead.BrakePipeDischargeTimeFactor;
-                    }
 
                     // This section determines whether small ejector or vacuum pump is going to counteract brake pipe leakage - only applies to steam locomotives
 
@@ -580,6 +562,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                     lead.BrakeSystem.ControllerRunningLock = false;
                     }
+
+/*
+                    Trace.TraceInformation("Brake Test - Volume {0} Release Rate {1} Charging Rate {2}", train.TotalTrainBrakeSystemVolumeM3, ReleaseNetBPLossGainPSI, lead.BrakePipeChargingRatePSIorInHgpS);
+                    Trace.TraceInformation("Large Ejector Raw {0} Large Ejector (VB) {1} Ad Large Ejector {2}", lead.LargeEjectorBrakePipeChargingRatePSIorInHgpS, LargeEjectorChargingRateInHgpS, AdjLargeEjectorChargingRateInHgpS);
+                    Trace.TraceInformation("Small Ejector Raw {0} Small Ejector (VB) {1} Ad Small Ejector {2}", lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS, SmallEjectorChargingRateInHgpS, AdjSmallEjectorChargingRateInHgpS);
+                    Trace.TraceInformation("Pipe Loss - Raw {0} Adj {1}", lead.TrainBrakePipeLeakPSIorInHgpS, AdjTrainPipeLeakLossPSI);
+*/
 
                     // Adjust brake pipe pressure according to various brake controls. Two modes are considered
                     //  - EQ where brake system is fitted with EQ reservoir, and lead locomotive uses the equalising pressure to set brake pipe
