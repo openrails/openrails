@@ -1178,6 +1178,10 @@ controls:
 - ``<Alt+U>`` -- increase steam pipe pressure (and hence train temperature)
 - ``<Alt+D>`` -- decrease steam pipe pressure (and hence train temperature)
 
+The steam heating control valve can be configured by adding an enginecontroller 
+called ``ORTSSTeamHeat ( w, x, y, z)``. It should be configured as a standard 
+4 value controller.
+
 It should be noted that the impact of steam heating will vary depending
 upon the season, length of train, etc.
 
@@ -1997,7 +2001,14 @@ TrainBrakesControllerRunningStart, TrainBrakesControllerApplyStart, TrainBrakesC
 TrainBrakesControllerVacuumContinuousServiceStart, TrainBrakesControllerEmergencyStart, 
 EngineBrakesControllerReleaseStart, EngineBrakesControllerRunningStart, EngineBrakesControllerApplyStart.
 
+If ``TrainPipeLeakRate`` has been set in the ENG file, then the small ejector will be required to offset the leakage 
+in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase the level of operation of the small ejector.
+
+An engine controller can be configured to customise the operation of the small ejector. This controller is called 
+``ORTSSmallEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller.
+
 Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted to air braked locomotives.
+
 
 
 Dynamically Evolving Tractive Force
