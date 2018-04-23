@@ -31,7 +31,7 @@
 //#define DEBUG_LOCO_STEAM_USAGE
 
 // Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
-#define DEBUG_LOCO_STEAM_HEAT_HUD
+//#define DEBUG_LOCO_STEAM_HEAT_HUD
 
 // Debug for Auxiliary Tender
 //#define DEBUG_AUXTENDER
