@@ -315,6 +315,19 @@ namespace Orts.Formats.Msts
             }
         }
 
+        public void InsertORSpecificData(string filenamewithpath)
+        {
+            using (STFReader stf = new STFReader(filenamewithpath, false))
+            {
+                var tr_activityTokenPresent = false;
+                stf.ParseFile(() => false && (Tr_Activity.Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
+                    new STFReader.TokenProcessor("tr_activity", ()=>{ tr_activityTokenPresent = true;  Tr_Activity.InsertORSpecificData (stf); }),
+                    });
+                if (!tr_activityTokenPresent)
+                    STFException.TraceWarning(stf, "Missing Tr_Activity statement");
+            }
+        }
+
         // Used for explore in activity mode
         public ActivityFile()
         {
@@ -335,6 +348,17 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("tr_activity_header", ()=>{ Tr_Activity_Header = new Tr_Activity_Header(stf); }),
             });
             if (!headerOnly && (Tr_Activity_File == null))
+                STFException.TraceWarning(stf, "Missing Tr_Activity_File statement");
+        }
+
+        public void InsertORSpecificData(STFReader stf)
+        {
+            stf.MustMatch("(");
+            var tr_activity_fileTokenPresent = false;
+            stf.ParseBlock(() => false && (Tr_Activity_Header != null), new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("tr_activity_file", ()=>{ tr_activity_fileTokenPresent = true;  Tr_Activity_File.InsertORSpecificData (stf); }),
+            });
+            if (!tr_activity_fileTokenPresent)
                 STFException.TraceWarning(stf, "Missing Tr_Activity_File statement");
         }
 
@@ -484,6 +508,19 @@ namespace Orts.Formats.Msts
         //    NextActivityObjectUID = 32786;
         //    ActivityObjects.Clear();
         //}
+        public void InsertORSpecificData(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("ortsaihornatcrossings", ()=>{ ORTSAIHornAtCrossings = stf.ReadIntBlock(ORTSAIHornAtCrossings); }),
+                new STFReader.TokenProcessor("events",()=>
+                {
+                    if ( Events == null) Events = new Events(stf);
+                    else Events.InsertORSpecificData (stf);
+                }
+                ),
+            });
+        }
     }
 
     public class Player_Service_Definition {
@@ -622,13 +659,12 @@ namespace Orts.Formats.Msts
                     outf.Write(thisServiceItem.Efficiency);
                     outf.Write(thisServiceItem.PlatformStartID);
                 }
-            } 
+            }
         }
+     }
 
- 
-    }
-
-    public class Service_Item {
+    public class Service_Item
+    {
         public float Efficiency = new float();
         public int SkipCount;
         public float DistanceDownPath = new float();
@@ -676,6 +712,63 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("eventcategorytime", ()=>{ EventList.Add(new EventCategoryTime(stf)); }),
             });
         }
+
+        public void InsertORSpecificData (STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("eventcategorylocation", ()=>{ TryModify(0, stf); }),
+                new STFReader.TokenProcessor("eventcategoryaction", ()=>{ TryModify(1, stf); }),
+                new STFReader.TokenProcessor("eventcategorytime", ()=>{ TryModify(2, stf); }),
+            });
+        }
+
+        public void TryModify(int Category, STFReader stf)
+        {
+            Event origEvent;
+            bool wrongEventID = false;
+            int modifiedID = -1;
+            try
+            {
+                stf.MustMatch("(");
+                stf.MustMatch("id");
+                stf.MustMatch("(");
+                modifiedID = stf.ReadInt(null);
+                stf.MustMatch(")");
+                origEvent = EventList.Find(x => x.ID == modifiedID);
+                if (origEvent == null)
+                {
+                    wrongEventID = true;
+                    Trace.TraceWarning("Skipped event {0} not present in base activity file", modifiedID);
+                    stf.SkipRestOfBlock();
+                }
+                else
+                {
+                    wrongEventID = !TestMatch(Category, origEvent);
+                    if (!wrongEventID)
+                    {
+                       origEvent.AddOrModifyEvent(stf, Path.GetDirectoryName(stf.FileName));
+                    }
+                    else
+                    {
+                        Trace.TraceWarning("Skipped event {0} of event category not matching with base activity file", modifiedID);
+                        stf.SkipRestOfBlock();
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException("Error in additional activity file", error));
+            }
+        }
+
+        private bool TestMatch(int category, Event origEvent)
+        {
+            if (category == 0 && origEvent is EventCategoryLocation) return true;
+            if (category == 1 && origEvent is EventCategoryAction) return true;
+            if (category == 2 && origEvent is EventCategoryTime) return true;
+            return false;
+        }
     }
 
     /// <summary>
@@ -693,6 +786,9 @@ namespace Orts.Formats.Msts
         public string ORTSActSoundFile;
         public int ORTSActSoundFileType;
         public ORTSWeatherChange ORTSWeatherChange;
+
+        public virtual void AddOrModifyEvent (STFReader stf, string fileName)
+        { }
     }
 
     public class EventCategoryLocation : Event {
@@ -705,6 +801,11 @@ namespace Orts.Formats.Msts
 
         public EventCategoryLocation(STFReader stf) {
             stf.MustMatch("(");
+            AddOrModifyEvent(stf, stf.FileName);
+                }
+
+        public override void AddOrModifyEvent (STFReader stf, string fileName)
+        { 
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("eventtypelocation", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); }),
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
@@ -728,7 +829,7 @@ namespace Orts.Formats.Msts
                 {
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
-                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "SOUND"), tempString);
+                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
                     var ORTSActSoundFileTypeString = stf.ReadString();
                     switch (ORTSActSoundFileTypeString)
 	                    {
@@ -768,6 +869,11 @@ namespace Orts.Formats.Msts
 
         public EventCategoryAction(STFReader stf) {
             stf.MustMatch("(");
+            AddOrModifyEvent(stf, stf.FileName);
+        }
+
+        public override void AddOrModifyEvent(STFReader stf, string fileName)
+        {
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("eventtypeallstops", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Type = EventType.AllStops; }),
                 new STFReader.TokenProcessor("eventtypeassembletrain", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Type = EventType.AssembleTrain; }),
@@ -793,7 +899,7 @@ namespace Orts.Formats.Msts
                 {
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
-                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "SOUND"), tempString);
+                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
                     var ORTSActSoundFileTypeString = stf.ReadString();
                     switch (ORTSActSoundFileTypeString)
 	                    {
@@ -860,6 +966,11 @@ namespace Orts.Formats.Msts
 
         public EventCategoryTime(STFReader stf) {
             stf.MustMatch("(");
+            AddOrModifyEvent(stf, stf.FileName);
+        }
+
+        public override void AddOrModifyEvent(STFReader stf, string fileName)
+        {
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
@@ -873,7 +984,7 @@ namespace Orts.Formats.Msts
                 {
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
-                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(stf.FileName)), "SOUND"), tempString);
+                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
                     var ORTSActSoundFileTypeString = stf.ReadString();
                     switch (ORTSActSoundFileTypeString)
 	                    {

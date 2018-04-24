@@ -349,6 +349,16 @@ namespace Orts.Simulation
         {
             ActivityFileName = Path.GetFileNameWithoutExtension(activityPath);
             Activity = new ActivityFile(activityPath);
+
+            // check for existence of activity file in OpenRails subfolder
+
+            activityPath = RoutePath + @"\Activities\Openrails\" + ActivityFileName + ".act";
+            if (File.Exists(activityPath))
+            {
+                // We have an OR-specific addition to world file
+                Activity.InsertORSpecificData(activityPath);
+            }
+
             ActivityRun = new Activity(Activity, this);
             // <CSComment> There can also be an activity without events and without station stops
             //            if (ActivityRun.Current == null && ActivityRun.EventList.Count == 0)
