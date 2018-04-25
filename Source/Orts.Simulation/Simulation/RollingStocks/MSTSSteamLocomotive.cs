@@ -148,6 +148,9 @@ namespace Orts.Simulation.RollingStocks
         float PreviousTenderWaterVolumeUKG;
         public float MaxLocoTenderWaterMassKG;         // Maximum read from Eng file
         float MaxTotalCombinedWaterVolumeUKG;
+        float RestoredMaxTotalCombinedWaterVolumeUKG; // Values to restore after game save
+        float RestoredCombinedTenderWaterVolumeUKG;     // Values to restore after game save
+
         // Tender
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
         public bool HasTenderCoupled = true;
@@ -901,8 +904,12 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(BoilerHeatOutBTUpS);
             outf.Write(BoilerHeatInBTUpS);
             outf.Write(TenderCoalMassKG);
-            outf.Write(CombinedTenderWaterVolumeUKG);
+            outf.Write(RestoredMaxTotalCombinedWaterVolumeUKG);
+            outf.Write(RestoredCombinedTenderWaterVolumeUKG);
             outf.Write(CumulativeWaterConsumptionLbs);
+            outf.Write(CurrentAuxTenderWaterVolumeUKG);
+            outf.Write(CurrentLocoTenderWaterVolumeUKG);
+            outf.Write(PreviousTenderWaterVolumeUKG);
             outf.Write(SteamIsAuxTenderCoupled);
             outf.Write(CylinderSteamUsageLBpS);
             outf.Write(BoilerHeatBTU);
@@ -935,8 +942,12 @@ namespace Orts.Simulation.RollingStocks
             BoilerHeatOutBTUpS = inf.ReadSingle();
             BoilerHeatInBTUpS = inf.ReadSingle();
             TenderCoalMassKG = inf.ReadSingle();
-            CombinedTenderWaterVolumeUKG = inf.ReadSingle();
+            RestoredMaxTotalCombinedWaterVolumeUKG = inf.ReadSingle();
+            RestoredCombinedTenderWaterVolumeUKG = inf.ReadSingle();
             CumulativeWaterConsumptionLbs = inf.ReadSingle();
+            CurrentAuxTenderWaterVolumeUKG = inf.ReadSingle();
+            CurrentLocoTenderWaterVolumeUKG = inf.ReadSingle();
+            PreviousTenderWaterVolumeUKG = inf.ReadSingle();
             SteamIsAuxTenderCoupled = inf.ReadBoolean();
             CylinderSteamUsageLBpS = inf.ReadSingle();
             BoilerHeatBTU = inf.ReadSingle();
@@ -1049,7 +1060,7 @@ namespace Orts.Simulation.RollingStocks
             // Assign value for superheat Initial pressure factor if not set in ENG file
             if (SuperheatCutoffPressureFactor == 0)
             {
-                SuperheatCutoffPressureFactor = 50.0f; // If no factor in the ENG file set to nominal value (50.0)
+                SuperheatCutoffPressureFactor = 40.0f; // If no factor in the ENG file set to nominal value (40.0)
             }
 
             // Determine if Cylinder Port Opening  Factor has been set
@@ -1206,10 +1217,19 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // ******************  Test Boiler Type ********************* 
+
+
             MaxTotalCombinedWaterVolumeUKG = (Kg.ToLb(MaxLocoTenderWaterMassKG) / WaterLBpUKG); // Initialise loco with tender water only - will be updated as appropriate
-            CombinedTenderWaterVolumeUKG = MaxTotalCombinedWaterVolumeUKG; //Initialise tender as full, will be adjusted as appropriate 
-            InitializeTenderWithCoal();
+
+            if (RestoredCombinedTenderWaterVolumeUKG > 1.0)// Check to see if this is a restored game -(assumed so if Restored >0), then set water controller values based upon saved values
+             {
+                CombinedTenderWaterVolumeUKG = RestoredCombinedTenderWaterVolumeUKG;
+                MaxTotalCombinedWaterVolumeUKG = RestoredMaxTotalCombinedWaterVolumeUKG;
+             }
+
             InitializeTenderWithWater();
+
+            InitializeTenderWithCoal();
 
             // Assign default steam table values if table not in ENG file
             if (InitialPressureDropRatioRpMtoX == null)
@@ -2190,6 +2210,8 @@ namespace Orts.Simulation.RollingStocks
             }
 
             TenderWaterPercent = CombinedTenderWaterVolumeUKG / MaxTotalCombinedWaterVolumeUKG;  // Calculate the current % of water in tender
+            RestoredMaxTotalCombinedWaterVolumeUKG = MaxTotalCombinedWaterVolumeUKG;
+            RestoredCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;
             CurrentAuxTenderWaterVolumeUKG = (Kg.ToLb(Train.MaxAuxTenderWaterMassKG) / WaterLBpUKG) * TenderWaterPercent; // Adjust water level in aux tender
             CurrentLocoTenderWaterVolumeUKG = (Kg.ToLb(MaxLocoTenderWaterMassKG) / WaterLBpUKG) * TenderWaterPercent; // Adjust water level in locomotive tender
             PrevCombinedTenderWaterVolumeUKG = CombinedTenderWaterVolumeUKG;   // Store value for next iteration
