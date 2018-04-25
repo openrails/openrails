@@ -657,7 +657,7 @@ namespace Orts.Simulation.RollingStocks
 
             // +++++++++++++++++++++++++++
 
-            if (WagonType == WagonTypes.Passenger) // only calculate heat loss on passenger cars
+            if (WagonType == WagonTypes.Passenger && Train.CarSteamHeatOn) // only calculate heat loss on passenger cars
             {
 
                 // Initialise car values for heating to zero
@@ -727,7 +727,7 @@ namespace Orts.Simulation.RollingStocks
                 float HeatLossInfiltrationWpT = SpecificHeatCapacityJpKgpK * AirDensityKgpM3 * NumAirShiftspSec * CarHeatVolumeM3 * (CarriageHeatTempC - CarOutsideTempC);
 
                 CarHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT;
-
+                
                 // ++++++++++++++++++++++++
                 // Calculate steam pipe surface area
                 float CompartmentSteamPipeRadiusM = Me.FromIn(2.0f) / 2.0f;  // Assume the steam pipes in the compartments have diameter of 2" (50mm)

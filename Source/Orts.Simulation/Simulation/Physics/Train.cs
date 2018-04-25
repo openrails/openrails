@@ -1975,22 +1975,32 @@ namespace Orts.Simulation.Physics
                         TrainCurrentTrainSteamHeatW += TrainNetSteamHeatLossWpTime * elapsedClockSeconds;  // Gains per elapsed time         
                     }
 
-                    float MaximumHeatTempC = 30.0f;     // Allow heat to go to 86oF (30oC)
+                    float MaximumHeatTempC = 37.778f;     // Allow heat to go to 100oF (37.778oC)
 
                     if (IsTrainSteamHeatInitial)
                     {
                         // First time this method is processed do this loop
-                        TrainCurrentCarriageHeatTempC = 10.5f;
                         TrainCurrentTrainSteamHeatW = (TrainCurrentCarriageHeatTempC - TrainOutsideTempC) / (TrainInsideTempC - TrainOutsideTempC) * TrainTotalSteamHeatW;
                         IsTrainSteamHeatInitial = false;
                     }
                     else
                     {
                         // After initialisation do this loop
-                        if (TrainCurrentCarriageHeatTempC > TrainOutsideTempC && TrainCurrentCarriageHeatTempC <= MaximumHeatTempC && TrainTotalSteamHeatW > 0.0)
+                        if (TrainCurrentCarriageHeatTempC <= MaximumHeatTempC && TrainTotalSteamHeatW > 0.0)
                         {
-                            TrainCurrentCarriageHeatTempC = (((TrainInsideTempC - TrainOutsideTempC) * TrainCurrentTrainSteamHeatW) / TrainTotalSteamHeatW) + TrainOutsideTempC;
+                            if (TrainCurrentCarriageHeatTempC >= TrainOutsideTempC)
+                            {
+                                TrainCurrentCarriageHeatTempC = (((TrainInsideTempC - TrainOutsideTempC) * TrainCurrentTrainSteamHeatW) / TrainTotalSteamHeatW) + TrainOutsideTempC;
+                            }
+                            else
+                            {
+                                // TO BE CHECKED
+                                TrainCurrentCarriageHeatTempC = TrainOutsideTempC - (((TrainInsideTempC - TrainOutsideTempC) * TrainCurrentTrainSteamHeatW) / TrainTotalSteamHeatW);
+                            }
+                            
                         }
+
+        
                         TrainSteamPipeHeatConvW = (PipeHeatTransCoeffWpM2K * TrainHeatPipeAreaM2 * (C.ToK(TrainCurrentSteamHeatPipeTempC) - C.ToK(TrainCurrentCarriageHeatTempC)));
                         float PipeTempAK = (float)Math.Pow(C.ToK(TrainCurrentSteamHeatPipeTempC), 4.0f);
                         float PipeTempBK = (float)Math.Pow(C.ToK(TrainCurrentCarriageHeatTempC), 4.0f);
@@ -2000,40 +2010,48 @@ namespace Orts.Simulation.Physics
                         // Calculate Net steam heat loss or gain
                         TrainNetSteamHeatLossWpTime = TrainSteamPipeHeatW - TrainSteamHeatLossWpT;
 
-                        DisplayTrainNetSteamHeatLossWpTime = TrainNetSteamHeatLossWpTime; // Captures raw value of heat loss for display on HUD
-
-                        // Test to see if steam heating temp has exceeded the comfortable heating value.
-                        if (TrainCurrentCarriageHeatTempC > 22.0f)
-                 //     if (TrainCurrentCarriageHeatTempC > TrainInsideTempC)
+                        if (CarSteamHeatOn) // Only display warning messages if steam heating is turned on
                         {
-                            if (!IsSteamHeatExceeded)
+
+                            DisplayTrainNetSteamHeatLossWpTime = TrainNetSteamHeatLossWpTime; // Captures raw value of heat loss for display on HUD
+
+                            // Test to see if steam heating temp has exceeded the comfortable heating value.
+                            if (TrainCurrentCarriageHeatTempC > 23.8889f) // If temp above 75of (23.889oC) then alarm
+                            //     if (TrainCurrentCarriageHeatTempC > TrainInsideTempC)
                             {
-                                IsSteamHeatExceeded = true;
-                                // Provide warning message if temperature is too hot
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
+                                if (!IsSteamHeatExceeded)
+                                {
+                                    IsSteamHeatExceeded = true;
+                                    // Provide warning message if temperature is too hot
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
+                                }
+                            }
+                            else if (TrainCurrentCarriageHeatTempC < 22.0f)
+                            //           else if (TrainCurrentCarriageHeatTempC < TrainInsideTempC - 3.0f)
+                            {
+                                IsSteamHeatExceeded = false;        // Reset temperature warning
+                            }
+
+                            // Test to see if steam heating temp has dropped too low.
+
+                            if (TrainCurrentCarriageHeatTempC < 18.333f) // If temp below 65of (18.33oC) then alarm
+                            {
+                                if (!IsSteamHeatLow)
+                                {
+                                    IsSteamHeatLow = true;
+                                    // Provide warning message if temperature is too hot
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
+                                }
+                            }
+                            else if (TrainCurrentCarriageHeatTempC > 21.0f)
+                            {
+
+                                IsSteamHeatLow = false;        // Reset temperature warning
                             }
                         }
-                        else if (TrainCurrentCarriageHeatTempC < 19.0f)
-             //           else if (TrainCurrentCarriageHeatTempC < TrainInsideTempC - 3.0f)
+                        else
                         {
-                            IsSteamHeatExceeded = false;        // Reset temperature warning
-                        }
-
-                        // Test to see if steam heating temp has dropped too low.
-
-                        if (TrainCurrentCarriageHeatTempC < 10.0f) // If temp below 50of (10oC) then alarm
-                        {
-                            if (!IsSteamHeatLow)
-                            {
-                                IsSteamHeatLow = true;
-                                // Provide warning message if temperature is too hot
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
-                            }
-                        }
-                        else if (TrainCurrentCarriageHeatTempC > 13.0f)
-                        {
-
-                            IsSteamHeatLow = false;        // Reset temperature warning
+                            DisplayTrainNetSteamHeatLossWpTime = 0.0f; // Set to zero if steam heating is off
                         }
                     }
 

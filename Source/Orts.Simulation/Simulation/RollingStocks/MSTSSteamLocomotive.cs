@@ -31,7 +31,7 @@
 //#define DEBUG_LOCO_STEAM_USAGE
 
 // Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
-//#define DEBUG_LOCO_STEAM_HEAT_HUD
+#define DEBUG_LOCO_STEAM_HEAT_HUD
 
 // Debug for Auxiliary Tender
 //#define DEBUG_AUXTENDER
@@ -5374,81 +5374,73 @@ namespace Orts.Simulation.RollingStocks
         {
             // Update Steam Heating System
 
+            // Calculate steam pressure in steam pipe
+            if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
+             {
+                CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
+             }
+            
+                CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
+            
             // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
+            if (IsSteamHeatFitted && TrainFittedSteamHeat && CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
                 if (this.IsLeadLocomotive())
                 {
+                    Train.CarSteamHeatOn = true; // turn on steam effects on wagons
+                    Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
+
                     if (IsSteamHeatFirstTime)
-                {
-                    IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
-                    Train.TrainInsideTempC = 15.5f; // Assume a desired temperature of 60oF = 15.5oC
-                }
-                else
-                {
-                    // After first pass continue as normal
-
-                    if (IsSteamInitial)
-                    {
-                        if (HotStart)
                         {
-                            Train.TrainCurrentCarriageHeatTempC = 14.0f;
+                            IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
+                            Train.TrainInsideTempC = 21.11f; // Assume a desired temperature of 70oF = 15.5oC
                         }
                         else
                         {
-                            Train.TrainCurrentCarriageHeatTempC = Train.TrainOutsideTempC;
+                            // After first pass continue as normal
+
+                            if (IsSteamInitial)
+                            {
+                                if (HotStart)
+                                {
+                                    Train.TrainCurrentCarriageHeatTempC = 21.111f; // Set intial temp to 70oF
+                            }
+                                else
+                                {
+                                    Train.TrainCurrentCarriageHeatTempC = Train.TrainOutsideTempC;
+                                }
+                                // Initialise current Train Steam Heat based upon selected Current carriage Temp
+                                Train.TrainCurrentTrainSteamHeatW = (Train.TrainCurrentCarriageHeatTempC - Train.TrainOutsideTempC) / (Train.TrainInsideTempC - Train.TrainOutsideTempC) * Train.TrainTotalSteamHeatW;
+                                IsSteamInitial = false;
+                            }
+
+                            float ConvertBtupLbtoKjpKg = 2.32599999962f;  // Conversion factor
+                            // Calculate steam usage
+                            // Only set up for saturated steam at this time - needs to also work for superheated steam
+                            if (Train.TrainSteamPipeHeatW == 0.0 || CurrentSteamHeatPressurePSI == 0.0)
+                            {
+                                CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Zero steam usage if Steam pipe heat is zero
+                            }
+                            else
+                            {
+                                CalculatedCarHeaterSteamUsageLBpS = Kg.ToLb(W.ToKW(Train.TrainSteamPipeHeatW) / (SteamHeatPSItoBTUpLB[CurrentSteamHeatPressurePSI] * ConvertBtupLbtoKjpKg));
+                            }
+
+                            // Calculate impact of steam heat usage on locomotive
+                            BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
+                            BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
+                            TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
+                            BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
                         }
-                        // Initialise current Train Steam Heat based upon selected Current carriage Temp
-                        Train.TrainCurrentTrainSteamHeatW = (Train.TrainCurrentCarriageHeatTempC - Train.TrainOutsideTempC) / (Train.TrainInsideTempC - Train.TrainOutsideTempC) * Train.TrainTotalSteamHeatW;
-                        IsSteamInitial = false;
-                    }
-
-                    // Calculate steam pressure in steam pipe
-                    if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
-                    {
-                        CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
-                    }
-
-                    CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
-
-               
-                        if (CurrentSteamHeatPressurePSI < 0.1)
-                        {
-                            Train.TrainCurrentSteamHeatPipeTempC = 0.0f;       // Reset values to zero if steam is not turned on.
-                            Train.TrainSteamPipeHeatW = 0.0f;
-                            Train.CarSteamHeatOn = false; // turn off steam effects on wagons
-                        }
-                        else
-                        {
-                            Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
-                            Train.CarSteamHeatOn = true; // turn on steam effects on wagons
-                        }
-                   
-
-                    float ConvertBtupLbtoKjpKg = 2.32599999962f;  // Conversion factor
-                    // Calculate steam usage
-                    // Only set up for saturated steam at this time - needs to also work for superheated steam
-                    if (Train.TrainSteamPipeHeatW == 0.0 || CurrentSteamHeatPressurePSI == 0.0)
-                    {
-                        CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Zero steam usage if Steam pipe heat is zero
-                    }
-                    else
-                    {
-                        CalculatedCarHeaterSteamUsageLBpS = Kg.ToLb(W.ToKW(Train.TrainSteamPipeHeatW) / (SteamHeatPSItoBTUpLB[CurrentSteamHeatPressurePSI] * ConvertBtupLbtoKjpKg));
-                    }
-
-                    // Calculate impact of steam heat usage on locomotive
-                    BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
-                    BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
-                    TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
-                    BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
-                }
-              }
+                   }
             }
             else
             {
                 CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Set to zero by default
+                Train.TrainCurrentSteamHeatPipeTempC = -17.7778f;       // Reset values to zero if steam is not turned on.
+                Train.TrainSteamPipeHeatW = 0.0f;
+                Train.CarSteamHeatOn = false; // turn off steam effects on wagons
             }
         }
 
@@ -5789,9 +5781,9 @@ namespace Orts.Simulation.RollingStocks
                 IsSuperSet);
 #endif
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive())
+            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
-                // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive
+                // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive, and steam heat valve is on.
                 // Display Steam Heat info
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}/{11}\t{12}\t{13:N0}\n",
                    Simulator.Catalog.GetString("StHeat:"),
