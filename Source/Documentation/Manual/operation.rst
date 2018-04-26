@@ -1695,14 +1695,45 @@ With this flag set, no speed reduction is applied when passing the signal.
 OR-Specific Additions to Activity Files
 =======================================
 
-The additions described below will be ignored by MSTS. Make these additions to 
-the .act file with a Unicode-enabled editor. Note that these additions will be 
+The additions described below will be ignored by MSTS.
+Since activity files are not used in Timetable mode, none of the following 
+features will operate in that mode.
+You can make these additions in three different ways, which are described in following subparagraphs.
+
+Manually modifying the .act file
+--------------------------------
+
+Make these additions by modifying the .act file with a Unicode-enabled editor. 
+Note that these additions will be 
 removed by the MSTS Activity Editor if the .act activity file is opened and 
 saved as an .act file by the AE. However, if the activity is opened in the AE 
 and saved in an .apk Activity Package, the additions will instead be included.
 
-Since activity files are not used in Timetable mode, none of the following 
-features will operate in that mode.
+Using the TSRE5 activity editing capabilities
+---------------------------------------------
+
+The TSRE5 Route Editor includes activity editing capabilities. These capabilities 
+include addition of all OR-specific additions to activity files described in 
+following paragraphs.
+
+Generating an additional activity file
+--------------------------------------
+
+If the TSRE5 editor isn't used, and if it is desired to avoid the problem that the 
+OR-specific additions are lost by later modifying the activity with the MSTS Activity Editor, 
+it is recommended to use this third possibility: an OpenRails subfolder must be created 
+within the route's ACTIVITIES folder, and an .act file including only the OR-specific additions can be 
+created with an Unicode-enable editor and then located there.
+An example of an unmodified .act file and of an additional .act file within the route's 
+OpenRails subfolder is included in file ORActivityExtensionFileSample.zip, which may be 
+found within the ``Documentation\SampleFiles\Manual`` subfolder within the OpenRails folder.
+As can be seen, the name of such additional .act file must be the same as the one of the base 
+.act file. Re events, to ensure a correct cross-correspondence between event definitions 
+within the base file and within the additional file, in the additional file within 
+the EventCategory block of every modified event the first line must be the ID () one, 
+and the ID must correspond with the one present in the base .act file. Only the added 
+lines within such EventCategory block must be present in the additional .act file.
+
 
 No Halt by Activity Message Box
 -------------------------------
@@ -1757,6 +1788,10 @@ must be terminated before the normal waiting point is reached ( just in case).
 On the other hand, a horn blow waiting point may be positioned just after a 
 normal WP (thus achieving the effect that the train blows the horn when it 
 restarts).
+
+To implement this feature it is not necessary to proceed as described in the 
+first three paragraphs of this chapter. It is enough to insert the waiting 
+points within the paths with either the MSTS AE or through TrackViewer.
 
 AI Horn Blow at Level Crossings
 -------------------------------

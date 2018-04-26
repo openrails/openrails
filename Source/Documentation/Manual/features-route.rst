@@ -62,7 +62,7 @@ Route Catania-Messina can be downloaded from
 `here <http://www.trainsimhobby.net/infusions/pro_download_panel/download.php?did=544>`_ . 
 A .ws file within the World subdirectory must be replaced with file 
 ``w-005631+014158.zip``
-available in the Open Rails pack in the Documentation\SampleFiles\Manual subfolder. 
+available in the Open Rails pack in the ``Documentation\SampleFiles\Manual`` subfolder. 
 (this has nothing to do with turntables, it's a file that contains incoherent data that 
 can cause a crash).
 Pls. note that also the other sample files cited in this paragraph are available in such subfolder. 
