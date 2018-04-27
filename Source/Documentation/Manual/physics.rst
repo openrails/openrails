@@ -1428,13 +1428,14 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 |                                                           |                   |unused             |                   |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 
-Special Steam Effects for Steam Locomotives
--------------------------------------------
-Steam exhausts on a steam locomotive can be modelled in OR by defining
-appropriate steam effects in the ``SteamSpecialEffects`` section of the
-ENG file.
+Special Visual Effects for Locomotives or Wagons
+------------------------------------------------
+Steam exhausts on a steam locomotive, and other special visual effects can be modelled in OR by defining
+appropriate visual effects in the ``SteamSpecialEffects`` section of the steam locomotive ENG file, the 
+``DieselSpecialEffects`` section of the diesel locomotive ENG file, or the ``SpecialEffects`` section 
+of a relevant wagon (including diesel, steam or electric locomotives.
 
-OR supports the following special steam effects:
+OR supports the following special visual effects in a steam locomotive:
 
 - Steam cylinders (named ``CylindersFX`` and ``Cylinders2FX``) -- two effects
   are provided which will represent the steam exhausted when the steam
@@ -1462,10 +1463,34 @@ OR supports the following special steam effects:
   steam discharge from the steam overflow pipe of the injectors. They will
   appear whenever the respective injectors operate.
 
-NB: If a steam effect is not defined in the ``SteamSpecialEffects`` section
-of the ENG file, then it will not be displayed  in the simulation.
+OR supports the following special visual effects in a diesel locomotive:
 
-Each effect is defined by inserting a code block into the ENG file similar to
+- Exhaust (named ``Exhaustnumber``) -- is a diesel exhaust. Multiple exhausts can
+  be defined, simply by adjusting the numerical value of the number after the key
+  word exhaust.
+
+OR supports the following special visual effects in a wagon (also the wagon section of 
+an ENG file):
+
+- Steam Heating Boiler (named ``HeatingSteamBoilerFX``) -- represents the exhaust for
+  a steam heating boiler. Typically this will be set up on a diesel or electric train
+  as steam heating was provided directly from a steam locomotive.
+
+- Wagon Generator (named ``WagonGeneratorFX``) -- represents the exhaust for a generator.
+  This generator was used to provide additional auxiliary power for the train, and
+  could have been used for air conditioning, heating lighting, etc.
+
+- Wagon Smoke (named ``WagonSmokeFX``) -- represents the smoke coming from say a
+  wood fire. This might have been a heating unit located in the guards van of the train.
+
+- Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a
+  steam pipe connection between wagons.
+
+NB: If a steam effect is not defined in the ``SteamSpecialEffects``,  ``DieselSpecialEffects``, or the 
+``SpecialEffects`` section of an ENG/WAG file, then it will not be displayed  in the simulation. 
+Similarly if any of the co-ordinates are zero, then the effect will not be displayed.
+
+Each effect is defined by inserting a code block into the ENG/WAG file similar to
 the one shown below::
 
     CylindersFX (
@@ -1473,7 +1498,7 @@ the one shown below::
         -1  0  0
         0.1
     )
-
+    
 The code block consists of the following elements:
 
 - Effect name -- as described above,
