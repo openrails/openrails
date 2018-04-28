@@ -1212,12 +1212,15 @@ The following commands are available at runtime (keys not shown here can be foun
 
 - Overcast increase/decrease: increases and decreases the amount of clouds
 - fog increase/decrease
-- precipitation increase/decrease.
+- precipitation increase/decrease
+- Precipitation "liquidity" (that is selection between rain and snow with intermediate states) increase/decrease.
 
-This demonstrates Open Rails software's foundation for dynamic weather 
-effects in the game.
+These commands are active starting from any initial weather state (clear, rain, snow).
 
-Moreover, pressing ``<Alt+P>`` can change the weather from clear to raining to 
+By selecting the desired precipitation liquidity before increasing precipitation, it 
+is possible to decide whether to pass from clear to rain or from clear to snow weather.
+
+Moreover, pressing ``<Alt+P>`` can abruptly change the weather from clear to raining to 
 snowing and back to clear.
 
 Randomized Weather in activities
