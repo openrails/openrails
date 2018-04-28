@@ -359,38 +359,77 @@ namespace Orts.Viewer3D
 
                 // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                 // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
-                if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // 0xFFFF represents 65535 which is the max for 16bit devices.
+                // 0xFFFF represents 65535 which is the max for 16bit devices.
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
                 {
-                    if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
+                    if (Viewer.Simulator.WeatherType == WeatherType.Clear)
                     {
-                        Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
-                        weatherChangeOn = false;
-                        if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
+                        Viewer.SoundProcess.RemoveSoundSources(this);
+                        if (Weather.PrecipitationLiquidity > DynamicWeather.RainSnowLiquidityThreshold)
+                        {
+                            Viewer.Simulator.WeatherType = WeatherType.Rain;
+                            Viewer.SoundProcess.AddSoundSources(this, RainSound);
+                        }
+                        else
+                        {
+                            Viewer.Simulator.WeatherType = WeatherType.Snow;
+                            Viewer.SoundProcess.AddSoundSources(this, SnowSound);
+                        }
                     }
-                    if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease))
-                    {
-                        Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2);
-                        weatherChangeOn = false;
-                        if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
-                    }
-                    if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) UpdateVolume();
+                    Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2 + 0.0000001f,
+                            Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? PrecipitationViewer.MaxIntensityPPSPM2 : PrecipitationViewer.MaxIntensityPPSPM2_16);
+                    weatherChangeOn = false;
+                    if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
                 }
-                else
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease))
                 {
-                    if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
+                    Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2,
+                        Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? PrecipitationViewer.MaxIntensityPPSPM2 : PrecipitationViewer.MaxIntensityPPSPM2_16);
+                    if (Weather.PricipitationIntensityPPSPM2 < PrecipitationViewer.MinIntensityPPSPM2 + 0.00001f)
                     {
-                        Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2_16);
-                        weatherChangeOn = false;
-                        if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
+                        Weather.PricipitationIntensityPPSPM2 = 0;
+                        if (Viewer.Simulator.WeatherType != WeatherType.Clear)
+                        {
+                            Viewer.SoundProcess.RemoveSoundSources(this);
+                            Viewer.Simulator.WeatherType = WeatherType.Clear;
+                            Viewer.SoundProcess.AddSoundSources(this, ClearSound);
+                        }
                     }
-                    if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease))
-                    {
-                        Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2, PrecipitationViewer.MaxIntensityPPSPM2_16);
-                        weatherChangeOn = false;
-                        if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
-                    }
-                    if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) UpdateVolume();
+                    weatherChangeOn = false;
+                    if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
                 }
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) UpdateVolume();
+ 
+                // Change in precipitation liquidity, passing from rain to snow and vice-versa
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityIncrease))
+                {
+                    Weather.PrecipitationLiquidity = MathHelper.Clamp(Weather.PrecipitationLiquidity + 0.01f, 0, 1);
+                    weatherChangeOn = false;
+                    if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationLiquidity = -1;
+                    if (Weather.PrecipitationLiquidity > DynamicWeather.RainSnowLiquidityThreshold && Viewer.Simulator.WeatherType != WeatherType.Rain
+                        && Weather.PricipitationIntensityPPSPM2 > 0)
+                    {
+                        Viewer.Simulator.WeatherType = WeatherType.Rain;
+                        Viewer.SoundProcess.RemoveSoundSources(this);
+                        Viewer.SoundProcess.AddSoundSources(this, RainSound);
+
+                    }
+                }
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityDecrease))
+                {
+                    Weather.PrecipitationLiquidity = MathHelper.Clamp(Weather.PrecipitationLiquidity - 0.01f, 0, 1);
+                    weatherChangeOn = false;
+                    if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationLiquidity = -1;
+                    if (Weather.PrecipitationLiquidity <= DynamicWeather.RainSnowLiquidityThreshold && Viewer.Simulator.WeatherType != WeatherType.Snow
+                        && Weather.PricipitationIntensityPPSPM2 > 0)
+                    {
+                        Viewer.Simulator.WeatherType = WeatherType.Snow;
+                        Viewer.SoundProcess.RemoveSoundSources(this);
+                        Viewer.SoundProcess.AddSoundSources(this, SnowSound);
+                    }
+                }
+                if (UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityDecrease)) UpdateVolume();
+
                 // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
                 if (UserInput.IsDown(UserCommands.DebugFogIncrease))
                 {
@@ -445,6 +484,16 @@ namespace Orts.Viewer3D
             }
             if (RandomizedWeather && !weatherChangeOn) // time to prepare a new weather change
                 dynamicWeather.WeatherChange_NextRandomization(elapsedTime, this);
+            if (Weather.PricipitationIntensityPPSPM2 == 0 && Viewer.Simulator.WeatherType != WeatherType.Clear)
+            {
+                Viewer.Simulator.WeatherType = Orts.Formats.Msts.WeatherType.Clear;
+                UpdateWeatherParameters();
+            }
+            else if (Weather.PricipitationIntensityPPSPM2 > 0 && Viewer.Simulator.WeatherType == WeatherType.Clear)
+            {
+                Viewer.Simulator.WeatherType = Weather.PrecipitationLiquidity > DynamicWeather.RainSnowLiquidityThreshold ? WeatherType.Rain : WeatherType.Snow;
+                UpdateWeatherParameters();
+            }
         }
 
         public class DynamicWeather

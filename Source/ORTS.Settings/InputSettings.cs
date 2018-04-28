@@ -85,6 +85,8 @@ namespace ORTS.Settings
         [GetString("Debug Fog Decrease")] DebugFogDecrease,
         [GetString("Debug Precipitation Increase")] DebugPrecipitationIncrease,
         [GetString("Debug Precipitation Decrease")] DebugPrecipitationDecrease,
+        [GetString("Debug Precipitation Liquidity Increase")] DebugPrecipitationLiquidityIncrease,
+        [GetString("Debug Precipitation Liquidity Decrease")] DebugPrecipitationLiquidityDecrease,
         [GetString("Debug Weather Change")] DebugWeatherChange,
         [GetString("Debug Clock Forwards")] DebugClockForwards,
         [GetString("Debug Clock Backwards")] DebugClockBackwards,
@@ -607,6 +609,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.DebugPhysicsForm] = new UserCommandKeyInput(0x3D, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugPrecipitationDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugPrecipitationIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugPrecipitationLiquidityDecrease] = new UserCommandKeyInput(0x0C, KeyModifiers.Control | KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugPrecipitationLiquidityIncrease] = new UserCommandKeyInput(0x0D, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugResetWheelSlip] = new UserCommandKeyInput(0x2D, KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSignalling] = new UserCommandKeyInput(0x57, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugSoundForm] = new UserCommandKeyInput(0x1F, KeyModifiers.Alt);
