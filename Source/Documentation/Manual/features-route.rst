@@ -52,6 +52,9 @@ Turntables and transfertables are managed in a similar way by OR, and share also
 significant portion of code. Therefore here reference to turntables will be made, and 
 then only the differences for transfertables will be described.
 
+.. caution:: Turntables and transfertables can't be directly connected to a leading switch. A track section of at least 1 meter must be laid in between.
+
+
 Turntables
 ----------
 
