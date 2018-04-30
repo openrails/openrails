@@ -258,7 +258,7 @@ namespace Orts.Simulation.RollingStocks
         SmoothedData FuelRateStoker = new SmoothedData(15); // Stoker is more responsive and only takes x seconds to fully react to changing needs.
         SmoothedData FuelRate = new SmoothedData(45); // Automatic fireman takes x seconds to fully react to changing needs.
         SmoothedData BurnRateSmoothKGpS = new SmoothedData(150); // Changes in BurnRate take x seconds to fully react to changing needs - models increase and decrease in heat.
-        float FuelRateSmooth = 0.0f;     // Smoothed Fuel Rate
+        float FuelRateSmoothed = 0.0f;     // Smoothed Fuel Rate
         public bool HasWaterScoop = false; // indicates whether loco + tender have a water scoop or not
         public float ScoopMinPickupSpeedMpS = 0.0f; // Minimum scoop pickup speed
         public float ScoopMaxPickupSpeedMpS = 200.0f; // Maximum scoop pickup speed
@@ -903,6 +903,9 @@ namespace Orts.Simulation.RollingStocks
         {
             outf.Write(BoilerHeatOutBTUpS);
             outf.Write(BoilerHeatInBTUpS);
+            outf.Write(PreviousBoilerHeatOutBTUpS);
+            outf.Write(PreviousBoilerHeatSmoothedBTU);
+            outf.Write(BurnRateRawKGpS);
             outf.Write(TenderCoalMassKG);
             outf.Write(RestoredMaxTotalCombinedWaterVolumeUKG);
             outf.Write(RestoredCombinedTenderWaterVolumeUKG);
@@ -916,6 +919,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(BoilerMassLB);
             outf.Write(BoilerPressurePSI);
             outf.Write(WaterTempNewK);
+            outf.Write(BkW_Diff);
             outf.Write(WaterFraction);
             outf.Write(EvaporationLBpS);
             outf.Write(FireMassKG);
@@ -930,6 +934,9 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(FireboxDoorController, outf);
             ControllerFactory.Save(FiringRateController, outf);
             ControllerFactory.Save(SmallEjectorController, outf);
+            outf.Write(FuelBurnRateSmoothedKGpS);
+            outf.Write(BoilerHeatSmoothedBTU);
+            outf.Write(FuelRateSmoothed);
             base.Save(outf);
         }
 
@@ -941,6 +948,9 @@ namespace Orts.Simulation.RollingStocks
         {
             BoilerHeatOutBTUpS = inf.ReadSingle();
             BoilerHeatInBTUpS = inf.ReadSingle();
+            PreviousBoilerHeatOutBTUpS = inf.ReadSingle();
+            PreviousBoilerHeatSmoothedBTU = inf.ReadSingle();
+            BurnRateRawKGpS = inf.ReadSingle();
             TenderCoalMassKG = inf.ReadSingle();
             RestoredMaxTotalCombinedWaterVolumeUKG = inf.ReadSingle();
             RestoredCombinedTenderWaterVolumeUKG = inf.ReadSingle();
@@ -954,6 +964,7 @@ namespace Orts.Simulation.RollingStocks
             BoilerMassLB = inf.ReadSingle();
             BoilerPressurePSI = inf.ReadSingle();
             WaterTempNewK = inf.ReadSingle();
+            BkW_Diff = inf.ReadSingle();
             WaterFraction = inf.ReadSingle();
             EvaporationLBpS = inf.ReadSingle();
             FireMassKG = inf.ReadSingle();
@@ -968,6 +979,12 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(FireboxDoorController, inf);
             ControllerFactory.Restore(FiringRateController, inf);
             ControllerFactory.Restore(SmallEjectorController, inf);
+            FuelBurnRateSmoothedKGpS = inf.ReadSingle();
+            BurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
+            BoilerHeatSmoothedBTU = inf.ReadSingle();
+            BoilerHeatSmoothBTU.ForceSmoothValue(BoilerHeatSmoothedBTU);
+            FuelRateSmoothed = inf.ReadSingle();
+            FuelRate.ForceSmoothValue(FuelRateSmoothed);
             base.Restore(inf);
         }
 
@@ -1967,7 +1984,7 @@ namespace Orts.Simulation.RollingStocks
             var variable1 = WheelSpeedSlipMpS / DriverWheelRadiusM / MathHelper.Pi * 5;
             Variable1 = ThrottlePercent == 0 ? 0 : variable1;
             Variable2 = MathHelper.Clamp((CylinderCocksPressureAtmPSI - OneAtmospherePSI) / BoilerPressurePSI * 100f, 0, 100);
-            Variable3 = FuelRateSmooth * 100;
+            Variable3 = FuelRateSmoothed * 100;
 
             const int rotations = 2;
             const int fullLoop = 10 * rotations;
@@ -2419,8 +2436,8 @@ namespace Orts.Simulation.RollingStocks
 
             if (FiringIsManual)
             {
-                FuelRateSmooth = CoalIsExhausted ? 0 : FiringRateController.CurrentValue;
-                FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmooth;
+                FuelRateSmoothed = CoalIsExhausted ? 0 : FiringRateController.CurrentValue;
+                FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmoothed;
             }
             else if (elapsedClockSeconds > 0.001 && MaxFiringRateKGpS > 0.001)
             {
@@ -2429,12 +2446,12 @@ namespace Orts.Simulation.RollingStocks
                 if (StokerIsMechanical) // if a stoker is fitted expect a quicker response to fuel feeding
                 {
                     FuelRateStoker.Update(elapsedClockSeconds, DesiredChange); // faster fuel feed rate for stoker    
-                    FuelRateSmooth = CoalIsExhausted ? 0 : FuelRateStoker.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
+                    FuelRateSmoothed = CoalIsExhausted ? 0 : FuelRateStoker.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire). 
                 }
                 else
                 {
                     FuelRate.Update(elapsedClockSeconds, DesiredChange); // slower fuel feed rate for fireman
-                    FuelRateSmooth = CoalIsExhausted ? 0 : FuelRate.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire).
+                    FuelRateSmoothed = CoalIsExhausted ? 0 : FuelRate.SmoothedValue; // If tender coal is empty stop fuelrate (feeding coal onto fire).
                 }
 
                 float CurrentFireLevelfactor = 0.95f; // factor representing the how low firemass has got compared to ideal firemass  
@@ -2467,13 +2484,13 @@ namespace Orts.Simulation.RollingStocks
                 if (FuelBoost && !FuelBoostReset) // if fuel boost is still on, and hasn't been reset - needs further refinement as this shouldn't be able to be maintained indefinitely
                 {
                     DisplayMaxFiringRateKGpS = MaxTheoreticalFiringRateKgpS; // Set display value with temporary higher shovelling level
-                    FuelFeedRateKGpS = MaxTheoreticalFiringRateKgpS * FuelRateSmooth;  // At times of heavy burning allow AI fireman to overfuel
+                    FuelFeedRateKGpS = MaxTheoreticalFiringRateKgpS * FuelRateSmoothed;  // At times of heavy burning allow AI fireman to overfuel
                     FuelBoostOnTimerS += elapsedClockSeconds; // Time how long to fuel boost for
                 }
                 else
                 {
                     DisplayMaxFiringRateKGpS = MaxFiringRateKGpS; // Rest display max firing rate to new figure
-                    FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmooth;
+                    FuelFeedRateKGpS = MaxFiringRateKGpS * FuelRateSmoothed;
                 }
             }
             // Calculate update to firemass as a result of adding fuel to the fire
