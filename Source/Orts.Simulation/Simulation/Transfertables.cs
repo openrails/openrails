@@ -148,6 +148,7 @@ namespace Orts.Simulation
                     }
                 }
             }
+            XPos = CenterOffset.X;
             // Compute width of transfer table
             Width = (float)(trackShape.SectionIdxs[trackShape.SectionIdxs.Length - 1].X - trackShape.SectionIdxs[0].X);
         }
@@ -291,7 +292,7 @@ namespace Orts.Simulation
         public void ComputeCenter(WorldPosition worldPosition)
         {
             Vector3 movingCenterOffset = CenterOffset;
-            movingCenterOffset.X += XPos;
+            movingCenterOffset.X = XPos;
             Vector3 originCoordinates;
             Vector3.Transform(ref movingCenterOffset, ref worldPosition.XNAMatrix, out originCoordinates);
             WorldPosition = new WorldPosition(worldPosition);
