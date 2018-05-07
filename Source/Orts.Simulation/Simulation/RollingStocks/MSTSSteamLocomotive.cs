@@ -1313,7 +1313,7 @@ namespace Orts.Simulation.RollingStocks
                 CylinderSteamUsageLBpS = 1.0f;  // Set to 1 to ensure that there are no divide by zero errors
                 WaterFraction = 0.9f;  // Initialise boiler water level at 90%
             }
-
+            float MaxWaterFraction = 0.9f; // Initialise the max water fraction when the boiler starts
             if (BoilerEvapRateLbspFt2 == 0) // If boiler evaporation rate is not in ENG file then set a default value
             {
                 BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
@@ -1330,8 +1330,8 @@ namespace Orts.Simulation.RollingStocks
             }
 
             MaxBoilerHeatSafetyPressurePSI = MaxBoilerPressurePSI + SafetyValveStartPSI + 6.0f; // set locomotive maximum boiler pressure to calculate max heat, allow for safety valve + a bit
-            MaxBoilerSafetyPressHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerHeatSafetyPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerHeatSafetyPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerHeatSafetyPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerHeatSafetyPressurePSI];  // calculate the maximum possible heat in the boiler, assuming safety valve and a small margin
-            MaxBoilerHeatBTU = WaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerPressurePSI] + (1 - WaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI];  // calculate the maximum possible heat in the boiler
+            MaxBoilerSafetyPressHeatBTU = MaxWaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerHeatSafetyPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerHeatSafetyPressurePSI] + (1 - MaxWaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerHeatSafetyPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerHeatSafetyPressurePSI];  // calculate the maximum possible heat in the boiler, assuming safety valve and a small margin
+            MaxBoilerHeatBTU = MaxWaterFraction * BoilerVolumeFT3 * WaterDensityPSItoLBpFT3[MaxBoilerPressurePSI] * WaterHeatPSItoBTUpLB[MaxBoilerPressurePSI] + (1 - MaxWaterFraction) * BoilerVolumeFT3 * SteamDensityPSItoLBpFT3[MaxBoilerPressurePSI] * SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI];  // calculate the maximum possible heat in the boiler
 
             MaxBoilerKW = Kg.FromLb(TheoreticalMaxSteamOutputLBpS) * W.ToKW(W.FromBTUpS(SteamHeatPSItoBTUpLB[MaxBoilerPressurePSI]));
             MaxFlueTempK = (MaxBoilerKW / (W.ToKW(BoilerHeatTransferCoeffWpM2K) * EvaporationAreaM2 * HeatMaterialThicknessFactor)) + baseTempK;
@@ -6025,16 +6025,8 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.min,
                 FormatStrings.rpm,
                 Simulator.Catalog.GetString("Max-SpdF"),
-                DisplaySpeedFactor);
+                DisplaySpeedFactor
 
-            status.AppendFormat("\n{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
-                Simulator.Catalog.GetString("Sand:"),
-                Simulator.Catalog.GetString("S/Use"),
-                TrackSanderSandConsumptionFt3pH,
-                Simulator.Catalog.GetString("S/Box"),
-                TrackSandBoxCapacityFt3,
-                Simulator.Catalog.GetString("M/Press"),
-                MainResPressurePSI
                 );
 
             if (Simulator.UseAdvancedAdhesion && SteamEngineType != SteamEngineTypes.Geared) // Only display slip monitor if advanced adhesion used
@@ -6060,6 +6052,15 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(Kg.FromLb(SteamDrvWheelWeightLbs), IsMetric),
                     Simulator.Catalog.GetString("FoA"),
                     CalculatedFactorofAdhesion);
+
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
+                Simulator.Catalog.GetString("Sand:"),
+                Simulator.Catalog.GetString("S/Use"),
+                TrackSanderSandConsumptionFt3pH,
+                Simulator.Catalog.GetString("S/Box"),
+                TrackSandBoxCapacityFt3,
+                Simulator.Catalog.GetString("M/Press"),
+                MainResPressurePSI);
             }
 
 #if DEBUG_STEAM_EFFECTS
