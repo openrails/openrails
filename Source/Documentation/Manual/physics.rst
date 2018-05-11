@@ -1694,9 +1694,11 @@ Wheel Skidding due to Excessive Brake Force
 
 The application of excessive braking force onto a wheel can cause it to lock up and then start to slip along the rails. This occurs where the wagon braking force exceeds the adhesive weight force of the wagon wheel, i.e. the wheel to rail friction is overcome, and the wheel no longer *grips* the rails.
 
-Typically this happens with lightly loaded vehicles at lower speeds, and hence the need to ensure that braking forces are applied to design standards.
+Typically this happens with lightly loaded vehicles at lower speeds, and hence the need to ensure that braking forces are applied to design standards. Skidding will be more likely to occur when the adhesion between the wheel and track is low, so for example skidding is more likely in wet weather then dry weather. The value *Wag Adhesion* in the FORCES INFORMATION HUD indicates this adhesion value, and will vary with the relevant weather conditions.
 
-When a vehicle experiences wheel skid, an indication is provided in the FORCES INFORMATION HUD. To correct the problem the brakes must be released, and then applied slowly to ensure that the wheels are not *locked* up.
+When a vehicle experiences wheel skid, an indication is provided in the FORCES INFORMATION HUD. To correct the problem the brakes must be released, and then applied slowly to ensure that the wheels are not *locked* up. Wheel skid will only occur if ADVANCED adhesion is selected in the options menu.
+
+(Ref to *Wheel Skidding due to Excessive Brake Force* for additional information)
 
 Using the F5 HUD Expanded Braking Information
 ---------------------------------------------
