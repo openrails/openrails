@@ -147,10 +147,6 @@ namespace Orts.Formats.Msts
         ORTS_OIL_PRESSURE,
         ORTS_DIESEL_TEMPERATURE,
         ORTS_CYL_COMP,
-        EXTERNALWIPERS,
-        LEFTDOOR,
-        RIGHTDOOR,
-        MIRRORS,
         GEARS_DISPLAY,
         ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER,
         ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER,
@@ -159,7 +155,12 @@ namespace Orts.Formats.Msts
         ORTS_CIRCUIT_BREAKER_CLOSED,
         ORTS_CIRCUIT_BREAKER_OPEN,
         ORTS_CIRCUIT_BREAKER_AUTHORIZED,
-        ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED
+        ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED,
+        // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
+        EXTERNALWIPERS,
+        LEFTDOOR,
+        RIGHTDOOR,
+        MIRRORS
     }
 
     public enum CABViewControlStyles
