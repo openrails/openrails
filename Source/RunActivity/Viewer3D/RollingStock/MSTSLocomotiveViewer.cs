@@ -1884,6 +1884,33 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.SANDING: new SanderCommand(Viewer.Log, ChangedValue(Locomotive.Sander ? 1 : 0) > 0); break;
                 case CABViewControlTypes.PANTOGRAPH: new PantographCommand(Viewer.Log, 1, ChangedValue(Locomotive.Pantographs[1].CommandUp ? 1 : 0) > 0); break;
                 case CABViewControlTypes.PANTOGRAPH2: new PantographCommand(Viewer.Log, 2, ChangedValue(Locomotive.Pantographs[2].CommandUp ? 1 : 0) > 0); break;
+                case CABViewControlTypes.PANTOGRAPHS_4C:
+                case CABViewControlTypes.PANTOGRAPHS_4:
+                    var pantos = ChangedValue(0);
+                    if (pantos != 0)
+                    {
+                        if (Locomotive.Pantographs[1].State == PantographState.Down && Locomotive.Pantographs[2].State == PantographState.Down)
+                        {
+                            if (pantos > 0) new PantographCommand(Viewer.Log, 1, true);
+                            else if (Control.ControlType == CABViewControlTypes.PANTOGRAPHS_4C) new PantographCommand(Viewer.Log, 2, true);
+                        }
+                        else if (Locomotive.Pantographs[1].State == PantographState.Up && Locomotive.Pantographs[2].State == PantographState.Down)
+                        {
+                            if (pantos > 0) new PantographCommand(Viewer.Log, 2, true);
+                            else new PantographCommand(Viewer.Log, 1, false);
+                        }
+                        else if (Locomotive.Pantographs[1].State == PantographState.Up && Locomotive.Pantographs[2].State == PantographState.Up)
+                        {
+                            if (pantos > 0) new PantographCommand(Viewer.Log, 1, false);
+                            else new PantographCommand(Viewer.Log, 2, false);
+                        }
+                        else if (Locomotive.Pantographs[1].State == PantographState.Down && Locomotive.Pantographs[2].State == PantographState.Up)
+                        {
+                            if (pantos < 0) new PantographCommand(Viewer.Log, 1, true);
+                            else if (Control.ControlType == CABViewControlTypes.PANTOGRAPHS_4C) new PantographCommand(Viewer.Log, 2, false);
+                        }
+                    }
+                    break;
                 case CABViewControlTypes.STEAM_HEAT: Locomotive.SetSteamHeatValue(ChangedValue(Locomotive.SteamHeatController.IntermediateValue)); break;
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).PowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);
