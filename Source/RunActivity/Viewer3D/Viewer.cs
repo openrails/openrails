@@ -631,7 +631,7 @@ namespace Orts.Viewer3D
         {
             float cabTextureInverseRatio = -1;
             bool _isNightTexture;
-            var cabTexture = CABTextureManager.GetTexture(cabTextureFileName, false, false, out _isNightTexture);
+            var cabTexture = CABTextureManager.GetTexture(cabTextureFileName, false, false, out _isNightTexture, false);
             if (cabTexture != SharedMaterialManager.MissingTexture)
             {
                 cabTextureInverseRatio = (float)cabTexture.Height / cabTexture.Width;
