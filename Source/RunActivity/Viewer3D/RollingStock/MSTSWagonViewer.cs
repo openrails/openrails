@@ -142,21 +142,31 @@ namespace Orts.Viewer3D.RollingStock
                 ? new PoseableShape(viewer, wagonFolderSlash + car.MainShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.ShadowCaster)
                 : new PoseableShape(viewer, null, car.WorldPosition);
 
-            // This insection initialises the MSTS style freight animation for the coal load on a tender or tank locomotive - in operation it will raise or lower with caol usage.
+            // This insection initialises the MSTS style freight animation - can either be for a coal load, which will adjust with usage, or a static animation, such as additional shape.
             if (car.FreightShapeFileName != null)
             {
-                var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
+                
                 car.HasFreightAnim = true;
                 FreightShape = new AnimatedShape(viewer, wagonFolderSlash + car.FreightShapeFileName + '\0' + wagonFolderSlash, new WorldPosition(car.WorldPosition), ShapeFlags.ShadowCaster);
+
                 // Reproducing MSTS "bug" of not allowing tender animation in case both minLevel and maxLevel are 0 or maxLevel <  minLevel 
-                // Applies to both a standard tender locomotive or a tank locomotive (where coal load is on same "wagon" as the locomotive.
-                if ((MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0)) && MSTSWagon.FreightAnimMaxLevelM != 0 && MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
+                // Applies to both a standard tender locomotive or a tank locomotive (where coal load is on same "wagon" as the locomotive -  for the coal load on a tender or tank locomotive - in operation it will raise or lower with caol usage
+
+                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon.EngineType == TrainCar.EngineTypes.Steam)
                 {
-                    // Force allowing animation:
-                    if (FreightShape.SharedShape.LodControls.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
-                        FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] = 1;
+
+                    var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
+
+                    if ((MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0)) && MSTSWagon.FreightAnimMaxLevelM != 0 && MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
+                    {
+                        // Force allowing animation:
+                        if (FreightShape.SharedShape.LodControls.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
+                            FreightShape.SharedShape.LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] = 1;
+                    }
                 }
             }
+
+
             if (car.InteriorShapeFileName != null)
                 InteriorShape = new AnimatedShape(viewer, wagonFolderSlash + car.InteriorShapeFileName + '\0' + wagonFolderSlash, car.WorldPosition, ShapeFlags.Interior, 30.0f);
 
@@ -558,36 +568,48 @@ namespace Orts.Viewer3D.RollingStock
                 TrainCarShape.XNAMatrices[p.iMatrix] = Car.VibrationInverseMatrix * m;
             }
 
-            // This section adjusts the tender or tank locomotive coal shape up or down as coal is used.
-            // Uses MSTS style freight animation
+
+            // Applies MSTS style freight animation
+            // If it is a coal load then adjusts the tender or tank locomotive coal shape up or down as coal is used.
+            // Alternatively if a "static" shape, then displays it only
             if (FreightShape != null)
             {
+                // Define position of shape
                 FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
                 FreightShape.Location.TileX = Car.WorldPosition.TileX; FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
 
-                var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
-
-                // Applies to both a standard tender locomotive or a tank locomotive (where coal load is on same "wagon" as the locomotive.
-                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0))
-                {
+                    bool SteamAnimShape = false;
                     float FuelControllerLevel = 0.0f;
-                    if (MSTSWagon.TendersSteamLocomotive == null)
-                        MSTSWagon.FindTendersSteamLocomotive();
 
-                    if(MSTSWagon.TendersSteamLocomotive != null)
+                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon.EngineType == TrainCar.EngineTypes.Steam)
+                {
+
+                    var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
+
+                    // Applies to both a standard tender locomotive or a tank locomotive (where coal load is on same "wagon" as the locomotive).
+                    if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0))
                     {
-                        FuelControllerLevel = MSTSWagon.TendersSteamLocomotive.FuelController.CurrentValue;
+
+                        if (MSTSWagon.TendersSteamLocomotive == null)
+                            MSTSWagon.FindTendersSteamLocomotive();
+
+                        if (MSTSWagon.TendersSteamLocomotive != null)
+                        {
+                            FuelControllerLevel = MSTSWagon.TendersSteamLocomotive.FuelController.CurrentValue;
+                        }
+                        else
+                        {
+                            FuelControllerLevel = NonTenderSteamLocomotive.FuelController.CurrentValue;
+                        }
+                        SteamAnimShape = true;
                     }
-                    else
-                    {
-                        FuelControllerLevel = NonTenderSteamLocomotive.FuelController.CurrentValue;
-                    }                   
+                }
 
                     // Adjust height of coal load for tenders and tank steam locomotives
-                    if (FreightShape.XNAMatrices.Length > 0 && (MSTSWagon.TendersSteamLocomotive != null || (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0)))
+                    if (FreightShape.XNAMatrices.Length > 0 && SteamAnimShape)
                     {
                         if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
-                        {                        
+                        {
                             FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
                         }
                         else
@@ -596,7 +618,7 @@ namespace Orts.Viewer3D.RollingStock
                             FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
                         }
                     }
-                }
+                                    
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
 
