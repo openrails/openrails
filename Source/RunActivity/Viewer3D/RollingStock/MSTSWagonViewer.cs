@@ -569,24 +569,28 @@ namespace Orts.Viewer3D.RollingStock
             }
 
 
-            // Applies MSTS style freight animation
-            // If it is a coal load then adjusts the tender or tank locomotive coal shape up or down as coal is used.
-            // Alternatively if a "static" shape, then displays it only
+            // Applies MSTS style freight animation for coal load on the locomotive, crews, and other static animations.
+            // Takes the form of FreightAnim ( A B C )
+            // MSTS allowed crew figures to be inserted into the tender WAG file and thus be displayed on the locomotive.
+            // It appears that only one MSTS type FA can be used per vehicle (to be confirmed?)
+            // For coal load variation, C should be absent (set to 1 when read in WAG file) or >0 - sets FreightAnimFlag; and A > B
+            // To disable coal load variation and insert a static (crew) shape on the tender breech, one of the conditions indicated above
             if (FreightShape != null)
             {
-                // Define position of shape
+                // Define default position of shape
                 FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
-                FreightShape.Location.TileX = Car.WorldPosition.TileX; FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
+                FreightShape.Location.TileX = Car.WorldPosition.TileX;
+                FreightShape.Location.TileZ = Car.WorldPosition.TileZ;
 
                     bool SteamAnimShape = false;
                     float FuelControllerLevel = 0.0f;
 
+                // For coal load variation on locomotives determine the current fuel level - and whether locomotive is a tender or tank type locomotive.
                 if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon.EngineType == TrainCar.EngineTypes.Steam)
                 {
 
                     var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
-
-                    // Applies to both a standard tender locomotive or a tank locomotive (where coal load is on same "wagon" as the locomotive).
+                                        
                     if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || (MSTSWagon.EngineType == TrainCar.EngineTypes.Steam && NonTenderSteamLocomotive.IsTenderRequired == 0.0))
                     {
 
@@ -605,20 +609,21 @@ namespace Orts.Viewer3D.RollingStock
                     }
                 }
 
-                    // Adjust height of coal load for tenders and tank steam locomotives
-                    if (FreightShape.XNAMatrices.Length > 0 && SteamAnimShape)
+                    // Set height of FAs - if relevant conditions met, use default position co-ords defined above
+                    if (FreightShape.XNAMatrices.Length > 0)
                     {
-                        if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM)
+                        // For tender coal load animation 
+                        if (MSTSWagon.FreightAnimFlag > 0 && MSTSWagon.FreightAnimMaxLevelM > MSTSWagon.FreightAnimMinLevelM && SteamAnimShape)
                         {
                             FreightShape.XNAMatrices[0].M42 = MSTSWagon.FreightAnimMinLevelM + FuelControllerLevel * (MSTSWagon.FreightAnimMaxLevelM - MSTSWagon.FreightAnimMinLevelM);
                         }
-                        else
-                        // reproducing MSTS strange behavior; used to display loco crew
+                        // reproducing MSTS strange behavior; used to display loco crew when attached to tender
+                        else if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender) 
                         {
                             FreightShape.Location.XNAMatrix.M42 += MSTSWagon.FreightAnimMaxLevelM;
                         }
                     }
-                                    
+                // Display Animation Shape                    
                 FreightShape.PrepareFrame(frame, elapsedTime);
             }
 
