@@ -1716,23 +1716,25 @@ The TSRE5 Route Editor includes activity editing capabilities. These capabilitie
 include addition of all OR-specific additions to activity files described in 
 following paragraphs.
 
-Generating an additional activity file
+.. _operation-extension-activity-file:
+
+Generating an extension activity file
 --------------------------------------
 
 If the TSRE5 editor isn't used, and if it is desired to avoid the problem that the 
 OR-specific additions are lost by later modifying the activity with the MSTS Activity Editor, 
 it is recommended to use this third possibility: an OpenRails subfolder must be created 
-within the route's ACTIVITIES folder, and an .act file including only the OR-specific additions can be 
-created with an Unicode-enable editor and then located there.
-An example of an unmodified .act file and of an additional .act file within the route's 
+within the route's ACTIVITIES folder, and an .act file including only the OR-specific extensions 
+used can be created with an Unicode-enable editor and then located there.
+An example of an unmodified .act file and of an extension .act file within the route's 
 OpenRails subfolder is included in file ORActivityExtensionFileSample.zip, which may be 
 found within the ``Documentation\SampleFiles\Manual`` subfolder within the OpenRails folder.
-As can be seen, the name of such additional .act file must be the same as the one of the base 
+As can be seen, the name of such extension .act file must be the same as the one of the base 
 .act file. Re events, to ensure a correct cross-correspondence between event definitions 
-within the base file and within the additional file, in the additional file within 
+within the base file and within the extension file, in the extension file within 
 the EventCategory block of every modified event the first line must be the ID () one, 
 and the ID must correspond with the one present in the base .act file. Only the added 
-lines within such EventCategory block must be present in the additional .act file.
+lines within such EventCategory block must be present in the extension .act file.
 
 
 No Halt by Activity Message Box
@@ -1936,3 +1938,87 @@ WeatherChange events will remove them, so they should be backed up separately.
 Opening an .act file that contains WeatherChange events with the MSTS Activity 
 Editor and packaging it without editing it generates an .apk file that contains 
 the WeatherChange events.
+
+AI train Waiting Point modification through player train event
+--------------------------------------------------------------
+
+Purpose of the feature
+''''''''''''''''''''''
+
+An event outcome is available which modifies the waiting point expiration time 
+when the event is hit (e.g. when the player train reaches it, in case of a 
+location event).
+
+This solves AI train sync problems. If e.g. an AI train is due to couple or 
+uncouple cars to/from the player train, it must be ensured that the two trains 
+are at the right place at the right time. If however this occurs after a long 
+run of the player train, this one could be delayed, and so it is difficult to 
+guarantee that the rendez-vous occurs correctly. In this case a long lasting 
+waiting point may be placed on the AI train path. The AI train will wait there for 
+the player train. At the sync location (usuall few before the point where the player 
+train must be touched by the AI train) a location event is positioned, which 
+indicates the updated waiting point value for the AI train (usually a short 
+waiting point). When the player train will hit such location event, the AI 
+train wating point will be updated and such train will restart after the updated 
+waiting point has 
+expired, and it will couple to the player train.
+
+The feature may be used also for other features, like having an AI train 
+coupling to the player train as helper, or like guaranteeing a passenger train 
+connection in a station.
+
+Syntax of the feature
+'''''''''''''''''''''
+To make use of this feature it is suggested to generate an :ref:`Extension activity 
+file <operation-extension-activity-file>` .
+Here is an example of an extension activity file using such feature::
+
+  SIMISA@@@@@@@@@@JINX0a0t______
+  
+  Tr_Activity (
+  	Tr_Activity_File (
+  		Events (
+  			EventCategoryLocation (
+  				ID ( 1 )
+  				ORTSContinue ( 3 )
+  				Outcomes (
+  					ORTSRestartWaitingTrain (
+  						ORTSWaitingTrainToRestart ( "TesteventWP_ai_longerpath" )
+  							ORTSDelayToRestart ( 60 )
+  							ORTSMatchingWPDelay ( 31500 )
+  							)
+  				)
+  			)
+  		)
+  	)
+  )
+
+
+Description of parameters:
+
+1) ORTSWaitingTrainToRestart has as parameter the service name of the AI train whose waiting point 
+   has to be modified
+2) ORTSDelayToRestart is the new delay for the waiting point. It is expressed in seconds.
+3) ORTSMatchingWPDelay indicates the original value of the AI train waiting point; this 
+   is used to ensure 
+   that the correct waiting point is modified.
+
+The above file is also available as file TesteventWP_longerpath_extension.zip, which may be 
+found within the ``Documentation\SampleFiles\Manual`` subfolder within the OpenRails folder. 
+A sample activity using such file is available as file testeventwp_longerpath.zip in the same 
+subfolder. It is an .apk file.
+
+The activity uses the MSTS legacy route USA1 and legacy trainsets.
+
+The player train exits from the tunnel and stops at the Baltimore station. Just before this, 
+it hits the location event setting the AI train WP. Later an AI train will enter the station 
+and stop. This train hits an absolute WP just after terminating passenger unloading. As the 
+player train arrived before, such absolute WP becomes zeroed and the AI train will restart 
+without further waiting.
+
+If instead the player train is stopped before entering the station, and stays there until the 
+AI train has entered the station and unloaded passsengers, the AI train will stay further 
+there until the player train restarts, hits the location event and the modified WP time has 
+expired.
+
+
