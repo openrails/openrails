@@ -974,16 +974,35 @@ namespace Orts.Simulation
                             }
                             // couple my front to rear of train
                             //drivenTrain.SetCoupleSpeed(train, 1);
-                            drivenTrain.FirstCar.SignalEvent(Event.Couple);
+
                             TrainCar lead = drivenTrain.LeadLocomotive;
-                            for (int i = 0; i < train.Cars.Count; ++i)
-                            {
-                                TrainCar car = train.Cars[i];
-                                drivenTrain.Cars.Insert(i, car);
-                                car.Train = drivenTrain;
+                            if (lead == null)
+                            {//Like Rear coupling with changed data  
+                                lead = train.LeadLocomotive;
+                                train.LastCar.SignalEvent(Event.Couple);
+     
+                                for (int i = 0; i < drivenTrain.Cars.Count; ++i)
+                                {
+                                    TrainCar car = drivenTrain.Cars[i];
+                                    train.Cars.Add(car);
+                                    car.Train = train;
+                                }
+                                //Rear coupling
+                                FinishRearCoupling(train, drivenTrain, false);
                             }
-                            if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
-                            FinishFrontCoupling(drivenTrain, train, lead, true);
+                            else
+                            {
+                                drivenTrain.FirstCar.SignalEvent(Event.Couple);
+                                lead = drivenTrain.LeadLocomotive;
+                                for (int i = 0; i < train.Cars.Count; ++i)
+                                {
+                                    TrainCar car = train.Cars[i];
+                                    drivenTrain.Cars.Insert(i, car);
+                                    car.Train = drivenTrain;
+                                }
+                                if (drivenTrain.LeadLocomotiveIndex >= 0) drivenTrain.LeadLocomotiveIndex += train.Cars.Count;
+                                FinishFrontCoupling(drivenTrain, train, lead, true);
+                            }
                             return;
                         }
                         float d2 = drivenTrain.FrontTDBTraveller.OverlapDistanceM(train.FrontTDBTraveller, false);
