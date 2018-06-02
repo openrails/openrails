@@ -810,7 +810,12 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("eventtypelocation", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); }),
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
+                new STFReader.TokenProcessor("outcomes", ()=>
+                {
+                    if (Outcomes == null)
+                        Outcomes = new Outcomes(stf);
+                    else
+                        Outcomes.CreateOrModifyOutcomes(stf); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ TextToDisplayOnCompletionIfTriggered = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnottriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(null); }),
@@ -884,7 +889,12 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("eventtypereachspeed", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); Type = EventType.ReachSpeed; }),
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
+                new STFReader.TokenProcessor("outcomes", ()=>
+                {
+                    if (Outcomes == null)
+                        Outcomes = new Outcomes(stf);
+                    else
+                        Outcomes.CreateOrModifyOutcomes(stf); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ TextToDisplayOnCompletionIfTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
@@ -974,7 +984,12 @@ namespace Orts.Formats.Msts
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("id", ()=>{ ID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("activation_level", ()=>{ Activation_Level = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("outcomes", ()=>{ Outcomes = new Outcomes(stf); }),
+                new STFReader.TokenProcessor("outcomes", ()=>
+                {
+                    if (Outcomes == null)
+                        Outcomes = new Outcomes(stf);
+                    else
+                        Outcomes.CreateOrModifyOutcomes(stf); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletioniftriggered", ()=>{ TextToDisplayOnCompletionIfTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("texttodisplayoncompletionifnotrriggered", ()=>{ TextToDisplayOnCompletionIfNotTriggered = stf.ReadStringBlock(""); }),
                 new STFReader.TokenProcessor("name", ()=>{ Name = stf.ReadStringBlock(""); }),
@@ -1020,8 +1035,15 @@ namespace Orts.Formats.Msts
         public List<int> DecActLevelList = new List<int>();
         public List<int> IncActLevelList = new List<int>();
         public string DisplayMessage;
+ //       public string WaitingTrainToRestart;
+        public RestartWaitingTrain RestartWaitingTrain;
 
         public Outcomes(STFReader stf) {
+            CreateOrModifyOutcomes(stf);
+        }
+
+        public void CreateOrModifyOutcomes(STFReader stf)
+        { 
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("activitysuccess", ()=>{ stf.MustMatch("("); stf.MustMatch(")"); ActivitySuccess = true; }),
@@ -1030,9 +1052,30 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("restoreactlevel", ()=>{ RestoreActLevelList.Add(stf.ReadIntBlock(null)); }),
                 new STFReader.TokenProcessor("decactlevel", ()=>{ DecActLevelList.Add(stf.ReadIntBlock(null)); }),
                 new STFReader.TokenProcessor("incactlevel", ()=>{ IncActLevelList.Add(stf.ReadIntBlock(null)); }),
-                new STFReader.TokenProcessor("displaymessage", ()=>{ DisplayMessage = stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("displaymessage", ()=>{
+                    DisplayMessage = stf.ReadStringBlock(""); }),
+ //               new STFReader.TokenProcessor("ortswaitingtraintorestart", ()=>{ WaitingTrainToRestart = stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("ortsrestartwaitingtrain", ()=>{ RestartWaitingTrain = new RestartWaitingTrain(stf); }),
             });
         }
+    }
+
+    public class RestartWaitingTrain
+    {
+        public string WaitingTrainToRestart;
+        public int DelayToRestart;
+        public int MatchingWPDelay;
+
+        public RestartWaitingTrain (STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("ortswaitingtraintorestart", ()=>{ WaitingTrainToRestart = stf.ReadStringBlock(""); }),
+                new STFReader.TokenProcessor("ortsdelaytorestart", ()=>{ DelayToRestart = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsmatchingwpdelay", ()=>{ MatchingWPDelay = stf.ReadIntBlock(null); }),
+            });
+        }
+
     }
 
     public class ORTSWeatherChange

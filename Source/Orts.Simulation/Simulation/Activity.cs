@@ -1252,6 +1252,11 @@ namespace Orts.Simulation
                 activity.IsSuccessful = true;
                 return true;
             }
+            if (this.ParsedObject.Outcomes.RestartWaitingTrain != null && this.ParsedObject.Outcomes.RestartWaitingTrain.WaitingTrainToRestart != "")
+            {
+                var restartWaitingTrain = this.ParsedObject.Outcomes.RestartWaitingTrain;
+                Simulator.RestartWaitingTrain(restartWaitingTrain.WaitingTrainToRestart, restartWaitingTrain.DelayToRestart, restartWaitingTrain.MatchingWPDelay);
+            }
             return false;
         }
 
