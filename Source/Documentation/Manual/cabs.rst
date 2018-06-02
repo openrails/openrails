@@ -278,3 +278,21 @@ Now just one more thing. Download the ``DF11G3DCab`` demo trainset. In the
 for your model.
 
 Now, open OR and test your speedometer.
+
+
+FUEL_GAUGE for steam locomotives
+--------------------------------
+
+The FUEL_GAUGE dial is available also for steam locomotives. It may be used 
+both to display a fuel level for oil burning steam locomotives (also in 2D cabs), 
+and to animate the coal level in a tank loco. Default unit of measure is Kg; 
+alternate unit of 
+measure may be LBS.
+Here below an example of an entry for a 3D cab::
+
+  Dial (
+  Type ( FUEL_GAUGE DIAL )
+  Style ( POINTER )
+  ScaleRange ( 0 5000 )
+  Units ( LBS )
+  ) 
