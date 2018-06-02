@@ -211,7 +211,8 @@ namespace Orts.Formats.Msts
         GALLONS,
         INCHES_OF_MERCURY,
         MILI_AMPS,
-        RPM
+        RPM,
+        LBS
     }
 
     public class CabViewControls : List<CabViewControl>

@@ -5590,6 +5590,12 @@ namespace Orts.Simulation.RollingStocks
                         data = SmallEjectorController.CurrentValue;
                         break;
                     }
+                case CABViewControlTypes.FUEL_GAUGE:
+                    if (cvc.Units == CABViewControlUnits.LBS)
+                        data = Kg.ToLb(TenderCoalMassKG);
+                    else
+                        data = TenderCoalMassKG;
+                     break;
                 default:
                     data = base.GetDataOf(cvc);
                     break;
