@@ -314,13 +314,6 @@ namespace Orts.Common
             0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
         };
 
-
-        // Cylinder Condensation - Ref Principles of Locomotive Operation
-        static float[] CylinderCondensationSimpleFactor = new float[]
-        {
-              0.335f, 0.27f, 0.21f, 0.17f, 0.15f, 0.16f, 0.19f, 0.23f
-        };
-
 // Steam Tables
 
 // Indicator Diagram - Cylinder Events
@@ -343,12 +336,6 @@ namespace Orts.Common
             return new Interpolator(CutOffFractionEventTableX, CylinderAdmissionTableX);
         }   
           
-// Cylinder condensation Vs Speed (Wheel Revolutions) - Simple locomotive - based upon Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        public static Interpolator CylinderCondensationSimpleSpeedAdjRpMtoX()
-        {
-            return new Interpolator(CondensationWheelRotationRpM, CylinderCondensationSimpleFactor);
-        }
-
 // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
         public static Interpolator CylinderCondensationFractionInterpolatorX()
         {

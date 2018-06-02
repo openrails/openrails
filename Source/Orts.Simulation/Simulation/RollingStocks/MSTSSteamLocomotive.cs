@@ -284,7 +284,6 @@ namespace Orts.Simulation.RollingStocks
         float CylinderSweptVolumeFT3pFT;     // Volume of steam Cylinder
         float LPCylinderSweptVolumeFT3pFT;     // Volume of LP steam Cylinder
         float CylinderCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to cutoff
-        float CylinderSpeedCondensationFactor;  // Cylinder compensation factor for condensation in cylinder due to speed
         float BlowerSteamUsageFactor;
         float InjectorLockOutResetTimeS = 15.0f; // Time to reset the injector lock out time - time to prevent change of injectors
         float InjectorLockOutTimeS = 0.0f; // Current lock out time - reset after Reset Time exceeded 
@@ -314,7 +313,6 @@ namespace Orts.Simulation.RollingStocks
         Interpolator BoilerEfficiency;  // boiler efficiency given steam usage
         Interpolator WaterTempFtoPSI;  // Table to convert water temp to pressure
         Interpolator CylinderCondensationFractionX;  // Table to find the cylinder condensation fraction per cutoff for the cylinder - saturated steam
-        Interpolator CylinderCondensationFactorSpeed;  // Table to find the cylinder condensation fraction Vs speed for the cylinder - saturated steam
         Interpolator SuperheatTempLimitXtoDegF;  // Table to find Super heat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
         Interpolator SuperheatTempLbpHtoDegF;  // Table to find Super heat temp per lbs of steam to cylinder - from BTC Test Results for Std 8
         Interpolator InitialPressureDropRatioRpMtoX; // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases
@@ -788,6 +786,9 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortscylinderbackpressure": BackPressureIHPtoPSI = new Interpolator(stf); break;
                 case "engine(ortsburnrate": NewBurnRateSteamToCoalLbspH = new Interpolator(stf); break;
                 case "engine(ortsboilerefficiency": BoilerEfficiencyGrateAreaLBpFT2toX = new Interpolator(stf); break;
+                case "engine(ortscylindereventexhaust": CylinderExhausttoCutoff = new Interpolator(stf); break;
+                case "engine(ortscylindereventcompression": CylinderCompressiontoCutoff = new Interpolator(stf); break;
+                case "engine(ortscylindereventadmission": CylinderAdmissiontoCutoff = new Interpolator(stf); break;
                 case "engine(ortssteamgearratio":
                     stf.MustMatch("(");
                     SteamGearRatioLow = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -894,6 +895,9 @@ namespace Orts.Simulation.RollingStocks
             ScoopMinPickupSpeedMpS = locoCopy.ScoopMinPickupSpeedMpS;
             ScoopMaxPickupSpeedMpS = locoCopy.ScoopMaxPickupSpeedMpS;
             ScoopResistanceN = locoCopy.ScoopResistanceN;
+            CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
+            CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
+            CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
         }
 
         /// <summary>
@@ -1068,7 +1072,6 @@ namespace Orts.Simulation.RollingStocks
             SaturationPressureKtoPSI = SteamTable.SaturationPressureInterpolatorKtoPSI();
 
             CylinderCondensationFractionX = SteamTable.CylinderCondensationFractionInterpolatorX();
-            CylinderCondensationFactorSpeed = SteamTable.CylinderCondensationSimpleSpeedAdjRpMtoX();
             SuperheatTempLimitXtoDegF = SteamTable.SuperheatTempLimitInterpolatorXtoDegF();
             SuperheatTempLbpHtoDegF = SteamTable.SuperheatTempInterpolatorLbpHtoDegF();
 
@@ -1078,10 +1081,25 @@ namespace Orts.Simulation.RollingStocks
             CutoffInitialPressureDropRatioUpper = SteamTable.CutoffInitialPressureUpper();
             CutoffInitialPressureDropRatioLower = SteamTable.CutoffInitialPressureLower();
 
-            CylinderExhausttoCutoff = SteamTable.CylinderEventExhausttoCutoff();
-            CylinderCompressiontoCutoff = SteamTable.CylinderEventCompressiontoCutoff();
-            CylinderAdmissiontoCutoff = SteamTable.CylinderEventAdmissiontoCutoff();
-
+            // Assign default steam table values if cylinder event is not in ENG file
+            if (CylinderExhausttoCutoff == null)
+             {
+               CylinderExhausttoCutoff = SteamTable.CylinderEventExhausttoCutoff();
+              // Trace.TraceInformation("Default values used for CylinderExhausttoCutoff");
+             }
+            
+            
+            if (CylinderCompressiontoCutoff == null)
+             {
+               CylinderCompressiontoCutoff = SteamTable.CylinderEventCompressiontoCutoff();
+               // Trace.TraceInformation("Default values used for CylinderCompressiontoCutoff");
+             }
+            
+            if (CylinderAdmissiontoCutoff == null)
+             {
+               CylinderAdmissiontoCutoff = SteamTable.CylinderEventAdmissiontoCutoff();
+             }
+            
             // Assign default steam table values if table not in ENG file
             if (BoilerEfficiencyGrateAreaLBpFT2toX == null)
             {
@@ -1122,7 +1140,7 @@ namespace Orts.Simulation.RollingStocks
             // Determine if Cylinder Port Opening  Factor has been set
             if (CylinderPortOpeningFactor == 0)
             {
-                CylinderPortOpeningFactor = 0.10f; // Set as default if not specified
+                CylinderPortOpeningFactor = 0.085f; // Set as default if not specified
             }
             CylinderPortOpeningFactor = MathHelper.Clamp(CylinderPortOpeningFactor, 0.05f, 0.12f); // Clamp Cylinder Port Opening Factor to between 0.05 & 0.12 so that tables are not exceeded   
 
@@ -4021,8 +4039,8 @@ namespace Orts.Simulation.RollingStocks
                 else // Superheated locomotive, but superheat temp limit has not been reached.
                 {
                     CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
-                    CylinderSpeedCondensationFactor = CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] / CylinderCondensationFactorSpeed[0.01f]; // Calculate compensating factor for condensation due to speed of locomotive
-                    float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor * CylinderSpeedCondensationFactor);  // Calculate correcting factor for steam use due to compensation
+
+                    float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor);  // Calculate correcting factor for steam use due to compensation
                     float TempCondensationFactor = CondensationFactorTemp - 1.0f;
                     float SuperHeatMultiplier = (1.0f - (CurrentSuperheatTempF / SuperheatTempLimitXtoDegF[cutoff])) * TempCondensationFactor;
                     SuperHeatMultiplier = MathHelper.Clamp(SuperHeatMultiplier, 0.0f, SuperHeatMultiplier);
@@ -4034,8 +4052,7 @@ namespace Orts.Simulation.RollingStocks
             else // Saturated steam locomotive
             {
                 CylinderCondensationFactor = CylinderCondensationFractionX[cutoff];
-                CylinderSpeedCondensationFactor = CylinderCondensationFactorSpeed[pS.TopM(DrvWheelRevRpS)] / CylinderCondensationFactorSpeed[0.01f]; // Calculate compensating factor for condensation due to speed of locomotive
-                float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor * CylinderSpeedCondensationFactor);  // Calculate correcting factor for steam use due to compensation
+                float CondensationFactorTemp = 1.0f + (CylinderCondensationFactor);  // Calculate correcting factor for steam use due to compensation
                 SuperheaterSteamUsageFactor = CondensationFactorTemp;
           //      SuperheaterSteamUsageFactor = 1.0f; // Steam input to cylinder, but loses effectiveness. In saturated mode steam usage should not be reduced
             }
@@ -5636,13 +5653,11 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatArea(SuperheatAreaM2, IsMetric),
                 FormatStrings.FormatEnergyDensityByMass(FuelCalorificKJpKG, IsMetric));
 
-            status.AppendFormat("{0}\t{1}\t{4:N1}\t{2}\t{5:N2}\t{3}\t{6:N3}\n",
+            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N3}\n",
                 Simulator.Catalog.GetString("Adj:"),
                 Simulator.Catalog.GetString("CylEff"),
-                Simulator.Catalog.GetString("CylExh"),
-                Simulator.Catalog.GetString("PortOpen"),
                 CylinderEfficiencyRate,
-                CylinderExhaustOpenFactor,
+                Simulator.Catalog.GetString("PortOpen"),
                 CylinderPortOpeningFactor);
 
             status.AppendFormat("\n\t\t === {0} === \t\t{1}/{2}\n",
@@ -5748,6 +5763,19 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
+            // Display steam cylinder events
+                status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N3}\n",
+                    Simulator.Catalog.GetString("CylEvts:"),
+                    Simulator.Catalog.GetString("Cutoff"),
+                    cutoff * 100,
+                    Simulator.Catalog.GetString("CylExh"),
+                    CylinderExhaustOpenFactor * 100,
+                    Simulator.Catalog.GetString("CylComp"),
+                    CylinderCompressionCloseFactor * 100,
+                    Simulator.Catalog.GetString("CyAdmis"),
+                    CylinderAdmissionOpenFactor * 100
+                                     );
+
             if (SteamEngineType == SteamEngineTypes.Compound)  // Display Steam Indicator Information for compound locomotive
             {
 
@@ -5817,7 +5845,7 @@ namespace Orts.Simulation.RollingStocks
                 );
 
 #if DEBUG_LOCO_STEAM_USAGE
-            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\t{15}\t{16:N2}\t{17}\t{18:N2}\t{19}\t{20:N2}\t{21}\t{22:N2}\t{23}\t{24}\n",
+            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12:N2}\t{13}\t{14:N2}\t{15}\t{16:N2}\t{17}\t{18:N2}\t{19}\t{20:N2}\t{21}\t{22}\n",
                 "DbgUse:",
                 "SwpVol",
                 CylinderSweptVolumeFT3pFT,
@@ -5839,8 +5867,6 @@ namespace Orts.Simulation.RollingStocks
                 SuperheaterSteamUsageFactor,
                 "CondFact",
                 CylinderCondensationFactor,
-                "CondSp",
-                CylinderSpeedCondensationFactor,
                 "SuperSet",
                 IsSuperSet);
 #endif
