@@ -53,6 +53,7 @@ float3   SideVector;
 float    ReferenceAlpha;
 texture  ImageTexture;
 texture  OverlayTexture;
+float	 OverlayScale;
 
 sampler Image = sampler_state
 {
@@ -467,7 +468,7 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Overlay image for terrain.
-	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * 32) * 2;
+	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * OverlayScale) * 2;
 	// Headlights effect use original Color.
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.

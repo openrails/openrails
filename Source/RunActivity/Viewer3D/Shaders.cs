@@ -86,6 +86,7 @@ namespace Orts.Viewer3D
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
         readonly EffectParameter referenceAlpha;
+        readonly EffectParameter overlayScale;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -191,6 +192,8 @@ namespace Orts.Viewer3D
 
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
 
+        public int OverlayScale { set { overlayScale.SetValue(value); } }
+
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
         {
@@ -222,6 +225,7 @@ namespace Orts.Viewer3D
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
+            overlayScale = Parameters["OverlayScale"];
         }
     }
 
