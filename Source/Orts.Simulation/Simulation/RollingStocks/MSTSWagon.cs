@@ -1735,16 +1735,24 @@ namespace Orts.Simulation.RollingStocks
                 return;
             }
 
+            bool HasTender = false;
             var tenderIndex = 0;
+
+            // Check to see if this car is defined as a tender, if so then set linkage to relevant steam locomotive. If no tender, then set linkage to null
             for (var i = 0; i < Train.Cars.Count; i++)
             {
-                if (Train.Cars[i] == this)
+                if (Train.Cars[i] == this && Train.Cars[i].WagonType == TrainCar.WagonTypes.Tender)
+                {
                     tenderIndex = i;
+                    HasTender = true;
+                }
             }
-            if (tenderIndex > 0 && Train.Cars[tenderIndex - 1] is MSTSSteamLocomotive)
+            if (HasTender && tenderIndex > 0 && Train.Cars[tenderIndex - 1] is MSTSSteamLocomotive)
                 TendersSteamLocomotive = Train.Cars[tenderIndex - 1] as MSTSSteamLocomotive;
-            if (tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1] is MSTSSteamLocomotive)
+            else if (HasTender && tenderIndex < Train.Cars.Count - 1 && Train.Cars[tenderIndex + 1] is MSTSSteamLocomotive)
                 TendersSteamLocomotive = Train.Cars[tenderIndex + 1] as MSTSSteamLocomotive;
+            else
+                TendersSteamLocomotive = null;
         }
 
         public void ConfirmSteamLocomotiveTender()
