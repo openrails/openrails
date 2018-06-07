@@ -152,7 +152,7 @@ namespace Orts.Viewer3D.RollingStock
                 // Reproducing MSTS "bug" of not allowing tender animation in case both minLevel and maxLevel are 0 or maxLevel <  minLevel 
                 // Applies to both a standard tender locomotive or a tank locomotive (where coal load is on same "wagon" as the locomotive -  for the coal load on a tender or tank locomotive - in operation it will raise or lower with caol usage
 
-                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon.EngineType == TrainCar.EngineTypes.Steam)
+                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSSteamLocomotive)
                 {
 
                     var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
@@ -586,7 +586,7 @@ namespace Orts.Viewer3D.RollingStock
                     float FuelControllerLevel = 0.0f;
 
                 // For coal load variation on locomotives determine the current fuel level - and whether locomotive is a tender or tank type locomotive.
-                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon.EngineType == TrainCar.EngineTypes.Steam)
+                if (MSTSWagon.WagonType == TrainCar.WagonTypes.Tender || MSTSWagon is MSTSSteamLocomotive)
                 {
 
                     var NonTenderSteamLocomotive = MSTSWagon as MSTSSteamLocomotive;
@@ -600,12 +600,13 @@ namespace Orts.Viewer3D.RollingStock
                         if (MSTSWagon.TendersSteamLocomotive != null)
                         {
                             FuelControllerLevel = MSTSWagon.TendersSteamLocomotive.FuelController.CurrentValue;
+                            SteamAnimShape = true;
                         }
-                        else
+                        else if (NonTenderSteamLocomotive != null)
                         {
                             FuelControllerLevel = NonTenderSteamLocomotive.FuelController.CurrentValue;
-                        }
-                        SteamAnimShape = true;
+                            SteamAnimShape = true;
+                        } 
                     }
                 }
 
