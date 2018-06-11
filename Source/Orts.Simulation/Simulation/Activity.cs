@@ -1431,7 +1431,7 @@ namespace Orts.Simulation
                 if (train.Cars.Find(car => car.CarID == item) == null) return false;
             }
             // train speed < 1
-            return (Math.Abs(train.SpeedMpS) == 0 ? true : false);
+            return (Math.Abs(train.SpeedMpS) <= 1 ? true : false);
         }
         /// <summary>
         /// Like MSTS, do not check for unlisted wagons as the wagon list may be shortened for convenience to contain
