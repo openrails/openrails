@@ -409,11 +409,11 @@ namespace Orts.Viewer3D.RollingStock
                                             if (index > 0 && train.Cars[index - 1] is MSTSSteamLocomotive && !wagon.Flipped && !train.Cars[index - 1].Flipped)
                                                 nearestPickup.SteamLocomotiveWithTender = train.Cars[index - 1] as MSTSLocomotive;
                                             // but after reversal point or turntable reversal order of cars is reversed too!
-                                            else if (index < train.Cars.Count && train.Cars[index + 1] is MSTSSteamLocomotive && wagon.Flipped && train.Cars[index + 1].Flipped)
+                                            else if (index < train.Cars.Count - 1 && train.Cars[index + 1] is MSTSSteamLocomotive && wagon.Flipped && train.Cars[index + 1].Flipped)
                                                 nearestPickup.SteamLocomotiveWithTender = train.Cars[index + 1] as MSTSLocomotive;
                                             else if (index > 0 && train.Cars[index - 1] is MSTSSteamLocomotive)
                                                 nearestPickup.SteamLocomotiveWithTender = train.Cars[index - 1] as MSTSLocomotive;
-                                            else if (index < train.Cars.Count && train.Cars[index + 1] is MSTSSteamLocomotive)
+                                            else if (index < train.Cars.Count - 1 && train.Cars[index + 1] is MSTSSteamLocomotive)
                                                 nearestPickup.SteamLocomotiveWithTender = train.Cars[index + 1] as MSTSLocomotive;
                                         }
                                         nearestPickup.IntakePoint = intake;
