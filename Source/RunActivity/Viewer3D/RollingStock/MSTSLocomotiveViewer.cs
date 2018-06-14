@@ -545,7 +545,7 @@ namespace Orts.Viewer3D.RollingStock
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
             }
-            else
+            else if (match.Wagon.FreightAnimations != null)
             {
                 // freight wagon animation
                 var fraction = match.Wagon.GetFilledFraction(match.Pickup.PickupType);
