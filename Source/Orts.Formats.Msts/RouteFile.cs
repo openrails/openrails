@@ -198,23 +198,29 @@ namespace Orts.Formats.Msts
 
     public class TRKEnvironment
     {
-        string[] ENVFileNames = new string[12];
+        Dictionary<string, string> ENVFileNames = new Dictionary<string, string>();
 
         public TRKEnvironment(STFReader stf)
         {
             stf.MustMatch("(");
             for( int i = 0; i < 12; ++i )
             {
-                string s = stf.ReadString();
-                ENVFileNames[i] = stf.ReadStringBlock(null);
+                var envfilekey = stf.ReadString();
+                var envfile = stf.ReadStringBlock(null);
+                ENVFileNames.Add(envfilekey, envfile);
+//                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
             }
             stf.SkipRestOfBlock();
         }
 
-        public string ENVFileName( SeasonType seasonType, WeatherType weatherType )
+        public string ENVFileName(SeasonType seasonType, WeatherType weatherType)
         {
-            int index = (int)seasonType * 3 + (int)weatherType;
-            return ENVFileNames[index];
+            //int index = (int)seasonType * 3 + (int)weatherType;
+            //return ENVFileNames[index];
+            var envfilekey = seasonType.ToString() + weatherType.ToString();
+            var envfile = ENVFileNames[envfilekey];
+//            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
+            return envfile;
         }
     }
 
