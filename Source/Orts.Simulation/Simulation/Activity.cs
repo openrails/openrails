@@ -746,6 +746,9 @@ namespace Orts.Simulation
         public float distanceToNextSignal = -1;
         public Train MyPlayerTrain; // Shortcut to player train
 
+        public bool ldbfevaldepartbeforeboarding = false;//Debrief Eval
+        public static int nDbfEvalDepartBeforeBoarding = 0;//Debrief Eval
+
         public ActivityTaskPassengerStopAt(Simulator simulator, ActivityTask prev, DateTime Arrive, DateTime Depart,
                  PlatformItem Platformend1, PlatformItem Platformend2)
         {
@@ -1001,6 +1004,15 @@ namespace Orts.Simulation
                     {
                         DisplayMessage = Simulator.Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
                             remaining / 60, remaining % 60);
+
+                        //Debrief Eval
+                        if (Simulator.PlayerLocomotive.SpeedMpS > 0 && !ldbfevaldepartbeforeboarding)
+                        {
+                            var train = Simulator.PlayerLocomotive.Train;
+                            ldbfevaldepartbeforeboarding = true;
+                            nDbfEvalDepartBeforeBoarding++;
+                            train.DbfEvalValueChanged = true;
+                        }
                     }
                     // May depart
                     else if (!maydepart)
@@ -1018,6 +1030,8 @@ namespace Orts.Simulation
                             DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                             Simulator.SoundNotify = Event.PermissionToDepart;
                         }
+
+                        ldbfevaldepartbeforeboarding = false;//reset flag. Debrief Eval
 
                         // if last task, show closure window
                         // also set times in logfile
@@ -1375,7 +1389,7 @@ namespace Orts.Simulation
                         listsMatch = true;
                         for (int i = trainItem.Cars.Count; i > 0; i--)
                         {
-                            if (trainItem.Cars.ElementAt(i-1).CarID != wagonIdList.ElementAt(trainItem.Cars.Count-i)) { listsMatch = false; break; }
+                            if (trainItem.Cars.ElementAt(i - 1).CarID != wagonIdList.ElementAt(trainItem.Cars.Count - i)) { listsMatch = false; break; }
                         }
                     }
                     if (listsMatch) return trainItem;
@@ -1407,7 +1421,7 @@ namespace Orts.Simulation
                 if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
                 {
                     if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
-                    
+
                     //a consist require engine + wagons
                     if (listsMatch && lEngine) return trainItem;
                 }
@@ -1455,7 +1469,7 @@ namespace Orts.Simulation
                     lNotFound = false; break;//wagon still part of the train
                 }
             }
-            return (lNotFound? true:false);
+            return (lNotFound? true : false);
         }
         /// <summary>
         /// Like platforms, checking that one end of the train is within the siding.

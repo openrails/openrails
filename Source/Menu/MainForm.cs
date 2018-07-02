@@ -80,7 +80,7 @@ namespace ORTS
                 return programNormal;
             }
         }
-
+        
         // Base items
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
@@ -372,6 +372,11 @@ namespace ORTS
             ShowStartAtList();
             ShowEnvironment();
             ShowDetails();
+            //Debrief Activity Eval
+            if (SelectedActivity.Name.Contains("Explore"))
+            { checkDebriefActivityEval.Checked = false; checkDebriefActivityEval.Enabled = false; }
+            else
+            { checkDebriefActivityEval.Enabled = true; }
         }
         #endregion
 
@@ -615,6 +620,11 @@ namespace ORTS
         {
             checkBoxWarnings.Checked = Settings.Logging;
             checkBoxWindowed.Checked = !Settings.FullScreen;
+            //Debrief activity evaluation
+            checkDebriefActivityEval.Checked = Settings.DebriefActivityEval;
+            //TO DO: Debrief TTactivity evaluation
+            //checkDebriefTTActivityEval.Checked = Settings.DebriefTTActivityEval;
+
             textBoxMPUser.Text = Settings.Multiplayer_User;
             textBoxMPHost.Text = Settings.Multiplayer_Host + ":" + Settings.Multiplayer_Port;
         }
@@ -624,6 +634,11 @@ namespace ORTS
             Settings.Logging = checkBoxWarnings.Checked;
             Settings.FullScreen = !checkBoxWindowed.Checked;
             Settings.Multiplayer_User = textBoxMPUser.Text;
+            //Debrief activity evaluation
+            Settings.DebriefActivityEval = checkDebriefActivityEval.Checked;
+            //TO DO: Debrief TTactivity evaluation
+            //Settings.DebriefTTActivityEval = checkDebriefTTActivityEval.Checked;
+
             var mpHost = textBoxMPHost.Text.Split(':');
             Settings.Multiplayer_Host = mpHost[0];
             if (mpHost.Length > 1)
@@ -942,6 +957,7 @@ namespace ORTS
                 comboBoxStartTime.Items.Clear();
                 foreach (var hour in Enumerable.Range(0, 24))
                     comboBoxStartTime.Items.Add(String.Format("{0}:00", hour));
+
                 UpdateFromMenuSelection<string>(comboBoxStartTime, UserSettings.Menu_SelectionIndex.Time, "12:00");
                 UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxStartSeason, UserSettings.Menu_SelectionIndex.Season, s => s.Key.ToString(), new KeyedComboBoxItem(1, ""));
                 UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxStartWeather, UserSettings.Menu_SelectionIndex.Weather, w => w.Key.ToString(), new KeyedComboBoxItem(0, ""));
@@ -973,7 +989,6 @@ namespace ORTS
 
             TimetableSets.Clear();
             ShowTimetableSetList();
-
             var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
             TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
@@ -1370,5 +1385,20 @@ namespace ORTS
         }
         #endregion
 
+        void comboBoxTimetable_EnabledChanged(object sender, EventArgs e)
+        {
+            //Debrief Eval TTActivity.
+            if (!comboBoxTimetable.Enabled)
+            {
+                //comboBoxTimetable.Enabled == false then we erase comboBoxTimetable and comboBoxTimetableTrain data.
+                if (comboBoxTimetable.Items.Count > 0)
+                {
+                    comboBoxTimetable.Items.Clear();
+                    comboBoxTimetableTrain.Items.Clear();
+                    buttonStart.Enabled = false;
+                }
+            }
+            //TO DO: Debrief Eval TTActivity
+        }
     }
 }

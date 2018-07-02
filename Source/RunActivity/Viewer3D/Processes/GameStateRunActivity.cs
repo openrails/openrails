@@ -349,6 +349,35 @@ namespace Orts.Viewer3D.Processes
                 // Write out position within file so we can check when restoring.
                 outf.Write(outf.BaseStream.Position);
             }
+
+            //Debrief Eval
+            if (Viewer.Settings.DebriefActivityEval)
+            {
+                var dbfEvalFiles = Directory.GetFiles(UserSettings.UserDataFolder, Simulator.ActivityFileName + "*.dbfeval");
+                foreach (var files in dbfEvalFiles)
+                   File.Delete(files);//Delete all debrief eval files previously saved, for the same activity.//fileDbfEval
+
+                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem  + ".dbfeval", FileMode.Create, FileAccess.Write)))
+                {                    
+                    // Save debrief eval values.
+                    outf.Write(ActivityTaskPassengerStopAt.nDbfEvalDepartBeforeBoarding);
+                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
+                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
+                    outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
+                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
+                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
+                    outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
+                    outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
+                    outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
+                    outf.Write(Simulator.DbfEvalOverSpeedCoupling);
+                    outf.Write(Viewer.DbfEvalAutoPilotTimeS);
+                    outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
+                    outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
+                }
+            }
         }
 
         /// <summary>
@@ -383,6 +412,31 @@ namespace Orts.Viewer3D.Processes
                     var savePosition = inf.ReadInt64();
                     if (restorePosition != savePosition)
                         throw new InvalidDataException("Saved game stream position is incorrect.");
+
+                    //Restore Debrief eval data
+                    var dbfevalfile = saveFile.Replace(".save", ".dbfeval");
+                    if (settings.DebriefActivityEval && File.Exists(dbfevalfile))
+                    {
+                        using (BinaryReader infDbfEval = new BinaryReader(new FileStream(dbfevalfile, FileMode.Open, FileAccess.Read)))
+                        {
+                            ActivityTaskPassengerStopAt.nDbfEvalDepartBeforeBoarding = infDbfEval.ReadInt32();
+                            Popups.TrackMonitor.DbfEvalOverSpeed = infDbfEval.ReadInt32();
+                            Popups.TrackMonitor.DbfEvalOverSpeedTimeS = infDbfEval.ReadDouble();
+                            Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS = infDbfEval.ReadDouble();
+                            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving = infDbfEval.ReadInt32();
+                            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped = infDbfEval.ReadInt32();
+                            Simulation.Physics.Train.NumOfCouplerBreaks = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose = infDbfEval.ReadInt32();
+                            Simulator.DbfEvalOverSpeedCoupling = infDbfEval.ReadInt32();
+                            Viewer.DbfEvalAutoPilotTimeS = infDbfEval.ReadDouble();
+                            Viewer.DbfEvalIniAutoPilotTimeS = infDbfEval.ReadDouble();
+                            Popups.HelpWindow.DbfEvalDistanceTravelled = infDbfEval.ReadSingle();
+                        }
+                    }
                 }
                 catch (Exception error)
                 {

@@ -2721,9 +2721,26 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
+        //Debrief Eval
+        public static int DbfEvalFullTrainBrakeUnder8kmh = 0;
+        public bool ldbfevalfulltrainbrakeunder8kmh = false;
+
         public override string GetTrainBrakeStatus()
         {
+            var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
             string s = TrainBrakeController.GetStatus();
+ 
+
+            if (s == "Emergency" && train.LeadLocomotive != null && !ldbfevalfulltrainbrakeunder8kmh && train.LeadLocomotive.IsPlayerTrain && Math.Abs(train.SpeedMpS) < 2.22222)
+            {
+                
+                DbfEvalFullTrainBrakeUnder8kmh++;
+                ldbfevalfulltrainbrakeunder8kmh = true;
+                train.DbfEvalValueChanged = true;//Debrief eval
+            }
+            if (s != "Emergency" && ldbfevalfulltrainbrakeunder8kmh)
+                ldbfevalfulltrainbrakeunder8kmh = false;
+
             TrainCar lastCar = Train.Cars[Train.Cars.Count - 1];
             if (lastCar == this)
                 lastCar = Train.Cars[0];

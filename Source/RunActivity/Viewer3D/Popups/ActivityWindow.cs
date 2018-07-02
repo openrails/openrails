@@ -149,7 +149,7 @@ namespace Orts.Viewer3D.Popups
             if (Owner.Viewer.Simulator.IsReplaying) Owner.Viewer.Simulator.Confirmer.Confirm(CabControl.Activity, CabSetting.On);
             ResumeMenu();
         }
-
+        
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
             base.PrepareFrame(elapsedTime, updateFull);
@@ -164,6 +164,15 @@ namespace Orts.Viewer3D.Popups
                     {
                         if (Activity.IsComplete)
                         {
+                            if (Owner.Viewer.Settings.DebriefActivityEval && !Owner.Viewer.HelpWindow.Visible)
+                            {//Show evaluation info.
+                                Owner.Viewer.HelpWindow.Visible = false;
+                                //TO DO: Change next lines to one line. 
+                                Owner.Viewer.HelpWindow.TabAction();
+                                Owner.Viewer.HelpWindow.TabAction();
+                                Owner.Viewer.HelpWindow.TabAction();
+                                Owner.Viewer.HelpWindow.TabAction();
+                            }
                             Visible = Activity.IsActivityWindowOpen = Owner.Viewer.HelpWindow.ActivityUpdated = Owner.Viewer.Simulator.Paused = true;
                             ComposeMenu(e.ParsedObject.Name, Viewer.Catalog.GetStringFmt("This activity has ended {0}.\nFor a detailed evaluation, see the Help Window (F1).",
                                 Activity.IsSuccessful ? Viewer.Catalog.GetString("") : Viewer.Catalog.GetString("without success")));

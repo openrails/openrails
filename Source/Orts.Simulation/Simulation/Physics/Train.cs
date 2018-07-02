@@ -235,8 +235,9 @@ namespace Orts.Simulation.Physics
 
 
         //To investigate coupler breaks on route
-        public int NumOfCouplerBreaks = 0;
         private bool numOfCouplerBreaksNoted = false;
+        public static int NumOfCouplerBreaks = 0;//Debrief Eval
+        public bool DbfEvalValueChanged { get;set; }//Debrief Eval
 
         public enum TRAINTYPE
         {
@@ -1754,6 +1755,8 @@ namespace Orts.Simulation.Physics
                     if (!numOfCouplerBreaksNoted)
                     {
                         NumOfCouplerBreaks++;
+                        DbfEvalValueChanged = true;//Debrief eval
+
                         Trace.WriteLine(String.Format("Num of coupler breaks: {0}", NumOfCouplerBreaks));
                         numOfCouplerBreaksNoted = true;
 

@@ -96,6 +96,14 @@ namespace Orts.Simulation.RollingStocks
         public readonly string WagFilePath;
         public string RealWagFilePath; //we are substituting missing remote cars in MP, so need to remember this
 
+        public static int DbfEvalTravellingTooFast;//Debrief eval
+        public static int DbfEvalTravellingTooFastSnappedBrakeHose;//Debrief eval
+        public bool dbfEvalsnappedbrakehose = false;//Debrief eval
+        public bool ldbfevalcurvespeed = false;//Debrief eval
+        static float dbfmaxsafecurvespeedmps;//Debrief eval
+        public static int DbfEvalTrainOverturned;//Debrief eval
+        public bool ldbfevaltrainoverturned = false;
+                                        
         // original consist of which car was part (used in timetable for couple/uncouple options)
         public string OrgConsist = string.Empty;
 
@@ -180,8 +188,6 @@ namespace Orts.Simulation.RollingStocks
                 _SpeedMpS = value;
             }
         }
-
-
 
         public float AccelerationMpSS
         {
@@ -848,6 +854,7 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateCurveSpeedLimit()
         {
             float s = AbsSpeedMpS; // speed of train
+            var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
 
             // get curve radius
 
@@ -964,6 +971,14 @@ namespace Orts.Simulation.RollingStocks
                                     {
                                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers are feeling uncomfortable and your train may break a coupling or airhose."));
                                     }
+
+                                    if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
+                                    {
+                                        dbfmaxsafecurvespeedmps = MaxSafeCurveSpeedMps;
+                                        //ldbfevalcurvespeed = true;
+                                        DbfEvalTravellingTooFast++;
+                                        train.DbfEvalValueChanged = true;//Debrief eval
+                                    }
                                 }
 
                             }
@@ -973,6 +988,8 @@ namespace Orts.Simulation.RollingStocks
                                 BrakeSystem.FrontBrakeHoseConnected = false; // break the brake hose connection between cars if the speed is too fast
                                 var message = "You were travelling too fast for this curve, and have snapped a brake hose on Car" + CarID + ". You will need to repair the hose and restart.";
                                 Simulator.Confirmer.Message(ConfirmLevel.Warning, message);
+
+                                dbfEvalsnappedbrakehose = true;//Debrief eval
                             }
 
                         }
@@ -981,6 +998,13 @@ namespace Orts.Simulation.RollingStocks
                             if (IsMaxSafeCurveSpeed)
                             {
                                 IsMaxSafeCurveSpeed = false; // reset flag for IsMaxSafeCurveSpeed reached - if speed on curve decreases
+
+                                if (dbfEvalsnappedbrakehose)
+                                {
+                                    DbfEvalTravellingTooFastSnappedBrakeHose++;//Debrief eval
+                                    dbfEvalsnappedbrakehose = false;
+                                    train.DbfEvalValueChanged = true;//Debrief eval
+                                }
                             }
                         }
 
@@ -1004,6 +1028,12 @@ namespace Orts.Simulation.RollingStocks
                                 if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
                                 {
                                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Your train has overturned, and this is simulated by a broken coupler."));
+                                    if (!ldbfevaltrainoverturned)
+                                    {
+                                        ldbfevaltrainoverturned = true;
+                                        DbfEvalTrainOverturned++;
+                                        train.DbfEvalValueChanged = true;//Debrief eval
+                                    }
                                 }
                             }
 
@@ -1013,6 +1043,7 @@ namespace Orts.Simulation.RollingStocks
                             if (IsCriticalSpeed)
                             {
                                 IsCriticalSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
+                                ldbfevaltrainoverturned = false;
                             }
                         }
 

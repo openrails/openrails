@@ -198,6 +198,10 @@ namespace Orts.Viewer3D
 
         UserInputRailDriver RailDriver;
 
+        public static double DbfEvalAutoPilotTimeS = 0;//Debrief eval
+        public static double DbfEvalIniAutoPilotTimeS = 0;//Debrief eval  
+        public bool DbfEvalAutoPilot = false;//DebriefEval
+
         /// <summary>
         /// Finds time of last entry to set ReplayEndsAt and provide the Replay started message.
         /// </summary>
@@ -814,6 +818,8 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         void HandleUserInput(ElapsedTime elapsedTime)
         {
+            var train = Program.Viewer.PlayerLocomotive.Train;//DebriefEval
+
             if (UserInput.IsMouseLeftButtonDown || (Camera is ThreeDimCabCamera && RenderProcess.IsMouseVisible))
             {
                 Vector3 nearsource = new Vector3((float)UserInput.MouseX, (float)UserInput.MouseY, 0f);
@@ -1122,7 +1128,11 @@ namespace Orts.Viewer3D
                 if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
                     var success = ((AITrain)PlayerLocomotive.Train).SwitchToPlayerControl();
-                    if (success) Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to player control"));
+                    if (success)
+                    {   
+                        Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to player control"));
+                        DbfEvalAutoPilot = false;//Debrief eval
+                    }
                 }
                 else if (PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
                 {
@@ -1131,11 +1141,22 @@ namespace Orts.Viewer3D
                     else
                     {
                         var success = ((AITrain)PlayerLocomotive.Train).SwitchToAutopilotControl();
-                        if (success) Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to autopilot"));
+                        if (success)
+                        {
+                            Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to autopilot"));
+                            DbfEvalIniAutoPilotTimeS = Simulator.ClockTime;//Debrief eval
+                            DbfEvalAutoPilot = true;//Debrief eval
+                        }
                     }
                 }
-             }
+            }
 
+            if (DbfEvalAutoPilot && (Simulator.ClockTime - DbfEvalIniAutoPilotTimeS) > 1.0000 )
+            {              
+                DbfEvalAutoPilotTimeS = DbfEvalAutoPilotTimeS + (Simulator.ClockTime - DbfEvalIniAutoPilotTimeS);//Debrief eval
+                train.DbfEvalValueChanged = true;
+                DbfEvalIniAutoPilotTimeS = Simulator.ClockTime;//Debrief eval
+            }
             if (UserInput.IsPressed(UserCommands.DebugDumpKeymap))
             {
                 var textPath = Path.Combine(Settings.LoggingPath, "OpenRailsKeyboard.txt");

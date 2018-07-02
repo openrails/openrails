@@ -52,6 +52,10 @@ namespace Orts.Viewer3D.RollingStock
         public ThreeDimentionCabViewer ThreeDimentionCabViewer = null;
         public CabRenderer ThreeDimentionCabRenderer = null; //allow user to have different setting of .cvf file under CABVIEW3D
 
+        public static int DbfEvalEBPBstopped = 0;//Debrief eval
+        public static int DbfEvalEBPBmoving = 0;//Debrief eval
+        public bool lemergencybuttonpressed = false;
+
         public MSTSLocomotiveViewer(Viewer viewer, MSTSLocomotive car)
             : base(viewer, car)
         {
@@ -221,10 +225,21 @@ namespace Orts.Viewer3D.RollingStock
                 if (UserInput.IsPressed(command))
                 {
                     UserInputCommands[command][1]();
+                    //Debrief eval
+                    if (!lemergencybuttonpressed && Locomotive.EmergencyButtonPressed && Locomotive.IsPlayerTrain)
+                    {
+                        var train = Program.Viewer.PlayerLocomotive.Train;
+                        if (Math.Abs(Locomotive.SpeedMpS) == 0) DbfEvalEBPBstopped++;
+                        if (Math.Abs(Locomotive.SpeedMpS) > 0) DbfEvalEBPBmoving++;
+                        lemergencybuttonpressed = true;
+                        train.DbfEvalValueChanged = true;//Debrief eval
+                    }
                 }
                 else if (UserInput.IsReleased(command))
                 {
                     UserInputCommands[command][0]();
+                    //Debrief eval
+                    if (lemergencybuttonpressed && !Locomotive.EmergencyButtonPressed) lemergencybuttonpressed = false;
                 }
             }
         }

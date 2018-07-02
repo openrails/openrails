@@ -20,12 +20,16 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
+using Orts.Simulation.AIs;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -34,8 +38,37 @@ namespace Orts.Viewer3D.Popups
         public bool ActivityUpdated;
         public int lastLastEventID = -1;
 
+        Dictionary<int, string> DbfEvalTaskName = new Dictionary<int, string>();//Debrief eval
+        Dictionary<int, string> DbfEvalTaskLocation = new Dictionary<int, string>();//Debrief eval
+        Dictionary<int, string> DbfEvalTaskStatus = new Dictionary<int, string>();//Debrief eval
+        Dictionary<int, string> DbfEvalStationName = new Dictionary<int, string>();//Debrief eval
+        Dictionary<int, string> DbfEvalSchArrive = new Dictionary<int, string>();//Debrief eval
+        Dictionary<int, string> DbfEvalSchDepart = new Dictionary<int, string>();//Debrief eval
+        Dictionary<int, string> DbfEvalActArrive = new Dictionary<int, string>();//Debrief eval
+        Dictionary<int, string> DbfEvalActDepart = new Dictionary<int, string>();//Debrief eval
+
+        Dictionary<string, double> DbfEvalValues = new Dictionary<string, double>();//Debrief eval
+        
+        public static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
+        ControlLayout scrollbox;
+        ControlLayoutHorizontal line;
+
+        bool lDebriefEvalFile = false;//Debrief eval
+        bool ldbfevalupdateautopilottime = false;//Debrief eval
+        bool actualStatusVisible = false; //Debrief eval
+        bool dbfevalActivityEnded = false; //Debrief eval
+        Label indicator;//Debrief eval
+        Label statusLabel;//Debrief eval
+        StreamWriter wDbfEval;//Debrief eval
+        public static float DbfEvalDistanceTravelled = 0;//Debrief eval
+
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
+
+        public void LogSeparator(int nCols)
+        {
+            if (!lDebriefEvalFile) wDbfEval.WriteLine(new String('-', nCols));
+        }
 
         public HelpWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + owner.TextFontDefault.Height * 37, Window.DecorationSize.Y + owner.TextFontDefault.Height * 24, Viewer.Catalog.GetString("Help"))
@@ -232,14 +265,19 @@ namespace Orts.Viewer3D.Popups
                                                 }
                                             }
                                             if (locationFirst != location)
+                                            {
                                                 line.Add(new Label(colWidth * 7, line.RemainingHeight, location));
-                                            else if ((eventAction.Type == Orts.Formats.Msts.EventType.PickUpPassengers) || (eventAction.Type == Orts.Formats.Msts.EventType.PickUpWagons))
+                                            }
+                                            else if (location == "" | (eventAction.Type == Orts.Formats.Msts.EventType.PickUpPassengers) || (eventAction.Type == Orts.Formats.Msts.EventType.PickUpWagons))
                                                 line.AddSpace(colWidth * 7, 0);
                                             locationFirst = location;
                                             locationShown = true;
                                         }
                                         // Status column
-                                        if (@event.TimesTriggered == 1 && wagonIdx == 0) line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Done")));
+                                        if (@event.TimesTriggered == 1 && wagonIdx == 0)
+                                        {
+                                            line.Add(new Label(colWidth * 6, line.RemainingHeight, Viewer.Catalog.GetString("Done")));
+                                        }
                                         else line.Add(new Label(colWidth, line.RemainingHeight, ""));
                                         wagonIdx++;
 
@@ -251,18 +289,847 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
                 }));
-            }
-            Tabs.Add(new TabData(Tab.LocomotiveProcedures, Viewer.Catalog.GetString("Procedures"), (cl) =>
-            {
-                var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
-                if (owner.Viewer.Simulator.PlayerLocomotive != null &&
-                    owner.Viewer.Simulator.PlayerLocomotive is MSTSLocomotive &&
-                    ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures != null &&
-                    ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
+
+                Tabs.Add(new TabData(Tab.ActivityEvaluation, Viewer.Catalog.GetString("Evaluation"), (cl) =>
                 {
-                    scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
-                }
-            }));
+                    if (owner.Viewer.Simulator.ActivityRun.EventList != null && owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name != null)
+                    {
+                        var txtinfo = "";
+                        var locomotive = Owner.Viewer.Simulator.PlayerLocomotive;
+                        int dbfeval = 0;//Debrief eval
+                        int nmissedstation = 0;//Debrief eval
+                        string labeltext = "";
+                        int noverspeedcoupling = Simulator.DbfEvalOverSpeedCoupling;
+
+                        // Detect at arrival              
+                        int dbfstationstopsremaining = 0;
+                        Train playerTrain = Owner.Viewer.Simulator.PlayerLocomotive.Train;
+
+                        scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                        var colWidth = (cl.RemainingWidth - cl.TextHeight) / 7;
+                        line = scrollbox.AddLayoutHorizontalLineOfText();
+                        Label indicator;
+                        if (!actualStatusVisible)
+                        {                            
+                            //Activity name
+                            txtinfo = "Activity: " + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.ToString();
+                            line.Add(new Label(colWidth, line.RemainingHeight, txtinfo));
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            labeltext = "Startime: " + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime();
+                            line.Add(new Label(colWidth * 2, line.RemainingHeight, labeltext));
+                            labeltext = "Estimated time to complete: " + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTime();
+                            line.Add(new Label(colWidth * 2, line.RemainingHeight, labeltext));
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                        }
+                        //Options status
+                        bool lcurvespeeddependent = owner.Viewer.Settings.CurveSpeedDependent;
+                        bool lbreakcouplers = owner.Viewer.Settings.BreakCouplers;
+
+                        //Activity status
+                        bool dbfevalisfinished = owner.Viewer.Simulator.ActivityRun.IsFinished;
+                        bool dbfevalissuccessful = owner.Viewer.Simulator.ActivityRun.IsSuccessful;
+                        bool dbfevaliscompleted = owner.Viewer.Simulator.ActivityRun.IsComplete;
+                        line.Add(indicator = new Label(colWidth, line.RemainingHeight, dbfevalisfinished | dbfevalissuccessful | dbfevaliscompleted ? Viewer.Catalog.GetString("This Activity has ended.") : Viewer.Catalog.GetString("")));
+                        indicator.Color = dbfevalisfinished | dbfevalissuccessful | dbfevaliscompleted ? Color.LightSalmon : Color.Black;
+                        line = scrollbox.AddLayoutHorizontalLineOfText();
+                        line.AddHorizontalSeparator();
+
+                        //Timetable
+                        if (!actualStatusVisible)
+                        {
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line.Add(new Label(colWidth * 0, line.RemainingHeight, Viewer.Catalog.GetString("Timetable:")));
+                        }
+                        if (owner.Viewer.Simulator.ActivityRun != null)
+                        {
+                            foreach (var task in owner.Viewer.Simulator.ActivityRun.Tasks)
+                            {
+                                var stopAt = task as ActivityTaskPassengerStopAt;
+                                if (stopAt != null)
+                                {
+                                    Label arrive = new Label(colWidth, line.RemainingWidth, "");
+                                    Label depart = new Label(colWidth, line.RemainingWidth, "");
+
+                                    //Debrief eval. Avoid to reolad data
+                                    arrive.Text = stopAt.ActArrive.HasValue ? stopAt.ActArrive.Value.ToString("HH:mm:ss") : stopAt.IsCompleted.HasValue && task.NextTask != null ? "(missed)" : "";
+                                    depart.Text = stopAt.ActDepart.HasValue ? stopAt.ActDepart.Value.ToString("HH:mm:ss") : stopAt.IsCompleted.HasValue && task.NextTask != null ? "(missed)" : "";
+                                    if (!DbfEvalStationName.ContainsKey(dbfeval))
+                                    {
+                                        DbfEvalStationName.Add(dbfeval, stopAt.PlatformEnd1.Station);
+                                        DbfEvalSchArrive.Add(dbfeval, stopAt.SchArrive.ToString("HH:mm:ss"));
+                                        DbfEvalActArrive.Add(dbfeval, arrive.Text);
+                                        DbfEvalSchDepart.Add(dbfeval, stopAt.SchDepart.ToString("HH:mm:ss"));
+                                        DbfEvalActDepart.Add(dbfeval, depart.Text);
+                                    }
+                                    else if (DbfEvalActArrive[dbfeval] != arrive.Text | DbfEvalActDepart[dbfeval] != depart.Text)
+                                    {
+                                        DbfEvalActArrive[dbfeval] = arrive.Text;
+                                        DbfEvalActDepart[dbfeval] = depart.Text;
+                                    }
+                                }
+                                dbfeval++;
+                            }
+                            //Station stops
+                            if (!actualStatusVisible)
+                            {
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+                                line.Add(new Label(colWidth * 0, line.RemainingHeight, Viewer.Catalog.GetString("- Station stops: ") + DbfEvalStationName.Count));
+                            }
+                            //Station stops remaining
+
+                            foreach (var item in DbfEvalActArrive)
+                            {
+                                if (item.Value == "")
+                                    dbfstationstopsremaining++;
+                            }
+                            if (!actualStatusVisible)
+                            {
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+                                line.Add(new Label(colWidth * 3, line.RemainingHeight, Viewer.Catalog.GetString("- Remaining station stops: ") + dbfstationstopsremaining.ToString()));
+                           
+                                //Current delay
+                                line.Add(new Label(colWidth, line.RemainingHeight, playerTrain.Delay != null ? Viewer.Catalog.GetPluralStringFmt("Current Delay: {0} minute", "Current Delay: {0} minutes", (long)playerTrain.Delay.Value.TotalMinutes) : "Current Delay: 0 minute"));
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+                                line = line.AddLayoutHorizontalLineOfText();
+                            }
+                            //Missed station stops                            
+                            foreach (var item in DbfEvalActDepart)
+                            {
+                                if (item.Value == "(missed)")
+                                    nmissedstation++;
+                            }
+                            if (!actualStatusVisible)
+                            {
+                                line.Add(indicator = new Label(colWidth * 2, line.RemainingHeight, Viewer.Catalog.GetString("- Missed station stops: ") + nmissedstation));
+                                indicator.Color = nmissedstation > 0 ? Color.LightSalmon : Color.White;
+                                line.Add(new Label(colWidth, line.RemainingHeight, nmissedstation > 0 ? Viewer.Catalog.GetString("Station") : Viewer.Catalog.GetString(""), LabelAlignment.Left));
+
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                                foreach (var item in DbfEvalActDepart)
+                                {
+                                    if (item.Value == "(missed)")
+                                    {
+                                        line.Add(indicator = new Label(colWidth * 2, line.RemainingHeight, Viewer.Catalog.GetString(" ")));
+                                        line.Add(indicator = new Label(colWidth, line.RemainingHeight, DbfEvalStationName[item.Key], LabelAlignment.Left));
+                                        indicator.Color = Color.LightSalmon;
+                                        line = scrollbox.AddLayoutHorizontalLineOfText();
+                                    }
+                                }
+                            }
+                            //line = scrollbox.AddLayoutHorizontalLineOfText();                            
+                            if (!actualStatusVisible)
+                            {
+                                line.AddHorizontalSeparator();
+
+                                //Work orders
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+                                line.Add(new Label(colWidth * 0, line.RemainingHeight, Viewer.Catalog.GetString("Work orders:")));
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+                            }
+                            //--------------------------------------------------------
+                            dbfeval = 0;//Debrief eval
+                            bool dbfevalexist = false;//Debrief eval
+                            string dbfevaltaskname, dbfevaltasklocation, dbfevaltaskstatus;
+
+                            foreach (var @event in owner.Viewer.Simulator.ActivityRun.EventList)
+                            {
+                                dbfevaltaskname = "";
+                                dbfevaltasklocation = "";
+                                dbfevaltaskstatus = "";
+                                var eventAction = @event.ParsedObject as Orts.Formats.Msts.EventCategoryAction;
+                                if (eventAction != null)
+                                {
+
+                                    //line = scrollbox.AddLayoutHorizontalLineOfText();
+                                    // Task column
+                                    switch (eventAction.Type)
+                                    {
+                                        case Orts.Formats.Msts.EventType.AssembleTrain:
+                                        case Orts.Formats.Msts.EventType.AssembleTrainAtLocation:
+                                            dbfevaltaskname = "Assemble Train"; dbfevalexist = true;
+                                            if (eventAction.Type == Orts.Formats.Msts.EventType.AssembleTrainAtLocation)
+                                            {
+                                                dbfevaltaskname = "Assemble Train At Location";
+                                            }
+                                            break;
+                                        case Orts.Formats.Msts.EventType.DropOffWagonsAtLocation:
+                                            dbfevaltaskname = "Drop Off"; dbfevalexist = true;
+                                            break;
+                                        case Orts.Formats.Msts.EventType.PickUpPassengers:
+                                        case Orts.Formats.Msts.EventType.PickUpWagons:
+                                            dbfevaltaskname = "Drop Off"; dbfevalexist = true;
+                                            break;
+                                    }
+                                    if (eventAction.WagonList != null)
+                                    {
+                                        var location = "";
+                                        var locationFirst = "";
+                                        foreach (Orts.Formats.Msts.WorkOrderWagon wagonItem in eventAction.WagonList.WorkOrderWagonList)
+                                        {
+                                            var sidingId = eventAction.Type == Orts.Formats.Msts.EventType.AssembleTrainAtLocation
+                                                    || eventAction.Type == Orts.Formats.Msts.EventType.DropOffWagonsAtLocation
+                                                    ? (uint)eventAction.SidingId : wagonItem.SidingId;
+                                            foreach (var item in owner.Viewer.Simulator.TDB.TrackDB.TrItemTable)
+                                            {
+                                                var siding = item as Orts.Formats.Msts.SidingItem;
+                                                if (siding != null && siding.TrItemId == sidingId)
+                                                {
+                                                    location = siding.ItemName;
+                                                    break;
+                                                }
+                                            }
+                                            if (locationFirst != location)
+                                                dbfevaltasklocation = location;
+
+                                            locationFirst = location;
+                                            // Status column
+                                            if (@event.TimesTriggered == 1)
+                                                dbfevaltaskstatus = "Done";
+
+                                        }
+                                    }
+                                    if (dbfevalexist)
+                                    {
+                                        if (!DbfEvalTaskName.ContainsKey(dbfeval) && !(dbfevaltaskname == "" && dbfevaltasklocation == "" && dbfevaltaskstatus == ""))
+                                        {
+                                            DbfEvalTaskName.Add(dbfeval, dbfevaltaskname);
+                                            DbfEvalTaskLocation.Add(dbfeval, dbfevaltasklocation);
+                                            DbfEvalTaskStatus.Add(dbfeval, dbfevaltaskstatus);
+                                        }
+                                        else if (dbfevaltaskstatus != "" && DbfEvalTaskStatus[dbfeval] != dbfevaltaskstatus)
+                                        {
+                                            DbfEvalTaskStatus[dbfeval] = dbfevaltaskstatus;
+                                        }
+                                        dbfeval++;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        //--------------------------------------------------------
+                        //Task count
+                        if (!actualStatusVisible)
+                        {
+                            line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("- Tasks: " + DbfEvalTaskName.Count)));
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                        }
+                        //Task accomplished
+                        int ndbfEvalTaskAccomplished = 0;
+                        foreach (var item in DbfEvalTaskStatus)
+                        {
+                            if (item.Value == "Done")
+                                ndbfEvalTaskAccomplished++;
+                        }
+                        if (!actualStatusVisible)
+                        {
+                            line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("- Accomplished: ") + ndbfEvalTaskAccomplished));
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("- Coupling speed limits: ") + noverspeedcoupling));
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line.AddHorizontalSeparator();
+                        }
+                        //-------------------------------------------------------------
+                        if (!owner.Viewer.Settings.DebriefActivityEval)
+                        {
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line.Add(indicator = new Label(colWidth * 14, line.RemainingHeight, Viewer.Catalog.GetString("  The Debrief evaluation checkbox is unchecked.")));
+                            indicator.Color = Color.LightSalmon;
+                        }
+                        else
+                        {   
+                            // Current Debriel Eval data                        
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            if (!actualStatusVisible)
+                                statusLabel = new Label(colWidth * 2, line.RemainingHeight, "Actual status: (▼)");
+                            else
+                                statusLabel = new Label(colWidth * 2, line.RemainingHeight, "Actual status: (▲)");
+
+                            statusLabel.Click += status_Click;
+                            line.Add(statusLabel);
+
+                            DbfEvalValues.Clear();
+                            if (actualStatusVisible)
+                            {
+                                DbfEvalValues.Add("Train Overturned", TrainCar.DbfEvalTrainOverturned);
+                                DbfEvalValues.Add("Alerter applications above 10MPH/16KMH", Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
+                                DbfEvalValues.Add("Auto pilot (Time)", Viewer.DbfEvalAutoPilotTimeS);
+                                DbfEvalValues.Add(lbreakcouplers ? "Coupler breaks" : "Coupler overloaded", Train.NumOfCouplerBreaks);
+                                DbfEvalValues.Add("Coupling speed limits", Simulator.DbfEvalOverSpeedCoupling);
+                                DbfEvalValues.Add(lcurvespeeddependent ? "Curve speeds exceeded" : "Curve dependent speed limit (Disabled)", lcurvespeeddependent ? TrainCar.DbfEvalTravellingTooFast : 0);
+                                DbfEvalValues.Add("Departure before passenger boarding completed", ActivityTaskPassengerStopAt.nDbfEvalDepartBeforeBoarding);
+                                DbfEvalValues.Add("Distance travelled", DbfEvalDistanceTravelled + locomotive.DistanceM);
+                                DbfEvalValues.Add("Emergency applications while moving", RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
+                                DbfEvalValues.Add("Emergency applications while stopped", RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
+                                DbfEvalValues.Add("Full Train Brake applications under 5MPH/8KMH", MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
+                                if (lcurvespeeddependent) DbfEvalValues.Add("Hose breaks", TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
+                                DbfEvalValues.Add("Over Speed", TrackMonitor.DbfEvalOverSpeed);
+                                DbfEvalValues.Add("Over Speed (Time)", TrackMonitor.DbfEvalOverSpeedTimeS);
+                                //TO DO: water consumption is not ready.
+                                //DbfEvalValues.Add("Water consumption", MSTSSteamLocomotive.DbfEvalCumulativeWaterConsumptionLbs);
+                                var train = Program.Viewer.PlayerLocomotive.Train;//Debrief Eval
+                                train.DbfEvalValueChanged = true;
+
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                                //List sorted by Key
+                                foreach (KeyValuePair<string, double> pair in DbfEvalValues.OrderBy(i => i.Key))
+                                {
+                                    line.Add(new Label(colWidth * 4, line.RemainingHeight, Viewer.Catalog.GetString("- " + pair.Key)));
+                                    line.Add(new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("= " + (pair.Key.Contains("Time") ? FormatStrings.FormatTime(pair.Value) : pair.Key.Contains("Distance") ? FormatStrings.FormatDistanceDisplay(Convert.ToSingle(pair.Value), locomotive.IsMetric) : pair.Value.ToString()))));
+
+                                    line = scrollbox.AddLayoutHorizontalLineOfText();
+                                }
+                            
+                                line.AddHorizontalSeparator();
+                            }
+                        }
+
+                        //Report when DebriefActivityEval and Activity is completed or finished or successful.                        
+                        if (owner.Viewer.Settings.DebriefActivityEval && (dbfevaliscompleted | dbfevalisfinished | dbfevalissuccessful) )
+                        {
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            actualStatusVisible = false;//Enable scroll
+                            dbfevalActivityEnded = true;
+
+                            //If Autopilot control then update recorded time
+                            if (!ldbfevalupdateautopilottime && owner.Viewer.PlayerLocomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                            {
+                                Viewer.DbfEvalAutoPilotTimeS = Viewer.DbfEvalAutoPilotTimeS + (owner.Viewer.Simulator.ClockTime - Viewer.DbfEvalIniAutoPilotTimeS);
+                                ldbfevalupdateautopilottime = true;
+                            }  
+                            //---------------------------------------------------------
+                            //Report
+                            //----------------------------------------------------------
+                            colWidth = (cl.RemainingWidth - cl.TextHeight) / 14;
+                            var filename="";
+                            var dbfEvalFiles = Directory.GetFiles(UserSettings.UserDataFolder, Owner.Viewer.Simulator.ActivityFileName + "*.dbfeval");
+                            foreach (var files in dbfEvalFiles)
+                                File.Delete(files);//Delete all debrief eval files previously saved, for the same activity.
+
+                            //Activity name
+                            var activityname = owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Name.ToString().Trim();
+
+                            foreach (var ch in Path.GetInvalidFileNameChars())
+                                activityname = activityname.Replace(ch, ' ');
+
+                            filename = new string(activityname.ToCharArray().Where(c => !Char.IsWhiteSpace(c)).ToArray()) + ".";
+
+                            var dbfevalDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Application.ProductName);
+
+                            if (!Directory.Exists(dbfevalDataFolder))
+                                Directory.CreateDirectory(dbfevalDataFolder);
+
+                            //.DbfEval.txt
+                            filename = String.Format("{0}{1:yyyyMMdd.HHmm}.DbfEval.txt", filename, DateTime.Now);
+                            filename = String.Format(filename, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
+                                                        
+                            logFileName = Path.Combine(dbfevalDataFolder, filename);
+                            //Ensure we start with an empty file.
+                            if (File.Exists(logFileName) && !lDebriefEvalFile) File.Delete(logFileName);
+                            //Create file.
+                            if (!lDebriefEvalFile) wDbfEval = new StreamWriter(File.Open(logFileName, FileMode.Create), System.Text.Encoding.UTF8);
+                        
+                            labeltext = "";
+                            //--------------------------------------------------------------------------------
+                            writeline();
+                            LogSeparator(80);
+                            consolewltext("This is a Debrief Eval for " + Application.ProductName);
+                            LogSeparator(80);
+                            //--------------------------------------------------------------------------------
+                            consolewltext("Version      = " + (VersionInfo.Version.Length > 0 ? VersionInfo.Version : "<none>"));
+                            consolewltext("Build        = " + VersionInfo.Build);
+                            if (logFileName.Length > 0)
+                                consolewltext("Debrief file = " + logFileName);
+
+                            consolewltext("Executable   = " + Path.GetFileName(Application.ExecutablePath));
+                             LogSeparator(80);
+                            line.AddHorizontalSeparator();
+
+                            //Report
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString("A report file was created:")));
+                            indicator.Color = Color.LightGreen;
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line.Add(indicator = new Label(colWidth, line.RemainingHeight, Viewer.Catalog.GetString(filename)));
+                            indicator.Color = Color.LightGreen;
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            labeltext = "-------------";
+                            outmesssagecolorcenter(labeltext, colWidth * 14, Color.Yellow, true);
+                            labeltext = "Debrief eval.";
+                            outmesssagecolorcenter(labeltext, colWidth * 14, Color.Yellow, true);
+                            labeltext = "-------------";
+                            outmesssagecolorcenter(labeltext, colWidth * 14, Color.Yellow, true);
+                            writeline();
+
+                            
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            //Information:
+                            labeltext = "0-Information:";
+                            outmesssagecolor(labeltext, colWidth, Color.Yellow, true, 0, 0);
+
+                            //Activity
+                            labeltext = "  Route=" + owner.Viewer.Simulator.RouteName.ToString();
+                            outmesssage(labeltext, colWidth * 3, true, 0);
+                            labeltext = "  Activity="+ activityname;
+                            outmesssage(labeltext, colWidth * 3, true,0);
+                            labeltext = "  Difficulty=" + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Difficulty.ToString();
+                            outmesssage(labeltext, colWidth * 3, true,0);
+                            labeltext = "  Startime=" + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime.FormattedStartTime().ToString();
+                            outmesssage(labeltext, colWidth * 3, true,0);
+                            labeltext = "  Estimated Time=" + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.Duration.FormattedDurationTimeHMS().ToString();
+                            outmesssage(labeltext, colWidth * 3, true,0);
+                            //TODO: find an existing function to do it.
+                            double iniTime = owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime.Hour * 3600;
+                            iniTime = iniTime + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime.Minute * 60;
+                            iniTime = iniTime + owner.Viewer.Simulator.Activity.Tr_Activity.Tr_Activity_Header.StartTime.Second;
+                            labeltext = "  Elapsed Time=" + FormatStrings.FormatTime(Owner.Viewer.Simulator.ClockTime - iniTime);
+                            outmesssage(labeltext, colWidth * 3, true,0);
+
+                            //Auto pilot time.
+                            labeltext = "  Autopilot Time=" + FormatStrings.FormatTime(Viewer.DbfEvalAutoPilotTimeS);
+                            outmesssage(labeltext, colWidth * 3, true, 0);
+
+                           // var locomotive = Owner.Viewer.Simulator.PlayerLocomotive;                            
+                            var cars = Owner.Viewer.PlayerTrain.Cars;
+                            bool ismetric = locomotive.IsMetric;
+                            bool isuk = locomotive.IsUK;
+                            float distancetravelled = locomotive.DistanceM + DbfEvalDistanceTravelled;
+                            //Distance travelled
+                            labeltext = "  Travelled=" + FormatStrings.FormatDistanceDisplay(distancetravelled, ismetric);
+                            outmesssage(labeltext, colWidth * 3, true, 0);
+
+                            float nDieselvolume = 0, nCoalvolume = 0;
+                            float nDiesellevel = 0, nCoallevel = 0;
+                            float nDieselburned = 0, nCoalburned = 0;
+                            float nCoalBurnedPerc = 0, nWaterBurnedPerc = 0;
+                            List<string> cEnginetype = new List<string>();
+                            bool lDiesel = false;
+                            bool lSteam = false;
+                            bool lElectric = false;
+                            foreach (var item in cars)//Consist engines
+                            {
+
+                                if (item.EngineType.ToString() == "Diesel")
+                                {//Fuel Diesel
+                                    nDieselvolume = nDieselvolume + (item as MSTSDieselLocomotive).MaxDieselLevelL;
+                                    nDiesellevel = nDiesellevel + (item as MSTSDieselLocomotive).DieselLevelL;
+                                    nDieselburned = nDieselvolume - nDiesellevel;
+                                    cEnginetype.Add("Diesel");
+                                    lDiesel = true;
+                                }
+
+                                if (item.EngineType.ToString() == "Steam" && item.AuxWagonType.ToString() == "Engine")
+                                {//Fuel Steam
+                                    nCoalvolume = nCoalvolume + (item as MSTSSteamLocomotive).MaxTenderCoalMassKG;
+                                    nCoallevel = nCoallevel + (item as MSTSSteamLocomotive).TenderCoalMassKG;
+                                    nCoalburned = nCoalvolume - nCoallevel;
+                                    nCoalBurnedPerc = 1 - ((item as MSTSSteamLocomotive).TenderCoalMassKG / (item as MSTSSteamLocomotive).MaxTenderCoalMassKG);
+                                    cEnginetype.Add("Steam");
+
+                                    nWaterBurnedPerc = 1 - ((item as MSTSSteamLocomotive).CombinedTenderWaterVolumeUKG / (item as MSTSSteamLocomotive).MaxTotalCombinedWaterVolumeUKG);
+                                    lSteam = true;
+                                }
+                                if (item.EngineType.ToString() == "Electric")
+                                {
+                                    cEnginetype.Add("Electric");
+                                    lElectric = true;
+                                }
+                            }
+                            //Consist engine type  
+                            int ncountdiesel = cEnginetype.Where(s => s == "Diesel").Count();
+                            int ncountsteam = cEnginetype.Where(s => s == "Steam").Count();
+                            int ncountelectric = cEnginetype.Where(s => s == "Electric").Count();
+                            labeltext = "  Consist engine=" + (ncountdiesel > 0? ncountdiesel + " Diesel. ": "") + (ncountsteam > 0 ? ncountsteam + " Steam." : "") + (ncountelectric > 0 ? ncountelectric + " Electric." : "");
+                            outmesssage(labeltext, colWidth * 3, true, 0);
+                            
+                            if (lDiesel)//Fuel Diesel
+                            {                               
+                                labeltext = "  Burned Diesel=" + FormatStrings.FormatFuelVolume(nDieselburned, ismetric, isuk);
+                                outmesssage(labeltext, colWidth * 3, true, 0);
+                            }                            
+                            
+                            if (lSteam)//Fuel Steam
+                            {
+                                labeltext = "  Burned Coal=" + FormatStrings.FormatMass(nCoalburned, ismetric) + " (" + nCoalBurnedPerc.ToString("0.##%") +")";
+                                outmesssage(labeltext, colWidth * 3, true, 0);
+                                labeltext = "  Water consumption=" + nWaterBurnedPerc.ToString("0.##%");
+                                outmesssage(labeltext, colWidth * 3, true, 0);
+                            }                            
+                            
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            writeline();
+                            
+                            //Station Arrival, Departure, Passing Evaluation. 100.                              
+                            labeltext = "1-Station Arrival, Departure, Passing Evaluation:";
+                            outmesssagecolor(labeltext, colWidth, Color.Yellow, true, 6, 0);
+                            //Station
+                            double nstationmissed = 0;
+                            double nstationdelayed = 0;
+                            double nstationarrival = DbfEvalStationName.Count - dbfstationstopsremaining - nmissedstation;
+                            int ndepartbeforeboarding = ActivityTaskPassengerStopAt.nDbfEvalDepartBeforeBoarding;
+
+                            if (DbfEvalStationName.Count > 0)
+                            {
+                                //Activity station stops
+                                labeltext = "  Station Arrival=" + nstationarrival.ToString();
+                                outmesssage(labeltext, colWidth * 4, true, 1);
+
+                                //Delayed. -0.2 per second. 
+                                if (playerTrain.Delay != null)
+                                {
+                                    nstationdelayed = 0.2 * (long)playerTrain.Delay.Value.TotalSeconds;//second
+                                    labeltext = "  Delay=" + FormatStrings.FormatTime(playerTrain.Delay.Value.TotalSeconds);
+                                    outmesssagecolor(labeltext, colWidth * 4, nmissedstation > 0 ? Color.LightSalmon : Color.White, true, 1, 0);                                
+                                }
+                                //Missed station stops. -20.
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+                                labeltext = "  Missed station stops=" + nmissedstation + (nmissedstation > 0 ? nmissedstation > 1 ? "    Stations" : "    Station" : "");
+                                outmesssagecolor(labeltext, colWidth * 4, nmissedstation > 0 ? Color.LightSalmon : Color.White, false, 1, 1);
+                                nstationmissed = 20 * nmissedstation;                                
+
+                                foreach (var item in DbfEvalActDepart)
+                                {
+                                    if (item.Value == "(missed)")
+                                    {
+                                        line = scrollbox.AddLayoutHorizontalLineOfText();
+                                        outmesssage("  ", colWidth * 5, false, 3);
+                                        labeltext = DbfEvalStationName[item.Key];
+                                        outmesssagecolor(labeltext, colWidth, Color.LightSalmon, false, 3, 1);
+                                    }
+                                }
+
+                                //Station departure before passenger boarding completed. -80.                                
+                                labeltext = "  Departure before passenger boarding completed=" + ndepartbeforeboarding;
+                                outmesssage(labeltext, colWidth * 8, true, 1);
+                                ndepartbeforeboarding = 80 * ndepartbeforeboarding;
+                            }
+                            else
+                            {
+                                labeltext = "  No Station stops.";
+                                outmesssage(labeltext, colWidth, true, 1);
+                            }
+
+                            //Station Arrival, Departure, Passing Evaluation. Overall Rating.
+                            double nstationdelmisbef = nstationdelayed + nstationmissed + ndepartbeforeboarding;
+                            int nstatarrdeppaseval = DbfEvalStationName.Count != dbfstationstopsremaining && (nstationdelmisbef)<=100 ? (nstationarrival == DbfEvalStationName.Count && nstationdelmisbef == 0) ? 100 :Convert.ToInt16(100 - nstationdelmisbef) : 0;
+                            labeltext = DbfEvalStationName.Count != dbfstationstopsremaining ? "  Overall rating total=" + nstatarrdeppaseval : "  Overall rating total=0";
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, true, 1, 1);
+                            
+                            //Work orders. 100.
+                            colWidth = (cl.RemainingWidth - cl.TextHeight) / 7;
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            labeltext = "2-Work orders:";
+                            outmesssagecolor(labeltext, colWidth, Color.Yellow, true, 6, 0);                            
+                            //Work orders sheet.
+                            if (DbfEvalTaskName.Count > 0)
+                            {
+                                line = scrollbox.AddLayoutHorizontalLineOfText();
+                                colWidth = (scrollbox.RemainingWidth - cl.TextHeight) / 20;
+                                labeltext = "  Task";
+                                outmesssagecolor(labeltext, colWidth * 7, Color.Gray, false, 2, 0);
+                                labeltext = "Location";
+                                outmesssagecolor(labeltext, colWidth * 8, Color.Gray, false, 2, 0);
+                                labeltext = "Status";
+                                outmesssagecolor(labeltext, colWidth, Color.Gray, false, 2, 1);
+                                foreach (KeyValuePair<int, string> item in DbfEvalTaskName)
+                                {
+                                    line = scrollbox.AddLayoutHorizontalLineOfText();
+                                    labeltext = "  " + item.Value;
+                                    outmesssage(labeltext, colWidth * 7, false, 2);
+                                    labeltext = DbfEvalTaskLocation.ContainsKey(item.Key) && DbfEvalTaskLocation[item.Key] != "" ? DbfEvalTaskLocation[item.Key].ToString() : "-";
+                                    outmesssage(labeltext, colWidth * 8, false, 2);
+                                    labeltext = DbfEvalTaskStatus.ContainsKey(item.Key) && DbfEvalTaskStatus[item.Key] != "" ? DbfEvalTaskStatus[item.Key].ToString() : "-";
+                                    outmesssage(labeltext, colWidth, false, 2);
+                                    writeline();
+                                }
+                                //Coupling Over Speed > 1.5 MpS (5.4Kmh 3.3Mph)
+                                colWidth = (cl.RemainingWidth - cl.TextHeight) / 14;
+                                labeltext = "  Coupling speed limits=" + noverspeedcoupling.ToString();
+                                outmesssage(labeltext, colWidth * 4, true, 2);
+                            }
+                            else
+                            {
+                                labeltext = "  No Tasks.";
+                                outmesssage(labeltext, colWidth, true, 1);
+                            }
+                            //Work orders. 100. Overall Rating.
+                            colWidth = (cl.RemainingWidth - cl.TextHeight) / 14;
+                            int nworkorderseval = DbfEvalTaskName.Count > 0? (100 / DbfEvalTaskName.Count) * (ndbfEvalTaskAccomplished - noverspeedcoupling):0;
+                            nworkorderseval = nworkorderseval > 0? nworkorderseval : 0;
+                            labeltext = "  Overall rating total=" + nworkorderseval;
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, true, 2, 1);                            
+
+                            //----------------------
+                            //SPEED Evaluation. 100.
+                            //----------------------
+                            
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            labeltext = "3-Speed Evaluation:";
+                            outmesssagecolor(labeltext, colWidth, Color.Yellow, true, 6, 0);
+                            //Over Speed
+                            //Track Monitor Red.
+                            int nspeedred = TrackMonitor.DbfEvalOverSpeed;
+                            labeltext = "  Over Speed=" + nspeedred;
+                            outmesssage(labeltext, colWidth * 4, true, 2);
+                            //Over Speed Time.
+                            //Track Monitor Red. -1.5 per second. dbfEvalOverSpeedTimeS.
+                            double nspeedredtime = TrackMonitor.DbfEvalOverSpeedTimeS;
+                            labeltext = "  Over Speed (Time)=" + FormatStrings.FormatTime(nspeedredtime);
+                            outmesssage(labeltext, colWidth * 4, true, 2);
+                            nspeedredtime = 1.5 * nspeedredtime;
+
+                            //SPEED Evaluation. 100. Overall Rating.
+                            int nSpeedEval = Convert.ToInt16(100 - nspeedredtime);                            
+                            labeltext = "  Overall rating total=" + nSpeedEval;
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, true, 2, 1);
+
+                            //-----------------------------------------------------
+                            //Freight Durability/Passenger Comfort Evaluation. 100.
+                            //-----------------------------------------------------
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            labeltext = "4-Freight Durability/Passenger Comfort Evaluation:";
+                            outmesssagecolor(labeltext, colWidth, Color.Yellow, true, 6, 0);
+                            
+                            //Durability                            
+                            //Curve speeds exceeded. -3. dbfEvalTravellingTooFast
+                            int ncurvespeedexceeded = TrainCar.DbfEvalTravellingTooFast;
+                            labeltext = lcurvespeeddependent? "  Curve speeds exceeded=" + ncurvespeedexceeded: "  Curve dependent speed limit (Disabled)";
+                            outmesssage(labeltext, colWidth * 4, true, 4);
+                            ncurvespeedexceeded = 3 * ncurvespeedexceeded;
+
+                            //Hose Breaks.  -7. dbfEvalTravellingTooFastBrakeHose
+                            int nhosebreaks = TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose;
+                            labeltext = lcurvespeeddependent ? "  Hose breaks=" + nhosebreaks:  "  Curve dependent speed limit (Disabled)";
+                            outmesssage(labeltext, colWidth * 4, true, 4);
+                            nhosebreaks = 7 * nhosebreaks;
+
+                            //Coupler Breaks. -10.
+                            int ncouplerbreaks = Train.NumOfCouplerBreaks;
+                            labeltext = (lbreakcouplers? "  Coupler breaks=": "  Coupler overloaded=") + ncouplerbreaks;
+                            outmesssage(labeltext, colWidth * 4, true, 4);
+                            ncouplerbreaks = 10 * ncouplerbreaks;
+
+                            //Train Overturned. -20.
+                            int ntrainoverturned = TrainCar.DbfEvalTrainOverturned;
+                            labeltext = "  Train Overturned=" + ntrainoverturned;
+                            outmesssage(labeltext, colWidth * 4, true, 4);
+                            ntrainoverturned = 20 * ntrainoverturned;
+
+                            //Freight Durability/Passenger Comfort Evaluation. 100. Overall Rating.
+                            int nFdurPasconfEval = (100 - (ncurvespeedexceeded + nhosebreaks + ncouplerbreaks + ntrainoverturned > 100 ? 100 : ncurvespeedexceeded + nhosebreaks + ncouplerbreaks + ntrainoverturned));
+                            labeltext = "  Overall rating total=" + nFdurPasconfEval;
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, true, 4, 1);
+
+                            //------------------------------------------
+                            //EMERGENCY/PENALTY Actions Evaluation. 100.
+                            //------------------------------------------
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            labeltext = "5-Emergency/Penalty Actions Evaluation:";
+                            outmesssagecolor(labeltext, colWidth, Color.Yellow, true, 6, 0);
+
+                            //Full Brake applications under 5MPH / 8KMH. 2.
+                            int nfullbrakeappunder8kmh = Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh;
+                            labeltext = "  Full Train Brake applications under 5MPH/8KMH=" + nfullbrakeappunder8kmh;
+                            outmesssage(labeltext, colWidth * 8, true, 5);
+                            nfullbrakeappunder8kmh = 2 * nfullbrakeappunder8kmh;
+                            
+                            //Emergency applications MOVING. 20.
+                            int nebpbmoving = RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving;
+                            labeltext = "  Emergency applications while moving=" + nebpbmoving;
+                            outmesssage(labeltext, colWidth * 8, true,5);
+                            nebpbmoving = 20 * nebpbmoving;
+
+                            //Emergency applications while STOPPED. 5.
+                            int nebpbstopped = RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped;
+                            labeltext = "  Emergency applications while stopped=" + nebpbstopped;
+                            outmesssage(labeltext, colWidth * 8, true, 5);
+                            nebpbstopped = 5 * nebpbstopped;
+
+                            //Alerter Penalty applications above 16KMH ~ 10MPH. 35.                            
+                            int nfullbrakeabove16kmh = Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh;
+                            labeltext = "  Alerter applications above 10MPH/16KMH=" + nfullbrakeabove16kmh;
+                            outmesssage(labeltext, colWidth * 8, true,5);
+                            nfullbrakeabove16kmh = 35 * nfullbrakeabove16kmh;
+
+                            //Emergency/Penalty Actions Evaluation. 100. Overall Rating.
+                            int nepactionseval = nebpbstopped + nebpbmoving + nfullbrakeappunder8kmh + nfullbrakeabove16kmh;
+                            nepactionseval = 100 - (nepactionseval > 100 ? 100 : nepactionseval);
+                            labeltext = "  Overall rating total=" + nepactionseval;
+                            outmesssagecolor(labeltext, colWidth * 8, Color.Yellow, true, 5, 1);
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            //-------------------------
+                            //R A T I N G  &  S T A R S
+                            //-------------------------
+                            string cstart = " ★ ★ ★ ★ ★"; 
+                            line.AddHorizontalSeparator();
+
+                            colWidth = (cl.RemainingWidth - cl.TextHeight) / 7;
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            labeltext = "Rating & Stars";
+                            outmesssagecolorcenter(labeltext, colWidth * 7, Color.Yellow, true);
+                            labeltext = "**************";
+                            outmesssagecolorcenter(labeltext, colWidth * 7, Color.Yellow, true);
+                            writeline();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            //Station Arrival, Departure, Passing Evaluation. 100                          
+                            labeltext = "1- Station Arrival, Departure, Passing Evaluation=" + (nstatarrdeppaseval > 0 ? (cstart.Substring(0, nstatarrdeppaseval / 10).ToString()) : " .");
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, false, 6, 1);                            
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            //SPEED Evaluation. 100                            
+                            labeltext = "2- Work orders Evaluation=" + (nworkorderseval > 0 ? (cstart.Substring(0, nworkorderseval / 10).ToString()) : " ."); 
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, false, 6, 1);                            
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            //SPEED Evaluation. 100                            
+                            labeltext = "3- Speed Evaluation=" + (nSpeedEval > 0 ? (cstart.Substring(0, nSpeedEval / 10).ToString()) : " ."); 
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, false, 6, 1);
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            //Freight Durability/Passenger Comfort Evaluation. 100.
+                            labeltext = "4- Freight Durability/Passenger Comfort Evaluation="+ (nFdurPasconfEval > 0 ? (cstart.Substring(0, (nFdurPasconfEval / 10)).ToString()) : " .");
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, false, 6, 1);
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            //Emergency/Penalty Actions Evaluation. 100.
+                            labeltext = "5- Emergency/Penalty Actions Evaluation=" + (nepactionseval > 0 ? (cstart.Substring(0, nepactionseval / 10).ToString()) : " .");
+                            outmesssagecolor(labeltext, colWidth * 4, Color.Yellow, false, 6, 1);
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            labeltext = "";
+                            line.AddHorizontalSeparator();
+                            line = scrollbox.AddLayoutHorizontalLineOfText();
+
+                            writeline();
+                            LogSeparator(80);
+                            writeline();
+
+                            if (!lDebriefEvalFile)
+                            {
+                                lDebriefEvalFile = true;
+                                wDbfEval.Close();//Close output file
+                                System.Diagnostics.Process.Start("notepad.exe", logFileName);//Show debrief eval file
+                            }
+                        }
+                    }
+                }));
+                Tabs.Add(new TabData(Tab.LocomotiveProcedures, Viewer.Catalog.GetString("Procedures"), (cl) =>
+                {
+                    var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                    if (owner.Viewer.Simulator.PlayerLocomotive != null &&
+                        owner.Viewer.Simulator.PlayerLocomotive is MSTSLocomotive &&
+                        ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures != null &&
+                        ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
+                    {
+                        scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
+                    }
+                }));
+            }
+        }
+
+        private void status_Click(Control arg1, Point arg2)
+        {
+            if (actualStatusVisible)
+                actualStatusVisible = false;
+            else
+                actualStatusVisible = true;
+
+            Layout();
+        }
+
+        private void outmesssagecolorcenter( string text, int colW, Color color, bool lScroll)
+        {
+            if (lScroll)
+            {
+                line = scrollbox.AddLayoutHorizontalLineOfText();
+                if (!lDebriefEvalFile) wDbfEval.WriteLine(text.PadLeft(40 + text.Length / 2));
+            }
+            else
+                if (!lDebriefEvalFile) wDbfEval.Write(text.PadLeft(40 + text.Length / 2));
+
+            line.Add(indicator = new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(text), LabelAlignment.Center));
+            indicator.Color =color;
+        }    
+        
+        private void outmesssagecolor(string text, int colW, Color color, bool bScroll, int nmargin, int nwriteline)
+        {
+            string[] atext = text.Split('=');
+            int[] nvalmargin = { 16, 22, 23, 30, 33, 48, 50 };
+
+            if (bScroll)
+            {
+                line = scrollbox.AddLayoutHorizontalLineOfText();
+                if (!lDebriefEvalFile) wDbfEval.WriteLine(atext.Length > 1 ? atext[0].PadRight(nvalmargin[nmargin]) + " = " + atext[1]: text);
+            }
+            else
+            {
+                if (!lDebriefEvalFile) wDbfEval.Write(atext.Length > 1 ? atext[0].PadRight(nvalmargin[nmargin]) + " = " + atext[1]: text.PadRight(nvalmargin[nmargin]));
+            }
+
+            if (!lDebriefEvalFile)
+            {
+                for (int i = 0; i < nwriteline; i++)
+                    writeline();
+            }
+
+            if (atext.Length > 1)
+            {
+                line.Add(indicator = new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(atext[0])));
+                indicator.Color = color;
+                line.Add(indicator = new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(" = " + atext[1])));
+                indicator.Color = color;
+            }
+            else
+            {
+                line.Add(indicator = new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(text)));
+                indicator.Color = color;
+            }
+        }
+
+        private void outmesssage(string text, int colW, bool bScroll, int nmargin)
+        {
+            string[] atext = text.Split('=');
+            int[] nvalmargin = { 16, 22, 23, 30, 33, 48, 50 };
+
+            if (bScroll)
+            {
+                line = scrollbox.AddLayoutHorizontalLineOfText();
+                if (!lDebriefEvalFile)
+                    wDbfEval.WriteLine(atext.Length > 1 ? atext[0].PadRight(nvalmargin[nmargin]) + " = " + atext[1] : text.PadRight(nvalmargin[nmargin]));
+            }
+            else
+                if (!lDebriefEvalFile) wDbfEval.Write(text.PadRight(nvalmargin[nmargin]));
+
+            if (atext.Length > 1)
+            {
+                line.Add(new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(atext[0])));
+                line.Add(new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(" = " + atext[1])));
+            }
+            else
+            {
+                line.Add(new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(text)));
+            }
+        }
+        
+        private void consolewltext(string text)
+        {
+            if (!lDebriefEvalFile) wDbfEval.WriteLine(text + ".");
+        }
+
+        private void writeline()
+        {
+            if (!lDebriefEvalFile) wDbfEval.WriteLine();
         }
 
         public override void TabAction()
@@ -284,9 +1151,9 @@ namespace Orts.Viewer3D.Popups
                     var label = new Label(tabWidth, hbox.RemainingHeight, Tabs[i].TabLabel, LabelAlignment.Center) { Color = ActiveTab == i ? Color.White : Color.Gray, Tag = i };
                     label.Click += label_Click;
                     hbox.Add(label);
+                    
                 }
                 vbox.AddHorizontalSeparator();
-
                 Tabs[ActiveTab].Layout(vbox);
             }
 
@@ -302,6 +1169,7 @@ namespace Orts.Viewer3D.Popups
         enum Tab
         {
             ActivityBriefing,
+            ActivityEvaluation,
             ActivityTimetable,
             ActivityWorkOrders,
             LocomotiveProcedures,
@@ -322,14 +1190,16 @@ namespace Orts.Viewer3D.Popups
             }
         }
 
+        
         ActivityTask LastActivityTask;
         bool StoppedAt;
-
+        
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
+
             base.PrepareFrame(elapsedTime, updateFull);
 
-            if (updateFull && Tabs[ActiveTab].Tab == Tab.ActivityTimetable && Owner.Viewer.Simulator.ActivityRun != null)
+            if (updateFull && (Tabs[ActiveTab].Tab == Tab.ActivityTimetable | Tabs[ActiveTab].Tab == Tab.ActivityEvaluation) && Owner.Viewer.Simulator.ActivityRun != null)
             {
                 if (LastActivityTask != Owner.Viewer.Simulator.ActivityRun.Current || StoppedAt != GetStoppedAt(LastActivityTask))
                 {
@@ -337,9 +1207,8 @@ namespace Orts.Viewer3D.Popups
                     StoppedAt = GetStoppedAt(LastActivityTask);
                     Layout();
                 }
-
             }
-            else if (updateFull && Tabs[ActiveTab].Tab == Tab.ActivityWorkOrders && Owner.Viewer.Simulator.ActivityRun != null)
+            else if (updateFull && (Tabs[ActiveTab].Tab == Tab.ActivityWorkOrders | Tabs[ActiveTab].Tab == Tab.ActivityEvaluation) && Owner.Viewer.Simulator.ActivityRun != null)
             {
                 if (Owner.Viewer.Simulator.ActivityRun.EventList != null)
                 {
@@ -349,6 +1218,16 @@ namespace Orts.Viewer3D.Popups
                         lastLastEventID = Owner.Viewer.Simulator.ActivityRun.LastTriggeredEvent.ParsedObject.ID;
                         Layout();
                     }
+                }
+            }
+            else if (Tabs[ActiveTab].Tab == Tab.ActivityEvaluation && Owner.Viewer.Simulator.ActivityRun != null && !dbfevalActivityEnded)//Debrief Eval
+            {
+
+                var train = Program.Viewer.PlayerLocomotive.Train;//Debrief Eval
+                if (train.DbfEvalValueChanged)//Debrief Eval
+                {
+                    train.DbfEvalValueChanged = false;//Debrief Eval
+                    Layout();
                 }
             }
             if (this.ActivityUpdated == true) //true value is set in ActivityWindow.cs

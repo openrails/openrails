@@ -450,6 +450,7 @@ namespace Orts.Formats.Msts
     public class Duration {
         int Hour;
         int Minute;
+        int Second;
 
         public Duration(int h, int m) {
             Hour = h;
@@ -463,9 +464,16 @@ namespace Orts.Formats.Msts
             stf.MustMatch(")");
         }
 
-        public String FormattedDurationTime() {
+        public String FormattedDurationTime()
+        {
             return Hour.ToString("00") + ":" + Minute.ToString("00");
         }
+
+        public String FormattedDurationTimeHMS()
+        {
+            return Hour.ToString("00") + ":" + Minute.ToString("00") + ":" + Second.ToString("00");
+        }
+
     }
 
     public class Tr_Activity_File {

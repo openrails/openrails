@@ -103,6 +103,8 @@ namespace Orts.Simulation
 
         public float CurveDurability;  // Sets the durability due to curve speeds in TrainCars - read from consist file.
 
+        public static int DbfEvalOverSpeedCoupling;//Debrief eval
+
         public Signals Signals;
         public AI AI;
         public SeasonType Season;
@@ -917,6 +919,9 @@ namespace Orts.Simulation
                             // couple my rear to front of train
                             //drivenTrain.SetCoupleSpeed(train, 1);
                             drivenTrain.LastCar.SignalEvent(Event.Couple);
+                            if (drivenTrain.SpeedMpS > 1.5)
+                                DbfEvalOverSpeedCoupling += 1;
+
                             foreach (TrainCar car in train.Cars)
                             {
                                 drivenTrain.Cars.Add(car);
@@ -938,6 +943,9 @@ namespace Orts.Simulation
                             // couple my rear to rear of train
                             //drivenTrain.SetCoupleSpeed(train, -1);
                             drivenTrain.LastCar.SignalEvent(Event.Couple);
+                            if (drivenTrain.SpeedMpS > 1.5)
+                                DbfEvalOverSpeedCoupling += 1;
+
                             for (int i = train.Cars.Count - 1; i >= 0; --i)
                             {
                                 TrainCar car = train.Cars[i];
@@ -980,7 +988,9 @@ namespace Orts.Simulation
                             {//Like Rear coupling with changed data  
                                 lead = train.LeadLocomotive;
                                 train.LastCar.SignalEvent(Event.Couple);
-     
+                                if (drivenTrain.SpeedMpS > 1.5)
+                                    DbfEvalOverSpeedCoupling += 1;
+
                                 for (int i = 0; i < drivenTrain.Cars.Count; ++i)
                                 {
                                     TrainCar car = drivenTrain.Cars[i];
@@ -993,6 +1003,9 @@ namespace Orts.Simulation
                             else
                             {
                                 drivenTrain.FirstCar.SignalEvent(Event.Couple);
+                                if (drivenTrain.SpeedMpS > 1.5)
+                                    DbfEvalOverSpeedCoupling += 1;
+
                                 lead = drivenTrain.LeadLocomotive;
                                 for (int i = 0; i < train.Cars.Count; ++i)
                                 {
@@ -1018,6 +1031,9 @@ namespace Orts.Simulation
                             // couple my front to front of train
                             //drivenTrain.SetCoupleSpeed(train, -1);
                             drivenTrain.FirstCar.SignalEvent(Event.Couple);
+                            if (drivenTrain.SpeedMpS > 1.5)
+                                DbfEvalOverSpeedCoupling += 1;
+
                             TrainCar lead = drivenTrain.LeadLocomotive;
                             for (int i = 0; i < train.Cars.Count; ++i)
                             {

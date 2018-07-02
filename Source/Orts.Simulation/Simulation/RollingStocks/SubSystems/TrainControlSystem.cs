@@ -175,6 +175,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (other.AWSMonitor != null) AWSMonitor = new MonitoringDevice(other.AWSMonitor);
         }
 
+        //Debrief Eval
+        public static int DbfevalFullBrakeAbove16kmh = 0;
+        public bool ldbfevalfullbrakeabove16kmh = false;
+
         public void Initialize()
         {
             if (!Simulator.Settings.DisableTCSScripts && ScriptName != null && ScriptName != "MSTS")
@@ -270,7 +274,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Script.SetFullBrake = (value) =>
             {
                 if (Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
-                    Locomotive.TrainBrakeController.TCSFullServiceBraking = value; 
+                {
+                    Locomotive.TrainBrakeController.TCSFullServiceBraking = value;
+                    
+                    //Debrief Eval
+                    if (value && Locomotive.IsPlayerTrain && !ldbfevalfullbrakeabove16kmh && Math.Abs(Locomotive.SpeedMpS) > 4.44444)
+                    {
+                        var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
+                        DbfevalFullBrakeAbove16kmh++;
+                        ldbfevalfullbrakeabove16kmh = true;
+                        train.DbfEvalValueChanged = true;//Debrief eval
+                    }
+                    if (!value)
+                       ldbfevalfullbrakeabove16kmh = false;
+                }
             };
             Script.SetEmergencyBrake = (value) =>
             {

@@ -147,7 +147,7 @@ namespace Orts.Simulation.RollingStocks
         float PrevCombinedTenderWaterVolumeUKG;
         float PreviousTenderWaterVolumeUKG;
         public float MaxLocoTenderWaterMassKG;         // Maximum read from Eng file
-        float MaxTotalCombinedWaterVolumeUKG;
+        public float MaxTotalCombinedWaterVolumeUKG;
         float RestoredMaxTotalCombinedWaterVolumeUKG; // Values to restore after game save
         float RestoredCombinedTenderWaterVolumeUKG;     // Values to restore after game save
 
@@ -272,6 +272,7 @@ namespace Orts.Simulation.RollingStocks
         public float CumulativeWaterConsumptionLbs = 0.0f;
         public float CumulativeCylinderSteamConsumptionLbs = 0.0f;
         float CummulativeTotalSteamConsumptionLbs = 0.0f;
+        public static float DbfEvalCumulativeWaterConsumptionLbs;//DebriefEval
 
         int LocoIndex;
         public float LocoTenderFrictionForceN; // Combined friction of locomotive and tender
@@ -2307,6 +2308,7 @@ namespace Orts.Simulation.RollingStocks
             WaterConsumptionLbpS = InjectorBoilerInputLB / elapsedClockSeconds; // water consumption
             WaterConsumptionLbpS = MathHelper.Clamp(WaterConsumptionLbpS, 0, WaterConsumptionLbpS);
             CumulativeWaterConsumptionLbs += InjectorBoilerInputLB;
+            if (CumulativeWaterConsumptionLbs > 0) DbfEvalCumulativeWaterConsumptionLbs = CumulativeWaterConsumptionLbs;//DebriefEval
 
 #if DEBUG_AUXTENDER
 

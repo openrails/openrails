@@ -186,6 +186,11 @@ namespace Orts.Viewer3D.Popups
         WindowTextFont Font;
 
         bool metric;
+     
+        public static int DbfEvalOverSpeed;//Debrief eval
+        bool istrackColorRed = false;//Debrief eval
+        public static Double DbfEvalOverSpeedTimeS = 0;//Debrief eval
+        public static double DbfEvalIniOverSpeedTimeS = 0;//Debrief eval
 
         Train.TrainInfo validInfo;
 
@@ -364,6 +369,7 @@ namespace Orts.Viewer3D.Popups
 
         void drawTrack(SpriteBatch spriteBatch, Point offset, float speedMpS, float allowedSpeedMpS)
         {
+            var train = Program.Viewer.PlayerLocomotive.Train;
             var absoluteSpeedMpS = Math.Abs(speedMpS);
             var trackColor =
                 absoluteSpeedMpS < allowedSpeedMpS - 1.0f ? Color.Green :
@@ -372,6 +378,25 @@ namespace Orts.Viewer3D.Popups
 
             spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail1Offset, offset.Y, trackRailWidth, Position.Height), trackColor);
             spriteBatch.Draw(MonitorTexture, new Rectangle(offset.X + trackOffset + trackRail2Offset, offset.Y, trackRailWidth, Position.Height), trackColor);
+
+            if (trackColor == Color.Red && !istrackColorRed)//Debrief Eval
+            {
+                istrackColorRed = true;
+                DbfEvalIniOverSpeedTimeS = Orts.MultiPlayer.MPManager.Simulator.ClockTime;
+            }            
+
+            if (istrackColorRed && trackColor != Color.Red)//Debrief Eval
+            {
+                istrackColorRed = false;
+                DbfEvalOverSpeed++;
+            }
+
+            if (istrackColorRed && (Orts.MultiPlayer.MPManager.Simulator.ClockTime - DbfEvalIniOverSpeedTimeS) > 1.0000)//Debrief Eval
+            {
+                DbfEvalOverSpeedTimeS = DbfEvalOverSpeedTimeS + (Orts.MultiPlayer.MPManager.Simulator.ClockTime - DbfEvalIniOverSpeedTimeS);
+                train.DbfEvalValueChanged = true;
+                DbfEvalIniOverSpeedTimeS = Orts.MultiPlayer.MPManager.Simulator.ClockTime;
+            }
         }
 
         void drawAutoInfo(SpriteBatch spriteBatch, Point offset)
