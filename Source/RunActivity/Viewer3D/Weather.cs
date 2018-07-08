@@ -170,8 +170,6 @@ namespace Orts.Viewer3D
                 case Orts.Formats.Msts.WeatherType.Snow: Weather.PricipitationIntensityPPSPM2 = 0.0050f; Viewer.SoundProcess.AddSoundSources(this, SnowSound); break;
             }
 
-            // WeatherControl is created during World consturction so this needs to be skipped.
-            if (Viewer.World != null) Viewer.World.Precipitation.Reset();
         }
 
         void UpdateSoundSources()
