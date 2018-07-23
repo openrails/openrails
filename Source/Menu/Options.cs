@@ -251,6 +251,7 @@ namespace ORTS
             if (initialContentSetup)
             {
                 tabOptions.SelectedTab = tabPageContent;
+                buttonContentBrowse.Enabled = false; // Initial state because browsing a null path leads to an exception
                 try
                 {
                     bindingSourceContent.Add(new ContentFolder() { Name = "Train Simulator", Path = MSTSPath.Base() });
@@ -655,20 +656,44 @@ namespace ORTS
                 if (folderBrowser.ShowDialog(this) == DialogResult.OK)
                 {
                     var current = bindingSourceContent.Current as ContentFolder;
+                    System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
                     textBoxContentPath.Text = current.Path = folderBrowser.SelectedPath;
                     if (String.IsNullOrEmpty(current.Name))
-                        textBoxContentName.Text = current.Name = Path.GetFileName(textBoxContentPath.Text);
+                        // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
+                        // which does that and also checks for duplicate names 
+                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
                     bindingSourceContent.ResetCurrentItem();
                 }
             }
         }
 
+        /// <summary>
+        /// Edits to the input field are copied back to the list of content.
+        /// They are also checked for duplicate names which would lead to an exception when saving.
+        /// if duplicate, then " copy" is silently appended to the entry in list of content.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void textBoxContentName_TextChanged(object sender, EventArgs e)
         {
             var current = bindingSourceContent.Current as ContentFolder;
             if (current != null && current.Name != textBoxContentName.Text)
             {
-                current.Name = textBoxContentName.Text;
+                // Duplicate names lead to an exception, so append " copy" if not unique
+                var suffix = "";
+                var isNameUnique = true;
+                while (isNameUnique)
+                {
+                    isNameUnique = false; // to exit after a single pass
+                    foreach (var item in bindingSourceContent)
+                        if (((ContentFolder)item).Name == textBoxContentName.Text + suffix)
+                        {
+                            suffix += " copy"; // To ensure uniqueness
+                            isNameUnique = true; // to force another pass
+                            break;
+                        }
+                }
+                current.Name = textBoxContentName.Text + suffix;
                 bindingSourceContent.ResetCurrentItem();
             }
         }
