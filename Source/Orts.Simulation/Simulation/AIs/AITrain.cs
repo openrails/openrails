@@ -534,49 +534,7 @@ namespace Orts.Simulation.AIs
                 return (false);
             }
 
-            PlatformDetails thisPlatform = thisStation.PlatformItem;
-
-            float platformBeginOffset = thisPlatform.TCOffset[0, thisStation.Direction];
-            float platformEndOffset = thisPlatform.TCOffset[1, thisStation.Direction];
-            int endSectionIndex = thisStation.Direction == 0 ?
-                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
-                    thisPlatform.TCSectionIndex[0];
-            int endSectionRouteIndex = ValidRoute[0].GetRouteIndex(endSectionIndex, 0);
-
-            int beginSectionIndex = thisStation.Direction == 1 ?
-                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
-                    thisPlatform.TCSectionIndex[0];
-            int beginSectionRouteIndex = ValidRoute[0].GetRouteIndex(beginSectionIndex, 0);
-
-            // check position
-
-            int stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[0].RouteListIndex);
-
-            // if not found from front of train, try from rear of train (front may be beyond platform)
-            if (stationIndex < 0)
-            {
-                stationIndex = ValidRoute[0].GetRouteIndex(thisStation.TCSectionIndex, PresentPosition[1].RouteListIndex);
-            }
-
-
-            // if rear is in platform, station is valid
-            if (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset >= platformBeginOffset)
-            {
-                atStation = true;
-            }
-            // if front is in platform and most of the train is as well, station is valid
-            else if (PresentPosition[0].RouteListIndex == stationIndex &&
-                    ((thisPlatform.Length - (platformEndOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
-            {
-                atStation = true;
-            }
-            // if front is beyond platform and rear is not on route or before platform : train spans platform
-            else if ((PresentPosition[0].RouteListIndex > stationIndex || (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset >= platformEndOffset))
-                && (PresentPosition[1].RouteListIndex < stationIndex || (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset <= platformBeginOffset)))
-            {
-                atStation = true;
-            }
-
+            atStation = CheckStationPosition(thisStation.PlatformItem, thisStation.Direction, thisStation.TCSectionIndex);
 
             // At station : set state, create action item
 
@@ -770,7 +728,7 @@ namespace Orts.Simulation.AIs
                     }
                     else
                     {
-                        stillExist = ProcessEndOfPath(presentTime);
+                        stillExist = ProcessEndOfPath(presentTime, false);
                         if (stillExist[1])
                         {
                             if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
@@ -2091,7 +2049,7 @@ namespace Orts.Simulation.AIs
 
             // check if station is end of path
 
-            bool[] endOfPath = ProcessEndOfPath(presentTime);
+            bool[] endOfPath = ProcessEndOfPath(presentTime, false);
 
             if (endOfPath[0])
             {
@@ -2185,8 +2143,7 @@ namespace Orts.Simulation.AIs
 
             if (StationStops.Count > 0) PreviousStop = StationStops[0].CreateCopy();
             if (removeStation)
-                StationStops.RemoveAt(0);
-
+                 StationStops.RemoveAt(0);
             ResetActions(true);
         }
 
@@ -3024,6 +2981,7 @@ namespace Orts.Simulation.AIs
 
         public virtual void UpdateFollowingState(float elapsedClockSeconds, int presentTime)
         {
+            if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.TRAIN_AHEAD && nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM < -5)
             if (CheckTrain)
             {
                 File.AppendAllText(@"C:\temp\checktrain.txt",
@@ -3122,10 +3080,11 @@ namespace Orts.Simulation.AIs
                         {
                             var rearOrFront = ValidRoute[0][ValidRoute[0].Count - 1].Direction == 1 ? 0 : 1;
 
-                            if (OtherTrain.TrainType == TRAINTYPE.STATIC || OtherTrain.PresentPosition[0].TCSectionIndex ==
+                            if (OtherTrain.TrainType == TRAINTYPE.STATIC || (OtherTrain.PresentPosition[0].TCSectionIndex ==
                                 TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
                                 || OtherTrain.PresentPosition[1].TCSectionIndex ==
-                                TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex
+                                TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1].TCSectionIndex) && 
+                                (TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid || TCRoute.activeSubpath == TCRoute.TCRouteSubpaths.Count - 1) 
                                 || UncondAttach)
                             {
                                 attachToTrain = true;
@@ -4085,7 +4044,7 @@ namespace Orts.Simulation.AIs
         /// [1] : true : train still exists, false : train is removed and no longer exists
         /// </summary>
 
-        public virtual bool[] ProcessEndOfPath(int presentTime)
+        public virtual bool[] ProcessEndOfPath(int presentTime, bool checkLoop = true)
         {
             bool[] returnValue = new bool[2] { false, true };
 
@@ -4101,7 +4060,7 @@ namespace Orts.Simulation.AIs
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
             int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
 
-            bool[] nextPart = UpdateRouteActions(0);
+            bool[] nextPart = UpdateRouteActions(0, checkLoop);
 
             if (!nextPart[0]) return (returnValue);   // not at end and not to attach to anything
 
@@ -5691,12 +5650,12 @@ namespace Orts.Simulation.AIs
 
             // if still valid - check if more severe as existing action
 
+            bool earlier = false;
+
             if (actionValid)
             {
                 if (nextActionInfo != null)
                 {
-                    bool earlier = false;
-
                     if (thisItem.ActivateDistanceM < nextActionInfo.ActivateDistanceM)
                     {
                         if (thisItem.RequiredSpeedMpS <= nextActionInfo.RequiredSpeedMpS)
@@ -5930,7 +5889,7 @@ namespace Orts.Simulation.AIs
                 }
             }
 
-            if (actionCleared)
+            if (actionCleared || earlier)
             {
 #if DEBUG_REPORTS
                 File.AppendAllText(@"C:\temp\printproc.txt", "Action Cleared\n");
@@ -6078,7 +6037,9 @@ namespace Orts.Simulation.AIs
                 case AI_MOVEMENT_STATE.FROZEN:
                     movString = "FRO ";
                     break;
-
+                case AI_MOVEMENT_STATE.STOPPED_EXISTING:
+                    movString = "STE ";
+                    break;
             }
 
             string abString = AITrainThrottlePercent.ToString("000");
@@ -6193,6 +6154,9 @@ namespace Orts.Simulation.AIs
                         break;
                     case AIActionItem.AI_ACTION_TYPE.NONE:
                         actString = "NONE";
+                        break;
+                    case AIActionItem.AI_ACTION_TYPE.REVERSAL:
+                        actString = "REV";
                         break;
                     default:
                         actString = "AUX";
@@ -6542,42 +6506,8 @@ namespace Orts.Simulation.AIs
                     // check if stopped at station
                     if (Math.Abs(SpeedMpS) == 0.0f)
                     {
-                        // build list of occupied section
-                        int frontIndex = PresentPosition[0].RouteListIndex;
-                        int rearIndex = PresentPosition[1].RouteListIndex;
-                        List<int> occupiedSections = new List<int>();
-
-                        // check valid positions
-                        if (frontIndex < 0 && rearIndex < 0) // not on route so cannot be in station
-                        {
-                            return; // no further actions possible
-                        }
-
-                        // correct position if either end is off route
-                        if (frontIndex < 0) frontIndex = rearIndex;
-                        if (rearIndex < 0) rearIndex = frontIndex;
-
-                        // set start and stop in correct order
-                        int startIndex = frontIndex < rearIndex ? frontIndex : rearIndex;
-                        int stopIndex = frontIndex < rearIndex ? rearIndex : frontIndex;
-
-                        for (int iIndex = startIndex; iIndex <= stopIndex; iIndex++)
-                        {
-                            occupiedSections.Add(ValidRoute[0][iIndex].TCSectionIndex);
-                        }
-
-                        // check if any platform section is in list of occupied sections - if so, we're in the station
-                        foreach (int sectionIndex in StationStops[0].PlatformItem.TCSectionIndex)
-                        {
-                            if (occupiedSections.Contains(sectionIndex))
-                            {
-                                // TODO : check offset within section
-                                AtStation = true;
-                                break;
-                            }
-                        }
-
-                        if (AtStation)
+                        AtStation = IsAtPlatform();
+                         if (AtStation)
                         {
                             int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
                             StationStops[0].ActualArrival = presentTime;
@@ -6586,22 +6516,8 @@ namespace Orts.Simulation.AIs
                     }
                     else
                     {
-                        // check if station missed : station must be at least 500m. behind us
-                        bool missedStation = false;
-
-                        int stationRouteIndex = ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, 0);
-
-                        if (StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
-                        {
-                            if (stationRouteIndex < 0)
-                            {
-                                missedStation = true;
-                            }
-                            else if (stationRouteIndex < PresentPosition[1].RouteListIndex)
-                            {
-                                missedStation = ValidRoute[0].GetDistanceAlongRoute(stationRouteIndex, StationStops[0].StopOffset, PresentPosition[1].RouteListIndex, PresentPosition[1].TCOffset, true, signalRef) > 500f;
-                            }
-                        }
+                        // check if station missed : station must be at least 250m. behind us
+                        bool missedStation = IsMissedPlatform(250);
 
                         if (missedStation)
                         {

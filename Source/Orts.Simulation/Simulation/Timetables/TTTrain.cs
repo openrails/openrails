@@ -2052,7 +2052,7 @@ namespace Orts.Simulation.Timetables
         /// <param name="stationDirection"></param>
         /// <param name="stationTCSectionIndex"></param>
         /// <returns></returns>
-        public bool CheckStationPosition(PlatformDetails thisPlatform, int stationDirection, int stationTCSectionIndex)
+        public override bool CheckStationPosition(PlatformDetails thisPlatform, int stationDirection, int stationTCSectionIndex)
         {
             bool atStation = false;
             //            PlatformDetails thisPlatform = thisStation.PlatformItem;
@@ -8255,14 +8255,14 @@ namespace Orts.Simulation.Timetables
         /// Override from AITrain class
         /// <\summary>
 
-        public override bool[] ProcessEndOfPath(int presentTime)
+        public override bool[] ProcessEndOfPath(int presentTime, bool checkLoop = true)
         {
             bool[] returnValue = new bool[2] { false, true };
 
             int directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
             int positionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].TCSectionIndex;
 
-            bool[] nextPart = UpdateRouteActions(0);
+            bool[] nextPart = UpdateRouteActions(0, checkLoop);
 
             if (!nextPart[0]) return (returnValue);   // not at end and not to attach to anything
 

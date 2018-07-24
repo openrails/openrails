@@ -778,51 +778,8 @@ namespace Orts.Simulation
         /// <returns></returns>
         public bool IsAtStation(Train myTrain)
         {
-            // Front calcs
-            TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper(myTrain.FrontTDBTraveller);
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
-
-            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            // If front between the ends of the platform
-            if ((distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
-                distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))
-                return true;
-
-            // Rear calcs
-            helper =
-                new TDBTravellerDistanceCalculatorHelper(myTrain.RearTDBTraveller);
-
-            distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            // If rear between the ends of the platform
-            if ((distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
-                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))
-                return true;
-
-            // if front is beyond and rear is still in front of platform
-            if (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid)
-                return true;
-
-            // Otherwise not
-            return false;
+            var thisStation = myTrain.StationStops[0];
+            return myTrain.CheckStationPosition(thisStation.PlatformItem, thisStation.Direction, thisStation.TCSectionIndex);
         }
 
         public bool IsMissedStation()
@@ -835,33 +792,7 @@ namespace Orts.Simulation
                 return (false);
             }
 
-            // Calc all distances
-            TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
-
-            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            helper =
-                new TDBTravellerDistanceCalculatorHelper(MyPlayerTrain.RearTDBTraveller);
-
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
-            distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            // If all behind then missed
-            return (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                Simulator.PlayerLocomotive.Direction != Direction.N);
+            return MyPlayerTrain.IsMissedPlatform(200.0f);
         }
 
         public override void NotifyEvent(ActivityEventType EventType)
@@ -957,7 +888,7 @@ namespace Orts.Simulation
                     CompletedAt = ActDepart.Value;
                     // Completeness depends on the elapsed waiting time
                     IsCompleted = maydepart;
-                   if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                    if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                        MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
 
                     if (LogStationStops)

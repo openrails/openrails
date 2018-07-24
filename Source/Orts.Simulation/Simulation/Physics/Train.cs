@@ -4762,6 +4762,66 @@ namespace Orts.Simulation.Physics
             }
         }
 
+        /// <summary>
+        /// Check if train is stopped in station
+        /// </summary>
+        /// <param name="thisPlatform"></param>
+        /// <param name="stationDirection"></param>
+        /// <param name="stationTCSectionIndex"></param>
+        /// <returns></returns>
+        public virtual bool CheckStationPosition(PlatformDetails thisPlatform, int stationDirection, int stationTCSectionIndex)
+        {
+            bool atStation = false;
+            float platformBeginOffset = thisPlatform.TCOffset[0, stationDirection];
+            float platformEndOffset = thisPlatform.TCOffset[1, stationDirection];
+            int endSectionIndex = stationDirection == 0 ?
+                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
+                    thisPlatform.TCSectionIndex[0];
+            int endSectionRouteIndex = ValidRoute[0].GetRouteIndex(endSectionIndex, 0);
+
+            int beginSectionIndex = stationDirection == 1 ?
+                    thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1] :
+                    thisPlatform.TCSectionIndex[0];
+            int beginSectionRouteIndex = ValidRoute[0].GetRouteIndex(beginSectionIndex, 0);
+
+            // check position
+
+            int stationIndex = ValidRoute[0].GetRouteIndex(stationTCSectionIndex, PresentPosition[0].RouteListIndex);
+
+            // if not found from front of train, try from rear of train (front may be beyond platform)
+            if (stationIndex < 0)
+            {
+                stationIndex = ValidRoute[0].GetRouteIndex(stationTCSectionIndex, PresentPosition[1].RouteListIndex);
+            }
+
+
+            // if rear is in platform, station is valid
+            if (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset >= platformBeginOffset && PresentPosition[1].TCOffset <= platformEndOffset)
+            {
+                atStation = true;
+            }
+            // if front is in platform and most of the train is as well, station is valid
+            else if (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset <= platformEndOffset &&
+                    ((thisPlatform.Length - (platformEndOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
+            {
+                atStation = true;
+            }
+            // if front is beyond platform and and most of the train is as well, station is valid
+            else if (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset > platformEndOffset &&
+                     (PresentPosition[0].TCOffset - platformEndOffset) < (Length / 3))
+            {
+                atStation = true;
+            }
+            // if front is beyond platform and rear is not on route or before platform : train spans platform
+            else if ((PresentPosition[0].RouteListIndex > stationIndex || (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset >= platformEndOffset))
+                && (PresentPosition[1].RouteListIndex < stationIndex || (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset <= platformBeginOffset)))
+            {
+                atStation = true;
+            }
+
+            return atStation;
+        }
+
 
         //================================================================================================//
         /// <summary>
@@ -5199,14 +5259,13 @@ namespace Orts.Simulation.Physics
                 TrackCircuitSection thisSection = signalRef.TrackCircuitList[sectionIndex];
                 if (!thisSection.CircuitState.ThisTrainOccupying(routedForward))
                 {
+                    thisSection.SetOccupied(routedForward, routeListIndex[1]);
                     if (!Simulator.TimetableMode && thisSection.CircuitState.HasOtherTrainsOccupying(routedForward))
                     {
                         SwitchToNodeControl(sectionIndex);
                         EndAuthorityType[0] = END_AUTHORITY.TRAIN_AHEAD;
                         ChangeControlModeOtherTrains(thisSection);
                     }
-                    thisSection.SetOccupied(routedForward, routeListIndex[1]);
-
                     // additional actions for child classes
                     UpdateSectionState_Additional(sectionIndex);
                 }
@@ -5573,7 +5632,7 @@ namespace Orts.Simulation.Physics
 
             if (PresentPosition[0].RouteListIndex >= 0) directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
 
-            bool[] nextRoute = UpdateRouteActions(elapsedClockSeconds);
+            bool[] nextRoute = UpdateRouteActions(elapsedClockSeconds, false);
 
             AuxActionsContain.SetAuxAction(this);
             if (!nextRoute[0]) return(true);  // not at end of route
@@ -5620,7 +5679,7 @@ namespace Orts.Simulation.Physics
         /// bool[1] "false" if no further route available
         /// </summary>
 
-        public bool[] UpdateRouteActions(float elapsedClockSeconds)
+        public bool[] UpdateRouteActions(float elapsedClockSeconds, bool checkLoop = true)
         {
             bool endOfRoute = false;
             bool[] returnState = new bool[2] { false, false };
@@ -5640,37 +5699,38 @@ namespace Orts.Simulation.Physics
 
             // check if train in loop
             // if so, forward to next subroute and continue
-
-            if (TCRoute != null && (ControlMode == TRAIN_CONTROL.AUTO_NODE || ControlMode == TRAIN_CONTROL.AUTO_SIGNAL) && TCRoute.LoopEnd[TCRoute.activeSubpath] >= 0)
+            if (checkLoop || StationStops.Count <= 1 || StationStops.Count > 1 && TCRoute != null && StationStops[1].SubrouteIndex > TCRoute.activeSubpath)
             {
-                int loopSectionIndex = ValidRoute[0].GetRouteIndex(TCRoute.LoopEnd[TCRoute.activeSubpath], 0);
-
-                if (loopSectionIndex >= 0 && PresentPosition[1].RouteListIndex > loopSectionIndex)
+                if (TCRoute != null && (ControlMode == TRAIN_CONTROL.AUTO_NODE || ControlMode == TRAIN_CONTROL.AUTO_SIGNAL) && TCRoute.LoopEnd[TCRoute.activeSubpath] >= 0)
                 {
-                    int frontSection = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][PresentPosition[0].RouteListIndex].TCSectionIndex;
-                    int rearSection = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][PresentPosition[1].RouteListIndex].TCSectionIndex;
+                    int loopSectionIndex = ValidRoute[0].GetRouteIndex(TCRoute.LoopEnd[TCRoute.activeSubpath], 0);
 
-                    TCRoute.activeSubpath++;
-                    ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
-
-                    PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(frontSection, 0);
-                    PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(rearSection, 0);
-
-                    // Invalidate preceding section indexes to avoid wrong indexing when building route forward (in Reserve())
-
-                    for (int routeListIndex = 0; routeListIndex < PresentPosition[1].RouteListIndex; routeListIndex++)
+                    if (loopSectionIndex >= 0 && PresentPosition[1].RouteListIndex > loopSectionIndex)
                     {
-                        ValidRoute[0][routeListIndex].TCSectionIndex = -1;
-                    }
-                    returnState[0] = true;
-                    returnState[1] = true;
-                    return (returnState);
-                }
+                        int frontSection = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][PresentPosition[0].RouteListIndex].TCSectionIndex;
+                        int rearSection = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][PresentPosition[1].RouteListIndex].TCSectionIndex;
+                        TCRoute.activeSubpath++;
+                        ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
 
-                // if loopend no longer on this valid route, remove loopend indication
-                else if (loopSectionIndex < 0)
-                {
-                    TCRoute.LoopEnd[TCRoute.activeSubpath] = -1;
+                        PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(frontSection, 0);
+                        PresentPosition[1].RouteListIndex = ValidRoute[0].GetRouteIndex(rearSection, 0);
+
+                        // Invalidate preceding section indexes to avoid wrong indexing when building route forward (in Reserve())
+
+                        for (int routeListIndex = 0; routeListIndex < PresentPosition[1].RouteListIndex; routeListIndex++)
+                        {
+                            ValidRoute[0][routeListIndex].TCSectionIndex = -1;
+                        }
+                        returnState[0] = true;
+                        returnState[1] = true;
+                        return (returnState);
+                    }
+
+                    // if loopend no longer on this valid route, remove loopend indication
+                    else if (loopSectionIndex < 0)
+                    {
+                        TCRoute.LoopEnd[TCRoute.activeSubpath] = -1;
+                    }
                 }
             }
 
@@ -6446,6 +6506,7 @@ namespace Orts.Simulation.Physics
                 thisSection = signalRef.TrackCircuitList[ValidRoute[0][iSection].TCSectionIndex];
                 DistanceToEndNodeAuthorityM[0] += thisSection.Length;
             }
+
 
             // run out of authority : train is out of control
 
@@ -11479,11 +11540,85 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
-        /// Check vicinity of reversal point to Platform
-        /// returns false if distance greater than preset value
-        /// <\summary>
+        /// Check whether train is at Platform
+        /// returns true if yes
+        /// </summary>
 
-        public bool CheckVicinityOfPlatformToReversalPoint(float tcOffset, int routeListIndex, int activeSubpath)
+        public bool IsAtPlatform()
+        {
+            // build list of occupied section
+            bool atStation = false;
+            int frontIndex = PresentPosition[0].RouteListIndex;
+            int rearIndex = PresentPosition[1].RouteListIndex;
+            List<int> occupiedSections = new List<int>();
+
+            // check valid positions
+            if (frontIndex < 0 && rearIndex < 0) // not on route so cannot be in station
+            {
+                return atStation; // no further actions possible
+            }
+
+            // correct position if either end is off route
+            if (frontIndex < 0) frontIndex = rearIndex;
+            if (rearIndex < 0) rearIndex = frontIndex;
+
+            // set start and stop in correct order
+            int startIndex = frontIndex < rearIndex ? frontIndex : rearIndex;
+            int stopIndex = frontIndex < rearIndex ? rearIndex : frontIndex;
+
+            for (int iIndex = startIndex; iIndex <= stopIndex; iIndex++)
+            {
+                occupiedSections.Add(ValidRoute[0][iIndex].TCSectionIndex);
+            }
+
+            // check if any platform section is in list of occupied sections - if so, we're in the station
+            foreach (int sectionIndex in StationStops[0].PlatformItem.TCSectionIndex)
+            {
+                if (occupiedSections.Contains(sectionIndex))
+                {
+                    // TODO : check offset within section
+                    atStation = true;
+                    break;
+                }
+            }
+            return atStation;
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check whether train has missed platform
+        /// returns true if yes
+        /// </summary>
+
+        public bool IsMissedPlatform(float thresholdDistance)
+        {
+            // check if station missed
+
+            int stationRouteIndex = ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, 0);
+
+            if (StationStops[0].SubrouteIndex == TCRoute.activeSubpath)
+            {
+                if (stationRouteIndex < 0)
+                {
+                    return true;
+                }
+                else if (stationRouteIndex <= PresentPosition[1].RouteListIndex)
+                {
+                    var platformSection = signalRef.TrackCircuitList[StationStops[0].TCSectionIndex];
+                    var platformReverseStopOffset = platformSection.Length - StationStops[0].StopOffset;
+                    return ValidRoute[0].GetDistanceAlongRoute(stationRouteIndex, platformReverseStopOffset, PresentPosition[1].RouteListIndex, PresentPosition[1].TCOffset, true, signalRef) > thresholdDistance;
+                }
+            }
+            return false;
+        }
+
+            //================================================================================================//
+            /// <summary>
+            /// Check vicinity of reversal point to Platform
+            /// returns false if distance greater than preset value 
+            /// </summary>
+
+            public bool CheckVicinityOfPlatformToReversalPoint(float tcOffset, int routeListIndex, int activeSubpath)
         {
             float Threshold = 100.0f;
             float lengthToGoM = -tcOffset;
@@ -11800,6 +11935,7 @@ namespace Orts.Simulation.Physics
         ///      EOP     : AI approch and of path
         ///      STA     : AI is on Station Stop
         ///      WTP     : AI is on Waiting Point
+        ///      STE     : AI is in Stopped Existing state
         ///  5   AI Data :
         ///      000&000     : Throttel & Brake in %
         ///                  : for mode INI, BRK, ACC, FOL, RUN or EOP

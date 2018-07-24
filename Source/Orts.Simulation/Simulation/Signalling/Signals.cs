@@ -3496,7 +3496,7 @@ namespace Orts.Simulation.Signalling
 
             // if not cleared to max distance or looped, determine reason
 
-            if (!furthestRouteCleared && lastRouteIndex > 0 && endAuthority != Train.END_AUTHORITY.LOOP)
+            if (!furthestRouteCleared && lastRouteIndex > 0 && routePart[lastRouteIndex].TCSectionIndex >= 0  && endAuthority != Train.END_AUTHORITY.LOOP)
             {
 
                 thisElement = routePart[lastRouteIndex];
