@@ -51,6 +51,9 @@
 // Debug for Steam Performance Data @ 5mph increments
 //#define DEBUG_STEAM_PERFORMANCE
 
+// Debug for Steam Cylinder Events
+//#define DEBUG_STEAM_CYLINDER_EVENTS
+
 /* STEAM LOCOMOTIVE CLASSES
  * 
  * The Locomotive is represented by two classes:
@@ -470,6 +473,13 @@ namespace Orts.Simulation.RollingStocks
         public float LogBackPressurePSI;
         public float LogReleasePressurePSI;
         public float LogSteamChestPressurePSI;
+
+   // Values for Steam Cylinder events
+        float ValveTravel = 10.8268f;
+        float ValveLead = 0.275591f;
+        float ValveExhLap = 0.708661f;
+        float ValveSteamLap;
+        double ValveAdvanceAngleDeg;
 
         public float LogLPInitialPressurePSI;
         public float LogLPCutoffPressurePSI;
@@ -3160,10 +3170,60 @@ namespace Orts.Simulation.RollingStocks
 
             // Initialise values used in this module
 
+            
+#if DEBUG_STEAM_CYLINDER_EVENTS
 
-            // Set Cylinder Events according to cutoff value selected
+            // THIS CODE IS NOT FULLY OPERATIONAL AT THIS TIME
 
-            CylinderExhaustOpenFactor = CylinderExhausttoCutoff[cutoff];
+            float ValveHalfTravel = ValveTravel / 2.0f;
+
+            // Valve events calculated using Zeuner Diagram
+            // References - Valve-gears, Analysis by the Zeuner diagram : Spangler, H. W. -  https://archive.org/details/valvegearsanalys00spanrich
+            // Zeuner Diagram by Charles Dockstader used as a reference source (Note - the release value seems to be incorrect ) - http://www.billp.org/Dockstader/ValveGear.html
+
+            if (cutoff != 0) // If cutoff is > 0, then calculate valve events
+            {
+                // Calculate cutoff point on axis axis, and then the relevant point on the valve trael circle
+                float ValveCutOffAxis = cutoff * ValveTravel;
+                float ValveCutOffOrigin = ValveCutOffAxis - ValveHalfTravel;
+                float ValveCutOffAxisAng = (float)Math.Acos(ValveCutOffOrigin / ValveHalfTravel);
+                float ValvePointX0 = ValveHalfTravel * (float)Math.Cos(ValveCutOffAxisAng);
+                float ValvePointY0 = ValveHalfTravel * (float)Math.Sin(ValveCutOffAxisAng);
+
+                float ValvePointX1 = -ValveHalfTravel;
+                float ValvePointY1 = 0.0f;
+
+                float DistanceP0P1 = (float)Math.Sqrt((float)Math.Pow((ValvePointX0 - ValvePointX1), 2) + (float)Math.Pow((ValvePointY0 - ValvePointY1), 2));
+                float DistanceLead = ValveLead;
+                float DistanceP0P3 = (float)Math.Sqrt((float)Math.Pow(DistanceP0P1, 2) - (float)Math.Pow(DistanceLead, 2));
+
+                float A = ((float)Math.Pow(DistanceP0P3, 2) - (float)Math.Pow(DistanceLead, 2) + (float)Math.Pow(DistanceP0P1, 2)) / (2.0f * DistanceP0P1);
+                float H = (float)Math.Pow(DistanceP0P3, 2) - (float)Math.Pow(A, 2);
+                float B = ((float)Math.Pow(DistanceLead, 2) - (float)Math.Pow(DistanceP0P3, 2) + (float)Math.Pow(DistanceP0P1, 2)) / (2.0f * DistanceP0P1);
+
+                float ValvePointX2 = ((DistanceP0P1 - A) / DistanceP0P1) * (float)Math.Abs(ValvePointX0 - ValvePointX1) + ValvePointX1;
+                float ValvePointY2 = ((DistanceP0P1 - A) / DistanceP0P1) * (float)Math.Abs(ValvePointY0 - ValvePointY1) + ValvePointY1;
+
+                float ValvePointX3 = ValvePointX2 - (H * (ValvePointY1 - ValvePointY0)) / DistanceP0P1;
+                float ValvePointY3 = ValvePointY2 + (H * (ValvePointX1 - ValvePointX0)) / DistanceP0P1;
+
+                float ValveGradientAdminCutoff = (ValvePointY0 - ValvePointY3) / (ValvePointX0 - ValvePointX3);
+                float ValveAdvanceAngleRadians = (float)Math.Atan(ValveGradientAdminCutoff);
+                ValveAdvanceAngleDeg = MathHelper.ToDegrees(ValveAdvanceAngleRadians);
+
+                //   Trace.TraceInformation("Check - Grad {0} ATAN {1} Deg {2}", ValveGradientAdminCutoff, ValveAdvanceAngleRadians, ValveAdvanceAngle);
+                //   Trace.TraceInformation("Valve - Angle {0} x0 {1} y1{2}", ValveCutOffAxisAng, ValveCutOffPointX0, ValveCutOffPointY0);
+            }
+            else
+            {
+                ValveAdvanceAngleDeg = 0.0f;
+            }
+            
+#endif
+
+                        // Set Cylinder Events according to cutoff value selected
+
+                        CylinderExhaustOpenFactor = CylinderExhausttoCutoff[cutoff];
             CylinderCompressionCloseFactor = CylinderCompressiontoCutoff[cutoff];
             CylinderAdmissionOpenFactor = CylinderAdmissiontoCutoff[cutoff];
 
@@ -5771,8 +5831,30 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
-            // Display steam cylinder events
-                status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N3}\n",
+            
+#if DEBUG_STEAM_CYLINDER_EVENTS
+
+            status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N2}\t{9}\t{10:N2}\t{11}\t{12:N2}\n",
+            Simulator.Catalog.GetString("CylValve:"),
+            Simulator.Catalog.GetString("Travel"),
+            ValveTravel,
+            Simulator.Catalog.GetString("Cutoff"),
+            cutoff * 100,
+            Simulator.Catalog.GetString("Lead"),
+            ValveLead,
+            Simulator.Catalog.GetString("ExhLap"),
+            ValveExhLap,
+            Simulator.Catalog.GetString("StLap"),
+            ValveSteamLap,
+            Simulator.Catalog.GetString("AdvAng"),
+            ValveAdvanceAngleDeg
+              );
+            
+#endif
+
+
+        // Display steam cylinder events
+                    status.AppendFormat("{0}\t{1}\t{2:N2}\t{3}\t{4:N2}\t{5}\t{6:N2}\t{7}\t{8:N3}\n",
                     Simulator.Catalog.GetString("CylEvts:"),
                     Simulator.Catalog.GetString("Cutoff"),
                     cutoff * 100,
