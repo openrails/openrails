@@ -2143,7 +2143,7 @@ namespace Orts.Simulation.AIs
 
             if (StationStops.Count > 0) PreviousStop = StationStops[0].CreateCopy();
             if (removeStation)
-                 StationStops.RemoveAt(0);
+                StationStops.RemoveAt(0);
             ResetActions(true);
         }
 
@@ -3230,16 +3230,8 @@ namespace Orts.Simulation.AIs
                                     if (thisTrainInStation) thisTrainInStation = (StationStops[0].SubrouteIndex == TCRoute.activeSubpath);
                                     if (thisTrainInStation)
                                     {
-                                        if (otherTrainInStation)
-                                        {
-                                            thisTrainInStation =
-                                                (ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) >= PresentPosition[0].RouteListIndex);
-                                        }
-                                        else
-                                        {
-                                            thisTrainInStation =
-                                                (ValidRoute[0].GetRouteIndex(StationStops[0].TCSectionIndex, PresentPosition[0].RouteListIndex) == PresentPosition[0].RouteListIndex);
-                                        }
+                                        var thisStation = StationStops[0];
+                                        thisTrainInStation = CheckStationPosition(thisStation.PlatformItem, thisStation.Direction, thisStation.TCSectionIndex);
                                     }
 
                                     if (thisTrainInStation)
