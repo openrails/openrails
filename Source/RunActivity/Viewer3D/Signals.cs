@@ -70,6 +70,7 @@ namespace Orts.Viewer3D
 
             // All sub-objects except the one pointing to the first matrix (99.00% times it is the first one, but not always, see Protrain) are hidden by default.
             //For each other sub-object, look up its name in the hierarchy and use the visibility of that matrix. 
+            visibleMatrixNames[0] = true;
             SubObjVisible = new bool[SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length];
             SubObjVisible[0] = true;
             for (var i = 1; i < SharedShape.LodControls[0].DistanceLevels[0].SubObjects.Length; i++)
@@ -77,10 +78,10 @@ namespace Orts.Viewer3D
                 if (i == SharedShape.RootSubObjectIndex) SubObjVisible[i] = true;
                 else
                 {
-                    var subObj =SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i];
+                    var subObj = SharedShape.LodControls[0].DistanceLevels[0].SubObjects[i];
                     int minHiLevIndex = 0;
                     if (subObj.ShapePrimitives[0].Hierarchy[subObj.ShapePrimitives[0].HierarchyIndex] > 0)
-                        // Search for ShapePrimitive with lowest Hierarchy Value and check visibility with it
+                    // Search for ShapePrimitive with lowest Hierarchy Value and check visibility with it
                     {
                         var minHiLev = 999;
                         for (var j = 0; j < subObj.ShapePrimitives.Length; j++)
