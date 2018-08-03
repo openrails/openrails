@@ -5791,6 +5791,7 @@ namespace Orts.Simulation.AIs
 
             // if still valid, set as action, set state to braking if still running
 
+            var stationCancelled = false;
             if (actionValid)
             {
 #if DEBUG_REPORTS
@@ -5810,10 +5811,18 @@ namespace Orts.Simulation.AIs
                         requiredActions.Remove(thisItem);
                     }
                     else
+                    {
+                        if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
+                            stationCancelled = true;
                         nextActionInfo = thisItem;
+                    }
                 }
                 else
+                {
+                    if (nextActionInfo != null && nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.STATION_STOP)
+                        stationCancelled = true;
                     nextActionInfo = thisItem;
+                }
                 if (nextActionInfo.RequiredSpeedMpS == 0)
                 {
                     NextStopDistanceM = thisItem.ActivateDistanceM - PresentPosition[0].DistanceTravelledM;
@@ -5881,7 +5890,7 @@ namespace Orts.Simulation.AIs
                 }
             }
 
-            if (actionCleared || earlier)
+            if (actionCleared)
             {
 #if DEBUG_REPORTS
                 File.AppendAllText(@"C:\temp\printproc.txt", "Action Cleared\n");
@@ -5893,6 +5902,10 @@ namespace Orts.Simulation.AIs
                 // reset actions - ensure next action is validated
 
                 ResetActions(true);
+            }
+            else if (stationCancelled)
+            {
+                SetNextStationAction(false);
             }
         }
 
