@@ -5280,14 +5280,14 @@ namespace Orts.Simulation.Physics
         public void ChangeControlModeOtherTrains(TrackCircuitSection thisSection)
         {
             int otherdirection = -1;
-            int owndirection = routedForward.TrainRouteDirectionIndex;
+            int owndirection = PresentPosition[0].TCDirection;
             foreach (KeyValuePair<TrainRouted, int> trainToCheckInfo in thisSection.CircuitState.TrainOccupy)
             {
                 Train OtherTrain = trainToCheckInfo.Key.Train;
                 if (OtherTrain.ControlMode == TRAIN_CONTROL.AUTO_SIGNAL) // train is still in signal mode, might need adjusting
                 {
-                    otherdirection = trainToCheckInfo.Value;
-
+                    otherdirection = OtherTrain.PresentPosition[0].TCSectionIndex == thisSection.Index ? OtherTrain.PresentPosition[0].TCDirection :
+                        OtherTrain.PresentPosition[1].TCSectionIndex == thisSection.Index ? OtherTrain.PresentPosition[1].TCDirection : -1;
                     if (owndirection >= 0 && otherdirection >= 0) // both trains found
                     {
                         if (owndirection != otherdirection) // opposite directions - this train is now ahead of train in section
