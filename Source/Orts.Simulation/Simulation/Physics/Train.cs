@@ -4796,25 +4796,30 @@ namespace Orts.Simulation.Physics
 
 
             // if rear is in platform, station is valid
-            if (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset >= platformBeginOffset && PresentPosition[1].TCOffset <= platformEndOffset)
+            if (((((beginSectionRouteIndex != -1 && PresentPosition[1].RouteListIndex == beginSectionRouteIndex) || (PresentPosition[1].RouteListIndex == -1 && PresentPosition[1].TCSectionIndex == beginSectionIndex))
+                && PresentPosition[1].TCOffset >= platformBeginOffset) || PresentPosition[1].RouteListIndex > beginSectionRouteIndex) &&
+                ((PresentPosition[1].TCSectionIndex == endSectionIndex && PresentPosition[1].TCOffset <= platformEndOffset) || endSectionRouteIndex == -1 || 
+                PresentPosition[1].RouteListIndex < endSectionRouteIndex))
             {
                 atStation = true;
             }
             // if front is in platform and most of the train is as well, station is valid
-            else if (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset <= platformEndOffset &&
-                    ((thisPlatform.Length - (platformEndOffset - PresentPosition[0].TCOffset)) > (Length / 2)))
+            else if (((((endSectionRouteIndex != -1 && PresentPosition[0].RouteListIndex == endSectionRouteIndex) || (PresentPosition[0].RouteListIndex == -1 && PresentPosition[0].TCSectionIndex == endSectionIndex))
+                && PresentPosition[0].TCOffset <= platformEndOffset) && ((thisPlatform.Length - (platformEndOffset - PresentPosition[0].TCOffset)) > Length / 2)) || 
+                (PresentPosition[0].RouteListIndex != -1 && PresentPosition[0].RouteListIndex < endSectionRouteIndex && 
+                (PresentPosition[0].RouteListIndex > beginSectionRouteIndex || (PresentPosition[0].RouteListIndex == beginSectionRouteIndex && PresentPosition[0].TCOffset >= platformBeginOffset))))
             {
                 atStation = true;
             }
-            // if front is beyond platform and and most of the train is as well, station is valid
-            else if (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset > platformEndOffset &&
+            // if front is beyond platform and and most of the train is within it, station is valid (isn't it already covered by cases 1 or 4?)
+            else if (endSectionRouteIndex != -1 && PresentPosition[0].RouteListIndex == endSectionRouteIndex && PresentPosition[0].TCOffset > platformEndOffset &&
                      (PresentPosition[0].TCOffset - platformEndOffset) < (Length / 3))
             {
                 atStation = true;
             }
             // if front is beyond platform and rear is not on route or before platform : train spans platform
-            else if ((PresentPosition[0].RouteListIndex > stationIndex || (PresentPosition[0].RouteListIndex == stationIndex && PresentPosition[0].TCOffset >= platformEndOffset))
-                && (PresentPosition[1].RouteListIndex < stationIndex || (PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset <= platformBeginOffset)))
+            else if (((endSectionRouteIndex != -1 && PresentPosition[0].RouteListIndex > endSectionRouteIndex )|| (endSectionRouteIndex != -1 && PresentPosition[0].RouteListIndex == endSectionRouteIndex && PresentPosition[0].TCOffset >= platformEndOffset))
+                  && (PresentPosition[1].RouteListIndex < beginSectionRouteIndex || (PresentPosition[1].RouteListIndex == beginSectionRouteIndex && PresentPosition[1].TCOffset <= platformBeginOffset)))
             {
                 atStation = true;
             }
