@@ -103,16 +103,26 @@ namespace Orts.Simulation.RollingStocks
         public float ExternalSoundPassThruPercent = -1;
         public float WheelRadiusM = 1;          // provide some defaults in case it's missing from the wag
         protected float StaticFrictionFactorLb;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
+        float FrictionLowSpeedN;
         public float Friction0N;        // static friction
         protected float Friction5N;               // Friction at 5mph
         public float DavisAN;           // davis equation constant
         public float DavisBNSpM;        // davis equation constant for speed
         public float DavisCNSSpMM;      // davis equation constant for speed squared
+        public float DavisDragConstant; // Drag coefficient for wagon
+        public float WagonFrontalAreaM2; // Frontal area of wagon
+
+        // Wind Impacts
+        float WagonDirectionDeg;
+        float WagonResultantWindComponentDeg;
+        float WagonWindResultantSpeedMpS;
+
         protected float FrictionC1; // MSTS Friction parameters
         protected float FrictionE1; // MSTS Friction parameters
         protected float FrictionV2; // MSTS Friction parameters
         protected float FrictionC2; // MSTS Friction parameters
         protected float FrictionE2; // MSTS Friction parameters
+
         //protected float FrictionSpeedMpS; // Train current speed value for friction calculations ; this value is never used outside of this class, and FrictionSpeedMpS is always = AbsSpeedMpS
         public List<MSTSCoupling> Couplers = new List<MSTSCoupling>();
         public float Adhesion1 = .27f;   // 1st MSTS adhesion value
@@ -329,6 +339,38 @@ namespace Orts.Simulation.RollingStocks
             {
                 Trace.TraceWarning("{0} references non-existent shape {1}", WagFilePath, wagonFolderSlash + InteriorShapeFileName);
                 InteriorShapeFileName = null;
+            }
+
+            // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
+            if (DavisDragConstant == 0)
+            {
+                if (WagonType == WagonTypes.Engine)
+                {
+                    DavisDragConstant = 0.0024f;
+                }
+                else if (WagonType == WagonTypes.Freight)
+                {
+                    DavisDragConstant = 0.0005f;
+                }
+                else if (WagonType == WagonTypes.Passenger)
+                {
+                    DavisDragConstant = 0.00034f;
+                }
+                else if (WagonType == WagonTypes.Tender)
+                {
+                    DavisDragConstant = 0.0005f;
+                }
+                else  //Standard default if not declared anywhere else
+                {
+                    DavisDragConstant = 0.0005f;
+                }
+            }
+
+            // If wagon frontal area not user defined, assign a default value based upon the wagon dimensions
+
+            if (WagonFrontalAreaM2 == 0)
+            {
+                WagonFrontalAreaM2 = CarWidthM * CarHeightM;
             }
 
             // Initialise key wagon parameters
@@ -778,6 +820,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(coupling(couplinghasrigidconnection":
                     Couplers[Couplers.Count - 1].Rigid = stf.ReadBoolBlock(true);
+                    HUDCouplerRigidIndication = Couplers[Couplers.Count - 1].Rigid; // Capture state for display on HUD
                     break;
                 case "wagon(coupling(spring(stiffness":
                     stf.MustMatch("(");
@@ -851,6 +894,8 @@ namespace Orts.Simulation.RollingStocks
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
                     break;
                 case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
+                case "wagon(ortsdavisdragconstant": DavisDragConstant = stf.ReadFloat(STFReader.UNITS.None, null); break;
+                case "wagon(ortswagonfrontalarea": WagonFrontalAreaM2 = stf.ReadFloat(STFReader.UNITS.AreaDefaultFT2, null); break;
             }
         }
 
@@ -892,6 +937,8 @@ namespace Orts.Simulation.RollingStocks
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
+            DavisDragConstant = copy.DavisDragConstant;
+            WagonFrontalAreaM2 = copy.WagonFrontalAreaM2;
             FrictionC1 = copy.FrictionC1;
             FrictionE1 = copy.FrictionE1;
             FrictionV2 = copy.FrictionV2;
@@ -936,7 +983,7 @@ namespace Orts.Simulation.RollingStocks
             }
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
-
+            HUDCouplerRigidIndication = copy.HUDCouplerRigidIndication;
             Pantographs.Copy(copy.Pantographs);
             if (copy.FreightAnimations != null)
             {
@@ -1318,17 +1365,22 @@ namespace Orts.Simulation.RollingStocks
 
                     }
 
+                    // Calculation of resistance @ low speeds
+                    // Wind resistance is not included at low speeds, as it does not have a significant enough impact
                     const float speed5 = 2.2352f; // 5 mph
                     Friction5N = DavisAN + speed5 * (DavisBNSpM + speed5 * DavisCNSSpMM); // Calculate friction @ 5 mph
                     Friction0N = N.FromLbf(Kg.ToTUS(MassKG) * StaticFrictionFactorLb); // Static friction is journal or roller bearing friction x factor
-                    float FrictionLowSpeedN = ((1.0f - (AbsSpeedMpS / speed5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
+                    FrictionLowSpeedN = ((1.0f - (AbsSpeedMpS / speed5)) * (Friction0N - Friction5N)) + Friction5N; // Calculate friction below 5mph - decreases linearly with speed
                     FrictionForceN = FrictionLowSpeedN; // At low speed use this value
 
                 }
                 else
                 {
+
                     FrictionForceN = DavisAN + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
+
                 }
+
 
 #if DEBUG_FRICTION
 
@@ -1342,6 +1394,7 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
+            UpdateWindForce();
 
             foreach (MSTSCoupling coupler in Couplers)
             {
@@ -1493,6 +1546,96 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
             }
+        }
+
+
+        private void UpdateWindForce()
+        {
+
+            // Calculate compensation for  wind
+            // There are two components due to wind - 
+            // Drag, impact of wind on train, will increase resistance when head on, will decrease resistance when acting as a tailwind.
+            // Lateral resistance - due to wheel flange being pushed against rail due to side wind.
+            // Calculation based upon information provided in AREA 1942 Proceedings - https://archive.org/details/proceedingsofann431942amer - pg 56
+
+            if (Train.TrainWindResistanceDependent && !CarTunnelData.FrontPositionBeyondStartOfTunnel.HasValue && AbsSpeedMpS > 2.2352) // Only calculate wind resistance if option selected in options menu, and not in a tunnel, and speed is sufficient for wind effects (>5mph)
+            {
+
+                // Wagon Direction
+                float direction = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
+                WagonDirectionDeg = MathHelper.ToDegrees((float)direction);
+
+                // If a westerly direction (ie -ve) convert to an angle between 0 and 360
+                if (WagonDirectionDeg < 0)
+                    WagonDirectionDeg += 360;
+
+                float TrainSpeedMpS = Math.Abs(SpeedMpS);
+                
+                // Find angle between wind and direction of train
+                if (Train.PhysicsWindDirectionDeg > WagonDirectionDeg)
+                    WagonResultantWindComponentDeg = Train.PhysicsWindDirectionDeg - WagonDirectionDeg;
+                else if (WagonDirectionDeg > Train.PhysicsWindDirectionDeg)
+                    WagonResultantWindComponentDeg = WagonDirectionDeg - Train.PhysicsWindDirectionDeg;
+                else
+                    WagonResultantWindComponentDeg = 0.0f;
+
+                // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
+                if (Math.Abs(WagonResultantWindComponentDeg) > 360)
+                    WagonResultantWindComponentDeg = WagonResultantWindComponentDeg - 360.0f;
+
+                // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
+                if (WagonResultantWindComponentDeg > 180)
+                    WagonResultantWindComponentDeg = 360 - WagonResultantWindComponentDeg;
+
+                float ResultantWindComponentRad = MathHelper.ToRadians(WagonResultantWindComponentDeg);
+
+                // Find the resultand wind vector for the combination of wind and train speed
+                WagonWindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + Train.PhysicsWindSpeedMpS * Train.PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * Train.PhysicsWindSpeedMpS * (float)Math.Cos(ResultantWindComponentRad));
+
+                // Calculate Drag Resistance
+                // The drag resistance will be the difference between the STILL firction calculated using the standard Davies equation, 
+                // and that produced using the wind resultant speed (combination of wind speed and train speed)
+                float TempStillDragResistanceForceN = AbsSpeedMpS * AbsSpeedMpS * DavisCNSSpMM;
+                float TempCombinedDragResistanceForceN = WagonWindResultantSpeedMpS * WagonWindResultantSpeedMpS * DavisCNSSpMM; // R3 of Davis formula taking into account wind
+                float WindDragResistanceForceN = 0.0f;
+
+                // Find the difference between the Still and combined resistances
+                // This difference will be added or subtracted from the overall friction force depending upon the estimated wind direction.
+                // Wind typically headon to train - increase resistance - +ve differential
+                if (TempCombinedDragResistanceForceN > TempStillDragResistanceForceN)
+                {
+                    WindDragResistanceForceN = TempCombinedDragResistanceForceN - TempStillDragResistanceForceN;
+                }
+                else // wind typically following train - reduce resistance - -ve differential
+                {
+                    WindDragResistanceForceN = TempStillDragResistanceForceN - TempCombinedDragResistanceForceN;
+                    WindDragResistanceForceN *= -1.0f;  // Convert to negative number to allow subtraction from ForceN
+                }
+
+                // Calculate Lateral Resistance
+
+                // Calculate lateral resistance due to wind
+                // Resistance is due to the wheel flanges being pushed further onto rails when a cross wind is experienced by a train
+                float A = Train.PhysicsWindSpeedMpS / AbsSpeedMpS;
+                float C = (float)Math.Sqrt((1 + (A * A) + 2.0f * A * Math.Cos(ResultantWindComponentRad)));
+                float WindConstant = 8.25f;
+                float TrainSpeedMpH = Me.ToMi(pS.TopH(AbsSpeedMpS));
+                float WindSpeedMpH = Me.ToMi(pS.TopH(Train.PhysicsWindSpeedMpS));
+
+                float WagonFrontalAreaFt2 = Me2.ToFt2(WagonFrontalAreaM2);
+
+                LateralWindForceN = N.FromLbf(WindConstant * A * (float)Math.Sin(ResultantWindComponentRad) * DavisDragConstant * WagonFrontalAreaFt2 * TrainSpeedMpH * TrainSpeedMpH * C);
+
+                float LateralWindResistanceForceN = N.FromLbf(WindConstant * A * (float)Math.Sin(ResultantWindComponentRad) * DavisDragConstant * WagonFrontalAreaFt2 * TrainSpeedMpH * TrainSpeedMpH * C * Train.WagonCoefficientFriction);
+
+                WindForceN = LateralWindResistanceForceN + WindDragResistanceForceN;
+
+            }
+            else
+            {
+                WindForceN = 0.0f; // Set to zero if wind resistance is not to be calculated
+            }
+
         }
 
         private void UpdateTenderLoad()
@@ -2068,11 +2211,14 @@ namespace Orts.Simulation.RollingStocks
             if (a == 0)
                 R0Diff = b / 2 * Stiffness2NpM / (Stiffness1NpM + Stiffness2NpM);
             else
-                R0Diff = .012f;
+                R0Diff = b - a;
+
+                // R0Diff = .012f;
             if (R0Diff < .001)
                 R0Diff = .001f;
-            else if (R0Diff > .1)
+            else if (R0Diff > .7)
                 R0Diff = .1f;
+//           Trace.TraceInformation("a {0} b {1} R0Diff {2}", a, b, R0Diff);
         }
         public void SetStiffness(float a, float b)
         {

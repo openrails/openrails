@@ -165,6 +165,8 @@ namespace Orts.Simulation.RollingStocks
         public float _PrevSpeedMpS;
         public float AbsSpeedMpS; // Math.Abs(SpeedMps) expression is repeated many times in the subclasses, maybe this deserves a class variable
         public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
+        public int HUDCouplerForceIndication = 0; // Flag to indicate whether coupler is 1 - pulling, 2 - pushing or 0 - neither
+        public bool HUDCouplerRigidIndication = false; // flag to indicate whether coupler is rigid of flexible. False indicates that coupler is flexible
         public float CouplerSlack2M;  // slack calculated using draft gear force
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
@@ -272,7 +274,20 @@ namespace Orts.Simulation.RollingStocks
         public float PrevMotiveForceN;
         public float GravityForceN;  // Newtons  - signed relative to direction of car - 
         public float CurveForceN;   // Resistive force due to curve, in Newtons
+        public float WindForceN;  // Resistive force due to wind
+
         //private float _prevCurveForceN=0f;
+
+        // Derailment variables
+        public float WagonVerticalDerailForceN; // Vertical force of wagon/car - essentially determined by the weight
+        public float TotalWagonLateralDerailForceN;
+        public float LateralWindForceN;
+        public float WagonFrontCouplerAngleRad;
+//        public float WagonVerticalForceN; // Vertical force of wagon/car - essentially determined by the weight
+
+        public bool BuffForceExceeded;
+
+        public float WagonCentrifrugalForceN;
 
         // filter curve force for audio to prevent rapid changes.
         //private IIRFilter CurveForceFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.9f);
@@ -289,9 +304,10 @@ namespace Orts.Simulation.RollingStocks
 
         public float CurrentElevationPercent;
 
-        public bool CurveResistanceSpeedDependent;
+        public bool CurveResistanceDependent;
         public bool CurveSpeedDependent;
         public bool TunnelResistanceDependent;
+
 
         protected float MaxDurableSafeCurveSpeedMpS;
 
@@ -385,10 +401,10 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual void Initialize()
         {
-            CurveResistanceSpeedDependent = Simulator.Settings.CurveResistanceSpeedDependent;
+            CurveResistanceDependent = Simulator.Settings.CurveResistanceDependent;
             CurveSpeedDependent = Simulator.Settings.CurveSpeedDependent;
             TunnelResistanceDependent = Simulator.Settings.TunnelResistanceDependent;
-
+            
             //CurveForceFilter.Initialize();
             // Initialize tunnel resistance values
 
@@ -505,6 +521,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateTunnelForce();
             UpdateCarriageHeatLoss();
             UpdateBrakeSlideCalculation();
+            UpdateTrainDerailmentRisk();
 
             // acceleration
             if (elapsedClockSeconds > 0.0f)
@@ -517,7 +534,6 @@ namespace Orts.Simulation.RollingStocks
                 _PrevSpeedMpS = _SpeedMpS;
             }
         }
-
 
         #region Calculate Brake Skid
 
@@ -845,11 +861,91 @@ namespace Orts.Simulation.RollingStocks
 
         #endregion
 
+        #region Calculate risk of train derailing
+
+        //================================================================================================//
+        /// <summary>
+        /// Update Risk of train derailing
+        /// <\summary>
+
+        public void UpdateTrainDerailmentRisk()
+        {
+            // Train will derail if lateral forces on the train exceed the vertical forces holding the train on the railway track. 
+            // Typically the train is most at risk when travelling around a curve
+
+            // Based upon ??????
+
+            // Calculate Lateral forces
+
+            foreach (var w in WheelAxles)
+            {
+ //               Trace.TraceInformation("Car ID {0} Length {1} Bogie {2} Offset {3} MAtrix {4}", CarID, CarLengthM,  w.BogieIndex, w.OffsetM, w.BogieMatrix);
+
+            }
+
+            // Calculate the vertival force on the wheel of the car, to determine whether wagon derails or not
+            WagonVerticalDerailForceN = MassKG * GravitationalAccelerationMpS2 * Train.WagonCoefficientFriction;
+
+ 
+
+            // Calculate coupler angle when travelling around curve
+
+            float OverhangCarIM = 2.545f; // Vehicle overhang - B
+            float OverhangCarI1M = 2.545f;  // Vehicle overhang - B
+            float CouplerDistanceM = 2.4f; // Coupler distance - D
+            float BogieDistanceIM = 8.23f; // 0.5 * distance between bogie centres - A
+            float BogieDistanceI1M = 8.23f;  // 0.5 * distance between bogie centres - A
+            float CouplerAlphaAngleRad;
+            float CouplerBetaAngleRad;
+            float CouplerGammaAngleRad;
+
+
+            float BogieCentresAdjVehiclesM = OverhangCarIM + OverhangCarI1M + CouplerDistanceM; // L value
+
+            if (CurrentCurveRadius != 0)
+            {
+                CouplerAlphaAngleRad = BogieDistanceIM / CurrentCurveRadius;  // 
+                CouplerBetaAngleRad = BogieDistanceI1M / CurrentCurveRadius;
+                CouplerGammaAngleRad = BogieCentresAdjVehiclesM / (2.0f * CurrentCurveRadius);
+
+                float AngleBetweenCarbodies = CouplerAlphaAngleRad + CouplerBetaAngleRad + 2.0f * CouplerGammaAngleRad;
+
+                WagonFrontCouplerAngleRad = (BogieCentresAdjVehiclesM* (CouplerGammaAngleRad + CouplerAlphaAngleRad) - OverhangCarI1M* AngleBetweenCarbodies) / CouplerDistanceM;
+
+          //      Trace.TraceInformation("Centre {0} Gamma {1} Alpha {2} Between {3} CouplerDist {4}", BogieCentresAdjVehiclesM, CouplerGammaAngleRad, CouplerAlphaAngleRad, AngleBetweenCarbodies, CouplerDistanceM);
+            }
+            else
+            {
+                WagonFrontCouplerAngleRad = 0.0f;
+            }
+
+            // Lateral Force = Coupler force x Sin (Coupler Angle)
+
+            float CouplerLateralForceN = CouplerForceU * (float)Math.Sin(WagonFrontCouplerAngleRad);
+
+
+            TotalWagonLateralDerailForceN = CouplerLateralForceN;
+
+            if (TotalWagonLateralDerailForceN > WagonVerticalDerailForceN)
+            {
+                BuffForceExceeded = true;
+            }
+            else
+            {
+                BuffForceExceeded = false;
+            }
+
+        }
+
+        #endregion
+
+
 
         #region Calculate permissible speeds around curves
         /// <summary>
         /// Reads current curve radius and computes the maximum recommended speed around the curve based upon the 
         /// superelevation of the track
+        /// Based upon information extracted from - Critical Speed Analysis of Railcars and Wheelsets on Curved and Straight Track - https://scarab.bates.edu/cgi/viewcontent.cgi?article=1135&context=honorstheses
         /// </summary>
         public virtual void UpdateCurveSpeedLimit()
         {
@@ -858,7 +954,7 @@ namespace Orts.Simulation.RollingStocks
 
             // get curve radius
 
-            if (CurveSpeedDependent || CurveResistanceSpeedDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
+            if (CurveSpeedDependent || CurveResistanceDependent)  // Function enabled by menu selection for either curve resistance or curve speed limit
             {
 
 
@@ -940,6 +1036,19 @@ namespace Orts.Simulation.RollingStocks
 
                     MaxCurveEqualLoadSpeedMps = (float)Math.Sqrt((SuperelevationM * GravitationalAccelerationMpS2 * CurrentCurveRadius) / TrackGaugeM);
 
+                    // Calculate critical speed - indicates the speed above which stock will overturn - sum of the centrifrugal force and the vertical weight of the vehicle around the CoG
+                    // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
+                    // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
+
+                    float EJ = (SuperElevationTotalM * CentreOfGravityM.Y) / TrackGaugeM;
+                    float KC = (TrackGaugeM / 2.0f) + EJ;
+                    const float KgtoTonne = 0.001f;
+                    WagonCentrifrugalForceN = MassKG * KgtoTonne * (KC / CentreOfGravityM.Y);
+
+             //       Trace.TraceInformation("Side Forces - CarID {0} Centrifugral {1} Wind Lateral {2}", CarID, WagonCentrifrugalForceN, LateralWindForceN);
+
+                    float CriticalSpeedMpS = (float)Math.Sqrt((WagonCentrifrugalForceN * GravitationalAccelerationMpS2 * CurrentCurveRadius) / (MassKG * KgtoTonne));
+
                     if (CurveSpeedDependent)
                     {
                         // This section tests for the durability value of the consist. Durability value will non-zero if read from consist files. 
@@ -1008,17 +1117,6 @@ namespace Orts.Simulation.RollingStocks
                             }
                         }
 
-                        // Calculate critical speed - indicates the speed above which stock will overturn - sum of the centrifrugal force and the vertical weight of the vehicle around the CoG
-                        // critical speed = SQRT ( (centrifrugal force x gravity x curve radius) / Vehicle weight)
-                        // centrifrugal force = Stock Weight x factor for movement of resultant force due to superelevation.
-
-                        float EJ = (SuperElevationTotalM * CentreOfGravityM.Y) / TrackGaugeM;
-                        float KC = (TrackGaugeM / 2.0f) + EJ;
-                        const float KgtoTonne = 0.001f;
-                        float CentrifrugalForceN = MassKG * KgtoTonne * (KC / CentreOfGravityM.Y);
-
-                        float CriticalSpeedMpS = (float)Math.Sqrt((CentrifrugalForceN * GravitationalAccelerationMpS2 * CurrentCurveRadius) / (MassKG * KgtoTonne));
-
                         if (s > CriticalSpeedMpS)
                         {
                             if (!IsCriticalSpeed)
@@ -1081,7 +1179,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public virtual void UpdateCurveForce(float elapsedClockSeconds)
         {
-            if (CurveResistanceSpeedDependent)
+            if (CurveResistanceDependent)
             {
 
                 if (CurrentCurveRadius > 0)

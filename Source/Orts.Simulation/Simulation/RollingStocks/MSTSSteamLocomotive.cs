@@ -576,6 +576,7 @@ namespace Orts.Simulation.RollingStocks
         float CombGravityN;   // Temporary parameter to store combined Gravity values of locomotive and tender
         float CombTunnelN;    // Temporary parameter to store combined Tunnel values of locomotive and tender
         float CombCurveN;     // Temporary parameter to store combined Curve values of locomotive and tender
+        float CombWindN;     // Temporary parameter to store combined Curve values of locomotive and tender
 
         float cutoff;
         float NumSafetyValves;  // Number of safety valves fitted to locomotive - typically 1 to 4
@@ -4360,6 +4361,7 @@ namespace Orts.Simulation.RollingStocks
             CombGravityN = 0;
             CombTunnelN = 0;
             CombCurveN = 0;
+            CombWindN = 0;
 
 
                 LocoIndex = 0;
@@ -4374,6 +4376,7 @@ namespace Orts.Simulation.RollingStocks
                 CombGravityN -= Train.Cars[LocoIndex].GravityForceN;
                 CombTunnelN = Train.Cars[LocoIndex].TunnelForceN;
                 CombCurveN = Train.Cars[LocoIndex].CurveForceN;
+                CombWindN = Train.Cars[LocoIndex].WindForceN;
 
              if (HasTenderCoupled)
             {
@@ -4384,11 +4387,12 @@ namespace Orts.Simulation.RollingStocks
                     CombGravityN -= Train.Cars[LocoIndex + 1].GravityForceN; // Gravity forces have negative values on rising grade
                     CombTunnelN += Train.Cars[LocoIndex + 1].TunnelForceN;
                     CombCurveN += Train.Cars[LocoIndex + 1].CurveForceN;
+                    CombWindN += Train.Cars[LocoIndex + 1].WindForceN;
                 }
 
             }
 
-            LocoTenderFrictionForceN = CombFrictionN + CombGravityN + CombTunnelN + CombCurveN;  // Combined frictional forces of the locomotive and tender
+            LocoTenderFrictionForceN = CombFrictionN + CombGravityN + CombTunnelN + CombCurveN + CombWindN;  // Combined frictional forces of the locomotive and tender
 
             MotiveForceSmoothedN.Update(elapsedClockSeconds, MotiveForceN);
             if (float.IsNaN(MotiveForceN))

@@ -180,6 +180,21 @@ namespace Orts.Simulation.Physics
         Interpolator OutsideSpringTempbyLatitudeC;
         Interpolator OutsideSummerTempbyLatitudeC;
 
+        // Values for Wind Direction and Speed - needed for wind resistance and lateral force
+        public float PhysicsWindDirectionDeg;
+        public float PhysicsWindSpeedMpS;
+        public float PhysicsTrainLocoDirectionDeg;
+        public float ResultantWindComponentDeg;
+        public float WindResultantSpeedMpS;
+        public bool TrainWindResistanceDependent
+        {
+            get
+            {
+               return Simulator.Settings.WindResistanceDependent;
+            }
+        }
+        
+
         // Input values to allow the temperature for different values of latitude to be calculated
         static float[] WorldLatitudeDeg = new float[]
         {
@@ -1646,7 +1661,6 @@ namespace Orts.Simulation.Physics
             UpdateMinimalDelay();
 
             // check position of train wrt tunnels
-
             ProcessTunnels();
 
             // log train details
@@ -1784,6 +1798,8 @@ namespace Orts.Simulation.Physics
             UpdateAuxTender();
             UpdateCarSpeeds(elapsedClockSeconds);
             UpdateCouplerSlack(elapsedClockSeconds);
+            // Update wind elements for the train, ie the wind speed, and direction, as well as the angle between the train and wind
+            UpdateWindComponents();
 
             float distanceM = LastCar.SpeedMpS * elapsedClockSeconds;
             if (float.IsNaN(distanceM)) distanceM = 0;//avoid NaN, if so will not move
@@ -1819,6 +1835,63 @@ namespace Orts.Simulation.Physics
             ProjectedSpeedMpS = SpeedMpS > float.Epsilon ?
                 Math.Max(0, ProjectedSpeedMpS) : SpeedMpS < -float.Epsilon ? Math.Min(0, ProjectedSpeedMpS) : 0;
         }
+
+        //================================================================================================//
+        /// <summary>
+        /// Update Wind components for the train
+        /// <\summary>
+
+        public void UpdateWindComponents()
+        {
+            // Gets wind direction and speed, and determines HUD display values for the train as a whole. 
+            //These will be representative of the train whilst it is on a straight track, but each wagon will vary when going around a curve.
+            // Note both train and wind direction will be positive between 0 (north) and 180 (south) through east, and negative between 0 (north) and 180 (south) through west
+            // Wind and train direction to be converted to an angle between 0 and 360 deg.
+            if (TrainWindResistanceDependent)
+            {
+                // Calculate Wind speed and direction, and train direction
+                // Update the value of the Wind Speed and Direction for the train
+                PhysicsWindDirectionDeg = MathHelper.ToDegrees(Simulator.Weather.WindDirection);
+                PhysicsWindSpeedMpS = Simulator.Weather.WindSpeed;
+                float TrainSpeedMpS = Math.Abs(SpeedMpS);
+
+                // If a westerly direction (ie -ve) convert to an angle between 0 and 360
+                if (PhysicsWindDirectionDeg < 0)
+                    PhysicsWindDirectionDeg += 360;
+
+                if (PhysicsTrainLocoDirectionDeg < 0)
+                    PhysicsTrainLocoDirectionDeg += 360;
+
+                // calculate angle between train and eind direction
+                if (PhysicsWindDirectionDeg > PhysicsTrainLocoDirectionDeg)
+                    ResultantWindComponentDeg = PhysicsWindDirectionDeg - PhysicsTrainLocoDirectionDeg;
+                else if (PhysicsTrainLocoDirectionDeg > PhysicsWindDirectionDeg)
+                    ResultantWindComponentDeg = PhysicsTrainLocoDirectionDeg - PhysicsWindDirectionDeg;
+                else
+                    ResultantWindComponentDeg = 0.0f;
+
+//                Trace.TraceInformation("WindDeg {0} TrainDeg {1} ResWindDeg {2}", PhysicsWindDirectionDeg, PhysicsTrainLocoDirectionDeg, ResultantWindComponentDeg);
+
+                // Correct wind direction if it is greater then 360 deg, then correct to a value less then 360
+                if (Math.Abs(ResultantWindComponentDeg) > 360)
+                    ResultantWindComponentDeg = ResultantWindComponentDeg - 360.0f;
+
+                // Wind angle should be kept between 0 and 180 the formulas do not cope with angles > 180. If angle > 180, denotes wind of "other" side of train
+                if (ResultantWindComponentDeg > 180)
+                    ResultantWindComponentDeg = 360 - ResultantWindComponentDeg;
+
+                float WindAngleRad = MathHelper.ToRadians(ResultantWindComponentDeg);
+
+                WindResultantSpeedMpS = (float)Math.Sqrt(TrainSpeedMpS * TrainSpeedMpS + PhysicsWindSpeedMpS * PhysicsWindSpeedMpS + 2.0f * TrainSpeedMpS * PhysicsWindSpeedMpS * (float)Math.Cos(WindAngleRad));
+
+//                Trace.TraceInformation("WindResultant {0} ResWindDeg {1}", WindResultantSpeedMpS, ResultantWindComponentDeg);
+            }
+            else
+            {
+                WindResultantSpeedMpS = Math.Abs(SpeedMpS);
+            }
+        }
+
 
         //================================================================================================//
         /// <summary>
@@ -4175,10 +4248,10 @@ namespace Orts.Simulation.Physics
             // TODO: this loop could be extracted and become a separate method, that could be called also by TTTrain.physicsPreUpdate
             for (int i = 0; i < Cars.Count; i++)
                 if (Cars[i].SpeedMpS > 0)
-                    Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN +
+                    Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
                         ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0)? Math.Abs(Cars[i].MotiveForceN) : 0));
                 else if (Cars[i].SpeedMpS < 0)
-                    Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].TunnelForceN +
+                    Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
                         ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0)? Math.Abs(Cars[i].MotiveForceN) : 0);
             if (Cars.Count < 2)
                 return;
@@ -4288,9 +4361,9 @@ namespace Orts.Simulation.Physics
 #if DEBUG_SPEED_FORCES
                 Trace.TraceInformation(" ========================================  Train Speed #2 (Train.cs) ===========================================================");
                 Trace.TraceInformation("Car ID {0} TotalForceN {1} Mass {2} elapsedtime {3} CarSpeed {4}", car.CarID, car.TotalForceN, car.MassKG, elapsedTime, car.SpeedMpS);
-                Trace.TraceInformation("Friction {0} Brake {1} Curve {2} Tunnel {3}", car.FrictionForceN, car.BrakeForceN, car.CurveForceN, car.TunnelForceN);
+                Trace.TraceInformation("Friction {0} Brake {1} Curve {2} Wind {3} Tunnel {4}", car.FrictionForceN, car.BrakeForceN, car.CurveForceN, car.WindForceN, car.TunnelForceN);
                 Trace.TraceInformation("Coupler {0} Prev Car Speed {1}", car.CouplerForceU, PrevCarSpeedMps);
-                Trace.TraceInformation("Calculated Total {0}", car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN);
+                Trace.TraceInformation("Calculated Total {0}", car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN);
 #endif
             }
             if (n == 0)
@@ -4301,7 +4374,7 @@ namespace Orts.Simulation.Physics
             for (int i = 0; i < Cars.Count; i++)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN + 
+                if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN + 
                     ((car is MSTSLocomotive && (car as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(car.MotiveForceN) : 0)))
                     continue;
                 int j = i;
@@ -4311,14 +4384,14 @@ namespace Orts.Simulation.Physics
                 {
                     if (car is MSTSLocomotive)
                     {
-                        f += car.TotalForceN - (car.FrictionForceN + car.CurveForceN + car.TunnelForceN);
+                        f += car.TotalForceN - (car.FrictionForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN);
                         if ((car as MSTSLocomotive).DynamicBrakeForceN > 0)
                         {
                             f -= Math.Abs(car.MotiveForceN);
                         }
                     }
                     else
-                        f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN);
+                        f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN);
                     m += car.MassKG;
                     if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumCouplerSlack2M())
                         break;
@@ -4349,7 +4422,7 @@ namespace Orts.Simulation.Physics
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
                 TrainCar car = Cars[i];
-                if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f * (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN+ 
+                if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f * (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN+ 
                     ((car.IsDriveable && (car as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(car.MotiveForceN) : 0))))
                     continue;
                 int j = i;
@@ -4359,14 +4432,14 @@ namespace Orts.Simulation.Physics
                 {
                     if (car is MSTSLocomotive)
                     {
-                        f += car.TotalForceN + car.FrictionForceN + car.CurveForceN + car.TunnelForceN;
+                        f += car.TotalForceN + car.FrictionForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN;
                         if ((car as MSTSLocomotive).DynamicBrakeForceN > 0)
                         {
                             f += Math.Abs(car.MotiveForceN);
                         }
                     }
                     else
-                        f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.TunnelForceN;
+                        f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN;
                     m += car.MassKG;
                     if (j == 0 || car.CouplerSlackM > -car.GetMaximumCouplerSlack2M())
                         break;
@@ -4411,11 +4484,23 @@ namespace Orts.Simulation.Physics
                 else if (car.CouplerSlackM > max)
                     car.CouplerSlackM = max;
                 TotalCouplerSlackM += car.CouplerSlackM;
+//                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4}", car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M());
                 max = car.GetMaximumCouplerSlack1M();
-                if (car.CouplerSlackM >= max)
+                if (car.CouplerSlackM >= max) // Coupler pulling
+                {
                     NPull++;
+                    car.HUDCouplerForceIndication = 1; 
+                }                    
                 else if (car.CouplerSlackM <= -max)
+                {
                     NPush++;
+                    car.HUDCouplerForceIndication = 2;
+                }
+                else
+                {
+                    car.HUDCouplerForceIndication = 0;
+                }
+                    
             }
             foreach (TrainCar car in Cars)
                 car.DistanceM += Math.Abs(car.SpeedMpS * elapsedTime);

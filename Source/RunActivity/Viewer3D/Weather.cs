@@ -43,9 +43,6 @@ namespace Orts.Viewer3D
         public readonly List<SoundSourceBase> SnowSound;
         public readonly List<SoundSourceBase> WeatherSounds = new List<SoundSourceBase>();
 
-        readonly float[] WindChangeMpSS = { 40, 5 }; // Flurry, steady
-        const float WindSpeedMaxMpS = 30;
-
         public bool weatherChangeOn = false;
         public DynamicWeather dynamicWeather;
         public bool RandomizedWeather;
@@ -56,6 +53,15 @@ namespace Orts.Viewer3D
         Vector2 WindSpeedInternalMpS;
         Vector2[] windSpeedMpS = new Vector2[2];
         public float Time;
+        readonly float[] WindChangeMpSS = { 40, 5 }; // Flurry, steady
+        const float WindSpeedMaxMpS = 4.5f;
+        float WindUpdateTimer = 0.0f;
+        float WindGustUpdateTimeS = 1.0f;
+        bool InitialWind = true;
+        float BaseWindDirectionRad;
+        float WindDirectionVariationRad = (float)MathHelper.ToRadians(45.0f); // Set at 45 Deg
+        float calculatedWindDirection;
+
 
         public WeatherControl(Viewer viewer)
         {
@@ -199,20 +205,52 @@ namespace Orts.Viewer3D
 
         private void UpdateWind(ElapsedTime elapsedTime)
         {
-            WindSpeedInternalMpS = Vector2.Zero;
-            for (var i = 0; i < windSpeedMpS.Length; i++)
+            WindUpdateTimer += elapsedTime.ClockSeconds;
+
+            if (WindUpdateTimer > WindGustUpdateTimeS)
             {
-                windSpeedMpS[i].X += ((float)Viewer.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
-                windSpeedMpS[i].Y += ((float)Viewer.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * elapsedTime.ClockSeconds;
 
-                var windMagnitude = windSpeedMpS[i].Length() / (i == 0 ? Weather.WindSpeedMpS.Length() * 0.4f : WindSpeedMaxMpS);
-                if (windMagnitude > 1)
-                    windSpeedMpS[i] /= windMagnitude;
+                WindSpeedInternalMpS = Vector2.Zero;
+                for (var i = 0; i < windSpeedMpS.Length; i++)
+                {
+                    windSpeedMpS[i].X += ((float)Viewer.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * WindUpdateTimer;
+                    windSpeedMpS[i].Y += ((float)Viewer.Random.NextDouble() * 2 - 1) * WindChangeMpSS[i] * WindUpdateTimer;
 
-                WindSpeedInternalMpS += windSpeedMpS[i];
+                    var windMagnitude = windSpeedMpS[i].Length() / (i == 0 ? Weather.WindSpeedMpS.Length() * 0.4f : WindSpeedMaxMpS);
+
+                    if (windMagnitude > 1)
+                        windSpeedMpS[i] /= windMagnitude;
+
+                    WindSpeedInternalMpS += windSpeedMpS[i];
+                }
+
+                var TotalwindMagnitude = WindSpeedInternalMpS.Length() / (WindSpeedMaxMpS);
+
+                if (TotalwindMagnitude > 1)
+                    WindSpeedInternalMpS /= TotalwindMagnitude;
+
+                Weather.WindSpeedMpS = WindSpeedInternalMpS;
+                WindUpdateTimer = 0.0f; // Reset wind gust timer
+
+                if (InitialWind) // Record the initial wind direction.
+                {
+                    BaseWindDirectionRad = (float)Math.Atan2(Weather.WindSpeedMpS.X, Weather.WindSpeedMpS.Y);
+                    InitialWind = false; // set false so that base wind is not changed
+                }
+
+                calculatedWindDirection = (float)Math.Atan2(Weather.WindSpeedMpS.X, Weather.WindSpeedMpS.Y);
+
+                // Test to ensure wind direction stays within the direction bandwidth set, if out of bounds set new random direction
+                if (calculatedWindDirection > (BaseWindDirectionRad + WindDirectionVariationRad))
+                    calculatedWindDirection = BaseWindDirectionRad + (WindDirectionVariationRad * (float)Viewer.Random.NextDouble());
+
+
+                if (calculatedWindDirection < (BaseWindDirectionRad - WindDirectionVariationRad))
+                    calculatedWindDirection = BaseWindDirectionRad - (WindDirectionVariationRad * (float)Viewer.Random.NextDouble());
+
+                Weather.CalculatedWindDirection = calculatedWindDirection;
+
             }
-
-            Weather.WindSpeedMpS = WindSpeedInternalMpS;
         }
 
         private bool RandomizeInitialWeather()

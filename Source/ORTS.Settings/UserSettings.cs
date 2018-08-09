@@ -189,11 +189,13 @@ namespace ORTS.Settings
         [Default(false)]
         public bool BreakCouplers { get; set; }
         [Default(false)]
-        public bool CurveResistanceSpeedDependent { get; set; }
+        public bool CurveResistanceDependent { get; set; }
         [Default(false)]
         public bool CurveSpeedDependent { get; set; }
         [Default(false)]
         public bool TunnelResistanceDependent { get; set; }
+        [Default(false)]
+        public bool WindResistanceDependent { get; set; }
         [Default(false)]
         public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]

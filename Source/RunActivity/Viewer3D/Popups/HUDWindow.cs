@@ -770,10 +770,16 @@ namespace Orts.Viewer3D.Popups
                     TableAddLabelValue(table, Viewer.Catalog.GetString("Wagon Adhesion"), "{0:F0}%", mstsLocomotive.WagonCoefficientFrictionHUD * 100.0f);
                 }
                 TableAddLine(table);
-            }
 
-            //TableAddLine(table,"Coupler breaks: {0:F0}", train.NumOfCouplerBreaks);
-            
+                if (train.TrainWindResistanceDependent) // Only show this information if wind resistance is selected
+                {
+                    TableAddLine(table, "Wind Speed: {0:N2} mph   Wind Direction: {1:N2} Deg   Train Direction: {2:N2} Deg    ResWind: {3:N2} Deg   ResSpeed {4:N2} mph", Me.ToMi(pS.TopH(train.PhysicsWindSpeedMpS)), train.PhysicsWindDirectionDeg, train.PhysicsTrainLocoDirectionDeg, train.ResultantWindComponentDeg, Me.ToMi(pS.TopH(train.WindResultantSpeedMpS)));
+
+                    TableAddLine(table);
+                }
+
+
+            }
 
             TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Car"),
@@ -784,12 +790,22 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Gravity"),
                 Viewer.Catalog.GetString("Curve"),
                 Viewer.Catalog.GetString("Tunnel"),
+                Viewer.Catalog.GetString("Wind"),
                 Viewer.Catalog.GetString("Coupler"),
+                Viewer.Catalog.GetString("Coupler"),
+                Viewer.Catalog.GetString("Slack"),
                 Viewer.Catalog.GetString("Mass"),
                 Viewer.Catalog.GetString("Gradient"),
                 Viewer.Catalog.GetString("Curve"),
                 Viewer.Catalog.GetString("Brk Frict."),
                 Viewer.Catalog.GetString("Brk Slide")
+
+                // Possibly needed for buffing forces
+//                Viewer.Catalog.GetString("VertD"),
+//                Viewer.Catalog.GetString("VertL"),
+//                Viewer.Catalog.GetString("BuffExc"),
+//                Viewer.Catalog.GetString("CplAng")
+
                 );
             TableAddLine(table);
 
@@ -806,13 +822,25 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 5, "{0}", FormatStrings.FormatForce(car.GravityForceN, car.IsMetric));
                 TableSetCell(table, 6, "{0}", FormatStrings.FormatForce(car.CurveForceN, car.IsMetric));
                 TableSetCell(table, 7, "{0}", FormatStrings.FormatForce(car.TunnelForceN, car.IsMetric));
-                TableSetCell(table, 8, "{0}{1}", FormatStrings.FormatForce(car.CouplerForceU, car.IsMetric), car.CouplerOverloaded ? "???" : "");
-                TableSetCell(table, 9, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
-                TableSetCell(table, 10, "{0:F2}%", -car.CurrentElevationPercent);
-                TableSetCell(table, 11, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
-                TableSetCell(table, 12, "{0:F0}%", car.BrakeShoeCoefficientFriction * 100.0f);
-                TableSetCell(table, 13, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : "No");
-                TableSetCell(table, 14, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
+                TableSetCell(table, 8, "{0}", FormatStrings.FormatForce(car.WindForceN, car.IsMetric));
+                TableSetCell(table, 9, "{0}", FormatStrings.FormatForce(car.CouplerForceU, car.IsMetric));
+                TableSetCell(table, 10, "{0} : {1}", car.HUDCouplerRigidIndication == true ? "R" : "F", car.CouplerOverloaded ? "xxx" : car.HUDCouplerForceIndication == 1 ? "Pull" : car.HUDCouplerForceIndication == 2 ? "Push" : "-");
+                TableSetCell(table, 11, "{0}", FormatStrings.FormatVeryShortDistanceDisplay( car.CouplerSlackM, car.IsMetric));
+                TableSetCell(table, 12, "{0}", FormatStrings.FormatLargeMass(car.MassKG, car.IsMetric, car.IsUK));
+                TableSetCell(table, 13, "{0:F2}%", -car.CurrentElevationPercent);
+                TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
+                TableSetCell(table, 15, "{0:F0}%", car.BrakeShoeCoefficientFriction * 100.0f);
+                TableSetCell(table, 16, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : "No");
+
+                // Possibly needed for buffing forces
+//                TableSetCell(table, 17, "{0}", FormatStrings.FormatForce(car.WagonVerticalDerailForceN, car.IsMetric));
+//                TableSetCell(table, 18, "{0}", FormatStrings.FormatForce(car.TotalWagonLateralDerailForceN, car.IsMetric));
+//                TableSetCell(table, 19, car.BuffForceExceeded ? Viewer.Catalog.GetString("Yes") : "No");
+                
+//                TableSetCell(table, 20, "{0:F2}", MathHelper.ToDegrees(car.WagonFrontCouplerAngleRad));
+
+
+                TableSetCell(table, 17, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableAddLine(table);
             }
         }

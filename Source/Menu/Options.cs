@@ -182,9 +182,10 @@ namespace ORTS
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
-            checkCurveResistanceSpeedDependent.Checked = Settings.CurveResistanceSpeedDependent;
+            checkCurveResistanceDependent.Checked = Settings.CurveResistanceDependent;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
             checkTunnelResistanceDependent.Checked = Settings.TunnelResistanceDependent;
+            checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
             checkAutopilot.Checked = Settings.Autopilot;
@@ -463,9 +464,10 @@ namespace ORTS
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
-            Settings.CurveResistanceSpeedDependent = checkCurveResistanceSpeedDependent.Checked;
+            Settings.CurveResistanceDependent = checkCurveResistanceDependent.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             Settings.TunnelResistanceDependent = checkTunnelResistanceDependent.Checked;
+            Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
             Settings.Autopilot = checkAutopilot.Checked;

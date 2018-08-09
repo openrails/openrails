@@ -94,8 +94,9 @@
             this.checkAutopilot = new System.Windows.Forms.CheckBox();
             this.checkHotStart = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
-            this.checkCurveResistanceSpeedDependent = new System.Windows.Forms.CheckBox();
+            this.checkCurveResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkTunnelResistanceDependent = new System.Windows.Forms.CheckBox();
+            this.checkWindResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkOverrideNonElectrifiedRoutes = new System.Windows.Forms.CheckBox();
             this.labelAdhesionMovingAverageFilterSize = new System.Windows.Forms.Label();
             this.numericAdhesionMovingAverageFilterSize = new System.Windows.Forms.NumericUpDown();
@@ -954,8 +955,9 @@
             this.tabPageSimulation.Controls.Add(this.groupBox1);
             this.tabPageSimulation.Controls.Add(this.checkHotStart);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
-            this.tabPageSimulation.Controls.Add(this.checkCurveResistanceSpeedDependent);
+            this.tabPageSimulation.Controls.Add(this.checkCurveResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkTunnelResistanceDependent);
+            this.tabPageSimulation.Controls.Add(this.checkWindResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkOverrideNonElectrifiedRoutes);
             this.tabPageSimulation.Controls.Add(this.labelAdhesionMovingAverageFilterSize);
             this.tabPageSimulation.Controls.Add(this.numericAdhesionMovingAverageFilterSize);
@@ -1030,7 +1032,7 @@
             // checkHotStart
             // 
             this.checkHotStart.AutoSize = true;
-            this.checkHotStart.Location = new System.Drawing.Point(6, 169);
+            this.checkHotStart.Location = new System.Drawing.Point(6, 192);
             this.checkHotStart.Name = "checkHotStart";
             this.checkHotStart.Size = new System.Drawing.Size(151, 17);
             this.checkHotStart.TabIndex = 8;
@@ -1047,15 +1049,15 @@
             this.checkCurveSpeedDependent.Text = "Curve dependent speed limit";
             this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
             // 
-            // checkCurveResistanceSpeedDependent
+            // checkCurveResistanceDependent
             // 
-            this.checkCurveResistanceSpeedDependent.AutoSize = true;
-            this.checkCurveResistanceSpeedDependent.Location = new System.Drawing.Point(6, 77);
-            this.checkCurveResistanceSpeedDependent.Name = "checkCurveResistanceSpeedDependent";
-            this.checkCurveResistanceSpeedDependent.Size = new System.Drawing.Size(159, 17);
-            this.checkCurveResistanceSpeedDependent.TabIndex = 4;
-            this.checkCurveResistanceSpeedDependent.Text = "Curve dependent resistance";
-            this.checkCurveResistanceSpeedDependent.UseVisualStyleBackColor = true;
+            this.checkCurveResistanceDependent.AutoSize = true;
+            this.checkCurveResistanceDependent.Location = new System.Drawing.Point(6, 77);
+            this.checkCurveResistanceDependent.Name = "checkCurveResistanceDependent";
+            this.checkCurveResistanceDependent.Size = new System.Drawing.Size(159, 17);
+            this.checkCurveResistanceDependent.TabIndex = 4;
+            this.checkCurveResistanceDependent.Text = "Curve dependent resistance";
+            this.checkCurveResistanceDependent.UseVisualStyleBackColor = true;
             // 
             // checkTunnelResistanceDependent
             // 
@@ -1067,10 +1069,22 @@
             this.checkTunnelResistanceDependent.Text = "Tunnel dependent resistance";
             this.checkTunnelResistanceDependent.UseVisualStyleBackColor = true;
             // 
+            // checkWindResistanceSpeedDependent
+            // 
+            this.checkWindResistanceDependent.AutoSize = true;
+            this.checkWindResistanceDependent.Location = new System.Drawing.Point(6, 146);
+            this.checkWindResistanceDependent.Name = "checkWindResistanceDependent";
+            this.checkWindResistanceDependent.Size = new System.Drawing.Size(159, 17);
+            this.checkWindResistanceDependent.TabIndex = 4;
+            this.checkWindResistanceDependent.Text = "Wind dependent resistance";
+            this.checkWindResistanceDependent.UseVisualStyleBackColor = true;
+
+
+            // 
             // checkOverrideNonElectrifiedRoutes
             // 
             this.checkOverrideNonElectrifiedRoutes.AutoSize = true;
-            this.checkOverrideNonElectrifiedRoutes.Location = new System.Drawing.Point(6, 146);
+            this.checkOverrideNonElectrifiedRoutes.Location = new System.Drawing.Point(6, 169);
             this.checkOverrideNonElectrifiedRoutes.Name = "checkOverrideNonElectrifiedRoutes";
             this.checkOverrideNonElectrifiedRoutes.Size = new System.Drawing.Size(219, 17);
             this.checkOverrideNonElectrifiedRoutes.TabIndex = 7;
@@ -2378,8 +2392,9 @@
         private System.Windows.Forms.CheckBox checkDataLogTrainSpeed;
         private System.Windows.Forms.CheckBox checkUseMSTSEnv;
         private System.Windows.Forms.CheckBox checkPreferDDSTexture;
-        private System.Windows.Forms.CheckBox checkCurveResistanceSpeedDependent;
+        private System.Windows.Forms.CheckBox checkCurveResistanceDependent;
         private System.Windows.Forms.CheckBox checkTunnelResistanceDependent;
+        private System.Windows.Forms.CheckBox checkWindResistanceDependent;
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboLanguage;
         private System.Windows.Forms.Label labelDistantMountainsViewingDistance;

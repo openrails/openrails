@@ -652,6 +652,13 @@ namespace ORTS.Common
             return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", Me.ToFt(distanceM), ft);
         }
 
+        public static string FormatVeryShortDistanceDisplay(float distanceM, bool isMetric)
+        {
+            if (isMetric)
+                return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", distanceM, m);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", Me.ToFt(distanceM), ft);
+        }
+
         /// <summary>
         /// format localized mass string, as displayed in in-game windows.
         /// </summary>

@@ -1313,8 +1313,12 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateControllers(elapsedClockSeconds);
 
+            // Train Heading
+            var heading = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
+            Train.PhysicsTrainLocoDirectionDeg = MathHelper.ToDegrees((float)heading);
+ 
             // TODO  this is a wild simplification for electric and diesel electric
-            float t = ThrottlePercent / 100f;
+                        float t = ThrottlePercent / 100f;
 
             if (!AdvancedAdhesionModel)  // Advanced adhesion model turned off.
                AbsWheelSpeedMpS = AbsSpeedMpS;
