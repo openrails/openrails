@@ -781,6 +781,9 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsdavis_a": DavisAN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
+                case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
+                case "wagon(ortsdavisdragconstant": DavisDragConstant = stf.ReadFloat(STFReader.UNITS.None, null); break;
+                case "wagon(ortswagonfrontalarea": WagonFrontalAreaM2 = stf.ReadFloat(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "wagon(ortsbearingtype":
                     stf.MustMatch("(");
                     string typeString2 = stf.ReadString();
@@ -893,9 +896,6 @@ namespace Orts.Simulation.RollingStocks
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
                     break;
-                case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
-                case "wagon(ortsdavisdragconstant": DavisDragConstant = stf.ReadFloat(STFReader.UNITS.None, null); break;
-                case "wagon(ortswagonfrontalarea": WagonFrontalAreaM2 = stf.ReadFloat(STFReader.UNITS.AreaDefaultFT2, null); break;
             }
         }
 
@@ -1400,7 +1400,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (IsPlayerTrain) // Only break couplers on player trains
                 {
-                    if (-CouplerForceU > coupler.Break1N || IsCriticalSpeed == true)  // break couplers if forces exceeded onm coupler or train has "overturned" on curve
+                    if (-CouplerForceU > coupler.Break1N || IsCriticalMaxSpeed == true)  // break couplers if forces exceeded onm coupler or train has "overturned" on curve
                     {
                         CouplerOverloaded = true;
                     }
