@@ -1189,7 +1189,8 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     // reset flags if train is on a straight - in preparation for next curve
-                    IsCriticalMaxSpeed = false;   // reset flag for IsCriticalSpeed reached
+                    IsCriticalMaxSpeed = false;   // reset flag for IsCriticalMaxSpeed reached
+                    IsCriticalMinSpeed = false;   // reset flag for IsCriticalMinSpeed reached
                     IsMaxSafeCurveSpeed = false; // reset flag for IsMaxEqualLoadSpeed reached
                 }
             }
