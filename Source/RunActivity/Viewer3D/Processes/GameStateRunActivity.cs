@@ -357,10 +357,14 @@ namespace Orts.Viewer3D.Processes
                 foreach (var files in dbfEvalFiles)
                    File.Delete(files);//Delete all debrief eval files previously saved, for the same activity.//fileDbfEval
 
-                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem  + ".dbfeval", FileMode.Create, FileAccess.Write)))
-                {                    
+                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".dbfeval", FileMode.Create, FileAccess.Write)))
+                {
                     // Save debrief eval values.
-                    outf.Write(ActivityTaskPassengerStopAt.nDbfEvalDepartBeforeBoarding);
+                    outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
+                    for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
+                    {
+                        outf.Write((string) ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
+                    }
                     outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
                     outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
                     outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
@@ -419,7 +423,11 @@ namespace Orts.Viewer3D.Processes
                     {
                         using (BinaryReader infDbfEval = new BinaryReader(new FileStream(dbfevalfile, FileMode.Open, FileAccess.Read)))
                         {
-                            ActivityTaskPassengerStopAt.nDbfEvalDepartBeforeBoarding = infDbfEval.ReadInt32();
+                            int nDepartBeforeBoarding = infDbfEval.ReadInt32();
+                            for (int i = 0; i < nDepartBeforeBoarding; i++)
+                            {
+                                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i] = infDbfEval.ReadString();
+                            }
                             Popups.TrackMonitor.DbfEvalOverSpeed = infDbfEval.ReadInt32();
                             Popups.TrackMonitor.DbfEvalOverSpeedTimeS = infDbfEval.ReadDouble();
                             Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS = infDbfEval.ReadDouble();
