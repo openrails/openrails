@@ -1400,7 +1400,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (IsPlayerTrain) // Only break couplers on player trains
                 {
-                    if (-CouplerForceU > coupler.Break1N || IsCriticalMaxSpeed == true)  // break couplers if forces exceeded onm coupler or train has "overturned" on curve
+                    if (-CouplerForceU > coupler.Break1N )  // break couplers if forces exceeded
                     {
                         CouplerOverloaded = true;
                     }
