@@ -1,22 +1,23 @@
 ﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Ionic.Zip;
 using Newtonsoft.Json;
+using ORTS.Common;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace ORTS.Updater
 {
@@ -276,7 +278,7 @@ namespace ORTS.Updater
             State.LastCheck = DateTime.Now;
             // So what we're doing here is rounding up the DateTime (LastCheck) to the next TimeSpan (TTL) period. For
             // example, if the TTL was 1 hour, we'd round up the the start of the next hour. Similarly, if the TTL was
-            // 1 day, we'd round up to midnight (the start of the next day). The purpose of this is to avoid 2 * TTL 
+            // 1 day, we'd round up to midnight (the start of the next day). The purpose of this is to avoid 2 * TTL
             // checking which might well occur if you always launch Open Rails around the same time of day each day -
             // if they launch it at 6:00PM on Monday, then 5:30PM on Tuesday, they won't get an update chech on
             // Tuesday. With the time rounding, they should get one check/day if the TTL is 1 day and they open it
@@ -408,11 +410,11 @@ namespace ORTS.Updater
         {
             var files = Directory.GetFiles(PathUpdateStage, "*", SearchOption.AllDirectories);
 
-            var expectedSubjects = new HashSet<string>();
+            var expectedCertificates = new HashSet<X509Certificate2>();
             try
             {
                 foreach (var cert in GetCertificatesFromFile(FileUpdater))
-                    expectedSubjects.Add(cert.Subject);
+                    expectedCertificates.Add(cert);
             }
             catch (CryptographicException)
             {
@@ -429,8 +431,18 @@ namespace ORTS.Updater
                     files[i].EndsWith(".sys", StringComparison.OrdinalIgnoreCase))
                 {
                     var certificates = GetCertificatesFromFile(files[i]);
-                    if (!certificates.Any(c => expectedSubjects.Contains(c.Subject)))
-                        throw new InvalidDataException("Cryptographic signatures don't match. Expected a common subject in old subjects:\n\n" + FormatCertificateSubjectList(expectedSubjects) + "\n\nAnd new subjects:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
+                    if (!certificates.Any(c => IsMatchingCertificate(expectedCertificates, c)))
+                    {
+                        switch (MessageBox.Show("The downloaded update has no matching cryptographic certificates; proceed with update?\n\nCurrent version's certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate version's certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n\nProceed with update?", Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo))
+                        {
+                            case DialogResult.Yes:
+                                foreach (var cert in certificates)
+                                    expectedCertificates.Add(cert);
+                                break;
+                            case DialogResult.No:
+                                throw new InvalidDataException("Cryptographic certificates don't match.\n\nCurrent certificates:\n\n" + FormatCertificateSubjectList(expectedCertificates) + "\n\nUpdate certificates:\n\n" + FormatCertificateSubjectList(certificates) + "\n");
+                        }
+                    }
                 }
             }
 
@@ -508,15 +520,37 @@ namespace ORTS.Updater
             return directory.Substring(basePath.Length + 1);
         }
 
-        static string FormatCertificateSubjectList(IEnumerable<string> subjects)
-        {
-            return string.Join("\n", subjects.Select(s => "- " + s).ToArray());
-        }
-
         static string FormatCertificateSubjectList(IEnumerable<X509Certificate2> certificates)
         {
-            return FormatCertificateSubjectList(certificates.Select(c => c.Subject));
+            if (certificates.Count() == 0)
+                return "<none>";
+
+            return string.Join("\n", certificates.Select(c => "- " + FormatCertificateSubject(c)).ToArray());
         }
+
+        static string FormatCertificateSubject(X509Certificate2 certificate)
+        {
+            return "Subject of certificate:\n    " + FormatCertificateDistinguishedName(certificate.SubjectName) + "\n  Issued by:\n    " + FormatCertificateDistinguishedName(certificate.IssuerName) + (certificate.Verify() ? "\n  Verified" : "\n  Not verified");
+        }
+
+        static string FormatCertificateDistinguishedName(X500DistinguishedName name)
+        {
+            return string.Join("\n    ", name.Format(true).Split('\n').Where(line => line.Length > 0).Reverse().ToArray());
+        }
+
+        static bool IsMatchingCertificate(HashSet<X509Certificate2> expectedCertificates, X509Certificate2 certificate)
+        {
+            var certMatch = FormatCertificateForMatching(certificate);
+            return expectedCertificates.Any(cert => FormatCertificateForMatching(cert) == certMatch);
+        }
+
+        static string FormatCertificateForMatching(X509Certificate2 certificate)
+        {
+            var subjectLines = certificate.SubjectName.Format(true).Split('\n');
+            var commonName = subjectLines.FirstOrDefault(line => line.StartsWith("CN="));
+            var country = subjectLines.FirstOrDefault(line => line.StartsWith("C="));
+            return certificate.Verify() + "\n" + commonName + "\n" + country;
+         }
 
         static List<X509Certificate2> GetCertificatesFromFile(string filename)
         {
