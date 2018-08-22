@@ -782,8 +782,8 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsdavis_b": DavisBNSpM = stf.ReadFloatBlock(STFReader.UNITS.Resistance, null); break;
                 case "wagon(ortsdavis_c": DavisCNSSpMM = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, null); break;
                 case "wagon(effects(specialeffects": ParseEffects(lowercasetoken, stf); break;
-                case "wagon(ortsdavisdragconstant": DavisDragConstant = stf.ReadFloat(STFReader.UNITS.None, null); break;
-                case "wagon(ortswagonfrontalarea": WagonFrontalAreaM2 = stf.ReadFloat(STFReader.UNITS.AreaDefaultFT2, null); break;
+                case "wagon(ortsdavisdragconstant": DavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortswagonfrontalarea": WagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "wagon(ortsbearingtype":
                     stf.MustMatch("(");
                     string typeString2 = stf.ReadString();
