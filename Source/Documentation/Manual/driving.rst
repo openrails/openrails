@@ -1563,24 +1563,61 @@ can be found in :ref:`Open Rails Braking <physics-braking>` and
 Extended HUD for Train Force Information
 ----------------------------------------
 
-In the first part of this display some information related to the player 
+In the top part of this display some information related to the player 
 locomotive is shown. The information format differs if :ref:`advanced 
 adhesion <options-advanced-adhesion>` has been selected or not in the 
 :ref:`Simulation Options <options-simulation>`.
 
-The table part shows total force for up to ten locos/cars in the train. 
-The first number shows the position of the car in the train. The second 
-number is the total force acting on the car. This is the sum of the other 
-forces after the signs are properly adjusted. The next number is the 
-motive force which should only be non-zero for locomotives, and that 
-becomes negative during dynamic braking. Next number is the brake force. 
-Follows the friction force calculated from the Davis equation. The 
-following value is the force due to gravity. Next values are the friction 
-forces due to the car being in a curve and/or in a tunnel. The next value 
-is the coupler force between this car and the next (negative is pull and 
-positive is push). The mass in kg and the track elevation in % under the 
-car follow. All of the force values are in Newtons. Many of these values 
-are relative to the orientation of the car, but some are relative to the 
+The middle line of information shown (provided that Wind Dependent 
+Resistance is selected in the Options Menu) shows the wind speed and 
+direction, the train direction, and the resulting train/wind vectors 
+for speed and direction.
+
+The table part below the above information, shows the relevant forces 
+acting upon the locos/cars in the train.
+
+The columns are as follows:
+
+**Car**  - the position of the car in the train.
+
+**Total**  - the total force acting on the car. This is the sum of the other 
+forces after the signs are properly adjusted.
+ 
+**Motive**  - the motive force which should only be non-zero for locomotives,
+ and that becomes negative during dynamic braking.
+  
+**Brake**  - the brake force.
+ 
+**Friction**  - the friction (or resistance) force calculated from the Davis equation. 
+This is in STILL air only.
+
+**Gravity**  - the force due to gravity.
+ 
+**Curve**  - the resistance forces due to the car being on a curve.
+
+**Tunnel**  -  the resistance forces due to the car being in a tunnel.
+ 
+**Wind**   - the resistance forces due to the car being impacted by wind.
+ 
+**Coupler**   - the coupler force between this car and the next (negative is pull and 
+positive is push). The **F** or **R** symbols indicate whether the coupler is a flexible or 
+rigid coupler respectively.
+
+**Slack**  - indicates the amount of slack (distance due to coupler movement between the cars).
+
+**Mass**  - car mass in kg.
+
+**Gradient**  - gradient of the track underneath the car.
+
+**Curve**  - the radius of the curve.
+
+**Brk Frict**  - friction of the brakes on the car.
+
+**Brk Slide**  - indicates whether the car is skidding due to excessive brake application.
+
+All of the force values will be in Newtons, or the UoM selected by the player. 
+
+Many of these values are relative to the orientation of the car, but some are relative to the 
 train. If applicable, two further fields appear: the first is "True" if 
 the car is flipped with respect to the train or ``False`` otherwise, while 
 the second field signals coupler overload.

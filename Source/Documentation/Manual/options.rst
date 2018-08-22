@@ -385,6 +385,17 @@ higher effort at invariant speed. This option is described in detail
 :ref:`here <physics-tunnel-friction>` (theory) and 
 :ref:`here <physics-tunnel-friction-application>` (OR application).
 
+.. _options-wind-resistance:
+
+Wind dependent resistance
+-------------------------
+
+When this option is selected, resistance to train motion is influenced by 
+the wind speed, and the direction that it is blowing. This option is 
+described in detail :ref:`here <physics-wind-resistance>`
+
+
+
 Override non-electrified route line-voltage
 -------------------------------------------
 

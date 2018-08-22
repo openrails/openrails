@@ -2088,7 +2088,8 @@ presents to the trains movement, as follows:
   when all the wheels of the rolling stock are perfectly aligned between the
   tracks). See the section below *Impact of superelevation*.
 
-The impact of wind resistance on curve friction is ignored.
+The impact of wind resistance on curve friction is calculated in the general 
+calculations for Wind Resistance.
 
 Impact of Rigid Wheelbase
 -------------------------
@@ -2127,11 +2128,6 @@ toward the outer rail, with the same effect. This may be made clearer by
 reference to figure below, which represents the forces which operate on a
 car at its centre of gravity.
 
-.. figure:: images/physics-superelevation-forces-with.png
-    :align: right
-
-    Forces on rolling stock transitioning a curve
-
 With the car at rest on the curve there is a component of the weight W
 which tends to move the car down toward the inner rail. When the car moves
 along the track centrifugal force ``Fc`` comes into play and the car action
@@ -2156,6 +2152,11 @@ the critical value referred to. This critical speed depends only on the
 super-elevation, the track gauge, and the radius of the track curvature.
 The resulting variation of curve resistance with speed is indicated in
 diagram below.
+
+.. figure:: images/physics-superelevation-forces-with.png
+
+
+    Forces on rolling stock transitioning a curve
 
 Calculation of Curve Resistance
 -------------------------------
@@ -2763,6 +2764,68 @@ values included in the TRK file.
 +---------------+-----------------+------------------+
 |350 km/h       |70.0 m\ :sup:`2` |100.0 m\ :sup:`2` |
 +---------------+-----------------+------------------+
+
+.. _physics-wind-resistance:
+
+Wind Resistance
+===============
+
+The default Davis resistance formula is only valid for train operation in STILL 
+air. At high train speeds, and especially for Very Fast trains the impact of 
+wind can be quite significant, and special consideration is required when 
+designing rolling stock, etc. If wind is present, then the impact of drag forces 
+on the train will vary, and be in addition to the values calculated in the 
+default (or still air) conditions.
+
+The wind resistance in OR is modeled by the following two components:
+
+**Wind Drag Resistance**  - If a train is heading into a headwind then the 
+train will experience greater resistance to movement, similarly if the train 
+has a tailwind, then the trains resistance will decrease as the wind provides 
+a "helping hand". As the wind swings from the head of the train to the rear 
+resistance will decrease. When the wind is perpendicular to the train, drag 
+impact due to the wind will be zero.
+
+
+**Wind Lateral Force Resistance**  - When the wind blows from the side of the 
+train, the train will be pushed against the outside track rail, thus increasing 
+the amount of resistance experienced by the train.
+
+To activate calculation of wind resistance, select the tickbox for "Wind dependent 
+resistance" in the Simulation TAB of the options menu. As wind only becomes 
+significant at higher train speeds, the wind resistance calculation only commences 
+once the train speed exceeds 5 mph.
+
+The amount of wind resistance that the train is experiencing is shown in the FORCES 
+INFORMATION HUD. (see attached screenshot) The current wind conditions are also shown 
+in the HUD, and include the Wind speed and direction, train direction, and the 
+resulting vectors for the combined train and wind speed. The value in the Friction 
+column is the default still air conditions as calculated by the Davis formula.
+It should be noted that OR calculates the Wind Drag resistance as a difference 
+compared to the still air Davis C value, and hence it is possible for values in the 
+Wind column to go negative on occasions. This is most likely when the wind is blowing 
+from the rear of the train, ie the ResWind direction is greater then 90\ |deg|\ C degrees, and 
+hence the wind is actually aiding the train movement, and in effect reducing the 
+amount of still air resistance.
+
+The wind model has been adjusted in the following way:	
+
+- Wind Update speed - 1 sec
+- Wind direction will always be within +/- 45\ |deg|\ C degrees of the randomly selected default 
+value selected at startup
+- Wind speed is limited to approx 10mph. 
+
+The Wind Resistance model will use default information, such as the width and height of 
+the stock from the Size statement, so by default it is not necessary to add any additional 
+parameters for its operation. However for those who like to customise, the following 
+parameters can be inputted via the WAG file or section.
+
+``ORTSWagonFrontalArea`` -- The frontal cross sectional area of the wagon. The default units 
+are in ft^2, so if entering metres, include the Units of Measure.
+
+``ORTSDavisDragConstant`` -- OR by default uses the standard Davis Drag constants. If alternate 
+drag constants are used in calculating the still air resistance, then it might be worthwhile 
+inputting these values.
 
 .. _physics-inclusions:
 
