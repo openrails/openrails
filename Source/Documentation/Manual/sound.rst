@@ -233,6 +233,17 @@ Trigger       Function
 163           Cab radio switched off
 =========     =====================================
 
+The following triggers are activated when the state of the engines 
+different from the first one change state in a diesel locomotive 
+(see :ref:`here <cabs-dieselenginesonoff>`):
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+167           Second engine power on
+168           Second engine power off
+=========     =====================================
+
 Variable Triggers
 -----------------
 

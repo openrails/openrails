@@ -17,6 +17,119 @@ next paragraphs.
 OR adds support for the ETCS circular speed gauge, as described 
 :ref:`here <options-etcs>`.
 
+.. _cabs-dieselenginesonoff:
+
+Controls to switch on and off diesel engines
+--------------------------------------------
+
+The keyboard keys to switch on and off diesel engines are following ones:
+
+  - Ctrl+Y switches on and off the first diesel engine of the player locomotive 
+  - Shift+Y switches on and off the other diesel engines of the player locomotive, plus all diesel engines of the further locomotives in the train, if they are MUed, (that is under control of the player locomotive) which is the default.
+
+  
+Following cabview controls are available:
+
+ORTS_PLAYER_DIESEL_ENGINE: the first frame is displayed when the diesel engine 
+of the player locomotive is in states stopped or stopping, while the second 
+frame is displayed when it is in states running or started. The control may 
+be used with the mouse and starts/stops the (first) diesel engine of the 
+player locomotive, and is useful when a single two state lever is used to start/stop 
+the engine.
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE TWO_STATE)
+                        Position ( 150 446 27 26 )
+                        Graphic ( graphic1.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( ONOFF )
+                        MouseControl ( 1 )
+                )
+
+
+
+ORTS_HELPERS_DIESEL_ENGINES: the first frame is displayed when further diesel 
+engines of the player locomotive and/or the diesel engines of the helper 
+locomotives are in states stopped or stopping, while the second frame is 
+displayed when they are in states running or started. The control may be used 
+with the mouse and starts/stops further diesel engines of the player locomotive 
+and the diesel engines of the helper locomotives, and is useful when a two 
+state button or lever is used. Note therefore that this command can be used 
+also for player locomotives with more than one engine.
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_HELPERS_DIESEL_ENGINES TWO_STATE)
+                        Position ( 190 446 27 26 )
+                        Graphic ( graphics2.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( ONOFF )
+                        MouseControl ( 1 )
+                )
+
+
+
+ORTS_PLAYER_DIESEL_ENGINE_STATE: this control respectively selects frames 0, 
+1, 2, 3 for the player locomotive engine states Stopped, Starting, Running and 
+Stopping. It is a display-only control.
+
+Example::
+
+                MultiState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE_STATE TRI_STATE)
+                        Position ( 270 446 39 40 )
+                        Graphic ( cd_363_zberace.ace )
+                        NumFrames ( 4 4 1 )
+                        Style ( NONE )
+                        MouseControl ( 1 )
+                        Orientation ( 0 )
+                        DirIncrease ( 1 )
+                )
+
+
+
+ORTS_PLAYER_DIESEL_ENGINE_STARTER: it displays the second frame when the 
+player diesel engine is in starting status, and the first one in all other 
+cases. It may be used with the mouse and it can only start the engine, 
+therefore it is useful in conjunction with ORTS_PLAYER_DIESEL_ENGINE_STOPPER 
+when starting and stopping the engine is done with separate commands 
+(e.g. 2 buttons).
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE_STARTER TWO_STATE)
+                        Position ( 310 446 27 26 )
+                        Graphic ( graphics3.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( PRESSED )
+                        MouseControl ( 1 )
+                )
+
+
+
+ORTS_PLAYER_DIESEL_ENGINE_STOPPER: it displays the second frame when the 
+player diesel engine is in stopping status, and the second one in all other 
+cases. It may be used with the mouse and it can only stop the engine, 
+therefore it is useful when starting and stopping the engine is done with 
+separate commands (e.g. 2 buttons).
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE_STOPPER TWO_STATE)
+                        Position ( 350 446 27 26 )
+                        Graphic ( Bell.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( PRESSED )
+                        MouseControl ( 1 )
+                )
+
+
+
 .. _cabs-cabradio:
 
 Cab radio
