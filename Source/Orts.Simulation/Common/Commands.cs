@@ -1256,6 +1256,46 @@ namespace Orts.Common
         }
     }
 
+    // Diesel player engine on / off command
+    [Serializable()]
+    public sealed class TogglePlayerEngineCommand : Command
+    {
+        public static MSTSDieselLocomotive Receiver { get; set; }
+
+        public TogglePlayerEngineCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.TogglePlayerEngine();
+            // Report();
+        }
+    }
+
+    // Diesel helpers engine on / off command
+    [Serializable()]
+    public sealed class ToggleHelpersEngineCommand : Command
+    {
+        public static MSTSDieselLocomotive Receiver { get; set; }
+
+        public ToggleHelpersEngineCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleHelpersEngine();
+            // Report();
+        }
+    }
+
     // Cab radio switch on-switch off command
     [Serializable()]
     public sealed class CabRadioCommand : BooleanCommand

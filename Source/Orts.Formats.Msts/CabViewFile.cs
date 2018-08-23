@@ -156,6 +156,11 @@ namespace Orts.Formats.Msts
         ORTS_CIRCUIT_BREAKER_OPEN,
         ORTS_CIRCUIT_BREAKER_AUTHORIZED,
         ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED,
+        ORTS_PLAYER_DIESEL_ENGINE,
+        ORTS_HELPERS_DIESEL_ENGINES,
+        ORTS_PLAYER_DIESEL_ENGINE_STATE,
+        ORTS_PLAYER_DIESEL_ENGINE_STARTER,
+        ORTS_PLAYER_DIESEL_ENGINE_STOPPER,
         // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
         EXTERNALWIPERS,
         LEFTDOOR,

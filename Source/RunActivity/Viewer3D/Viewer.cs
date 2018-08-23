@@ -501,6 +501,12 @@ namespace Orts.Viewer3D
                 CircuitBreakerClosingAuthorizationCommand.Receiver = (MSTSElectricLocomotive)PlayerLocomotive;
             }
 
+            if (PlayerLocomotive is MSTSDieselLocomotive)
+            {
+                TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+                ToggleHelpersEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+            }
+
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             RefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
             ToggleOdometerCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;

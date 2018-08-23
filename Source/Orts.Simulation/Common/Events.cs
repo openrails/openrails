@@ -159,7 +159,9 @@ namespace Orts.Common
         BrakePipePressureDecrease,
         BrakePipePressureStoppedChanging,
         CylinderCocksOpen,
-        CylinderCocksClose
+        CylinderCocksClose,
+        SecondEnginePowerOff,
+        SecondEnginePowerOn
     }
 
     public static class Events
@@ -331,6 +333,8 @@ namespace Orts.Common
 
                         case 165: return Event.VacuumExhausterOn;
                         case 166: return Event.VacuumExhausterOff;
+                        case 167: return Event.SecondEnginePowerOn;
+                        case 168: return Event.SecondEnginePowerOff;
                             //
 
                         default: return 0;

@@ -3717,6 +3717,70 @@ namespace Orts.Simulation.RollingStocks
                         data = CabRadioOn ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
+                    {
+                        data = 0;
+                        if (this is MSTSDieselLocomotive)
+                        {
+                            var dieselLoco = this as MSTSDieselLocomotive;
+                            data = (dieselLoco.DieselEngines[0].EngineStatus == DieselEngine.Status.Running ||
+                                dieselLoco.DieselEngines[0].EngineStatus == DieselEngine.Status.Starting) ? 1 : 0;
+                        }
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_HELPERS_DIESEL_ENGINES:
+                    {
+                        foreach (var car in Train.Cars)
+                        {
+                            var dieselLoco = car as MSTSDieselLocomotive;
+                            if (dieselLoco != null && dieselLoco.AcceptMUSignals)
+                            {
+                                if (car == Simulator.PlayerLocomotive && dieselLoco.DieselEngines.Count > 1)
+                                {
+                                    data = (dieselLoco.DieselEngines[1].EngineStatus == DieselEngine.Status.Running ||
+                                        dieselLoco.DieselEngines[1].EngineStatus == DieselEngine.Status.Starting) ? 1 : 0;
+                                    break;
+                                }
+                                else if (car != Simulator.PlayerLocomotive)
+                                {
+                                    data = (dieselLoco.DieselEngines[0].EngineStatus == DieselEngine.Status.Running ||
+                                        dieselLoco.DieselEngines[0].EngineStatus == DieselEngine.Status.Starting) ? 1 : 0;
+                                    break;
+                                }
+                             }
+                        }
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STATE:
+                    {
+                        data = 0;
+                        if (this is MSTSDieselLocomotive)
+                        {
+                            var dieselLoco = this as MSTSDieselLocomotive;
+                            data = (int)dieselLoco.DieselEngines[0].EngineStatus;
+                        }
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STARTER:
+                    {
+                        data = 0;
+                        if (this is MSTSDieselLocomotive)
+                        {
+                            var dieselLoco = this as MSTSDieselLocomotive;
+                            data = dieselLoco.DieselEngines[0].EngineStatus == DieselEngine.Status.Starting ? 1 : 0;
+                        }
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STOPPER:
+                    {
+                        data = 0;
+                        if (this is MSTSDieselLocomotive)
+                        {
+                            var dieselLoco = this as MSTSDieselLocomotive;
+                            data = dieselLoco.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping ? 1 : 0;
+                        }
+                        break;
+                    }
                 default:
                     {
                         data = 0;
