@@ -1565,6 +1565,17 @@ namespace Orts.Simulation.RollingStocks
                 float direction = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
                 WagonDirectionDeg = MathHelper.ToDegrees((float)direction);
 
+                // If car is flipped, then the car's direction will be reversed by 180 compared to the rest of the train, and thus for calculation purposes only, 
+                // it is necessary to reverse the "assumed" direction of the car back again. This shouldn't impact the visual appearance of the car.
+                if (Flipped)
+                {
+                    WagonDirectionDeg += 180.0f; // Reverse direction of car
+                    if (WagonDirectionDeg > 360) // If this results in an angle greater then 360, then convert it back to an angle between 0 & 360.
+                    {
+                        WagonDirectionDeg -= 360;
+                    }
+                }                   
+
                 // If a westerly direction (ie -ve) convert to an angle between 0 and 360
                 if (WagonDirectionDeg < 0)
                     WagonDirectionDeg += 360;
