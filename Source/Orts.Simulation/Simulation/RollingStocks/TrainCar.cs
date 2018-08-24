@@ -316,7 +316,8 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerForceG; // temporary value used by solver
         public float CouplerForceR; // right hand side value
         public float CouplerForceU; // result
-        public bool CouplerOverloaded; //true when coupler force is higher then Break limit
+        public bool CouplerExceedBreakLimit; //true when coupler force is higher then Break limit (set by 2nd parameter in Break statement)
+        public bool CouplerOverloaded; //true when coupler force is higher then Proof limit, thus overloaded, but not necessarily broken (set by 1nd parameter in Break statement)
         public bool BrakesStuck; //true when brakes stuck
 
         // set when model is loaded
@@ -1337,7 +1338,7 @@ namespace Orts.Simulation.RollingStocks
                 ThrottlePercent,
                 String.Format("{0}{1}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric), WheelSlip ? "!!!" : ""),
                 FormatStrings.FormatPower(MotiveForceN * SpeedMpS, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerOverloaded ? "???" : ""));
+                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerExceedBreakLimit ? "???" : ""));
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }

@@ -1398,9 +1398,11 @@ namespace Orts.Simulation.RollingStocks
 
             foreach (MSTSCoupling coupler in Couplers)
             {
-                if (IsPlayerTrain) // Only break couplers on player trains
+
+                // Test to see if coupler forces have exceeded the Proof (or safety limit). Exceeding this limit will provide an indication only
+                if (IsPlayerTrain)
                 {
-                    if (-CouplerForceU > coupler.Break1N )  // break couplers if forces exceeded
+                    if (-CouplerForceU > coupler.Break1N)  // break couplers if forces exceeded
                     {
                         CouplerOverloaded = true;
                     }
@@ -1409,9 +1411,26 @@ namespace Orts.Simulation.RollingStocks
                         CouplerOverloaded = false;
                     }
                 }
-                else // if not a player train then don't ever break the couplers
+                else
                 {
                     CouplerOverloaded = false;
+                }
+
+                // Test to see if coupler forces have been exceeded, and coupler has broken. Exceeding this limit will break the coupler
+                if (IsPlayerTrain) // Only break couplers on player trains
+                {
+                    if (-CouplerForceU > coupler.Break2N )  // break couplers if forces exceeded
+                    {
+                        CouplerExceedBreakLimit = true;
+                    }
+                    else
+                    {
+                        CouplerExceedBreakLimit = false;
+                    }
+                }
+                else // if not a player train then don't ever break the couplers
+                {
+                    CouplerExceedBreakLimit = false;
                 }
             }
 

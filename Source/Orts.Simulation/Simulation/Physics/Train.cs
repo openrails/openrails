@@ -1752,7 +1752,7 @@ namespace Orts.Simulation.Physics
 
                 }
 
-                if (car.CouplerOverloaded)
+                if (car.CouplerExceedBreakLimit)
                     uncoupleBehindCar = car;
             }
             MassKg = massKg;
@@ -1764,7 +1764,7 @@ namespace Orts.Simulation.Physics
             // Coupler breaker
             if (uncoupleBehindCar != null)
             {
-                if (uncoupleBehindCar.CouplerOverloaded)
+                if (uncoupleBehindCar.CouplerExceedBreakLimit)
                 {
                     if (!numOfCouplerBreaksNoted)
                     {
@@ -1777,7 +1777,7 @@ namespace Orts.Simulation.Physics
                         if (Simulator.BreakCouplers)
                         {
                             Simulator.UncoupleBehind(uncoupleBehindCar, true);
-                            uncoupleBehindCar.CouplerOverloaded = false;
+                            uncoupleBehindCar.CouplerExceedBreakLimit = false;
                             Simulator.Confirmer.Warning(Simulator.Catalog.GetString("Coupler broken!"));
                         }
                         else
