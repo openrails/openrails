@@ -1306,7 +1306,7 @@ namespace Orts.Simulation.Timetables
                                         break;
 
                                     case "triggers":
-                                        DisposeDetails = new DisposeInfo(DisposeInfo.DisposeType.Triggers, disposeCommands, TTTrain.FormCommand.TerminationFormed, TTTrain.Name);
+                                        DisposeDetails = new DisposeInfo(DisposeInfo.DisposeType.Triggers, disposeCommands, TTTrain.FormCommand.TerminationTriggered, TTTrain.Name);
                                         break;
 
                                     case "static":
