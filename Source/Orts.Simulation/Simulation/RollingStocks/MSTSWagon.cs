@@ -1396,6 +1396,8 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateWindForce();
 
+//            Trace.TraceInformation("Coupler - ID {0} GetSlack1 {1:N4} GetSlack2 {2:N4} GetStiff {3:N3} GetZero {4:N3}", CarID, GetMaximumCouplerSlack1M(), GetMaximumCouplerSlack2M(), GetCouplerStiffnessNpM(), GetCouplerZeroLengthM());
+
             foreach (MSTSCoupling coupler in Couplers)
             {
 
@@ -2037,7 +2039,23 @@ namespace Orts.Simulation.RollingStocks
         }
         public override float GetCouplerZeroLengthM()
         {
-            return Coupler != null ? Coupler.R0 : base.GetCouplerZeroLengthM();
+            float zerolength;
+            if (Coupler != null)
+            {
+                zerolength = Coupler.R0;
+            }
+            else
+            {
+                zerolength = base.GetCouplerZeroLengthM();
+            }
+           
+            // Ensure zerolength doesn't go higher then 0.15
+            if (zerolength > 0.15)
+            {
+                zerolength = 0.15f;
+            }
+
+            return zerolength;
         }
 
         public override float GetCouplerStiffnessNpM()
@@ -2045,18 +2063,19 @@ namespace Orts.Simulation.RollingStocks
             return Coupler != null && Coupler.R0 == 0 ? 7 * (Coupler.Stiffness1NpM + Coupler.Stiffness2NpM) : base.GetCouplerStiffnessNpM();
         }
 
-        public override float GetMaximumCouplerSlack1M()
+        public override float GetMaximumCouplerSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
         {
             if (Coupler == null)
                 return base.GetMaximumCouplerSlack1M();
             return Coupler.Rigid ? 0.0001f : Coupler.R0Diff;
         }
 
-        public override float GetMaximumCouplerSlack2M()
+        public override float GetMaximumCouplerSlack2M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack1M
         {
             if (Coupler == null)
                 return base.GetMaximumCouplerSlack2M();
-            return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M();
+            return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M()+ 0.05f; //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
+
         }
         public override void CopyCoupler(TrainCar other)
         {
@@ -2243,12 +2262,13 @@ namespace Orts.Simulation.RollingStocks
             else
                 R0Diff = b - a;
 
-                // R0Diff = .012f;
-            if (R0Diff < .001)
-                R0Diff = .001f;
-            else if (R0Diff > .7)
-                R0Diff = .1f;
-//           Trace.TraceInformation("a {0} b {1} R0Diff {2}", a, b, R0Diff);
+            //                 R0Diff = .1f;
+            // Ensure R0Diff stays within "reasonable limits"
+            if (R0Diff < 0.001)
+                R0Diff = 0.001f;
+            else if (R0Diff > 0.3) // Most couplers will not exceed 6" (150mm) of slack travel so therefore assuming allowance for two couplers, then allow up to 12" (300mm) of slack travel.
+                R0Diff = 0.1f;
+
         }
         public void SetStiffness(float a, float b)
         {

@@ -4271,6 +4271,8 @@ namespace Orts.Simulation.Physics
             do
                 SolveCouplerForceEquations();
             while (FixCouplerForceEquations());
+
+
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car = Cars[i];
@@ -4298,6 +4300,8 @@ namespace Orts.Simulation.Physics
                         car.CouplerSlack2M = maxs;
                 }
             }
+
+
         }
 
         //================================================================================================//
@@ -4467,7 +4471,7 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
-        /// Update coupler slack
+        /// Update coupler slack - ensures that coupler slack doesn't exceed the maximum permissible value, and provides indication to HUD
         /// <\summary>
 
         public void UpdateCouplerSlack(float elapsedTime)
@@ -4484,14 +4488,16 @@ namespace Orts.Simulation.Physics
                 else if (car.CouplerSlackM > max)
                     car.CouplerSlackM = max;
                 TotalCouplerSlackM += car.CouplerSlackM;
-//                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4}", car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M());
-                max = car.GetMaximumCouplerSlack1M();
-                if (car.CouplerSlackM >= max) // Coupler pulling
+                //                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4}", car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M());
+
+                // max = car.GetMaximumCouplerSlack1M();
+
+                if (car.CouplerSlackM >= 0.01) // Coupler pulling
                 {
                     NPull++;
                     car.HUDCouplerForceIndication = 1; 
                 }                    
-                else if (car.CouplerSlackM <= -max)
+                else if (car.CouplerSlackM <= -0.01)
                 {
                     NPush++;
                     car.HUDCouplerForceIndication = 2;

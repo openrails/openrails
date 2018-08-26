@@ -842,7 +842,11 @@ namespace Orts.Viewer3D.Popups
 
                 TableSetCell(table, 17, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableAddLine(table);
+
             }
+
+            TableAddLine(table);
+            TableSetCell(table, 11, "Tot {0}", FormatStrings.FormatShortDistanceDisplay(train.TotalCouplerSlackM, mstsLocomotive.IsMetric));
         }
 
         void TextPageDispatcherInfo(TableData table)
