@@ -4107,14 +4107,20 @@ namespace Orts.Simulation.Physics
         {
             float b = Cars[0].CouplerForceB;
             Cars[0].CouplerForceU = Cars[0].CouplerForceR / b;
+
+
             for (int i = 1; i < Cars.Count - 1; i++)
             {
                 Cars[i].CouplerForceG = Cars[i - 1].CouplerForceC / b;
                 b = Cars[i].CouplerForceB - Cars[i].CouplerForceA * Cars[i].CouplerForceG;
                 Cars[i].CouplerForceU = (Cars[i].CouplerForceR - Cars[i].CouplerForceA * Cars[i - 1].CouplerForceU) / b;
             }
+
             for (int i = Cars.Count - 3; i >= 0; i--)
+            {
                 Cars[i].CouplerForceU -= Cars[i + 1].CouplerForceG * Cars[i + 1].CouplerForceU;
+            }
+                
         }
 
 
@@ -4247,15 +4253,23 @@ namespace Orts.Simulation.Physics
         {
             // TODO: this loop could be extracted and become a separate method, that could be called also by TTTrain.physicsPreUpdate
             for (int i = 0; i < Cars.Count; i++)
+            {
                 if (Cars[i].SpeedMpS > 0)
                     Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
-                        ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0)? Math.Abs(Cars[i].MotiveForceN) : 0));
+                        ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(Cars[i].MotiveForceN) : 0));
                 else if (Cars[i].SpeedMpS < 0)
                     Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
-                        ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0)? Math.Abs(Cars[i].MotiveForceN) : 0);
+                        ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(Cars[i].MotiveForceN) : 0);
+            }
+
             if (Cars.Count < 2)
                 return;
-            SetupCouplerForceEquations();
+
+            SetupCouplerForceEquations(); // Based upon the car Mass, set up LH coupler forces (ABC)
+
+            // Calculate RH side coupler force
+            // Whilever coupler in first zone of expansion, then A = C = R = 0
+            // otherwise R is calculated based on difference in acceleration between cars
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car = Cars[i];
@@ -4268,18 +4282,26 @@ namespace Orts.Simulation.Physics
                 else
                     car.CouplerForceR = Cars[i + 1].TotalForceN / Cars[i + 1].MassKG - car.TotalForceN / car.MassKG;
             }
+
+            // Solve coupler forces to find CouplerForceU
             do
-                SolveCouplerForceEquations();
+                SolveCouplerForceEquations();  
             while (FixCouplerForceEquations());
+
 
 
             for (int i = 0; i < Cars.Count - 1; i++)
             {
+                // Calculate total forces on cars
                 TrainCar car = Cars[i];
                 car.TotalForceN += car.CouplerForceU;
                 Cars[i + 1].TotalForceN -= car.CouplerForceU;
+
+                // Find max coupler force on the car - currently doesn't appear to be used anywhere
                 if (MaximumCouplerForceN < Math.Abs(car.CouplerForceU))
                     MaximumCouplerForceN = Math.Abs(car.CouplerForceU);
+
+                // Update couplerslack2m which acts as an upper limit in slack calculations ???
                 float maxs = car.GetMaximumCouplerSlack2M();
                 if (car.CouplerForceU > 0)
                 {
@@ -4480,17 +4502,20 @@ namespace Orts.Simulation.Physics
             NPull = NPush = 0;
             for (int i = 0; i < Cars.Count - 1; i++)
             {
+                // update coupler slack
                 TrainCar car = Cars[i];
                 car.CouplerSlackM += (car.SpeedMpS - Cars[i + 1].SpeedMpS) * elapsedTime;
+
+                // Make sure that coupler slack does not exceed the maximum coupler slack
                 float max = car.GetMaximumCouplerSlack2M();
                 if (car.CouplerSlackM < -max)
                     car.CouplerSlackM = -max;
                 else if (car.CouplerSlackM > max)
                     car.CouplerSlackM = max;
-                TotalCouplerSlackM += car.CouplerSlackM;
-                //                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4}", car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M());
 
-                // max = car.GetMaximumCouplerSlack1M();
+                TotalCouplerSlackM += car.CouplerSlackM; // Total coupler slack displayed in HUD only
+
+                //                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4}", car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M());
 
                 if (car.CouplerSlackM >= 0.01) // Coupler pulling
                 {

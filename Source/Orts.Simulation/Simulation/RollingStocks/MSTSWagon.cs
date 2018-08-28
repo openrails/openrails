@@ -823,7 +823,6 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(coupling(couplinghasrigidconnection":
                     Couplers[Couplers.Count - 1].Rigid = stf.ReadBoolBlock(true);
-                    HUDCouplerRigidIndication = Couplers[Couplers.Count - 1].Rigid; // Capture state for display on HUD
                     break;
                 case "wagon(coupling(spring(stiffness":
                     stf.MustMatch("(");
@@ -983,7 +982,6 @@ namespace Orts.Simulation.RollingStocks
             }
             foreach (MSTSCoupling coupler in copy.Couplers)
                 Couplers.Add(coupler);
-            HUDCouplerRigidIndication = copy.HUDCouplerRigidIndication;
             Pantographs.Copy(copy.Pantographs);
             if (copy.FreightAnimations != null)
             {
@@ -1396,7 +1394,10 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateWindForce();
 
-//            Trace.TraceInformation("Coupler - ID {0} GetSlack1 {1:N4} GetSlack2 {2:N4} GetStiff {3:N3} GetZero {4:N3}", CarID, GetMaximumCouplerSlack1M(), GetMaximumCouplerSlack2M(), GetCouplerStiffnessNpM(), GetCouplerZeroLengthM());
+            //            Trace.TraceInformation("Coupler - ID {0} GetSlack1 {1:N4} GetSlack2 {2:N4} GetStiff {3:N3} GetZero {4:N3}", CarID, GetMaximumCouplerSlack1M(), GetMaximumCouplerSlack2M(), GetCouplerStiffnessNpM(), GetCouplerZeroLengthM());
+
+            // Get Coupler HUD Indication
+            HUDCouplerRigidIndication = GetCouplerRigidIndication();
 
             foreach (MSTSCoupling coupler in Couplers)
             {
@@ -2061,6 +2062,16 @@ namespace Orts.Simulation.RollingStocks
         public override float GetCouplerStiffnessNpM()
         {
             return Coupler != null && Coupler.R0 == 0 ? 7 * (Coupler.Stiffness1NpM + Coupler.Stiffness2NpM) : base.GetCouplerStiffnessNpM();
+        }
+
+
+        public override int GetCouplerRigidIndication()
+        {
+            if (Coupler == null)
+            {
+                 return 0;   // If no coupler defined
+            }
+            return Coupler.Rigid ? 1 : 2; // Return whether coupler Rigid or Flexible
         }
 
         public override float GetMaximumCouplerSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
