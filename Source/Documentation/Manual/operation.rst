@@ -732,7 +732,7 @@ The following additional shunting functions are available:
 
 These functions are described in detail below.
 
-A sample activity can be found in ``Documentation\SampleFiles\Manual\Show_AI_shunting.zip``.
+A sample activity can be found in ``Documentation\SampleFiles\Manual\Show_AI_shunting_enh.zip``.
 
 Activity Design for Extended AI Train Shunting Functions
 --------------------------------------------------------
