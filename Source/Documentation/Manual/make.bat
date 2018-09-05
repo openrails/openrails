@@ -10,7 +10,7 @@ if "%SPHINXAUTOBUILD%" == "" (
 )
 set BUILDDIR=_build
 set ALLSPHINXOPTS=-d %BUILDDIR%/doctrees %SPHINXOPTS% .
-set SPHINXAUTOBUILDOPTS=--open-browser --delay 5 
+set SPHINXAUTOBUILDOPTS=--open-browser --delay 5
 set I18NSPHINXOPTS=%SPHINXOPTS% .
 if NOT "%PAPER%" == "" (
 	set ALLSPHINXOPTS=-D latex_paper_size=%PAPER% %ALLSPHINXOPTS%
@@ -176,7 +176,7 @@ if "%1" == "latexpdf" (
 	REM Run pdflatex twice so that the Table of Contents is correct.
     for %%t in (*.tex) do pdflatex %%t
 	for %%t in (*.tex) do pdflatex %%t
-	cd %~dp0
+	cd "%~dp0"
 	echo.
 	echo.Build finished; the PDF files are in %BUILDDIR%/latex.
 	goto end
@@ -186,7 +186,7 @@ if "%1" == "latexpdfja" (
 	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
 	cd %BUILDDIR%/latex
 	make all-pdf-ja
-	cd %~dp0
+	cd "%~dp0"
 	echo.
 	echo.Build finished; the PDF files are in %BUILDDIR%/latex.
 	goto end
