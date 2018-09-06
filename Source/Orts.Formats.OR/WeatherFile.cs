@@ -31,12 +31,12 @@ namespace Orts.Formats.OR
 
     public class WeatherFile
     {
-        public List<WeatherSetting> Settings;
+        public List<WeatherSetting> Settings = new List<WeatherSetting>();
         public float TimeVariance;             // allowed max variation using random time setting
         public bool RandomSequence;            // set random sequence
 
         // TODO : to be created when JSON processing is available
-        public WeatherFile()
+        public WeatherFile(string fileName)
         {
         }
     }

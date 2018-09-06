@@ -297,10 +297,6 @@ namespace ORTS.Settings
         public bool CorrectQuestionableBrakingParams { get; set; }
         [Default(false)]
         public bool OpenDoorsInAITrains { get; set; }
-        [Default(false)]
-        public bool UseWeatherFile { get; set; }
-        [Default("")]
-        public string LastUsedWeatherFile { get; set; }
         [Default(0)]
         public int ActRandomizationLevel { get; set; }
         [Default(0)]

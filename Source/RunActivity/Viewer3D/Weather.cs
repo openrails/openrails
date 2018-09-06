@@ -896,10 +896,11 @@ namespace Orts.Viewer3D
             : base(viewer)
         {
             // read weather details from file
-            // TODO : create parser for weatherfile
-            // ORWeatherFile WeatherFile = new ORWeatherFile(weatherFile);
-            WeatherFile WeatherFile = new WeatherFile(); // dummy creator until parser is available
+            var WeatherFile = new WeatherFile(weatherFile);
             weatherDetails = WeatherFile.Settings;
+
+            if (weatherDetails.Count == 0)
+                Trace.TraceWarning("Weather file contains no settings {0}", weatherFile);
 
             // set initial weather parameters
             SetInitialWeatherParameters(realTime);
@@ -917,13 +918,13 @@ namespace Orts.Viewer3D
 
             // find last valid weather change
             AWActiveIndex = 0;
-            bool passedTime = false;
+            var passedTime = false;
 
-            for (int iIndex = 1; iIndex < weatherDetails.Count && !passedTime; iIndex++)
+            if (weatherDetails.Count == 0)
+                return;
+
+            for (var iIndex = 1; iIndex < weatherDetails.Count && !passedTime; iIndex++)
             {
-                TimeSpan wt = new TimeSpan((long)(weatherDetails[iIndex].Time * 10000000));
-
-                //Trace.TraceInformation("Index : {0} : start time : {1} ", iIndex, wt.ToString());
                 if (weatherDetails[iIndex].Time > Time)
                 {
                     passedTime = true;
