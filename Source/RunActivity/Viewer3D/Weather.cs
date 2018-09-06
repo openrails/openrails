@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
+// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -984,7 +984,10 @@ namespace Orts.Viewer3D
         {
             // not client and weather auto mode
             Time += elapsedTime.ClockSeconds;
-            bool fogActive = false;
+            var fogActive = false;
+
+            if (weatherDetails.Count == 0)
+                return;
 
             WeatherSetting lastWeather = weatherDetails[AWActiveIndex];
             int nextIndex = AWActiveIndex < (weatherDetails.Count - 1) ? AWActiveIndex + 1 : -1;
