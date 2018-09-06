@@ -779,6 +779,7 @@ namespace Orts.Simulation
         public bool IsAtStation(Train myTrain)
         {
             var thisStation = myTrain.StationStops[0];
+            if (myTrain.StationStops[0].SubrouteIndex != myTrain.TCRoute.activeSubpath) return false;
             return myTrain.CheckStationPosition(thisStation.PlatformItem, thisStation.Direction, thisStation.TCSectionIndex);
         }
 
