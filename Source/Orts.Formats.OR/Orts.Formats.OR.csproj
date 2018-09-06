@@ -70,7 +70,7 @@
     <Compile Include="GlobalItem.cs" />
     <Compile Include="MSTSCoord.cs" />
     <Compile Include="MSTSData.cs" />
-    <Compile Include="ORWeatherFile.cs" />
+    <Compile Include="WeatherFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RouteConfigurationFile.cs" />
     <Compile Include="RouteItems.cs" />
