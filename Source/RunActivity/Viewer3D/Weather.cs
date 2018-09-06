@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
+// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -160,9 +160,9 @@ namespace Orts.Viewer3D
             // These values are defaults only; subsequent changes to the weather via debugging only change the components (weather, overcastFactor and fogDistance) individually.
             switch (Viewer.Simulator.WeatherType)
             {
-                case Orts.Formats.Msts.WeatherType.Clear: Weather.OvercastFactor = 0.05f; Weather.FogDistance = 20000; Weather.PrecipitationLiquidity = 1;  break;
-                case Orts.Formats.Msts.WeatherType.Rain: Weather.OvercastFactor = 0.7f; Weather.FogDistance = 1000; Weather.PrecipitationLiquidity = 1; break;
-                case Orts.Formats.Msts.WeatherType.Snow: Weather.OvercastFactor = 0.6f; Weather.FogDistance = 500; Weather.PrecipitationLiquidity = 0; break;
+                case Orts.Formats.Msts.WeatherType.Clear: Weather.OvercastFactor = 0.05f; Weather.FogDistance = 20000; break;
+                case Orts.Formats.Msts.WeatherType.Rain: Weather.OvercastFactor = 0.7f; Weather.FogDistance = 1000; break;
+                case Orts.Formats.Msts.WeatherType.Snow: Weather.OvercastFactor = 0.6f; Weather.FogDistance = 500; break;
             }
         }
 
@@ -171,9 +171,9 @@ namespace Orts.Viewer3D
             Viewer.SoundProcess.RemoveSoundSources(this);
             switch (Viewer.Simulator.WeatherType)
             {
-                case Orts.Formats.Msts.WeatherType.Clear: Weather.PricipitationIntensityPPSPM2 = 0; Viewer.SoundProcess.AddSoundSources(this, ClearSound); break;
-                case Orts.Formats.Msts.WeatherType.Rain: Weather.PricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, RainSound); break;
-                case Orts.Formats.Msts.WeatherType.Snow: Weather.PricipitationIntensityPPSPM2 = 0.0050f; Viewer.SoundProcess.AddSoundSources(this, SnowSound); break;
+                case Orts.Formats.Msts.WeatherType.Clear: Weather.PrecipitationLiquidity = 1; Weather.PricipitationIntensityPPSPM2 = 0; Viewer.SoundProcess.AddSoundSources(this, ClearSound); break;
+                case Orts.Formats.Msts.WeatherType.Rain: Weather.PrecipitationLiquidity = 1; Weather.PricipitationIntensityPPSPM2 = 0.010f; Viewer.SoundProcess.AddSoundSources(this, RainSound); break;
+                case Orts.Formats.Msts.WeatherType.Snow: Weather.PrecipitationLiquidity = 0; Weather.PricipitationIntensityPPSPM2 = 0.0050f; Viewer.SoundProcess.AddSoundSources(this, SnowSound); break;
             }
 
         }
