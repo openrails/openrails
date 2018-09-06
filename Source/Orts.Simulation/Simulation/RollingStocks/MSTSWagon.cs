@@ -891,6 +891,13 @@ namespace Orts.Simulation.RollingStocks
                     FreightAnimations = new FreightAnimations(stf, this);
                     break;
                 case "wagon(ortsexternalsoundpassedthroughpercent": ExternalSoundPassThruPercent = stf.ReadFloatBlock(STFReader.UNITS.None, -1); break;
+                case "wagon(ortsalternatepassengerviewpoints": // accepted only if there is already a passenger viewpoint
+                    if (HasInsideView)
+                    {
+                        ParseAlternatePassengerViewPoints(stf);
+                    }
+                    else stf.SkipRestOfBlock();
+                    break;
                 default:
                     if (MSTSBrakeSystem != null)
                         MSTSBrakeSystem.Parse(lowercasetoken, stf);
@@ -1053,6 +1060,16 @@ namespace Orts.Simulation.RollingStocks
             if (this.CabViewpoints == null) CabViewpoints = new List<PassengerViewPoint>();
             CabViewpoints.Add(passengerViewPoint);
         }
+
+        // parses additional passenger viewpoints, if any
+        protected void ParseAlternatePassengerViewPoints(STFReader stf)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new[] {
+                new STFReader.TokenProcessor("ortsalternatepassengerviewpoint", ()=>{ ParseWagonInside(stf); }),
+            });
+        }
+
         public static float ParseFloat(string token)
         {   // is there a better way to ignore any suffix?
             while (token.Length > 0)

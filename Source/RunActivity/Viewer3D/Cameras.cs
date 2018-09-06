@@ -1430,6 +1430,7 @@ namespace Orts.Viewer3D
         public override Styles Style { get { return Styles.Passenger; } }
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override string Name { get { return Viewer.Catalog.GetString("Passenger"); } }
+        protected int ActViewPoint;
 
         public PassengerCamera(Viewer viewer)
             : base(viewer)
@@ -1444,11 +1445,46 @@ namespace Orts.Viewer3D
         protected override void SetCameraCar(TrainCar car)
         {
             base.SetCameraCar(car);
-            viewPoint = attachedCar.PassengerViewpoints[0];
+            viewPoint = attachedCar.PassengerViewpoints[ActViewPoint];
             attachedLocation = viewPoint.Location;
             // Apply previous angle of camera for this type of car.
             RotationXRadians = viewPoint.RotationXRadians;
             RotationYRadians = viewPoint.RotationYRadians;
+        }
+
+        public override void HandleUserInput(ElapsedTime elapsedTime)
+        {
+            base.HandleUserInput(elapsedTime);
+            if (UserInput.IsPressed(UserCommands.CameraChangePassengerViewPoint))
+                new CameraChangePassengerViewPointCommand(Viewer.Log);
+        }
+        
+            public void SwitchSideCameraCar(TrainCar car)
+        {
+            attachedLocation.X = -attachedLocation.X;
+            RotationYRadians = -viewPoint.RotationYRadians;
+        }
+
+        public void ChangePassengerViewPoint(TrainCar car)
+        {
+            ActViewPoint++;
+            if (ActViewPoint >= car.PassengerViewpoints.Count) ActViewPoint = 0;
+            viewPoint = attachedCar.PassengerViewpoints[ActViewPoint];
+            attachedLocation = viewPoint.Location;
+            RotationXRadians = viewPoint.RotationXRadians;
+            RotationYRadians = viewPoint.RotationYRadians;
+        }
+
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            outf.Write(ActViewPoint);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            ActViewPoint = inf.ReadInt32();
         }
     }
 
