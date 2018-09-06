@@ -1,4 +1,4 @@
-// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2010, 2011, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -897,7 +897,7 @@ namespace Orts.Viewer3D
         {
             // read weather details from file
             var WeatherFile = new WeatherFile(weatherFile);
-            weatherDetails = WeatherFile.Settings;
+            weatherDetails = WeatherFile.Changes;
 
             if (weatherDetails.Count == 0)
                 Trace.TraceWarning("Weather file contains no settings {0}", weatherFile);
@@ -968,7 +968,7 @@ namespace Orts.Viewer3D
             }
 
             // cloudcover
-            else
+            else if (lastWeather.GetType() == typeof(WeatherSettingOvercast))
             {
                 WeatherSettingOvercast lastWeatherOvercast = lastWeather as WeatherSettingOvercast;
                 AWOvercastCloudcover = Math.Max(0, Math.Min(1, (lastWeatherOvercast.Overcast/100) +
@@ -1066,7 +1066,7 @@ namespace Orts.Viewer3D
                 }
             }
             // clear
-            else
+            else if (lastWeather.GetType() == typeof(WeatherSettingOvercast))
             {
                 WeatherSettingOvercast lastWeatherOvercast = lastWeather as WeatherSettingOvercast;
                 AWOvercastCloudcover = CalculateOvercast(lastWeatherOvercast.Overcast, lastWeatherOvercast.OvercastVariation, lastWeatherOvercast.OvercastRateOfChange, elapsedTime);

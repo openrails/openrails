@@ -1,17 +1,17 @@
 ﻿// COPYRIGHT 2017, 2018 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.IO;
+using Orts.Parsers.OR;
 
 namespace Orts.Formats.OR
 {
@@ -31,13 +32,41 @@ namespace Orts.Formats.OR
 
     public class WeatherFile
     {
-        public List<WeatherSetting> Settings = new List<WeatherSetting>();
+        public List<WeatherSetting> Changes = new List<WeatherSetting>();
         public float TimeVariance;             // allowed max variation using random time setting
         public bool RandomSequence;            // set random sequence
 
-        // TODO : to be created when JSON processing is available
         public WeatherFile(string fileName)
         {
+            JsonReader.ReadFile(fileName, TryParse);
+        }
+
+        protected virtual bool TryParse(JsonReader item)
+        {
+            switch (item.Path)
+            {
+                case "":
+                case "Changes[].":
+                    // Ignore these items.
+                    break;
+                case "Changes[].Type":
+                    switch (item.AsString(""))
+                    {
+                        case "Clear":
+                            Changes.Add(new WeatherSettingOvercast(item));
+                            break;
+                        case "Precipitation":
+                            Changes.Add(new WeatherSettingPrecipitation(item));
+                            break;
+                        case "Fog":
+                            Changes.Add(new WeatherSettingFog(item));
+                            break;
+                        default: return false;
+                    }
+                    break;
+                default: return false;
+            }
+            return true;
         }
     }
 
@@ -46,6 +75,16 @@ namespace Orts.Formats.OR
         public float Time;                                                 // time of change
         public float GenOvercast;                                          // cloud cover, copied from actual type when terminating
         public float GenVisibility;                                        // visibility, copied from actual type when terminating
+
+        protected virtual bool TryParse(JsonReader item)
+        {
+            switch (item.Path)
+            {
+                case "Time": Time = item.AsTime(Time); break;
+                default: return false;
+            }
+            return true;
+        }
     }
 
     public class WeatherSettingOvercast : WeatherSetting
@@ -53,11 +92,25 @@ namespace Orts.Formats.OR
         public float Overcast;                                         // required overcast - range : 0 - 100 (percentage)
         public float OvercastVariation;                                // variation in overcast - range : 0 - 100 (percentage change)
         public float OvercastRateOfChange;                             // overcast rate of change - range : 0 - 1 (scaling factor)
-        public float OvercastVisibility;                               // required visibility - range 1000 - 60000 (for lower values use fog)
+        public float OvercastVisibility = 60000;                       // required visibility - range 1000 - 60000 (for lower values use fog)
 
-        // TO BE DEFINED when JSON processing is available
-        public WeatherSettingOvercast()
+        public WeatherSettingOvercast(JsonReader json)
         {
+            json.ReadBlock(TryParse);
+        }
+
+        protected override bool TryParse(JsonReader item)
+        {
+            if (base.TryParse(item)) return true;
+            switch (item.Path)
+            {
+                case "Overcast": Overcast = item.AsFloat(Overcast); break;
+                case "OvercastVariation": OvercastVariation = item.AsFloat(OvercastVariation); break;
+                case "OvercastRateOfChange": OvercastRateOfChange = item.AsFloat(OvercastRateOfChange); break;
+                case "OvercastVisibility": OvercastVisibility = item.AsFloat(OvercastVisibility); break;
+                default: return false;
+            }
+            return true;
         }
 
         // restore
@@ -87,14 +140,14 @@ namespace Orts.Formats.OR
     public class WeatherSettingPrecipitation : WeatherSetting
     {
         // precipitation spell
-        public Orts.Formats.Msts.WeatherType PrecipitationType;        // required precipitation : rain or snow
+        public Msts.WeatherType PrecipitationType = Msts.WeatherType.Clear;    // required precipitation : rain or snow
         public float PrecipitationDensity;                             // precipitation density - range 0 - 1
         public float PrecipitationVariation;                           // precipitation density variation - range 0 - 1
         public float PrecipitationRateOfChange;                        // precipitation rate of change - range 0 - 1
         public float PrecipitationProbability;                         // precipitation probability - range : 0 - 100
-        public float PrecipitationSpread;                              // precipitation average continuity - range : 1 - ...
-        public float PrecipitationVisibilityAtMinDensity;              // visibility during precipitation at min density
-        public float PrecipitationVisibilityAtMaxDensity;              // visibility during precipitation at max density
+        public float PrecipitationSpread = 1;                          // precipitation average continuity - range : 1 - ...
+        public float PrecipitationVisibilityAtMinDensity = 60000;      // visibility during precipitation at min density
+        public float PrecipitationVisibilityAtMaxDensity = 60000;      // visibility during precipitation at max density
 
         // build up to precipitation
         public float OvercastPrecipitationStart;                       // required overcast to start precipitation, also overcast during precipitation - range 0 - 100
@@ -109,11 +162,38 @@ namespace Orts.Formats.OR
         public float Overcast;                                         // required overcast in clear spells - range : 0 - 100
         public float OvercastVariation;                                // variation in overcast - range : 0 - 100
         public float OvercastRateOfChange;                             // overcast rate of change - range : 0 - 1
-        public float OvercastVisibility;                               // visibility during clear spells
+        public float OvercastVisibility = 60000;                       // visibility during clear spells
 
-        // TO BE DEFINED when JSON processing is available
-        public WeatherSettingPrecipitation()
+        public WeatherSettingPrecipitation(JsonReader json)
         {
+            json.ReadBlock(TryParse);
+        }
+
+        protected override bool TryParse(JsonReader item)
+        {
+            if (base.TryParse(item)) return true;
+            switch (item.Path)
+            {
+                case "PrecipitationType": PrecipitationType = item.AsEnum(PrecipitationType); break;
+                case "PrecipitationDensity": PrecipitationDensity = item.AsFloat(PrecipitationDensity); break;
+                case "PrecipitationVariation": PrecipitationVariation = item.AsFloat(PrecipitationVariation); break;
+                case "PrecipitationRateOfChange": PrecipitationRateOfChange = item.AsFloat(PrecipitationRateOfChange); break;
+                case "PrecipitationProbability": PrecipitationProbability = item.AsFloat(PrecipitationProbability); break;
+                case "PrecipitationSpread": PrecipitationSpread = item.AsFloat(PrecipitationSpread); break;
+                case "PrecipitationVisibilityAtMinDensity": PrecipitationVisibilityAtMinDensity = item.AsFloat(PrecipitationVisibilityAtMinDensity); break;
+                case "PrecipitationVisibilityAtMaxDensity": PrecipitationVisibilityAtMaxDensity = item.AsFloat(PrecipitationVisibilityAtMaxDensity); break;
+                case "OvercastPrecipitationStart": OvercastPrecipitationStart = item.AsFloat(OvercastPrecipitationStart); break;
+                case "OvercastBuildUp": OvercastBuildUp = item.AsFloat(OvercastBuildUp); break;
+                case "PrecipitationStartPhase": PrecipitationStartPhase = item.AsFloat(PrecipitationStartPhase); break;
+                case "OvercastDispersion": OvercastDispersion = item.AsFloat(OvercastDispersion); break;
+                case "PrecipitationEndPhase": PrecipitationEndPhase = item.AsFloat(PrecipitationEndPhase); break;
+                case "Overcast": Overcast = item.AsFloat(Overcast); break;
+                case "OvercastVariation": OvercastVariation = item.AsFloat(OvercastVariation); break;
+                case "OvercastRateOfChange": OvercastRateOfChange = item.AsFloat(OvercastRateOfChange); break;
+                case "OvercastVisibility": OvercastVisibility = item.AsFloat(OvercastVisibility); break;
+                default: return false;
+            }
+            return true;
         }
 
         // restore
@@ -173,14 +253,28 @@ namespace Orts.Formats.OR
     // fog
     public class WeatherSettingFog : WeatherSetting
     {
-        public float FogVisibilityM;                                   // required fog density - range 0 - 20000
-        public float FogSetTimeS;                                      // required rate for fog setting - range 300 - 3600
-        public float FogLiftTimeS;                                     // required rate for fog lifting - range 300 - 3600 - required visibility is taken from next weather
+        public float FogVisibilityM = 20000;                           // required fog density - range 0 - 20000
+        public float FogSetTimeS = 300;                                // required rate for fog setting - range 300 - 3600
+        public float FogLiftTimeS = 300;                               // required rate for fog lifting - range 300 - 3600 - required visibility is taken from next weather
         public float FogOvercast;                                      // required overcast after fog lifted - range 0 - 100
 
-        // TO BE DEFINED when JSON processing is available
-        public WeatherSettingFog()
+        public WeatherSettingFog(JsonReader json)
         {
+            json.ReadBlock(TryParse);
+        }
+
+        protected override bool TryParse(JsonReader item)
+        {
+            if (base.TryParse(item)) return true;
+            switch (item.Path)
+            {
+                case "FogVisibility": FogVisibilityM = item.AsFloat(FogVisibilityM); break;
+                case "FogSetTime": FogSetTimeS = item.AsFloat(FogSetTimeS); break;
+                case "FogLiftTime": FogLiftTimeS = item.AsFloat(FogLiftTimeS); break;
+                case "FogOvercast": FogOvercast = item.AsFloat(FogOvercast); break;
+                default: return false;
+            }
+            return true;
         }
 
         public WeatherSettingFog(BinaryReader inf)
