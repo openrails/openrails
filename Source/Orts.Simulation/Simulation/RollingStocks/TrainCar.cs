@@ -165,9 +165,11 @@ namespace Orts.Simulation.RollingStocks
         public float _PrevSpeedMpS;
         public float AbsSpeedMpS; // Math.Abs(SpeedMps) expression is repeated many times in the subclasses, maybe this deserves a class variable
         public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
+        public float CouplerDampingSpeedMpS; // Dampening applied to coupler
         public int HUDCouplerForceIndication = 0; // Flag to indicate whether coupler is 1 - pulling, 2 - pushing or 0 - neither
         public int HUDCouplerRigidIndication = 0; // flag to indicate whether coupler is rigid of flexible. False indicates that coupler is flexible
         public float CouplerSlack2M;  // slack calculated using draft gear force
+        public bool IsAdvancedCoupler = false; // Flag to indicate that coupler is to be treated as an advanced coupler
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
         public bool WheelSkid;  // True if wagon wheels lock up.
@@ -1472,6 +1474,36 @@ namespace Orts.Simulation.RollingStocks
             return 2e7f;
         }
 
+        public virtual float GetCouplerStiffness1NpM()
+        {
+            return 1e7f;
+        }
+
+        public virtual float GetCouplerStiffness2NpM()
+        {
+            return 1e7f;
+        }
+
+        public virtual float GetCouplerDamping1NMpS()
+        {
+            return 1e7f;
+        }
+
+        public virtual float GetCouplerDamping2NMpS()
+        {
+            return 1e7f;
+        }
+
+        public virtual float GetCouplerSlackAM()
+        {
+            return 0;
+        }
+
+        public virtual float GetCouplerSlackBM()
+        {
+            return 0.1f;
+        }
+
         public virtual int GetCouplerRigidIndication()
         {
             return 0;
@@ -1496,6 +1528,11 @@ namespace Orts.Simulation.RollingStocks
         {
             CouplerSlackM = other.CouplerSlackM;
             CouplerSlack2M = other.CouplerSlack2M;
+        }
+
+        public virtual bool GetAdvancedCouplerFlag()
+        {
+            return false;
         }
 
         public virtual void CopyControllerSettings(TrainCar other)

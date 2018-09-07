@@ -1792,12 +1792,16 @@ namespace Orts.Simulation.Physics
             else
                 numOfCouplerBreaksNoted = false;
 
-            AddCouplerImpuseForces();
-            ComputeCouplerForces();
+
             UpdateCarSteamHeat(elapsedClockSeconds);
             UpdateAuxTender();
+
+             AddCouplerImpuseForces();
+            ComputeCouplerForces();
+
             UpdateCarSpeeds(elapsedClockSeconds);
             UpdateCouplerSlack(elapsedClockSeconds);
+
             // Update wind elements for the train, ie the wind speed, and direction, as well as the angle between the train and wind
             UpdateWindComponents();
 
@@ -4288,8 +4292,6 @@ namespace Orts.Simulation.Physics
                 SolveCouplerForceEquations();  
             while (FixCouplerForceEquations());
 
-
-
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 // Calculate total forces on cars
@@ -4505,6 +4507,7 @@ namespace Orts.Simulation.Physics
                 // update coupler slack
                 TrainCar car = Cars[i];
                 car.CouplerSlackM += (car.SpeedMpS - Cars[i + 1].SpeedMpS) * elapsedTime;
+                car.CouplerDampingSpeedMpS = car.SpeedMpS - Cars[i + 1].SpeedMpS;
 
                 // Make sure that coupler slack does not exceed the maximum coupler slack
                 float max = car.GetMaximumCouplerSlack2M();
@@ -4515,7 +4518,10 @@ namespace Orts.Simulation.Physics
 
                 TotalCouplerSlackM += car.CouplerSlackM; // Total coupler slack displayed in HUD only
 
-                //                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4}", car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M());
+//                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4} Damping1 {5} Damping2 {6} Stiffness1 {7} Stiffness2 {8} AdvancedCpl {9} CplSlackA {10} CplSlackB {11}", 
+//                    car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), 
+//                    car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M(), car.GetCouplerDamping1NMpS(), car.GetCouplerDamping2NMpS(), 
+//                    car.GetCouplerStiffness1NpM(), car.GetCouplerStiffness1NpM(), car.IsAdvancedCoupler, car.GetCouplerSlackAM(), car.GetCouplerSlackBM());
 
                 if (car.CouplerSlackM >= 0.01) // Coupler pulling
                 {
