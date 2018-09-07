@@ -5750,6 +5750,8 @@ namespace Orts.Simulation.Physics
         {
             int directionNow = PresentPosition[0].TCDirection;
             int positionNow = PresentPosition[0].TCSectionIndex;
+            int directionNowBack = PresentPosition[1].TCDirection;
+            int positionNowBack = PresentPosition[1].TCSectionIndex;
 
             if (PresentPosition[0].RouteListIndex >= 0) directionNow = ValidRoute[0][PresentPosition[0].RouteListIndex].Direction;
 
@@ -5762,7 +5764,7 @@ namespace Orts.Simulation.Physics
 
             if (nextRoute[1])
             {
-                if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
+                if (positionNowBack == PresentPosition[0].TCSectionIndex && directionNowBack != PresentPosition[0].TCDirection)
                 {
                     ReverseFormation(IsActualPlayerTrain);
                     // active subpath must be incremented in parallel in incorporated train if present
