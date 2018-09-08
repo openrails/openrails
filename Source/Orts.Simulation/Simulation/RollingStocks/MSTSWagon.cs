@@ -2069,26 +2069,26 @@ namespace Orts.Simulation.RollingStocks
         }
         public override float GetCouplerZeroLengthM()
         {
-            float zerolength;
-            if (Coupler != null)
-            {
-                zerolength = Coupler.R0;
-            }
-            else
-            {
-                zerolength = base.GetCouplerZeroLengthM();
-            }
-           
+            return Coupler != null ? Coupler.R0 : base.GetCouplerZeroLengthM();
+
+            //            float zerolength;
+            //            if (Coupler != null)
+            //            {
+            //                zerolength = Coupler.R0;
+            //            }
+            //            else
+            //            {
+            //                zerolength = base.GetCouplerZeroLengthM();
+            //            }
+
             // Ensure zerolength doesn't go higher then 0.15
-            if (zerolength > 0.15)
-            {
-                zerolength = 0.15f;
-            }
+            //            if (zerolength > 0.15)
+            //            {
+            //                zerolength = 0.15f;
+            //            }
 
-            return zerolength;
+            //            return zerolength;
         }
-
-
 
         public override float GetCouplerStiffnessNpM()
         {
