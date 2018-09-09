@@ -1156,28 +1156,32 @@ namespace Orts.Simulation.RollingStocks
                             }
                         }
 
+
+                        // This alarm indication comes up even in shunting yard situations where typically no superelevation would be present.
+                        // Code is disabled until a bteer way is determined to work out whether track piees are superelevated or not.
+
                         // if speed doesn't reach minimum speed required around the curve then set notification
-                        // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
-                        if (s < CriticalMinSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) && CurrentCurveRadius > 150 ) 
-                        {
-                            if (!IsCriticalMinSpeed)
-                            {
-                                IsCriticalMinSpeed = true; // set flag for IsCriticalSpeed not reached
-
-                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
-                                {
-                                      Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too slow for this curve, and Car " + CarID + "may topple over."));
-                                }
-                            }
-
-                        }
-                        else if (s > CriticalMinSpeedMpS + SpeedToleranceMpS) // Reset notification once speed increases
-                        {
-                            if (IsCriticalMinSpeed)
-                            {
-                                IsCriticalMinSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
-                            }
-                        }
+                       // Breaking of brake hose will not apply to TT mode or AI trains or if on a curve less then 150m to cover operation in shunting yards, where track would mostly have no superelevation
+//                        if (s < CriticalMinSpeedMpS && Train.GetType() != typeof(AITrain) && Train.GetType() != typeof(TTTrain) && CurrentCurveRadius > 150 ) 
+//                       {
+//                            if (!IsCriticalMinSpeed)
+//                            {
+//                                IsCriticalMinSpeed = true; // set flag for IsCriticalSpeed not reached
+//
+//                                if (Train.IsPlayerDriven && !Simulator.TimetableMode)  // Warning messages will only apply if this is player train and not running in TT mode
+//                                {
+//                                      Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You were travelling too slow for this curve, and Car " + CarID + "may topple over."));
+//                                }
+//                            }
+//
+//                        }
+//                        else if (s > CriticalMinSpeedMpS + SpeedToleranceMpS) // Reset notification once speed increases
+//                        {
+//                            if (IsCriticalMinSpeed)
+//                            {
+//                                IsCriticalMinSpeed = false; // reset flag for IsCriticalSpeed reached - if speed on curve decreases
+//                            }
+//                        }
 
 #if DEBUG_CURVE_SPEED
                    Trace.TraceInformation("================================== TrainCar.cs - DEBUG_CURVE_SPEED ==============================================================");
