@@ -2358,13 +2358,13 @@ namespace Orts.Simulation.RollingStocks
             if (a == 0)
                 R0Diff = b / 2 * Stiffness2NpM / (Stiffness1NpM + Stiffness2NpM);
             else
-                R0Diff = b - a;
+                R0Diff = 0.012f;
+            //               R0Diff = b - a;
 
-            //                 R0Diff = .1f;
             // Ensure R0Diff stays within "reasonable limits"
             if (R0Diff < 0.001)
                 R0Diff = 0.001f;
-            else if (R0Diff > 0.3) // Most couplers will not exceed 6" (150mm) of slack travel so therefore assuming allowance for two couplers, then allow up to 12" (300mm) of slack travel.
+            else if (R0Diff > 0.1) 
                 R0Diff = 0.1f;
 
         }
