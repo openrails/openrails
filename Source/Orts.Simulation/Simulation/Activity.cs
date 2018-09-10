@@ -252,7 +252,7 @@ namespace Orts.Simulation
             }
             else
             {
-                if (prevTrainSpeed == 0)
+                if (prevTrainSpeed == 0 && !(Simulator.OriginalPlayerTrain.SpeedMpS < Math.Abs(0.2f)))
                 {
                     prevTrainSpeed = Simulator.OriginalPlayerTrain.SpeedMpS;
                     Current.NotifyEvent(ActivityEventType.TrainStart);
