@@ -670,8 +670,28 @@ route, although it will also be searched in the general Train Simulator Sound fo
 For the second case there is no suggestion. The file will again be searched in both folders.
 
 
-  
+.. _features-route-curve-superelevation:
 
+Defining Curve Superelevation
+=============================
+  
+This feature allows curves within the route to be assigned a value for superelevation. It
+is inserted either in the route's root .trk file or in the "Include" .trk file.
+
+It should be noted that currently this information only applies to physics calculations 
+for superelevation. The visual movement of the train due to superelevation is set within 
+the option menu.
+
+The values are assigned by inserting the following parameter::
+
+   ORTSTrackSuperElevation ( x y .......... )
+   
+where x and y are a series of paired parameters specifying the curve radius in metres (x value),
+and the amount of superelevation in metres (y value). The statement will take as many paired 
+values as desired. Each paired set of values must have an x and y value present. If it is desired
+to 'hold' a certain value of SuperElevation for a number of different radii curves, then the same 
+y value needs to be used for succeeding values of curve radius. Where the y value changes between 
+curve radii, then Open Rails will extrapolate the y value between the two points. 
 
 
 
