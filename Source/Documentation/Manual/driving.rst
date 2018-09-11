@@ -1036,11 +1036,14 @@ Open Rails provides all of the MSTS views plus additional view options:
   pressed);
 - The exterior views (keys 2,3,4,6) and the interior view (key 5) can be 
   attached to any train in the simulation by the Alt+9 key as described
-  below
+  below;
 - The ``<Alt+F9>`` key shows the :ref:`Train List <driving-trainlist>` 
   window, which not only allows attaching the exterior views to any train, 
   but also, in Activity mode, to move to the Cab and :ref:`drive any train 
-  in the simulation <driving-trainlist>`.
+  in the simulation <driving-trainlist>`;
+- when in passenger view (key 5) it is possible to toggle the viewpoint from 
+  one side to the other of the wagon, and to jump to other viewpoints if defined, 
+  as described below.
 
 All of the required key presses are shown by the ``F1 Help`` key in the game. 
 Note that some of the key combinations are different in Open Rails than in 
@@ -1109,7 +1112,12 @@ default position relative to the current target car.
   up or down with ``<Alt>`` + the four arrow keys. Successive presses of the 
   ``<5>`` key will move the view to successive views (if they exist) within 
   the active train. Note that the *active train* may be an AI train selected 
-  by ``<Ctrl+9>``.
+  by ``<Ctrl+9>``. By pressing ``<Shift+5>`` the viewpoint can be toggled to 
+  the other 
+  side of the wagon (if it was right side, it moves to left side and vice-versa). 
+  If more viewpoints are defined for such wagon as explained 
+  :ref:`here <features-passengerviewpoints>`, pressing ``<Shift+5>`` moves 
+  through the various viewpoints.
 - Key ``<6>`` is the brakeman's view -- the camera is assumed to be at 
   either end of the train, selected by ``<Alt+Home>`` and ``<Alt+End>``.
   Rotation is controlled by the arrow keys or mouse with right button 

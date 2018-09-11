@@ -2812,8 +2812,9 @@ The wind model has been adjusted in the following way:
 
 - Wind Update speed - 1 sec
 - Wind direction will always be within +/- 45\ |deg|\ C degrees of the randomly selected default 
-value selected at startup
-- Wind speed is limited to approx 10mph. 
+  value selected at startup
+- Wind speed is limited to approx 10mph.
+
 
 The Wind Resistance model will use default information, such as the width and height of 
 the stock from the Size statement, so by default it is not necessary to add any additional 

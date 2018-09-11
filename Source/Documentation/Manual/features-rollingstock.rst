@@ -395,4 +395,43 @@ A typical configuration code block will be as follows::
   )
  
 The empty values for the wagon will be read from the normal base WAG file paramers.
- 
+
+.. _features-passengerviewpoints:
+
+Multiple passenger viewpoints
+=============================
+
+Additional passenger viewpoints may be added within a carriage that 
+is provided with passenger viewpoint.
+
+Such additional passenger viewpoints are defined within an include file 
+with the format shown in 
+following example for the legacy oebarcar.wag (located in the 380 folder) 
+MSTS wagon::
+     
+  include ( ../oebarcar.wag )
+  
+  Wagon (
+        ORTSAlternatePassengerViewPoints (
+                ORTSAlternatePassengerViewPoint (
+                        PassengerCabinHeadPos ( -0.0 2.85801 -6.091 )
+                        RotationLimit ( 50 270 0 )
+                        StartDirection ( 0 0 0 )      
+                )  
+                ORTSAlternatePassengerViewPoint (
+                        PassengerCabinHeadPos ( -0.5 2.35801 -1.791 )
+                        RotationLimit ( 50 270 0 )
+                        StartDirection ( 0 0 0 )      
+                ) 	
+                ORTSAlternatePassengerViewPoint (
+                        PassengerCabinHeadPos ( 0.9 2.35801 -1.791 )
+                        RotationLimit ( 50 270 0 )
+                        StartDirection ( -5 -90 0 )      
+                ) 				
+        )
+  )
+
+At runtime, when in passenger view, the player may pass from one viewpoint to 
+the other by pressing Shift-5.
+
+
