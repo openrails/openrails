@@ -210,7 +210,6 @@ namespace Orts.Viewer3D.RollingStock
                 if (TrainCarShape.SharedShape.MatrixNames[i].Equals("BOGIE"))
                 {
                     bogieMatrix1 = i;
-                    numBogie += 1;
                 }
                 // For now, the total axle count consisting of axles that are part of the bogie are being counted.
                 if (TrainCarShape.SharedShape.MatrixNames[i].Contains("WHEELS"))
@@ -305,7 +304,7 @@ namespace Orts.Viewer3D.RollingStock
                     var id = 1;
                     Int32.TryParse(matrixName.Substring(5), out id);
                     var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
-                    car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2, numBogie);
+                    car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2);
                     bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
                 }
                 else
@@ -314,7 +313,7 @@ namespace Orts.Viewer3D.RollingStock
                     //  parse the string number from the string.
                     var id = 1;
                     var m = TrainCarShape.SharedShape.GetMatrixProduct(matrix);
-                    car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2, numBogie);
+                    car.AddBogie(m.M43, matrix, id, matrixName.ToString(), numBogie1, numBogie2);
                     bogieMatrix = matrix; // Bogie matrix needs to be saved for test with axles.
                 }
                 // Bogies contain wheels!

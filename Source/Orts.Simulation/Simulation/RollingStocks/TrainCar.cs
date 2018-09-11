@@ -1593,7 +1593,7 @@ namespace Orts.Simulation.RollingStocks
 
         } // end AddWheelSet()
 
-        public void AddBogie(float offset, int matrix, int id, string bogie, int numBogie1, int numBogie2, int numBogie)
+        public void AddBogie(float offset, int matrix, int id, string bogie, int numBogie1, int numBogie2)
         {
             if (WheelAxlesLoaded || WheelHasBeenSet)
                 return;
@@ -1630,7 +1630,7 @@ namespace Orts.Simulation.RollingStocks
                     Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
                 }
             }
-            if (bogie == "BOGIE3")
+            else if (bogie == "BOGIE3")
             {
                 while (Parts.Count <= id)
                     Parts.Add(new TrainCarPart(0, 0));
@@ -1638,7 +1638,7 @@ namespace Orts.Simulation.RollingStocks
                 Parts[id].iMatrix = matrix;
                 Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
             }
-            if (bogie == "BOGIE4")
+            else if (bogie == "BOGIE4")
             {
                 while (Parts.Count <= id)
                     Parts.Add(new TrainCarPart(0, 0));
@@ -1654,7 +1654,16 @@ namespace Orts.Simulation.RollingStocks
                 Parts[id].iMatrix = matrix;
                 Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
             }
-            
+            // The else will cover additions not covered above.
+            else
+            {
+                while (Parts.Count <= id)
+                    Parts.Add(new TrainCarPart(0, 0));
+                Parts[id].OffsetM = offset;
+                Parts[id].iMatrix = matrix;
+                Parts[id].bogie = true;//identify this is a bogie, will be used for hold rails on track
+            }
+
         } // end AddBogie()
 
         public void SetUpWheels()
