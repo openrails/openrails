@@ -347,15 +347,15 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (WagonType == WagonTypes.Engine)
                 {
-                    DavisDragConstant = 0.2083f;  // engine drag value
+                    TrailLocoResistanceFactor = 0.2083f;  // engine drag value
                 }
                 else if (WagonType == WagonTypes.Tender)
                 {
-                    DavisDragConstant = 1.0f;  // assume that tenders have been set with a value of 0.0005 as per freight wagons
+                    TrailLocoResistanceFactor = 1.0f;  // assume that tenders have been set with a value of 0.0005 as per freight wagons
                 }
                 else  //Standard default if not declared anywhere else
                 {
-                    DavisDragConstant = 1.0f;
+                    TrailLocoResistanceFactor = 1.0f;
                 }
             }
 
@@ -2309,7 +2309,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (Coupler == null)
                 return base.GetMaximumCouplerSlack2M();
-            return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M()+ 0.05f; //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
+            return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M(); //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
 
         }
         public override void CopyCoupler(TrainCar other)
