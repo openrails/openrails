@@ -2828,6 +2828,27 @@ are in ft^2, so if entering metres, include the Units of Measure.
 drag constants are used in calculating the still air resistance, then it might be worthwhile 
 inputting these values.
 
+
+.. _physics-trailing-locomotive-resistance:
+
+Trailing Locomotive Resistance
+==============================
+
+Typically only one set of resistance parameters is allowed for each WAG file. In the case of locomotives 
+this can create issues as a leading locomotive will have a higher drag resistance then a trailing locomotive.
+
+OR automatically adjusts the Drag resistance for trailing locomotives based upon the ratio of the original 
+Davis formula. 
+
+However for those who like to customise, the following parameter can be inputted via the WAG file or section.
+
+``ORTSTrailLocomotiveResistanceFactor`` -- The constant value by which the leading locomotive resistance 
+needs to be decreased for trailing operation.
+
+For steam locomotive tenders it may be necessary to enter this value depending upon the Drag constant used 
+to calculate the tender resistance.
+
+
 .. _physics-inclusions:
 
 OR-Specific *Include Files* for Modifying MSTS File Parameters
