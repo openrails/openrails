@@ -1578,16 +1578,22 @@ namespace Orts.Simulation.RollingStocks
             // Came across a model where the axle offset that is part of a bogie would become 0 during the initial process.  This is something we must test for.
             if (wheels.Length == 8 && Parts.Count > 0)
             {
-                if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13")
+                if (wheels == "WHEELS11" || wheels == "WHEELS12" || wheels == "WHEELS13" || wheels == "WHEELS14")
                     WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
 
-                if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23")
+                else if (wheels == "WHEELS21" || wheels == "WHEELS22" || wheels == "WHEELS23" || wheels == "WHEELS24")
                     WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
 
-                if (wheels == "WHEELS31" || wheels == "WHEELS32" || wheels == "WHEELS33")
+                else if (wheels == "WHEELS31" || wheels == "WHEELS32" || wheels == "WHEELS33" || wheels == "WHEELS34")
+                    WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+
+                else if (wheels == "WHEELS41" || wheels == "WHEELS42" || wheels == "WHEELS43" || wheels == "WHEELS44")
+                    WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
+                // This else will cover additional Wheels added following the proper naming convention.
+                else
                     WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
             }
-            // The else will cover any WHEELS spelling or additions not covered above.
+            // The else will cover WHEELS spelling where the length is less than 8.
             else
                 WheelAxles.Add(new WheelAxle(offset, bogieID, parentMatrix));
 
