@@ -3460,6 +3460,55 @@ namespace Orts.Simulation.RollingStocks
                             data = -data;
                         break;
                     }
+                case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:
+                    {
+                        var direction = 0; // Forwards
+                        if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
+                            direction = ((CVCGauge)cvc).Direction;
+                        data = 0.0f;
+                        if (FilteredMotiveForceN != 0)
+                            data = this.FilteredMotiveForceN;
+                        else
+                            data = this.LocomotiveAxle.AxleForceN;
+                        if (data > 0 && SpeedMpS > 0 || data < 0 && SpeedMpS < 0)
+                        {
+                            data = 0;
+                            break;
+                        }
+                        data = Math.Abs(data);
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.AMPS:
+                                if (MaxCurrentA == 0)
+                                    MaxCurrentA = (float)cvc.MaxValue;
+                                if (DynamicBrakeMaxCurrentA == 0)
+                                    DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
+                                if (ThrottlePercent > 0)
+                                {
+                                    data = 0;
+                                }
+                                if (DynamicBrakePercent > 0)
+                                {
+                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                }
+                                data = Math.Abs(data);
+                                break;
+
+                            case CABViewControlUnits.NEWTONS:
+                                break;
+
+                            case CABViewControlUnits.KILO_NEWTONS:
+                                data = data / 1000.0f;
+                                break;
+
+                            case CABViewControlUnits.KILO_LBS:
+                                data = data / 4448.22162f;
+                                break;
+                        }
+                        if (direction == 1 && !(cvc is CVCGauge))
+                            data = -data;
+                        break;
+                    }
                 case CABViewControlTypes.MAIN_RES:
                     {
                         data = ConvertFromPSI(cvc, MainResPressurePSI);
