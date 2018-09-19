@@ -3940,6 +3940,9 @@ namespace Orts.Simulation.RollingStocks
                         }
                         break;
                     }
+                case CABViewControlTypes.ORTS_CABLIGHT:
+                    data = CabLightOn ? 1 : 0;
+                    break;
                 default:
                     {
                         data = 0;

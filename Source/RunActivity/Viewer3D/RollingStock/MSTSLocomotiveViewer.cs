@@ -1864,6 +1864,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STATE:
                 case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STARTER:
                 case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STOPPER:
+                case CABViewControlTypes.ORTS_CABLIGHT:
                     index = (int)data;
                     break;
             }
@@ -2003,6 +2004,8 @@ namespace Orts.Viewer3D.RollingStock
                     dieselLoco = Locomotive as MSTSDieselLocomotive;
                     if (dieselLoco.DieselEngines[0].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running &&
                                 ChangedValue(1) == 0) new TogglePlayerEngineCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_CABLIGHT:
+                    if ((Locomotive.CabLightOn ? 1 : 0) != ChangedValue(Locomotive.CabLightOn ? 1 : 0)) new ToggleCabLightCommand(Viewer.Log); break;
             }
 
         }
