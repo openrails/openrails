@@ -504,7 +504,6 @@ namespace Orts.Viewer3D
             if (PlayerLocomotive is MSTSDieselLocomotive)
             {
                 TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
-                ToggleHelpersEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
             }
 
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
@@ -532,6 +531,7 @@ namespace Orts.Viewer3D
             ActivityCommand.Receiver = ActivityWindow;  // and therefore shared by all sub-classes
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
+            ToggleHelpersEngineCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
         }
 
         public void ChangeToPreviousFreeRoamCamera()

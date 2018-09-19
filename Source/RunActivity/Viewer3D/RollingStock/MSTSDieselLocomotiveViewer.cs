@@ -70,7 +70,6 @@ namespace Orts.Viewer3D.RollingStock
         public override void InitializeUserInputCommands()
         {
             UserInputCommands.Add(UserCommands.ControlDieselPlayer, new Action[] { Noop, () => new TogglePlayerEngineCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlDieselHelper, new Action[] { Noop, () => new ToggleHelpersEngineCommand(Viewer.Log) });
             base.InitializeUserInputCommands();
         }
 

@@ -1280,7 +1280,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ToggleHelpersEngineCommand : Command
     {
-        public static MSTSDieselLocomotive Receiver { get; set; }
+        public static MSTSLocomotive Receiver { get; set; }
 
         public ToggleHelpersEngineCommand(CommandLog log)
             : base(log)
