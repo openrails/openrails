@@ -209,7 +209,8 @@ Electric Locomotives -- Additional information
 ----------------------------------------------
 
 For electric locomotives information about the pantograph state is also 
-shown and whether the locomotive has power (at least one pantograph raised) 
+shown, as well as info about the circuit breaker state and whether the 
+locomotive has power (at least one pantograph raised and circuit breaker closed) 
 or not.
 
 .. image:: images/driving-hud-electric.png
@@ -1505,11 +1506,14 @@ You can turn off any extended HUD, while continuing to show the basic HUD,
 by pressing ``<Alt+F5>``. Pressing ``<Alt+F5>`` again returns the 
 display of the currently active extended HUD.
 
+In the extended HUDs the trainsets (locos and cars) are identified by the 
+trainset UiD as defined in the consist file, preceded by a train identification.
+
 Extended HUD for Consist Information
 ------------------------------------
 
 This page shows in the first line data about the whole train. Under 
-``Player`` you will find the train number as assigned by OR followed by an 
+``Player`` you will find the player locomotive UiD followed by an 
 ``F`` if the forward cab is selected, and an ``R`` if the rear cab is 
 selected.
 
@@ -1517,7 +1521,7 @@ selected.
     :align: center
     :scale: 80%
 
-``Tilted`` is true in case the consist name ends with ``tilted`` (e.g. 
+``Tilted`` is set at YES in case the consist name ends with ``tilted`` (e.g. 
 ``ETR460_tilted.con``), in which case it means that it is a tilting train.
 
 ``Control mode`` shows the actual control mode. Read more about this here.
@@ -1558,9 +1562,9 @@ Extended HUD for Brake Information
 .. image:: images/physics-hud-brake-connecting.png
 
 This extended HUD display includes all the information of the basic HUD 
-plus Brake status information. Information is shown for all cars. The 
-first number shows the car UiD in the train, as found in the consist file 
-or the activity file; the following alphanumeric string shows the brake 
+plus Brake status information. In the first part specific information for 
+locomotives is shown, while in the second one general information is shown for 
+all cars. After the car UiD the following alphanumeric string shows the brake 
 system (``1P``: single-pipe system, ``V``: vacuum etc.) and the current 
 state of the air brakes on the unit. More information on this display 
 can be found in :ref:`Open Rails Braking <physics-braking>` and 
@@ -1586,7 +1590,7 @@ acting upon the locos/cars in the train.
 
 The columns are as follows:
 
-**Car**  - the position of the car in the train.
+**Car**  - the UiD of the car as defined in the car consist file.
 
 **Total**  - the total force acting on the car. This is the sum of the other 
 forces after the signs are properly adjusted.

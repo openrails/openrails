@@ -10,29 +10,33 @@ Goal
 The Multi-Player mode implemented in this stage is intended for friends to play 
 OR together, each assuming the role of a train engineer operating a train. There 
 is a built-in way to compose and send text messages, but there is no built-in 
-tool for chatting, thus players are encouraged to use Ventrillo, Skype, MSN, 
-Yahoo, Teamspeak or other tools to communicate vocally. 
+tool for chatting, thus players are encouraged to use Skype,  
+Teamspeak or other tools to communicate vocally. 
 
-The current release utilizes a peer-to-peer mode, thus each player must start 
-and run OR on his computer. A special server was deployed so you may not need 
-to set up a server from your own computer.
+Each player must start and run OR on his computer. The network server may be either a 
+special :ref:`public server <multiplayer-public-server>` so you may not need to set 
+up a network server from your 
+own computer, or the dispatcher computer (see below).
 
 Getting Started
 ===============
 
-One player starts as the server, and then the others connect as clients. Each 
-player will choose and operate his own consist (and locomotive), but also can 
+One player starts as the dispatcher (from a network point of view his computer may be 
+network client or network server, as explained above), and then the others start as standard 
+players. They are always network clients and therefore they are also simply called clients. 
+Each player (dispatcher included) will choose and operate his own consist (and locomotive), 
+but also can 
 jump to watch others' consists, or couple with others to work as lead and DPU 
-through a tough route, or even act as a dispatcher to control signals and 
+through a tough route, or even act as a dispatching aid to control signals and 
 switches manually.
 
 Requirements
 ============
 
-The server can start an activity or choose to explore.  Clients MUST choose to 
+The dispatcher can start an activity or choose to explore.  Clients MUST choose to 
 explore (or a simple activity with timetable but no AI trains).
 
-The client must select the same route played by the server.
+The client must select the same route played by the dispatcher.
 
 It is not required for everyone to have the same set of paths, rolling stocks 
 and consists. 
@@ -63,10 +67,13 @@ The forum is free to join and post: http://www.tsimserver.com/forums
 Starting a Multi-Player Session
 ===============================
 
-Starting as Server
-------------------
+Starting as Dispatcher
+----------------------
 
 .. image:: images/start-activity.png
+
+To start as Dispatcher you must be the first player to enter the multiplayer 
+session.
 
 On the OR main menu you select in a standard way as described in the 
 :ref:`Getting started <start>` chapter on the left side Route, activity or 
@@ -74,18 +81,25 @@ explore route, and in case of explore route you select as usual locomotive,
 consist, path, time, season and weather.
 
 On the lower right side you enter your User Name and the host and port 
-address. If you want to run as standalone server, or if you want to have more 
-than instance of OR running in MP mode on the same computer, you must set 
+address. If you want to run as standalone local server, or if you want to have more 
+than one instance of OR running in MP mode on the same computer, you must set 
 *Host/port* to ``127.0.0.1:30000``. 30000 is the default port, but you can 
 change to any integer between 10000 and 65536.
 
 If you want to run in a local area network usually valid host addresses are 
 ``192.168.1.2`` or ``192.168.1.1``.
 
-After having inserted the *Username* and *Host/port* data you click on 
-*Server*. 
+If you use the special :ref:`public server <multiplayer-public-server>` you 
+need to check the *Client*"* radio button. If instead your computer acts as 
+server, you check the *Server*"* radio button. 
 
-When server starts, Windows Firewall may ask if you want to allow OR access 
+After having inserted the *Username* and *Host/port* data you click on 
+*Start MP*. 
+
+Note that when using the special :ref:`public server <multiplayer-public-server>` ,
+
+
+After start, Windows Firewall may ask if you want to allow OR access 
 to the Internet. If so, click *Allow*.  If you use other firewall software, you 
 may need to configure it to allow OpenRails to access the Internet.
 
@@ -100,32 +114,33 @@ On the left side of the main menu you must enter only route, path and
 consist. The other parameters are received from the server.
 
 On the right side you enter your username, IP address and port of the server, 
-and click on *Client*. 
+you check the *Client* radio button and the you click on  *Start MP*. 
 
 In-Game Controls
 ================
 
-Once the server and clients have started and connected, to display 
+Once the dispatcher and clients have started and connected, to display 
 MultiPlayer status you must press F5 to display the basic HUD; at the bottom 
 of it you will see the information. You can watch how many players and trains 
 are present and how far away you are from others. You can also look if you 
-are acting as dispatcher (the server always is the dispatcher) or as client.
+are acting as dispatcher or as client.
 
 .. image:: images/multiplayer-hud-basic.png
 
-A player joined will have the same weather, time and season as the server, no 
+A player joined will have the same weather, time and season as the dispatcher, no 
 matter what are the original choices.
 
 The player train may join the world and find that it is inside another 
 train.  Don't panic, you have two minutes to move your train out before OR 
 thinks you want to couple with that train.
 
-AI trains are added by the server and broadcast to all players. As a client, 
+AI trains are added by the dispatcher computer (if it runs in activity mode) 
+and broadcast to all players. As a client, 
 do not start an activity with AI trains; moreover it is recommended that you 
 start in Explore mode on the client.
 
 You can jump to see other trains in sequence by pressing ``<Alt+9>``. 
-OpenRails will cycle through all trains active on the server with each key 
+OpenRails will cycle through all active trains with each key 
 press. If you are running an activity OpenRails will include in the cycle any 
 static consists that are used in the activity. As some trains may be far away, 
 OpenRails may need a few seconds to load the surrounding scenery.  Thus you 
@@ -137,8 +152,9 @@ Internet routings vary moment to moment there may be some lag, and trains may
 jump a bit as OpenRails tries to update the locations with information 
 received.
 
-You can couple/decouple as usual. As coupling is controlled in the server, a 
-player needs to drive slowly so that the server will have accurate 
+You can couple/decouple as usual. As coupling is controlled in the dispatcher 
+computer, a 
+player needs to drive slowly so that the dispatcher computer  will have accurate 
 information of train positions. If two player trains couple together, one of 
 them will become a helper, and a message will be shown on the left indicating 
 that the player is in Helper mode.  A player in Helper mode cannot control 
@@ -213,7 +229,7 @@ selected.
 Summary of Multi-Player Procedures
 ==================================
 
-1.  Server can start an activity or Explore. Clients must choose to Explore 
+1.  Dispatcher can start an activity or Explore. Clients must choose to Explore 
     the route or start with an activity without AI trains.
 2.  Missing rolling stock in other players' consists will be automatically 
     replaced by existing cars from local directory. This can lead to awkward consists.
@@ -222,7 +238,7 @@ Summary of Multi-Player Procedures
 4.  Use ``<Alt+9>`` to see other trains, 9 to see your own train, 
     ``<Ctrl+9>`` to view/hide the dispatcher window.  Use the mouse wheel 
     to zoom and left mouse button to pan the dispatcher window.
-5.  We can send and read messages from the dispatcher window
+5.  You can send and read messages from the dispatcher window
 6.  Use ``<Ctrl+Alt+F11>`` to see the path trains will follow, and 
     ``<F7>`` to see train names
 7.  Move trains slowly when trying to couple.
@@ -239,7 +255,7 @@ Possible Problems
 =================
 
 - A server may not be able to listen on the port specified. Restart the 
-  server and choose another port.
+  dispatcher and the clients and choose another port.
 - If you cannot connect to the server, verify you have the correct IP 
   address and port number, and that the server has the port opened.
 - If other players have rolling stock you do not have, that train will 
@@ -250,11 +266,13 @@ Possible Problems
   apart within two minutes and it will be fine.
 - If your train is moving too quickly when trying to couple, the process may 
   not work and weird things can happen.
-- As the server has absolute control, clients may notice the switch just 
-  changed will be changed back a few seconds later if the server controlled 
+- As the dispatcher has absolute control, clients may notice the switch just 
+  changed will be changed back a few seconds later if the dispatcher controlled 
   train wants to pass it.
 - Coupling/uncoupling the same set of trains may end up with weird things.
 - ``<Ctrl+E>`` locomotive switch may have train cars flipped.
+
+.. _multiplayer-public-server:
 
 Using the Public Server
 =======================
@@ -286,6 +304,36 @@ Additional info on using the Public Server
   server for about two minutes. If the client re-enters the game within such 
   time frame, it will re-enter the game in the position where he was at the 
   moment of the crash.
+
+Save and resume
+===============
+
+Networked games may be prone to crashes, and it is not nice if you get a crash in 
+the middle of a long-lasting game and you have to restart the game from its 
+beginning. 
+
+Therefore also for multiplayer mode the *Save and resume* feature is available: it is 
+advisable that the dispatcher regularly saves the session by pressing F2 during game.
+
+If a crash occurs, the procedure to resume game is described here below.
+When the dispatcher wants to resume the session from the last save, all players must 
+be off the game.
+
+The dispatcher must have in his main menu path and consist as in the saved session. 
+He clicks the *Resume MP* button and in the resume window he selects the session he wants 
+and clicks on the *Resume* bùtton therein.
+When he is again in the game, he will see in the dispatcher window that the other player 
+trains are shown in grey on the route. Now the other players have 10 minutes to re-enter 
+the game where they were when the game was saved. They too must have in their main menu 
+their original path and the consist they had in the moment the game was saved. They must 
+select *Start MP* to re-enter the game. They will re-enter the game in the place where 
+they were when the game was saved. If however the consist at the moment of the game save is different 
+from the one selected when re-entering the game. or if the train proceeded less than 1 Km from 
+game start, the player will re-enter the game at the beginning of the path.
+
+As there are many possible cases, it may be possible that some of them are not covered.
+
+
 
 Setting up a Server from Your Own Computer
 ==========================================

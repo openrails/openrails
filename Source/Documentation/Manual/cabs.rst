@@ -143,12 +143,33 @@ Here is an example of a cab radio control block within the .cvf file::
 
 			TwoState (
             Type ( CAB_RADIO TWO_STATE )
-			Position ( 150 425 30 21 )
-			Graphic ( Horn.ace )
-			NumFrames ( 2 2 1 )
-			Style ( ONOFF )
-			MouseControl ( 1 )
+			      Position ( 150 425 30 21 )
+			      Graphic ( Horn.ace )
+			      NumFrames ( 2 2 1 )
+			      Style ( ONOFF )
+			      MouseControl ( 1 )
             )
+
+
+Cab light
+---------
+
+OR supports the cab light cabview control.
+Pressing key L switches on and off the cab light under the same conditions 
+applicable to MSTS.
+Switching on and off the cab light enables discrete sound trigger 161, as 
+explained :ref:`here <sound-discrete>`.
+Here is an example of a cab light control block within the .cvf file::
+
+			TwoState (
+            Type ( ORTS_CABLIGHT TWO_STATE )
+			      Position ( 120 425 30 21 )
+			      Graphic ( Horn.ace )
+			      NumFrames ( 2 2 1 )
+			      Style ( ONOFF )
+			      MouseControl ( 1 )
+            )
+
 
 
 High-resolution Cab Backgrounds and Controls
