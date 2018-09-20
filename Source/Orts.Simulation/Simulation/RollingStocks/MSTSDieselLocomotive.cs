@@ -545,7 +545,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines.HasGearBox)
                 status.AppendFormat("\t{0} {1}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex);
-            status.AppendFormat("\t{0} {1}\t\t\t{2}", 
+            status.AppendFormat("\t{0} {1}\t\t{2}", 
                 Simulator.Catalog.GetString("Fuel"), 
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
 
