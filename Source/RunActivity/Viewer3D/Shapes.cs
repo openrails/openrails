@@ -965,13 +965,20 @@ namespace Orts.Viewer3D
 
             // 0 can be used as a setting for instant animation.
             if (FuelPickupItem.ReFill() && FuelPickupItemObj.UID == MSTSWagon.RefillProcess.ActivePickupObjectUID)
+            {
+                if (AnimationKey == 0 && Sound != null) Sound.HandleEvent(Event.FuelTowerDown);
                 if (FuelPickupItemObj.PickupAnimData.AnimationSpeed == 0) AnimationKey = 1.0f;
                 else if (AnimationKey < AnimationFrames)
                     AnimationKey += elapsedTime.ClockSeconds * FrameRate;
+            }
 
             if (!FuelPickupItem.ReFill() && AnimationKey > 0)
             {
-                if (Sound != null) Sound.HandleEvent(Event.FuelTowerTransferEnd);
+                if (AnimationKey == AnimationFrames && Sound != null)
+                {
+                    Sound.HandleEvent(Event.FuelTowerTransferEnd);
+                    Sound.HandleEvent(Event.FuelTowerUp);
+                }
                 AnimationKey -= elapsedTime.ClockSeconds * FrameRate;
             }
 
