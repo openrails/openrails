@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// #define DEBUG_MULTIPLAYER
+// DEBUG flag for debug prints
+
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
@@ -37,6 +40,9 @@ namespace Orts.MultiPlayer
     {
         public static Message Decode(string m)
         {
+#if DEBUG_MULTIPLAYER
+            Trace.TraceInformation("MP message received: {0}", m);
+#endif
             int index = m.IndexOf(' ');
             string key = m.Substring(0, index);
             if (key == "MOVE") return new MSGMove(m.Substring(index + 1));
@@ -74,7 +80,7 @@ namespace Orts.MultiPlayer
         public virtual void HandleMsg() { System.Console.WriteLine("test"); return; }
     }
 
-    #region MSGMove
+#region MSGMove
     public class MSGMove : Message
     {
         class MSGMoveItem
@@ -228,16 +234,16 @@ namespace Orts.MultiPlayer
             }
         }
     }
-    #endregion MSGMove
+#endregion MSGMove
 
-    #region MSGRequired
+#region MSGRequired
     public class MSGRequired : Message
     {
 
     }
-    #endregion
+#endregion
 
-    #region MSGPlayer
+#region MSGPlayer
     public class MSGPlayer : MSGRequired
     {
         public string user = "";
@@ -375,7 +381,7 @@ namespace Orts.MultiPlayer
                 TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.travelled;
                 trainmaxspeed = t.TrainMaxSpeedMpS;
             }
-            seconds = MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
+            seconds = (int)MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
             pantofirst = pantosecond = 0;
             MSTSWagon w = (MSTSWagon)MPManager.Simulator.PlayerLocomotive;
             if (w != null)
@@ -474,7 +480,7 @@ namespace Orts.MultiPlayer
             {
 
                 if (MPManager.FindPlayerTrain(user) != null) return; //already added the player, ignore
-                //if the client comes back after disconnected withing 1 minute
+                //if the client comes back after disconnected within 3 minutes (10 in case of save/restore)
                 if (MPManager.IsServer() && MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(user))
                 {
                     var p1 = MPManager.Instance().lostPlayer[user];
@@ -637,9 +643,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGPlayer
+#endregion MSGPlayer
 
-    #region MSGPlayerTrainSw
+#region MSGPlayerTrainSw
     public class MSGPlayerTrainSw : MSGRequired
     {
         public string user = "";
@@ -734,9 +740,9 @@ namespace Orts.MultiPlayer
                 }*/
     }
 
-    #endregion MSGPlayerTrainSw
+#endregion MSGPlayerTrainSw
 
-    #region MGSwitch
+#region MGSwitch
 
     public class MSGSwitch : Message
     {
@@ -822,9 +828,9 @@ namespace Orts.MultiPlayer
 
     }
 
-    #endregion MGSwitch
+#endregion MGSwitch
 
-    #region MSGResetSignal
+#region MSGResetSignal
     public class MSGResetSignal : Message
     {
         public string user;
@@ -856,9 +862,9 @@ namespace Orts.MultiPlayer
             }
         }
     }
-    #endregion MSGResetSignal
+#endregion MSGResetSignal
 
-    #region MSGOrgSwitch
+#region MSGOrgSwitch
     public class MSGOrgSwitch : MSGRequired
     {
         SortedList<uint, TrJunctionNode> SwitchState;
@@ -936,9 +942,9 @@ namespace Orts.MultiPlayer
             return " " + tmp.Length + ": " + tmp;
         }
     }
-    #endregion MSGOrgSwitch
+#endregion MSGOrgSwitch
 
-    #region MSGSwitchStatus
+#region MSGSwitchStatus
     public class MSGSwitchStatus : Message
     {
         static byte[] preState;
@@ -1091,8 +1097,8 @@ namespace Orts.MultiPlayer
             return " " + tmp.Length + ": " + tmp;
         }
     }
-    #endregion MSGSwitchStatus
-    #region MSGTrain
+#endregion MSGSwitchStatus
+#region MSGTrain
     //message to add new train from either a string (received message), or a Train (building a message)
     public class MSGTrain : Message
     {
@@ -1256,9 +1262,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGTrain
+#endregion MSGTrain
 
-    #region MSGUpdateTrain
+#region MSGUpdateTrain
 
     //message to add new train from either a string (received message), or a Train (building a message)
     public class MSGUpdateTrain : Message
@@ -1487,9 +1493,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGUpdateTrain
+#endregion MSGUpdateTrain
 
-    #region MSGRemoveTrain
+#region MSGRemoveTrain
     //remove AI trains
     public class MSGRemoveTrain : Message
     {
@@ -1542,9 +1548,9 @@ namespace Orts.MultiPlayer
 
     }
 
-    #endregion MSGRemoveTrain
+#endregion MSGRemoveTrain
 
-    #region MSGServer
+#region MSGServer
     public class MSGServer : MSGRequired
     {
         string user; //true: I am a server now, false, not
@@ -1597,9 +1603,9 @@ namespace Orts.MultiPlayer
             }
         }
     }
-    #endregion MSGServer
+#endregion MSGServer
 
-    #region MSGAlive
+#region MSGAlive
     public class MSGAlive : Message
     {
         string user;
@@ -1621,9 +1627,9 @@ namespace Orts.MultiPlayer
             //System.Console.WriteLine(this.ToString());
         }
     }
-    #endregion MSGAlive
+#endregion MSGAlive
 
-    #region MSGTrainMerge
+#region MSGTrainMerge
     //message to add new train from either a string (received message), or a Train (building a message)
     public class MSGTrainMerge : Message
     {
@@ -1669,9 +1675,9 @@ namespace Orts.MultiPlayer
             return " " + tmp.Length + ": " + tmp;
         }
     }
-    #endregion MSGTrainMerge
+#endregion MSGTrainMerge
 
-    #region MSGMessage
+#region MSGMessage
     //warning, error or information from the server, a client receives Error will disconnect itself
     public class MSGMessage : MSGRequired
     {
@@ -1758,9 +1764,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGMessage
+#endregion MSGMessage
 
-    #region MSGControl
+#region MSGControl
     //message to ask for the control of a train or confirm it
     public class MSGControl : Message
     {
@@ -1835,9 +1841,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGControl
+#endregion MSGControl
 
-    #region MSGLocoChange
+#region MSGLocoChange
     //message to add new train from either a string (received message), or a Train (building a message)
     public class MSGLocoChange : Message
     {
@@ -1895,9 +1901,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGLocoChange
+#endregion MSGLocoChange
 
-    #region MSGEvent
+#region MSGEvent
     public class MSGEvent : Message
     {
         public string user;
@@ -1993,9 +1999,9 @@ namespace Orts.MultiPlayer
 
     }
 
-    #endregion MSGEvent
+#endregion MSGEvent
 
-    #region MSGQuit
+#region MSGQuit
     public class MSGQuit : Message
     {
         public string user;
@@ -2068,10 +2074,10 @@ namespace Orts.MultiPlayer
 
     }
 
-    #endregion MSGQuit
+#endregion MSGQuit
 
 
-    #region MSGLost
+#region MSGLost
     public class MSGLost : Message
     {
         public string user;
@@ -2124,9 +2130,9 @@ namespace Orts.MultiPlayer
 
     }
 
-    #endregion MSGLost
+#endregion MSGLost
 
-    #region MSGGetTrain
+#region MSGGetTrain
     public class MSGGetTrain : Message
     {
         public int num;
@@ -2166,9 +2172,9 @@ namespace Orts.MultiPlayer
         }
 
     }
-    #endregion MSGGetTrain
+#endregion MSGGetTrain
 
-    #region MSGUncouple
+#region MSGUncouple
 
     public class MSGUncouple : Message
     {
@@ -2594,9 +2600,9 @@ namespace Orts.MultiPlayer
             }
         }
     }
-    #endregion MSGUncouple
+#endregion MSGUncouple
 
-    #region MSGCouple
+#region MSGCouple
     public class MSGCouple : Message
     {
         string[] cars;
@@ -2842,9 +2848,9 @@ namespace Orts.MultiPlayer
             }
         }
     }
-    #endregion MSGCouple
+#endregion MSGCouple
 
-    #region MSGSignalStatus
+#region MSGSignalStatus
     public class MSGSignalStatus : Message
     {
         static byte[] preState;
@@ -2978,9 +2984,9 @@ namespace Orts.MultiPlayer
             return " " + tmp.Length + ": " + tmp;
         }
     }
-    #endregion MSGSignalStatus
+#endregion MSGSignalStatus
 
-    #region MSGLocoInfo
+#region MSGLocoInfo
     public class MSGLocoInfo : Message
     {
 
@@ -3096,9 +3102,9 @@ namespace Orts.MultiPlayer
             return " " + tmp.Length + ": " + tmp;
         }
     }
-    #endregion MSGLocoInfo
+#endregion MSGLocoInfo
 
-    #region MSGAvatar
+#region MSGAvatar
     public class MSGAvatar : Message
     {
         public string user;
@@ -3141,10 +3147,10 @@ namespace Orts.MultiPlayer
 
     }
 
-    #endregion MSGAvatar
+#endregion MSGAvatar
 
 
-    #region MSGText
+#region MSGText
     //message to add new train from either a string (received message), or a Train (building a message)
     public class MSGText : MSGRequired
     {
@@ -3200,9 +3206,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGText
+#endregion MSGText
 
-    #region MSGWeather
+#region MSGWeather
     public class MSGWeather : Message
     {
         public int weather;
@@ -3258,9 +3264,9 @@ namespace Orts.MultiPlayer
         }
     }
 
-    #endregion MSGWeather
+#endregion MSGWeather
 
-    #region MSGAider
+#region MSGAider
     public class MSGAider : Message
     {
         public string user;
@@ -3304,9 +3310,9 @@ namespace Orts.MultiPlayer
 
     }
 
-    #endregion MSGAider
+#endregion MSGAider
 
-    #region MSGSignalChange
+#region MSGSignalChange
     public class MSGSignalChange : Message
     {
         int index;
@@ -3374,9 +3380,9 @@ namespace Orts.MultiPlayer
             return " " + tmp.Length + ": " + tmp;
         }
     }
-    #endregion MSGSignalChange
+#endregion MSGSignalChange
 
-    #region MSGExhaust
+#region MSGExhaust
     public class MSGExhaust : Message
     {
         class MSGExhaustItem
@@ -3465,6 +3471,6 @@ namespace Orts.MultiPlayer
                 }
             }
         }
-        #endregion MSGExhaust
+#endregion MSGExhaust
     }
 }

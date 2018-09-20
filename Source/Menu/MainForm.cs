@@ -49,6 +49,8 @@ namespace ORTS
             MultiplayerClient,
             SinglePlayerTimetableGame,
             SinglePlayerResumeTimetableGame,
+            MultiplayerServerResumeSave,
+            MultiplayerClientResumeSave
         }
 
         bool Initialized;
@@ -571,17 +573,33 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
-            if (radioButtonModeActivity.Checked)
-            {
-                SelectedAction = UserAction.SingleplayerNewGame;
-            }
-            else
+            OpenResumeForm(false);
+        }
+
+        void buttonResumeMP_Click(object sender, EventArgs e)
+        {
+            OpenResumeForm(true);
+        }
+
+        void OpenResumeForm (bool multiplayer)
+        {
+            if (radioButtonModeTimetable.Checked)
             {
                 SelectedAction = UserAction.SinglePlayerTimetableGame;
             }
+            else if (!multiplayer)
+            {
+                SelectedAction = UserAction.SingleplayerNewGame;
+            }
+            else if (radioButtonMPClient.Checked)
+            {
+                SelectedAction = UserAction.MultiplayerClient;
+            }
+            else
+                SelectedAction = UserAction.MultiplayerServer;
 
             // if timetable mode but no timetable selected - no action
-            if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetableSet == null)
+            if (SelectedAction == UserAction.SinglePlayerTimetableGame && (SelectedTimetableSet == null || multiplayer))
             {
                 return;
             }
@@ -598,21 +616,14 @@ namespace ORTS
             }
         }
 
-        void buttonMPClient_Click(object sender, EventArgs e)
+        void buttonStartMP_Click(object sender, EventArgs e)
         {
             if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
-            SelectedAction = UserAction.MultiplayerClient;
+            SelectedAction = radioButtonMPClient.Checked? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
 
-        void buttonMPServer_Click(object sender, EventArgs e)
-        {
-            if (CheckUserName(textBoxMPUser.Text) == false) return;
-            SaveOptions();
-            SelectedAction = UserAction.MultiplayerServer;
-            DialogResult = DialogResult.OK;
-        }
         #endregion
 
         #region Options
@@ -700,8 +711,7 @@ namespace ORTS
             buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked ?
                 SelectedActivity != null && (!(SelectedActivity is ExploreActivity) || (comboBoxConsist.Items.Count > 0 && comboBoxHeadTo.Items.Count > 0)) :
                 SelectedTimetableTrain != null;
-            buttonMPClient.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text) && !String.IsNullOrEmpty(textBoxMPHost.Text);
-            buttonMPServer.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text);
+            buttonResumeMP.Enabled = buttonStartMP.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text) && !String.IsNullOrEmpty(textBoxMPHost.Text);
         }
         #endregion
 

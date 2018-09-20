@@ -115,7 +115,11 @@ namespace Orts.Viewer3D.Processes
             var actions = new[] { "start", "resume", "replay", "replay_from_save", "test"};
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
+                {
                     action = possibleAction;
+                    Game.Settings.MultiplayerServer = false;
+                    Game.Settings.MultiplayerClient = false;
+                }
 
             // Look for required type of action
             var acttype = "";
@@ -133,8 +137,15 @@ namespace Orts.Viewer3D.Processes
             var data = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
 
             // No action, check for data; for now assume any data is good data.
-            if ((action.Length == 0) && (data.Length > 0))
-                action = "start";
+            if (action.Length == 0)
+            {
+                // this cases occur in multiplayer mode
+                if (data.Length > 1)
+                    action = "start";
+                else if (data.Length == 1)
+                    action = "resume";
+
+            }
 
             var settings = Game.Settings;
 
@@ -305,13 +316,14 @@ namespace Orts.Viewer3D.Processes
         [CallOnThread("Updater")]
         public static void Save()
         {
-            if (MPManager.IsMultiPlayer()) return; //no save for multiplayer sessions yet
+            if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) return; //no save for multiplayer sessions yet
             // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
             // that are likely to match the previously chosen route and activity.
             // Append the current date and time, so that each file is unique.
             // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
-            var fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
-                (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName), DateTime.Now);
+            var fileStem = String.Format("{0} {1} {2:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
+                (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName),
+                MPManager.IsMultiPlayer() && MPManager.IsServer() ? "$Multipl$ " : "" , DateTime.Now);
 
             using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
@@ -320,6 +332,8 @@ namespace Orts.Viewer3D.Processes
                 outf.Write(VersionInfo.Build);
 
                 // Save heading data used in Menu.exe
+                if (MPManager.IsMultiPlayer() && MPManager.IsServer())
+                    outf.Write("$Multipl$");
                 outf.Write(Simulator.RouteName);
                 outf.Write(Simulator.PathName);
 
@@ -345,6 +359,9 @@ namespace Orts.Viewer3D.Processes
 
                 Simulator.Save(outf);
                 Viewer.Save(outf, fileStem);
+                // Save multiplayer parameters
+                if (MPManager.IsMultiPlayer() && MPManager.IsServer())
+                    MPManager.OnlineTrains.Save (outf);
 
                 // Write out position within file so we can check when restoring.
                 outf.Write(outf.BaseStream.Position);
@@ -410,7 +427,15 @@ namespace Orts.Viewer3D.Processes
                     InitSimulator(settings, values.args, "Resume", values.acttype);
                     Simulator.Restore(inf, values.pathName, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
+                    if (Client != null)
+                    {
+                        Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
+                    }
                     Viewer.Restore(inf);
+
+                    if (MPManager.IsMultiPlayer() && MPManager.IsServer())
+                        MPManager.OnlineTrains.Restore(inf);
+
 
                     var restorePosition = inf.BaseStream.Position;
                     var savePosition = inf.ReadInt64();
@@ -1162,7 +1187,10 @@ namespace Orts.Viewer3D.Processes
         {
             savedValues values = default(savedValues);
             // Skip the heading data used in Menu.exe
-            inf.ReadString();    // Route name
+            // Done so even if not elegant to be compatible with existing save files
+            var routeNameOrMultipl = inf.ReadString();
+            if (routeNameOrMultipl == "$Multipl$")
+                inf.ReadString(); // Route name
             values.pathName = inf.ReadString();    // Path name
             inf.ReadInt32();     // Time elapsed in game (secs)
             inf.ReadInt64();     // Date and time in real world

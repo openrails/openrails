@@ -482,7 +482,7 @@ namespace Orts.MultiPlayer
 				MPManager.Instance().lastPlayerAddedTime = Simulator.GameTime;
 				MPManager.Instance().lastSwitchTime = Simulator.GameTime;
 
-				MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", Simulator.conFileName, Simulator.patFileName, Simulator.PlayerLocomotive.Train,
+				MSGPlayer host = new  MSGPlayer(MPManager.GetUserName(), "1234", Simulator.conFileName, Simulator.patFileName, Simulator.PlayerLocomotive.Train,
 					Simulator.PlayerLocomotive.Train.Number, Simulator.Settings.AvatarURL);
 				MPManager.BroadCast(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
 				foreach (Train t in Simulator.Trains)

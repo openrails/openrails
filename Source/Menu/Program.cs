@@ -80,6 +80,12 @@ namespace ORTS
                         case MainForm.UserAction.SinglePlayerResumeTimetableGame:
                             parameters.Add("-resume");
                             break;
+                        case MainForm.UserAction.MultiplayerClientResumeSave:
+                            parameters.Add("-multiplayerclient");
+                            break;
+                        case MainForm.UserAction.MultiplayerServerResumeSave:
+                            parameters.Add("-multiplayerserver");
+                            break;
                     }
                     switch (MainForm.SelectedAction)
                     {
@@ -114,6 +120,8 @@ namespace ORTS
                         case MainForm.UserAction.SingleplayerResumeSave:
                         case MainForm.UserAction.SingleplayerReplaySave:
                         case MainForm.UserAction.SingleplayerReplaySaveFromSave:
+                        case MainForm.UserAction.MultiplayerClientResumeSave:
+                        case MainForm.UserAction.MultiplayerServerResumeSave:
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
                             break;
                         case MainForm.UserAction.SinglePlayerTimetableGame:

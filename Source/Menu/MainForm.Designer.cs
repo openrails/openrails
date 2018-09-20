@@ -46,10 +46,12 @@ namespace ORTS
             this.textBoxMPHost = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
-            this.buttonMPClient = new System.Windows.Forms.Button();
-            this.buttonMPServer = new System.Windows.Forms.Button();
             this.textBoxMPUser = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radioButtonMPServer = new System.Windows.Forms.RadioButton();
+            this.radioButtonMPClient = new System.Windows.Forms.RadioButton();
+            this.buttonStartMP = new System.Windows.Forms.Button();
+            this.buttonResumeMP = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panelDetails = new System.Windows.Forms.Panel();
@@ -125,7 +127,7 @@ namespace ORTS
             this.buttonStart.Enabled = false;
             this.buttonStart.Location = new System.Drawing.Point(6, 19);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(75, 34);
+            this.buttonStart.Size = new System.Drawing.Size(75, 46);
             this.buttonStart.TabIndex = 0;
             this.buttonStart.Text = "Start";
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
@@ -172,7 +174,7 @@ namespace ORTS
             // buttonResume
             // 
             this.buttonResume.Enabled = false;
-            this.buttonResume.Location = new System.Drawing.Point(6, 59);
+            this.buttonResume.Location = new System.Drawing.Point(7, 79);
             this.buttonResume.Name = "buttonResume";
             this.buttonResume.Size = new System.Drawing.Size(75, 35);
             this.buttonResume.TabIndex = 1;
@@ -253,26 +255,6 @@ namespace ORTS
             this.label13.Text = "User name:";
             this.label13.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // buttonMPClient
-            // 
-            this.buttonMPClient.Enabled = false;
-            this.buttonMPClient.Location = new System.Drawing.Point(164, 71);
-            this.buttonMPClient.Name = "buttonMPClient";
-            this.buttonMPClient.Size = new System.Drawing.Size(75, 23);
-            this.buttonMPClient.TabIndex = 5;
-            this.buttonMPClient.Text = "Client";
-            this.buttonMPClient.Click += new System.EventHandler(this.buttonMPClient_Click);
-            // 
-            // buttonMPServer
-            // 
-            this.buttonMPServer.Enabled = false;
-            this.buttonMPServer.Location = new System.Drawing.Point(83, 71);
-            this.buttonMPServer.Name = "buttonMPServer";
-            this.buttonMPServer.Size = new System.Drawing.Size(75, 23);
-            this.buttonMPServer.TabIndex = 4;
-            this.buttonMPServer.Text = "Server";
-            this.buttonMPServer.Click += new System.EventHandler(this.buttonMPServer_Click);
-            // 
             // textBoxMPUser
             // 
             this.textBoxMPUser.Location = new System.Drawing.Point(83, 19);
@@ -284,27 +266,71 @@ namespace ORTS
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.radioButtonMPServer);
+            this.groupBox1.Controls.Add(this.radioButtonMPClient);
+            this.groupBox1.Controls.Add(this.buttonStartMP);
+            this.groupBox1.Controls.Add(this.buttonResumeMP);
             this.groupBox1.Controls.Add(this.label13);
             this.groupBox1.Controls.Add(this.textBoxMPHost);
             this.groupBox1.Controls.Add(this.textBoxMPUser);
-            this.groupBox1.Controls.Add(this.buttonMPClient);
             this.groupBox1.Controls.Add(this.label14);
-            this.groupBox1.Controls.Add(this.buttonMPServer);
-            this.groupBox1.Location = new System.Drawing.Point(597, 436);
+            this.groupBox1.Location = new System.Drawing.Point(597, 416);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(245, 100);
+            this.groupBox1.Size = new System.Drawing.Size(245, 120);
             this.groupBox1.TabIndex = 15;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Multiplayer";
+            // 
+            // radioButtonMPServer
+            // 
+            this.radioButtonMPServer.Location = new System.Drawing.Point(9, 91);
+            this.radioButtonMPServer.Name = "radioButtonMPServer";
+            this.radioButtonMPServer.Size = new System.Drawing.Size(58, 20);
+            this.radioButtonMPServer.TabIndex = 9;
+            this.radioButtonMPServer.Text = "Server";
+            this.radioButtonMPServer.UseVisualStyleBackColor = true;
+            this.radioButtonMPServer.CheckedChanged += new System.EventHandler(this.radioButtonMode_CheckedChanged);
+            // 
+            // radioButtonMPClient
+            // 
+            this.radioButtonMPClient.Checked = true;
+            this.radioButtonMPClient.Location = new System.Drawing.Point(9, 67);
+            this.radioButtonMPClient.Name = "radioButtonMPClient";
+            this.radioButtonMPClient.Size = new System.Drawing.Size(75, 20);
+            this.radioButtonMPClient.TabIndex = 8;
+            this.radioButtonMPClient.TabStop = true;
+            this.radioButtonMPClient.Text = "Client";
+            this.radioButtonMPClient.UseVisualStyleBackColor = true;
+            this.radioButtonMPClient.CheckedChanged += new System.EventHandler(this.radioButtonMode_CheckedChanged);
+            // 
+            // buttonStartMP
+            // 
+            this.buttonStartMP.Enabled = false;
+            this.buttonStartMP.Location = new System.Drawing.Point(83, 88);
+            this.buttonStartMP.Name = "buttonStartMP";
+            this.buttonStartMP.Size = new System.Drawing.Size(75, 23);
+            this.buttonStartMP.TabIndex = 7;
+            this.buttonStartMP.Text = "Start MP";
+            this.buttonStartMP.Click += new System.EventHandler(this.buttonStartMP_Click);
+            // 
+            // buttonResumeMP
+            // 
+            this.buttonResumeMP.Enabled = false;
+            this.buttonResumeMP.Location = new System.Drawing.Point(164, 88);
+            this.buttonResumeMP.Name = "buttonResumeMP";
+            this.buttonResumeMP.Size = new System.Drawing.Size(75, 23);
+            this.buttonResumeMP.TabIndex = 6;
+            this.buttonResumeMP.Text = "Resume MP";
+            this.buttonResumeMP.Click += new System.EventHandler(this.buttonResumeMP_Click);
             // 
             // groupBox3
             // 
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.buttonResume);
             this.groupBox3.Controls.Add(this.buttonStart);
-            this.groupBox3.Location = new System.Drawing.Point(504, 436);
+            this.groupBox3.Location = new System.Drawing.Point(504, 416);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(87, 100);
+            this.groupBox3.Size = new System.Drawing.Size(87, 120);
             this.groupBox3.TabIndex = 14;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Singleplayer";
@@ -331,7 +357,7 @@ namespace ORTS
             this.panelDetails.ForeColor = System.Drawing.SystemColors.WindowText;
             this.panelDetails.Location = new System.Drawing.Point(299, 31);
             this.panelDetails.Name = "panelDetails";
-            this.panelDetails.Size = new System.Drawing.Size(543, 399);
+            this.panelDetails.Size = new System.Drawing.Size(543, 379);
             this.panelDetails.TabIndex = 20;
             // 
             // pictureBoxLogo
@@ -353,9 +379,9 @@ namespace ORTS
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.checkBoxWindowed);
             this.panel1.Controls.Add(this.buttonTools);
-            this.panel1.Location = new System.Drawing.Point(311, 436);
+            this.panel1.Location = new System.Drawing.Point(311, 416);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(187, 100);
+            this.panel1.Size = new System.Drawing.Size(187, 120);
             this.panel1.TabIndex = 13;
             // 
             // buttonDocuments
@@ -697,7 +723,7 @@ namespace ORTS
             this.panelModeTimetable.Location = new System.Drawing.Point(299, 119);
             this.panelModeTimetable.Margin = new System.Windows.Forms.Padding(0);
             this.panelModeTimetable.Name = "panelModeTimetable";
-            this.panelModeTimetable.Size = new System.Drawing.Size(287, 311);
+            this.panelModeTimetable.Size = new System.Drawing.Size(287, 291);
             this.panelModeTimetable.TabIndex = 10;
             this.panelModeTimetable.Visible = false;
             // 
@@ -851,7 +877,7 @@ namespace ORTS
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
-            this.testingToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(113, 22);
             this.testingToolStripMenuItem.Text = "Testing";
             this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
             // 
@@ -861,7 +887,7 @@ namespace ORTS
             this.contextMenuStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testingToolStripMenuItem});
             this.contextMenuStripTools.Name = "contextMenuStrip1";
-            this.contextMenuStripTools.Size = new System.Drawing.Size(113, 26);
+            this.contextMenuStripTools.Size = new System.Drawing.Size(114, 26);
             // 
             // linkLabelChangeLog
             // 
@@ -941,8 +967,6 @@ namespace ORTS
         private System.Windows.Forms.ComboBox comboBoxFolder;
         private System.Windows.Forms.ComboBox comboBoxRoute;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button buttonMPClient;
-        private System.Windows.Forms.Button buttonMPServer;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.TextBox textBoxMPHost;
@@ -995,6 +1019,10 @@ namespace ORTS
         private System.Windows.Forms.LinkLabel linkLabelChangeLog;
         private System.Windows.Forms.Button buttonDocuments;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDocuments;
+        private System.Windows.Forms.Button buttonResumeMP;
+        private System.Windows.Forms.RadioButton radioButtonMPServer;
+        private System.Windows.Forms.RadioButton radioButtonMPClient;
+        private System.Windows.Forms.Button buttonStartMP;
         private System.Windows.Forms.CheckBox checkDebriefActivityEval;
     }
 }

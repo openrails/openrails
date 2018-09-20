@@ -87,6 +87,7 @@ namespace ORTS
             public string Distance { get; private set; }
             public bool? Valid { get; private set; } // 3 possibilities: invalid, unknown validity, valid
             public string VersionOrBuild { get; private set; }
+            public bool IsMultiplayer { get; private set; }
             public bool DbfEval { get; private set; } //Debrief Eval
 
             public Save(string fileName, string currentBuild, int youngestFailedToResume)
@@ -101,9 +102,21 @@ namespace ORTS
                         var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
                         var versionOrBuild = version.Length > 0 ? version : build;
                         var valid = VersionInfo.GetValidity(version, build, youngestFailedToResume);
+                        // Read in multiplayer flag/ route/activity/path/player data.
+                        // Done so even if not elegant to be compatible with existing save files
+                        var routeNameOrMultipl = inf.ReadString();
+                        var routeName = "";
+                        var isMultiplayer = false;
+                        if (routeNameOrMultipl == "$Multipl$")
+                        {
+                            isMultiplayer = true;
+                            routeName = inf.ReadString(); // Route name
+                        }
+                        else
+                        {
+                            routeName = routeNameOrMultipl; // Route name 
+                        }
 
-                        // Read in route/activity/path/player data.
-                        var routeName = inf.ReadString(); // Route name
                         var pathName = inf.ReadString(); // Path name
                         var gameTime = new DateTime().AddSeconds(inf.ReadInt32()).TimeOfDay; // Game time
                         var realTime = DateTime.FromBinary(inf.ReadInt64()); // Real time
@@ -120,6 +133,7 @@ namespace ORTS
 
                         PathName = pathName;
                         RouteName = routeName.Trim();
+                        IsMultiplayer = isMultiplayer;
                         GameTime = gameTime;
                         RealTime = realTime;
                         CurrentTile = currentTile;
@@ -137,6 +151,7 @@ namespace ORTS
 
         public string SelectedSaveFile { get; set; }
         public MainForm.UserAction SelectedAction { get; set; }
+        private bool Multiplayer { get; set; }
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
@@ -145,6 +160,7 @@ namespace ORTS
         {
             MainForm = parentForm;
             SelectedAction = mainFormAction;
+            Multiplayer = SelectedAction == MainForm.UserAction.MultiplayerClient || SelectedAction == MainForm.UserAction.MultiplayerServer;
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
             Localizer.Localize(this, catalog);
@@ -175,6 +191,8 @@ namespace ORTS
                     activity.Name == "+ " + catalog.GetString("Explore in Activity Mode") + " +" ? catalog.GetString("Explore in Activity Mode") : catalog.GetString("Explore Route"));
                 pathNameDataGridViewTextBoxColumn.Visible = activity.FilePath == null;
             }
+
+            if (Multiplayer) Text += " - Multiplayer ";
 
             LoadSaves();
         }
@@ -229,6 +247,7 @@ namespace ORTS
                             var save = new Save(saveFile, build, Settings.YoungestFailedToRestore);
                             if (save.RouteName == Route.Name)
                             {
+                                if (!save.IsMultiplayer ^ Multiplayer)
                                 saves.Add(save);
                             }
                             else    // In case you receive a SavePack where the activity is recognised but the route has been renamed.
@@ -237,7 +256,8 @@ namespace ORTS
                             {
                                 if (!MainForm.Routes.Any(el => el.Name == save.RouteName))
                                 {
-                                    saves.Add(save);
+                                    if (!save.IsMultiplayer ^ Multiplayer)
+                                        saves.Add(save);
                                     // Save a warning to show later.
                                     warning += catalog.GetStringFmt("Warning: Save {0} found from a route with an unexpected name:\n{1}.\n\n", save.RealTime, save.RouteName);
                                 }
@@ -298,8 +318,23 @@ namespace ORTS
                             return;
 
                     SelectedSaveFile = save.File;
-                    SelectedAction = SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame ?
-                        MainForm.UserAction.SinglePlayerResumeTimetableGame : MainForm.UserAction.SingleplayerResumeSave;
+                    var selectedAction = SelectedAction;
+                    switch (SelectedAction)
+                    {
+                        case MainForm.UserAction.SinglePlayerTimetableGame:
+                            selectedAction = MainForm.UserAction.SinglePlayerResumeTimetableGame;
+                            break;
+                        case MainForm.UserAction.SingleplayerNewGame:
+                            selectedAction = MainForm.UserAction.SingleplayerResumeSave;
+                            break;
+                        case MainForm.UserAction.MultiplayerClient:
+                            selectedAction = MainForm.UserAction.MultiplayerClientResumeSave;
+                            break;
+                        case MainForm.UserAction.MultiplayerServer:
+                            selectedAction = MainForm.UserAction.MultiplayerServerResumeSave;
+                            break;
+                    }
+                    SelectedAction = selectedAction;
                     DialogResult = DialogResult.OK;
                 }
             }
@@ -327,8 +362,8 @@ namespace ORTS
                     buttonDelete.Enabled = true;
                     buttonResume.Enabled = (save.Valid != false); // I.e. either true or null
                     var replayFileName = Path.ChangeExtension(save.File, "replay");
-                    buttonReplayFromPreviousSave.Enabled = ((save.Valid != false) && File.Exists(replayFileName));
-                    buttonReplayFromStart.Enabled = File.Exists(replayFileName); // can Replay From Start even if Save is invalid.
+                    buttonReplayFromPreviousSave.Enabled = (save.Valid != false) && File.Exists(replayFileName) && !Multiplayer;
+                    buttonReplayFromStart.Enabled = File.Exists(replayFileName) && !Multiplayer; // can Replay From Start even if Save is invalid.
                 }
                 else
                 {

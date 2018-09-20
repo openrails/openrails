@@ -930,17 +930,20 @@ namespace Orts.Simulation.Physics
             InitialSpeed = inf.ReadSingle();
             IsPathless = inf.ReadBoolean();
 
-            // restore leadlocomotive
-            if (LeadLocomotiveIndex >= 0)
+            if (TrainType != TRAINTYPE.REMOTE)
             {
-                LeadLocomotive = Cars[LeadLocomotiveIndex];
-                Simulator.PlayerLocomotive = LeadLocomotive;
-            }
+                // restore leadlocomotive
+                if (LeadLocomotiveIndex >= 0)
+                {
+                    LeadLocomotive = Cars[LeadLocomotiveIndex];
+                    Simulator.PlayerLocomotive = LeadLocomotive;
+                }
 
-            // restore logfile
-            if (DatalogTrainSpeed)
-            {
-                CreateLogFile();
+                // restore logfile
+                if (DatalogTrainSpeed)
+                {
+                    CreateLogFile();
+                }
             }
         }
 
