@@ -1796,11 +1796,13 @@ namespace Orts.Simulation.Physics
             UpdateCarSteamHeat(elapsedClockSeconds);
             UpdateAuxTender();
 
-             AddCouplerImpuseForces();
+            AddCouplerImpuseForces();
             ComputeCouplerForces();
 
             UpdateCarSpeeds(elapsedClockSeconds);
             UpdateCouplerSlack(elapsedClockSeconds);
+
+//            Trace.TraceInformation("CouplerSlack - CarID {0} Slack1M {1} Slack2M {2}", Cars[3].CarID, Cars[3].CouplerSlackM, Cars[3].CouplerSlack2M);
 
             // Update wind elements for the train, ie the wind speed, and direction, as well as the angle between the train and wind
             UpdateWindComponents();
@@ -4136,28 +4138,72 @@ namespace Orts.Simulation.Physics
 
         bool FixCouplerForceEquations()
         {
+
+            // coupler in tension
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car = Cars[i];
-                if (car.CouplerSlackM < 0 || car.CouplerForceB >= 1)
+
+            // if coupler in compression on this car, or coupler is not to be solved, then jump car
+                if (car.CouplerSlackM < 0 || car.CouplerForceB >= 1) 
                     continue;
-                float maxs1 = car.GetMaximumCouplerSlack1M();
-                if (car.CouplerSlackM < maxs1 || car.CouplerForceU > 0)
+
+                if (Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
                 {
-                    SetCouplerForce(car, 0);
-                    return true;
+                    float maxs0 = car.GetMaximumCouplerSlack0M();
+
+                    if (car.CouplerSlackM < maxs0 )
+ //               if (car.CouplerSlackM < maxs0 || car.CouplerForceU > 0)  // In Zone 1 set coupler forces to zero, as coupler faces not touching, or if coupler force is in the opposite direction, ie compressing ( +ve CouplerForceU )
+                    {
+//                        Trace.TraceInformation("FixCoupler #1 - Tension - CardId {0} SlackM {1} Slack2M {2} Maxs0 {3} Force {4}", car.CarID, car.CouplerSlackM, car.CouplerSlack2M, maxs0, car.CouplerForceU);
+                        SetCouplerForce(car, 0);
+                        return true;
+                    }
+                }
+                else // "Simple coupler" - operates on two extension zones, coupler faces not in contact, and coupler fuller in contact
+                {
+                    float maxs1 = car.GetMaximumCouplerSlack1M();
+                    // In Zone 1 set coupler forces to zero, as coupler faces not touching, or if coupler force is in the opposite direction, ie compressing ( +ve CouplerForceU )
+                    if (car.CouplerSlackM < maxs1 || car.CouplerForceU > 0) 
+                    {
+                        SetCouplerForce(car, 0);
+                        return true;
+                    }
                 }
             }
+
+
+           // Coupler in compression
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
                 TrainCar car = Cars[i];
+
+                // Coupler in tension on this car or coupler force is "zero" then jump to next car
                 if (car.CouplerSlackM > 0 || car.CouplerForceB >= 1)
                     continue;
-                float maxs1 = car.GetMaximumCouplerSlack1M();
-                if (car.CouplerSlackM > -maxs1 || car.CouplerForceU < 0)
+
+                if (Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
                 {
-                    SetCouplerForce(car, 0);
-                    return true;
+                    float maxs0 = car.GetMaximumCouplerSlack0M();
+
+                    if (car.CouplerSlackM > -maxs0)
+//                    if (car.CouplerSlackM > -maxs0 || car.CouplerForceU < 0) // In Zone 1 set coupler forces to zero, as coupler faces not touching, or if coupler force is in the opposite direction, ie in tension ( -ve CouplerForceU )
+                    {
+//                        Trace.TraceInformation("FixCoupler #2 - Compression - CardId {0} SlackM {1} Slack2M {2} Maxs0 {3} Force {4}", car.CarID, car.CouplerSlackM, car.CouplerSlack2M, maxs0, car.CouplerForceU);
+                        SetCouplerForce(car, 0);
+                        return true;
+                    }
+                }
+                else // "Simple coupler" - operates on two extension zones, coupler faces not in contact, and coupler fuller in contact
+                {
+
+                    float maxs1 = car.GetMaximumCouplerSlack1M();
+                    // In Zone 1 set coupler forces to zero, as coupler faces not touching, or if coupler force is in the opposite direction, ie in tension ( -ve CouplerForceU )
+                    if (car.CouplerSlackM > -maxs1 || car.CouplerForceU < 0) 
+                    {
+                        SetCouplerForce(car, 0);
+                        return true;
+                    }
                 }
             }
             return false;
@@ -4184,6 +4230,7 @@ namespace Orts.Simulation.Physics
 
         bool FixCouplerImpulseForceEquations()
         {
+            // coupler in tension - CouplerForce -ve
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car = Cars[i];
@@ -4191,10 +4238,13 @@ namespace Orts.Simulation.Physics
                     continue;
                 if (car.CouplerSlackM < car.CouplerSlack2M || car.CouplerForceU > 0)
                 {
+ //                   Trace.TraceInformation("FixCouplerImpulse #1 - Tension - CardId {0} SlackM {1} Slack2M {2} Force {3}", car.CarID, car.CouplerSlackM, car.CouplerSlack2M, car.CouplerForceU);
                     SetCouplerForce(car, 0);
                     return true;
                 }
             }
+
+            // Coupler in compression - CouplerForce +ve
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
                 TrainCar car = Cars[i];
@@ -4202,6 +4252,7 @@ namespace Orts.Simulation.Physics
                     continue;
                 if (car.CouplerSlackM > -car.CouplerSlack2M || car.CouplerForceU < 0)
                 {
+//                    Trace.TraceInformation("FixCouplerImpulse #2 - Tension - CardId {0} SlackM {1} Slack2M {2} Force {3}", car.CarID, car.CouplerSlackM, car.CouplerSlack2M, car.CouplerForceU);
                     SetCouplerForce(car, 0);
                     return true;
                 }
@@ -4220,18 +4271,21 @@ namespace Orts.Simulation.Physics
             if (Cars.Count < 2)
                 return;
             SetupCouplerForceEquations();
+
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car = Cars[i];
-                float max = car.CouplerSlack2M;
-                if (-max < car.CouplerSlackM && car.CouplerSlackM < max)
-                {
-                    car.CouplerForceB = 1;
-                    car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
-                }
-                else
-                    car.CouplerForceR = Cars[i + 1].SpeedMpS - car.SpeedMpS;
+
+                    float max = car.CouplerSlack2M;
+                    if (-max < car.CouplerSlackM && car.CouplerSlackM < max)
+                    {
+                        car.CouplerForceB = 1;
+                        car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
+                    }
+                    else
+                        car.CouplerForceR = Cars[i + 1].SpeedMpS - car.SpeedMpS;
             }
+
             do
                 SolveCouplerForceEquations();
             while (FixCouplerImpulseForceEquations());
@@ -4247,85 +4301,134 @@ namespace Orts.Simulation.Physics
             }
         }
 
-
         //================================================================================================//
         /// <summary>
-        /// computes coupler acceleration balancing forces
+        /// computes coupler acceleration balancing forces for Coupler
+        /// The couplers are calculated using the formulas 9.7 to 9.9 (pg 243), described in the Handbook of Railway Vehicle Dynamics by Simon Iwnicki
+        ///  In the book there is one equation per car and in OR there is one equation per coupler. To get the OR equations, first solve the 
+        ///  equations in the book for acceleration. Then equate the acceleration equation for each pair of adjacent cars. Arrange the fwc 
+        ///  terms on the left hand side and all other terms on the right side. Now if the fwc values are treated as unknowns, there is a 
+        ///  tridiagonal system of linear equations which can be solved to find the coupler forces needed to make the accelerations match.
+        ///  
+        ///  Each fwc value corresponds to one of the CouplerForceU values.The CouplerForceA, CouplerForceB and CouplerForceC values are 
+        ///  the CouplerForceU coefficients for the previuous coupler, the current coupler and the next coupler.The CouplerForceR values are 
+        ///  the sum of the right hand side terms. The notation and the code in SolveCouplerForceEquations() that solves for the CouplerForceU 
+        ///  values is from "Numerical Recipes in C".
+        ///  
+        /// Or has two coupler models - Simple and Advanced
+        /// Simple - has two extension zones - #1 where the coupler faces have not come into contact, and hence CouplerForceU is zero, #2 where coupler 
+        /// forces are taking the full weight of the following car. The breaking capacity of the coupler could be considered zone 3
+        /// 
+        /// Advanced - has three extension zones, and the breaking zone - #1 where the coupler faces have not come into contact, and hence 
+        /// CouplerForceU is zero, #2 where the spring is taking the load, and car is able to oscilate in the train as it moves backwards and 
+        /// forwards due to the action of the spring, #3 - where the coupler is fully extended against the friction brake, and the full force of the 
+        /// following wagons will be applied to the coupler.
+        /// 
         /// <\summary>
 
         public void ComputeCouplerForces()
         {
-            // TODO: this loop could be extracted and become a separate method, that could be called also by TTTrain.physicsPreUpdate
-            for (int i = 0; i < Cars.Count; i++)
-            {
-                if (Cars[i].SpeedMpS > 0)
-                    Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
-                        ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(Cars[i].MotiveForceN) : 0));
-                else if (Cars[i].SpeedMpS < 0)
-                    Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
-                        ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(Cars[i].MotiveForceN) : 0);
-            }
 
-            if (Cars.Count < 2)
-                return;
-
-            SetupCouplerForceEquations(); // Based upon the car Mass, set up LH coupler forces (ABC)
-
-            // Calculate RH side coupler force
-            // Whilever coupler in first zone of expansion, then A = C = R = 0
-            // otherwise R is calculated based on difference in acceleration between cars
-            for (int i = 0; i < Cars.Count - 1; i++)
-            {
-                TrainCar car = Cars[i];
-                float max = car.GetMaximumCouplerSlack1M();
-                if (-max < car.CouplerSlackM && car.CouplerSlackM < max)
+                // TODO: this loop could be extracted and become a separate method, that could be called also by TTTrain.physicsPreUpdate
+                for (int i = 0; i < Cars.Count; i++)
                 {
-                    car.CouplerForceB = 1;
-                    car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
+                    if (Cars[i].SpeedMpS > 0)
+                        Cars[i].TotalForceN -= (Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
+                            ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(Cars[i].MotiveForceN) : 0));
+                    else if (Cars[i].SpeedMpS < 0)
+                        Cars[i].TotalForceN += Cars[i].FrictionForceN + Cars[i].BrakeForceN + Cars[i].CurveForceN + Cars[i].WindForceN + Cars[i].TunnelForceN +
+                            ((Cars[i] is MSTSLocomotive && (Cars[i] as MSTSLocomotive).DynamicBrakeForceN > 0) ? Math.Abs(Cars[i].MotiveForceN) : 0);
+                }
+
+                if (Cars.Count < 2)
+                    return;
+
+                SetupCouplerForceEquations(); // Based upon the car Mass, set up LH side forces (ABC) parameters
+
+                // Calculate RH side coupler force
+                // Whilever coupler faces not in contact, then "zero coupler force" by setting A = C = R = 0
+                // otherwise R is calculated based on difference in acceleration between cars, or stiffness and damping value
+                for (int i = 0; i < Cars.Count - 1; i++)
+                {
+                        TrainCar car = Cars[i];
+                    if (Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
+                    {
+                    float max0 = car.GetMaximumCouplerSlack0M();
+                    float max1 = car.GetMaximumCouplerSlack1M();
+
+                    if ( car.CouplerSlackM > -max0 && car.CouplerSlackM < max0) // Zone 1 coupler faces not in contact - no force generated
+                    {
+                        car.CouplerForceB = 1;
+                        car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
+                    }
+                    else if (-max1 < car.CouplerSlackM && car.CouplerSlackM < -max0 || car.CouplerSlackM > max0 && car.CouplerSlackM < max1)   // Zone 2 coupler faces in contact, but spring and damping effects are in play
+                    {
+                        car.CouplerForceR = (Math.Abs(car.CouplerSlackM) * car.GetCouplerStiffness1NpM() + car.CouplerDampingSpeedMpS * car.GetCouplerDamping1NMpS()) / Cars[i + 1].MassKG - car.TotalForceN / car.MassKG;
+                    }
+                    else // Zone 3 coupler faces fully in contact - full force generated
+                    {
+                        car.CouplerForceR = Cars[i + 1].TotalForceN / Cars[i + 1].MassKG - car.TotalForceN / car.MassKG;
+                    }
+
+                }
+                    else // "Simple coupler" - operates on two extension zones, coupler faces not in contact, and coupler fuller in contact
+                    {
+                        float max = car.GetMaximumCouplerSlack1M();
+                        if (-max < car.CouplerSlackM && car.CouplerSlackM < max)
+                        {
+                            car.CouplerForceB = 1;
+                            car.CouplerForceA = car.CouplerForceC = car.CouplerForceR = 0;
+                        }
+                        else
+                            car.CouplerForceR = Cars[i + 1].TotalForceN / Cars[i + 1].MassKG - car.TotalForceN / car.MassKG;
+                    }
+                }
+
+                // Solve coupler forces to find CouplerForceU
+                do
+                    SolveCouplerForceEquations();
+                while (FixCouplerForceEquations());
+
+                for (int i = 0; i < Cars.Count - 1; i++)
+                {
+                    // Calculate total forces on cars
+                    TrainCar car = Cars[i];
+                    car.TotalForceN += car.CouplerForceU;
+                    Cars[i + 1].TotalForceN -= car.CouplerForceU;
+
+                    // Find max coupler force on the car - currently doesn't appear to be used anywhere
+                    if (MaximumCouplerForceN < Math.Abs(car.CouplerForceU))
+                        MaximumCouplerForceN = Math.Abs(car.CouplerForceU);
+
+                    // Update couplerslack2m which acts as an upper limit in slack calculations
+                    float maxs = car.GetMaximumCouplerSlack2M();
+
+                if (Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
+                {
+                             car.CouplerSlack2M = maxs;
                 }
                 else
-                    car.CouplerForceR = Cars[i + 1].TotalForceN / Cars[i + 1].MassKG - car.TotalForceN / car.MassKG;
-            }
-
-            // Solve coupler forces to find CouplerForceU
-            do
-                SolveCouplerForceEquations();  
-            while (FixCouplerForceEquations());
-
-            for (int i = 0; i < Cars.Count - 1; i++)
-            {
-                // Calculate total forces on cars
-                TrainCar car = Cars[i];
-                car.TotalForceN += car.CouplerForceU;
-                Cars[i + 1].TotalForceN -= car.CouplerForceU;
-
-                // Find max coupler force on the car - currently doesn't appear to be used anywhere
-                if (MaximumCouplerForceN < Math.Abs(car.CouplerForceU))
-                    MaximumCouplerForceN = Math.Abs(car.CouplerForceU);
-
-                // Update couplerslack2m which acts as an upper limit in slack calculations ???
-                float maxs = car.GetMaximumCouplerSlack2M();
-                if (car.CouplerForceU > 0)
                 {
-                    float f = -(car.CouplerSlackM + car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
-                    if (car.CouplerSlackM > -maxs && f > car.CouplerForceU)
-                        car.CouplerSlack2M = -car.CouplerSlackM;
-                    else
+                    if (car.CouplerForceU > 0)
+                    {
+                        float f = -(car.CouplerSlackM + car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
+                        if (car.CouplerSlackM > -maxs && f > car.CouplerForceU)
+                            car.CouplerSlack2M = -car.CouplerSlackM;
+                        else
+                            car.CouplerSlack2M = maxs;
+                    }
+                    else if (car.CouplerForceU == 0)
                         car.CouplerSlack2M = maxs;
-                }
-                else if (car.CouplerForceU == 0)
-                    car.CouplerSlack2M = maxs;
-                else
-                {
-                    float f = (car.CouplerSlackM - car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
-                    if (car.CouplerSlackM < maxs && f > car.CouplerForceU)
-                        car.CouplerSlack2M = car.CouplerSlackM;
                     else
-                        car.CouplerSlack2M = maxs;
+                    {
+                        float f = (car.CouplerSlackM - car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
+                        if (car.CouplerSlackM < maxs && f > car.CouplerForceU)
+                            car.CouplerSlack2M = car.CouplerSlackM;
+                        else
+                            car.CouplerSlack2M = maxs;
+                    }
                 }
             }
-
-
         }
 
         //================================================================================================//
@@ -4338,7 +4441,7 @@ namespace Orts.Simulation.Physics
             // The train speed is calculated by averaging all the car speeds. The individual car speeds are calculated from the TotalForce acting on each car. Typically the MotiveForce or Gravitational forces (though other forces like friction have a small impact as well).
             // At stop under normal circumstances the BrakeForce exceeds the TotalForces, and therefore the wagon is "held in a stationary position". 
             // In the case of "air_piped" wagons which have no BrakeForces acting on them, the car is not held stationary, and each car shows a small speed.
-            // To overcome this any "air_piped cars are forced to zero speed if the prcedding car is stationary.
+            // To overcome this any "air_piped cars are forced to zero speed if the preceeding car is stationary.
             int n = 0;
             float PrevCarSpeedMps = 0.0f;
             float NextCarSpeedMps = 0.0f;
@@ -4446,6 +4549,9 @@ namespace Orts.Simulation.Physics
             }
             if (n == 0)
                 return;
+
+
+
             // start cars moving backward
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
@@ -4504,9 +4610,11 @@ namespace Orts.Simulation.Physics
             NPull = NPush = 0;
             for (int i = 0; i < Cars.Count - 1; i++)
             {
-                // update coupler slack
+                // update coupler slack distance
                 TrainCar car = Cars[i];
                 car.CouplerSlackM += (car.SpeedMpS - Cars[i + 1].SpeedMpS) * elapsedTime;
+
+                // Calculate speed for damping force
                 car.CouplerDampingSpeedMpS = car.SpeedMpS - Cars[i + 1].SpeedMpS;
 
                 // Make sure that coupler slack does not exceed the maximum coupler slack
@@ -4518,17 +4626,17 @@ namespace Orts.Simulation.Physics
 
                 TotalCouplerSlackM += car.CouplerSlackM; // Total coupler slack displayed in HUD only
 
-//                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack1 {3} MaxSlack2 {4} Damping1 {5} Damping2 {6} Stiffness1 {7} Stiffness2 {8} AdvancedCpl {9} CplSlackA {10} CplSlackB {11}", 
-//                    car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), 
+//                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack0 {3} MaxSlack1 {4} MaxSlack2 {5} Damping1 {6} Damping2 {7} Stiffness1 {8} Stiffness2 {9} AdvancedCpl {10} CplSlackA {11} CplSlackB {12}", 
+//                    car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack0M(),
 //                    car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M(), car.GetCouplerDamping1NMpS(), car.GetCouplerDamping2NMpS(), 
 //                    car.GetCouplerStiffness1NpM(), car.GetCouplerStiffness1NpM(), car.IsAdvancedCoupler, car.GetCouplerSlackAM(), car.GetCouplerSlackBM());
 
-                if (car.CouplerSlackM >= 0.01) // Coupler pulling
+                if (car.CouplerSlackM >= 0.001) // Coupler pulling
                 {
                     NPull++;
                     car.HUDCouplerForceIndication = 1; 
                 }                    
-                else if (car.CouplerSlackM <= -0.01)
+                else if (car.CouplerSlackM <= -0.001)
                 {
                     NPush++;
                     car.HUDCouplerForceIndication = 2;

@@ -1512,14 +1512,19 @@ namespace Orts.Simulation.RollingStocks
             return 0;
         }
 
-        public virtual float GetMaximumCouplerSlack1M()
+        public virtual float GetMaximumCouplerSlack0M()
         {
-            return .012f;
+            return 0.005f;
         }
 
+        public virtual float GetMaximumCouplerSlack1M()
+        {
+            return 0.012f;
+        }
+        
         public virtual float GetMaximumCouplerSlack2M()
         {
-            return .12f;
+            return 0.12f;
         }
 
         public virtual float GetMaximumCouplerForceN()
