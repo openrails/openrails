@@ -163,6 +163,9 @@ namespace Orts.Formats.Msts
         ORTS_PLAYER_DIESEL_ENGINE_STARTER,
         ORTS_PLAYER_DIESEL_ENGINE_STOPPER,
         ORTS_CABLIGHT,
+        ORTS_LEFTDOOR,
+        ORTS_RIGHTDOOR,
+        ORTS_MIRRORS,
 
         // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
         EXTERNALWIPERS,

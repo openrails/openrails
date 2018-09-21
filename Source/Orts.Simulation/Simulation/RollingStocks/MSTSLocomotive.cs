@@ -3943,6 +3943,15 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.ORTS_CABLIGHT:
                     data = CabLightOn ? 1 : 0;
                     break;
+                case CABViewControlTypes.ORTS_LEFTDOOR:
+                    data = GetCabFlipped() ? (DoorRightOpen ? 1 : 0) : DoorLeftOpen ? 1 : 0;
+                    break;
+                case CABViewControlTypes.ORTS_RIGHTDOOR:
+                    data = GetCabFlipped() ? (DoorLeftOpen ? 1 : 0) : DoorRightOpen ? 1 : 0;
+                    break;
+                case CABViewControlTypes.ORTS_MIRRORS:
+                    data = MirrorOpen ? 1 : 0;
+                    break;
                 default:
                     {
                         data = 0;
