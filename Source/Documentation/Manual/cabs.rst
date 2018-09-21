@@ -171,6 +171,15 @@ Here is an example of a cab light control block within the .cvf file::
             )
 
 
+Further OR cab controls
+-----------------------
+
+OR supports the cabview control to open/close the left doors, the right doors 
+and the mirrors.
+
+The control blocks are like the one shown for the cab light. The Type strings 
+are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
+
 
 High-resolution Cab Backgrounds and Controls
 --------------------------------------------
