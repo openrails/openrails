@@ -139,12 +139,9 @@ namespace Orts.Viewer3D.Processes
             // No action, check for data; for now assume any data is good data.
             if (action.Length == 0)
             {
-                // this cases occur in multiplayer mode
-                if (data.Length > 1)
-                    action = "start";
-                else if (data.Length == 1)
-                    action = "resume";
-
+                // in multiplayer start/resume there is no "-start" or "-resume" string, so you have to discriminate
+                if (Acttype.Length > 0) action = "start";
+                else action = "resume";
             }
 
             var settings = Game.Settings;
