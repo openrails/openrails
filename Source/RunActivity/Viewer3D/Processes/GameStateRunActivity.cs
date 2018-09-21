@@ -426,6 +426,7 @@ namespace Orts.Viewer3D.Processes
                     Viewer = new Viewer(Simulator, Game);
                     if (Client != null)
                     {
+                        if (Acttype == "activity") Simulator.GetPathAndConsist();
                         Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
                     }
                     Viewer.Restore(inf);

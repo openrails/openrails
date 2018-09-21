@@ -620,6 +620,17 @@ namespace Orts.Simulation
             return PlayerLocomotive;
         }
 
+        /// <summary>
+        /// Gets path and consist of player train in multiplayer resume in activity
+        /// </summary>
+        public void GetPathAndConsist()
+        {
+            var PlayerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
+            var srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + PlayerServiceFileName + ".SRV");
+            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
+        }
+
 
         /// <summary>
         /// Convert and elapsed real time into clock time based on simulator
