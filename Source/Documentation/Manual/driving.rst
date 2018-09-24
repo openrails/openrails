@@ -734,7 +734,8 @@ for a signal behind. You will receive a voice message reporting if you
 received authorization or not. On the Track monitor window the signal 
 colours will change from red to red/white if permission is granted.
 
-7.6.8 Change Cab - ``<Ctrl+E>``
+Change Cab
+----------
 
 All locomotives and some passenger cars have a forward-facing cab which is 
 configured through an entry in the ENG file. For example, the MSTS Dash9 

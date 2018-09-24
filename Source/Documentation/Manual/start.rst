@@ -165,8 +165,8 @@ Now you can select in the drop-down window ``Train:`` from all of the trains
 of the timetable the train you desire to run as the Player train. Season 
 and weather can also be selected.
 
-Run!
-----
+Run
+---
 
 Now, click on ``Start``, and OR will start loading the data needed for your 
 game. When loading completes you will be within the cab of your 
