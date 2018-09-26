@@ -788,7 +788,7 @@ namespace Orts.Simulation
             // Check if station is in present train path
 
             if (MyPlayerTrain.StationStops.Count == 0 ||
-                MyPlayerTrain.TCRoute.activeSubpath != MyPlayerTrain.StationStops[0].SubrouteIndex)
+                MyPlayerTrain.TCRoute.activeSubpath != MyPlayerTrain.StationStops[0].SubrouteIndex || !(MyPlayerTrain.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || MyPlayerTrain.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL))
             {
                 return (false);
             }
