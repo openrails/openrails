@@ -6856,7 +6856,8 @@ namespace Orts.Simulation.Signalling
                             if (s != null && s.enabledTrain != null && s.enabledTrain.Train == reservedTrain.Train) reservedTrainStillThere = true;
                         }
 
-                        if (reservedTrainStillThere == true && reservedTrain.Train.GetDistanceToTrain(this.Index, 0.0f) > 0)
+                        if (reservedTrainStillThere == true && reservedTrain.Train.ValidRoute[0] != null && reservedTrain.Train.PresentPosition[0] != null &&
+                            reservedTrain.Train.GetDistanceToTrain(this.Index, 0.0f) > 0)
                             localBlockstate = SignalObject.InternalBlockstate.ReservedOther;
                         else
                         {
