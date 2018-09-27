@@ -623,7 +623,7 @@ Alternatively, the original .trk file can be left unmodified, and a new .trk fil
 inserted into an ``OpenRails`` folder in the root folder of the route. This is 
 explained :ref:`here <features-route-modify-trk>`. 
 
-To avoid also forest trees on routes following line::
+To avoid also forest trees on roads following line::
 
   ORTSUserPreferenceRemoveForestTreesFromRoads ( 1 )
 
