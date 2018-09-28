@@ -318,7 +318,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             }
 
-            if (!Car.Train.WagonsAttached) // If wagons are not attached to the train, then set wagon BC pressure to same as locomotive
+            // If wagons are not attached to the locomotive, then set wagon BC pressure to same as locomotive in the Train brake line
+            if (!Car.Train.WagonsAttached && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender))
             {
                 Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSIA;
             }

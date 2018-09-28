@@ -532,7 +532,7 @@ namespace Orts.Simulation.Physics
                 {
                     FirstCarUiD = car.UiD;
                 }
-                if(FirstCarUiD != 0)
+                if (FirstCarUiD != 0)
                 {
                     break; // If UiD has been set, then don't go any further
                 }
@@ -540,7 +540,7 @@ namespace Orts.Simulation.Physics
             return FirstCarUiD;
         }
 
-        // Get the UiD value of the first wagon - searches along train, and gets the integer UiD of the first wagon that is not an engine or tender
+        // Determine whther there are any wagons attached to the locomotive
         public virtual bool GetWagonsAttachedIndication()
         {
             WagonsAttached = false;
@@ -550,6 +550,7 @@ namespace Orts.Simulation.Physics
                 if (car.WagonType == MSTSWagon.WagonTypes.Freight || car.WagonType == MSTSWagon.WagonTypes.Passenger)
                 {
                     WagonsAttached = true;
+                    break;
                 }
                 else
                 {
