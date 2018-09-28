@@ -5089,6 +5089,18 @@ namespace Orts.Simulation.Physics
             routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
             PresentPosition[1].RouteListIndex = routeIndex;
 
+            if (doJump) // jump do be performed in multiplayer mode when train re-enters game in different position
+            {
+                doJump = false;
+                PresentPosition[0].CopyTo(ref PreviousPosition[0]);
+                Trace.TraceInformation("Multiplayer server requested the player train to jump");
+                // reset some items
+                SignalObjectItems.Clear();
+                NextSignalObject[0] = null;
+                InitializeSignals(true);
+                LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
+            }
+
             // get reserved length
             ReservedTrackLengthM = GetReservedLength();
         }
@@ -5769,6 +5781,9 @@ namespace Orts.Simulation.Physics
                     {
                         if (RearSignalObject.this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP)
                         {
+                            Trace.TraceWarning("Train {1} ({0}) passing rear signal {2} at {3} at danger at {4}",
+                            Number.ToString(), Name, RearSignalObject.thisRef.ToString(),
+                            DistanceTravelledM.ToString("###0.0"), SpeedMpS.ToString("##0.00"));
                             SetTrainOutOfControl(OUTOFCONTROL.SPAD_REAR);
                             outOfControl = true;
                         }
@@ -19278,6 +19293,8 @@ namespace Orts.Simulation.Physics
         public int expectedTileX, expectedTileZ, expectedTracIndex, expectedDIr, expectedTDir;
         public float expectedX, expectedZ, expectedTravelled, expectedLength;
         public bool updateMSGReceived;
+        public bool jumpRequested; // set when a train jump has been requested by the server (when player re-enters game in old position
+        public bool doJump; // used in conjunction with above flag to manage thread safety
 
         public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir, float len)
         {
@@ -19355,6 +19372,11 @@ namespace Orts.Simulation.Physics
                         SpeedMpS += (expectedTravelled - x) / 1;
                         CalculatePositionOfCars(elapsedClockSeconds, SpeedMpS * elapsedClockSeconds);
                         newDistanceTravelledM = DistanceTravelledM + (SpeedMpS * elapsedClockSeconds);
+                    }
+                    if (jumpRequested)
+                    {
+                        doJump = true;
+                        jumpRequested = false;
                     }
                 }
                 catch (Exception)

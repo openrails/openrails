@@ -534,6 +534,7 @@ namespace Orts.MultiPlayer
                             t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
                             t.expectedTDir = this.dir; t.expectedDIr = (int)t.MUDirection;
                             t.updateMSGReceived = true; t.expectedTravelled = t.travelled; t.TrainMaxSpeedMpS = this.trainmaxspeed;
+                            t.jumpRequested = true; // server has requested me to jump after I re-entered the game
                         }
                     }
                     MPManager.Simulator.ClockTime = this.seconds;
