@@ -6519,7 +6519,7 @@ namespace Orts.Simulation.AIs
                             StationStops[0].CalculateDepartTime(presentTime, this);
                         }
                     }
-                    else
+                    else if (ControlMode == TRAIN_CONTROL.AUTO_NODE || ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
                     {
                         // check if station missed : station must be at least 250m. behind us
                         bool missedStation = IsMissedPlatform(250);
