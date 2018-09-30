@@ -2422,9 +2422,9 @@ namespace Orts.Simulation.RollingStocks
                 {
                     AIFireOverride = true; // Set whenever SetFireOn or SetFireOff are selected
                 }
-                else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatSmoothedBTU < MaxBoilerHeatBTU)
+                else if (BoilerPressurePSI < MaxBoilerPressurePSI && BoilerHeatSmoothedBTU < MaxBoilerHeatBTU && BoilerHeatBTU < MaxBoilerSafetyPressHeatBTU)
                 {
-                    AIFireOverride = false; // Reset if pressure and heat back to normal
+                    AIFireOverride = false; // Reset if pressure and heat back to "normal"
                 }
 
                 if (SetFireReset)  // Check FireReset Override command - resets fireoff and fireon override
@@ -2448,7 +2448,7 @@ namespace Orts.Simulation.RollingStocks
                 // Check FireOn Override command - allows player to force the fire up in preparation for a station departure
                 if (SetFireOn)
                 {
-                    if ((BoilerHeatSmoothedBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f) || BoilerPressurePSI > MaxBoilerPressurePSI || (BoilerHeatSmoothedBTU > MaxBoilerHeatBTU && absSpeedMpS <= 10.0f) || (BoilerHeatBTU > MaxBoilerSafetyPressHeatBTU && absSpeedMpS <= 10.0f))
+                    if ((BoilerHeatSmoothedBTU > 0.995f * MaxBoilerHeatBTU && absSpeedMpS > 10.0f) || BoilerPressurePSI > MaxBoilerPressurePSI ||  absSpeedMpS <= 10.0f && (BoilerHeatSmoothedBTU > MaxBoilerHeatBTU  || BoilerHeatBTU > 1.1f * MaxBoilerSafetyPressHeatBTU))
                     {
                         SetFireOn = false; // Disable FireOn if bolierpressure and boilerheat back to "normal"
                     }
@@ -2866,14 +2866,15 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 #region Safety Valve - AI Firing
-
-                if (BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI && !ShovelAnyway && AIFireOverride)  // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient
+                // turn safety valves on if boiler heat is excessive, and fireman is not trying to raise steam for rising gradient by using the AI fire override
+                if (AIFireOverride && BoilerPressurePSI > MaxBoilerPressurePSI + SafetyValveStartPSI)  
                 {
                     SignalEvent(Event.SteamSafetyValveOn);
                     SafetyIsOn = true;
                 }
 
-                else if (BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI || ShovelAnyway)  // turn safety vales off if boiler heat has returned to "normal", or fireman is trying to raise steam for rising gradient.
+                // turn safety vales off if boiler heat has returned to "normal", fitreman is no longer in override mode
+                else if (!AIFireOverride && BoilerPressurePSI < MaxBoilerPressurePSI - SafetyValveDropPSI)  
                 {
                     SignalEvent(Event.SteamSafetyValveOff);
                     SafetyIsOn = false;
@@ -5749,18 +5750,20 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.h,
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateSmoothedKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6}\t\t{7}\t{8}\t\t{9}\t{10}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6}\t\t{7}\t{8}\t\t{9}\t{10}\t\t{11}\t{12}\n",
                 Simulator.Catalog.GetString("Heat:"),
                 Simulator.Catalog.GetString("In"),
                 FormatStrings.FormatPower(W.FromBTUpS(BoilerHeatInBTUpS), IsMetric, false, true),
                 Simulator.Catalog.GetString("Out"),
                 FormatStrings.FormatPower(W.FromBTUpS(PreviousBoilerHeatOutBTUpS), IsMetric, false, true),
                 Simulator.Catalog.GetString("Stored"),
-                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothBTU.SmoothedValue), IsMetric),
+                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothedBTU), IsMetric),
                 Simulator.Catalog.GetString("Max"),
                 FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerHeatBTU), IsMetric),
                 Simulator.Catalog.GetString("Safety"),
-                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerSafetyPressHeatBTU), IsMetric)
+                FormatStrings.FormatEnergy(W.FromBTUpS(MaxBoilerSafetyPressHeatBTU), IsMetric),
+                Simulator.Catalog.GetString("Raw"),
+                FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatBTU), IsMetric)
                 );
 
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
@@ -6115,7 +6118,7 @@ namespace Orts.Simulation.RollingStocks
                     );
             }
 
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\n",
                 Simulator.Catalog.GetString("Status:"),
                 Simulator.Catalog.GetString("CoalOut"),
                 CoalIsExhausted ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
@@ -6132,7 +6135,10 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Catalog.GetString("FireOn"),
                 SetFireOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 Simulator.Catalog.GetString("FireOff"),
-                SetFireOff ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+                SetFireOff ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
+                Simulator.Catalog.GetString("AIOR"),
+                AIFireOverride ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
+                );
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Performance"));
             status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
