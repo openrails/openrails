@@ -1070,35 +1070,35 @@ steam usage exceeding the steam generation. This point determines the
 maximum speed of the locomotive and will vary depending upon load and
 track conditions
 
-The AI Fireman in Open Rails is not proactive, ie it cannot look ahead for 
-gradients, etc, and therefore will only add fuel to the fire once the train 
-is on the gradient. This reactive approach can result in a boiler pressure 
-drop whilst the fire is building up. Similarly if the steam usage is dropped 
-(due to a throttle decrease, such as approaching a station) then the fire 
+The AI Fireman in Open Rails is not proactive, ie it cannot look ahead for
+gradients, etc, and therefore will only add fuel to the fire once the train
+is on the gradient. This reactive approach can result in a boiler pressure
+drop whilst the fire is building up. Similarly if the steam usage is dropped
+(due to a throttle decrease, such as approaching a station) then the fire
 takes time to reduce in heat, thus the boiler pressure can become excessive.
 
-To give the player a little bit more control over this, and to facilitate 
-the maintaining of the boiler pressure the following key controls have been 
+To give the player a little bit more control over this, and to facilitate
+the maintaining of the boiler pressure the following key controls have been
 added to the AI Fireman function:
 
-AIFireOn - (``<Alt+H>``) - Forces the AI fireman to start building 
-the fire up (increases boiler heat & pressure, etc) - typically used just 
-before leaving a station to maintain pressure as steam consumption increases. 
-This function will be turned off if AIFireOff, AIFireReset are triggered or 
+AIFireOn - (``<Alt+H>``) - Forces the AI fireman to start building
+the fire up (increases boiler heat & pressure, etc) - typically used just
+before leaving a station to maintain pressure as steam consumption increases.
+This function will be turned off if AIFireOff, AIFireReset are triggered or
 if boiler pressure or BoilerHeat exceeds the boiler limit.
 
-AIFireOff - (``<Ctrl+H>``) - Forces the AI fireman to stop adding 
-to the fire (allows boiler heat to decrease as fire drops) - typically used 
-approaching a station to allow the fire heat to decrease, and thus stopping 
-boiler pressure from exceeding the maximum. This function will be turned off 
-if AIFireOn, AIFireReset are triggered or if boiler pressure or BoilerHeat 
+AIFireOff - (``<Ctrl+H>``) - Forces the AI fireman to stop adding
+to the fire (allows boiler heat to decrease as fire drops) - typically used
+approaching a station to allow the fire heat to decrease, and thus stopping
+boiler pressure from exceeding the maximum. This function will be turned off
+if AIFireOn, AIFireReset are triggered or if boiler pressure or BoilerHeat
 drops too low.
 
-AIFireReset - (``<Ctrl+Alt+H>``) - turns off both of the above 
+AIFireReset - (``<Ctrl+Alt+H>``) - turns off both of the above
 functions when desired.
 
-If theses controls are not used, then the AI fireman operates in the same 
-fashion as previously. 
+If theses controls are not used, then the AI fireman operates in the same
+fashion as previously.
 
 Steam Locomotive Carriage Steam Heat Modelling
 ''''''''''''''''''''''''''''''''''''''''''''''
@@ -1178,8 +1178,8 @@ controls:
 - ``<Alt+U>`` -- increase steam pipe pressure (and hence train temperature)
 - ``<Alt+D>`` -- decrease steam pipe pressure (and hence train temperature)
 
-The steam heating control valve can be configured by adding an enginecontroller 
-called ``ORTSSTeamHeat ( w, x, y, z)``. It should be configured as a standard 
+The steam heating control valve can be configured by adding an enginecontroller
+called ``ORTSSTeamHeat ( w, x, y, z)``. It should be configured as a standard
 4 value controller.
 
 It should be noted that the impact of steam heating will vary depending
@@ -1431,8 +1431,8 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 Special Visual Effects for Locomotives or Wagons
 ------------------------------------------------
 Steam exhausts on a steam locomotive, and other special visual effects can be modelled in OR by defining
-appropriate visual effects in the ``SteamSpecialEffects`` section of the steam locomotive ENG file, the 
-``DieselSpecialEffects`` section of the diesel locomotive ENG file, or the ``SpecialEffects`` section 
+appropriate visual effects in the ``SteamSpecialEffects`` section of the steam locomotive ENG file, the
+``DieselSpecialEffects`` section of the diesel locomotive ENG file, or the ``SpecialEffects`` section
 of a relevant wagon (including diesel, steam or electric locomotives.
 
 OR supports the following special visual effects in a steam locomotive:
@@ -1469,7 +1469,7 @@ OR supports the following special visual effects in a diesel locomotive:
   be defined, simply by adjusting the numerical value of the number after the key
   word exhaust.
 
-OR supports the following special visual effects in a wagon (also the wagon section of 
+OR supports the following special visual effects in a wagon (also the wagon section of
 an ENG file):
 
 - Steam Heating Boiler (named ``HeatingSteamBoilerFX``) -- represents the exhaust for
@@ -1486,8 +1486,8 @@ an ENG file):
 - Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a
   steam pipe connection between wagons.
 
-NB: If a steam effect is not defined in the ``SteamSpecialEffects``,  ``DieselSpecialEffects``, or the 
-``SpecialEffects`` section of an ENG/WAG file, then it will not be displayed  in the simulation. 
+NB: If a steam effect is not defined in the ``SteamSpecialEffects``,  ``DieselSpecialEffects``, or the
+``SpecialEffects`` section of an ENG/WAG file, then it will not be displayed  in the simulation.
 Similarly if any of the co-ordinates are zero, then the effect will not be displayed.
 
 Each effect is defined by inserting a code block into the ENG/WAG file similar to
@@ -1498,7 +1498,7 @@ the one shown below::
         -1  0  0
         0.1
     )
-    
+
 The code block consists of the following elements:
 
 - Effect name -- as described above,
@@ -1942,96 +1942,96 @@ Vacuum Brakes
 
 Vacuum braking has been implemented in Open Rails in one of the two following forms:
 
-- Direct Vacuum - in this form, while ever the Brake Pipe (BP) is connected to the ejectors 
-  or vacuum pump, depending upon the operating capacity of the ejectors, a vacuum will be 
+- Direct Vacuum - in this form, while ever the Brake Pipe (BP) is connected to the ejectors
+  or vacuum pump, depending upon the operating capacity of the ejectors, a vacuum will be
   maintained or created. Typically this will be when the brake controller is in a Brake Off position.
 
-- Equalising Reservoir (EQ) - in this form a main vacuum reservoir is fitted to the locomotive, 
-  along with the equalising reservoir. Typically the main reservoir is maintained at a sufficiently 
-  high enough vacuum to create the vacuum in the BP to release the brakes. The BP vacuum will 
+- Equalising Reservoir (EQ) - in this form a main vacuum reservoir is fitted to the locomotive,
+  along with the equalising reservoir. Typically the main reservoir is maintained at a sufficiently
+  high enough vacuum to create the vacuum in the BP to release the brakes. The BP vacuum will
   equalise at the vacuum set by the driver on the equalising reservoir.
 
-In general, brakes (in particular a system with an equalising reservoir) will have three 
+In general, brakes (in particular a system with an equalising reservoir) will have three
 potential timings that impact the application or the releasing of the brakes.
 
 i) In the equalising reservoir as the brake controller is varied
 ii) In the train brake pipe as the vacuum is increased or decreased
 iii) In the brake cylinder as it is applied or released.
 
-In the case of brakes without an equalising reservoir only items ii) and iii) are valid 
+In the case of brakes without an equalising reservoir only items ii) and iii) are valid
 in the above list.
 
-The OR code attempts to model the above three items, however some compromises may need 
-to be made, and it is suggested that the best outcome will be achieved when an overall timing 
+The OR code attempts to model the above three items, however some compromises may need
+to be made, and it is suggested that the best outcome will be achieved when an overall timing
 approach is considered, rather than considering each of the individual components in isolation.
 
-To enable the Equalising Reservoir option above BrakesTrainBrakeType must be set 
+To enable the Equalising Reservoir option above BrakesTrainBrakeType must be set
 to ``vacuum_single_pipe_eq`` in the engine section of the ENG file.
 
-Following is a list of specific OR parameters and their default values. The default 
-values can be overwritten by including the following parameters into the relevant 
+Following is a list of specific OR parameters and their default values. The default
+values can be overwritten by including the following parameters into the relevant
 wagon section of the WAG or ENG file.
 
-- ``wagon(BrakePipeVolume`` -- Volume of brake pipe fitted to car in cubic feet 
+- ``wagon(BrakePipeVolume`` -- Volume of brake pipe fitted to car in cubic feet
   (default calculated from car length, and assumption of 2in BP).
-- ``wagon(ORTSAuxilaryResCapacity`` -- Volume of auxiliary vacuum reservoir 
+- ``wagon(ORTSAuxilaryResCapacity`` -- Volume of auxiliary vacuum reservoir
   (coupled to brake cylinder) in cubic feet (default calculated on basis of 24in reservoir).
-- ``wagon(ORTSBrakeCylinderSize`` -- Size of brake cylinders fitted to wagon in inches 
+- ``wagon(ORTSBrakeCylinderSize`` -- Size of brake cylinders fitted to wagon in inches
   (default assumes a 18in brake cylinder).
-- ``wagon(ORTSNumberBrakeCylinders`` -- Number of brake cylinders fitted to wagon, 
+- ``wagon(ORTSNumberBrakeCylinders`` -- Number of brake cylinders fitted to wagon,
   as an integer number (default 2).
-- ``wagon(ORTSDirectAdmissionValve`` -- Car has direct admission valves fitted, 
+- ``wagon(ORTSDirectAdmissionValve`` -- Car has direct admission valves fitted,
   0 = No, 1 = Yes (default No).
-- ``wagon(ORTSBrakeShoeFriction`` -- defines the friction curve for the brake shoe 
+- ``wagon(ORTSBrakeShoeFriction`` -- defines the friction curve for the brake shoe
   with speed (default curve for cast iron brake shoes included in OR).
 
-Other standard brake parameters such as MaxBrakeForce, MaxReleaseRate , MaxApplicationRate, 
+Other standard brake parameters such as MaxBrakeForce, MaxReleaseRate , MaxApplicationRate,
 BrakeCylinderPressureForMaxBrakeBrakeForce can be used as well.
 
 Additionaly the following are defined in the engine section of the ENG file:
 
-- ``engine(ORTSBrakePipeChargingRate`` -- sets the rate at which the brake pipe charges in InHg per second 
-  (default 0.32) This value should be calculated on the basis of feeding into a 200ft^3 brake system, 
+- ``engine(ORTSBrakePipeChargingRate`` -- sets the rate at which the brake pipe charges in InHg per second
+  (default 0.32) This value should be calculated on the basis of feeding into a 200ft^3 brake system,
   as OR will adjust the value depending upon the connected volume of the brake cylinders and brake pipe.
 
 - ``engine(ORTSBrakeServiceTimeFactor`` -- Time for lead engine brake pipe pressure to drop in seconds (default 10.0)
 
-- ``engine(ORTSBrakeEmergencyTimeFactor`` -- Time for lead engine brake pipe pressure to drop under 
+- ``engine(ORTSBrakeEmergencyTimeFactor`` -- Time for lead engine brake pipe pressure to drop under
   emergency conditions, in seconds (default 1.0)
 
-- ``engine(ORTSBrakePipeTimeFactor`` -- Controls propagation increase time along train pipe as vacuum 
+- ``engine(ORTSBrakePipeTimeFactor`` -- Controls propagation increase time along train pipe as vacuum
   increases, ie when brakes released, in seconds (default 0.02)
 
 - ``engine(TrainPipeLeakRate`` -- Rate at which the train brake pipe leaks at, in InHg per second (default no leakage)
 
-- ``engine(ORTSVacuumBrakesMainResVolume`` -- The volume of the main vacuum brake reservoir in cubic feet 
+- ``engine(ORTSVacuumBrakesMainResVolume`` -- The volume of the main vacuum brake reservoir in cubic feet
   (default 110.0 , EQ operation only)
 
-- ``engine(ORTSVacuumBrakesMainResMaxVacuum`` -- The maximum vacuum in the main vacuum brake reservoir. 
-  When this pressure is reached the exhauster will automatically stop running, in InHg. (default 23 , EQ 
+- ``engine(ORTSVacuumBrakesMainResMaxVacuum`` -- The maximum vacuum in the main vacuum brake reservoir.
+  When this pressure is reached the exhauster will automatically stop running, in InHg. (default 23 , EQ
   operation only)
 
-- ``engine(ORTSVacuumBrakesExhausterRestartVacuum`` -- pressure below which the exhauster will start to 
+- ``engine(ORTSVacuumBrakesExhausterRestartVacuum`` -- pressure below which the exhauster will start to
   operate to recharge the main reservoir, in InHg (default 21 , EQ operation only)
 
-- ``engine(ORTSVacuumBrakesMainResChargingRate`` -- rate at which the main vacuum reservoir charges at, 
+- ``engine(ORTSVacuumBrakesMainResChargingRate`` -- rate at which the main vacuum reservoir charges at,
   in InHg per second (default 0.2, EQ operation only)
 
 **Note: It is strongly recommended that UoM be used whenever units such as InHg, etc are specificed in the above parameters.**
 
-Other standard brake parameters such as VacuumBrakesHasVacuumPump, VacuumBrakesMinBoilerPressureMaxVacuum, 
+Other standard brake parameters such as VacuumBrakesHasVacuumPump, VacuumBrakesMinBoilerPressureMaxVacuum,
 VacuumBrakesSmallEjectorUsageRate, VacuumBrakesLargeEjectorUsageRate can be defined as well.
 
-When defining the Brake Controllers for vacuum braked locomotives, only the following BrakesController 
-tokens should be used - TrainBrakesControllerFullQuickReleaseStart, TrainBrakesControllerReleaseStart, 
-TrainBrakesControllerRunningStart, TrainBrakesControllerApplyStart, TrainBrakesControllerHoldLappedStart, 
-TrainBrakesControllerVacuumContinuousServiceStart, TrainBrakesControllerEmergencyStart, 
+When defining the Brake Controllers for vacuum braked locomotives, only the following BrakesController
+tokens should be used - TrainBrakesControllerFullQuickReleaseStart, TrainBrakesControllerReleaseStart,
+TrainBrakesControllerRunningStart, TrainBrakesControllerApplyStart, TrainBrakesControllerHoldLappedStart,
+TrainBrakesControllerVacuumContinuousServiceStart, TrainBrakesControllerEmergencyStart,
 EngineBrakesControllerReleaseStart, EngineBrakesControllerRunningStart, EngineBrakesControllerApplyStart.
 
-If ``TrainPipeLeakRate`` has been set in the ENG file, then the small ejector will be required to offset the leakage 
+If ``TrainPipeLeakRate`` has been set in the ENG file, then the small ejector will be required to offset the leakage
 in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase the level of operation of the small ejector.
 
-An engine controller can be configured to customise the operation of the small ejector. This controller is called 
+An engine controller can be configured to customise the operation of the small ejector. This controller is called
 ``ORTSSmallEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller.
 
 Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted to air braked locomotives.
@@ -2088,7 +2088,7 @@ presents to the trains movement, as follows:
   when all the wheels of the rolling stock are perfectly aligned between the
   tracks). See the section below *Impact of superelevation*.
 
-The impact of wind resistance on curve friction is calculated in the general 
+The impact of wind resistance on curve friction is calculated in the general
 calculations for Wind Resistance.
 
 Impact of Rigid Wheelbase
@@ -2770,62 +2770,62 @@ values included in the TRK file.
 Wind Resistance
 ===============
 
-The default Davis resistance formula is only valid for train operation in STILL 
-air. At high train speeds, and especially for Very Fast trains the impact of 
-wind can be quite significant, and special consideration is required when 
-designing rolling stock, etc. If wind is present, then the impact of drag forces 
-on the train will vary, and be in addition to the values calculated in the 
+The default Davis resistance formula is only valid for train operation in STILL
+air. At high train speeds, and especially for Very Fast trains the impact of
+wind can be quite significant, and special consideration is required when
+designing rolling stock, etc. If wind is present, then the impact of drag forces
+on the train will vary, and be in addition to the values calculated in the
 default (or still air) conditions.
 
 The wind resistance in OR is modeled by the following two components:
 
-**Wind Drag Resistance**  - If a train is heading into a headwind then the 
-train will experience greater resistance to movement, similarly if the train 
-has a tailwind, then the trains resistance will decrease as the wind provides 
-a "helping hand". As the wind swings from the head of the train to the rear 
-resistance will decrease. When the wind is perpendicular to the train, drag 
+**Wind Drag Resistance**  - If a train is heading into a headwind then the
+train will experience greater resistance to movement, similarly if the train
+has a tailwind, then the trains resistance will decrease as the wind provides
+a "helping hand". As the wind swings from the head of the train to the rear
+resistance will decrease. When the wind is perpendicular to the train, drag
 impact due to the wind will be zero.
 
 
-**Wind Lateral Force Resistance**  - When the wind blows from the side of the 
-train, the train will be pushed against the outside track rail, thus increasing 
+**Wind Lateral Force Resistance**  - When the wind blows from the side of the
+train, the train will be pushed against the outside track rail, thus increasing
 the amount of resistance experienced by the train.
 
-To activate calculation of wind resistance, select the tickbox for "Wind dependent 
-resistance" in the Simulation TAB of the options menu. As wind only becomes 
-significant at higher train speeds, the wind resistance calculation only commences 
+To activate calculation of wind resistance, select the tickbox for "Wind dependent
+resistance" in the Simulation TAB of the options menu. As wind only becomes
+significant at higher train speeds, the wind resistance calculation only commences
 once the train speed exceeds 5 mph.
 
-The amount of wind resistance that the train is experiencing is shown in the FORCES 
-INFORMATION HUD. (see attached screenshot) The current wind conditions are also shown 
-in the HUD, and include the Wind speed and direction, train direction, and the 
-resulting vectors for the combined train and wind speed. The value in the Friction 
+The amount of wind resistance that the train is experiencing is shown in the FORCES
+INFORMATION HUD. (see attached screenshot) The current wind conditions are also shown
+in the HUD, and include the Wind speed and direction, train direction, and the
+resulting vectors for the combined train and wind speed. The value in the Friction
 column is the default still air conditions as calculated by the Davis formula.
-It should be noted that OR calculates the Wind Drag resistance as a difference 
-compared to the still air Davis C value, and hence it is possible for values in the 
-Wind column to go negative on occasions. This is most likely when the wind is blowing 
-from the rear of the train, ie the ResWind direction is greater then 90\ |deg|\ C degrees, and 
-hence the wind is actually aiding the train movement, and in effect reducing the 
+It should be noted that OR calculates the Wind Drag resistance as a difference
+compared to the still air Davis C value, and hence it is possible for values in the
+Wind column to go negative on occasions. This is most likely when the wind is blowing
+from the rear of the train, ie the ResWind direction is greater then 90\ |deg|\ C degrees, and
+hence the wind is actually aiding the train movement, and in effect reducing the
 amount of still air resistance.
 
-The wind model has been adjusted in the following way:	
+The wind model has been adjusted in the following way:
 
 - Wind Update speed - 1 sec
-- Wind direction will always be within +/- 45\ |deg|\ C degrees of the randomly selected default 
+- Wind direction will always be within +/- 45\ |deg|\ C degrees of the randomly selected default
   value selected at startup
 - Wind speed is limited to approx 10mph.
 
 
-The Wind Resistance model will use default information, such as the width and height of 
-the stock from the Size statement, so by default it is not necessary to add any additional 
-parameters for its operation. However for those who like to customise, the following 
+The Wind Resistance model will use default information, such as the width and height of
+the stock from the Size statement, so by default it is not necessary to add any additional
+parameters for its operation. However for those who like to customise, the following
 parameters can be inputted via the WAG file or section.
 
-``ORTSWagonFrontalArea`` -- The frontal cross sectional area of the wagon. The default units 
+``ORTSWagonFrontalArea`` -- The frontal cross sectional area of the wagon. The default units
 are in ft^2, so if entering metres, include the Units of Measure.
 
-``ORTSDavisDragConstant`` -- OR by default uses the standard Davis Drag constants. If alternate 
-drag constants are used in calculating the still air resistance, then it might be worthwhile 
+``ORTSDavisDragConstant`` -- OR by default uses the standard Davis Drag constants. If alternate
+drag constants are used in calculating the still air resistance, then it might be worthwhile
 inputting these values.
 
 
@@ -2834,18 +2834,18 @@ inputting these values.
 Trailing Locomotive Resistance
 ==============================
 
-Typically only one set of resistance parameters is allowed for each WAG file. In the case of locomotives 
+Typically only one set of resistance parameters is allowed for each WAG file. In the case of locomotives
 this can create issues as a leading locomotive will have a higher drag resistance then a trailing locomotive.
 
-OR automatically adjusts the Drag resistance for trailing locomotives based upon the ratio of the original 
-Davis formula. 
+OR automatically adjusts the Drag resistance for trailing locomotives based upon the ratio of the original
+Davis formula.
 
 However for those who like to customise, the following parameter can be inputted via the WAG file or section.
 
-``ORTSTrailLocomotiveResistanceFactor`` -- The constant value by which the leading locomotive resistance 
+``ORTSTrailLocomotiveResistanceFactor`` -- The constant value by which the leading locomotive resistance
 needs to be decreased for trailing operation.
 
-For steam locomotive tenders it may be necessary to enter this value depending upon the Drag constant used 
+For steam locomotive tenders it may be necessary to enter this value depending upon the Drag constant used
 to calculate the tender resistance.
 
 
@@ -2882,7 +2882,7 @@ This new file may contain either:
 An example of an OR-specific ``bc13ge70tonner.eng`` file to be placed into the
 OpenRails subfolder that uses the second possibility is as follows::
 
-    include ( ..\bc13ge70tonner.eng )
+    include ( ../bc13ge70tonner.eng )
     Wagon (
       MaxReleaseRate ( 2.17 )
       MaxApplicationRate ( 3.37 )
