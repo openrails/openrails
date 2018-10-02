@@ -1313,9 +1313,12 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateControllers(elapsedClockSeconds);
 
-            // Train Heading
-            var heading = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
-            Train.PhysicsTrainLocoDirectionDeg = MathHelper.ToDegrees((float)heading);
+            // Train Heading - only check the lead locomotive otherwise flipped locomotives further in consist will overwrite the train direction
+            if (IsLeadLocomotive())
+            {
+                var heading = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
+                Train.PhysicsTrainLocoDirectionDeg = MathHelper.ToDegrees((float)heading);
+            }
  
             // TODO  this is a wild simplification for electric and diesel electric
                         float t = ThrottlePercent / 100f;
