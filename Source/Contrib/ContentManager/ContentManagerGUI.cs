@@ -85,6 +85,10 @@ namespace ORTS.ContentManager
                     if (e2.Cancelled || e.Node.Nodes.Count < 1 || e.Node.Nodes[0].Text != "Loading..." || e.Node.Nodes[0].Tag != null)
                         return;
 
+                    // Collapse node if we're going to end up with no child nodes.
+                    if (e2.Error == null && nodes.Length == 0)
+                        e.Node.Collapse();
+
                     // Remove the loading node.
                     e.Node.Nodes.RemoveAt(0);
 
