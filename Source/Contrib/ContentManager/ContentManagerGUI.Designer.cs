@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ContentManagerGUI));
+            this.searchBox = new CueTextBox();
+            this.searchResults = new System.Windows.Forms.ListBox();
             this.treeViewContent = new System.Windows.Forms.TreeView();
             this.richTextBoxContent = new System.Windows.Forms.RichTextBox();
             this.splitContainer = new System.Windows.Forms.SplitContainer();
@@ -36,6 +38,26 @@
             this.splitContainer.Panel2.SuspendLayout();
             this.splitContainer.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // searchBox
+            // 
+            this.searchBox.Cue = "Search for items...";
+            this.searchBox.Dock = System.Windows.Forms.DockStyle.Top;
+            this.searchBox.Name = "searchBox";
+            this.searchBox.ShowCueWhenFocused = true;
+            this.searchBox.Size = new System.Drawing.Size(516, 30);
+            this.searchBox.TabIndex = 1;
+            this.searchBox.Text = "";
+            this.searchBox.TextChanged += new System.EventHandler(this.searchBox_TextChanged);
+            // 
+            // searchResults
+            // 
+            this.searchResults.Dock = System.Windows.Forms.DockStyle.Top;
+            this.searchResults.Name = "searchResults";
+            this.searchResults.Size = new System.Drawing.Size(516, 200);
+            this.searchResults.TabIndex = 2;
+            this.searchResults.Visible = false;
+            this.searchResults.DoubleClick += new System.EventHandler(this.searchResults_DoubleClick);
             // 
             // treeViewContent
             // 
@@ -69,6 +91,8 @@
             // splitContainer.Panel1
             // 
             this.splitContainer.Panel1.Controls.Add(this.treeViewContent);
+            this.splitContainer.Panel1.Controls.Add(this.searchResults);
+            this.splitContainer.Panel1.Controls.Add(this.searchBox);
             this.splitContainer.Panel1MinSize = 100;
             // 
             // splitContainer.Panel2
@@ -98,6 +122,8 @@
 
         #endregion
 
+        private CueTextBox searchBox;
+        private System.Windows.Forms.ListBox searchResults;
         private System.Windows.Forms.TreeView treeViewContent;
         private System.Windows.Forms.RichTextBox richTextBoxContent;
         private System.Windows.Forms.SplitContainer splitContainer;

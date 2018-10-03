@@ -63,6 +63,7 @@
     <Compile Include="ContentManager.cs" />
     <Compile Include="ContentMSTS.cs" />
     <Compile Include="ContentOR.cs" />
+    <Compile Include="CueTextBox.cs" />
     <Compile Include="Models\Activity.cs" />
     <Compile Include="Models\Car.cs" />
     <Compile Include="Models\Consist.cs" />

@@ -17,6 +17,7 @@
 
 using ORTS.Settings;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -36,6 +37,27 @@ namespace ORTS.ContentManager
         readonly Regex ContentLink = new Regex("\u0001(.*?)\u0002(.*?)\u0001");
 
         Content PendingSelection;
+        List<string> PendingSelections = new List<string>();
+
+        BackgroundWorker SearchWorker = null;
+
+        class SearchResult
+        {
+            public string Name;
+            public string[] Path;
+            public SearchResult(Content content, string path)
+            {
+                var placeEnd = Math.Max(path.LastIndexOf(" / "), path.LastIndexOf(" -> "));
+                var place = path.Substring(0, placeEnd);
+                Name = string.Format("{0} ({1}) in {2}", content.Name, content.Type, place);
+                Path = path.Split(new[] { " / ", " -> " }, StringSplitOptions.None);
+            }
+
+            public override string ToString()
+            {
+                return Name;
+            }
+        }
 
         public ContentManagerGUI()
         {
@@ -98,18 +120,42 @@ namespace ORTS.ContentManager
                     else
                         e.Node.Nodes.AddRange(nodes);
 
-                    if (PendingSelection != null)
-                    {
-                        var pendingSelectionNode = nodes.FirstOrDefault(node => (Content)node.Tag == PendingSelection);
-                        if (pendingSelectionNode != null)
-                        {
-                            treeViewContent.SelectedNode = pendingSelectionNode;
-                            treeViewContent.Focus();
-                        }
-                        PendingSelection = null;
-                    }
+                    CheckForPendingActions(e.Node);
                 };
                 worker.RunWorkerAsync(e.Node.Tag);
+            }
+            else
+            {
+                var worker = new BackgroundWorker();
+                worker.RunWorkerCompleted += (object sender2, RunWorkerCompletedEventArgs e2) =>
+                {
+                    CheckForPendingActions(e.Node);
+                };
+                worker.RunWorkerAsync(e.Node.Tag);
+            }
+        }
+
+        void CheckForPendingActions(TreeNode startNode)
+        {
+            if (PendingSelection != null)
+            {
+                var pendingSelectionNode = startNode.Nodes.OfType<TreeNode>().FirstOrDefault(node => (Content)node.Tag == PendingSelection);
+                if (pendingSelectionNode != null)
+                {
+                    treeViewContent.SelectedNode = pendingSelectionNode;
+                    treeViewContent.Focus();
+                }
+                PendingSelection = null;
+            }
+            if (PendingSelections.Count > 0)
+            {
+                var pendingSelectionNode = startNode.Nodes.OfType<TreeNode>().FirstOrDefault(node => ((Content)node.Tag).Name == PendingSelections[0]);
+                if (pendingSelectionNode != null)
+                {
+                    treeViewContent.SelectedNode = pendingSelectionNode;
+                    treeViewContent.SelectedNode.Expand();
+                }
+                PendingSelections.RemoveAt(0);
             }
         }
 
@@ -185,6 +231,85 @@ namespace ORTS.ContentManager
                     treeViewContent.SelectedNode.Expand();
                 }
             }
+        }
+
+        void searchBox_TextChanged(object sender, EventArgs e)
+        {
+            if (SearchWorker != null)
+            {
+                SearchWorker.CancelAsync();
+                SearchWorker = null;
+            }
+
+            searchResults.Items.Clear();
+            searchResults.Visible = searchBox.Text.Length > 0;
+            if (!searchResults.Visible)
+                return;
+
+            var worker = new BackgroundWorker();
+            worker.WorkerSupportsCancellation = true;
+            worker.DoWork += (object sender1, DoWorkEventArgs e1) =>
+            {
+                var search = (e1.Argument as string).ToLowerInvariant();
+                var finds = new List<SearchResult>();
+                var pending = new Dictionary<string, Content>();
+                pending.Add(ContentManager.Name, ContentManager);
+
+                while (pending.Count > 0 && !worker.CancellationPending)
+                {
+                    var path = pending.Keys.First();
+                    var content = pending[path];
+                    pending.Remove(path);
+
+                    if (content.Name.ToLowerInvariant().Contains(search))
+                    {
+                        finds.Add(new SearchResult(content, path));
+                    }
+
+                    foreach (var child in ((ContentType[])Enum.GetValues(typeof(ContentType))).SelectMany(ct => content.Get(ct)))
+                    {
+                        pending.Add(path + " / " + child.Name, child);
+                    }
+
+                    foreach (var child in ContentLink.Matches(ContentInfo.GetText(content)).Cast<Match>().Select(linkMatch => content.Get(linkMatch.Groups[1].Value, (ContentType)Enum.Parse(typeof(ContentType), linkMatch.Groups[2].Value))).Where(linkContent => linkContent != null))
+                    {
+                        var key = path + " -> " + child.Name;
+                        if (!pending.ContainsKey(key))
+                            pending.Add(key, child);
+                    }
+
+                    searchResults.Invoke((Action<List<SearchResult>, bool>)UpdateSearchResults, finds, false);
+                }
+
+                if (worker.CancellationPending)
+                    e1.Cancel = true;
+                else
+                    searchResults.Invoke((Action<List<SearchResult>, bool>)UpdateSearchResults, finds, true);
+            };
+            SearchWorker = worker;
+            SearchWorker.RunWorkerAsync(searchBox.Text);
+        }
+
+        void UpdateSearchResults(List<SearchResult> results, bool done)
+        {
+            if (done || searchResults.Items.Count % 100 != results.Count % 100)
+            {
+                searchResults.Items.AddRange(results.Skip(searchResults.Items.Count).ToArray());
+            }
+        }
+
+        void searchResults_DoubleClick(object sender, EventArgs e)
+        {
+            var result = searchResults.SelectedItem as SearchResult;
+            if (result == null)
+                return;
+
+            PendingSelections.Clear();
+            PendingSelections.AddRange(result.Path.Skip(1).ToArray());
+            treeViewContent.Focus();
+            treeViewContent.CollapseAll();
+            treeViewContent.SelectedNode = treeViewContent.Nodes[0];
+            treeViewContent.SelectedNode.Expand();
         }
     }
 
