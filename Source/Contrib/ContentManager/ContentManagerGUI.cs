@@ -32,6 +32,7 @@ namespace ORTS.ContentManager
         readonly UserSettings Settings;
         readonly ContentManager ContentManager;
 
+        readonly Regex ContentBold = new Regex("^([\\w ]+:)\t", RegexOptions.Multiline);
         readonly Regex ContentLink = new Regex("\u0001(.*?)\u0002(.*?)\u0001");
 
         Content PendingSelection;
@@ -138,18 +139,12 @@ namespace ORTS.ContentManager
             Trace.TraceInformation("Updating richTextBoxContent with content {0}", e.Node.Tag as Content);
             richTextBoxContent.Text = ContentInfo.GetText(e.Node.Tag as Content);
             var boldFont = new Font(richTextBoxContent.Font, FontStyle.Bold);
-            var start = 0;
-            while (richTextBoxContent.Find(":\t", start, RichTextBoxFinds.None) >= 0)
+            var boldMatch = ContentBold.Match(richTextBoxContent.Text);
+            while (boldMatch.Success)
             {
-                var endPos = richTextBoxContent.Find(":\t", start, RichTextBoxFinds.None);
-                var line = richTextBoxContent.GetLineFromCharIndex(endPos);
-                var startPos = richTextBoxContent.GetFirstCharIndexFromLine(line);
-                if (startPos <= start && start > 0)
-                    startPos = start + 1;
-                richTextBoxContent.Select(startPos, endPos - startPos + 1);
-                if (richTextBoxContent.SelectedText.IndexOf("\t") == -1)
-                    richTextBoxContent.SelectionFont = boldFont;
-                start = endPos + 1;
+                richTextBoxContent.Select(boldMatch.Groups[1].Index, boldMatch.Groups[1].Length);
+                richTextBoxContent.SelectionFont = boldFont;
+                boldMatch = ContentBold.Match(richTextBoxContent.Text, boldMatch.Index + boldMatch.Length);
             }
             var linkMatch = ContentLink.Match(richTextBoxContent.Text);
             while (linkMatch.Success)
