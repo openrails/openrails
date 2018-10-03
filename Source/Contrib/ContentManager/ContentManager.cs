@@ -50,16 +50,6 @@ namespace ORTS.ContentManager
                         yield return new ContentMSTSCollection(this, folder.Key, folder.Value);
                 }
             }
-            //else if (type == ContentType.Route)
-            //{
-            //    foreach (var folder in Settings.Folders)
-            //    {
-            //        // TODO: Support OR content folders.
-            //        var path = Path.Combine(folder.Value, "Routes");
-            //        foreach (var route in Directory.GetDirectories(path))
-            //            yield return new ContentMSTSRoute(Path.Combine(path, route)));
-            //    }
-            //}
         }
     }
 }
