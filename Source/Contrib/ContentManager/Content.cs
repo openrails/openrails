@@ -26,23 +26,25 @@ using System.Linq;
 namespace ORTS.ContentManager
 {
     // Root
-    //   Package
-    //     Route
-    //       Activity
-    //       Service - the timetabled stops and other actions along a path
-    //       Path - the physical route taken
-    //       Scenery
-    //       Model
-    //       Texture
-    //     Consist
-    //     Car
-    //       Model
-    //       Texture
-    //     Cab
-    //       Texture
+    //   Collection
+    //     Package
+    //       Route
+    //         Activity
+    //         Service - the timetabled stops and other actions along a path
+    //         Path - the physical route taken
+    //         Scenery
+    //         Model
+    //         Texture
+    //       Consist
+    //       Car
+    //         Model
+    //         Texture
+    //       Cab
+    //         Texture
     public enum ContentType
     {
         Root,
+        Collection,
         Package,
         Route,
         Activity,

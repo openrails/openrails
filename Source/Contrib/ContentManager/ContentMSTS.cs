@@ -23,6 +23,31 @@ using System.Linq;
 namespace ORTS.ContentManager
 {
     [Serializable]
+    public class ContentMSTSCollection : Content
+    {
+        public override ContentType Type { get { return ContentType.Collection; } }
+
+        public ContentMSTSCollection(Content parent, string name, string path)
+            : base(parent)
+        {
+            Name = name;
+            PathName = path;
+        }
+
+        public override IEnumerable<Content> Get(ContentType type)
+        {
+            if (type == ContentType.Package)
+            {
+                foreach (var item in Directory.GetDirectories(PathName))
+                {
+                    if (Directory.Exists(Path.Combine(item, "ROUTES")) || Directory.Exists(Path.Combine(item, "TRAINS")))
+                        yield return new ContentMSTSPackage(this, Path.GetFileName(item), item);
+                }
+            }
+        }
+    }
+
+    [Serializable]
     public class ContentMSTSPackage : Content
     {
         public override ContentType Type { get { return ContentType.Package; } }

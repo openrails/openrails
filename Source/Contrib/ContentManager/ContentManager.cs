@@ -43,7 +43,12 @@ namespace ORTS.ContentManager
             {
                 // TODO: Support OR content folders.
                 foreach (var folder in Settings.Folders)
-                    yield return new ContentMSTSPackage(this, folder.Key, folder.Value);
+                {
+                    if (folder.Value.StartsWith("collection:"))
+                        yield return new ContentMSTSCollection(this, folder.Key, folder.Value.Substring(11));
+                    else
+                        yield return new ContentMSTSPackage(this, folder.Key, folder.Value);
+                }
             }
             //else if (type == ContentType.Route)
             //{
