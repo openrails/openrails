@@ -32,7 +32,7 @@ namespace ORTS.ContentManager
         readonly UserSettings Settings;
         readonly ContentManager ContentManager;
 
-        readonly Regex ContentBold = new Regex("^([\\w ]+:)\t", RegexOptions.Multiline);
+        readonly Regex ContentBold = new Regex("(?:^|\t)([\\w ]+:)\t", RegexOptions.Multiline);
         readonly Regex ContentLink = new Regex("\u0001(.*?)\u0002(.*?)\u0001");
 
         Content PendingSelection;
@@ -144,7 +144,7 @@ namespace ORTS.ContentManager
             {
                 richTextBoxContent.Select(boldMatch.Groups[1].Index, boldMatch.Groups[1].Length);
                 richTextBoxContent.SelectionFont = boldFont;
-                boldMatch = ContentBold.Match(richTextBoxContent.Text, boldMatch.Index + boldMatch.Length);
+                boldMatch = ContentBold.Match(richTextBoxContent.Text, boldMatch.Groups[1].Index + boldMatch.Groups[1].Length);
             }
             var linkMatch = ContentLink.Match(richTextBoxContent.Text);
             while (linkMatch.Success)
