@@ -40,7 +40,7 @@ namespace ORTS.ContentManager
             {
                 foreach (var item in Directory.GetDirectories(PathName))
                 {
-                    if (Directory.Exists(Path.Combine(item, "ROUTES")) || Directory.Exists(Path.Combine(item, "TRAINS")))
+                    if (ContentMSTSPackage.IsValid(item))
                         yield return new ContentMSTSPackage(this, Path.GetFileName(item), item);
                 }
             }
@@ -50,6 +50,11 @@ namespace ORTS.ContentManager
     [Serializable]
     public class ContentMSTSPackage : Content
     {
+        public static bool IsValid(string pathName)
+        {
+            return Directory.Exists(Path.Combine(pathName, "ROUTES")) || Directory.Exists(Path.Combine(pathName, "TRAINS"));
+        }
+
         public override ContentType Type { get { return ContentType.Package; } }
 
         public ContentMSTSPackage(Content parent, string name, string path)

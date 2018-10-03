@@ -44,10 +44,10 @@ namespace ORTS.ContentManager
                 // TODO: Support OR content folders.
                 foreach (var folder in Settings.Folders)
                 {
-                    if (folder.Value.StartsWith("collection:"))
-                        yield return new ContentMSTSCollection(this, folder.Key, folder.Value.Substring(11));
-                    else
+                    if (ContentMSTSPackage.IsValid(folder.Value))
                         yield return new ContentMSTSPackage(this, folder.Key, folder.Value);
+                    else
+                        yield return new ContentMSTSCollection(this, folder.Key, folder.Value);
                 }
             }
             //else if (type == ContentType.Route)
