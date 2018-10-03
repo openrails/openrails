@@ -1,17 +1,17 @@
 ﻿// COPYRIGHT 2014 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -40,6 +40,10 @@ namespace ORTS.ContentManager
         List<string> PendingSelections = new List<string>();
 
         BackgroundWorker SearchWorker = null;
+        const string InitialSearchPendingText = "Searching...";
+        const int InitialSearchPendingLength = 9;
+        int SearchPendingLength = InitialSearchPendingLength;
+        DateTimeOffset SearchPendingTime;
 
         class SearchResult
         {
@@ -88,6 +92,7 @@ namespace ORTS.ContentManager
                 e.Node.Nodes[0].Text = "Loading...";
                 var content = e.Node.Tag as Content;
                 var worker = new BackgroundWorker();
+                worker.WorkerSupportsCancellation = true;
                 worker.DoWork += (object sender1, DoWorkEventArgs e1) =>
                 {
                     // Get all the different possible types of content from this content item.
@@ -101,11 +106,12 @@ namespace ORTS.ContentManager
                 };
                 worker.RunWorkerCompleted += (object sender2, RunWorkerCompletedEventArgs e2) =>
                 {
-                    var nodes = e2.Result as TreeNode[];
-
                     // If we got cancelled, or the loading node is missing, we should abort here to avoid issues caused by double-loading.
                     if (e2.Cancelled || e.Node.Nodes.Count < 1 || e.Node.Nodes[0].Text != "Loading..." || e.Node.Nodes[0].Tag != null)
                         return;
+
+                    // Get results from worker.
+                    var nodes = e2.Result as TreeNode[];
 
                     // Collapse node if we're going to end up with no child nodes.
                     if (e2.Error == null && nodes.Length == 0)
@@ -246,6 +252,9 @@ namespace ORTS.ContentManager
             if (!searchResults.Visible)
                 return;
 
+            searchResults.Items.Add("");
+            SearchPendingTime = DateTimeOffset.Now;
+
             var worker = new BackgroundWorker();
             worker.WorkerSupportsCancellation = true;
             worker.DoWork += (object sender1, DoWorkEventArgs e1) =>
@@ -271,23 +280,43 @@ namespace ORTS.ContentManager
                         if (!pending.ContainsKey(path + " -> " + child.Name))
                             pending.Add(path + " -> " + child.Name, child);
 
-                    searchResults.Invoke((Action<List<SearchResult>, bool>)UpdateSearchResults, finds, false);
+                    searchResults.Invoke((Action<List<SearchResult>, int, bool>)UpdateSearchResults, finds, pending.Count, false);
                 }
+
+                e1.Result = finds;
 
                 if (worker.CancellationPending)
                     e1.Cancel = true;
-                else
-                    searchResults.Invoke((Action<List<SearchResult>, bool>)UpdateSearchResults, finds, true);
+            };
+            worker.RunWorkerCompleted += (object sender2, RunWorkerCompletedEventArgs e2) =>
+            {
+                if (e2.Cancelled)
+                    return;
+
+                var finds = e2.Result as List<SearchResult>;
+
+                if (e2.Error != null)
+                    MessageBox.Show(e2.Error.Message, Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                searchResults.Invoke((Action<List<SearchResult>, int, bool>)UpdateSearchResults, finds, 0, true);
             };
             SearchWorker = worker;
             SearchWorker.RunWorkerAsync(searchBox.Text);
         }
 
-        void UpdateSearchResults(List<SearchResult> results, bool done)
+        void UpdateSearchResults(List<SearchResult> results, int pending, bool done)
         {
-            if (done || searchResults.Items.Count % 100 != results.Count % 100)
+            if (done || (DateTimeOffset.Now - SearchPendingTime).TotalSeconds >= 0.5)
             {
-                searchResults.Items.AddRange(results.Skip(searchResults.Items.Count).ToArray());
+                searchResults.Items.AddRange(results.Skip(searchResults.Items.Count - 1).ToArray());
+                SearchPendingLength++;
+                if (SearchPendingLength > InitialSearchPendingText.Length) SearchPendingLength = InitialSearchPendingLength;
+                searchResults.Items[0] = "[" + pending + "/" + results.Count + "] " + InitialSearchPendingText.Substring(0, SearchPendingLength);
+                SearchPendingTime = DateTimeOffset.Now;
+            }
+            if (done)
+            {
+                searchResults.Items.RemoveAt(0);
             }
         }
 
