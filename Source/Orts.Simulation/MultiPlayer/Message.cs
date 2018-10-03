@@ -74,6 +74,7 @@ namespace Orts.MultiPlayer
             else if (key == "AIDER") return new MSGAider(m.Substring(index + 1));
             else if (key == "SIGNALCHANGE") return new MSGSignalChange(m.Substring(index + 1));
             else if (key == "EXHAUST") return new MSGExhaust(m.Substring(index + 1));
+            else if (key == "FLIP") return new MSGFlip(m.Substring(index + 1));
             else throw new Exception("Unknown Keyword" + key);
         }
 
@@ -209,7 +210,13 @@ namespace Orts.MultiPlayer
                             }
                             if (t.TrainType == Train.TRAINTYPE.REMOTE)
                             {
-                                t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
+                                var reverseTrav = false;
+//                                 Alternate way to check for train flip
+//                                if (m.user.Contains("0xAI") && m.trackNodeIndex == t.RearTDBTraveller.TrackNodeIndex && m.tdbDir != (int)t.RearTDBTraveller.Direction)
+//                                {
+//                                    reverseTrav = true;
+//                                }
+                                t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length, reverseTrav);
                                 break;
                             }
                         }
@@ -3408,7 +3415,7 @@ namespace Orts.MultiPlayer
 
             public override string ToString()
             {
-                return user + " " + num + " " + iCar + " " + exhPart.ToString(CultureInfo.InvariantCulture) + " " + exhMag.ToString(CultureInfo.InvariantCulture) + 
+                return user + " " + num + " " + iCar + " " + exhPart.ToString(CultureInfo.InvariantCulture) + " " + exhMag.ToString(CultureInfo.InvariantCulture) +
                     " " + exhColorR.ToString(CultureInfo.InvariantCulture) + " " + exhColorG.ToString(CultureInfo.InvariantCulture) + " " + exhColorB.ToString(CultureInfo.InvariantCulture);
             }
         }
@@ -3418,7 +3425,7 @@ namespace Orts.MultiPlayer
         {
             m = m.Trim();
             string[] areas = m.Split(' ');
-            if (areas.Length % 8 != 0) 
+            if (areas.Length % 8 != 0)
             {
                 throw new Exception("Parsing error " + m);
             }
@@ -3478,6 +3485,190 @@ namespace Orts.MultiPlayer
                 }
             }
         }
-#endregion MSGExhaust
     }
+#endregion MSGExhaust
+
+#region MSGFlip
+    //message to indicate that a train has been flipped (reverse formation)
+    // message contains data before flip
+    public class MSGFlip : Message
+    {
+        string[] cars;
+        string[] ids;
+        int[] flipped; //if a wagon is engine
+        int TrainNum;
+        int direction;
+        int TileX, TileZ;
+        float X, Z, Travelled;
+        int mDirection;
+        float speed;
+        int tni;
+        int count;
+        int tdir;
+        float len;
+        int reverseMU;
+
+        public MSGFlip(string m)
+        {
+            //System.Console.WriteLine(m);
+            int index = m.IndexOf(' '); int last = 0;
+            TrainNum = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            direction = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            TileX = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            TileZ = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            X = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            Z = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            Travelled = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            mDirection = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            speed = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            tni = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            count = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            tdir = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            len = float.Parse(m.Substring(0, index + 1), CultureInfo.InvariantCulture);
+            m = m.Remove(0, index + 1);
+            index = m.IndexOf(' ');
+            reverseMU = int.Parse(m.Substring(0, index + 1));
+            m = m.Remove(0, index + 1);
+            string[] areas = m.Split('\t');
+            cars = new string[areas.Length - 1];//with an empty "" at end
+            ids = new string[areas.Length - 1];
+            flipped = new int[areas.Length - 1];
+            for (var i = 0; i < cars.Length; i++)
+            {
+                index = areas[i].IndexOf('\"');
+                last = areas[i].LastIndexOf('\"');
+                cars[i] = areas[i].Substring(index + 1, last - index - 1);
+                string tmp = areas[i].Remove(0, last + 1);
+                tmp = tmp.Trim();
+                string[] carinfo = tmp.Split('\n');
+                ids[i] = carinfo[0];
+                flipped[i] = int.Parse(carinfo[1]);
+            }
+
+            //System.Console.WriteLine(this.ToString());
+
+        }
+
+        public MSGFlip(Train t, bool setMUParameters, int n)
+        {
+            cars = new string[t.Cars.Count];
+            ids = new string[t.Cars.Count];
+            flipped = new int[t.Cars.Count];
+            var carGroup = Math.Min(t.Cars.Count, 20); // it is not needed to check for real flip on a full, long consist
+            for (var i = 0; i < carGroup; i++)
+            {
+                cars[i] = t.Cars[i].RealWagFilePath;
+                ids[i] = t.Cars[i].CarID;
+                if (t.Cars[i].Flipped == true) flipped[i] = 1;
+                else flipped[i] = 0;
+            }
+            TrainNum = n;
+            direction = t.RearTDBTraveller.Direction == Traveller.TravellerDirection.Forward ? 1 : 0;
+            TileX = t.RearTDBTraveller.TileX;
+            TileZ = t.RearTDBTraveller.TileZ;
+            X = t.RearTDBTraveller.X;
+            Z = t.RearTDBTraveller.Z;
+            Travelled = t.travelled;
+            mDirection = (int)t.MUDirection;
+            speed = t.SpeedMpS;
+            tni = t.RearTDBTraveller.TrackNodeIndex;
+            count = t.Cars.Count;
+            tdir = (int)t.RearTDBTraveller.Direction;
+            len = t.Length;
+            reverseMU = (setMUParameters ? 1 : 0);
+        }
+
+        public override void HandleMsg() //only client will get message, thus will set states
+        {
+            if (MPManager.IsServer()) return; //server will ignore it
+                                              //System.Console.WriteLine(this.ToString());
+                                              // construct train data
+            foreach (Train t in MPManager.Simulator.Trains)
+            {
+                if (t.Number == TrainNum)
+                {
+                    // Check if real flip
+                    var realFlip = false;
+                    // if different number of cars, most likely there was a couple/uncouple, so let's assume real flip
+                    if (t.Cars.Count != count) realFlip = true;
+                    else
+                    {
+                        for (var i = 0; i < Math.Min(20, t.Cars.Count - 1); i++)
+                        {
+                            var c = t.Cars[i].RealWagFilePath;
+                            var index = c.LastIndexOf("\\trains\\trainset\\", StringComparison.OrdinalIgnoreCase);
+                            if (index > 0)
+                            {
+                                c = c.Remove(0, index + 17);
+                            }//c: wagon path without folder name
+                            if (t.Cars[i].Flipped != (flipped[i] == 0 ? false : true))
+                            {
+                                Trace.TraceWarning("Invalid data have prevented flipping: car number {0} local flip state {1} remote flip state {2}",
+                                    i, t.Cars[i].Flipped, flipped[i]);
+                                return;
+                            }
+                            if (c.ToLower() != cars[i].ToLower())
+                            {
+                                Trace.TraceWarning("Invalid data have prevented flipping: car number {0} local filepath {1} remote filepath {2}",
+                                    i, t.Cars[i].Flipped, flipped[i]);
+                                return;
+                            }
+                        }
+                        realFlip = true;
+                    }
+#if DEBUG_MULTIPLAYER
+                    Trace.TraceInformation("Changing Direction");
+#endif
+                    if (realFlip)
+                        t.ToDoUpdate(tni, TileX, TileZ, X, Z, Travelled, speed, direction, tdir, len, true, reverseMU);
+                    return;
+                }
+            }
+        }
+
+        public override string ToString()
+        {
+            string tmp = "FLIP " + TrainNum + " " + direction + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture) + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + mDirection + " " + 
+                speed.ToString(CultureInfo.InvariantCulture) + " " + tni + " " + count + " " + tdir + " " + len.ToString(CultureInfo.InvariantCulture) + " " + reverseMU + " ";
+            for (var i = 0; i < cars.Length; i++)
+            {
+                var c = cars[i];
+                var index = c.LastIndexOf("\\trains\\trainset\\", StringComparison.OrdinalIgnoreCase);
+                if (index > 0)
+                {
+                    c = c.Remove(0, index + 17);
+                }//c: wagon path without folder name
+
+                tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + "\t";
+            }
+            return " " + tmp.Length + ": " + tmp;
+        }
+    }
+
+#endregion MSGFlip
+
 }

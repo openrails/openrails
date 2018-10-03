@@ -31,6 +31,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
+using Orts.MultiPlayer;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
@@ -4498,6 +4499,7 @@ namespace Orts.Simulation.AIs
                 Simulator.TrainDictionary.Remove(attachTrain.Number);
                 Simulator.NameDictionary.Remove(attachTrain.Name.ToLower());
             }
+            if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGCouple(this, attachTrain, false)).ToString());
             UpdateOccupancies();
             AddTrackSections();
             ResetActions(true);

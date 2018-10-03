@@ -1444,6 +1444,7 @@ namespace Orts.Simulation.Physics
 
         public void ReverseFormation(bool setMUParameters)
         {
+            if (MPManager.IsMultiPlayer()) MPManager.BroadCast((new MSGFlip(this, setMUParameters, Number)).ToString()); // message contains data before flip
             ReverseCars();
             // Flip the train's travellers.
             var t = FrontTDBTraveller;
@@ -19295,8 +19296,11 @@ namespace Orts.Simulation.Physics
         public bool updateMSGReceived;
         public bool jumpRequested; // set when a train jump has been requested by the server (when player re-enters game in old position
         public bool doJump; // used in conjunction with above flag to manage thread safety
+        public bool doReverseTrav; // reverse rear traveller in AI reversal points
+        public int doReverseMU;
 
-        public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir, float len)
+        public void ToDoUpdate(int tni, int tX, int tZ, float x, float z, float eT, float speed, int dir, int tDir, float len, bool reverseTrav = false,
+            int reverseMU = 0)
         {
             SpeedMpS = speed;
             expectedTileX = tX;
@@ -19308,6 +19312,11 @@ namespace Orts.Simulation.Physics
             expectedDIr = dir;
             expectedTDir = tDir;
             expectedLength = len;
+            if (reverseTrav)
+            {
+                doReverseTrav = true;
+                doReverseMU = reverseMU;
+            }
             updateMSGReceived = true;
         }
 
@@ -19337,46 +19346,58 @@ namespace Orts.Simulation.Physics
                 try
                 {
                     targetSpeedMpS = SpeedMpS;
-                    UpdateCarSlack(expectedLength);//update car slack first
-
-                    var x = travelled + LastSpeedMpS * elapsedClockSeconds + (SpeedMpS - LastSpeedMpS) / 2 * elapsedClockSeconds;
-//                    xx = x;
-                    this.MUDirection = (Direction)expectedDIr;
-
-                    if (Math.Abs(x - expectedTravelled) < 1 || Math.Abs(x - expectedTravelled) > 20)
+                    if (doReverseTrav)
                     {
-                        CalculatePositionOfCars(elapsedClockSeconds, expectedTravelled - travelled);
-                        newDistanceTravelledM = DistanceTravelledM + expectedTravelled - travelled;
-
-                        //if something wrong with the switch
-                        if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
-                        {
-                            Traveller t = null;
-                            if (expectedTracIndex <= 0)
-                            {
-                                t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
-                            }
-                            else
-                            {
-                                t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
-                            }
-                            //move = SpeedMpS > 0 ? 0.001f : -0.001f;
-                            this.travelled = expectedTravelled;
-                            this.RearTDBTraveller = t;
-                            CalculatePositionOfCars();
-
-                        }
-                    }
-                    else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
-                    {
-                        SpeedMpS += (expectedTravelled - x) / 1;
+                        doReverseTrav = false;
+                        ReverseFormation(doReverseMU == 1? true : false);
+                        UpdateCarSlack(expectedLength);//update car slack first
                         CalculatePositionOfCars(elapsedClockSeconds, SpeedMpS * elapsedClockSeconds);
                         newDistanceTravelledM = DistanceTravelledM + (SpeedMpS * elapsedClockSeconds);
+                        this.MUDirection = (Direction)expectedDIr;
                     }
-                    if (jumpRequested)
+                    else
                     {
-                        doJump = true;
-                        jumpRequested = false;
+                        UpdateCarSlack(expectedLength);//update car slack first
+
+                        var x = travelled + LastSpeedMpS * elapsedClockSeconds + (SpeedMpS - LastSpeedMpS) / 2 * elapsedClockSeconds;
+                        //                    xx = x;
+                        this.MUDirection = (Direction)expectedDIr;
+
+                        if (Math.Abs(x - expectedTravelled) < 1 || Math.Abs(x - expectedTravelled) > 20)
+                        {
+                            CalculatePositionOfCars(elapsedClockSeconds, expectedTravelled - travelled);
+                            newDistanceTravelledM = DistanceTravelledM + expectedTravelled - travelled;
+
+                            //if something wrong with the switch
+                            if (this.RearTDBTraveller.TrackNodeIndex != expectedTracIndex)
+                            {
+                                Traveller t = null;
+                                if (expectedTracIndex <= 0)
+                                {
+                                    t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+                                }
+                                else
+                                {
+                                    t = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[expectedTracIndex], expectedTileX, expectedTileZ, expectedX, expectedZ, (Traveller.TravellerDirection)expectedTDir);
+                                }
+                                //move = SpeedMpS > 0 ? 0.001f : -0.001f;
+                                this.travelled = expectedTravelled;
+                                this.RearTDBTraveller = t;
+                                CalculatePositionOfCars();
+
+                            }
+                        }
+                        else//if the predicted location and reported location are similar, will try to increase/decrease the speed to bridge the gap in 1 second
+                        {
+                            SpeedMpS += (expectedTravelled - x) / 1;
+                            CalculatePositionOfCars(elapsedClockSeconds, SpeedMpS * elapsedClockSeconds);
+                            newDistanceTravelledM = DistanceTravelledM + (SpeedMpS * elapsedClockSeconds);
+                        }
+                        if (jumpRequested)
+                        {
+                            doJump = true;
+                            jumpRequested = false;
+                        }
                     }
                 }
                 catch (Exception)

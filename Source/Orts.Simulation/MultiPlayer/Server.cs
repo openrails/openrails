@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
- // DEBUG flag for debug prints
 // #define DEBUG_MULTIPLAYER
+// DEBUG flag for debug prints
 
 using System;
 using System.Collections.Generic;
