@@ -1318,6 +1318,15 @@ namespace Orts.Simulation.RollingStocks
             {
                 var heading = (float)Math.Atan2(WorldPosition.XNAMatrix.M13, WorldPosition.XNAMatrix.M11);
                 Train.PhysicsTrainLocoDirectionDeg = MathHelper.ToDegrees((float)heading);
+
+                if (Flipped)
+                {
+                    Train.PhysicsTrainLocoDirectionDeg += 180.0f; // Reverse direction of train
+                    if (Train.PhysicsTrainLocoDirectionDeg > 360) // If this results in an angle greater then 360, then convert it back to an angle between 0 & 360.
+                    {
+                        Train.PhysicsTrainLocoDirectionDeg -= 360;
+                    }
+                }
             }
  
             // TODO  this is a wild simplification for electric and diesel electric
