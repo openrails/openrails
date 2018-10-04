@@ -77,7 +77,7 @@
     <Compile Include="ImportExportSaveForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ImportExportSaveForm.designer.cs">
+    <Compile Include="ImportExportSaveForm.Designer.cs">
       <DependentUpon>ImportExportSaveForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KeyInputControl.cs">

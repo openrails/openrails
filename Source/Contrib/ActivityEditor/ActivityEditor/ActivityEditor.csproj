@@ -55,7 +55,7 @@
     <Compile Include="ActionProperties\ControlStartProperties.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ActionProperties\ControlStartProperties.designer.cs">
+    <Compile Include="ActionProperties\ControlStartProperties.Designer.cs">
       <DependentUpon>ControlStartProperties.cs</DependentUpon>
     </Compile>
     <Compile Include="ActionProperties\ControlStoppedProperties.cs">
