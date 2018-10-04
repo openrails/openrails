@@ -255,6 +255,17 @@ namespace Orts.MultiPlayer
                 if (train.LeadLocomotive != null) p.LeadingLocomotiveID = train.LeadLocomotive.CarID;
                 else p.LeadingLocomotiveID = "NA";
             }
+
+            if (train.LeadLocomotive != null)
+            {
+                train.Name = train.GetTrainName(train.LeadLocomotive.CarID);
+            }
+            else if (train.Cars != null && train.Cars.Count > 0)
+            {
+                train.Name = train.GetTrainName(train.Cars[0].CarID);
+            }
+            else if (player !=null && player.user != null) train.Name = player.user;
+
             if (MPManager.IsServer())
             {
                 train.InitializeSignals(false);

@@ -1125,6 +1125,7 @@ namespace Orts.MultiPlayer
         int TileX, TileZ;
         float X, Z, Travelled;
         int mDirection;
+        string name;
 
         public MSGTrain(string m)
         {
@@ -1154,10 +1155,10 @@ namespace Orts.MultiPlayer
             mDirection = int.Parse(m.Substring(0, index + 1));
             m = m.Remove(0, index + 1);
             string[] areas = m.Split('\t');
-            cars = new string[areas.Length - 1];//with an empty "" at end
-            ids = new string[areas.Length - 1];
-            flipped = new int[areas.Length - 1];
-            lengths = new int[areas.Length - 1];
+            cars = new string[areas.Length - 2];//with an empty "" at end
+            ids = new string[areas.Length - 2];
+            flipped = new int[areas.Length - 2];
+            lengths = new int[areas.Length - 2];
             for (var i = 0; i < cars.Length; i++)
             {
                 index = areas[i].IndexOf('\"');
@@ -1170,6 +1171,9 @@ namespace Orts.MultiPlayer
                 flipped[i] = int.Parse(carinfo[1]);
                 lengths[i] = int.Parse(carinfo[2]);
             }
+            index = areas[areas.Length - 2].IndexOf('\n');
+            last = areas[areas.Length - 2].Length;
+            name = areas[areas.Length - 2].Substring(index + 1, last - index - 1);
 
             //System.Console.WriteLine(this.ToString());
 
@@ -1197,6 +1201,7 @@ namespace Orts.MultiPlayer
             Z = t.RearTDBTraveller.Z;
             Travelled = t.travelled;
             mDirection = (int)t.MUDirection;
+            name = t.Name;
         }
 
         public override void HandleMsg() //only client will get message, thus will set states
@@ -1239,6 +1244,7 @@ namespace Orts.MultiPlayer
             }// for each rail car
 
             if (train.Cars.Count == 0) return;
+            train.Name = name;
 
             train.InitializeBrakes();
             //train.InitializeSignals(false);//client do it won't have impact
@@ -1272,6 +1278,7 @@ namespace Orts.MultiPlayer
 
                 tmp += "\"" + c + "\"" + " " + ids[i] + "\n" + flipped[i] + "\n" + lengths[i] + "\t";
             }
+            tmp += "\n" + name  + "\t";
             return " " + tmp.Length + ": " + tmp;
         }
     }
