@@ -61,7 +61,7 @@ namespace Orts.MultiPlayer
             protect = inf.ReadBoolean();
             status = Status.Quit;
             Train.SpeedMpS = 0;
-            quitTime = MPManager.Simulator.GameTime + 420; // allow a total of 10 minutes (420 + 180 sec) to reenter game.
+            quitTime = MPManager.Simulator.GameTime; // allow a total of 10 minutes to reenter game.
             for (int iCar = 0; iCar < Train.Cars.Count; iCar++)
             {
                 var car = Train.Cars[iCar];

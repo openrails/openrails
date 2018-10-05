@@ -594,13 +594,13 @@ namespace Orts.MultiPlayer
 
 		private void CleanLostPlayers()
 		{
-			//check if any of the lost player list has been lost for more than 180 seconds. If so, remove it and will not worry about it anymore
+			//check if any of the lost player list has been lost for more than 600 seconds. If so, remove it and will not worry about it anymore
 			if (lostPlayer.Count > 0)
 			{
 				List<string> removeLost = null;
 				foreach (var x in lostPlayer)
 				{
-					if (Simulator.GameTime - x.Value.quitTime > 180) //lost within 3 minutes will be held
+					if (Simulator.GameTime - x.Value.quitTime > 600) //within 10 minutes it will be held
 					{
 						if (removeLost == null) removeLost = new List<string>();
 						removeLost.Add(x.Key);
