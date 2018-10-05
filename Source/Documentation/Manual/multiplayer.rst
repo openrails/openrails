@@ -301,7 +301,7 @@ Additional info on using the Public Server
   player as dispatcher. Such player will receive on his monitor the following 
   message: *You are the new dispatcher. Enjoy!* 
 - If a client crashes or loses the connection, its position is held by the 
-  server for about two minutes. If the client re-enters the game within such 
+  server for 10 minutes. If the client re-enters the game within such 
   time frame, it will re-enter the game in the position where he was at the 
   moment of the crash.
 
