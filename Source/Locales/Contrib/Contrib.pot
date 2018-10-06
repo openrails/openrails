@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-03-24 21:41:06+0100\n"
-"PO-Revision-Date: 2018-03-24 21:41:14+0100\n"
+"POT-Creation-Date: 2018-10-06 15:03:13+0200\n"
+"PO-Revision-Date: 2018-10-06 15:03:21+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -658,11 +658,11 @@ msgid ""
 "wizard by clarifying the task in some way."
 msgstr ""
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.cs:65
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:92
 msgid "Loading..."
 msgstr ""
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:91
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:115
 msgid "Open Rails Content Manager"
 msgstr ""
 
