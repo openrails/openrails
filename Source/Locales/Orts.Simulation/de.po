@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
 "POT-Creation-Date: 2017-08-18 20:03:00+0200\n"
-"PO-Revision-Date: 2017-08-18 21:28+0100\n"
-"Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
+"PO-Revision-Date: 2018-10-08 09:54+0100\n"
+"Last-Translator: Carlo Santucci <carlosanit1@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -332,7 +332,7 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:168
 msgid "Throttle"
-msgstr "Regler:"
+msgstr "Regler"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:168
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:174
