@@ -561,6 +561,114 @@ as the front of the train passes a location, then when it reaches zero you
 will know, without switching views, that the other end of the train has 
 just reached the same point, e.g. the entrance to a siding, etc. 
 
+
+.. |uarr|   unicode:: U+02191 .. UPWARDS ARROW
+.. |darr|   unicode:: U+02193 .. DOWNWARDS ARROW
+
+.. _debriefeval:
+
+
+Debrief Evaluation
+------------------
+
+``Description``
+'''''''''''''''
+
+This feature displays a real-time evaluation of the player's performance 
+during the activity run and a final report at the end of an activity.
+The evaluation reports various parameters to provide to the player info in order 
+to improve his train driving ability.
+While the activity is running relevant data are stored and displayed.
+The stored data are used to generate a report at the end of the activity.
+
+
+``How it does work``
+''''''''''''''''''''
+
+Activity evaluation is enabled only for Activity mode, and requires the 
+"Debrief evaluation" checkbox in the main menu window to be enabled.
+Checking some checkboxes within the various option tabs of the main menu 
+provides additional parameters for the activity evaluation. 
+
+Here an example about the Options/General tab:
+
+.. image:: images/dbfeval-options-general.png
+
+and here an example about the Options/Simulation tab:
+
+.. image:: images/dbfeval-options-simulation.png
+
+Checkboxes shown as unchecked in the two above pictures may be checked or 
+unchecked, but don't have effect to activity evaluation.
+
+A tab named "Evaluation" is present on the F1 Help Information Monitor.
+Once the activity is running it displays dynamic information about the player 
+train performance up to that moment.
+
+If the "Debrief evaluation" checkbox is unchecked, a message reminds this.
+
+   
+
+.. image:: images/dbfeval-evaluation-unchecked.png
+   :scale: 100%
+   :align: center
+
+
+In case that Debrief evaluation was checked, **Actual status: (**\ |darr| **)**\ , is displayed.
+
+   
+
+.. image:: images/dbfeval-evaluation-ini.png
+   :scale: 100%
+   :align: center
+
+.. raw:: latex
+
+   \newpage
+   
+Cliking **Actual status: (**\ |darr| **)**\  expanded real-time display appears.
+
+
+.. image:: images/dbfeval-evaluation-expanded.png
+   :scale: 100%
+   :align: center
+
+   
+
+Cliking **Actual status: (**\ |uarr| **)**\  collapses all items.
+
+Once the activity has ended, the report file is created and a new window displays it.
+
+.. image:: images/dbfeval-evaluation-ended.png
+   :scale: 100%
+   :align: center
+
+
+.. raw:: latex
+
+   \newpage
+
+This report is made up of several sections.
+
+.. image:: images/dbfeval-report.png
+   :scale: 80%
+   :align: center
+
+.. raw:: latex
+
+    \newpage
+
+Activity saves (F2) will save also the evaluation data, if the "Debrief evaluation" 
+checkbox was checked.
+In such case the activity saves will have the "Eval" checkbox checked in the resume window.
+
+.. image:: images/dbfeval-resume.png
+   :scale: 100%
+   :align: center
+
+
+
+
 .. _driving-dispatcher:
 
 Dispatcher Window

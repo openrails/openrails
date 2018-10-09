@@ -122,10 +122,18 @@ by that locomotive will appear.
 If you instead select a specific activity, you won't have to perform any 
 further selections.
 
+If you have selected an activity, the "Debrief evaluation" checkbox becomes 
+checkable. If it is checked, during the activity run 
+data about the activity run are stored and may be displayed in real time, and at 
+the end of the activity a report file provides a complete compendium of information about 
+the player skills as a train driver.
+Debrief evaluation is described :ref:`here <debriefeval>`.
+
 If you have selected the related Experimental Option, at runtime you can 
 switch :ref:`Autopilot mode <driving-autopilot>` on or off, which allows you
 to watch OR driving your 
 train, as if you were a trainspotter or a visitor in the cab. 
+Autopilot mode is not operating in Explore mode.
 
 .. _start-timetable:
 
@@ -192,3 +200,6 @@ the  commands during replay: it's like you are seeing a video on how you
 played the game. Replay is described :ref:`later <driving-save-and-replay>`
 together with the save and 
 resume functions.
+
+
+
