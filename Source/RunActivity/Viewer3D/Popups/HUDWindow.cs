@@ -983,7 +983,7 @@ namespace Orts.Viewer3D.Popups
 
         void TextPageWeather(TableData table)
         {
-            TextPageHeading(table, Viewer.Catalog.GetString("WEATHER INFORMATIOPN"));
+            TextPageHeading(table, Viewer.Catalog.GetString("WEATHER INFORMATION"));
 
             TableAddLabelValue(table, Viewer.Catalog.GetString("Visibility"), Viewer.Catalog.GetStringFmt("{0:N0} m", Viewer.Simulator.Weather.FogDistance));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Cloud cover"), Viewer.Catalog.GetStringFmt("{0:F0} %", Viewer.Simulator.Weather.OvercastFactor * 100));

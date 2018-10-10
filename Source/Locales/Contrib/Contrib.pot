@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-10-06 15:03:13+0200\n"
-"PO-Revision-Date: 2018-10-06 15:03:21+0200\n"
+"POT-Creation-Date: 2018-10-10 21:29:21+0100\n"
+"PO-Revision-Date: 2018-10-10 21:29:22+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -110,9 +110,6 @@ msgid "HornProperties"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
-msgid "Activiti Description"
-msgstr ""
-
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92

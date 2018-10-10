@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-10-06 15:03:28+0200\n"
-"PO-Revision-Date: 2018-10-06 15:03:32+0200\n"
+"POT-Creation-Date: 2018-10-10 21:29:39+0100\n"
+"PO-Revision-Date: 2018-10-10 21:29:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -1303,7 +1303,7 @@ msgid "Path"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:986
-msgid "WEATHER INFORMATIOPN"
+msgid "WEATHER INFORMATION"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:988

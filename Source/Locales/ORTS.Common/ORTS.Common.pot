@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-03-24 21:41:26+0100\n"
-"PO-Revision-Date: 2018-03-24 21:41:26+0100\n"
+"POT-Creation-Date: 2018-10-10 21:29:27+0100\n"
+"PO-Revision-Date: 2018-10-10 21:29:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -88,11 +88,11 @@ msgid "t"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:543
-msgid "ltn"
+msgid "t-uk"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:544
-msgid "stn"
+msgid "t-us"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:545
@@ -116,11 +116,11 @@ msgid "L"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:550
-msgid "Imp.gal"
+msgid "g-uk"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:551
-msgid "U.S.gal"
+msgid "g-us"
 msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:552
