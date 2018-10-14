@@ -1330,7 +1330,7 @@ namespace Orts.Simulation.RollingStocks
             // This section updates the weight and physics of the locomotive
             if (FreightAnimations != null && FreightAnimations.ContinuousFreightAnimationsPresent) // make sure that a freight animation INCLUDE File has been defined, and it contains "continuous" animation data.
             {
-                if (WagonType == WagonTypes.Engine && EngineType == EngineTypes.Steam)
+                if (this is MSTSSteamLocomotive)
                 // If steam locomotive then water, and coal variations will impact the weight of the locomotive
                 {
                     // set a process to pass relevant locomotive parameters from locomotive file to this wagon file
@@ -1376,7 +1376,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-                else if (WagonType == WagonTypes.Engine && EngineType == EngineTypes.Diesel)
+                else if (this is MSTSDieselLocomotive)
                 // If diesel locomotive
                 {
                    // set a process to pass relevant locomotive parameters from locomotive file to this wagon file
@@ -2113,10 +2113,11 @@ namespace Orts.Simulation.RollingStocks
 
         public void ConfirmSteamLocomotiveTender()
         {
+            
             // Check each steam locomotive to see if it has a tender attached.
-            if (WagonType == WagonTypes.Engine && EngineType == EngineTypes.Steam )
+            if (this is MSTSSteamLocomotive )
             {
-       
+
                 if (Train == null || Train.Cars == null)
                 {
                     SteamLocomotiveTender = null;
