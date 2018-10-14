@@ -2085,7 +2085,7 @@ namespace Orts.Simulation.RollingStocks
         public void FindTendersSteamLocomotive()
         {
             // Find the steam locomotive associated with this wagon tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
-            if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
+            if (Train == null || Train.Cars == null || Train.Cars.Count == 1)
             {
                 TendersSteamLocomotive = null;
                 return;
@@ -2122,7 +2122,7 @@ namespace Orts.Simulation.RollingStocks
                     SteamLocomotiveTender = null;
                      return;
                 }
-                else if(Train.Cars.Count < 1) // If car count is less then 1, then there must be no tender attached
+                else if(Train.Cars.Count == 1) // If car count is equal to 1, then there must be no tender attached
                 {
                     SteamLocomotiveTender = Train.Cars[0] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
@@ -2158,7 +2158,7 @@ namespace Orts.Simulation.RollingStocks
         public void FindAuxTendersSteamLocomotive()
         {
             // Find the steam locomotive associated with this wagon aux tender, this allows parameters processed in the steam loocmotive module to be used elsewhere
-            if (Train == null || Train.Cars == null || Train.Cars.Count < 2)
+            if (Train == null || Train.Cars == null || Train.Cars.Count == 1)
             {
                 AuxTendersSteamLocomotive = null;
                 return;
