@@ -102,7 +102,8 @@ namespace Orts.Simulation
 
                     foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List)
                     {
-                        if (Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem)
+                        if (i.PlatformStartID < Simulator.TDB.TrackDB.TrItemTable.Length && i.PlatformStartID >= 0 && 
+                            Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem)
                             Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
                         else
                         {
