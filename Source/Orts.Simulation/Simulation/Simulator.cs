@@ -533,6 +533,7 @@ namespace Orts.Simulation
             ActivityRun = Orts.Simulation.Activity.Restore(inf, this, ActivityRun);
             Signals.RestoreTrains(Trains);  // restore links to trains
             Signals.Update(true);           // update all signals once to set proper stat
+            MPManager.Instance().RememberOriginalSwitchState(); // this prepares a string that must then be passed to clients
         }
 
         public void Save(BinaryWriter outf)
