@@ -424,9 +424,10 @@ namespace Orts.Viewer3D.Processes
                     InitSimulator(settings, values.args, "Resume", values.acttype);
                     Simulator.Restore(inf, values.pathName, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
+                    if (Client != null || Server != null)
+                        if (Acttype == "activity") Simulator.GetPathAndConsist();
                     if (Client != null)
                     {
-                        if (Acttype == "activity") Simulator.GetPathAndConsist();
                         Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
                     }
                     Viewer.Restore(inf);
