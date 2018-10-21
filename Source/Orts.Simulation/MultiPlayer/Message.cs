@@ -621,13 +621,13 @@ namespace Orts.MultiPlayer
             //client connected directly to the server, thus will send the game status to the player directly (avoiding using broadcast)
             MPManager.OnlineTrains.AddPlayers(this, p);
             //System.Console.WriteLine(this.ToString());
-            p.Send((new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
+            SendToPlayer(p, (new MSGOrgSwitch(user, MPManager.Instance().OriginalSwitchState)).ToString());
 
             MPManager.Instance().lastPlayerAddedTime = MPManager.Simulator.GameTime;
 
             MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", MPManager.Simulator.conFileName, MPManager.Simulator.patFileName, MPManager.Simulator.PlayerLocomotive.Train,
                 MPManager.Simulator.PlayerLocomotive.Train.Number, MPManager.Simulator.Settings.AvatarURL);
-            p.Send(host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
+            SendToPlayer(p, host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
 
             //send the train information to the new player
             Train[] trains = MPManager.Simulator.Trains.ToArray();
@@ -637,11 +637,11 @@ namespace Orts.MultiPlayer
                 if (MPManager.Simulator.PlayerLocomotive != null && t == MPManager.Simulator.PlayerLocomotive.Train) continue; //avoid broadcast player train
                 if (MPManager.FindPlayerTrain(t)) continue;
                 if (MPManager.Instance().removedTrains.Contains(t)) continue;//this train is going to be removed, should avoid it.
-                p.Send((new MSGTrain(t, t.Number)).ToString());
+                SendToPlayer(p, (new MSGTrain(t, t.Number)).ToString());
             }
             if (MPManager.Instance().CheckSpad == false) { p.Send((new MultiPlayer.MSGMessage("All", "OverSpeedOK", "OK to go overspeed and pass stop light")).ToString()); }
-            else { p.Send((new MultiPlayer.MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light")).ToString()); }
-            p.Send(MPManager.Instance().GetEnvInfo());//update weather
+            else { SendToPlayer(p, (new MultiPlayer.MSGMessage("All", "NoOverSpeed", "Penalty for overspeed and passing stop light")).ToString()); }
+            SendToPlayer(p, MPManager.Instance().GetEnvInfo());//update weather
 
             //send the new player information to everyone else
             host = new MSGPlayer(p.Username, "1234", p.con, p.path, p.Train, p.Train.Number, p.url);
@@ -649,12 +649,21 @@ namespace Orts.MultiPlayer
             string newPlayer = host.ToString();
             foreach (var op in players)
             {
-                op.Value.Send(newPlayer);
+                SendToPlayer(op.Value, newPlayer);
             }
 
             //System.Console.WriteLine(host.ToString() + MPManager.Simulator.OnlineTrains.AddAllPlayerTrain());
 
         }
+
+        public void SendToPlayer(OnlinePlayer p, string msg)
+        {
+#if DEBUG_MULTIPLAYER
+            Trace.TraceInformation("Message {1} sent to player {0}", p.Username, msg); 
+#endif
+            p.Send(msg);
+        }
+
     }
 
 #endregion MSGPlayer
