@@ -35,6 +35,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Processes
@@ -297,12 +298,21 @@ namespace Orts.Viewer3D.Processes
                     break;
             }
 
-            Viewer = new Viewer(Simulator, Game);
-
             if (Client != null)
             {
                 Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
+                // wait 5 seconds to see if you get a reply from server with updated position/consist data, else go on
+               
+                System.Threading.Thread.Sleep(5000);
+                if (Simulator.Trains[0].jumpRequested)
+                {
+                    Simulator.Trains[0].UpdateRemoteTrainPos(0);
+                }
+                var cancellation = Game.LoaderProcess.CancellationToken;
+                if (cancellation.IsCancellationRequested) return;
             }
+
+            Viewer = new Viewer(Simulator, Game);
 
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
