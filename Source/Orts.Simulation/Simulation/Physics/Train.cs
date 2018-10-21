@@ -9715,7 +9715,7 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         //
-        // Remove train (after coupling)
+        // Remove train (after coupling or when train disappeared in multiplayer)
         //
 
         public void RemoveFromTrack()
@@ -9729,6 +9729,18 @@ namespace Orts.Simulation.Physics
                 for (int iIndex = presentIndex; iIndex < ValidRoute[0].Count; iIndex++)
                 {
                     TCRouteElement thisElement = ValidRoute[0][iIndex];
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    thisSection.RemoveTrain(this, true);
+                }
+            }
+
+            // for explorer (e.g. in Multiplayer) and manual mode check also backward route
+
+            if (ValidRoute[1] != null && ValidRoute[1].Count > 0)
+            {
+                for(int iIndex = 0; iIndex < ValidRoute[1].Count; iIndex++)
+                {
+                    TCRouteElement thisElement = ValidRoute[1][iIndex];
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
                     thisSection.RemoveTrain(this, true);
                 }
