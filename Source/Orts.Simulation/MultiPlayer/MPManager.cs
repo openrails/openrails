@@ -640,11 +640,7 @@ namespace Orts.MultiPlayer
 							}
                             if (hasOtherPlayer == false) 
                             {
-                                foreach (OnlineLocomotive l in OnlineTrains.OnlineLocomotives)
-                                {
-                                    if (l.userName == p.Username)
-                                        OnlineTrains.OnlineLocomotives.Remove(l);
-                                }
+                                AddOrRemoveLocomotives(p.Username, p.Train, false);
                                 p.Train.RemoveFromTrack();
                                 Simulator.Trains.Remove(p.Train);
                             }
