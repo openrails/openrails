@@ -5248,11 +5248,20 @@ namespace Orts.Simulation.Signalling
 
                 foreach (var t in temptrains)
                 {
-                    try
+                    if (t.TrainType != Train.TRAINTYPE.STATIC)
                     {
-                        t.ProcessRequestExplorerSetSwitch(switchSection.Index);
+                        try
+                        {
+                            if (t.ControlMode != Train.TRAIN_CONTROL.AUTO_NODE && t.ControlMode != Train.TRAIN_CONTROL.AUTO_SIGNAL)
+                                t.ProcessRequestExplorerSetSwitch(switchSection.Index);
+                            else
+                                t.ProcessRequestAutoSetSwitch(switchSection.Index);
+                        }
+
+                        catch
+                        {
+                        }
                     }
-                    catch { }
                 }
             }
             return (switchSet);

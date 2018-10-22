@@ -6790,6 +6790,28 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
+        /// Switches switch after dispatcher window command, when in auto mode
+        /// </summary>
+
+        public bool ProcessRequestAutoSetSwitch(int reqSwitchIndex)
+        {
+            TrackCircuitSection reqSwitch = signalRef.TrackCircuitList[reqSwitchIndex];
+
+            bool switchSet = false;
+            if (reqSwitch.CircuitState.TrainReserved != null && reqSwitch.CircuitState.TrainReserved.Train == this)
+            {
+                // store required position
+                int reqSwitchPosition = reqSwitch.JunctionSetManual;
+                ClearReservedSections();
+                Reinitialize();
+                reqSwitch.JunctionSetManual = reqSwitchPosition;
+            }
+            switchSet = true;
+            return switchSet;
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Update section occupy states for manual mode
         /// Note : manual mode has no distance actions so sections must be cleared immediately
         /// </summary>
@@ -19502,6 +19524,22 @@ namespace Orts.Simulation.Physics
             ValidRoute[1] = null;
             LastReservedSection[1] = -1;
         }
+
+        /// <summary>
+        /// Clears reserved sections (used after manual switching)
+        /// </summary>
+        public void ClearReservedSections()
+        {
+
+            if (ValidRoute[0] != null)
+            {
+                int listIndex = PresentPosition[0].RouteListIndex;
+                signalRef.BreakDownRouteList(ValidRoute[0], listIndex, routedForward);
+                ClearDeadlocks();
+            }
+
+        }
+
 
         /// <summary>
         /// After turntable rotation, must find where it is
