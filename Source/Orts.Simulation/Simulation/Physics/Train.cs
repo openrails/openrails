@@ -8656,13 +8656,16 @@ namespace Orts.Simulation.Physics
                 }
             }
 
-            for (int iindex = 0; iindex < ValidRoute[1].Count - 1 && !switchFound; iindex++)
+            if (ValidRoute[1] != null)
             {
-                if (ValidRoute[1][iindex].TCSectionIndex == reqSwitchIndex)
+                for (int iindex = 0; iindex < ValidRoute[1].Count - 1 && !switchFound; iindex++)
                 {
-                    routeDirectionIndex = 1;
-                    direction = Direction.Reverse;
-                    switchFound = true;
+                    if (ValidRoute[1][iindex].TCSectionIndex == reqSwitchIndex)
+                    {
+                        routeDirectionIndex = 1;
+                        direction = Direction.Reverse;
+                        switchFound = true;
+                    }
                 }
             }
 
@@ -8743,6 +8746,8 @@ namespace Orts.Simulation.Physics
             {
                 signalRef.BreakDownRouteList(selectedRoute, 0, thisRouted);
                 selectedRoute.Clear();
+                TrainRoute = signalRef.BuildTempRoute(this, PresentPosition[1].TCSectionIndex, PresentPosition[1].TCOffset,
+                    PresentPosition[1].TCDirection, Length, false, true, false);
                 UpdateExplorerMode(-1);
             }
         }
