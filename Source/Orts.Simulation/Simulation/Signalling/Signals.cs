@@ -6578,6 +6578,16 @@ namespace Orts.Simulation.Signalling
 
         //================================================================================================//
         /// <summary>
+        /// Remove reservation of train
+        /// </summary>
+
+        public void UnreserveTrain()
+        {
+            CircuitState.TrainReserved = null;
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Remove claims from sections for reversed trains
         /// </summary>
 
@@ -6924,6 +6934,26 @@ namespace Orts.Simulation.Signalling
             thisBlockstate = localBlockstate > passedBlockstate ? localBlockstate : passedBlockstate;
 
             return (thisBlockstate);
+        }
+
+
+        //================================================================================================//
+        /// <summary>
+        /// Test only if section reserved to train
+        /// </summary>
+        
+        public bool CheckReserved(Train.TrainRouted thisTrain)
+        {
+            var reserved = false;
+            if (CircuitState.TrainReserved != null && thisTrain != null)
+            {
+                Train.TrainRouted reservedTrain = CircuitState.TrainReserved;
+                if (reservedTrain.Train == thisTrain.Train)
+                {
+                    reserved = true;
+                }
+            }
+            return reserved;
         }
 
         //================================================================================================//
