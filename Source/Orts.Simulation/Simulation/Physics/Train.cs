@@ -8714,7 +8714,8 @@ namespace Orts.Simulation.Physics
 
         public void ProcessExplorerSwitch(int routeDirectionIndex, TrackCircuitSection switchSection, Direction direction)
         {
-            TrainRouted thisRouted = direction == Direction.Reverse ? routedForward : routedBackward;
+            //<CSComment> Probably also in singleplayer the logic of multiplayer should be used, but it's unwise to modify it just before a release
+            TrainRouted thisRouted = direction == Direction.Reverse ^ !MPManager.IsMultiPlayer() ? routedBackward : routedForward;
             TCSubpathRoute selectedRoute = ValidRoute[routeDirectionIndex];
 
             // store required position
@@ -8753,20 +8754,41 @@ namespace Orts.Simulation.Physics
 
                 // breakdown and clear route
 
-                signalRef.BreakDownRouteList(selectedRoute, lastIndex + 1, thisRouted);
-                selectedRoute.RemoveRange(lastIndex + 1, selectedRoute.Count - lastIndex - 1);
+                // checke whether trailing or leading
+                //<CSComment> Probably also in singleplayer the logic of multiplayer should be used, but it's unwise to modify it just before a release
+                if (switchSection.Pins[0, 0].Link == selectedRoute[lastIndex].TCSectionIndex || !MPManager.IsMultiPlayer())
+                // leading, train may still own switch
 
-                // restore required position (is cleared by route breakdown)
-                switchSection.JunctionSetManual = reqSwitchPosition;
+                {
 
-                // set switch
-                switchSection.deAlignSwitchPins();
-                signalRef.setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
+                    signalRef.BreakDownRouteList(selectedRoute, lastIndex + 1, thisRouted);
+                    selectedRoute.RemoveRange(lastIndex + 1, selectedRoute.Count - lastIndex - 1);
 
-                // build new route - use signal request
-                float remLength = minCheckDistanceM - coveredLength;
-                TCSubpathRoute newRoute = firstSignal.requestClearSignalExplorer(selectedRoute, remLength, thisRouted, false, 0);
-                selectedRoute = newRoute;
+                    // restore required position (is cleared by route breakdown)
+                    switchSection.JunctionSetManual = reqSwitchPosition;
+
+                    // set switch
+                    switchSection.deAlignSwitchPins();
+                    signalRef.setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
+
+                    // build new route - use signal request
+                    float remLength = minCheckDistanceM - coveredLength;
+                    TCSubpathRoute newRoute = firstSignal.requestClearSignalExplorer(selectedRoute, remLength, thisRouted, false, 0);
+                    selectedRoute = newRoute;
+                }
+                else
+                {
+                    // trailing, train must not own switch any more
+                    signalRef.BreakDownRouteList(selectedRoute, junctionIndex, thisRouted);
+                    selectedRoute.RemoveRange(junctionIndex, selectedRoute.Count - junctionIndex);
+
+                    // restore required position (is cleared by route breakdown)
+                    switchSection.JunctionSetManual = reqSwitchPosition;
+
+                    // set switch
+                    switchSection.deAlignSwitchPins();
+                    signalRef.setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
+                }
             }
 
             // no signal is found - build route using full update process
