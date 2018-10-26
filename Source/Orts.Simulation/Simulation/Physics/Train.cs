@@ -7986,6 +7986,34 @@ namespace Orts.Simulation.Physics
 
         public void UpdateExplorerMode(int signalObjectIndex)
         {
+            if (MPManager.IsMultiPlayer())
+            // first unreserve all route positions where train is not present
+            {
+                if (ValidRoute[0] != null)
+                {
+                    foreach (var tcRouteElement in ValidRoute[0])
+                    {
+                        var tcSection = signalRef.TrackCircuitList[tcRouteElement.TCSectionIndex];
+                        if (tcSection.CheckReserved(routedForward) && !tcSection.CircuitState.TrainOccupy.ContainsTrain(this))
+                        {
+                            tcSection.Unreserve();
+                            tcSection.UnreserveTrain();
+                        }
+                    }
+                }
+                if (ValidRoute[1] != null)
+                {
+                    foreach (var tcRouteElement in ValidRoute[1])
+                    {
+                        var tcSection = signalRef.TrackCircuitList[tcRouteElement.TCSectionIndex];
+                        if (tcSection.CheckReserved(routedBackward) && !tcSection.CircuitState.TrainOccupy.ContainsTrain(this))                        {
+                            tcSection.Unreserve();
+                            tcSection.UnreserveTrain();
+                        }
+                    }
+                }
+            }
+
             // check present forward
             TCSubpathRoute newRouteF = CheckExplorerPath(0, PresentPosition[0], ValidRoute[0], true, ref EndAuthorityType[0],
                 ref DistanceToEndNodeAuthorityM[0]);
