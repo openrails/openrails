@@ -385,7 +385,7 @@ namespace Orts.MultiPlayer
             if (t != null)
             {
                 dir = (int)t.RearTDBTraveller.Direction; num = tn; TileX = t.RearTDBTraveller.TileX;
-                TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.travelled;
+                TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.DistanceTravelledM;
                 trainmaxspeed = t.TrainMaxSpeedMpS;
             }
             seconds = (int)MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
@@ -487,30 +487,33 @@ namespace Orts.MultiPlayer
             {
 
                 if (MPManager.FindPlayerTrain(user) != null) return; //already added the player, ignore
-                //if the client comes back after disconnected within 3 minutes (10 in case of save/restore)
+                //if the client comes back after disconnected within 10 minutes
                 if (MPManager.IsServer() && MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(user))
                 {
                     var p1 = MPManager.Instance().lostPlayer[user];
+                    var p1Train = p1.Train;
 
                     //check to see if the player gets back with the same set of cars
                     bool identical = true;
-                    if (cars.Length != p1.Train.Cars.Count) identical = false;
+                    if (cars.Length != p1Train.Cars.Count) identical = false;
                     if (identical != false)
                     {
                         string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\";
                         for (int i = 0; i < cars.Length; i++)
                         {
-                            if (wagonFilePath + cars[i] != p1.Train.Cars[i].RealWagFilePath) { identical = false; break; }
+                            if (wagonFilePath + cars[i] != p1Train.Cars[i].RealWagFilePath) { identical = false; break; }
                         }
                     }
 
-                    //if the player uses the same train cars
-                    if (identical)
+                    //if distance is higher than 1 Km from starting point of path
+
+                    if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
+                            new WorldLocation(p1Train.RearTDBTraveller.TileX, p1Train.RearTDBTraveller.TileZ, p1Train.RearTDBTraveller.X, 0, p1Train.RearTDBTraveller.Z)) > 1000000)
                     {
                         MPManager.OnlineTrains.Players.Add(user, p1);
                         p1.CreatedTime = MPManager.Simulator.GameTime;
-                        MPManager.Instance().AddOrRemoveTrain(p1.Train, true);
-                        if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, p1.Train, true);
+                        MPManager.Instance().AddOrRemoveTrain(p1Train, true);
+                        if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, p1Train, true);
                         MPManager.Instance().lostPlayer.Remove(user);
                     }
                     else//if the player uses different train cars
@@ -540,14 +543,67 @@ namespace Orts.MultiPlayer
                         {
                             t.expectedTileX = this.TileX; t.expectedTileZ = this.TileZ; t.expectedX = this.X; t.expectedZ = this.Z;
                             t.expectedTDir = this.dir; t.expectedDIr = (int)t.MUDirection;
-                            t.updateMSGReceived = true; t.expectedTravelled = t.travelled; t.TrainMaxSpeedMpS = this.trainmaxspeed;
-                            t.jumpRequested = true; // server has requested me to jump after I re-entered the game
-                            var i = 0;
-                            foreach (TrainCar car in t.Cars)
+                            t.expectedTravelled = t.DistanceTravelledM = t.travelled = this.Travelled;
+                            t.TrainMaxSpeedMpS = this.trainmaxspeed;
+                            //check to see if the player gets back with the same set of cars
+                            bool identical = true;
+                            if (cars.Length != t.Cars.Count) identical = false;
+                            if (identical != false)
                             {
-                                car.CarID = ids[i];
-                                i++;
+                                string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\";
+                                for (int i = 0; i < cars.Length; i++)
+                                {
+                                    if (wagonFilePath + cars[i] != t.Cars[i].RealWagFilePath) { identical = false; break; }
+                                }
                             }
+                            if (!identical)
+                            { 
+                            var carsCount = t.Cars.Count;
+                            t.Cars.RemoveRange(0, carsCount);
+                                for (int i = 0; i < cars.Length; i++)
+                                {
+                                    string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
+                                    if (!File.Exists(wagonFilePath))
+                                    {
+                                        Trace.TraceWarning("Ignored missing wagon {0}", wagonFilePath);
+                                        continue;
+                                    }
+
+                                    try // Load could fail if file has bad data.
+                                    {
+                                        TrainCar car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
+                                        car.Flipped = flipped[i] == 0 ? false : true;
+                                        car.CarID = ids[i];
+                                        var carID = car.CarID;
+                                        carID = carID.Remove(0, carID.LastIndexOf('-') + 2);
+                                        var uid = 0;
+                                        if (Int32.TryParse(carID, out uid)) car.UiD = uid;
+                                        car.Train = t;
+                                        t.Cars.Add(car);
+                                        if (car.CarID == leadingID)
+                                        {
+                                            t.LeadLocomotiveIndex = i;
+                                            MPManager.Simulator.PlayerLocomotive = t.LeadLocomotive as MSTSLocomotive;
+
+                                        }
+                                    }
+                                    catch (Exception error)
+                                    {
+                                        Trace.WriteLine(new FileLoadException(wagonFilePath, error));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                var i = 0;
+                                foreach (var car in t.Cars)
+                                {
+                                    car.CarID = ids[i];
+                                    i++;
+                                }
+                            }
+                            t.updateMSGReceived = true;
+                            t.jumpRequested = true; // server has requested me to jump after I re-entered the game
                         }
                     }
                     MPManager.Simulator.ClockTime = this.seconds;
@@ -580,33 +636,35 @@ namespace Orts.MultiPlayer
                 throw new SameNameError();
             }
 
-            //if the client comes back after disconnected withing 1 minute
+            //if the client comes back after disconnected within 10 minutes
             if (MPManager.Instance().lostPlayer != null && MPManager.Instance().lostPlayer.ContainsKey(user))
             {
                 var p1 = MPManager.Instance().lostPlayer[user];
+                var p1Train = p1.Train;
 
                 //check to see if the player gets back with the same set of cars
                 bool identical = true;
-                if (cars.Length != p1.Train.Cars.Count) identical = false;
+                if (cars.Length != p1Train.Cars.Count) identical = false;
                 if (identical != false)
                 {
                     string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\";
                     for (int i = 0; i < cars.Length; i++)
                     {
-                        if (wagonFilePath + cars[i] != p1.Train.Cars[i].RealWagFilePath) { identical = false; break; }
+                        if (wagonFilePath + cars[i] != p1Train.Cars[i].RealWagFilePath) { identical = false; break; }
                     }
                 }
 
-                //if the player uses the same train cars
-                if (identical)
+                //if the client player run already for more than 1 Km, we acknowledge him that run
+                if (WorldLocation.GetDistanceSquared(new WorldLocation(this.TileX, this.TileZ, this.X, 0, this.Z),
+                            new WorldLocation(p1Train.RearTDBTraveller.TileX, p1Train.RearTDBTraveller.TileZ, p1Train.RearTDBTraveller.X, 0, p1Train.RearTDBTraveller.Z)) > 1000000)
                 {
-                    p.Train = p1.Train; p.url = this.url;
-                    p.LeadingLocomotiveID = this.leadingID;
-                    p.con = MPManager.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + this.con;
-                    if (p.con.Contains("tilted")) p.Train.IsTilting = true;
-
-                    p.path = MPManager.Simulator.RoutePath + "\\PATHS\\" + this.path;
-                    p.Username = this.user;
+                    p.Train = p1Train; p.url = p1.url;
+                    p.LeadingLocomotiveID = p1.LeadingLocomotiveID;
+                    p.con = p1.con;
+                    p.Train.IsTilting = p1.Train.IsTilting;
+                    p.CreatedTime = MPManager.Simulator.GameTime;
+                    p.path = p1.path;
+                    p.Username = p1.Username;
                     MPManager.OnlineTrains.Players.Add(user, p);
                     MPManager.Instance().AddOrRemoveTrain(p.Train, true);
                     if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, p.Train, true);
