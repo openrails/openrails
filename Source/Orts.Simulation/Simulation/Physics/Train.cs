@@ -1390,13 +1390,29 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
-        /// In multiplayer, only want to change to my locomotives; i.e. those that start with my name.
+        /// In multiplayer, don't want to switch to a locomotive which is player locomotive of another user
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
         private bool SkipOtherUsersCar(int i)
         {
-            return MPManager.IsMultiPlayer() && !Cars[i].CarID.StartsWith(MPManager.GetUserName() + " ");
+            if (!MPManager.IsMultiPlayer()) return false;
+            else
+            {
+                var thisUsername = MPManager.GetUserName();
+                var skip = false;
+                foreach (OnlinePlayer onlinePlayer in MPManager.OnlineTrains.Players.Values)
+                {
+                    // don't consider the present user
+                    if (onlinePlayer.Username == thisUsername) continue;
+                    if (onlinePlayer.LeadingLocomotiveID == Cars[i].CarID)
+                    {
+                        skip = true;
+                        break;
+                    }
+                }
+                return skip;
+            } 
         }
 
         //================================================================================================//
