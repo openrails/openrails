@@ -254,7 +254,7 @@ load varies within the wagon. The parameters which can be changed are:
 
 - Mass
 - Brake and handbrake force
-- Friction
+- Friction (general and wind)
 - Centre of Gravity (impacts on curve performance)
 - Drive wheel weight (impacts upon locomotive adhesve weight)
 
@@ -280,6 +280,8 @@ below.::
       EmptyORTSDavis_A ( 580.71 )
       EmptyORTSDavis_B ( 5.0148 )
       EmptyORTSDavis_C ( 0.694782 )
+      EmptyORTSWagonFrontalArea ( 10.0m )
+      EmptyORTSDavisDragConstant ( 0.0003 )
       EmptyCentreOfGravity_Y ( 1.41 )
       IsGondola(0)
       UnloadingStartDelay (5)
@@ -297,6 +299,8 @@ below.::
       FullORTSDavis_A ( 748.61 )
       FullORTSDavis_B ( 18.0157 )
       FullORTSDavis_C ( 0.838530 )
+      FullORTSWagonFrontalArea ( 15.0m )
+      FullORTSDavisDragConstant ( 0.005 )
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
@@ -354,6 +358,7 @@ For example, the following code block would apply to a steam locomotive (note th
       FullORTSDavis_A ( 748.61 )
       FullORTSDavis_B ( 18.0157 )
       FullORTSDavis_C ( 0.838530 )
+      
       FullCentreOfGravity_Y ( 1.8 ) 
      )
   )
@@ -365,6 +370,8 @@ Notes:
 - Empty weight of tender will be the full mass minus coal and water weight
 - ``FreightWeightWhenFull`` will be the sum of the coal and water weight.
 - Full physics values will be those values for the combined weight of the tender, water and coal.
+- The parameters for wind resistance ( ORTSWagonFrontalArea and ORTSDavisDragConstant ) can be left 
+  out if the area and drag does not change between the full and empty states.
    
 
 Static wagons (Static Freight Animations)
@@ -390,6 +397,8 @@ A typical configuration code block will be as follows::
     FullORTSDavis_A ( 358.37 )
     FullORTSDavis_B ( 7.7739 )
     FullORTSDavis_C ( 0.718740 )
+    FullORTSWagonFrontalArea ( 15.0m )
+    FullORTSDavisDragConstant ( 0.005 )    
     FullCentreOfGravity_Y ( 1.8 ) 
    )
   )
