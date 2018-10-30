@@ -627,7 +627,7 @@ namespace Orts.Simulation.RollingStocks
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullORTSWagonFrontalAreaM2 > 0)
                     {
-                        LoadFullDavisDragConstant = FreightAnimations.FullPhysicsContinuousOne.FullORTSWagonFrontalAreaM2;
+                        LoadFullWagonFrontalAreaM2 = FreightAnimations.FullPhysicsContinuousOne.FullORTSWagonFrontalAreaM2;
                     }
                     else
                     {
