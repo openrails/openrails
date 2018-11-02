@@ -161,7 +161,8 @@ that the player is in Helper mode.  A player in Helper mode cannot control
 his consist as it falls under control of the lead locomotive. By pressing 
 ``<Shift+E>`` you can swap Helper status with another player on the train. 
 Always press ``<\>`` and ``<Shift+/>`` to reset brakes each time after 
-coupling/uncoupling.
+coupling/uncoupling. Note that two trains can't couple together before two 
+minutes are passed from their presence in the Dispatcher's computer.
 
 Players can uncouple their own trains. Players in the uncoupled trains may 
 need to press ``<Shift+E>`` to gain control; otherwise, the uncoupled 
@@ -241,7 +242,8 @@ Summary of Multi-Player Procedures
 5.  You can send and read messages from the dispatcher window
 6.  Use ``<Ctrl+Alt+F11>`` to see the path trains will follow, and 
     ``<F7>`` to see train names
-7.  Move trains slowly when trying to couple.
+7.  Move trains slowly when trying to couple. Trains don't couple in their 
+    first two minutes of life.
 8.  Use ``<\>`` and ``<Shift+/>`` (on English keyboards) just after your 
     train is coupled or uncoupled, or when you just gain back the control of 
     your own train.
@@ -327,9 +329,9 @@ trains are shown in grey on the route. Now the other players have 10 minutes to 
 the game where they were when the game was saved. They too must have in their main menu 
 their original path and the consist they had in the moment the game was saved. They must 
 select *Start MP* to re-enter the game. They will re-enter the game in the place where 
-they were when the game was saved. If however the consist at the moment of the game save is different 
-from the one selected when re-entering the game. or if the train proceeded less than 1 Km from 
-game start, the player will re-enter the game at the beginning of the path.
+they were and with the consist they had when the game was saved. If however the train proceeded 
+less than 1 Km from game start, the player will re-enter the game at the beginning of the path 
+with his original consist.
 
 As there are many possible cases, it may be possible that some of them are not covered.
 
