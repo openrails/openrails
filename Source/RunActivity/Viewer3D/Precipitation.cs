@@ -307,7 +307,8 @@ namespace Orts.Viewer3D
             var tiles = viewer.Tiles;
             var scenery = viewer.World.Scenery;
             var worldLocation = viewer.Camera.CameraWorldLocation;
-                        
+            //var worldLocation = Program.Viewer.PlayerLocomotive.WorldPosition.WorldLocation;  // This is used to test overall precipitation position.
+
             if (TimeParticlesLastEmitted == 0)
             {
                 TimeParticlesLastEmitted = currentTime - ParticleDuration;
@@ -328,7 +329,7 @@ namespace Orts.Viewer3D
 
             for (var i = 0; i < numToEmit; i++)
             {
-                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxLengthM), 0, worldLocation.Location.Z + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxWidthM));
+                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxWidthM), 0, worldLocation.Location.Z + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxLengthM));
                 temp.Location.Y = Heights.GetHeight(temp, tiles, scenery);
                 var position = new WorldPosition(temp);
 
