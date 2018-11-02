@@ -1226,6 +1226,29 @@ namespace Orts.Simulation
             return rear ? dot : -dot;
         }
 
+        // Checks if trains are overlapping. Used in multiplayer, where the standard method may lead to train overlapping
+        public float RoughOverlapDistanceM(Traveller other, Traveller farMe, Traveller farOther, float lengthMe, float lengthOther, bool rear)
+        {
+            var dy = Y - other.Y;
+            if (Math.Abs(dy) > 1)
+                return 1;
+            var dx = farMe.X - other.X + 2048 * (farMe.TileX - other.TileX);
+            var dz = farMe.Z - other.Z + 2048 * (farMe.TileZ - other.TileZ);
+            if (dx * dx + dz * dz > lengthMe * lengthMe) return 1;
+            dx = X - farOther.X + 2048 * (TileX - farOther.TileX);
+            dz = Z - farOther.Z + 2048 * (TileZ - farOther.TileZ);
+            if (dx * dx + dz * dz > lengthOther * lengthOther) return 1;
+            dx = X - other.X + 2048 * (TileX - other.TileX);
+            dz = Z - other.Z + 2048 * (TileZ - other.TileZ);
+            var diagonal = dx * dx + dz * dz;
+            if (diagonal < 200 && diagonal < (lengthMe + lengthOther) * (lengthMe + lengthOther))
+            {
+                var dot = dx * (float)Math.Sin(directionVector.Y) + dz * (float)Math.Cos(directionVector.Y);
+                return rear ? dot : -dot;
+            }
+            return 1;
+        }
+
         public override string ToString()
         {
             return String.Format("{{TN={0} TS={1} O={2:F6}}}", TrackNodeIndex, TrackVectorSectionIndex, trackOffset);
