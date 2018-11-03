@@ -43,6 +43,20 @@ are present, instead of using file ``blank.bmp``.
 To have a minimum working snow texture set, the file ``microtex.ace`` must 
 also be present in the ``SNOW`` subfolder.
 
+Snow Textures with Night Textures
+=================================
+MSTS did not allow snow textures to be used with night textures.
+This meant having dark buildings when running an activity at night
+when the weather is set to snow.  It turns out that OR is able to run
+with snow textures and night textures.  To do this, you have to create
+the ``Night\`` folder in the ``Textures\Snow\`` directory and copy the needed textures 
+into the ``Night\`` folder.  Doing this will allow night textures to be visible when operating
+in snow at night.  Keep in mind that the current night textures such as buildings do not 
+include snow so new textures will have to be created.
+
+One warning, if you decide to do this, there is a possiblility of experiencing resource
+issues.
+
 Operating Turntables and Transfertables
 =======================================
 
