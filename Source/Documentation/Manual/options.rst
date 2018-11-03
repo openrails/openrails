@@ -814,4 +814,16 @@ size of the box can be set by the entries in the height, width and length
 boxes. The X and Z values are centered on the camera location, and falling
 particles *spawn* and fall from the top of the box.
 
+The max size for both length and width is 3000 meters or 9,842ft. Due to possibe
+resource issues, the ability to use max length and width may not be possible.  The
+best way to use the precipitation box is to define a square around your entire train
+if small enough or around most of your train.  Keep track on how your resources are 
+being used since snow will take up the most resources so you will have to adjust the
+size until you are satisified with the results.
+
+The reason for defining a square around your train is to minimize the moments when your train
+is approaching the edge of the precipitation box.  Worst case is to save the activity,
+exit and re-enter the activity since doing this will set your train back in the middle of the
+precipitation box.
+
 
