@@ -29,6 +29,7 @@ using Orts.Parsers.Msts;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Common;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -188,7 +189,8 @@ namespace Orts.MultiPlayer
 				if (IsServer())
 				{
 					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Simulator.PlayerLocomotive;
-					if (Simulator.Confirmer != null)
+                    InitializeBrakesCommand.Receiver = MPManager.Simulator.PlayerLocomotive.Train;
+                    if (Simulator.Confirmer != null)
                         Simulator.Confirmer.Information(MPManager.Catalog.GetString("You gained back the control of your train"));
 					msgctl = new MSGControl(GetUserName(), "Confirm", train);
 					BroadCast(msgctl.ToString());

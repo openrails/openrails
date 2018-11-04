@@ -24,6 +24,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
+using Orts.Common;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
@@ -1883,6 +1884,7 @@ namespace Orts.MultiPlayer
             {
                 Train train = MPManager.Simulator.PlayerLocomotive.Train;
                 train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = MPManager.Simulator.PlayerLocomotive;
+                InitializeBrakesCommand.Receiver = MPManager.Simulator.PlayerLocomotive.Train;
                 if (MPManager.Simulator.Confirmer != null)
                     MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("You gained back the control of your train"));
                 MPManager.Instance().RemoveUncoupledTrains(train);
