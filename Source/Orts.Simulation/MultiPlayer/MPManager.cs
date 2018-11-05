@@ -190,6 +190,7 @@ namespace Orts.MultiPlayer
 				{
 					train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = Simulator.PlayerLocomotive;
                     InitializeBrakesCommand.Receiver = MPManager.Simulator.PlayerLocomotive.Train;
+                    train.InitializeSignals(false);
                     if (Simulator.Confirmer != null)
                         Simulator.Confirmer.Information(MPManager.Catalog.GetString("You gained back the control of your train"));
 					msgctl = new MSGControl(GetUserName(), "Confirm", train);

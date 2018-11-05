@@ -1862,6 +1862,7 @@ namespace Orts.MultiPlayer
         int num;
         string level;
         string user;
+        float trainmaxspeed;
         public MSGControl(string m)
         {
             m.Trim();
@@ -1869,6 +1870,7 @@ namespace Orts.MultiPlayer
             user = t[0];
             level = t[1];
             num = int.Parse(t[2]);
+            trainmaxspeed = float.Parse(t[3], CultureInfo.InvariantCulture);
         }
 
         public MSGControl(string u, string l, Train t)
@@ -1876,6 +1878,7 @@ namespace Orts.MultiPlayer
             user = u;
             level = l;
             num = t.Number;
+            trainmaxspeed = (MPManager.Simulator.PlayerLocomotive as MSTSLocomotive).MaxSpeedMpS;
         }
 
         public override void HandleMsg()
@@ -1885,6 +1888,7 @@ namespace Orts.MultiPlayer
                 Train train = MPManager.Simulator.PlayerLocomotive.Train;
                 train.TrainType = Train.TRAINTYPE.PLAYER; train.LeadLocomotive = MPManager.Simulator.PlayerLocomotive;
                 InitializeBrakesCommand.Receiver = MPManager.Simulator.PlayerLocomotive.Train;
+                train.InitializeSignals(false);
                 if (MPManager.Simulator.Confirmer != null)
                     MPManager.Simulator.Confirmer.Information(MPManager.Catalog.GetString("You gained back the control of your train"));
                 MPManager.Instance().RemoveUncoupledTrains(train);
@@ -1901,6 +1905,7 @@ namespace Orts.MultiPlayer
                         }
                         MPManager.Instance().RemoveUncoupledTrains(p.Value.Train);
                         p.Value.Train.TrainType = Train.TRAINTYPE.REMOTE;
+                        p.Value.Train.TrainMaxSpeedMpS = trainmaxspeed;
                         break;
                     }
                 }
@@ -1916,6 +1921,8 @@ namespace Orts.MultiPlayer
                             if (t.Number == this.num) p.Value.Train = t;
                         }
                         p.Value.Train.TrainType = Train.TRAINTYPE.REMOTE;
+                        p.Value.Train.TrainMaxSpeedMpS = trainmaxspeed;
+                        p.Value.Train.InitializeSignals(false);
                         MPManager.Instance().RemoveUncoupledTrains(p.Value.Train);
                         MPManager.BroadCast((new MSGControl(user, "Confirm", p.Value.Train)).ToString());
                         break;
@@ -1926,7 +1933,7 @@ namespace Orts.MultiPlayer
 
         public override string ToString()
         {
-            string tmp = "CONTROL " + user + "\t" + level + "\t" + num;
+            string tmp = "CONTROL " + user + "\t" + level + "\t" + num + "\t" + trainmaxspeed.ToString(CultureInfo.InvariantCulture);
             return " " + tmp.Length + ": " + tmp;
         }
     }
