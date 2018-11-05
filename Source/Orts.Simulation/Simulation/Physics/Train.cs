@@ -12439,7 +12439,7 @@ namespace Orts.Simulation.Physics
             statusString[iColumn] = FormatStrings.FormatDistanceDisplay(DistanceTravelledM, metric);
             iColumn++;
             //  2, "Speed"
-            var trainSpeed = TrainType == Train.TRAINTYPE.REMOTE ? targetSpeedMpS : SpeedMpS;
+            var trainSpeed = TrainType == Train.TRAINTYPE.REMOTE && SpeedMpS != 0 ? targetSpeedMpS : SpeedMpS;
             statusString[iColumn] = FormatStrings.FormatSpeed(trainSpeed, metric);
             if (Math.Abs(trainSpeed) > Math.Abs(AllowedMaxSpeedMpS)) statusString[iColumn] += "!!!";
             iColumn++;
