@@ -1328,6 +1328,19 @@ namespace Orts.MultiPlayer
             train.AITrainBrakePercent = 100;
 
             if (train.Cars[0] is MSTSLocomotive) train.LeadLocomotive = train.Cars[0];
+            if (train.Cars[0].CarID.StartsWith("AI"))
+            {
+                // It's an AI train for the server, raise pantos and light lights
+                if (train.LeadLocomotive != null) train.LeadLocomotive.SignalEvent(Event._HeadlightOn);
+                foreach (TrainCar car in train.Cars)
+                {
+                    if (car is MSTSElectricLocomotive)
+                    {
+                        car.Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        break;
+                    }
+                }
+            }
             if (MPManager.Instance().AddOrRemoveTrain(train, true) == false) return; //add train, but failed
             // if (MPManager.IsServer()) MPManager.Instance().AddOrRemoveLocomotives(user, train, true);
         }
