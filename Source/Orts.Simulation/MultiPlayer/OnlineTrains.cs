@@ -65,7 +65,7 @@ namespace Orts.MultiPlayer
             if (move == null) move = new MSGMove();
             foreach (OnlinePlayer p in Players.Values)
             {
-                if (p.Train != null && MPManager.Simulator.PlayerLocomotive != null && p.Train != MPManager.Simulator.PlayerLocomotive.Train)
+                if (p.Train != null && MPManager.Simulator.PlayerLocomotive != null && !(p.Train == MPManager.Simulator.PlayerLocomotive.Train && p.Train.TrainType != Train.TRAINTYPE.REMOTE))
                 {
                     if (Math.Abs(p.Train.SpeedMpS) > 0.001 || Math.Abs(p.Train.LastReportedSpeed) > 0)
                     {

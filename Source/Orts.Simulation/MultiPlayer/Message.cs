@@ -110,7 +110,7 @@ namespace Orts.MultiPlayer
         {
             m = m.Trim();
             string[] areas = m.Split(' ');
-            if (areas.Length % 13 != 0) //user speed travelled
+            if (areas.Length % 13 != 0 && !(areas.Length == 1 && areas[0].Length == 0)) //check for correct formatting
             {
                 throw new Exception("Parsing error " + m);
             }
@@ -118,10 +118,11 @@ namespace Orts.MultiPlayer
             {
                 int i = 0;
                 items = new List<MSGMoveItem>();
-                for (i = 0; i < areas.Length / 13; i++)
-                    items.Add(new MSGMoveItem(areas[13 * i], float.Parse(areas[13 * i + 1], CultureInfo.InvariantCulture), float.Parse(areas[13 * i + 2], CultureInfo.InvariantCulture), int.Parse(areas[13 * i + 3]),
-                        int.Parse(areas[13 * i + 4]), int.Parse(areas[13 * i + 5]), float.Parse(areas[13 * i + 6], CultureInfo.InvariantCulture), float.Parse(areas[13 * i + 7], CultureInfo.InvariantCulture),
-                        int.Parse(areas[13 * i + 8]), int.Parse(areas[13 * i + 9]), int.Parse(areas[13 * i + 10]), int.Parse(areas[13 * i + 11]), float.Parse(areas[13 * i + 12], CultureInfo.InvariantCulture)));
+                if (areas.Length > 1)
+                    for (i = 0; i < areas.Length / 13; i++)
+                        items.Add(new MSGMoveItem(areas[13 * i], float.Parse(areas[13 * i + 1], CultureInfo.InvariantCulture), float.Parse(areas[13 * i + 2], CultureInfo.InvariantCulture), int.Parse(areas[13 * i + 3]),
+                            int.Parse(areas[13 * i + 4]), int.Parse(areas[13 * i + 5]), float.Parse(areas[13 * i + 6], CultureInfo.InvariantCulture), float.Parse(areas[13 * i + 7], CultureInfo.InvariantCulture),
+                            int.Parse(areas[13 * i + 8]), int.Parse(areas[13 * i + 9]), int.Parse(areas[13 * i + 10]), int.Parse(areas[13 * i + 11]), float.Parse(areas[13 * i + 12], CultureInfo.InvariantCulture)));
             }
             catch (Exception e)
             {
@@ -167,6 +168,7 @@ namespace Orts.MultiPlayer
         public override string ToString()
         {
             string tmp = "MOVE ";
+            if (items != null && items.Count > 0)
             for (var i = 0; i < items.Count; i++) tmp += items[i].ToString() + " ";
             return " " + tmp.Length + ": " + tmp;
         }
@@ -228,6 +230,10 @@ namespace Orts.MultiPlayer
                     Train t = MPManager.FindPlayerTrain(m.user);
                     if (t != null)
                     {
+                        // skip the case where this train is merged with yours and you are the boss of that train
+                        if (t.Number == MPManager.Simulator.PlayerLocomotive.Train.Number &&
+                            MPManager.Simulator.PlayerLocomotive == MPManager.Simulator.PlayerLocomotive.Train.LeadLocomotive &&
+                            t.TrainType != Train.TRAINTYPE.REMOTE && t.TrainType != Train.TRAINTYPE.STATIC) continue;
                         found = true;
                         t.ToDoUpdate(m.trackNodeIndex, m.TileX, m.TileZ, m.X, m.Z, m.travelled, m.speed, m.direction, m.tdbDir, m.Length);
                         // This is necessary as sometimes a train isn't in the Trains list

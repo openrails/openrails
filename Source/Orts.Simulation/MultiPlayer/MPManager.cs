@@ -237,7 +237,8 @@ namespace Orts.MultiPlayer
 			if (Server != null && newtime - lastMoveTime >= 1f)
 			{
 				MSGMove move = new MSGMove();
-				move.AddNewItem(GetUserName(), Simulator.PlayerLocomotive.Train);
+                if (Simulator.PlayerLocomotive.Train.TrainType != Train.TRAINTYPE.REMOTE)
+                    move.AddNewItem(GetUserName(), Simulator.PlayerLocomotive.Train);
 				Server.BroadCast(OnlineTrains.MoveTrains(move));
                 MSGExhaust exhaust = new MSGExhaust(); // Also updating loco exhaust
                 Train t = Simulator.PlayerLocomotive.Train;
