@@ -894,7 +894,7 @@ namespace Orts.Simulation.Physics
                 PreviousPosition[0] = new TCPosition();
                 PreviousPosition[0].RestorePreviousPositionDummy(inf);
             }
-
+            travelled = DistanceTravelledM;
             int activeActions = inf.ReadInt32();
             for (int iAction = 0; iAction < activeActions; iAction++)
             {
