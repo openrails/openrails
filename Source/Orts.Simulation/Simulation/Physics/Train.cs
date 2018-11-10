@@ -937,7 +937,8 @@ namespace Orts.Simulation.Physics
                 if (LeadLocomotiveIndex >= 0)
                 {
                     LeadLocomotive = Cars[LeadLocomotiveIndex];
-                    Simulator.PlayerLocomotive = LeadLocomotive;
+                    if (TrainType != TRAINTYPE.STATIC)
+                        Simulator.PlayerLocomotive = LeadLocomotive;
                 }
 
                 // restore logfile
