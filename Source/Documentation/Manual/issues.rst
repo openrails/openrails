@@ -24,3 +24,16 @@ Therefore the file must be edited as follows to be correctly interpreted by Open
 
     if ( next_hp ==# 0 && next_gue !=# 2 )
     {
+
+Spurious emergency braking in Timetable mode
+=============================================
+
+If in Timetable mode a speedplate with higher speedlimit follows a signal with 
+reduced speedlimit, the allowed speed in the Trackmonitor rises to the speed 
+shown on the speedplate. This occurs accordingly to specs of Timetable mode 
+(and differently from activity mode).
+
+However the overspeedmonitor considers the reduced signal speed, coherently 
+with activity mode. Therefore in this case if, in timetable mode, a train is 
+accelerated above the signal speed, the overspeedmonitor may trigger an 
+emergency braking.
