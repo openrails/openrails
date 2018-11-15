@@ -238,28 +238,57 @@ namespace Orts.Simulation
             {
                 Current = Current.NextTask;
             }
-
-            if (Simulator.OriginalPlayerTrain.SpeedMpS == 0)
+            if (Simulator.OriginalPlayerTrain.TrainType == Train.TRAINTYPE.PLAYER || Simulator.OriginalPlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
             {
-                if (prevTrainSpeed != 0)
+                if (Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) < 0.2f)
                 {
-                    prevTrainSpeed = 0;
-                    Current.NotifyEvent(ActivityEventType.TrainStop);
-                    if (Current.IsCompleted != null)
+                    if (Math.Abs(prevTrainSpeed) >= 0.2f)
                     {
-                        Current = Current.NextTask;
+                        prevTrainSpeed = 0;
+                        Current.NotifyEvent(ActivityEventType.TrainStop);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
+                    }
+                }
+                else
+                {
+                    if (Math.Abs(prevTrainSpeed) < 0.2f && Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) >= 0.2f)
+                    {
+                        prevTrainSpeed = Simulator.OriginalPlayerTrain.SpeedMpS;
+                        Current.NotifyEvent(ActivityEventType.TrainStart);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
                     }
                 }
             }
             else
             {
-                if (prevTrainSpeed == 0 && !(Simulator.OriginalPlayerTrain.SpeedMpS < Math.Abs(0.2f)))
+                if (Simulator.OriginalPlayerTrain.SpeedMpS == 0)
                 {
-                    prevTrainSpeed = Simulator.OriginalPlayerTrain.SpeedMpS;
-                    Current.NotifyEvent(ActivityEventType.TrainStart);
-                    if (Current.IsCompleted != null)
+                    if (prevTrainSpeed != 0)
                     {
-                        Current = Current.NextTask;
+                        prevTrainSpeed = 0;
+                        Current.NotifyEvent(ActivityEventType.TrainStop);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
+                    }
+                }
+                else
+                {
+                    if (prevTrainSpeed == 0 && Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) > 0.2f)
+                    {
+                        prevTrainSpeed = Simulator.OriginalPlayerTrain.SpeedMpS;
+                        Current.NotifyEvent(ActivityEventType.TrainStart);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
                     }
                 }
             }
