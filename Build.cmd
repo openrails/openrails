@@ -152,6 +152,11 @@ FOR %%F IN ("Program\*.exe", "Program\Orts.*.dll", "Program\Contrib.*.dll", "Pro
 )
 ECHO Set product and file version information to "%VersionInfoVersion%".
 
+REM *** Special build step: signs binaries ***
+IF NOT "%JENKINS_TOOLS%" == "" (
+	FOR /R "Program" %%F IN (*.exe *.dll) DO CALL "%JENKINS_TOOLS%\sign.cmd" "%%~F" || GOTO :error
+)
+
 IF NOT "%Mode%" == "Unstable" (
 	REM Restart the Office Click2Run service as this frequently breaks builds.
 	NET stop ClickToRunSvc
@@ -184,11 +189,9 @@ IF "%Mode%" == "Stable" (
 	iscc "Source\Installer\OpenRails from DVD\OpenRails from DVD.iss" || GOTO :error
 	CALL :move "Source\Installer\OpenRails from download\Output\OpenRailsTestingSetup.exe" "OpenRails-%Mode%-Setup.exe" || GOTO :error
 	CALL :move "Source\Installer\OpenRails from DVD\Output\OpenRailsTestingDVDSetup.exe" "OpenRails-%Mode%-DVDSetup.exe" || GOTO :error
-)
-
-REM *** Special build step: signs binaries ***
-IF NOT "%JENKINS_TOOLS%" == "" (
-	FOR /R "Program" %%F IN (*.exe *.dll) DO CALL "%JENKINS_TOOLS%\sign.cmd" "%%~F" || GOTO :error
+	REM *** Special build step: signs binaries ***
+	IF NOT "%JENKINS_TOOLS%" == "" CALL "%JENKINS_TOOLS%\sign.cmd" "OpenRails-%Mode%-Setup.exe" || GOTO :error
+	IF NOT "%JENKINS_TOOLS%" == "" CALL "%JENKINS_TOOLS%\sign.cmd" "OpenRails-%Mode%-DVDSetup.exe" || GOTO :error
 )
 
 REM Create binary and source zips.
