@@ -112,6 +112,15 @@ REM Set update channel.
 >>Program\Updater.ini ECHO Channel=string:%Mode% || GOTO :error
 ECHO Set update channel to "%Mode%".
 
+REM Set version number.
+IF NOT "%Version%" == "" (
+	>Program\Version.txt ECHO %Version%. || GOTO :error
+	ECHO Set version number to "%Version%".
+) ELSE (
+	>Program\Version.txt ECHO X || GOTO :error
+	ECHO Set version number to none.
+)
+
 REM Set revision number.
 >Program\Revision.txt ECHO $Revision: %Revision% $ || GOTO :error
 ECHO Set revision number to "%Revision%".
