@@ -19,6 +19,9 @@
           <p>
             A summary of the new and improved features can be found below. In addition, over 140 bugs have been fixed in this release. Please keep <a href="http://openrails.org/contribute/reporting-bugs/">reporting bugs and suggesting new features</a> so Open Rails can continue to imporve.
           </p>
+          <p>
+          This is the last version of Open Rails to support Windows XP; future versions will require Windows 7 or later.
+          </p>
         </div>
       </div>
       <div class="row">
