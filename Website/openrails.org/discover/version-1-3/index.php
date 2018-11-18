@@ -30,7 +30,7 @@
           <h3>Headlines</h3>
           <ul>
             <li>Timetables can join and split trains to form new trains</li>
-            <li>Mouse control for 3D cabs</li>
+            <li><a href="https://youtu.be/UO9XrBz3iD0">Mouse control for 3D cabs</a></li>
             <li><a href="https://youtu.be/7-wkgUxQsvI">Working transfer tables</a></li>
             <li>Activity evaluation</li>
             <li>Separate files for extensions to activity files</li>
@@ -42,7 +42,7 @@
             <li>Route-wide sounds when trains pass over low radius curves</li>
             <li>Save and resume in multiplayer</li>
             <li>Signal script functions can be reused by multiple signal types</li>
-            <li>Car spawner option to support walking people</li>
+            <li><a href="https://youtu.be/z61lYgzvlKw">Car spawner option to support walking people</a></li>
             <li>Cab radio sound triggers</li>
             <li>Command-line tool to load all supported file formats</li>
             <li>Activity randomization, including dynamic weather and mechanical problems</li>
