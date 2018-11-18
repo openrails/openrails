@@ -124,7 +124,13 @@ include "download/program/preamble.php";
           opacity: 0;
         }
         #modal2 .modal-dialog {
-          margin-top: 335px;
+          margin-top: 150px;
+        }
+        @media (min-width: 992px) {
+          #modal2 .modal-dialog {
+            margin-top: 335px;
+            width: 900px;
+          }
         }
         #modal2 .modal-content {
           border: none;
@@ -160,7 +166,7 @@ include "download/program/preamble.php";
       </style>
 
       <div id='modal2' class='modal fade' tabindex='-1' role='dialog' aria-labelledby='myModalLabel' aria-hidden='true'>
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog">
           <div class="modal-content row">
             <div class="user-new col-md-6">
               <div class="user-content">
@@ -188,11 +194,9 @@ include "download/program/preamble.php";
     </div>
     <!-- pop up modal2 -->
     <script type="text/javascript">
-    $(window).on('load',function(){
-      if (!window.matchMedia || window.matchMedia('(min-width: 992px)').matches) {
-        $('#modal2').modal('show');
-      }
-    });
+      $(window).on('load', function () {
+        $('#modal2').modal('show')
+      })
     </script>
   </body>
 </html>
