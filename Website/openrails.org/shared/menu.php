@@ -31,7 +31,8 @@ function in_directory($cwd, $name) {
                 <li><a href="/discover/our-plans/">Our Plans</a></li>
                 <!--<li><a href="/discover/version-1-0/">Version 1.0</a></li>-->
                 <!--<li><a href="/discover/version-1-1/">Version 1.1</a></li>-->
-                <li><a href="/discover/version-1-2/">Version 1.2</a></li>
+                <!-- <li><a href="/discover/version-1-2/">Version 1.2</a></li> -->
+                <li><a href="/discover/version-1-3/">Version 1.3</a></li>
                 <li><a href="/discover/project-team/">Project Team</a></li>
                 <li><a href="/discover/news/">News</a></li>
                 <li><a href="/discover/license/">License</a></li>
