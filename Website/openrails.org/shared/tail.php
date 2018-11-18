@@ -71,7 +71,7 @@ echo date('Y', filemtime("$path/../files/OpenRails-Testing-Source.zip"));
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script>
       // Work-around to use local file if CDN is blocked - see http://stackoverflow.com/questions/5257923/how-to-load-local-script-files-as-fallback-in-cases-where-cdn-are-blocked-unavai
-      if (typeof jQuery == 'undefined'){ 
+      if (typeof jQuery == 'undefined'){
         document.write('<script src="/shared/jquery/1.11.0/jquery.min.js">\x3C/script>')
       }
     </script>
@@ -92,7 +92,17 @@ echo date('Y', filemtime("$path/../files/OpenRails-Testing-Source.zip"));
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-      
+
       ga('create', 'UA-53007731-1', 'auto');
       ga('send', 'pageview');
+      ga('set', 'transport', 'beacon');
+    </script>
+    <script>
+      $(function () {
+        $('a[href]').on('click', function () {
+          if (this.href.indexOf('://openrails.org/') === -1 && this.href.indexOf('://www.openrails.org/') === -1) {
+            ga('send', 'event', 'outbound', 'click', this.href)
+          }
+        })
+      })
     </script>
