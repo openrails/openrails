@@ -6478,18 +6478,15 @@ namespace Orts.Simulation.AIs
                             if (!MayDepart)
                             {
                                 float distanceToNextSignal = -1;
-                                if (NextSignalObject[0] != null)
+                                if (NextSignalObject[0] != null) distanceToNextSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
+                                                                        // check if signal ahead is cleared - if not, do not allow depart
+                                if (NextSignalObject[0] != null && distanceToNextSignal >= 0 && distanceToNextSignal < 300 &&
+                                        NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
+                                    && NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
                                 {
-                                    distanceToNextSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
-                                    // check if signal ahead is cleared - if not, do not allow depart
-                                    if (distanceToNextSignal >= 0 && distanceToNextSignal < 300 &&
-                                         NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
-                                        && NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
-                                    {
-                                        DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
-                                    }
+                                    DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. Waiting for signal ahead to clear.");
                                 }
-                                if (distanceToNextSignal < 0 || distanceToNextSignal > 300)
+                                else
                                 {
                                     MayDepart = true;
                                     DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
