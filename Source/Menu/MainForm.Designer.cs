@@ -458,15 +458,14 @@ namespace ORTS
             // 
             // checkDebriefActivityEval
             // 
-            this.checkDebriefActivityEval.AutoSize = true;
             this.checkDebriefActivityEval.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.checkDebriefActivityEval.Location = new System.Drawing.Point(169, 3);
+            this.checkDebriefActivityEval.Location = new System.Drawing.Point(134, 3);
             this.checkDebriefActivityEval.Margin = new System.Windows.Forms.Padding(2);
             this.checkDebriefActivityEval.Name = "checkDebriefActivityEval";
-            this.checkDebriefActivityEval.Size = new System.Drawing.Size(115, 17);
+            this.checkDebriefActivityEval.Size = new System.Drawing.Size(149, 17);
             this.checkDebriefActivityEval.TabIndex = 20;
             this.checkDebriefActivityEval.Text = "Debrief evaluation:";
-            this.checkDebriefActivityEval.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.checkDebriefActivityEval.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.checkDebriefActivityEval.UseVisualStyleBackColor = true;
             // 
             // label3
@@ -590,22 +589,20 @@ namespace ORTS
             // 
             // label11
             // 
-            this.label11.AutoSize = true;
             this.label11.Location = new System.Drawing.Point(143, 234);
-            this.label11.Margin = new System.Windows.Forms.Padding(3);
+            this.label11.Margin = new System.Windows.Forms.Padding(2);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(50, 13);
+            this.label11.Size = new System.Drawing.Size(67, 14);
             this.label11.TabIndex = 16;
             this.label11.Text = "Duration:";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label9
             // 
-            this.label9.AutoSize = true;
             this.label9.Location = new System.Drawing.Point(4, 234);
-            this.label9.Margin = new System.Windows.Forms.Padding(3);
+            this.label9.Margin = new System.Windows.Forms.Padding(2);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(33, 13);
+            this.label9.Size = new System.Drawing.Size(56, 14);
             this.label9.TabIndex = 10;
             this.label9.Text = "Time:";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -650,11 +647,10 @@ namespace ORTS
             // 
             // label12
             // 
-            this.label12.AutoSize = true;
             this.label12.Location = new System.Drawing.Point(4, 289);
-            this.label12.Margin = new System.Windows.Forms.Padding(3);
+            this.label12.Margin = new System.Windows.Forms.Padding(2);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(51, 13);
+            this.label12.Size = new System.Drawing.Size(56, 14);
             this.label12.TabIndex = 14;
             this.label12.Text = "Weather:";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -674,11 +670,10 @@ namespace ORTS
             // 
             // label10
             // 
-            this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(143, 262);
-            this.label10.Margin = new System.Windows.Forms.Padding(3);
+            this.label10.Margin = new System.Windows.Forms.Padding(2);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(50, 13);
+            this.label10.Size = new System.Drawing.Size(67, 14);
             this.label10.TabIndex = 18;
             this.label10.Text = "Difficulty:";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -697,11 +692,10 @@ namespace ORTS
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(4, 262);
-            this.label8.Margin = new System.Windows.Forms.Padding(3);
+            this.label8.Margin = new System.Windows.Forms.Padding(2);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(46, 13);
+            this.label8.Size = new System.Drawing.Size(56, 14);
             this.label8.TabIndex = 12;
             this.label8.Text = "Season:";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
