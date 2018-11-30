@@ -1339,6 +1339,9 @@ namespace Orts.Viewer3D
         /// <returns></returns>
         static float Interpolate(float x, Orts.Formats.Msts.VolumeCurve Curve)
         {
+            if (Curve.CurvePoints.Count() < 2)
+                return Curve.CurvePoints[0].Y;
+
             Orts.Formats.Msts.CurvePoint[] curvePoints = Curve.CurvePoints;
 
             if (x < curvePoints[0].X)
