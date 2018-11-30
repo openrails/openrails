@@ -154,6 +154,8 @@ namespace Orts.Simulation.RollingStocks
         {
             base.LoadFromWagFile(wagFilePath);
 
+            NormalizeParams();
+
             if (DieselEngines == null)
                 DieselEngines = new DieselEngines(this);
 
@@ -186,6 +188,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             InitialMassKg = MassKG;
+ 
         }
 
         /// <summary>
@@ -760,6 +763,49 @@ namespace Orts.Simulation.RollingStocks
             ExhaustColorR.ForceSmoothValue(exhColorR);
             ExhaustColorG.ForceSmoothValue(exhColorG);
             ExhaustColorB.ForceSmoothValue(exhColorB);
+        }
+
+
+        //================================================================================================//
+        /// <summary>
+        /// The method copes with the strange parameters that some british gear-based DMUs have: throttle 
+        /// values arrive up to 1000%, and conversely GearBoxMaxTractiveForceForGears are divided by 10.
+        /// Apparently MSTS works well with such values. This method recognizes such case and corrects such values.
+        /// </summary>
+        protected void NormalizeParams()
+        {
+            // check for wrong GearBoxMaxTractiveForceForGears parameters
+            if (GearBox != null && GearBox.mstsParams != null && GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN.Count > 0)
+            {
+                if (ThrottleController != null && ThrottleController.MaximumValue > 1 && MaxForceN / GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN[0] > 3)
+                    // Tricky things have been made with this .eng file, see e.g Cravens 105; let's correct them
+                {
+                    for (int i = 0; i < GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN.Count; i++)
+                        GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN[i] *= ThrottleController.MaximumValue;
+                }
+                ThrottleController.Normalize(ThrottleController.MaximumValue);
+                // correct also .cvf files
+                if (CabViewList.Count > 0)
+                    foreach (var cabView in CabViewList)
+                    {
+                        if (cabView.CVFFile != null && cabView.CVFFile.CabViewControls != null && cabView.CVFFile.CabViewControls.Count > 0)
+                        {
+                            foreach ( var control in cabView.CVFFile.CabViewControls)
+                            {
+                                if (control is CVCDiscrete && control.ControlType == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
+                                {
+                                    var discreteControl = (CVCDiscrete)control;
+                                    for (var i = 0; i < discreteControl.Values.Count; i++)
+                                        discreteControl.Values[i] /= ThrottleController.MaximumValue;
+                                    if (discreteControl.MaxValue > 0) discreteControl.MaxValue = discreteControl.Values[discreteControl.Values.Count - 1];
+                                }
+                            }
+                        }
+                    }
+                ThrottleController.MaximumValue = 1;
+            }
+            // Check also for very low DieselEngineIdleRPM
+            if (IdleRPM < 10) IdleRPM = Math.Max(150, MaxRPM / 10);
         }
     } // class DieselLocomotive
 }

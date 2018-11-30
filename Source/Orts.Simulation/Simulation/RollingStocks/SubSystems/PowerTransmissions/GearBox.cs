@@ -119,7 +119,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
     public class GearBox
     {
-        MSTSGearBoxParams mstsParams = new MSTSGearBoxParams();
+        public MSTSGearBoxParams mstsParams = new MSTSGearBoxParams();
         DieselEngine DieselEngine;
         public List<Gear> Gears = new List<Gear>();
 

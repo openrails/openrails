@@ -547,5 +547,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             StepSize = stepSize;
         }
 
+        public void Normalize (float ratio)
+        {
+            for (int i = 0; i < Notches.Count; i++)
+                Notches[i].Value /= ratio;
+        }
+
     }
 }
