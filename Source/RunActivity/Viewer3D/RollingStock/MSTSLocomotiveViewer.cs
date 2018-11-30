@@ -68,8 +68,17 @@ namespace Orts.Viewer3D.RollingStock
 
             if (Locomotive.TrainControlSystem != null && Locomotive.TrainControlSystem.Sounds.Count > 0)
                 foreach (var script in Locomotive.TrainControlSystem.Sounds.Keys)
-                    Viewer.SoundProcess.AddSoundSources(script, new List<SoundSourceBase>() {
-                        new SoundSource(Viewer, Locomotive, Locomotive.TrainControlSystem.Sounds[script])});
+                {
+                    try
+                    {
+                        Viewer.SoundProcess.AddSoundSources(script, new List<SoundSourceBase>() {
+                            new SoundSource(Viewer, Locomotive, Locomotive.TrainControlSystem.Sounds[script])});
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.TraceInformation("File " + Locomotive.TrainControlSystem.Sounds[script] + " in script of locomotive of train " + Locomotive.Train.Name + " : " + error.Message);
+                    }
+                }
         }
 
         protected virtual void StartGearBoxIncrease()
