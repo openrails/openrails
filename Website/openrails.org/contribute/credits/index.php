@@ -36,11 +36,11 @@
           <li>Dan Reynolds</li>
           <li>Daniel Leach</li>
           <li>David B. Clarke</li>
+          <li>Dennis Towlson</li>
         </ul>
       </div>
       <div class="col-md-3">
         <ul>
-          <li>Dennis Towlson</li>
           <li>Derek Morton</li>
           <li>Doug Kightley</li>
           <li>Douglas Jones</li>
@@ -58,12 +58,12 @@
           <li>Jean-Louis Chauvin</li>
           <li>Jeff Bush</li>
           <li>Jeffrey Kraus-Yao</li>
+          <li>Jijun Tang</li>
+          <li>Jim Jendro</li>
         </ul>
       </div>
       <div class="col-md-3">
         <ul>
-          <li>Jijun Tang</li>
-          <li>Jim Jendro</li>
           <li>Jim Ward</li>
           <li>John Sandford</li>
           <li>Joseph Hoevet</li>
@@ -76,16 +76,17 @@
           <li>Matêj Pácha</li>
           <li>Matt Munro</li>
           <li>Matt Peddlesden</li>
+          <li>Mauricio Muñoz</li>
           <li>Paul Bourke</li>
           <li>Paul Gausden</li>
           <li>Paul Wright</li>
           <li>Peter Gulyas</li>
+          <li>Peter Newell</li>
+          <li>Phil Voxland</li>
         </ul>
       </div>
       <div class="col-md-3">
         <ul>
-          <li>Peter Newell</li>
-          <li>Phil Voxland</li>
           <li>Remus Iancu</li>
           <li>Richard Plokhaar</li>
           <li>Rick Grout</li>

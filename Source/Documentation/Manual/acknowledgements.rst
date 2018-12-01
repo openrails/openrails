@@ -9,24 +9,25 @@ people. We owe a massive thanks to all of them and therefore wish to mention
 them below and excuse ourselves if someone has been forgotten:
 
 ================== ================== ================== ==================
-Adam Kane          Dennis Towlson     Jijun Tang         Peter Newell
-Adam Miles         Derek Morton       Jim Jendro         Phil Voxland
-Alex Bloom         Doug Kightley      Jim Ward           Remus Iancu
-Andre Ming         Douglas Jones      John Sandford      Richard Plokhaar
-Anthony Brailsford Edward Keenan      Joseph Hoevet      Rick Grout
-Barrie Scott       Eric Pannese       Joseph Realmuto    Rick Hargraves
-Barry Munro        Eric Swenson       Larry Steiner      Riemer Grootjans
-Bill Currey        Eugen Rippstein    Laurie Heath       Rob Lane
-Bill Prieger       Fabian Joris       Lutz Doellermann   Robert Hodgson
-Bob Boudoin        Greg Davies        Marc Nelson        Robert Murphy
-Bruno Sanches      György Sárosi      Markus Gelbmann    Robert Roeterdink
-Carlo Santucci     Haifeng Li         Matêj Pácha        Roberto Ceccarelli
-Chris Jakeman      Hank Sundermeyer   Matt Munro         Samuel Kelly
-Chris Van Wagoner  James Ross         Matt Peddlesden    Scott Miller
-Craig Benner       Jan Vytlačil       Paul Bourke        Sid Penstone
-Dan Reynolds       Jean-Louis Chauvin Paul Gausden       Tim Muir
-Daniel Leach       Jeff Bush          Paul Wright        Walter Niehoff
-David B. Clarke    Jeffrey Kraus-Yao  Peter Gulyas       Wes Card
+Adam Kane          Derek Morton       Jim Ward           Remus Iancu
+Adam Miles         Doug Kightley      John Sandford      Richard Plokhaar
+Alex Bloom         Douglas Jones      Joseph Hoevet      Rick Grout
+Andre Ming         Edward Keenan      Joseph Realmuto    Rick Hargraves
+Anthony Brailsford Eric Pannese       Larry Steiner      Riemer Grootjans
+Barrie Scott       Eric Swenson       Laurie Heath       Rob Lane
+Barry Munro        Eugen Rippstein    Lutz Doellermann   Robert Hodgson
+Bill Currey        Fabian Joris       Marc Nelson        Robert Murphy
+Bill Prieger       Greg Davies        Markus Gelbmann    Robert Roeterdink
+Bob Boudoin        György Sárosi      Matêj Pácha        Roberto Ceccarelli
+Bruno Sanches      Haifeng Li         Matt Munro         Samuel Kelly
+Carlo Santucci     Hank Sundermeyer   Matt Peddlesden    Scott Miller
+Chris Jakeman      James Ross         Mauricio Muñoz     Sid Penstone
+Chris Van Wagoner  Jan Vytlačil       Paul Bourke        Tim Muir
+Craig Benner       Jean-Louis Chauvin Paul Gausden       Walter Niehoff
+Dan Reynolds       Jeff Bush          Paul Wright        Wes Card
+Daniel Leach       Jeffrey Kraus-Yao  Peter Gulyas
+David B. Clarke    Jijun Tang         Peter Newell
+Dennis Towlson     Jim Jendro         Phil Voxland
 ================== ================== ================== ==================
 
 And a special thanks to:
