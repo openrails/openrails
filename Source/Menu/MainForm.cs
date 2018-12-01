@@ -375,7 +375,9 @@ namespace ORTS
             ShowEnvironment();
             ShowDetails();
             //Debrief Activity Eval
-            if (SelectedActivity.Name.Contains("Explore"))
+            //0 = "- Explore route -"
+            //1 = "+ Explore in Activity mode +"
+            if (comboBoxActivity.SelectedIndex < 2)
             { checkDebriefActivityEval.Checked = false; checkDebriefActivityEval.Enabled = false; }
             else
             { checkDebriefActivityEval.Enabled = true; }
