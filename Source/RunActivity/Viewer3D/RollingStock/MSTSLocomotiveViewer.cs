@@ -323,6 +323,19 @@ namespace Orts.Viewer3D.RollingStock
         }
 
         /// <summary>
+        /// Release sounds of TCS if any, but not for player locomotive
+        /// </summary>
+        public override void Unload()
+        {
+            if (Locomotive.TrainControlSystem != null && Locomotive.TrainControlSystem.Sounds.Count > 0)
+                foreach (var script in Locomotive.TrainControlSystem.Sounds.Keys)
+                {
+                         Viewer.SoundProcess.RemoveSoundSources(script);
+                }
+            base.Unload();
+        }
+
+        /// <summary>
         /// Finds the pickup point which is closest to the loco or tender that uses coal, water or diesel oil.
         /// Uses that pickup to refill the loco or tender.
         /// Not implemented yet:
