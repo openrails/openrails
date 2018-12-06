@@ -3859,7 +3859,7 @@ namespace Orts.Simulation.Signalling
         public List<int> ScanRoute(Train thisTrain, int firstSectionIndex, float firstOffset, int firstDirection, bool forward,
                 float routeLength, bool honourManualSwitch, bool autoAlign, bool stopAtFacingSignal, bool reservedOnly, bool returnSections,
                 bool searchFacingSignal, bool searchBackwardSignal, bool searchFacingSpeedpost, bool searchBackwardSpeedpost,
-                bool isFreight)
+                bool isFreight, bool considerSpeedReset = false)
         {
 
             int sectionIndex = firstSectionIndex;
@@ -3976,8 +3976,12 @@ namespace Orts.Simulation.Signalling
 
                             SignalObject thisSpeedpost = thisItem.SignalRef;
                             ObjectSpeedInfo speed_info = thisSpeedpost.this_lim_speed(MstsSignalFunction.SPEED);
-
-                            if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0))
+                            if (considerSpeedReset)
+                            {
+                                var speed_infoR = thisSpeedpost.this_sig_speed(MstsSignalFunction.SPEED);
+                                speed_info.speed_reset = speed_infoR.speed_reset;
+                            }
+                            if ((isFreight && speed_info.speed_freight > 0) || (!isFreight && speed_info.speed_pass > 0) || speed_info.speed_reset == 1)
                             {
                                 if (thisItem.SignalLocation < thisSection.Length - offset)
                                 {

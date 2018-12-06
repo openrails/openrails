@@ -7786,7 +7786,7 @@ namespace Orts.Simulation.Physics
 
             foundSpeedLimit.Clear();
             foundSpeedLimit = signalRef.ScanRoute(this, thisElement.TCSectionIndex, offsetStart, thisElement.Direction,
-                    true, -1, false, true, false, false, false, false, true, false, true, IsFreight);
+                    true, -1, false, true, false, false, false, false, true, false, true, IsFreight, true);
 
             if (foundSpeedLimit.Count > 0)
             {
@@ -7810,6 +7810,18 @@ namespace Orts.Simulation.Physics
                     else
                     {
                         AllowedMaxSpeedMpS = Math.Min(allowedMaxSpeedSignalMpS, AllowedMaxSpeedMpS);
+                    }
+                }
+                else if (thisSignal.SignalHeads[0].sigFunction == MstsSignalFunction.SPEED)
+                {
+                    ObjectSpeedInfo thisSpeedInfo = thisSignal.this_sig_speed(MstsSignalFunction.SPEED);
+                    if (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)
+                    {
+                        allowedMaxSpeedSignalMpS = TrainMaxSpeedMpS;
+                        if (Simulator.TimetableMode)
+                            AllowedMaxSpeedMpS = allowedMaxSpeedLimitMpS;
+                        else
+                            AllowedMaxSpeedMpS = Math.Min(allowedMaxTempSpeedLimitMpS, allowedMaxSpeedLimitMpS);
                     }
                 }
             }
@@ -13409,6 +13421,7 @@ namespace Orts.Simulation.Physics
                 float distanceToTrainM = 0.0f;
                 float offset = PresentPosition[0].TCOffset;
                 float sectionStart = -offset;
+                float progressiveMaxSpeedLimitMpS = allowedMaxSpeedLimitMpS;
 
                 foreach (TCRouteElement thisElement in ValidRoute[0])
                 {
@@ -13437,8 +13450,11 @@ namespace Orts.Simulation.Physics
 
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
 
-                            if (distanceToTrainM > 0 && validSpeed > 0)
+                            if (distanceToTrainM > 0 && (validSpeed > 0 || thisSpeedInfo.speed_reset == 1))
                             {
+                                if (thisSpeedInfo.speed_reset == 1)
+                                    validSpeed = progressiveMaxSpeedLimitMpS;
+                                else progressiveMaxSpeedLimitMpS = validSpeed;
                                 thisItem = new TrainObjectItem(validSpeed, distanceToTrainM, (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
                                 thisInfo.ObjectInfoForward.Add(thisItem);
                             }
@@ -13468,6 +13484,7 @@ namespace Orts.Simulation.Physics
                 float offset = PresentPosition[1].TCOffset;
                 TrackCircuitSection firstSection = signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex];
                 float sectionStart = offset - firstSection.Length;
+                float progressiveMaxSpeedLimitMpS = allowedMaxSpeedLimitMpS;
 
                 foreach (TCRouteElement thisElement in ValidRoute[1])
                 {
@@ -13495,8 +13512,11 @@ namespace Orts.Simulation.Physics
                             float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
 
-                            if (distanceToTrainM > 0 && validSpeed > 0)
+                            if (distanceToTrainM > 0 && (validSpeed > 0 || thisSpeedInfo.speed_reset == 1))
                             {
+                                if (thisSpeedInfo.speed_reset == 1)
+                                    validSpeed = progressiveMaxSpeedLimitMpS;
+                                else progressiveMaxSpeedLimitMpS = validSpeed;
                                 thisItem = new TrainObjectItem(validSpeed, distanceToTrainM, (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
                                 thisInfo.ObjectInfoBackward.Add(thisItem);
                             }
