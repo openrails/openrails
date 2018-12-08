@@ -13450,9 +13450,9 @@ namespace Orts.Simulation.Physics
 
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
 
-                            if (distanceToTrainM > 0 && (validSpeed > 0 || thisSpeedInfo.speed_reset == 1))
+                            if (distanceToTrainM > 0 && (validSpeed > 0 || (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)))
                             {
-                                if (thisSpeedInfo.speed_reset == 1)
+                                if (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)
                                     validSpeed = progressiveMaxSpeedLimitMpS;
                                 else progressiveMaxSpeedLimitMpS = validSpeed;
                                 thisItem = new TrainObjectItem(validSpeed, distanceToTrainM, (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
@@ -13512,9 +13512,9 @@ namespace Orts.Simulation.Physics
                             float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
                             distanceToTrainM = sectionStart + thisSpeeditem.SignalLocation;
 
-                            if (distanceToTrainM > 0 && (validSpeed > 0 || thisSpeedInfo.speed_reset == 1))
+                            if (distanceToTrainM > 0 && (validSpeed > 0 || (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)))
                             {
-                                if (thisSpeedInfo.speed_reset == 1)
+                                if (thisSpeedInfo != null && thisSpeedInfo.speed_reset == 1)
                                     validSpeed = progressiveMaxSpeedLimitMpS;
                                 else progressiveMaxSpeedLimitMpS = validSpeed;
                                 thisItem = new TrainObjectItem(validSpeed, distanceToTrainM, (TrainObjectItem.SpeedItemType)thisSpeedpost.SpeedPostType());
