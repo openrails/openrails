@@ -2405,28 +2405,44 @@ namespace Orts.Simulation.RollingStocks
         {
             if (Coupler == null)
             {
-                return base.GetCouplerStiffness1NpM();
+                return base.GetCouplerStiffness2NpM();
             }
             return Coupler.Rigid? 10 * Coupler.Stiffness1NpM : Coupler.Stiffness2NpM;
         }
 
         public override float GetCouplerDamping1NMpS()
         {
+            if (Coupler == null)
+            {
+                return base.GetCouplerDamping1NMpS();
+            }
             return Coupler.Damping1NMps;
         }
 
         public override float GetCouplerDamping2NMpS()
         {
+            if (Coupler == null)
+            {
+                return base.GetCouplerDamping2NMpS();
+            }
             return Coupler.Damping2NMps;
         }
 
         public override float GetCouplerSlackAM()
         {
+            if (Coupler == null)
+            {
+                return base.GetCouplerSlackAM();
+            }
             return Coupler.CouplerSlackAM;
         }
 
         public override float GetCouplerSlackBM()
         {
+            if (Coupler == null)
+            {
+                return base.GetCouplerSlackBM();
+            }
             return Coupler.CouplerSlackBM;
         }
 
@@ -2441,6 +2457,10 @@ namespace Orts.Simulation.RollingStocks
 
         public override bool GetAdvancedCouplerFlag()
         {
+            if (Coupler == null)
+            {
+                return base.GetAdvancedCouplerFlag();
+            }
             return IsAdvancedCoupler;
         }
 
@@ -2487,6 +2507,11 @@ namespace Orts.Simulation.RollingStocks
 
 
         }
+
+
+        // TODO: This code appears to be being called by ReverseCars (in Trains.cs). 
+        // Reverse cars moves the couplers along by one car, however this may be encountering a null coupler at end of train. 
+        // Thus all coupler parameters need to be tested for null coupler and defasult values inserted (To be confirmed)
         public override void CopyCoupler(TrainCar other)
         {
             base.CopyCoupler(other);
