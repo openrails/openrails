@@ -15,12 +15,16 @@
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-10">
+          <h2>New in Open Rails 1.3.1 (since 1.3)</h2>
+          <p>
+            <a href="https://launchpad.net/or/+milestone/1.3.1">10 important bugs</a> have been fixed in this release.
+          </p>
           <h2>New in Open Rails 1.3 (since 1.2)</h2>
           <p>
             A summary of the new and improved features can be found below. In addition, over 140 bugs have been fixed in this release. Please keep <a href="http://openrails.org/contribute/reporting-bugs/">reporting bugs and suggesting new features</a> so Open Rails can continue to imporve.
           </p>
           <p>
-          This is the last version of Open Rails to support Windows XP; future versions will require Windows 7 or later.
+            This is the last version of Open Rails to support Windows XP; future versions will require Windows 7 or later.
           </p>
         </div>
       </div>

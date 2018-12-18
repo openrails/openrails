@@ -8,7 +8,7 @@
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRails-1.3-Setup.exe';
+  $download_stable = 'OpenRails-1.3.1-Setup.exe';
   $download_testing = 'OpenRails-Testing.zip';
   $file_path = "../../files";
 ?>
@@ -20,7 +20,7 @@
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-4">
-          <h1>Stable Version 1.3 <small>(recommended)</small></h1>
+          <h1>Stable Version 1.3.1 <small>(recommended)</small></h1>
           <br>
           <!-- Button to trigger modal -->
           <a href="#modal1" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
