@@ -364,6 +364,7 @@ Notes on the Track Monitor:
       information area is shown in red, and no Backward information is shown.
     - If the train is moving backward, the separation line is shown in white, 
       and Backward information is shown if available.
+    - For reversal points, see :ref:`here <operation-reversal-points>`.
 
 - For Manual mode:
 

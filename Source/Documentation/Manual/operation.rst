@@ -352,6 +352,8 @@ Further rules for the use of alternative paths :
   which first clears its path takes much longer to actually get to the passing 
   loop.
 
+.. _operation-reversal-points:
+
 Reversal Points
 ===============
 
@@ -371,7 +373,13 @@ cleared the diverging point, the reversal takes place later, when the diverging
 point is cleared.
 
 For player trains the reversal can take place starting from 50 meters before the 
-reversal point provided the diverging point is cleared.
+reversal point provided the diverging point is cleared.  The colour of the 
+reversal point icon in the :ref:`Track Monitor <driving-track-monitor>` is green 
+if the *diverging* point has been cleared (meaning that the player train may 
+already revert, even if it hasn't yet reached the reversal point), while it is 
+white in the opposite case (meaning that the player train must proceed further 
+towards the diverging point, eventually reaching it if colour does not change 
+to green, before reverting).
 
 As in MSTS, double reversal points can be used to set a signal at red after such 
 reversal points. However waiting points are recommended for this, as explained 
