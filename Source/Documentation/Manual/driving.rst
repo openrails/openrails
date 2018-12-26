@@ -935,7 +935,7 @@ but it can also be used to run an activity (or part of it, as it is
 possible to turn autopilot mode on or off at runtime) as a trainspotter or 
 a visitor within the cab.
 
-Autopilot mode is enabled with the related checkbox in the Experimental 
+Autopilot mode is enabled with the related checkbox in the Simulation 
 Options. It is active only in activity mode (i.e. not in explorer or 
 timetable modes).
 
