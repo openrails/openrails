@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
 "POT-Creation-Date: 2018-04-27 18:04:46+0200\n"
-"PO-Revision-Date: 2018-10-10 16:27+0200\n"
+"PO-Revision-Date: 2019-01-03 19:09+0100\n"
 "Last-Translator: Carlo Santucci <carlosanit1@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 1.6.4\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:227
@@ -451,7 +451,7 @@ msgstr "Pantograph 2"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:381
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:393
 msgid "Circuit breaker"
-msgstr "Stromkreisuntbrech"
+msgstr "Hauptschalter"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:176
 msgid "Circuit breaker closing authorization"
