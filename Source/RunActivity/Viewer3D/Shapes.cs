@@ -1484,6 +1484,13 @@ namespace Orts.Viewer3D
                 throw new InvalidDataException("Shape file missing lod_control section");
             else if (LodControls[0].DistanceLevels.Length > 0 && LodControls[0].DistanceLevels[0].SubObjects.Length > 0)
             {
+                // Zero the position offset of the root matrix for compatibility with MSTS
+                if (LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives.Length > 0 && LodControls[0].DistanceLevels[0].SubObjects[0].ShapePrimitives[0].Hierarchy[0] == -1)
+                {
+                    Matrices[0].M41 = 0;
+                    Matrices[0].M42 = 0;
+                    Matrices[0].M43 = 0;
+                }
                 // Look for root subobject, it is not necessarily the first (see ProTrain signal)
                 for (int soIndex = 0; soIndex <= LodControls[0].DistanceLevels[0].SubObjects.Length - 1; soIndex++)
                 {
@@ -1974,7 +1981,7 @@ namespace Orts.Viewer3D
                     {
                         var xnaMatrix = Matrix.Identity;
                         var hi = shapePrimitive.HierarchyIndex;
-                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length && shapePrimitive.Hierarchy[hi] != -1)
+                        while (hi >= 0 && hi < shapePrimitive.Hierarchy.Length)
                         {
                             Matrix.Multiply(ref xnaMatrix, ref animatedXNAMatrices[hi], out xnaMatrix);
                             hi = shapePrimitive.Hierarchy[hi];
