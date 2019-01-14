@@ -501,8 +501,8 @@ namespace Orts.Viewer3D
                     MPManager.Notify((new MSGWeather(-1, Weather.OvercastFactor, Weather.PricipitationIntensityPPSPM2, Weather.FogDistance)).ToString());
                 }
             }
-            if (Program.Simulator != null && Program.Simulator.ActivityRun != null && Program.Simulator.ActivityRun.triggeredEvent != null &&
-               Program.Simulator.ActivityRun.triggeredEvent.ORTSWeatherChange != null)
+            if (Program.Simulator != null && Program.Simulator.ActivityRun != null && Program.Simulator.ActivityRun.triggeredEventWrapper != null &&
+               (Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.ORTSWeatherChange != null || Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes.ORTSWeatherChange != null))
                 // Start a weather change sequence in activity mode
             {
                 // if not yet weather changes, create the instance
@@ -510,8 +510,10 @@ namespace Orts.Viewer3D
                 {
                     dynamicWeather = new DynamicWeather();
                 }
-                dynamicWeather.WeatherChange_Init(Program.Simulator.ActivityRun.triggeredEvent.ORTSWeatherChange, this);
-                Program.Simulator.ActivityRun.triggeredEvent = null;               
+                var weatherChange = Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes.ORTSWeatherChange != null ?
+                    Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes.ORTSWeatherChange : Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.ORTSWeatherChange;
+                dynamicWeather.WeatherChange_Init(weatherChange, this);
+                Program.Simulator.ActivityRun.triggeredEventWrapper = null;               
             }
             if (weatherChangeOn)
                 // manage the weather change sequence

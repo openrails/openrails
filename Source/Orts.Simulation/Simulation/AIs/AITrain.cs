@@ -286,6 +286,8 @@ namespace Orts.Simulation.AIs
                 CheckSignalObjects();
                 if (MovementState != AI_MOVEMENT_STATE.SUSPENDED) ObtainRequiredActions(0);
             }
+            // associate location events
+            if (Simulator.ActivityRun != null) Simulator.ActivityRun.AssociateEvents(this);
         }
 
         //================================================================================================//
@@ -6529,6 +6531,86 @@ namespace Orts.Simulation.AIs
                             if (TrainType != TRAINTYPE.AI_PLAYERHOSTING) StationStops.RemoveAt(0);
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Restarts waiting train due to event triggered by player train
+        /// </summary>
+        public void RestartWaitingTrain(RestartWaitingTrain restartWaitingTrain)
+        {
+            var delayToRestart = restartWaitingTrain.DelayToRestart;
+            var matchingWPDelay = restartWaitingTrain.MatchingWPDelay;
+            int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+            var roughActualDepart = presentTime + delayToRestart;
+            if (MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay == matchingWPDelay ||
+                (AuxActionsContain.specRequiredActions.Count > 0 && ((AuxActSigDelegate)(AuxActionsContain.specRequiredActions).First.Value).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION &&
+                (((AuxActSigDelegate)(AuxActionsContain.specRequiredActions).First.Value).ActionRef as AIActSigDelegateRef).Delay == matchingWPDelay)))
+            {
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay >= 30000 && ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay < 32400)
+                // absolute WP, use minutes as unit of measure
+                {
+                    (nextActionInfo as AuxActionWPItem).ActualDepart = (roughActualDepart / 60) * 60 + (roughActualDepart % 60 == 0 ? 0 : 60);
+                    // compute hrs and minutes
+                    var hrs = (nextActionInfo as AuxActionWPItem).ActualDepart / 3600;
+                    var minutes = ((nextActionInfo as AuxActionWPItem).ActualDepart - hrs * 3600) / 60;
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = 30000 + minutes + hrs * 100;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(30000 + minutes + hrs * 100);
+                }
+                else
+                {
+                    (nextActionInfo as AuxActionWPItem).ActualDepart = roughActualDepart;
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = delayToRestart;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(delayToRestart);
+                }
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).LinkedAuxAction)
+                // also a signal is connected with this WP
+                {
+                    if (AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate)
+                    // if should be true only for absolute WPs, where the linked aux action is started in parallel
+                    {
+                        (AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActualDepart = (nextActionInfo as AuxActionWPItem).ActualDepart;
+                        ((AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActionRef as AIActSigDelegateRef).Delay = ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay;
+                    }
+                }
+
+            }
+            else if (nextActionInfo != null & nextActionInfo is AuxActionWPItem && ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay == matchingWPDelay)
+            {
+                var actualDepart = 0;
+                var delay = 0;
+                // not yet at WP
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay >= 30000 && ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay < 32400)
+                {
+                    // compute hrs and minutes
+                    var hrs = roughActualDepart / 3600;
+                    var minutes = (roughActualDepart - hrs * 3600) / 60;
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = 30000 + minutes + hrs * 100;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(30000 + minutes + hrs * 100);
+                    if (AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef)
+                        (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay = 30000 + minutes + hrs * 100;
+                    actualDepart = (roughActualDepart / 60) * 60 + (roughActualDepart % 60 == 0 ? 0 : 60);
+                    delay = ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay;
+                }
+                else
+                {
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = delayToRestart;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(delayToRestart);
+                    actualDepart = roughActualDepart;
+                    delay = 1;
+                }
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).LinkedAuxAction)
+                // also a signal is connected with this WP
+                {
+                    if (AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate)
+                    // if should be true only for absolute WPs, where the linked aux action is started in parallel
+                    {
+                        (AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActualDepart = actualDepart;
+                        ((AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActionRef as AIActSigDelegateRef).Delay = ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay;
+                    }
+                    if (AuxActionsContain.SpecAuxActions.Count > 1 && AuxActionsContain.SpecAuxActions[1] is AIActSigDelegateRef)
+                        (AuxActionsContain.SpecAuxActions[1] as AIActSigDelegateRef).Delay = delay;
                 }
             }
         }

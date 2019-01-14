@@ -2599,12 +2599,28 @@ namespace Orts.Viewer3D
 
         public void Update()
         {
-            if (Program.Simulator.ActivityRun == null || Program.Simulator.ActivityRun.triggeredEvent == null || Program.Simulator.ActivityRun.triggeredEvent.ORTSActSoundFile == null)
+            if (Program.Simulator.ActivityRun == null || Program.Simulator.ActivityRun.triggeredEventWrapper == null || 
+                (Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.ORTSActSoundFile == null && (Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes == null
+                || Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes.ActivitySound == null))) 
                 return;
-            var localEventID = Program.Simulator.ActivityRun.triggeredEvent.ID;
-            var ORTSActSoundFile = Program.Simulator.ActivityRun.triggeredEvent.ORTSActSoundFile;
-            var ORTSActSoundFileType = Program.Simulator.ActivityRun.triggeredEvent.ORTSActSoundFileType;
-            Program.Simulator.ActivityRun.triggeredEvent = null;
+            var localEventID = Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.ID;
+            string ORTSActSoundFile;
+            int ORTSActSoundFileType;
+            ActivitySound activitySound = null;
+            if (Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes == null
+                || Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes.ActivitySound == null)
+            {
+                ORTSActSoundFile = Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.ORTSActSoundFile;
+                ORTSActSoundFileType = Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.ORTSActSoundFileType;
+            }
+            else
+            {
+                activitySound = Program.Simulator.ActivityRun.triggeredEventWrapper.ParsedObject.Outcomes.ActivitySound;
+                ORTSActSoundFile = activitySound.ORTSActSoundFile;
+                ORTSActSoundFileType = activitySound.ORTSActSoundFileType;
+            }
+            var train = Program.Simulator.ActivityRun.triggeredEventWrapper.Train;
+            Program.Simulator.ActivityRun.triggeredEventWrapper = null;
             var extension = Path.GetExtension(ORTSActSoundFile);
             SoundSource ActivitySounds;
             switch (extension)
@@ -2630,8 +2646,22 @@ namespace Orts.Viewer3D
                             }
                             break;
                         case 3:
-                            var worldLocation = Program.Viewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
+                            var loco = (train == Program.Viewer.Simulator.PlayerLocomotive.Train) ?
+                                Program.Viewer.Simulator.PlayerLocomotive : train.Cars[0];
+                            var worldLocation = loco.WorldPosition.WorldLocation;
                             worldLocation.Location.Y = worldLocation.Location.Y + 3; // Sound does not come from earth!
+//                            string wsName = Program.Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(worldLocation.TileX, worldLocation.TileZ) + "s";
+                            ActivitySounds = new SoundSource(Program.Viewer, worldLocation, Events.Source.None, ORTSActSoundFile, true);
+                            Program.Viewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        case 4:
+                            worldLocation = WorldLocation.None;
+                            worldLocation.TileX = activitySound.TileX;
+                            worldLocation.TileZ = activitySound.TileZ;
+                            worldLocation.Location.X = activitySound.X;
+                            worldLocation.Location.Y = activitySound.Y + 3; // Sound does not come from earth!
+                            worldLocation.Location.Z = activitySound.Z;
+ //                           wsName = Program.Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(worldLocation.TileX, worldLocation.TileZ) + "s";
                             ActivitySounds = new SoundSource(Program.Viewer, worldLocation, Events.Source.None, ORTSActSoundFile, true);
                             Program.Viewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;
@@ -2660,8 +2690,21 @@ namespace Orts.Viewer3D
                             }
                             break;
                         case 3:
-                            var worldLocation = Program.Viewer.Simulator.PlayerLocomotive.WorldPosition.WorldLocation;
+                            var loco = (train == Program.Viewer.Simulator.PlayerLocomotive.Train) ?
+                                Program.Viewer.Simulator.PlayerLocomotive : train.Cars[0];
+                            var worldLocation = loco.WorldPosition.WorldLocation;
                             worldLocation.Location.Y = worldLocation.Location.Y + 3; // Sound does not come from earth!
+ //                           string wsName = Program.Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(worldLocation.TileX, worldLocation.TileZ) + "s";
+                            ActivitySounds = new SoundSource(Program.Viewer, worldLocation, Events.Source.None, ORTSActSoundFile, true, ORTSActSoundFileType, true);
+                            Program.Viewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
+                            break;
+                        case 4:
+                            worldLocation = WorldLocation.None;
+                            worldLocation.TileX = activitySound.TileX;
+                            worldLocation.TileZ = activitySound.TileZ;
+                            worldLocation.Location.X = activitySound.X;
+                            worldLocation.Location.Y = activitySound.Y + 3; // Sound does not come from earth!
+//                            wsName = Program.Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(worldLocation.TileX, worldLocation.TileZ) + "s";
                             ActivitySounds = new SoundSource(Program.Viewer, worldLocation, Events.Source.None, ORTSActSoundFile, true, ORTSActSoundFileType, true);
                             Program.Viewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;

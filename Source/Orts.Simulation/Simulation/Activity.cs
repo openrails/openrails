@@ -18,6 +18,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
@@ -71,8 +72,7 @@ namespace Orts.Simulation
         // station stop logging flags - these are saved to resume correct logging after save
         private string StationStopLogFile;   // logfile name
         private bool StationStopLogActive;   // logging is active
-        public Orts.Formats.Msts.Event triggeredEvent = null;        // used for exchange with Sound.cs to trigger activity sounds;
-
+        public EventWrapper triggeredEventWrapper = null;        // used for exchange with Sound.cs to trigger activity sounds;
         public bool NewMsgFromNewPlayer = false; // flag to indicate to ActivityWindow that there is a new message to be shown;
         public string MsgFromNewPlayer; // string to be displayed in ActivityWindow
 
@@ -148,7 +148,7 @@ namespace Orts.Simulation
                 }
                 EventWrapper eventAdded = EventList.Last();
                 eventAdded.OriginalActivationLevel = i.Activation_Level;
-                if (i.ORTSWeatherChange != null) WeatherChangesPresent = true;
+                if (i.ORTSWeatherChange != null || i.Outcomes.ORTSWeatherChange != null) WeatherChangesPresent = true;
             }
 
             StationStopLogActive = false;
@@ -666,6 +666,21 @@ namespace Orts.Simulation
             thisVectorNode.TrItemRefs = newTrItemRefs; //use the new item lists for the track node
             thisVectorNode.NoItemRefs++;
         }
+
+        public void AssociateEvents(Train train)
+        {
+            foreach (var eventWrapper in EventList)
+            {
+                if (eventWrapper is EventCategoryLocationWrapper && eventWrapper.ParsedObject.TrainService != "" &&
+                    train.Name.ToLower() == eventWrapper.ParsedObject.TrainService.ToLower())
+                {
+                    if (eventWrapper.ParsedObject.TrainStartingTime == -1 || (train as AITrain).ServiceDefinition.Time == eventWrapper.ParsedObject.TrainStartingTime)
+                    {
+                        eventWrapper.Train = train;
+                    }
+                }
+            }
+        }
     }
 
     public class ActivityTask
@@ -1128,11 +1143,13 @@ namespace Orts.Simulation
         public int TimesTriggered;          // Needed for evaluation after activity ends
         public Boolean IsDisabled;          // Used for a reversible event to prevent it firing again until after it has been reset.
         protected Simulator Simulator;
+        public Train Train;              // Train involved in event; if null actual or original player train
 
         public EventWrapper(Orts.Formats.Msts.Event @event, Simulator simulator)
         {
             ParsedObject = @event;
             Simulator = simulator;
+            Train = null;
         }
 
         public virtual void Save(BinaryWriter outf)
@@ -1209,14 +1226,14 @@ namespace Orts.Simulation
 
             // Activity sound management
 
-            if (this.ParsedObject.ORTSActSoundFile != null)
+            if (this.ParsedObject.ORTSActSoundFile != null || (this.ParsedObject.Outcomes != null && this.ParsedObject.Outcomes.ActivitySound != null))
             {
-                if (activity.triggeredEvent == null) activity.triggeredEvent = this.ParsedObject;
+                if (activity.triggeredEventWrapper == null) activity.triggeredEventWrapper = this;
             }
 
-            if (this.ParsedObject.ORTSWeatherChange != null)
+            if (this.ParsedObject.ORTSWeatherChange != null || (this.ParsedObject.Outcomes != null && this.ParsedObject.Outcomes.ORTSWeatherChange != null))
             {
-                if (activity.triggeredEvent == null) activity.triggeredEvent = this.ParsedObject;
+                if (activity.triggeredEventWrapper == null) activity.triggeredEventWrapper = this;
             }
 
             if (this.ParsedObject.Outcomes.ActivityFail != null)
@@ -1232,12 +1249,11 @@ namespace Orts.Simulation
             if (this.ParsedObject.Outcomes.RestartWaitingTrain != null && this.ParsedObject.Outcomes.RestartWaitingTrain.WaitingTrainToRestart != "")
             {
                 var restartWaitingTrain = this.ParsedObject.Outcomes.RestartWaitingTrain;
-                Simulator.RestartWaitingTrain(restartWaitingTrain.WaitingTrainToRestart, restartWaitingTrain.DelayToRestart, restartWaitingTrain.MatchingWPDelay);
+                Simulator.RestartWaitingTrain(restartWaitingTrain);
             }
             return false;
         }
-
-      
+     
     }
 
     public class EventCategoryActionWrapper : EventWrapper
@@ -1502,17 +1518,23 @@ namespace Orts.Simulation
         {
             var triggered = false;
             var e = this.ParsedObject as Orts.Formats.Msts.EventCategoryLocation;
+            Train train = Simulator.PlayerLocomotive.Train;
+            if (ParsedObject.TrainService != "" && Train != null)
+            {
+                if (Train.FrontTDBTraveller != null) train = Train;
+                else return triggered;
+            }
+            Train = train;
             if (e.TriggerOnStop)
             {
                 // Is train still moving?
-                if (Math.Abs(Simulator.PlayerLocomotive.SpeedMpS) > 0.032f)
+                if (Math.Abs(train.SpeedMpS) > 0.032f)
                 {
                     return triggered;
                 }
             }
-            var playerTrain = Simulator.PlayerLocomotive.Train;
-            var trainFrontPosition = new Traveller(playerTrain.nextRouteReady && playerTrain.TCRoute.activeSubpath > 0 && playerTrain.TCRoute.ReversalInfo[playerTrain.TCRoute.activeSubpath - 1].Valid ?
-                playerTrain.RearTDBTraveller : playerTrain.FrontTDBTraveller); // just after reversal the old train front position must be considered
+            var trainFrontPosition = new Traveller(train.nextRouteReady && train.TCRoute.activeSubpath > 0 && train.TCRoute.ReversalInfo[train.TCRoute.activeSubpath - 1].Valid ?
+                train.RearTDBTraveller : train.FrontTDBTraveller); // just after reversal the old train front position must be considered
             var distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z, e.RadiusM);
             if (distance == -1)
             {
@@ -1538,6 +1560,7 @@ namespace Orts.Simulation
         {
             var e = this.ParsedObject as Orts.Formats.Msts.EventCategoryTime;
             if (e == null) return false;
+            Train = Simulator.PlayerLocomotive.Train;
             var triggered = (e.Time <= (int)Simulator.ClockTime - activity.StartTimeS);
             return triggered;
         }
