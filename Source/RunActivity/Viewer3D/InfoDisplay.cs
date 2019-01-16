@@ -330,8 +330,8 @@ namespace Orts.Viewer3D
                         {
                             Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[1].CommandUp.ToString());
                             Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[2].CommandUp.ToString());
-                            Logger.Data("null");
-                            Logger.Data("null");
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[3].CommandUp.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[4].CommandUp.ToString());
                             Logger.Data("null");
                             Logger.Data("null");
                             Logger.Data("null");
@@ -444,8 +444,8 @@ namespace Orts.Viewer3D
                                 "Player Compressor On",
                                 "D:Real RPM / E:panto 1 / S:Blower usage LBpS",
                                 "D:Demanded RPM / E:panto 2 / S:Boiler PSI",
-                                "D:Load % / E:null / S:Cylinder Cocks open",
-                                "D:Gearbox Current Gear / E:null / S:Evaporation LBpS",
+                                "D:Load % / E:panto 3 / S:Cylinder Cocks open",
+                                "D:Gearbox Current Gear / E:panto 4 / S:Evaporation LBpS",
                                 "D:Gearbox Next Gear / E:null / S:Fire Mass KG",
                                 "D:Clutch % / E:null / S:Steam usage LBpS",
                                 "D:Fuel Flow Lps / E:null / S:Blower",
