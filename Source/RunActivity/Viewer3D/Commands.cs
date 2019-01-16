@@ -472,7 +472,24 @@ namespace Orts.Viewer3D
             // Report();
         }
     }
-    
+
+    [Serializable()]
+    public sealed class UseSpecialTracksideCameraCommand : UseCameraCommand
+    {
+
+        public UseSpecialTracksideCameraCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.SpecialTracksideCamera.Activate();
+            // Report();
+        }
+    }
+
     [Serializable()]
     public abstract class MoveCameraCommand : CameraCommand
     {

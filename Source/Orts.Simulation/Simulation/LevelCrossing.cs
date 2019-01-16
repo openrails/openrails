@@ -298,6 +298,30 @@ namespace Orts.Simulation
                 }
             }
         }
+
+        public LevelCrossingItem SearchNearLevelCrossing(Train train, float reqDist, bool trainForwards, out float frontDist)
+        {
+            LevelCrossingItem roadItem = LevelCrossingItem.None;
+           frontDist = -1;
+            Traveller traveller = trainForwards ? train.FrontTDBTraveller :
+                new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
+            foreach (var crossing in TrackCrossingItems.Values.Where(ci => ci.CrossingGroup != null))
+            {
+                if (crossing.Trains.Contains(train))
+                {
+                    frontDist = crossing.DistanceTo(traveller, reqDist);
+                    if (frontDist > 0)
+                    {
+                        if (RoadToTrackCrossingItems.ContainsValue(crossing))
+                        {
+                            roadItem = RoadToTrackCrossingItems.FirstOrDefault(x => x.Value == crossing).Key;
+                            return roadItem;
+                        }
+                    }
+                }
+            }
+            return roadItem;
+        }
     }
 
     public class LevelCrossingItem
@@ -315,10 +339,17 @@ namespace Orts.Simulation
 
         public LevelCrossing Crossing { get { return CrossingGroup; } }
 
+        public static LevelCrossingItem None = new LevelCrossingItem();
+
         public LevelCrossingItem(TrackNode trackNode, TrItem trItem)
         {
             TrackNode = trackNode;
             Location = new WorldLocation(trItem.TileX, trItem.TileZ, trItem.X, trItem.Y, trItem.Z);
+        }
+
+        public LevelCrossingItem ()
+        {
+
         }
 
         [CallOnThread("Updater")]

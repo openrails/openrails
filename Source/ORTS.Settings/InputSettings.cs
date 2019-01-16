@@ -110,6 +110,7 @@ namespace ORTS.Settings
         [GetString("Camera Outside Front")] CameraOutsideFront,
         [GetString("Camera Outside Rear")] CameraOutsideRear,
         [GetString("Camera Trackside")] CameraTrackside,
+        [GetString("Camera SpecialTracksidePoint")] CameraSpecialTracksidePoint,
         [GetString("Camera Passenger")] CameraPassenger,
         [GetString("Camera Brakeman")] CameraBrakeman,
         [GetString("Camera Free")] CameraFree,
@@ -515,6 +516,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.CameraChangePassengerViewPoint] = new UserCommandKeyInput(0x06, KeyModifiers.Shift);
             Commands[(int)UserCommands.CameraToggleShowCab] = new UserCommandKeyInput(0x02, KeyModifiers.Shift);
             Commands[(int)UserCommands.CameraTrackside] = new UserCommandKeyInput(0x05);
+            Commands[(int)UserCommands.CameraSpecialTracksidePoint] = new UserCommandKeyInput(0x05, KeyModifiers.Shift);
             Commands[(int)UserCommands.CameraVibrate] = new UserCommandKeyInput(0x2F, KeyModifiers.Control);
             Commands[(int)UserCommands.CameraZoomIn] = new UserCommandModifiableKeyInput(0x49, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
             Commands[(int)UserCommands.CameraZoomOut] = new UserCommandModifiableKeyInput(0x51, Commands[(int)UserCommands.CameraMoveFast], Commands[(int)UserCommands.CameraMoveSlow]);
