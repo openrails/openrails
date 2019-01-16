@@ -36,7 +36,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\Program\</OutputPath>
+    <OutputPath>..\..\..\..\Program\</OutputPath>
     <DefineConstants>TRACE;DEBUG;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -46,7 +46,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\..\..\Program\</OutputPath>
+    <OutputPath>..\..\..\..\Program\</OutputPath>
     <DefineConstants>TRACE;WINDOWS;ACTIVITY_EDITOR</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -60,7 +60,7 @@
     <OutputPath>bin\x86\ReleaseConf\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseConf|AnyCPU'">
-    <OutputPath>..\..\..\Program\</OutputPath>
+    <OutputPath>..\..\..\..\Program\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework, Version=3.5.0.1046, Culture=neutral, processorArchitecture=MSIL">
