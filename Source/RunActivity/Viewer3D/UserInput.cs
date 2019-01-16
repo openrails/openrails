@@ -48,7 +48,7 @@ namespace Orts.Viewer3D
 
         public static RailDriverState RDState;
 
-        static InputSettings InputSettings;
+        public static InputSettings InputSettings;
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys key);
@@ -62,7 +62,9 @@ namespace Orts.Viewer3D
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
             KeyboardState = game.IsActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
             MouseState = game.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-            MouseButtonsSwapped = System.Windows.Forms.SystemInformation.MouseButtonsSwapped;
+            // Monogame returns swapped button status anyway.
+            //MouseButtonsSwapped = System.Windows.Forms.SystemInformation.MouseButtonsSwapped;
+            MouseButtonsSwapped = false;
 
 #if DEBUG_RAW_INPUT
             for (Keys key = 0; key <= Keys.OemClear; key++)

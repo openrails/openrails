@@ -22,6 +22,8 @@ using ORTS.Common;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using CancellationToken = ORTS.Common.CancellationToken;
+using CancellationTokenSource = ORTS.Common.CancellationTokenSource;
 
 namespace Orts.Viewer3D.Processes
 {

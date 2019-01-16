@@ -1005,7 +1005,7 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Memory"), Viewer.Catalog.GetStringFmt("{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, {2:F0}/{3:F0}/{4:F0} GCs)", GetWorkingSetSize() / 1024 / 1024, GC.GetTotalMemory(false) / 1024 / 1024, GC.CollectionCount(0), GC.CollectionCount(1), GC.CollectionCount(2), Viewer.TextureManager.GetStatus(), Viewer.MaterialManager.GetStatus(), Viewer.ShapeManager.GetStatus(), Viewer.World.Terrain.GetStatus(), AllocatedBytesPerSecLastValue / Viewer.RenderProcess.FrameRate.SmoothedValue / 1024));
             TableAddLabelValue(table, Viewer.Catalog.GetString("CPU"), Viewer.Catalog.GetStringFmt("{0:F0}% ({1})", (Viewer.RenderProcess.Profiler.CPU.SmoothedValue + Viewer.UpdaterProcess.Profiler.CPU.SmoothedValue + Viewer.LoaderProcess.Profiler.CPU.SmoothedValue + Viewer.SoundProcess.Profiler.CPU.SmoothedValue) / ProcessorCount, Viewer.Catalog.GetPluralStringFmt("{0} logical processor", "{0} logical processors", ProcessorCount)));
             TableAddLabelValue(table, Viewer.Catalog.GetString("GPU"), Viewer.Catalog.GetStringFmt("{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader model {4})", Viewer.RenderProcess.FrameRate.SmoothedValue, Viewer.RenderProcess.FrameTime.SmoothedP50 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP95 * 1000, Viewer.RenderProcess.FrameTime.SmoothedP99 * 1000, Viewer.Settings.ShaderModel));
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Adapter"), Viewer.Catalog.GetStringFmt("{0} ({1:F0} MB)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Adapter"), Viewer.Catalog.GetStringFmt("{0} ({1:F0} MB) ({2:F0} pixels x {3:F0} pixels)", Viewer.AdapterDescription, Viewer.AdapterMemory / 1024 / 1024, Viewer.DisplaySize.X, Viewer.DisplaySize.Y));
             if (Viewer.Settings.DynamicShadows)
             {
                 TableSetCells(table, 3, Enumerable.Range(0, RenderProcess.ShadowMapCount).Select(i => String.Format(Viewer.Catalog.GetStringFmt("{0}/{1}", RenderProcess.ShadowMapDistance[i], RenderProcess.ShadowMapDiameter[i]))).ToArray());
@@ -1184,7 +1184,6 @@ namespace Orts.Viewer3D.Popups
         const int PrimitivesPerSample = 2;
         const int VertexCount = VerticiesPerSample * SampleCount;
 
-        readonly VertexDeclaration VertexDeclaration;
         readonly DynamicVertexBuffer VertexBuffer;
         readonly VertexBuffer BorderVertexBuffer;
         readonly Color Color;
@@ -1197,12 +1196,10 @@ namespace Orts.Viewer3D.Popups
 
         public HUDGraphMesh(Viewer viewer, Color color, int height)
         {
-            VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColor.VertexElements);
-            VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, VertexCount * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
-            VertexBuffer.ContentLost += VertexBuffer_ContentLost;
-            BorderVertexBuffer = new VertexBuffer(viewer.GraphicsDevice, 10 * VertexPositionColor.SizeInBytes, BufferUsage.WriteOnly);
+            VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), VertexCount, BufferUsage.WriteOnly);
+            BorderVertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), 10, BufferUsage.WriteOnly);
             var borderOffset = new Vector2(1f / SampleCount, 1f / height);
-            var borderColor = new Color(Color.White, 0);
+            var borderColor = new Color(1f, 1f, 1f, 0f);
             BorderVertexBuffer.SetData(new[] {
                 // Bottom left
                 new VertexPositionColor(new Vector3(0 - borderOffset.X, 0 - borderOffset.Y, 1), borderColor),
@@ -1227,9 +1224,9 @@ namespace Orts.Viewer3D.Popups
             Sample.Y = SampleCount;
         }
 
-        void VertexBuffer_ContentLost(object sender, EventArgs e)
+        void VertexBuffer_ContentLost()
         {
-            VertexBuffer.SetData(0, Samples, 0, Samples.Length, VertexPositionColor.SizeInBytes, SetDataOptions.NoOverwrite);
+            VertexBuffer.SetData(0, Samples, 0, Samples.Length, VertexPositionColor.VertexDeclaration.VertexStride, SetDataOptions.NoOverwrite);
         }
 
         public void AddSample(float value)
@@ -1243,7 +1240,7 @@ namespace Orts.Viewer3D.Popups
             Samples[(int)Sample.X * VerticiesPerSample + 3] = new VertexPositionColor(new Vector3(x, 0, 1), Color);
             Samples[(int)Sample.X * VerticiesPerSample + 4] = new VertexPositionColor(new Vector3(x, value, 0), Color);
             Samples[(int)Sample.X * VerticiesPerSample + 5] = new VertexPositionColor(new Vector3(x, 0, 0), Color);
-            VertexBuffer.SetData((int)Sample.X * VerticiesPerSample * VertexPositionColor.SizeInBytes, Samples, (int)Sample.X * VerticiesPerSample, VerticiesPerSample, VertexPositionColor.SizeInBytes, SetDataOptions.NoOverwrite);
+            VertexBuffer.SetData((int)Sample.X * VerticiesPerSample * VertexPositionColor.VertexDeclaration.VertexStride, Samples, (int)Sample.X * VerticiesPerSample, VerticiesPerSample, VertexPositionColor.VertexDeclaration.VertexStride, SetDataOptions.NoOverwrite);
 
             SampleIndex = (SampleIndex + 1) % SampleCount;
             Sample.X = SampleIndex;
@@ -1251,14 +1248,15 @@ namespace Orts.Viewer3D.Popups
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            if (VertexBuffer.IsContentLost)
+                VertexBuffer_ContentLost();
 
             // Draw border
-            graphicsDevice.Vertices[0].SetSource(BorderVertexBuffer, 0, VertexPositionColor.SizeInBytes);
+            graphicsDevice.SetVertexBuffer(BorderVertexBuffer);
             graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 8);
 
             // Draw graph area (skipping the next value to be written)
-            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColor.SizeInBytes);
+            graphicsDevice.SetVertexBuffer(VertexBuffer);
             if (SampleIndex > 0)
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, SampleIndex * PrimitivesPerSample);
             if (SampleIndex + 1 < SampleCount)
@@ -1282,20 +1280,17 @@ namespace Orts.Viewer3D.Popups
             if (ShaderPassesGraph == null) ShaderPassesGraph = shader.Techniques["Graph"].Passes.GetEnumerator();
             shader.ScreenSize = new Vector2(Viewer.DisplaySize.X, Viewer.DisplaySize.Y);
 
-            var rs = graphicsDevice.RenderState;
-            rs.CullMode = CullMode.None;
-            rs.DepthBufferEnable = false;
+            graphicsDevice.RasterizerState = RasterizerState.CullNone;
+            graphicsDevice.DepthStencilState = DepthStencilState.None;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.DebugShader;
 
-            shader.Begin();
             ShaderPassesGraph.Reset();
             while (ShaderPassesGraph.MoveNext())
             {
-                ShaderPassesGraph.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     var graphMesh = item.RenderPrimitive as HUDGraphMesh;
@@ -1303,20 +1298,17 @@ namespace Orts.Viewer3D.Popups
                     {
                         shader.GraphPos = graphMesh.GraphPos;
                         shader.GraphSample = graphMesh.Sample;
-                        shader.CommitChanges();
+                        ShaderPassesGraph.Current.Apply();
                     }
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesGraph.Current.End();
             }
-            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.CullMode = CullMode.CullCounterClockwiseFace;
-            rs.DepthBufferEnable = true;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
     }
 }

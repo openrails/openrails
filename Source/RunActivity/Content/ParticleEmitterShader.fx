@@ -121,12 +121,12 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
 	In.StartPosition_StartTime.xyz += up * vertOffset.y;
 	
 	Out.Position = mul(float4(In.StartPosition_StartTime.xyz, 1), worldViewProjection);
-	
+
 	Out.TexCoord = texCoords[vertIdx];
-	int texAtlasPosition = In.TileXY_Vertex_ID.w;
-	int atlasX = texAtlasPosition % 4;
-	int atlasY = texAtlasPosition / 4;
-	Out.TexCoord += float2(0.25f * atlasX, 0.25f * atlasY);
+	float texAtlasPosition = In.TileXY_Vertex_ID.w;
+    float atlasY = (int) (texAtlasPosition / 4.0f);
+    float atlasX = (int) (texAtlasPosition - (atlasY * 4.0f));
+    Out.TexCoord += float2(0.25f * atlasX, 0.25f * atlasY);
 
 	Out.Color_Age.rgb = In.Color_Random.rgb;
 
@@ -163,7 +163,7 @@ void _PSApplyDay2Night(inout float3 Color)
 	Color.rgb *= adjustment;
 }
 
-float4 PSParticles(in PIXEL_INPUT In) : COLOR0
+float4 PSParticles(in VERTEX_OUTPUT In) : COLOR0
 {
 	clip(In.Color_Age.a);
 	
@@ -181,7 +181,7 @@ technique ParticleEmitterTechnique
 {
 	pass Pass_0
 	{
-		VertexShader = compile vs_2_0 VSParticles();
-		PixelShader = compile ps_2_0 PSParticles();
+		VertexShader = compile vs_4_0_level_9_1 VSParticles();
+		PixelShader = compile ps_4_0_level_9_1 PSParticles();
 	}
 }
