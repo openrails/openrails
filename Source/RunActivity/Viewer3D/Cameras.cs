@@ -1783,7 +1783,6 @@ namespace Orts.Viewer3D
         const float CameraAltitude = 2;
         // Height above the coordinate center of target.
         const float TargetAltitude = TerrainAltitudeMargin;
-        const float MaxHalfPlatformLength = 600;
         const int MaximumSpecialPointDistance = 300;
         const float PlatformOffsetM = 3.3f;
         public bool SpecialPoints = false;
@@ -1975,13 +1974,13 @@ namespace Orts.Viewer3D
                                 {
                                     PlatformDetails thisPlatform = train.signalRef.PlatformDetailsList[platformIndex];
                                     if (thisPlatform.TCOffset[0, thisRoute[routeIndex].Direction] + incrDistance < MaximumSpecialPointDistance * 0.7f
-                                        && thisPlatform.TCOffset[0, thisRoute[routeIndex].Direction] + incrDistance > 0)
+                                        && (thisPlatform.TCOffset[0, thisRoute[routeIndex].Direction] + incrDistance > 0 || FirstUpdateLoop))
                                     {
                                         // platform found, compute distance to viewing point
                                         distanceToViewingPoint = Math.Min(MaximumSpecialPointDistance * 0.7f,
-                                            incrDistance + thisPlatform.TCOffset[0, thisRoute[routeIndex].Direction] + thisPlatform.Length / 2.0f);
-                                        platformFound = true;
-                                        SpecialPointFound = true;
+                                            incrDistance + thisPlatform.TCOffset[0, thisRoute[routeIndex].Direction] + thisPlatform.Length * 0.7f);
+                                        if (FirstUpdateLoop && Math.Abs(train.SpeedMpS) <= 0.2f) distanceToViewingPoint = 
+                                                Math.Min(distanceToViewingPoint, train.Length * 0.95f);
                                         tdb.Move(distanceToViewingPoint);
                                         newLocation = tdb.WorldLocation;
                                         Traveller shortTrav;
@@ -1990,14 +1989,16 @@ namespace Orts.Viewer3D
                                         shortTrav = new Traveller(Viewer.Simulator.TSectionDat, Viewer.Simulator.TDB.TrackDB.TrackNodes, platformItem.TileX,
                                             platformItem.TileZ, platformItem.X, platformItem.Z, Traveller.TravellerDirection.Forward);
                                         var distanceToViewingPoint1 = shortTrav.DistanceTo(newLocation.TileX, newLocation.TileZ,
-                                            newLocation.Location.X, newLocation.Location.Y, newLocation.Location.Z, MaxHalfPlatformLength * 2);
+                                            newLocation.Location.X, newLocation.Location.Y, newLocation.Location.Z, thisPlatform.Length);
                                         if (distanceToViewingPoint1 == -1) //try other direction
                                         {
                                             shortTrav.ReverseDirection();
                                             distanceToViewingPoint1 = shortTrav.DistanceTo(newLocation.TileX, newLocation.TileZ,
-                                            newLocation.Location.X, newLocation.Location.Y, newLocation.Location.Z, MaxHalfPlatformLength * 2);
+                                            newLocation.Location.X, newLocation.Location.Y, newLocation.Location.Z, thisPlatform.Length);
                                             if (distanceToViewingPoint1 == -1) continue;
                                         }
+                                        platformFound = true;
+                                        SpecialPointFound = true;
                                         shortTrav.Move(distanceToViewingPoint1);
                                         newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Cos(shortTrav.RotY) *
                                             (thisPlatform.PlatformSide[1] ? 1 : -1);
@@ -2042,7 +2043,7 @@ namespace Orts.Viewer3D
                                 roadTraveller = new Traveller(Viewer.Simulator.TSectionDat, Viewer.Simulator.RDB.RoadTrackDB.TrackNodes, Viewer.Simulator.RDB.RoadTrackDB.TrackNodes[newLevelCrossingItem.TrackIndex],
                                     newLocation.TileX, newLocation.TileZ, newLocation.Location.X, newLocation.Location.Z, Traveller.TravellerDirection.Backward);
                             }
-                            roadTraveller.Move(10.0f);
+                            roadTraveller.Move(12.5f);
                             tdb.Move(FrontDist);
                             newLocation = roadTraveller.WorldLocation;
                         }
@@ -2114,7 +2115,7 @@ namespace Orts.Viewer3D
             SpecialPoints = true;
             DistanceRunM = 0;
             base.OnActivate(sameCamera);
-            FirstUpdateLoop = Math.Abs(attachedCar.Train.SpeedMpS) < 0.2 ? true : false;
+            FirstUpdateLoop = Math.Abs(AttachedCar.Train.SpeedMpS) <= 0.2f || sameCamera;
         }
     }
 
