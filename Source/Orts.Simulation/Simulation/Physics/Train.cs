@@ -11496,12 +11496,33 @@ namespace Orts.Simulation.Physics
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
                 }
 
+                if (!Simulator.TimetableMode && routeIndex == thisRoute.Count -1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                {
+                    // Check if station beyond reversal point
+                    var direction = thisRoute[routeIndex].Direction;
+                    if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                        routeIndex = -1;
+                }
+
+
                 // if first section not found in route, try last
 
                 if (routeIndex < 0)
                 {
                     sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
+                    if (!Simulator.TimetableMode && routeIndex == thisRoute.Count - 1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                    {
+                        // Check if station beyond reversal point
+                        var direction = thisRoute[routeIndex].Direction;
+                        if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                        {
+                            routeIndex = -1;
+                            // jump next subpath, because station stop can't be there
+                            activeSubroute++;
+                            activeSubrouteNodeIndex = 0;
+                        }
+                    }
                 }
 
                 // if neither section found - try next subroute - keep trying till found or out of subroutes
@@ -11512,13 +11533,31 @@ namespace Orts.Simulation.Physics
                     activeSubrouteNodeIndex = 0;
                     thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
-
+                    if (!Simulator.TimetableMode && routeIndex == thisRoute.Count - 1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                    {
+                        // Check if station beyond reversal point
+                        var direction = thisRoute[routeIndex].Direction;
+                        if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                            routeIndex = -1;
+                    }
                     // if first section not found in route, try last
 
                     if (routeIndex < 0)
                     {
                         sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
                         routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
+                        if (!Simulator.TimetableMode && routeIndex == thisRoute.Count - 1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                        {
+                            // Check if station beyond reversal point
+                            var direction = thisRoute[routeIndex].Direction;
+                            if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                            {
+                                routeIndex = -1;
+                                // jump next subpath, because station stop can't be there
+                                activeSubroute++;
+                                activeSubrouteNodeIndex = 0;
+                            }
+                        }
                     }
                 }
 
