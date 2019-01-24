@@ -2614,7 +2614,7 @@ namespace Orts.Simulation.Physics
                 InitializeSignals(false);     // Get signal information - only if train has route //
                 if (TrainType != TRAINTYPE.STATIC)
                     CheckDeadlock(ValidRoute[0], Number);    // Check deadlock against all other trains (not for static trains)
-                if (TCRoute != null) TCRoute.SetReversalOffset(Length);
+                if (TCRoute != null) TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
 
                 AuxActionsContain.SetAuxAction(this);
             }
@@ -6220,7 +6220,7 @@ namespace Orts.Simulation.Physics
                 ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
 
 
-                TCRoute.SetReversalOffset(Length);
+                TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
 
                 // clear existing list of occupied track, and build new list
                 for (int iSection = OccupiedTrack.Count - 1; iSection >= 0; iSection--)
@@ -9228,7 +9228,7 @@ namespace Orts.Simulation.Physics
 
             if (!Simulator.TimetableMode) AuxActionsContain.ResetAuxAction(this);
             SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-            TCRoute.SetReversalOffset(Length);
+            TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
         }
 
         //================================================================================================//
@@ -10077,7 +10077,7 @@ namespace Orts.Simulation.Physics
 
                 SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
                 CheckDeadlock(ValidRoute[0], Number);
-                TCRoute.SetReversalOffset(Length);
+                TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
             }
             else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
@@ -10472,7 +10472,7 @@ namespace Orts.Simulation.Physics
 
                 CheckDeadlock(ValidRoute[0], Number);
                 SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-                TCRoute.SetReversalOffset(Length);
+                TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
             }
             else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
@@ -16988,10 +16988,10 @@ namespace Orts.Simulation.Physics
             // Check for reversal offset margin
             //
 
-            public void SetReversalOffset(float trainLength)
+            public void SetReversalOffset(float trainLength, bool timetableMode = true)
             {
                 TCReversalInfo thisReversal = ReversalInfo[activeSubpath];
-                thisReversal.SignalUsed = thisReversal.Valid && thisReversal.SignalAvailable && trainLength < thisReversal.SignalOffset;
+                thisReversal.SignalUsed = thisReversal.Valid && thisReversal.SignalAvailable && timetableMode && trainLength < thisReversal.SignalOffset;
             }
 
             //================================================================================================//
