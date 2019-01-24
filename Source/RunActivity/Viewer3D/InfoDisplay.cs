@@ -330,8 +330,10 @@ namespace Orts.Viewer3D
                         {
                             Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[1].CommandUp.ToString());
                             Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[2].CommandUp.ToString());
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[3].CommandUp.ToString());
-                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[4].CommandUp.ToString());
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs.List.Count > 2 ? 
+                                (Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[3].CommandUp.ToString() : null);
+                            Logger.Data((Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs.List.Count > 3 ?
+                                (Viewer.PlayerLocomotive as MSTSElectricLocomotive).Pantographs[4].CommandUp.ToString() : null);
                             Logger.Data("null");
                             Logger.Data("null");
                             Logger.Data("null");
