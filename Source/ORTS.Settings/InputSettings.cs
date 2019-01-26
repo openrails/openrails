@@ -177,6 +177,8 @@ namespace ORTS.Settings
         [GetString("Control Light")] ControlLight,
         [GetString("Control Pantograph 1")] ControlPantograph1,
         [GetString("Control Pantograph 2")] ControlPantograph2,
+        [GetString("Control Pantograph 3")] ControlPantograph3,
+        [GetString("Control Pantograph 4")] ControlPantograph4,
         [GetString("Control Circuit Breaker Closing Order")] ControlCircuitBreakerClosingOrder,
         [GetString("Control Circuit Breaker Opening Order")] ControlCircuitBreakerOpeningOrder,
         [GetString("Control Circuit Breaker Closing Authorization")] ControlCircuitBreakerClosingAuthorization,
@@ -575,6 +577,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlPantograph1] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommands.ControlPantograph2] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
+            Commands[(int)UserCommands.ControlPantograph3] = new UserCommandKeyInput(0x19, KeyModifiers.Control);
+            Commands[(int)UserCommands.ControlPantograph4] = new UserCommandKeyInput(0x19, KeyModifiers.Shift | KeyModifiers.Control);
             Commands[(int)UserCommands.ControlOdoMeterShowHide] = new UserCommandKeyInput(0x2C, KeyModifiers.Shift);
             Commands[(int)UserCommands.ControlOdoMeterReset] = new UserCommandKeyInput(0x2C, KeyModifiers.Control);
             Commands[(int)UserCommands.ControlOdoMeterDirection] = new UserCommandKeyInput(0x2C, KeyModifiers.Control | KeyModifiers.Shift);

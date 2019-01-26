@@ -271,7 +271,7 @@ namespace Orts.MultiPlayer
         public float X, Z, Travelled;
         public double seconds;
         public int season, weather;
-        public int pantofirst, pantosecond;
+        public int pantofirst, pantosecond, pantothird, pantofourth;
         public string frontorrearcab;
         public int headlight;
         public float trainmaxspeed;
@@ -314,8 +314,10 @@ namespace Orts.MultiPlayer
                 weather = int.Parse(data[11]);
                 pantofirst = int.Parse(data[12]);
                 pantosecond = int.Parse(data[13]);
-                frontorrearcab = data[14];
-                headlight = int.Parse(data[15]);
+                pantothird = int.Parse(data[14]);
+                pantofourth = int.Parse(data[15]);
+                frontorrearcab = data[16];
+                headlight = int.Parse(data[17]);
                 //user = areas[0].Trim();
                 con = areas[2].Trim();
                 route = areas[3].Trim();
@@ -396,12 +398,14 @@ namespace Orts.MultiPlayer
                 trainmaxspeed = t.TrainMaxSpeedMpS;
             }
             seconds = (int)MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
-            pantofirst = pantosecond = 0;
+            pantofirst = pantosecond = pantothird = pantofourth = 0;
             MSTSWagon w = (MSTSWagon)MPManager.Simulator.PlayerLocomotive;
             if (w != null)
             {
                 pantofirst = w.Pantographs[1].CommandUp ? 1 : 0;
                 pantosecond = w.Pantographs[2].CommandUp ? 1 : 0;
+                pantothird = w.Pantographs.List.Count > 2 && w.Pantographs[3].CommandUp ? 1 : 0;
+                pantofourth = w.Pantographs.List.Count > 3 && w.Pantographs[4].CommandUp ? 1 : 0;
                 frontorrearcab = (w as MSTSLocomotive).UsingRearCab ? "R" : "F";
                 headlight = w.Headlight;
             }
@@ -429,7 +433,7 @@ namespace Orts.MultiPlayer
         public override string ToString()
         {
             string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
-                + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + trainmaxspeed.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + frontorrearcab + " " + headlight + " \r" +
+                + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + trainmaxspeed.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + pantothird + " " + pantofourth + " " + frontorrearcab + " " + headlight + " \r" +
                 leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
             for (var i = 0; i < cars.Length; i++)
             {
@@ -2072,6 +2076,18 @@ namespace Orts.MultiPlayer
             else if (EventName == "PANTO2")
             {
                 t.SignalEvent((EventState == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 2);
+
+                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+            }
+            else if (EventName == "PANTO3")
+            {
+                t.SignalEvent((EventState == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 3);
+
+                MPManager.BroadCast(this.ToString()); //if the server, will broadcast
+            }
+            else if (EventName == "PANTO4")
+            {
+                t.SignalEvent((EventState == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 4);
 
                 MPManager.BroadCast(this.ToString()); //if the server, will broadcast
             }

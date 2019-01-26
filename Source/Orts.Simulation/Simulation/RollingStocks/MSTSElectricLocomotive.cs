@@ -199,11 +199,15 @@ namespace Orts.Simulation.RollingStocks
                     case PowerSupplyEvent.RaisePantograph:
                         Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
                         Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.On);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.On);
                         break;
 
                     case PowerSupplyEvent.LowerPantograph:
                         Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
                         Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.Off);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.Off);
                         break;
                 }
             }
@@ -234,6 +238,8 @@ namespace Orts.Simulation.RollingStocks
                     case PowerSupplyEvent.RaisePantograph:
                         if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
                         if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
+                        if (id == 3) Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.On);
+                        if (id == 4) Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.On);
 
                         if (!Simulator.TRK.Tr_RouteFile.Electrified)
                             Simulator.Confirmer.Warning(Simulator.Catalog.GetString("No power line!"));
@@ -244,6 +250,8 @@ namespace Orts.Simulation.RollingStocks
                     case PowerSupplyEvent.LowerPantograph:
                         if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
                         if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
+                        if (id == 3) Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.Off);
+                        if (id == 4) Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.Off);
                         break;
                 }
             }
@@ -286,6 +294,14 @@ namespace Orts.Simulation.RollingStocks
 
                 case CABViewControlTypes.PANTOGRAPH2:
                     data = Pantographs[2].CommandUp ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_PANTOGRAPH3:
+                    data = Pantographs.List.Count > 2 && Pantographs[3].CommandUp ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_PANTOGRAPH4:
+                    data = Pantographs.List.Count > 3 && Pantographs[4].CommandUp ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.PANTOGRAPHS_4:

@@ -25,6 +25,8 @@ namespace Orts.Viewer3D
         //count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
         static int PantoSecondCount;
         static int PantoFirstCount;
+        static int PantoFourthCount;
+        static int PantoThirdCount;
         static int WiperCount;
         static int HeadLightCount;
         static int DoorLeftCount;
@@ -43,6 +45,10 @@ namespace Orts.Viewer3D
             if (UserInput.IsPressed(UserCommands.ControlPantograph2)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO2", (++PantoSecondCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommands.ControlPantograph1)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO1", (++PantoFirstCount) % 2)).ToString());
+
+            if (UserInput.IsPressed(UserCommands.ControlPantograph4)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO4", (++PantoFourthCount) % 2)).ToString());
+
+            if (UserInput.IsPressed(UserCommands.ControlPantograph3)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO3", (++PantoThirdCount) % 2)).ToString());
 
             if (UserInput.IsPressed(UserCommands.ControlWiper)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
 
