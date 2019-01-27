@@ -2702,7 +2702,6 @@ namespace Orts.Viewer3D
                             worldLocation.TileZ = activitySound.TileZ;
                             worldLocation.Location.X = activitySound.X;
                             worldLocation.Location.Y = activitySound.Y + 3; // Sound does not come from earth!
-//                            wsName = Program.Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(worldLocation.TileX, worldLocation.TileZ) + "s";
                             ActivitySounds = new SoundSource(Program.Viewer, worldLocation, Events.Source.None, ORTSActSoundFile, true, ORTSActSoundFileType, true);
                             Program.Viewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;
