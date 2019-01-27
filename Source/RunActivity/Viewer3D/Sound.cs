@@ -2650,7 +2650,6 @@ namespace Orts.Viewer3D
                                 Program.Viewer.Simulator.PlayerLocomotive : train.Cars[0];
                             var worldLocation = loco.WorldPosition.WorldLocation;
                             worldLocation.Location.Y = worldLocation.Location.Y + 3; // Sound does not come from earth!
-//                            string wsName = Program.Viewer.Simulator.RoutePath + @"\WORLD\" + WorldFile.WorldFileNameFromTileCoordinates(worldLocation.TileX, worldLocation.TileZ) + "s";
                             ActivitySounds = new SoundSource(Program.Viewer, worldLocation, Events.Source.None, ORTSActSoundFile, true);
                             Program.Viewer.SoundProcess.AddSoundSources(localEventID, new List<SoundSourceBase>() { ActivitySounds });
                             break;
