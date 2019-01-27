@@ -1518,7 +1518,7 @@ namespace Orts.Simulation
         {
             var triggered = false;
             var e = this.ParsedObject as Orts.Formats.Msts.EventCategoryLocation;
-            Train train = Simulator.PlayerLocomotive.Train;
+            var train = Simulator.PlayerLocomotive.Train;
             if (ParsedObject.TrainService != "" && Train != null)
             {
                 if (Train.FrontTDBTraveller != null) train = Train;
