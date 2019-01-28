@@ -779,6 +779,15 @@ namespace Orts.Formats.Msts
         }
     }
 
+    public enum ORTSActSoundFileTypes
+    {
+        Everywhere,
+        Cab,
+        Pass,
+        Ground,
+        Location
+    }
+
     /// <summary>
     /// The 3 types of event are inherited from the abstract Event class.
     /// </summary>
@@ -792,7 +801,7 @@ namespace Orts.Formats.Msts
         public Boolean Reversible;
         public int ORTSContinue = -1;
         public string ORTSActSoundFile;
-        public int ORTSActSoundFileType;
+        public ORTSActSoundFileTypes ORTSActSoundFileType;
         public ORTSWeatherChange ORTSWeatherChange;
         public string TrainService = "";
         public int TrainStartingTime = -1;
@@ -846,25 +855,15 @@ namespace Orts.Formats.Msts
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
                     ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
-                    var ORTSActSoundFileTypeString = stf.ReadString();
-                    switch (ORTSActSoundFileTypeString)
-	                    {
-                            case "Everywhere":
-                                ORTSActSoundFileType = 0;
-                                break;
-                            case "Cab":
-                                ORTSActSoundFileType = 1;
-                                break;
-                            case "Pass":
-                                ORTSActSoundFileType = 2;
-                                break;
-                            case "Ground":
-                                ORTSActSoundFileType = 3;
-                                break;
-                            default:
-                                ORTSActSoundFileType = 0;
-                                break;
-	                    }
+                    try
+                    {
+                    ORTSActSoundFileType = (ORTSActSoundFileTypes)Enum.Parse(typeof(ORTSActSoundFileTypes), stf.ReadString());
+                    }
+                    catch(ArgumentException)
+                    {
+                        STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                    }
                     stf.MustMatch(")");
                 }),
                 new STFReader.TokenProcessor("ortsweatherchange", ()=>{ ORTSWeatherChange = new ORTSWeatherChange(stf);}),
@@ -929,25 +928,15 @@ namespace Orts.Formats.Msts
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
                     ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
-                    var ORTSActSoundFileTypeString = stf.ReadString();
-                    switch (ORTSActSoundFileTypeString)
-	                    {
-                            case "Everywhere":
-                                ORTSActSoundFileType = 0;
-                                break;
-                            case "Cab":
-                                ORTSActSoundFileType = 1;
-                                break;
-                            case "Pass":
-                                ORTSActSoundFileType = 2;
-                                break;
-                            case "Ground":
-                                ORTSActSoundFileType = 3;
-                                break;
-                            default:
-                                ORTSActSoundFileType = 0;
-                                break;
-	                    }
+                    try
+                    {
+                    ORTSActSoundFileType = (ORTSActSoundFileTypes)Enum.Parse(typeof(ORTSActSoundFileTypes), stf.ReadString());
+                    }
+                    catch(ArgumentException)
+                    {
+                        STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                    }
                     stf.MustMatch(")");
                 }),
             });
@@ -1020,24 +1009,15 @@ namespace Orts.Formats.Msts
                     var tempString = stf.ReadString();
                     ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
                     var ORTSActSoundFileTypeString = stf.ReadString();
-                    switch (ORTSActSoundFileTypeString)
-	                    {
-                            case "Everywhere":
-                                ORTSActSoundFileType = 0;
-                                break;
-                            case "Cab":
-                                ORTSActSoundFileType = 1;
-                                break;
-                            case "Pass":
-                                ORTSActSoundFileType = 2;
-                                break;
-                            case "Ground":
-                                ORTSActSoundFileType = 3;
-                                break;
-                            default:
-                                ORTSActSoundFileType = 0;
-                                break;
-	                    }
+                    try
+                    {
+                    ORTSActSoundFileType = (ORTSActSoundFileTypes)Enum.Parse(typeof(ORTSActSoundFileTypes), stf.ReadString());
+                    }
+                    catch(ArgumentException)
+                    {
+                        STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                    }
                     stf.MustMatch(")");
                 }),
                 new STFReader.TokenProcessor("ortsweatherchange", ()=>{ ORTSWeatherChange = new ORTSWeatherChange(stf);}),
@@ -1160,7 +1140,7 @@ namespace Orts.Formats.Msts
     public class ActivitySound
     {
         public string ORTSActSoundFile;
-        public int ORTSActSoundFileType;
+        public ORTSActSoundFileTypes ORTSActSoundFileType;
         public int TileX;
         public int TileZ;
         public float X;
@@ -1175,28 +1155,15 @@ namespace Orts.Formats.Msts
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
                     ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
-                    var ORTSActSoundFileTypeString = stf.ReadString();
-                    switch (ORTSActSoundFileTypeString)
-                        {
-                            case "Everywhere":
-                                ORTSActSoundFileType = 0;
-                                break;
-                            case "Cab":
-                                ORTSActSoundFileType = 1;
-                                break;
-                            case "Pass":
-                                ORTSActSoundFileType = 2;
-                                break;
-                            case "Ground":
-                                ORTSActSoundFileType = 3;
-                                break;
-                            case "Location":
-                                ORTSActSoundFileType = 4;
-                                break;
-                            default:
-                                ORTSActSoundFileType = 0;
-                                break;
-                        }
+                    try
+                    {
+                    ORTSActSoundFileType = (ORTSActSoundFileTypes)Enum.Parse(typeof(ORTSActSoundFileTypes), stf.ReadString());
+                    }
+                    catch(ArgumentException)
+                    {
+                        STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                    }
                     stf.MustMatch(")");
                 }),
             new STFReader.TokenProcessor("ortssoundlocation", ()=>{
