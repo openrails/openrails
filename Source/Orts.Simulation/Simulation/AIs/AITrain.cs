@@ -462,7 +462,7 @@ namespace Orts.Simulation.AIs
                 }
 
                 InitializeSignals(false);           // Get signal information
-                TCRoute.SetReversalOffset(Length);  // set reversal information for first subpath
+                TCRoute.SetReversalOffset(Length, false);  // set reversal information for first subpath
                 SetEndOfRouteAction();              // set action to ensure train stops at end of route
 
                 // check if train starts at station stop

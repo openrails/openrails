@@ -2098,6 +2098,18 @@ namespace Orts.Simulation.RollingStocks
                 case Event.Pantograph2Down:
                     SignalEvent(PowerSupplyEvent.LowerPantograph, 2);
                     break;
+                case Event.Pantograph3Up:
+                    SignalEvent(PowerSupplyEvent.RaisePantograph, 3);
+                    break;
+                case Event.Pantograph3Down:
+                    SignalEvent(PowerSupplyEvent.LowerPantograph, 3);
+                    break;
+                case Event.Pantograph4Up:
+                    SignalEvent(PowerSupplyEvent.RaisePantograph, 4);
+                    break;
+                case Event.Pantograph4Down:
+                    SignalEvent(PowerSupplyEvent.LowerPantograph, 4);
+                    break;
             }
 
             // TODO: This should be moved to TrainCar probably.

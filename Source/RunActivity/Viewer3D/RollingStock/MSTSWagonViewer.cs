@@ -54,6 +54,8 @@ namespace Orts.Viewer3D.RollingStock
         AnimatedPart RunningGear;
         AnimatedPart Pantograph1;
         AnimatedPart Pantograph2;
+        AnimatedPart Pantograph3;
+        AnimatedPart Pantograph4;
         AnimatedPart LeftDoor;
         AnimatedPart RightDoor;
         AnimatedPart Mirrors;
@@ -173,6 +175,8 @@ namespace Orts.Viewer3D.RollingStock
             RunningGear = new AnimatedPart(TrainCarShape);
             Pantograph1 = new AnimatedPart(TrainCarShape);
             Pantograph2 = new AnimatedPart(TrainCarShape);
+            Pantograph3 = new AnimatedPart(TrainCarShape);
+            Pantograph4 = new AnimatedPart(TrainCarShape);
             LeftDoor = new AnimatedPart(TrainCarShape);
             RightDoor = new AnimatedPart(TrainCarShape);
             Mirrors = new AnimatedPart(TrainCarShape);
@@ -257,6 +261,8 @@ namespace Orts.Viewer3D.RollingStock
 
             Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
             Pantograph2.SetState(MSTSWagon.Pantographs[2].CommandUp);
+            if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.SetState(MSTSWagon.Pantographs[3].CommandUp);
+            if (MSTSWagon.Pantographs.List.Count > 3) Pantograph4.SetState(MSTSWagon.Pantographs[4].CommandUp);
             LeftDoor.SetState(MSTSWagon.DoorLeftOpen);
             RightDoor.SetState(MSTSWagon.DoorRightOpen);
             Mirrors.SetState(MSTSWagon.MirrorOpen);
@@ -364,6 +370,10 @@ namespace Orts.Viewer3D.RollingStock
                             Pantograph1.AddMatrix(matrix);
                         else if (matrixName.Contains("2"))
                             Pantograph2.AddMatrix(matrix);
+                        else if (matrixName.Contains("3"))
+                            Pantograph3.AddMatrix(matrix);
+                        else if (matrixName.Contains("4"))
+                            Pantograph4.AddMatrix(matrix);
                         else
                         {
                             if (HasFirstPanto) Pantograph1.AddMatrix(matrix); //some may have no first panto, will put it as panto 2
@@ -387,6 +397,10 @@ namespace Orts.Viewer3D.RollingStock
                     Pantograph1.AddMatrix(matrix);
                 else if (matrixName.Contains("2"))
                     Pantograph2.AddMatrix(matrix);
+                else if (matrixName.Contains("3"))
+                    Pantograph3.AddMatrix(matrix);
+                else if (matrixName.Contains("4"))
+                    Pantograph4.AddMatrix(matrix);
                 else
                 {
                     if (HasFirstPanto) Pantograph1.AddMatrix(matrix); //some may have no first panto, will put it as panto 2
@@ -408,6 +422,8 @@ namespace Orts.Viewer3D.RollingStock
         {
             UserInputCommands.Add(UserCommands.ControlPantograph1, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 1, !MSTSWagon.Pantographs[1].CommandUp) });
             UserInputCommands.Add(UserCommands.ControlPantograph2, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 2, !MSTSWagon.Pantographs[2].CommandUp) });
+            if (MSTSWagon.Pantographs.List.Count > 2) UserInputCommands.Add(UserCommands.ControlPantograph3, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 3, !MSTSWagon.Pantographs[3].CommandUp) });
+            if (MSTSWagon.Pantographs.List.Count > 3) UserInputCommands.Add(UserCommands.ControlPantograph4, new Action[] { Noop, () => new PantographCommand(Viewer.Log, 4, !MSTSWagon.Pantographs[4].CommandUp) });
             UserInputCommands.Add(UserCommands.ControlDoorLeft, new Action[] { Noop, () => new ToggleDoorsLeftCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlDoorRight, new Action[] { Noop, () => new ToggleDoorsRightCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommands.ControlMirror, new Action[] { Noop, () => new ToggleMirrorsCommand(Viewer.Log) });
@@ -429,6 +445,8 @@ namespace Orts.Viewer3D.RollingStock
         {
             Pantograph1.UpdateState(MSTSWagon.Pantographs[1].CommandUp, elapsedTime);
             Pantograph2.UpdateState(MSTSWagon.Pantographs[2].CommandUp, elapsedTime);
+            if (MSTSWagon.Pantographs.List.Count > 2) Pantograph3.UpdateState(MSTSWagon.Pantographs[3].CommandUp, elapsedTime);
+            if (MSTSWagon.Pantographs.List.Count > 3) Pantograph4.UpdateState(MSTSWagon.Pantographs[4].CommandUp, elapsedTime);
             LeftDoor.UpdateState(MSTSWagon.DoorLeftOpen, elapsedTime);
             RightDoor.UpdateState(MSTSWagon.DoorRightOpen, elapsedTime);
             Mirrors.UpdateState(MSTSWagon.MirrorOpen, elapsedTime);
