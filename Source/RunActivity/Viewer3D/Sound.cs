@@ -389,10 +389,10 @@ namespace Orts.Viewer3D
                     CarOnSwitch = false;
                     if (Car.Train.PresentPosition[0].TCSectionIndex != Car.Train.PresentPosition[1].TCSectionIndex)
                     {
-                        var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
-                        foreach (var thisSection in copyOccupiedTrack)
+                        try
                         {
-                            try
+                            var copyOccupiedTrack = Car.Train.OccupiedTrack.ToArray();
+                            foreach (var thisSection in copyOccupiedTrack)
                             {
                                 if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
                                 {
@@ -401,12 +401,15 @@ namespace Orts.Viewer3D
                                     var distanceFromSwitch = WorldLocation.GetDistanceSquared(Car.WorldPosition.WorldLocation, switchLocation);
                                     if (distanceFromSwitch < Car.CarLengthM * Car.CarLengthM + Math.Min(Car.SpeedMpS * 3, 150))
                                     {
-                                          CarOnSwitch = true;
+                                        CarOnSwitch = true;
                                         break;
                                     }
                                 }
                             }
-                            catch { }
+                        }
+                        catch
+                        {
+
                         }
                     }
                     // here check for curve
