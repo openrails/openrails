@@ -747,6 +747,10 @@ namespace Orts.Viewer3D
             if (frame.IsScreenChanged)
                 Camera.ScreenChanged();
 
+            // Check if you need to swap camera
+            if (Camera is TrackingCamera && Camera.AttachedCar != null && Camera.AttachedCar.Train != null && Camera.AttachedCar.Train.FormationReversed)
+                (Camera as TrackingCamera).SwapCameras();
+
             // Update camera first...
             Camera.Update(elapsedTime);
             // No above camera means we're allowed to auto-switch to cab view.
