@@ -701,14 +701,14 @@ namespace Orts.Simulation
                     try
                     {
                         if (train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
-                            train.Update(elapsedClockSeconds);
+                            train.Update(elapsedClockSeconds, false);
                         else ((AITrain)train).AIUpdate(elapsedClockSeconds, ClockTime, false);
                     }
                     catch (Exception e) { Trace.TraceWarning(e.Message); }
                 }
                 else if (train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                 {
-                    train.Update(elapsedClockSeconds);
+                    train.Update(elapsedClockSeconds, false);
                 }
                 else
                 {
