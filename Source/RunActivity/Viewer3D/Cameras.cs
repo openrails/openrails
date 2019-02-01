@@ -1028,6 +1028,7 @@ namespace Orts.Viewer3D
             ZDistanceM = inf.ReadSingle();
             if (attachedCar != null && attachedCar.Train == Viewer.SelectedTrain)
             {
+                var trainCars = GetCameraCars();
                 BrowseDistance = attachedCar.CarLengthM * 0.5f;
                 if (Front)
                 {
@@ -1037,18 +1038,10 @@ namespace Orts.Viewer3D
                 else
                 {
                     browsedTraveller = new Traveller(attachedCar.Train.RearTDBTraveller);
-                    browsedTraveller.Move(attachedCar.CarLengthM * 0.5f + attachedCar.Train.Length - ZDistanceM);
+                    browsedTraveller.Move((attachedCar.CarLengthM - trainCars.First().CarLengthM - trainCars.Last().CarLengthM) * 0.5f + attachedCar.Train.Length - ZDistanceM);
                 }
                 //               LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
-                var trainCars = GetCameraCars();
-                // compute car low and high offset within train
-                HighWagonOffsetLimit = 0;
-                foreach (TrainCar trainCar in trainCars)
-                {
-                    LowWagonOffsetLimit = HighWagonOffsetLimit - trainCar.CarLengthM;
-                    if (ZDistanceM > LowWagonOffsetLimit) break;
-                    else HighWagonOffsetLimit = LowWagonOffsetLimit;
-                }
+                ComputeCarOffsets(this);
             }
         }
 
@@ -1064,6 +1057,7 @@ namespace Orts.Viewer3D
 
         protected override void OnActivate(bool sameCamera)
         {
+            BrowseMode = BrowseForwards = BrowseBackwards = false;
             if (attachedCar == null || attachedCar.Train != Viewer.SelectedTrain)
             {
                 if (Front)
@@ -1071,21 +1065,19 @@ namespace Orts.Viewer3D
                     SetCameraCar(GetCameraCars().First());
                     browsedTraveller = new Traveller(attachedCar.Train.FrontTDBTraveller);
                     ZDistanceM = 0;
-                    BrowseDistance = attachedCar.CarLengthM * 0.5f;
-                    BrowseMode = BrowseForwards = BrowseBackwards = false;
                     HighWagonOffsetLimit = 0;
                     LowWagonOffsetLimit = -attachedCar.CarLengthM;
                 }
                 else
                 {
-                    SetCameraCar(GetCameraCars().Last());
+                    var trainCars = GetCameraCars();
+                    SetCameraCar(trainCars.Last());
                     browsedTraveller = new Traveller(attachedCar.Train.RearTDBTraveller);
-                    ZDistanceM = -attachedCar.Train.Length;
-                    BrowseDistance = attachedCar.CarLengthM * 0.5f;
-                    BrowseMode = BrowseForwards = BrowseBackwards = false;
-                    HighWagonOffsetLimit = attachedCar.Train.Length + attachedCar.CarLengthM;
-                    LowWagonOffsetLimit = -attachedCar.Train.Length;
+                    ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f;
+                    LowWagonOffsetLimit = -attachedCar.Train.Length + trainCars.First().CarLengthM * 0.5f;
+                    HighWagonOffsetLimit = LowWagonOffsetLimit + attachedCar.CarLengthM;
                 }
+                BrowseDistance = attachedCar.CarLengthM * 0.5f;
             }
             base.OnActivate(sameCamera);
         }
@@ -1257,10 +1249,10 @@ namespace Orts.Viewer3D
             {
                 var ZIncrM = -BrowseSpeedMpS * elapsedTime.ClockSeconds;
                 ZDistanceM += ZIncrM;
-                if (-ZDistanceM >= attachedCar.Train.Length)
+                if (-ZDistanceM >= attachedCar.Train.Length - (trainCars.First().CarLengthM  + trainCars.Last().CarLengthM) * 0.5f)
                 {
-                    ZIncrM = -attachedCar.Train.Length - (ZDistanceM - ZIncrM);
-                    ZDistanceM = -attachedCar.Train.Length;
+                    ZIncrM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f - (ZDistanceM - ZIncrM);
+                    ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f;
                     BrowseBackwards = false;
                 }
                 else if (ZDistanceM < LowWagonOffsetLimit)
@@ -1269,7 +1261,7 @@ namespace Orts.Viewer3D
                     HighWagonOffsetLimit = LowWagonOffsetLimit;
                     LowWagonOffsetLimit -= attachedCar.CarLengthM;
                 }
-                browsedTraveller.Move(elapsedTime.ClockSeconds * attachedCar.Train.SpeedMpS +ZIncrM);
+                browsedTraveller.Move(elapsedTime.ClockSeconds * attachedCar.Train.SpeedMpS + ZIncrM);
             }
             else if (BrowseForwards)
             {
@@ -1290,6 +1282,18 @@ namespace Orts.Viewer3D
                 browsedTraveller.Move(elapsedTime.ClockSeconds * attachedCar.Train.SpeedMpS + ZIncrM);
             }
             else browsedTraveller.Move(elapsedTime.ClockSeconds * attachedCar.Train.SpeedMpS);
+        }
+
+        protected void ComputeCarOffsets( TrackingCamera camera)
+        {
+            var trainCars = camera.GetCameraCars();
+            camera.HighWagonOffsetLimit = trainCars.First().CarLengthM * 0.5f;
+            foreach (TrainCar trainCar in trainCars)
+            {
+                camera.LowWagonOffsetLimit = camera.HighWagonOffsetLimit - trainCar.CarLengthM;
+                if (ZDistanceM > LowWagonOffsetLimit) break;
+                else camera.HighWagonOffsetLimit = camera.LowWagonOffsetLimit;
+            }
         }
 
         protected void PanUp(float speed)
@@ -1356,6 +1360,14 @@ namespace Orts.Viewer3D
             swapFloat = newCamera.RotationYRadians;
             newCamera.RotationYRadians = oldCamera.RotationYRadians - MathHelper.Pi * (Front ? 1 : -1);
             oldCamera.RotationYRadians = swapFloat + MathHelper.Pi * (Front ? 1 : -1);
+
+            // adjust and swap data for camera browsing
+
+            newCamera.BrowseForwards = newCamera.BrowseBackwards = false;
+            var trainCars = newCamera.GetCameraCars();
+            newCamera.ZDistanceM = -newCamera.attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f - oldCamera.ZDistanceM;
+            ComputeCarOffsets(newCamera);
+            // Todo travellers
         }
 
 
@@ -1400,8 +1412,8 @@ namespace Orts.Viewer3D
             BrowseMode = false;
             base.FirstCar();
             ZDistanceM = 0;
-            HighWagonOffsetLimit = 0;
-            LowWagonOffsetLimit = -attachedCar.CarLengthM;
+            HighWagonOffsetLimit = attachedCar.CarLengthM * 0.5f;
+            LowWagonOffsetLimit = -attachedCar.CarLengthM * 0.5f;
 //            LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
         }
 
@@ -1411,8 +1423,9 @@ namespace Orts.Viewer3D
             BrowseForwards = false;
             BrowseMode = false;
             base.LastCar();
-            ZDistanceM = -attachedCar.Train.Length;
-            LowWagonOffsetLimit = -attachedCar.Train.Length;
+            var trainCars = GetCameraCars();
+            ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f;
+            LowWagonOffsetLimit = -attachedCar.Train.Length + trainCars.First().CarLengthM * 0.5f;
             HighWagonOffsetLimit = LowWagonOffsetLimit + attachedCar.CarLengthM;
 //            LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
         }
@@ -1443,7 +1456,8 @@ namespace Orts.Viewer3D
                 {
 //                    LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
                     browsedTraveller = new Traveller(attachedCar.Train.RearTDBTraveller);
-                    browsedTraveller.Move(attachedCar.CarLengthM * 0.5f + attachedCar.Train.Length + ZDistanceM);
+                    var trainCars = GetCameraCars();
+                    browsedTraveller.Move((attachedCar.CarLengthM - trainCars.First().CarLengthM - trainCars.Last().CarLengthM) * 0.5f + attachedCar.Train.Length + ZDistanceM);
                     BrowseDistance = attachedCar.CarLengthM * 0.5f;
                     BrowseMode = true;
                 }
