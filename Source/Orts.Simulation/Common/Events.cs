@@ -86,6 +86,10 @@ namespace Orts.Common
         Pantograph1Up,
         Pantograph2Down,
         Pantograph2Up,
+        Pantograph3Down,
+        Pantograph3Up,
+        Pantograph4Down,
+        Pantograph4Up,
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
@@ -335,7 +339,12 @@ namespace Orts.Common
                         case 166: return Event.VacuumExhausterOff;
                         case 167: return Event.SecondEnginePowerOn;
                         case 168: return Event.SecondEnginePowerOff;
-                            //
+
+                        case 169: return Event.Pantograph3Up;
+                        case 170: return Event.Pantograph3Down;
+                        case 171: return Event.Pantograph4Up;
+                        case 172: return Event.Pantograph4Down;
+                        //
 
                         default: return 0;
                     }
