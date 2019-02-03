@@ -781,6 +781,7 @@ namespace Orts.Formats.Msts
 
     public enum ORTSActSoundFileTypes
     {
+        None,
         Everywhere,
         Cab,
         Pass,
@@ -861,8 +862,9 @@ namespace Orts.Formats.Msts
                     }
                     catch(ArgumentException)
                     {
+                        stf.StepBackOneItem();
                         STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
-                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.None;
                     }
                     stf.MustMatch(")");
                 }),
@@ -934,8 +936,9 @@ namespace Orts.Formats.Msts
                     }
                     catch(ArgumentException)
                     {
+                        stf.StepBackOneItem();
                         STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
-                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.None;
                     }
                     stf.MustMatch(")");
                 }),
@@ -1015,8 +1018,9 @@ namespace Orts.Formats.Msts
                     }
                     catch(ArgumentException)
                     {
+                        stf.StepBackOneItem();
                         STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
-                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.None;
                     }
                     stf.MustMatch(")");
                 }),
@@ -1161,8 +1165,9 @@ namespace Orts.Formats.Msts
                     }
                     catch(ArgumentException)
                     {
+                        stf.StepBackOneItem();
                         STFException.TraceInformation(stf, "Skipped unknown activity sound file type " + stf.ReadString());
-                        ORTSActSoundFileType = ORTSActSoundFileTypes.Cab;
+                        ORTSActSoundFileType = ORTSActSoundFileTypes.None;
                     }
                     stf.MustMatch(")");
                 }),
