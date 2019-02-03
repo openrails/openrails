@@ -310,7 +310,7 @@ namespace Orts.Simulation
                 if (crossing.Trains.Contains(train))
                 {
                     frontDist = crossing.DistanceTo(traveller, reqDist);
-                    if (frontDist > 0)
+                    if (frontDist > 0 && frontDist <= reqDist)
                     {
                         if (RoadToTrackCrossingItems.ContainsValue(crossing))
                         {
