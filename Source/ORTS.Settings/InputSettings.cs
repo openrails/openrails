@@ -100,6 +100,7 @@ namespace ORTS.Settings
         [GetString("Debug Toggle Advanced Adhesion")] DebugToggleAdvancedAdhesion,
         [GetString("Debug Sound Form")] DebugSoundForm,
         [GetString("Debug Physics Form")] DebugPhysicsForm,
+        [GetString("Debug Toggle Confirmations")] DebugToggleConfirmations,
 
         [GetString("Camera Cab")] CameraCab,
         [GetString("Camera Change Passenger Viewpoint")] CameraChangePassengerViewPoint,
@@ -626,6 +627,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommands.DebugToggleAdvancedAdhesion] = new UserCommandKeyInput(0x2D, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugTracks] = new UserCommandKeyInput(0x40, KeyModifiers.Control | KeyModifiers.Alt);
             Commands[(int)UserCommands.DebugWeatherChange] = new UserCommandKeyInput(0x19, KeyModifiers.Alt);
+            Commands[(int)UserCommands.DebugToggleConfirmations] = new UserCommandKeyInput(0x44, KeyModifiers.Control | KeyModifiers.Alt);
 
             Commands[(int)UserCommands.DisplayTrainListWindow] = new UserCommandKeyInput(0x43, KeyModifiers.Alt);
             Commands[(int)UserCommands.DisplayBasicHUDToggle] = new UserCommandKeyInput(0x3F, KeyModifiers.Alt);
