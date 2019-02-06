@@ -1786,7 +1786,7 @@ namespace Orts.Viewer3D
         const int MaximumSpecialPointDistance = 300;
         const float PlatformOffsetM = 3.3f;
         public bool SpecialPoints = false;
-        private bool SpecialPointFound = false;
+        protected bool SpecialPointFound = false;
         const float CheckIntervalM = 50f; // every 50 meters it is checked wheter there is a near special point
         protected float DistanceRunM = 0f; // distance run since last check interval
         protected bool FirstUpdateLoop = true; // first update loop
@@ -1906,12 +1906,19 @@ namespace Orts.Viewer3D
             {
                 foreach (var car in train.Cars)
                 {
-                    if (WorldLocation.GetDistance2D(car.WorldPosition.WorldLocation, cameraLocation).Length() < (SpecialPointFound ? MaximumSpecialPointDistance * 0.8f : MaximumDistance))
+                    if (LastCheckCar != null && car == LastCheckCar && 
+                        WorldLocation.GetDistance2D(car.WorldPosition.WorldLocation, cameraLocation).Length() < (SpecialPointFound ? MaximumSpecialPointDistance * 0.8f : MaximumDistance))
                     {
+                        trainClose = true;
+                        break;
+                    }
+                    else if (WorldLocation.GetDistance2D(car.WorldPosition.WorldLocation, cameraLocation).Length() < MaximumDistance)
+                        {
                         LastCheckCar = car;
                         trainClose = true;
                         break;
                     }
+                    LastCheckCar = null;
                 }
             }
             var trySpecial = false;
@@ -1999,6 +2006,7 @@ namespace Orts.Viewer3D
                                         }
                                         platformFound = true;
                                         SpecialPointFound = true;
+                                        LastCheckCar = FirstUpdateLoop ^ trainForwards ? train.Cars.First() : train.Cars.Last();
                                         shortTrav.Move(distanceToViewingPoint1);
                                         newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Cos(shortTrav.RotY) *
                                             (thisPlatform.PlatformSide[1] ? 1 : -1);
@@ -2030,6 +2038,7 @@ namespace Orts.Viewer3D
                         if (newLevelCrossingItem != LevelCrossingItem.None)
                         {
                             SpecialPointFound = true;
+                            LastCheckCar = trainForwards ? train.Cars.First() : train.Cars.Last();
                             newLocation = newLevelCrossingItem.Location;
                             TrackCameraLocation = new WorldLocation(newLocation);
                             Traveller roadTraveller;
@@ -2116,6 +2125,7 @@ namespace Orts.Viewer3D
             DistanceRunM = 0;
             base.OnActivate(sameCamera);
             FirstUpdateLoop = Math.Abs(AttachedCar.Train.SpeedMpS) <= 0.2f || sameCamera;
+            if (sameCamera) SpecialPointFound = false;
         }
     }
 
