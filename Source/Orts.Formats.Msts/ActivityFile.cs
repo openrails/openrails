@@ -1010,8 +1010,7 @@ namespace Orts.Formats.Msts
                 {
                     stf.MustMatch("(");
                     var tempString = stf.ReadString();
-                    ORTSActSoundFile =Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
-                    var ORTSActSoundFileTypeString = stf.ReadString();
+                    ORTSActSoundFile = Path.Combine(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(fileName)), "SOUND"), tempString);
                     try
                     {
                     ORTSActSoundFileType = (ORTSActSoundFileTypes)Enum.Parse(typeof(ORTSActSoundFileTypes), stf.ReadString());
