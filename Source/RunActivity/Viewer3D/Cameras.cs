@@ -1791,6 +1791,10 @@ namespace Orts.Viewer3D
         protected float DistanceRunM = 0f; // distance run since last check interval
         protected bool FirstUpdateLoop = true; // first update loop
 
+        const float MaxDistFromRoadCarM = 100.0f; // maximum distance of train traveller to spawned roadcar
+        protected RoadCar NearRoadCar;
+        protected bool RoadCarFound;
+
         protected TrainCar attachedCar;
         public override TrainCar AttachedCar { get { return attachedCar; } }
         public override string Name { get { return Viewer.Catalog.GetString("Trackside"); } }
@@ -1869,6 +1873,7 @@ namespace Orts.Viewer3D
             if (UserInput.IsDown(UserCommands.CameraPanLeft)) PanRight(-speed);
             if (UserInput.IsDown(UserCommands.CameraZoomIn)) ZoomIn(speed * 2);
             if (UserInput.IsDown(UserCommands.CameraZoomOut)) ZoomIn(-speed * 2);
+
             ZoomByMouseWheel(speed);
 
             var trainCars = Viewer.SelectedTrain.Cars;
@@ -1897,6 +1902,17 @@ namespace Orts.Viewer3D
                 trainForwards = (Viewer.PlayerLocomotive.SpeedMpS >= 0) ^ Viewer.PlayerLocomotive.Flipped ^ ((MSTSLocomotive)Viewer.PlayerLocomotive).UsingRearCab;
 
             targetLocation = attachedCar.WorldPosition.WorldLocation;
+            if (RoadCarFound)
+            {
+                if (NearRoadCar != null && NearRoadCar.Travelled < NearRoadCar.Spawner.Length - 10f)
+                {
+                    var traveller = new Traveller(NearRoadCar.FrontTraveller);
+                    traveller.Move(-2.5f - 0.15f * NearRoadCar.Length);
+                    cameraLocation = TrackCameraLocation = new WorldLocation(traveller.WorldLocation);
+                    cameraLocation.Location.Y += 1.8f;
+                }
+                else NearRoadCar = null;
+            }
 
             // Train is close enough if the last car we used is part of the same train and still close enough.
             var trainClose = (LastCheckCar != null) && (LastCheckCar.Train == train) && (WorldLocation.GetDistance2D(LastCheckCar.WorldPosition.WorldLocation, cameraLocation).Length() < (SpecialPointFound ? MaximumSpecialPointDistance * 0.8f : MaximumDistance));
@@ -1922,6 +1938,12 @@ namespace Orts.Viewer3D
                 if (!trainClose)
                     LastCheckCar = null;
             }
+            if (RoadCarFound && NearRoadCar == null)
+            {
+                RoadCarFound = false;
+                SpecialPointFound = false;
+                trainClose = false;
+            }
             var trySpecial = false;
             DistanceRunM += elapsedTime.ClockSeconds * train.SpeedMpS;
             if (Math.Abs(DistanceRunM) >= CheckIntervalM)
@@ -1934,6 +1956,8 @@ namespace Orts.Viewer3D
             {
                 SpecialPointFound = false;
                 bool platformFound = false;
+                NearRoadCar = null;
+                RoadCarFound = false;
                 Traveller tdb;
                 if (FirstUpdateLoop && SpecialPoints) 
                     tdb = trainForwards ? new Traveller(train.RearTDBTraveller) : new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
@@ -1954,6 +1978,8 @@ namespace Orts.Viewer3D
                     {
                         thisRoute = train.ValidRoute[1];
                     }
+
+                    // Search for platform
                     if (thisRoute != null)
                     {
                         if (FirstUpdateLoop)
@@ -2031,6 +2057,44 @@ namespace Orts.Viewer3D
                         }
                     }
 
+                    if (!SpecialPointFound)
+                    {
+
+                        // Search for near visible spawned car
+                        var minDistanceM = 10000.0f;
+                        NearRoadCar = null;
+                        foreach (RoadCar visibleCar in Viewer.World.RoadCars.VisibleCars)
+                        {
+                            // check for direction
+                            if (Math.Abs(visibleCar.FrontTraveller.RotY - train.FrontTDBTraveller.RotY) < 0.5f)
+                            {
+                                var traveller = visibleCar.Speed > Math.Abs(train.SpeedMpS) ^ trainForwards ?
+                                    train.RearTDBTraveller : train.FrontTDBTraveller;
+                                var distanceTo = WorldLocation.GetDistance2D(visibleCar.FrontTraveller.WorldLocation, traveller.WorldLocation).Length();
+                                if (distanceTo < MaxDistFromRoadCarM && Math.Abs(visibleCar.FrontTraveller.WorldLocation.Location.Y - traveller.WorldLocation.Location.Y) < 30.0f)
+                                {
+                                    if (visibleCar.Travelled < visibleCar.Spawner.Length - 30)
+                                    {
+                                        minDistanceM = distanceTo;
+                                        NearRoadCar = visibleCar;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (NearRoadCar != null)
+                        // readcar found
+                        {
+                            SpecialPointFound = true;
+                            RoadCarFound = true;
+                            NearRoadCar.CarriesCamera = true;
+                            var traveller = new Traveller(NearRoadCar.FrontTraveller);
+                            traveller.Move(-2.5f - 0.15f * NearRoadCar.Length);
+                            TrackCameraLocation = newLocation = new WorldLocation(traveller.WorldLocation);
+                            LastCheckCar = trainForwards ? train.Cars.First() : train.Cars.Last();
+                        }
+                    }
+
                     if (!SpecialPointFound )
                     {
                         // try to find near level crossing then
@@ -2080,15 +2144,23 @@ namespace Orts.Viewer3D
                         newLocation.Location.Z += -directionForward.X / SidewaysScale;
                     }
                 }
+
                 if (newLocation != WorldLocation.None && !trainClose)
                 {
                     newLocation.Normalize();
-
-                    var newLocationElevation = Viewer.Tiles.GetElevation(newLocation);
                     cameraLocation = newLocation;
-                    cameraLocation.Location.Y = newLocationElevation;
-                    TrackCameraLocation = new WorldLocation(cameraLocation);
-                    cameraLocation.Location.Y = Math.Max(tdb.Y, newLocationElevation) + CameraAltitude + CameraAltitudeOffset + (platformFound ? 0.35f : 0.0f);
+                    if (!RoadCarFound)
+                    {
+                        var newLocationElevation = Viewer.Tiles.GetElevation(newLocation);
+                        cameraLocation.Location.Y = newLocationElevation;
+                        TrackCameraLocation = new WorldLocation(cameraLocation);
+                        cameraLocation.Location.Y = Math.Max(tdb.Y, newLocationElevation) + CameraAltitude + CameraAltitudeOffset + (platformFound ? 0.35f : 0.0f);
+                    }
+                    else
+                    {
+                        TrackCameraLocation = new WorldLocation(cameraLocation);
+                        cameraLocation.Location.Y += 1.8f;
+                    }
                     DistanceRunM = 0f;
                 }
             }
@@ -2130,6 +2202,21 @@ namespace Orts.Viewer3D
             base.OnActivate(sameCamera);
             FirstUpdateLoop = Math.Abs(AttachedCar.Train.SpeedMpS) <= 0.2f || sameCamera;
             if (sameCamera) SpecialPointFound = false;
+        }
+
+        protected override void ZoomIn(float speed)
+        {
+            if (!RoadCarFound)
+            {
+                var movement = new Vector3(0, 0, 0);
+                movement.Z += speed;
+                ZRadians += movement.Z;
+                MoveCamera(movement);
+            }
+            else
+            {
+                NearRoadCar.ChangeSpeed(speed);
+            }
         }
     }
 
