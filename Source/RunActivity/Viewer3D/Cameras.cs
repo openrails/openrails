@@ -1918,8 +1918,9 @@ namespace Orts.Viewer3D
                         trainClose = true;
                         break;
                     }
-                    LastCheckCar = null;
                 }
+                if (!trainClose)
+                    LastCheckCar = null;
             }
             var trySpecial = false;
             DistanceRunM += elapsedTime.ClockSeconds * train.SpeedMpS;
@@ -2006,6 +2007,7 @@ namespace Orts.Viewer3D
                                         }
                                         platformFound = true;
                                         SpecialPointFound = true;
+                                        trainClose = false;
                                         LastCheckCar = FirstUpdateLoop ^ trainForwards ? train.Cars.First() : train.Cars.Last();
                                         shortTrav.Move(distanceToViewingPoint1);
                                         newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Cos(shortTrav.RotY) *
@@ -2038,6 +2040,7 @@ namespace Orts.Viewer3D
                         if (newLevelCrossingItem != LevelCrossingItem.None)
                         {
                             SpecialPointFound = true;
+                            trainClose = false;
                             LastCheckCar = trainForwards ? train.Cars.First() : train.Cars.Last();
                             newLocation = newLevelCrossingItem.Location;
                             TrackCameraLocation = new WorldLocation(newLocation);
@@ -2060,12 +2063,12 @@ namespace Orts.Viewer3D
                 }
                 if (!SpecialPointFound && !trainClose)
                 {
-                    if (FirstUpdateLoop)
-                        tdb = trainForwards ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward); // return to standard
+                    tdb = trainForwards ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward); // return to standard
                     tdb.Move(MaximumDistance * 0.75f);
                     newLocation = tdb.WorldLocation;
                     TrackCameraLocation = new WorldLocation(newLocation);
                     var directionForward = WorldLocation.GetDistance((trainForwards ? train.FirstCar : train.LastCar).WorldPosition.WorldLocation, newLocation);
+                    LastCheckCar = trainForwards ? train.FirstCar : train.LastCar;
                     if (Viewer.Random.Next(2) == 0)
                     {
                         newLocation.Location.X += -directionForward.Z / SidewaysScale; // Use swapped -X and Z to move to the left of the track.
@@ -2077,7 +2080,7 @@ namespace Orts.Viewer3D
                         newLocation.Location.Z += -directionForward.X / SidewaysScale;
                     }
                 }
-                if (newLocation != WorldLocation.None)
+                if (newLocation != WorldLocation.None && !trainClose)
                 {
                     newLocation.Normalize();
 
@@ -2086,6 +2089,7 @@ namespace Orts.Viewer3D
                     cameraLocation.Location.Y = newLocationElevation;
                     TrackCameraLocation = new WorldLocation(cameraLocation);
                     cameraLocation.Location.Y = Math.Max(tdb.Y, newLocationElevation) + CameraAltitude + CameraAltitudeOffset + (platformFound ? 0.35f : 0.0f);
+                    DistanceRunM = 0f;
                 }
             }
 
