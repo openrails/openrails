@@ -479,6 +479,10 @@ namespace Orts.Viewer3D.Processes
                             Popups.HelpWindow.DbfEvalDistanceTravelled = infDbfEval.ReadSingle();
                         }
                     }
+                    else if (settings.DebriefActivityEval && !File.Exists(dbfevalfile))
+                    {   //Resume mode: .dbfeval file doesn't exist.
+                        settings.DebriefActivityEval = false;//avoid to generate a new report.
+                    }
                 }
                 catch (Exception error)
                 {
