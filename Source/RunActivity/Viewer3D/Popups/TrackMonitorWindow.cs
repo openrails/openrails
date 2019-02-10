@@ -564,7 +564,7 @@ namespace Orts.Viewer3D.Popups
             spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + trainPosition[0], offset.Y + position, trainPosition[3], trainPosition[4]), sprite, Color.White);
         }
 
-        // draw own train marker at required position
+        // draw arrow at required position
         void drawArrow(SpriteBatch spriteBatch, Point offset, Rectangle sprite, int position)
         {
             spriteBatch.Draw(TrackMonitorImages, new Rectangle(offset.X + arrowPosition[0], offset.Y + position, arrowPosition[3], arrowPosition[4]), sprite, Color.White);
@@ -646,10 +646,6 @@ namespace Orts.Viewer3D.Popups
                         drawStation(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem);
                         break;
 
-                    case Train.TrainObjectItem.TRAINOBJECTTYPE.REVERSAL:
-                        drawReversal(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
-                        break;
-
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.WAITING_POINT:
                         drawWaitingPoint(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
@@ -658,11 +654,21 @@ namespace Orts.Viewer3D.Popups
                         lastLabelPosition = drawMilePost(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
+                    default:     // capture unkown item
+                        break;
+                }
+            }
+            //drawReversal and drawSwitch icons on top.
+            foreach (var thisItem in itemList)
+            {
+                switch (thisItem.ItemType)
+                {
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.FACING_SWITCH:
                         drawSwitch(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
-                    default:     // capture unkown item
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.REVERSAL:
+                        drawReversal(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
                 }
             }

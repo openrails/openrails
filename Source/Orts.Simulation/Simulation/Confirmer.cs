@@ -41,6 +41,8 @@ namespace Orts.Simulation
       , Power
       , Pantograph1
       , Pantograph2
+      , Pantograph3
+      , Pantograph4
       , CircuitBreakerClosingOrder
       , CircuitBreakerOpeningOrder
       , CircuitBreakerClosingAuthorization
@@ -171,6 +173,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Power"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Pantograph 1"), GetString("lower"), null, GetString("raise") } 
                 , new string [] { GetString("Pantograph 2"), GetString("lower"), null, GetString("raise") }
+                , new string [] { GetString("Pantograph 3"), GetString("lower"), null, GetString("raise") }
+                , new string [] { GetString("Pantograph 4"), GetString("lower"), null, GetString("raise") }
                 , new string [] { GetString("Circuit breaker"), GetString("open"), null, GetString("close") }
                 , new string [] { GetString("Circuit breaker"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("Circuit breaker closing authorization"), GetString("remove"), null, GetString("give") }

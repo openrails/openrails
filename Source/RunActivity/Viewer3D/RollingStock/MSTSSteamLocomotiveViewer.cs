@@ -234,7 +234,7 @@ namespace Orts.Viewer3D.RollingStock
             if (!SteamLocomotive.IsOverTrough())
             {
                 // Bad thing, scoop gets broken!
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop broken because activated outside through"));
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop broken because activated outside trough"));
                 return;
             }
             if (SteamLocomotive.SpeedMpS < SteamLocomotive.ScoopMinPickupSpeedMpS)

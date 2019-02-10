@@ -316,6 +316,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             case 2:
                                 soundEvent = Event.Pantograph2Down;
                                 break;
+
+                            case 3:
+                                soundEvent = Event.Pantograph3Down;
+                                break;
+
+                            case 4:
+                                soundEvent = Event.Pantograph4Down;
+                                break;
                         }
                     }
 
@@ -335,6 +343,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                             case 2:
                                 soundEvent = Event.Pantograph2Up;
+                                break;
+
+                            case 3:
+                                soundEvent = Event.Pantograph3Up;
+                                break;
+
+                            case 4:
+                                soundEvent = Event.Pantograph4Up;
                                 break;
                         }
                     }
