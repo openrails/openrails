@@ -6,11 +6,11 @@
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
       <div class="row">
         <div class="col-md-9 header">
-          <!--<img class="totally_free_software" src="shared/totally_free_software3.png" alt="Totally free software"/>-->
+          <img class="totally_free_software" src="shared/totally_free_software3.png" alt="Totally free software"/>
           <!--<img class="totally_free_software" src="shared/now_at_version_1_0b.png" alt="Now at Version 1.0"/>-->
           <!--<img class="totally_free_software" src="shared/now_at_version_1_1.png" alt="Now at Version 1.1"/>-->
           <!--<img class="totally_free_software" src="shared/now_at_version_1_2.png" alt="Now at Version 1.2"/>-->
-          <img class="totally_free_software" src="shared/now_at_version_1_3.png" alt="Now at Version 1.3"/>
+          <!-- <img class="totally_free_software" src="shared/now_at_version_1_3.png" alt="Now at Version 1.3"/> -->
           <a href="/">
             <img class="logo" src='shared/logos/or_logo.png' alt='logo for Open Rails'/>
             <div class="logo_text">Open Rails</div>
@@ -72,14 +72,16 @@
             <h4>News</h4>
           </div>
           <p>
+            <strong>Mar 2018</strong>
+            Geoff Rowlands found a way to model 3D controls so they can be grabbed by the handle <a href="https://www.youtube.com/watch?v=UO9XrBz3iD0&feature=youtu.be">as in this video</a>.
+          </p>
+          <p>
             <strong>Nov 2017</strong>
             Open Rails trialled <a href="http://www.monogame.net/">with Monogame instead of XNA</a> uses less RAM and give higher frame rates.
           </p>
           <p>
-            <strong>Jul 2017</strong>
-            The Elvas Tower forum plays a major role in developing Open Rails but has been closed to non-members following a dispute.
-            All of the <a href="http://www.elvastower.com/forums/">Open Rails sub-forums</a>
-            are now open again and becoming a member is easier too.
+            <strong>Nov 2017</strong>
+            Open Rails trialled <a href="http://www.monogame.net/">with Monogame instead of XNA</a> uses less RAM and give higher frame rates.
           </p>
           <p>
             <strong>Feb 2017</strong>
@@ -92,12 +94,6 @@
             <h4>Videos</h4>
           </div>
           <div class="headed_content">
-            <h5>Demo Model 1</h5>
-            <p>
-            <a href="https://www.youtube.com/watch?v=aZ5aVEvbOOE&feature=youtu.be" target="_blank">This video</a> records a player driving the
-            first <a href="/download/content">Open Rails demonstration route</a>
-            and providing a voice-over commentary.
-            </p>
             <h5>Video Review <a href="http://www.attherailyard.com" target="_blank">At The Railyard</a></h5>
             <p>
               In his Series 5, Nicholas Ozorak publishes
@@ -174,7 +170,7 @@ include "download/program/preamble.php";
                 <h1>New to Open Rails?</h1>
                 <h1>This <strong><a href="http://www.zigzag.coalstonewcastle.com.au/route/downloads/" title="Tutorials in this kit will help you to learn the rudimentary controls in Open Rails, how to drive a steam locomotive, operate the air brakes to stop the train, to turn the locomotive on a turntable, to fuel locomotive with water and coal, and also how to shunt cars and wagons">Starter Kit</a></strong> is for you</h1>
                 <p>Quickest way to get started with Open Rails</p>
-                <p>Download installs both Open Rails v1.3 and the Zig Zag Railway route with tutorial activities</p>
+                <p>Download installs both Open Rails v1.3.1 and the Zig Zag Railway route with tutorial activities</p>
                 <a href="http://www.zigzag.coalstonewcastle.com.au/route/downloads/" title="Tutorials in this kit will help you to learn the rudimentary controls in Open Rails, how to drive a steam locomotive, operate the air brakes to stop the train, to turn the locomotive on a turntable, to fuel locomotive with water and coal, and also how to shunt cars and wagons"><img src="landing_page_ctn.png"></a>
               </div>
             </div>
