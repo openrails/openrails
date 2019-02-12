@@ -538,6 +538,20 @@ structure::
 Other parameters will be added to this structure later, such as power
 limitations or speed restrictions.
 
+
+3rd and 4th Pantograph
+----------------------
+
+Open Rails supports up to 4 pantographs per locomotive. If three or four 
+pantographs are present, the above ORTSPantographs() block is mandatory, 
+and must contain a number of Pantograph() blocks equal to the number of 
+pantographs in the locomotive.
+The animation names of the 3rd and 4th pantograph follow the same rules valid 
+for Pantograph 2 (replacing 2 with 3 and 4).
+The third panto is moved with Ctrl-P, while the fourth panto is moved with Ctrl-Shift-P.
+The cabview controls must be named ORTS_PANTOGRAPH3 and ORTS_PANTOGRAPH4.
+
+
 Circuit breaker
 ---------------
 
