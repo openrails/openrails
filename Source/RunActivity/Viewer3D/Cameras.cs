@@ -2201,7 +2201,13 @@ namespace Orts.Viewer3D
             DistanceRunM = 0;
             base.OnActivate(sameCamera);
             FirstUpdateLoop = Math.Abs(AttachedCar.Train.SpeedMpS) <= 0.2f || sameCamera;
-            if (sameCamera) SpecialPointFound = false;
+            if (sameCamera)
+            {
+                SpecialPointFound = false;
+                TrackCameraLocation = WorldLocation.None;
+                RoadCarFound = false;
+                NearRoadCar = null;
+            }
         }
 
         protected override void ZoomIn(float speed)
