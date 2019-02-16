@@ -1907,7 +1907,7 @@ namespace Orts.Viewer3D
                 if (NearRoadCar != null && NearRoadCar.Travelled < NearRoadCar.Spawner.Length - 10f)
                 {
                     var traveller = new Traveller(NearRoadCar.FrontTraveller);
-                    traveller.Move(-2.5f - 0.15f * NearRoadCar.Length);
+                    traveller.Move(-2.5f - 0.15f * NearRoadCar.Length - NearRoadCar.Speed * 0.5f);
                     cameraLocation = TrackCameraLocation = new WorldLocation(traveller.WorldLocation);
                     cameraLocation.Location.Y += 1.8f;
                 }
@@ -1928,8 +1928,9 @@ namespace Orts.Viewer3D
                         trainClose = true;
                         break;
                     }
-                    else if (WorldLocation.GetDistance2D(car.WorldPosition.WorldLocation, cameraLocation).Length() < MaximumDistance)
-                        {
+                    else if (WorldLocation.GetDistance2D(car.WorldPosition.WorldLocation, cameraLocation).Length() < 
+                        (SpecialPointFound && NearRoadCar != null && train.SpeedMpS > NearRoadCar.Speed + 10 ? MaximumSpecialPointDistance * 0.8f : MaximumDistance))
+                    {
                         LastCheckCar = car;
                         trainClose = true;
                         break;

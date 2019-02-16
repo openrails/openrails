@@ -273,7 +273,7 @@ namespace Orts.Viewer3D
                 if (!cars[spawnerIndex - 1].CarriesCamera)
                     stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length / 2);
                 else
-                    stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length * 0.65f - 4);
+                    stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length * 0.65f - 4 - cars[spawnerIndex - 1].Speed * 0.5f);
                 }
 
             // Calculate whether we're too close to the minimum stopping distance (and need to slow down) or going too slowly (and need to speed up).
