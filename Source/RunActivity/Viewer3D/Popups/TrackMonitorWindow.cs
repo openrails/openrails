@@ -654,6 +654,14 @@ namespace Orts.Viewer3D.Popups
                         lastLabelPosition = drawMilePost(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
                         break;
 
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.FACING_SWITCH:
+                        drawSwitch(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        break;
+
+                    case Train.TrainObjectItem.TRAINOBJECTTYPE.REVERSAL:
+                        drawReversal(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        break;
+
                     default:     // capture unkown item
                         break;
                 }
@@ -669,6 +677,9 @@ namespace Orts.Viewer3D.Popups
 
                     case Train.TrainObjectItem.TRAINOBJECTTYPE.REVERSAL:
                         drawReversal(spriteBatch, offset, startObjectArea, endObjectArea, zeroPoint, maxDistance, distanceFactor, firstLabelPosition, forward, lastLabelPosition, thisItem, ref firstLabelShown);
+                        break;
+
+                    default:
                         break;
                 }
             }
