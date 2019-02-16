@@ -1445,6 +1445,7 @@ namespace Orts.Viewer3D
         protected override void SetCameraCar(TrainCar car)
         {
             base.SetCameraCar(car);
+            ActViewPoint = 0;
             viewPoint = attachedCar.PassengerViewpoints[ActViewPoint];
             attachedLocation = viewPoint.Location;
             // Apply previous angle of camera for this type of car.
