@@ -357,9 +357,6 @@ namespace Orts.Viewer3D
             get
             {
                 var elevationAtTarget = Viewer.Tiles.GetElevation(targetLocation);
-//                if (targetLocation.Location.Y + TerrainAltitudeMargin < elevationAtTarget)
-//                    Trace.TraceInformation("Y {0}, TerrainAltitudeMargin {1}, elevationAtTarget {2}", targetLocation.Location.Y,
-//                        TerrainAltitudeMargin, elevationAtTarget);
                 return targetLocation.Location.Y + TerrainAltitudeMargin < elevationAtTarget;
             }
         }
@@ -1814,8 +1811,6 @@ namespace Orts.Viewer3D
                     return true;
                 if (TrackCameraLocation == WorldLocation.None) return false;
                 var elevationAtCameraTarget = Viewer.Tiles.GetElevation(TrackCameraLocation);
-//                if (TrackCameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget)
-//                    Trace.TraceInformation("CameraY {0}, elevationAtCamera {1}", TrackCameraLocation.Location.Y, elevationAtCameraTarget);
                 return TrackCameraLocation.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget;
             }
         }
@@ -1904,6 +1899,7 @@ namespace Orts.Viewer3D
             targetLocation = attachedCar.WorldPosition.WorldLocation;
             if (RoadCarFound)
             {
+                // camera location is always behind the near road car, at a distance which increases at increased speed
                 if (NearRoadCar != null && NearRoadCar.Travelled < NearRoadCar.Spawner.Length - 10f)
                 {
                     var traveller = new Traveller(NearRoadCar.FrontTraveller);
@@ -1920,6 +1916,7 @@ namespace Orts.Viewer3D
             // Otherwise, let's check out every car and remember which is the first one close enough for next time.
             if (!trainClose)
             {
+                // if camera is not close to LastCheckCar, verify if it is still close to another car of the train
                 foreach (var car in train.Cars)
                 {
                     if (LastCheckCar != null && car == LastCheckCar && 
@@ -1947,6 +1944,7 @@ namespace Orts.Viewer3D
             }
             var trySpecial = false;
             DistanceRunM += elapsedTime.ClockSeconds * train.SpeedMpS;
+            // when camera not at a special point, try every CheckIntervalM meters if there is a new special point nearby
             if (Math.Abs(DistanceRunM) >= CheckIntervalM)
             {
                 DistanceRunM = 0;
@@ -1960,11 +1958,12 @@ namespace Orts.Viewer3D
                 NearRoadCar = null;
                 RoadCarFound = false;
                 Traveller tdb;
+                // At first update loop camera location may be also behind train front (e.g. platform at start of activity)
                 if (FirstUpdateLoop && SpecialPoints) 
                     tdb = trainForwards ? new Traveller(train.RearTDBTraveller) : new Traveller(train.FrontTDBTraveller, Traveller.TravellerDirection.Backward);
                  else
                     tdb = trainForwards ? new Traveller(train.FrontTDBTraveller) : new Traveller(train.RearTDBTraveller, Traveller.TravellerDirection.Backward);
-                WorldLocation newLocation = WorldLocation.None;
+                var newLocation = WorldLocation.None;
                 if (SpecialPoints)
                 {
                     int tcSectionIndex;
@@ -2003,6 +2002,7 @@ namespace Orts.Viewer3D
                                 incrDistance = trainForwards ? -train.PresentPosition[1].TCOffset : -TCSection.Length + train.PresentPosition[0].TCOffset;
                             else
                                 incrDistance = trainForwards ? -train.PresentPosition[0].TCOffset : -TCSection.Length + train.PresentPosition[1].TCOffset;
+                            // scanning route in direction of train, searching for a platform
                             while (incrDistance < MaximumSpecialPointDistance * 0.7f)
                             {
                                 foreach (int platformIndex in TCSection.PlatformIndex)
@@ -2018,6 +2018,8 @@ namespace Orts.Viewer3D
                                                 Math.Min(distanceToViewingPoint, train.Length * 0.95f);
                                         tdb.Move(distanceToViewingPoint);
                                         newLocation = tdb.WorldLocation;
+                                        // shortTrav is used to state directions, to correctly identify in which direction (left or right) to move
+                                        //the camera from center of track to the platform at its side
                                         Traveller shortTrav;
                                         PlatformItem platformItem = Viewer.Simulator.TDB.TrackDB.TrItemTable[thisPlatform.PlatformFrontUiD] as PlatformItem;
                                         if (platformItem == null) continue;
@@ -2037,6 +2039,7 @@ namespace Orts.Viewer3D
                                         trainClose = false;
                                         LastCheckCar = FirstUpdateLoop ^ trainForwards ? train.Cars.First() : train.Cars.Last();
                                         shortTrav.Move(distanceToViewingPoint1);
+                                        // moving newLocation to platform at side of track
                                         newLocation.Location.X += (PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Cos(shortTrav.RotY) *
                                             (thisPlatform.PlatformSide[1] ? 1 : -1);
                                         newLocation.Location.Z += -(PlatformOffsetM + Viewer.Simulator.SuperElevationGauge / 2) * (float)Math.Sin(shortTrav.RotY) *
@@ -2088,6 +2091,7 @@ namespace Orts.Viewer3D
                         {
                             SpecialPointFound = true;
                             RoadCarFound = true;
+                            // CarriesCamera needed to increase distance of following car
                             NearRoadCar.CarriesCamera = true;
                             var traveller = new Traveller(NearRoadCar.FrontTraveller);
                             traveller.Move(-2.5f - 0.15f * NearRoadCar.Length);
@@ -2110,6 +2114,7 @@ namespace Orts.Viewer3D
                             newLocation = newLevelCrossingItem.Location;
                             TrackCameraLocation = new WorldLocation(newLocation);
                             Traveller roadTraveller;
+                            // decide randomly at which side of the level crossing the camera will be located
                             if (Viewer.Random.Next(2) == 0)
                             {
                                 roadTraveller = new Traveller(Viewer.Simulator.TSectionDat, Viewer.Simulator.RDB.RoadTrackDB.TrackNodes, Viewer.Simulator.RDB.RoadTrackDB.TrackNodes[newLevelCrossingItem.TrackIndex],
