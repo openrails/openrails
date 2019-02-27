@@ -380,13 +380,17 @@ namespace Orts.Viewer3D
             {
                 lodItem.TexName = "overheadwire.ace";
             }
+            else if (File.Exists(viewer.Simulator.BasePath + "\\global\\textures\\overheadwire.ace"))
+            {
+                lodItem.TexName = "..\\..\\..\\global\\textures\\overheadwire.ace";
+            }
             else
             {
                 Trace.TraceInformation("Ignored missing overheadwire.ace, using default. You can copy the overheadwire.ace from OR\'s AddOns folder to {0}\\Textures", viewer.Simulator.RoutePath);
                 lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
             }
             lodItem.ShaderName = "TexDiff";
-            lodItem.LightModelName = "OptSpecular0";
+            lodItem.LightModelName = "DarkShade";
             lodItem.AlphaTestMode = 0;
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
