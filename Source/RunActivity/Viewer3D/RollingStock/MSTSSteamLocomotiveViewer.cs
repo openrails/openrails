@@ -212,8 +212,14 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         protected void ToggleTroughRefill()
         {
-            if (SteamLocomotive.RefillingFromTrough) StopRefillingFromTrough(Viewer.Log);
-            else AttemptToRefillFromTrough();
+            if (SteamLocomotive.RefillingFromTrough)
+            {
+               StopRefillingFromTrough(Viewer.Log);
+            }
+            else
+            {
+               AttemptToRefillFromTrough();
+            }
         }
 
         /// <summary>
@@ -237,10 +243,15 @@ namespace Orts.Viewer3D.RollingStock
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop broken because activated outside trough"));
                 return;
             }
-            if (SteamLocomotive.SpeedMpS < SteamLocomotive.ScoopMinPickupSpeedMpS)
+            if (SteamLocomotive.Direction == Direction.Reverse)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco must be moving forward."));
+                return;
+            }
+            if (SteamLocomotive.SpeedMpS < SteamLocomotive.WaterScoopMinSpeedMpS)
             {
                 Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must exceed {0}.",
-                    FormatStrings.FormatSpeedLimit(SteamLocomotive.ScoopMinPickupSpeedMpS, Viewer.MilepostUnitsMetric)));
+                    FormatStrings.FormatSpeedLimit(SteamLocomotive.WaterScoopMinSpeedMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
             if (SteamLocomotive.SpeedMpS > SteamLocomotive.ScoopMaxPickupSpeedMpS)
@@ -249,6 +260,16 @@ namespace Orts.Viewer3D.RollingStock
                     FormatStrings.FormatSpeedLimit(SteamLocomotive.ScoopMaxPickupSpeedMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
+
+            //            if (SteamLocomotive.SpeedMpS > SteamLocomotive.ScoopMaxPickupSpeedMpS)
+            //            {
+            //                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must not exceed {0}.",
+            //                    FormatStrings.FormatSpeedLimit(SteamLocomotive.ScoopMaxPickupSpeedMpS, Viewer.MilepostUnitsMetric)));
+            //                return;
+            //            }
+
+            //TODO - causes damage to locomotive if over full????
+
             var fraction = SteamLocomotive.GetFilledFraction((uint)MSTSWagon.PickupType.FuelWater);
             if (fraction > 0.99)
             {
@@ -261,8 +282,9 @@ namespace Orts.Viewer3D.RollingStock
                 MSTSWagon.RefillProcess.OkToRefill = true;
                 MSTSWagon.RefillProcess.ActivePickupObjectUID = -1;
                 SteamLocomotive.RefillingFromTrough = true;
+                SteamLocomotive.IsWaterScoopDown = true;
                 SteamLocomotive.SignalEvent(Event.WaterScoopDown);
-                StartRefilling((uint)MSTSWagon.PickupType.FuelWater, fraction);
+//                StartRefilling((uint)MSTSWagon.PickupType.FuelWater, fraction);
             }
 
         }
@@ -275,11 +297,12 @@ namespace Orts.Viewer3D.RollingStock
             MSTSWagon.RefillProcess.OkToRefill = false;
             MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
             SteamLocomotive.RefillingFromTrough = false;
-            var controller = new MSTSNotchController();
-            controller = SteamLocomotive.GetRefillController((uint)MSTSWagon.PickupType.FuelWater);
+//            var controller = new MSTSNotchController();
+//            controller = SteamLocomotive.GetRefillController((uint)MSTSWagon.PickupType.FuelWater);
 
-            new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
-            controller.StopIncrease();
+//            new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
+//            controller.StopIncrease();
+            SteamLocomotive.IsWaterScoopDown = false;
             SteamLocomotive.SignalEvent(Event.WaterScoopUp);
         }
 
