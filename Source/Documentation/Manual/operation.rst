@@ -1721,8 +1721,8 @@ Using the TSRE5 activity editing capabilities
 ---------------------------------------------
 
 The TSRE5 Route Editor includes activity editing capabilities. These capabilities 
-include addition of all OR-specific additions to activity files described in 
-following paragraphs.
+include addition of some OR-specific additions to activity files described in 
+following paragraphs. A note is present where this does not apply.
 
 .. _operation-extension-activity-file:
 
@@ -1823,15 +1823,44 @@ the route with TrackViewer allows identification of the true level crossings.
 If a horn blow is also desired for a *simple* road crossing, the feature *AI 
 Train Horn Blow* described above must be used.
 
+.. _operation-event-triggered-by-ai-train:
+
+Location Event triggered by AI Train
+------------------------------------
+
+Under MSTS location events may only be triggered when the player train reaches 
+them. OR provides also location events that are triggered by AI trains.
+In this case a line like following one must be added within the
+EventCategoryLocation block::
+  
+  				ORTSTriggeringTrain ( "TestEventAI" 43230 )
+
+where "TestEventAI" is the service name of the AI train, and 43230 is the 
+starting time of day (in seconds) of the AI train. The second parameter may be 
+omitted in case there is only one AI train with the service name present in the 
+above line.
+
+This feature in connection with the :ref:`AI train Waiting Point 
+modification through event <operation-waiting-point-modification>` allows 
+synchronization between AI trains or also between an AI train and the 
+player train.
+
+This feature is not yet managed by TSRE5.
+
+
 Location Event and Time Event Sound File
 ----------------------------------------
 
 An activity file can be modified so that a sound file is played when the train 
 reaches a location specified in an EventTypeLocation event in the .act file, 
 or when a certain time interval specified in an EventTypeTime event has 
-elapsed since the start of the activity. Add the line::
+elapsed since the start of the activity. Within the Outcomes() subblock of 
+the event add following subblock::
 
-    ORTSActSoundFile ( Filename SoundType )
+    ORTSActivitySound (
+        ORTSActSoundFile ( Filename SoundType )
+        ORTSSoundLocation ( TileX TileZ X Y Z )
+        )
 
 to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
     - *Filename* = name, in quotations, of a .wav file located in the SOUND 
@@ -1848,7 +1877,12 @@ to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
             one that the locomotive has reached when the event is triggered. The 
             sound is also heard in internal views in an attenuated way, and 
             becomes attenuated by moving away from the position.
- 
+        - ``Location`` -- sound is played externally from a fixed position 
+            defined in the ORTSSoundLocation parameter. 
+            
+
+Note: Parameter ORTSSoundLocation is needed only when *Soundtype* is ``Location``.
+
 For example::
 
     EventCategoryLocation (
@@ -1857,18 +1891,22 @@ For example::
         Activation_Level ( 1 )
         Outcomes (
             DisplayMessage ( "Won't be shown because ORTSContinue = 0")
+    		ORTSActivitySound (
+				ORTSActSoundFile ( "milanogrecopirelli.wav" "Ground" )
+			)
         )
         Name ( Location6 )
         Location ( -146 14082 -1016.56 762.16 10 )
         TriggerOnStop ( 0 )
         ORTSContinue ( 0 )
-        ORTSActSoundFile ( "x_Next_stop_MiClei.wav" "Pass" )
     )
 
 Including the ``ORTSContinue`` line (explained above) inhibits the normal halting 
 of the activity by the event. Also, if the value of 0 is inserted in the line as in the example 
 above, the display of the event message is completely suppressed. Only one 
 sound file per event is allowed.
+
+This feature is not yet managed by TSRE5 in this format.
 
 .. _operation-activity-weather-change:
 
@@ -1877,8 +1915,8 @@ Weather Change Activity Event
 
 An activity can be modified so that the weather changes when running the 
 activity in ORTS. MSTS operation is not affected by these WeatherChange events. 
-The following block can be added within an Event Block (either a Location or a 
-Time event) of the .act file::
+The following block can be added within the Outcomes () block of an Event Block 
+(either a Location or a Time event) of the .act file::
 
     ORTSWeatherChange (
         ORTSOvercast ( 
@@ -1947,8 +1985,12 @@ Opening an .act file that contains WeatherChange events with the MSTS Activity
 Editor and packaging it without editing it generates an .apk file that contains 
 the WeatherChange events.
 
-AI train Waiting Point modification through player train event
---------------------------------------------------------------
+This feature is not managed by TSRE5 in this format.
+
+.. _operation-waiting-point-modification:
+
+AI train Waiting Point modification through event
+-------------------------------------------------
 
 Purpose of the feature
 ''''''''''''''''''''''
@@ -1973,7 +2015,9 @@ expired, and it will couple to the player train.
 
 The feature may be used also for other features, like having an AI train 
 coupling to the player train as helper, or like guaranteeing a passenger train 
-connection in a station.
+connection in a station, or like having an AI train coupling to another AI train 
+(as the event may also be triggered by an AI train, see :ref:`Location Event 
+triggered by AI Train <operation-event-triggered-by-ai-train>`.
 
 Syntax of the feature
 '''''''''''''''''''''
@@ -1991,7 +2035,7 @@ Here is an example of an extension activity file using such feature::
   				ORTSContinue ( 3 )
   				Outcomes (
   					ORTSRestartWaitingTrain (
-  						ORTSWaitingTrainToRestart ( "TesteventWP_ai_longerpath" )
+  						ORTSWaitingTrainToRestart ( "TesteventWP_ai_longerpath" 23240 )
   							ORTSDelayToRestart ( 60 )
   							ORTSMatchingWPDelay ( 31500 )
   							)
@@ -2004,8 +2048,9 @@ Here is an example of an extension activity file using such feature::
 
 Description of parameters:
 
-1) ORTSWaitingTrainToRestart has as parameter the service name of the AI train whose waiting point 
-   has to be modified
+1) ORTSWaitingTrainToRestart has as first parameter the service name of the AI train whose 
+   waiting point has to be modified, and as second (optional) parameter the starting 
+   time of the AI train.
 2) ORTSDelayToRestart is the new delay for the waiting point. It is expressed in seconds.
 3) ORTSMatchingWPDelay indicates the original value of the AI train waiting point; this 
    is used to ensure 
@@ -2029,4 +2074,29 @@ AI train has entered the station and unloaded passsengers, the AI train will sta
 there until the player train restarts, hits the location event and the modified WP time has 
 expired.
 
+This feature is not yet managed by TSRE5.
+
+Old formats
+-----------
+
+Following alternate formats are accepted by OR for Event Sound Files and 
+Weather Change. These formats are not recommended for new activities.
+
+Event Sound Files: The sound file may be defined by a single line::
+
+        ORTSActSoundFile ( Filename SoundType )
+
+to be inserted directly in the EventCategoryLocation () or 
+EventCategoryTime () block, instead of being inserted within the 
+Outcomes() subblock. In this alternate format the ``Location`` SoundType is 
+not supported.
+
+TSRE5 manages this format.
+
+Weather Change events: the ORTSWeatherChange () block may be inserted 
+directly in the EventCategoryLocation () or 
+EventCategoryTime () block, instead of being inserted within the 
+Outcomes() subblock.
+
+TSRE5 manages this format.
 

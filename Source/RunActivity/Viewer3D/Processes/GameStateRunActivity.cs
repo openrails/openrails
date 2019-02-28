@@ -460,7 +460,7 @@ namespace Orts.Viewer3D.Processes
                             int nDepartBeforeBoarding = infDbfEval.ReadInt32();
                             for (int i = 0; i < nDepartBeforeBoarding; i++)
                             {
-                                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i] = infDbfEval.ReadString();
+                                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Add(infDbfEval.ReadString());
                             }
                             Popups.TrackMonitor.DbfEvalOverSpeed = infDbfEval.ReadInt32();
                             Popups.TrackMonitor.DbfEvalOverSpeedTimeS = infDbfEval.ReadDouble();
@@ -478,6 +478,10 @@ namespace Orts.Viewer3D.Processes
                             Viewer.DbfEvalIniAutoPilotTimeS = infDbfEval.ReadDouble();
                             Popups.HelpWindow.DbfEvalDistanceTravelled = infDbfEval.ReadSingle();
                         }
+                    }
+                    else if (settings.DebriefActivityEval && !File.Exists(dbfevalfile))
+                    {   //Resume mode: .dbfeval file doesn't exist.
+                        settings.DebriefActivityEval = false;//avoid to generate a new report.
                     }
                 }
                 catch (Exception error)
