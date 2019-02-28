@@ -1603,7 +1603,7 @@ namespace Orts.Simulation.Physics
         public virtual void Update(float elapsedClockSeconds, bool auxiliaryUpdate = true)
         {
             if (!auxiliaryUpdate)
-               FormationReversed = false;
+                FormationReversed = false;
             if (IsActualPlayerTrain && Simulator.ActiveMovingTable != null)
                 Simulator.ActiveMovingTable.CheckTrainOnMovingTable(this);
 
