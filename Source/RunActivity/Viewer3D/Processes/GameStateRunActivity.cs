@@ -314,7 +314,7 @@ namespace Orts.Viewer3D.Processes
 
             Viewer = new Viewer(Simulator, Game);
 
-            Game.ReplaceState(new GameStateViewer3D(Viewer));
+            Game.ReplaceState(new GameStateViewer3D(Viewer, true));
         }
 
         /// <summary>
@@ -509,7 +509,7 @@ namespace Orts.Viewer3D.Processes
                 // Reload the command log
                 Simulator.Log.LoadLog(Path.ChangeExtension(saveFile, "replay"));
 
-                Game.ReplaceState(new GameStateViewer3D(Viewer));
+                Game.ReplaceState(new GameStateViewer3D(Viewer, true));
             }
         }
 
@@ -547,7 +547,7 @@ namespace Orts.Viewer3D.Processes
             Simulator.Log.CommandList.Clear();
             CommandLog.ReportReplayCommands(Simulator.ReplayCommandList);
 
-            Game.ReplaceState(new GameStateViewer3D(Viewer));
+            Game.ReplaceState(new GameStateViewer3D(Viewer, true));
         }
 
         /// <summary>
@@ -626,7 +626,7 @@ namespace Orts.Viewer3D.Processes
             Simulator.ReplayCommandList = replayCommandList;
             CommandLog.ReportReplayCommands(Simulator.ReplayCommandList);
 
-            Game.ReplaceState(new GameStateViewer3D(Viewer));
+            Game.ReplaceState(new GameStateViewer3D(Viewer, true));
         }
 
         static string GetValidSaveVersionOrBuild(UserSettings settings, string saveFile, BinaryReader inf)
@@ -661,7 +661,7 @@ namespace Orts.Viewer3D.Processes
                 Simulator.Start(Game.LoaderProcess.CancellationToken);
                 Viewer = new Viewer(Simulator, Game);
                 Game.ReplaceState(exitGameState);
-                Game.PushState(new GameStateViewer3D(Viewer));
+                Game.PushState(new GameStateViewer3D(Viewer, true));
                 exitGameState.LoadTime = (DateTime.Now - startTime).TotalSeconds - Viewer.RealTime;
                 exitGameState.Passed = true;
             }

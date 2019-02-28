@@ -270,7 +270,7 @@ namespace Orts.Simulation.Physics
 
         public TRAINTYPE TrainType = TRAINTYPE.PLAYER;
 
-        public float distanceToSignal = 0.1f;
+        public float? DistanceToSignal = null;
         public List<ObjectItemInfo> SignalObjectItems;
         public int IndexNextSignal = -1;                 // Index in SignalObjectItems for next signal
         public int IndexNextSpeedlimit = -1;             // Index in SignalObjectItems for next speedpost
@@ -2901,7 +2901,7 @@ namespace Orts.Simulation.Physics
             if (IndexNextSignal >= 0)
             {
                 NextSignalObject[0] = SignalObjectItems[IndexNextSignal].ObjectDetails;
-                distanceToSignal = SignalObjectItems[IndexNextSignal].distance_to_train;
+                DistanceToSignal = SignalObjectItems[IndexNextSignal].distance_to_train;
             }
             else
             {
@@ -2913,7 +2913,7 @@ namespace Orts.Simulation.Physics
                 {
                     NextSignalObject[0] = firstSignalObject.ObjectDetails;
                     firstSignalObject.distance_to_train = firstSignalObject.distance_found;
-                    distanceToSignal = firstSignalObject.distance_found;
+                    DistanceToSignal = firstSignalObject.distance_found;
                 }
             }
 
@@ -3149,7 +3149,7 @@ namespace Orts.Simulation.Physics
             if (SignalObjectItems.Count <= 0 || (SignalObjectItems.Count == 1 && SignalObjectItems[0].ObjectType == ObjectItemInfo.ObjectItemType.Speedlimit))
             {
                 NextSignalObject[0] = null;
-                distanceToSignal = 0;
+                DistanceToSignal = null;
                 listChanged = true;
             }
 
@@ -3390,11 +3390,11 @@ namespace Orts.Simulation.Physics
             //
             if (IndexNextSignal >= 0)
             {
-                distanceToSignal = SignalObjectItems[IndexNextSignal].distance_to_train;
+                DistanceToSignal = SignalObjectItems[IndexNextSignal].distance_to_train;
             }
             else if (NextSignalObject[0] != null)
             {
-                distanceToSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
+                DistanceToSignal = NextSignalObject[0].DistanceTo(FrontTDBTraveller);
             }
             else if (ControlMode != TRAIN_CONTROL.AUTO_NODE)
             {
@@ -5676,7 +5676,7 @@ namespace Orts.Simulation.Physics
                             int reqSectionIndex = NextSignalObject[direction].TCReference;
                             float endOffset = NextSignalObject[direction].TCOffset;
 
-                            distanceToSignal = GetDistanceToTrain(reqSectionIndex, endOffset);
+                            DistanceToSignal = GetDistanceToTrain(reqSectionIndex, endOffset);
                         }
                         else
                         {
@@ -5694,7 +5694,7 @@ namespace Orts.Simulation.Physics
                             int reqSectionIndex = NextSignalObject[direction].TCReference;
                             float endOffset = NextSignalObject[direction].TCOffset;
 
-                            distanceToSignal = GetDistanceToTrain(reqSectionIndex, endOffset);
+                            DistanceToSignal = GetDistanceToTrain(reqSectionIndex, endOffset);
                         }
                         else
                         {
@@ -6650,7 +6650,7 @@ namespace Orts.Simulation.Physics
             {
                 KeyValuePair<Train, float> foundTrain = trainAhead.ElementAt(0);
                 // check if train is closer as signal
-                if (foundTrain.Value < distanceToSignal)
+                if (!DistanceToSignal.HasValue || foundTrain.Value < DistanceToSignal)
                 {
                     return (false);
                 }
@@ -12477,7 +12477,11 @@ namespace Orts.Simulation.Physics
             //  0, "Train"
             statusString[iColumn] = Number.ToString();
 
-            if (IsFreight)
+            if (Delay.HasValue && Delay.Value.TotalMinutes >= 1)
+            {
+                statusString[iColumn] = String.Concat(statusString[iColumn], " D");
+            }
+            else if (IsFreight)
             {
                 statusString[iColumn] = String.Concat(statusString[iColumn], " F");
             }
@@ -12771,7 +12775,14 @@ namespace Orts.Simulation.Physics
 
                     iColumn++;
                     //  9, "Distance"
-                    statusString[iColumn] = FormatStrings.FormatDistance(distanceToSignal, metric);
+                    if (DistanceToSignal.HasValue)
+                    {
+                        statusString[iColumn] = FormatStrings.FormatDistance(DistanceToSignal.Value, metric);
+                    }
+                    else
+                    {
+                        statusString[iColumn] = "-";
+                    }
                 }
                 else
                 {
@@ -13219,7 +13230,7 @@ namespace Orts.Simulation.Physics
                 ObjectSpeedInfo thisSpeedInfo = NextSignalObject[0].this_sig_speed(MstsSignalFunction.NORMAL);
                 float validSpeed = thisSpeedInfo == null ? -1 : (IsFreight ? thisSpeedInfo.speed_freight : thisSpeedInfo.speed_pass);
 
-                TrainObjectItem nextItem = new TrainObjectItem(signalAspect, validSpeed, distanceToSignal);
+                TrainObjectItem nextItem = new TrainObjectItem(signalAspect, validSpeed, DistanceToSignal);
                 thisInfo.ObjectInfoForward.Add(nextItem);
             }
 
@@ -14068,7 +14079,7 @@ namespace Orts.Simulation.Physics
                         if (SignalObjectItems[iObject].ObjectType == ObjectItemInfo.ObjectItemType.Signal)
                         {
                             NextSignalObject[0] = SignalObjectItems[iObject].ObjectDetails;
-                            distanceToSignal = SignalObjectItems[iObject].distance_to_train;
+                            DistanceToSignal = SignalObjectItems[iObject].distance_to_train;
                         }
                     }
 
@@ -14764,6 +14775,28 @@ namespace Orts.Simulation.Physics
         public virtual bool CheckWaitCondition(int sectionIndex)
         {
             return (false);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check Pool Access
+        /// Dummy method to allow virtualization by child classes
+        /// <\summary>
+
+        public virtual bool CheckPoolAccess(int sectionIndex)
+        {
+            return (false);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Check if deadlock must be accepted
+        /// Dummy method to allow virtualization by child classes
+        /// <\summary>
+
+        public virtual bool VerifyDeadlock(List<int> deadlockReferences)
+        {
+            return (true);
         }
 
         //================================================================================================//
@@ -19347,13 +19380,13 @@ namespace Orts.Simulation.Physics
             /// <\summary>
 
             // Constructor for Signal
-            public TrainObjectItem(TrackMonitorSignalAspect thisAspect, float thisSpeedMpS, float thisDistanceM)
+            public TrainObjectItem(TrackMonitorSignalAspect thisAspect, float thisSpeedMpS, float? thisDistanceM)
             {
                 ItemType = TRAINOBJECTTYPE.SIGNAL;
                 AuthorityType = END_AUTHORITY.NO_PATH_RESERVED;
                 SignalState = thisAspect;
                 AllowedSpeedMpS = thisSpeedMpS;
-                DistanceToTrainM = thisDistanceM;
+                DistanceToTrainM = thisDistanceM.HasValue ? thisDistanceM.Value : 0.1f;
             }
 
             // Constructor for Speedpost
