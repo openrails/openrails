@@ -414,6 +414,7 @@ namespace Orts.Simulation.Physics
         public double RunningTime;              // Total running time, used to check whether a locomotive is partly or totally unpowered due to a fault
         public int UnpoweredLoco = -1;          // car index of unpowered loco
 
+        // TODO: Replace this with an event
         public bool FormationReversed;          // flags the execution of the ReverseFormation method (executed at reversal points)
 
         public enum END_AUTHORITY
@@ -1476,7 +1477,7 @@ namespace Orts.Simulation.Physics
                 MUDirection = DirectionControl.Flip(MUDirection);
                 MUReverserPercent = -MUReverserPercent;
             }
-            if (!(this is AITrain && (this as AITrain).AI.PreUpdate)) FormationReversed = true;
+            if (!((this is AITrain && (this as AITrain).AI.PreUpdate) || this.TrainType == TRAINTYPE.STATIC)) FormationReversed = true;
         }
 
         //================================================================================================//
@@ -1602,7 +1603,7 @@ namespace Orts.Simulation.Physics
         public virtual void Update(float elapsedClockSeconds, bool auxiliaryUpdate = true)
         {
             if (!auxiliaryUpdate)
-               FormationReversed = false;
+                FormationReversed = false;
             if (IsActualPlayerTrain && Simulator.ActiveMovingTable != null)
                 Simulator.ActiveMovingTable.CheckTrainOnMovingTable(this);
 
