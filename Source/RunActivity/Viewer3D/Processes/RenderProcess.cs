@@ -101,7 +101,7 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             GraphicsDeviceManager.IsFullScreen = false;
-            GraphicsDeviceManager.PreferMultiSampling = Game.Settings.EnableMultisampling;
+            GraphicsDeviceManager.PreferMultiSampling = true;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
             var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
             if (screen.Primary)
@@ -136,6 +136,7 @@ namespace Orts.Viewer3D.Processes
             // This stops ResolveBackBuffer() clearing the back buffer.
             e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
             e.GraphicsDeviceInformation.PresentationParameters.DepthStencilFormat = DepthFormat.Depth24Stencil8;
+            if (Game.Settings.EnableMultisampling == false) e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 4;
         }
 
         internal void Start()
