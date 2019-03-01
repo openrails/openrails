@@ -1477,7 +1477,7 @@ namespace Orts.Simulation.Physics
                 MUDirection = DirectionControl.Flip(MUDirection);
                 MUReverserPercent = -MUReverserPercent;
             }
-            if (!(this is AITrain && (this as AITrain).AI.PreUpdate)) FormationReversed = true;
+            if (!((this is AITrain && (this as AITrain).AI.PreUpdate) || this.TrainType == TRAINTYPE.STATIC)) FormationReversed = true;
         }
 
         //================================================================================================//
