@@ -460,7 +460,7 @@ namespace Orts.Viewer3D.Processes
                             int nDepartBeforeBoarding = infDbfEval.ReadInt32();
                             for (int i = 0; i < nDepartBeforeBoarding; i++)
                             {
-                                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i] = infDbfEval.ReadString();
+                                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Add(infDbfEval.ReadString());
                             }
                             Popups.TrackMonitor.DbfEvalOverSpeed = infDbfEval.ReadInt32();
                             Popups.TrackMonitor.DbfEvalOverSpeedTimeS = infDbfEval.ReadDouble();
