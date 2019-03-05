@@ -1192,8 +1192,53 @@ namespace Orts.Viewer3D
             PositionDistance += speed * PositionDistance;
             PositionDistance = MathHelper.Clamp(PositionDistance, 1, 100);
         }
-    }
 
+        /// <summary>
+        /// Swaps front and rear tracking camera after reversal point, to avoid abrupt change of picture
+        /// </summary>
+
+        public void SwapCameras()
+        {
+            if (Front)
+            {
+                SwapParams(this, Viewer.BackCamera);
+                Viewer.BackCamera.Activate();
+            }
+            else
+            {
+                SwapParams(this, Viewer.FrontCamera);
+                Viewer.FrontCamera.Activate();
+            }
+        }
+
+
+        /// <summary>
+        /// Swaps parameters of Front and Back Camera
+        /// </summary>
+        /// 
+        protected void SwapParams(TrackingCamera oldCamera, TrackingCamera newCamera)
+        {
+            TrainCar swapCar = newCamera.attachedCar;
+            newCamera.attachedCar = oldCamera.attachedCar;
+            oldCamera.attachedCar = swapCar;
+            float swapFloat = newCamera.PositionDistance;
+            newCamera.PositionDistance = oldCamera.PositionDistance;
+            oldCamera.PositionDistance = swapFloat;
+            swapFloat = newCamera.PositionXRadians;
+            newCamera.PositionXRadians = oldCamera.PositionXRadians;
+            oldCamera.PositionXRadians = swapFloat;
+            swapFloat = newCamera.PositionYRadians;
+            newCamera.PositionYRadians = oldCamera.PositionYRadians + MathHelper.Pi * (Front ? 1 : -1);
+            oldCamera.PositionYRadians = swapFloat - MathHelper.Pi * (Front ? 1 : -1);
+            swapFloat = newCamera.RotationXRadians;
+            newCamera.RotationXRadians = oldCamera.RotationXRadians;
+            oldCamera.RotationXRadians = swapFloat;
+            swapFloat = newCamera.RotationYRadians;
+            newCamera.RotationYRadians = oldCamera.RotationYRadians - MathHelper.Pi * (Front ? 1 : -1);
+            oldCamera.RotationYRadians = swapFloat + MathHelper.Pi * (Front ? 1 : -1);
+        }
+    }
+    
     public abstract class NonTrackingCamera : AttachedCamera
     {
         public NonTrackingCamera(Viewer viewer)
