@@ -260,11 +260,11 @@ namespace Orts.Viewer3D
         {
         }
 
-        // <CJComment> To Do: Add a way to record this zoom operation. </CJComment>
+        // TODO: Add a way to record this zoom operation for Replay.
         protected void ZoomByMouseWheel(float speed)
         {
             // Will not zoom-in-out when help windows is up.
-            // TODO: Propery input processing through WindowManager.
+            // TODO: Property input processing through WindowManager.
             if (UserInput.IsMouseWheelChanged && !Viewer.HelpWindow.Visible)
             {
                 var fieldOfView = MathHelper.Clamp(FieldOfView - speed * UserInput.MouseWheelChange / 10, 1, 135);
