@@ -708,6 +708,17 @@ y value needs to be used for succeeding values of curve radius. Where the y valu
 curve radii, then Open Rails will extrapolate the y value between the two points. 
 
 
+Overhead (catenary) wire
+========================
+
+Open Rails uses texture overheadwire.ace to display the overhead wire. Such 
+texture must be present in the route's ``TEXTURES`` folder. If the texture is not found 
+there, Open Rails looks for it in the ``GLOBAL\TEXTURES`` folder. If the texture isn't 
+there either, Open Rails selects texture ``GLOBAL\TEXTURES\diselsmoke.ace``. It is however 
+strongly suggested to use a specific texture to display the overhead wire. A possible 
+texture to be used can be downloaded here ``Documentation\SampleFiles\Manual\overheadwire.zip``.
+
+
 
 
 
