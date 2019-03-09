@@ -18,3 +18,5 @@
 /Source/Documentation/**/_build
 /Source/Help
 /Source/Locales/**/*.bak
+.vs/VSWorkspaceState.json
+.vs/slnx.sqlite
