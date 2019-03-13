@@ -1824,7 +1824,7 @@ namespace Orts.Simulation.Physics
             UpdateCarSteamHeat(elapsedClockSeconds);
             UpdateAuxTender();
 
-            AddCouplerImpuseForces();
+            AddCouplerImpulseForces();
             ComputeCouplerForces();
 
             UpdateCarSpeeds(elapsedClockSeconds);
@@ -1854,7 +1854,19 @@ namespace Orts.Simulation.Physics
 #if DEBUG_SPEED_FORCES
             Trace.TraceInformation(" ========================= Train Speed #1 (Train.cs) ======================================== ");
             Trace.TraceInformation("Total Raw Speed {0} Train Speed {1}", SpeedMpS, SpeedMpS / Cars.Count);
-#endif 
+#endif
+            // This next statement looks odd - how can you find the updated speed of the train just by averaging the speeds of
+            // the individual TrainCars? No problem if all the TrainCars had equal masses but, if they differ, then surely
+            // you must find the total force on the train and then divide by the total mass?
+            // Not to worry as comparison with those totals shows that this statement does indeed give a correct updated speed !
+            //
+            // The reason, I believe, is that when the train forces are balanced (e.g. constant power on a constant gradient),
+            // then the calculation of forces in the couplers works out them out so that all the TrainCars share the
+            // same acceleration.
+            //
+            // The updated speed for each TrainCar is simply calculated from the mass of the TrainCar and the force on it but
+            // the force on it was previously such that all the TrainCars have the same acceleration. There is little need to
+            // add them up and average them, as they only differ when the train forces are out of balance - Chris Jakeman 4-Mar-2019
             SpeedMpS /= Cars.Count;
 
             SlipperySpotDistanceM -= SpeedMpS * elapsedClockSeconds;
@@ -4294,7 +4306,7 @@ namespace Orts.Simulation.Physics
         /// computes and applies coupler impulse forces which force speeds to match when no relative movement is possible
         /// <\summary>
 
-        public void AddCouplerImpuseForces()
+        public void AddCouplerImpulseForces()
         {
             if (Cars.Count < 2)
                 return;
