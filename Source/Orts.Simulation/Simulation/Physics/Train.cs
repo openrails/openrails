@@ -1839,16 +1839,12 @@ namespace Orts.Simulation.Physics
             foreach (TrainCar car1 in Cars)
             {
                 SpeedMpS += car1.SpeedMpS;
-
-                Console.Write($"{car1.SpeedMpS:F2} ");
-
                 //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
                 // To achieve the same result with other means, without flipping trainset physics, the line should be changed as follows:
                 //                 if (car1.Flipped)
                 if (car1.Flipped ^ (car1.IsDriveable && car1.Train.IsActualPlayerTrain && ((MSTSLocomotive)car1).UsingRearCab))
                     car1.SpeedMpS = -car1.SpeedMpS;
             }
-            Console.WriteLine();
 #if DEBUG_SPEED_FORCES
             Trace.TraceInformation(" ========================= Train Speed #1 (Train.cs) ======================================== ");
             Trace.TraceInformation("Total Raw Speed {0} Train Speed {1}", SpeedMpS, SpeedMpS / Cars.Count);
