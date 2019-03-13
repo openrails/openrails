@@ -73,7 +73,8 @@ Following are the native features Open Rails offers:
 - continuous OR freightanims are related to commodity loads, like coal, or 
   stones: the load level in the trainset varies accordingly to the amount of load
 - static OR freightanims are in fact additional shapes that can be attached to 
-  the main trainset shape
+  the main trainset shape. Such shapes may also include an animation (independent 
+  from train behaviour);
 - both types of OR freightanims can be present in the same trainset, and can 
   coexist with original MSTS freight animations
 - both types of OR freightanims can be related to locomotives or wagons
