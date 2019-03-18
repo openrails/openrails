@@ -62,6 +62,7 @@ namespace ORTS
 			var process = Process.Start(Path.Combine(path, menu));
             process.WaitForInputIdle();
 		}
+
         static void CheckNetFx(List<string> missing)
         {
             using (var RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"))
