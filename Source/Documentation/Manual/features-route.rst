@@ -157,9 +157,11 @@ the rotation animation should be as follows::
 				..
 				anim_node TRACKPIECE (
 					controllers ( ..
-						tcb_rot ( 3
+						tcb_rot ( 5
 							tcb_key ( 0 0 0 0 1 0 0 0 0 0 )
+							tcb_key ( 900 0 0.7071068 0 0.7071067 0 0 0 0 0 )
 							tcb_key ( 1800 0 1 0 0.0 0 0 0 0 0 )
+							tcb_key ( 2700 0 -0.7071068 0 0.7071067 0 0 0 0 0 )
 							tcb_key ( 3600 0 0 0 -1 0 0 0 0 0 )
 						)
 
