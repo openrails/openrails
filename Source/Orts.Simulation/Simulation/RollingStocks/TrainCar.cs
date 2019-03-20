@@ -274,7 +274,9 @@ namespace Orts.Simulation.RollingStocks
         public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car - 
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
         public float PrevMotiveForceN;
-        public float GravityForceN;  // Newtons  - signed relative to direction of car - 
+        // Gravity forces have negative values on rising grade. 
+        // This means they have the same sense as the motive forces and will push the train downhill.
+        public float GravityForceN;  // Newtons  - signed relative to direction of car.
         public float CurveForceN;   // Resistive force due to curve, in Newtons
         public float WindForceN;  // Resistive force due to wind
 
@@ -298,7 +300,10 @@ namespace Orts.Simulation.RollingStocks
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force applied to slow train (Newtons) - will be impacted by wheel/rail friction
         public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons) independent of friction wheel/rail friction
-        public float TotalForceN; // sum of all the forces active on car relative train direction
+
+        // Sum of all the forces acting on a Traincar in the direction of driving.
+        // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
+        public float TotalForceN; // 
 
         public string CarBrakeSystemType;
 

@@ -776,7 +776,7 @@ namespace Orts.Viewer3D
        public bool LoadDayTexture ()
        {
            bool oneMore = false;
-           if (Texture == SharedMaterialManager.MissingTexture)
+           if (Texture == SharedMaterialManager.MissingTexture && !String.IsNullOrEmpty(TexturePath))
            {
                 Texture = Viewer.TextureManager.Get(TexturePath.ToLower());
                 oneMore = true;

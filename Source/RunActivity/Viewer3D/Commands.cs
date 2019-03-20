@@ -472,7 +472,24 @@ namespace Orts.Viewer3D
             // Report();
         }
     }
-    
+
+    [Serializable()]
+    public sealed class UseSpecialTracksideCameraCommand : UseCameraCommand
+    {
+
+        public UseSpecialTracksideCameraCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.SpecialTracksideCamera.Activate();
+            // Report();
+        }
+    }
+
     [Serializable()]
     public abstract class MoveCameraCommand : CameraCommand
     {
@@ -905,6 +922,48 @@ namespace Orts.Viewer3D
             if (Receiver.Camera.AttachedCar.PassengerViewpoints.Count == 1)
                 Receiver.PassengerCamera.SwitchSideCameraCar(Receiver.Camera.AttachedCar);
             else Receiver.PassengerCamera.ChangePassengerViewPoint(Receiver.Camera.AttachedCar);
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class ToggleBrowseBackwardsCommand : UseCameraCommand
+    {
+
+        public ToggleBrowseBackwardsCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver.Camera is TrackingCamera)
+            {
+                var c = Receiver.Camera as TrackingCamera;
+                c.ToggleBrowseBackwards();
+            }
+            // Report();
+        }
+    }
+
+   [Serializable()]
+    public sealed class ToggleBrowseForwardsCommand : UseCameraCommand
+    {
+
+        public ToggleBrowseForwardsCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver.Camera is TrackingCamera)
+            {
+                var c = Receiver.Camera as TrackingCamera;
+                c.ToggleBrowseForwards();
+            }
             // Report();
         }
     }

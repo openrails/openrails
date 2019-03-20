@@ -660,7 +660,7 @@ namespace Orts.Simulation.AIs
             {
                 if (!preUpdate)
                 {
-                    Update(elapsedClockSeconds);
+                    Update(elapsedClockSeconds, false);
                 }
                 else
                 {
