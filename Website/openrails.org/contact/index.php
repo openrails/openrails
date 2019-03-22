@@ -22,7 +22,8 @@
         </p>
       </div>
 			<div class="col-md-6">
-        <form role="form" action="http://ccgi.jakeman.plus.com/forms/forward_message.php" method="get">
+        <!-- send this to another host as uktrainsim doesn't support mail() -->
+        <form role="form" action="http://wepp.co.uk/openrails/forward_message.php" method="get">
           <div class="form-group">
             <label for="emailAddress">Email address</label>
             <input type="email" class="form-control" id="emailAddress" name="from" placeholder="Enter your email address. (We do not share this.)" autofocus required>

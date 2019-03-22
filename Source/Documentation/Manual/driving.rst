@@ -1154,7 +1154,8 @@ Open Rails provides all of the MSTS views plus additional view options:
   in the simulation <driving-trainlist>`;
 - when in passenger view (key 5) it is possible to toggle the viewpoint from 
   one side to the other of the wagon, and to jump to other viewpoints if defined, 
-  as described below.
+  as described below;
+- a "special viewpoint" trackside view camera is available, as described below.  
 
 All of the required key presses are shown by the ``F1 Help`` key in the game. 
 Note that some of the key combinations are different in Open Rails than in 
@@ -1198,7 +1199,10 @@ controlled by the mouse with the right button depressed.
   to select a target toward the rear. The 2-View selects the train's head 
   end as the initial target, the 3-View the last car. Alt+Home resets the 
   target to the front, ``<Alt+End>`` to the rear of the train. 
-
+  With commands ``<Shift+Alt+7(Numpad)>`` and ``<Shift+Alt+1(Numpad)>`` 
+  cameras 2 or 3 move gently forward or backward along a stopped or moving 
+  train. By pressing a second time the key sequence the motion stops. 
+  
 The camera's position with respect to the target car is manipulated by the 
 four arrow keys -- left or right arrows rotate the camera's position left or 
 right, up or down arrows rotate the camera's position up or down while 
@@ -1215,6 +1219,15 @@ default position relative to the current target car.
   limited player control - the height of the camera can be adjusted with 
   the up and down arrow keys. Repeated pressing of the 4-key may change the 
   position along the track. 
+- Key ``<Shift+4>`` is a special viewpoint trackside view: the camera locates 
+  itself at platforms, or looks at the train following a spawned road car 
+  along the road, or at a level crossing, 
+  when such special viewpoints are near to the train; else it behaves like the 
+  standard trackside view camera. When the camera follows a spawned road car, 
+  speed of the road car can be increased and decreased within certain limits 
+  with keys ``<9(NumKey)>`` and ``<3(NumKey)>`` to adjust the speed of the 
+  camera with that of the train. By pressing key ``<Shift+4>`` when the camera 
+  is on a special viewpoint, another one, if available, is selected.  
 - Key ``<5>`` is an interior view that is active if the active train has a 
   *passenger view* declaration in any of its cars (or in the caboose). The 
   view direction can be rotated by the arrow keys or the mouse with right 

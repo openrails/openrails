@@ -244,6 +244,18 @@ Trigger       Function
 168           Second engine power off
 =========     =====================================
 
+Following triggers are activated when a 3rd and a 4th Pantograph 
+are present on the locomotive:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+169           Pantograph3Up
+170           Pantograph3Down
+171           Pantograph4Up
+172           Pantograph4Down
+=========     =====================================
+
 Variable Triggers
 -----------------
 

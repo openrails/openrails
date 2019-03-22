@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Open Rails'
-copyright = '2018, Open Rails'
+copyright = '2019, Open Rails'
 author = 'Open Rails Team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -62,7 +62,7 @@ author = 'Open Rails Team'
 # built documents.
 #
 # The short X.Y version.
-version = 'x.4329'
+version = 'X1.3.1-30'
 # The full version, including alpha/beta/rc tags.
 release = '1.3.1-beta'
 

@@ -414,6 +414,9 @@ namespace Orts.Simulation.Physics
         public double RunningTime;              // Total running time, used to check whether a locomotive is partly or totally unpowered due to a fault
         public int UnpoweredLoco = -1;          // car index of unpowered loco
 
+        // TODO: Replace this with an event
+        public bool FormationReversed;          // flags the execution of the ReverseFormation method (executed at reversal points)
+
         public enum END_AUTHORITY
         {
             END_OF_TRACK,
@@ -1474,6 +1477,7 @@ namespace Orts.Simulation.Physics
                 MUDirection = DirectionControl.Flip(MUDirection);
                 MUReverserPercent = -MUReverserPercent;
             }
+            if (!((this is AITrain && (this as AITrain).AI.PreUpdate) || this.TrainType == TRAINTYPE.STATIC)) FormationReversed = true;
         }
 
         //================================================================================================//
@@ -1596,8 +1600,10 @@ namespace Orts.Simulation.Physics
         /// Update train 
         /// <\summary>
 
-        public virtual void Update(float elapsedClockSeconds)
+        public virtual void Update(float elapsedClockSeconds, bool auxiliaryUpdate = true)
         {
+            if (!auxiliaryUpdate)
+                FormationReversed = false;
             if (IsActualPlayerTrain && Simulator.ActiveMovingTable != null)
                 Simulator.ActiveMovingTable.CheckTrainOnMovingTable(this);
 
@@ -1818,7 +1824,7 @@ namespace Orts.Simulation.Physics
             UpdateCarSteamHeat(elapsedClockSeconds);
             UpdateAuxTender();
 
-            AddCouplerImpuseForces();
+            AddCouplerImpulseForces();
             ComputeCouplerForces();
 
             UpdateCarSpeeds(elapsedClockSeconds);
@@ -1848,7 +1854,19 @@ namespace Orts.Simulation.Physics
 #if DEBUG_SPEED_FORCES
             Trace.TraceInformation(" ========================= Train Speed #1 (Train.cs) ======================================== ");
             Trace.TraceInformation("Total Raw Speed {0} Train Speed {1}", SpeedMpS, SpeedMpS / Cars.Count);
-#endif 
+#endif
+            // This next statement looks odd - how can you find the updated speed of the train just by averaging the speeds of
+            // the individual TrainCars? No problem if all the TrainCars had equal masses but, if they differ, then surely
+            // you must find the total force on the train and then divide by the total mass?
+            // Not to worry as comparison with those totals shows that this statement does indeed give a correct updated speed !
+            //
+            // The reason, I believe, is that when the train forces are balanced (e.g. constant power on a constant gradient),
+            // then the calculation of forces in the couplers works out them out so that all the TrainCars share the
+            // same acceleration.
+            //
+            // The updated speed for each TrainCar is simply calculated from the mass of the TrainCar and the force on it but
+            // the force on it was previously such that all the TrainCars have the same acceleration. There is little need to
+            // add them up and average them, as they only differ when the train forces are out of balance - Chris Jakeman 4-Mar-2019
             SpeedMpS /= Cars.Count;
 
             SlipperySpotDistanceM -= SpeedMpS * elapsedClockSeconds;
@@ -2614,7 +2632,7 @@ namespace Orts.Simulation.Physics
                 InitializeSignals(false);     // Get signal information - only if train has route //
                 if (TrainType != TRAINTYPE.STATIC)
                     CheckDeadlock(ValidRoute[0], Number);    // Check deadlock against all other trains (not for static trains)
-                if (TCRoute != null) TCRoute.SetReversalOffset(Length);
+                if (TCRoute != null) TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
 
                 AuxActionsContain.SetAuxAction(this);
             }
@@ -4288,7 +4306,7 @@ namespace Orts.Simulation.Physics
         /// computes and applies coupler impulse forces which force speeds to match when no relative movement is possible
         /// <\summary>
 
-        public void AddCouplerImpuseForces()
+        public void AddCouplerImpulseForces()
         {
             if (Cars.Count < 2)
                 return;
@@ -6220,7 +6238,7 @@ namespace Orts.Simulation.Physics
                 ValidRoute[0] = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath];
 
 
-                TCRoute.SetReversalOffset(Length);
+                TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
 
                 // clear existing list of occupied track, and build new list
                 for (int iSection = OccupiedTrack.Count - 1; iSection >= 0; iSection--)
@@ -6524,7 +6542,7 @@ namespace Orts.Simulation.Physics
                     actualWaitTimeS = 0.0f;
                     ClaimState = false;
 
-                    //<RRComment reset any invalid claims (occurs on WAIT commands, reason still to be checked! - not unclaiming causes deadlocks
+                    // Reset any invalid claims (occurs on WAIT commands, reason still to be checked!) - not unclaiming causes deadlocks
                     for (int iIndex = PresentPosition[0].RouteListIndex; iIndex <= ValidRoute[0].Count - 1; iIndex++)
                     {
                         int sectionIndex = ValidRoute[0][iIndex].TCSectionIndex;
@@ -9228,7 +9246,7 @@ namespace Orts.Simulation.Physics
 
             if (!Simulator.TimetableMode) AuxActionsContain.ResetAuxAction(this);
             SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-            TCRoute.SetReversalOffset(Length);
+            TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
         }
 
         //================================================================================================//
@@ -10077,7 +10095,7 @@ namespace Orts.Simulation.Physics
 
                 SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
                 CheckDeadlock(ValidRoute[0], Number);
-                TCRoute.SetReversalOffset(Length);
+                TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
             }
             else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
@@ -10472,7 +10490,7 @@ namespace Orts.Simulation.Physics
 
                 CheckDeadlock(ValidRoute[0], Number);
                 SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-                TCRoute.SetReversalOffset(Length);
+                TCRoute.SetReversalOffset(Length, Simulator.TimetableMode);
             }
             else if (ControlMode == TRAIN_CONTROL.MANUAL)
             {
@@ -11496,12 +11514,33 @@ namespace Orts.Simulation.Physics
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
                 }
 
+                if (!Simulator.TimetableMode && routeIndex == thisRoute.Count -1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                {
+                    // Check if station beyond reversal point
+                    var direction = thisRoute[routeIndex].Direction;
+                    if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                        routeIndex = -1;
+                }
+
+
                 // if first section not found in route, try last
 
                 if (routeIndex < 0)
                 {
                     sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
+                    if (!Simulator.TimetableMode && routeIndex == thisRoute.Count - 1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                    {
+                        // Check if station beyond reversal point
+                        var direction = thisRoute[routeIndex].Direction;
+                        if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                        {
+                            routeIndex = -1;
+                            // jump next subpath, because station stop can't be there
+                            activeSubroute++;
+                            activeSubrouteNodeIndex = 0;
+                        }
+                    }
                 }
 
                 // if neither section found - try next subroute - keep trying till found or out of subroutes
@@ -11512,13 +11551,31 @@ namespace Orts.Simulation.Physics
                     activeSubrouteNodeIndex = 0;
                     thisRoute = TCRoute.TCRouteSubpaths[activeSubroute];
                     routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
-
+                    if (!Simulator.TimetableMode && routeIndex == thisRoute.Count - 1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                    {
+                        // Check if station beyond reversal point
+                        var direction = thisRoute[routeIndex].Direction;
+                        if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                            routeIndex = -1;
+                    }
                     // if first section not found in route, try last
 
                     if (routeIndex < 0)
                     {
                         sectionIndex = thisPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
                         routeIndex = thisRoute.GetRouteIndex(sectionIndex, activeSubrouteNodeIndex);
+                        if (!Simulator.TimetableMode && routeIndex == thisRoute.Count - 1 && TCRoute.ReversalInfo[activeSubroute].Valid)
+                        {
+                            // Check if station beyond reversal point
+                            var direction = thisRoute[routeIndex].Direction;
+                            if (TCRoute.ReversalInfo[activeSubroute].ReverseReversalOffset < thisPlatform.TCOffset[0, direction])
+                            {
+                                routeIndex = -1;
+                                // jump next subpath, because station stop can't be there
+                                activeSubroute++;
+                                activeSubrouteNodeIndex = 0;
+                            }
+                        }
                     }
                 }
 
@@ -16949,10 +17006,10 @@ namespace Orts.Simulation.Physics
             // Check for reversal offset margin
             //
 
-            public void SetReversalOffset(float trainLength)
+            public void SetReversalOffset(float trainLength, bool timetableMode = true)
             {
                 TCReversalInfo thisReversal = ReversalInfo[activeSubpath];
-                thisReversal.SignalUsed = thisReversal.Valid && thisReversal.SignalAvailable && trainLength < thisReversal.SignalOffset;
+                thisReversal.SignalUsed = thisReversal.Valid && thisReversal.SignalAvailable && timetableMode && trainLength < thisReversal.SignalOffset;
             }
 
             //================================================================================================//

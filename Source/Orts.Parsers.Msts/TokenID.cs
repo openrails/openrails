@@ -1703,7 +1703,9 @@ namespace Orts.Parsers.Msts
 
         // ORTS specific
         ORTSListName, // ORTS specific for multi-carspawnerlists
-        ORTSSoundFileName // ORTS specific for individual level crossing sounds
+        ORTSSoundFileName, // ORTS specific for individual level crossing sounds
+        ORTSPantographToggle3,
+        ORTSPantographToggle4
     }
 
 }
