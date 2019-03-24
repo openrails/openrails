@@ -32,7 +32,7 @@ namespace Orts.Viewer3D.Processes
         readonly Game Game;
         readonly Thread Thread;
         readonly WatchdogToken WatchdogToken;
-        readonly CancellationTokenSource CancellationTokenSource;
+        readonly ORTS.Common.CancellationTokenSource CancellationTokenSource;
 
         public LoaderProcess(Game game)
         {
@@ -40,7 +40,7 @@ namespace Orts.Viewer3D.Processes
             Thread = new Thread(LoaderThread);
             WatchdogToken = new WatchdogToken(Thread);
             WatchdogToken.SpecialDispensationFactor = 6;
-            CancellationTokenSource = new CancellationTokenSource(WatchdogToken.Ping);
+            CancellationTokenSource = new ORTS.Common.CancellationTokenSource(WatchdogToken.Ping);
         }
 
         public void Start()
@@ -79,7 +79,7 @@ namespace Orts.Viewer3D.Processes
         /// and should not be used.
         /// </para>
         /// </remarks>
-        public CancellationToken CancellationToken
+        public ORTS.Common.CancellationToken CancellationToken
         {
             get
             {
