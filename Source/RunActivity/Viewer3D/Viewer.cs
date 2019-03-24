@@ -702,6 +702,12 @@ namespace Orts.Viewer3D
 
             HandleUserInput(elapsedTime);
             UserInput.Handled();
+            // We need to do it also here, because passing from manual to auto a ReverseFormation may be needed
+            if (Camera is TrackingCamera && Camera.AttachedCar != null && Camera.AttachedCar.Train != null && Camera.AttachedCar.Train.FormationReversed)
+            {
+                Camera.AttachedCar.Train.FormationReversed = false;
+                (Camera as TrackingCamera).SwapCameras();
+            }
             Simulator.Update(elapsedTime.ClockSeconds);
             if (PlayerLocomotive.Train.BrakingTime == -2) // We just had a wagon with stuck brakes
             {
