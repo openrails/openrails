@@ -157,9 +157,11 @@ the rotation animation should be as follows::
 				..
 				anim_node TRACKPIECE (
 					controllers ( ..
-						tcb_rot ( 3
+						tcb_rot ( 5
 							tcb_key ( 0 0 0 0 1 0 0 0 0 0 )
+							tcb_key ( 900 0 0.7071068 0 0.7071067 0 0 0 0 0 )
 							tcb_key ( 1800 0 1 0 0.0 0 0 0 0 0 )
+							tcb_key ( 2700 0 -0.7071068 0 0.7071067 0 0 0 0 0 )
 							tcb_key ( 3600 0 0 0 -1 0 0 0 0 0 )
 						)
 
@@ -706,6 +708,17 @@ values as desired. Each paired set of values must have an x and y value present.
 to 'hold' a certain value of SuperElevation for a number of different radii curves, then the same 
 y value needs to be used for succeeding values of curve radius. Where the y value changes between 
 curve radii, then Open Rails will extrapolate the y value between the two points. 
+
+
+Overhead (catenary) wire
+========================
+
+Open Rails uses texture overheadwire.ace to display the overhead wire. Such 
+texture must be present in the route's ``TEXTURES`` folder. If the texture is not found 
+there, Open Rails looks for it in the ``GLOBAL\TEXTURES`` folder. If the texture isn't 
+there either, Open Rails selects texture ``GLOBAL\TEXTURES\diselsmoke.ace``. It is however 
+strongly suggested to use a specific texture to display the overhead wire. A possible 
+texture to be used can be downloaded here ``Documentation\SampleFiles\Manual\overheadwire.zip``.
 
 
 

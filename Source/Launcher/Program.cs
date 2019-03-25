@@ -63,15 +63,15 @@ namespace ORTS
             process.WaitForInputIdle();
 		}
 
-		static void CheckNetFx(List<string> missing)
-		{
-			using (var RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v3.5"))
-				if ((SafeReadKey(RK, "Install", 0) == 1) && (SafeReadKey(RK, "SP", 0) >= 1))
-					return;
-			missing.Add("Microsoft .NET Framework 3.5 SP1");
-		}
+        static void CheckNetFx(List<string> missing)
+        {
+            using (var RK = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\"))
+                if ((SafeReadKey(RK, "Install", 0) == 1) && (SafeReadKey(RK, "Release", 0) >= 461808))  //https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed#find-net-framework-versions-45-and-later-with-code
+                    return;
+            missing.Add("Microsoft .NET Framework 4.7.2 or later");
+        }
 
-		static void CheckXNA(List<string> missing)
+        static void CheckXNA(List<string> missing)
 		{
 			foreach (var key in new[] { @"SOFTWARE\Wow6432Node\Microsoft\XNA\Framework\v3.1", @"SOFTWARE\Microsoft\XNA\Framework\v3.1" })
 			{
