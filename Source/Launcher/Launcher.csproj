@@ -21,7 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <DebugType>pdbonly</DebugType>
@@ -32,13 +32,10 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\OpenRails.xml</DocumentationFile>
     <NoWarn>1591</NoWarn>
-    <LangVersion>6</LangVersion>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>..\Launcher\app.manifest</ApplicationManifest>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'ReleaseConf|AnyCPU'">
-    <OutputPath>..\..\Program\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
