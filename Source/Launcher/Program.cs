@@ -52,7 +52,6 @@ namespace ORTS
 			var path = Path.GetDirectoryName(Application.ExecutablePath);
 
             CheckNetFx();
-			CheckXNA();
             CheckDXRuntime();
             CheckOpenAL();
 
@@ -103,20 +102,6 @@ namespace ORTS
                 "for Microsoft .NET Framework 4.7.2 and install the software.";
             downloadUrl = "https://support.microsoft.com/en-us/help/4054530/microsoft-net-framework-4-7-2-offline-installer-for-windows";
         }
-
-        static void CheckXNA()
-		{
-			foreach (var key in new[] { @"SOFTWARE\Wow6432Node\Microsoft\XNA\Framework\v3.1", @"SOFTWARE\Microsoft\XNA\Framework\v3.1" })
-			{
-                using (var RK = Registry.LocalMachine.OpenSubKey(key))
-                    if (SafeReadKey(RK, "Installed", 0) == 1) ;
-						return;
-			}
-			missing.Add("Microsoft XNA Framework 3.1");
-            downloadText = "Please go to\n https://www.microsoft.com/en-us/download/details.aspx?id=15163 \nto download the installer for " +
-                "Microsoft XNA Framework Redistributable 3.1 and install the software.";
-            downloadUrl = "https://www.microsoft.com/en-us/download/details.aspx?id=15163";
-		}
 
         static void CheckDXRuntime()
         {
