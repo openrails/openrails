@@ -35,7 +35,7 @@ Code is expected to follow the [Framework Design Guidelines](https://docs.micros
 * Structures, fields, and enums defining file format components may be named exactly as in the file format
 * Public and protected fields are allowed, although care must be taken with public fields
 
-Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects.
+Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
 
 Code should be well structured, with small methods performing a single key task (indicated by their name), and larger complex operations formed through calls to such methods.
 
@@ -43,11 +43,13 @@ Code should be well structured, with small methods performing a single key task 
 
 All fields, parameters and local variables containing real world measurements (e.g. length, area) must have the unit as a suffix. Measurements must be in [SI units](https://en.wikipedia.org/wiki/International_System_of_Units) unless you have an exception granted by the Open Rails Management Team.
 
-All physical formula used must be documented to identify the source of the formula, and ideally a one-line summary of what it does/is for. All constant values used in formula must be placed in a separate constant, with a name and unit suffix, for readability.
+All physical formula used must be documented to identify the source of the formula, and ideally a one-line summary of what it does/is for.
+
+All fixed values used in formula must be placed in a constant, with a name and unit suffix, for readability.
 
 ### Multi-threading
 
-Open Rails is a multi-threaded application, which presents some additional complexity. There are four key threads:
+Open Rails is a multi-threaded application, which presents some additional complexity. There are four key threads to be aware of:
 
 * Loader
 * Updater
