@@ -124,8 +124,6 @@ namespace ORTS.Settings
         public bool GraduatedRelease { get; set; }
         [Default(false)]
         public bool RetainersOnAllCars { get; set; }
-        [Default(true)]
-        public bool UseLargeAddressAware { get; set; }
         [Default(false)]
         public bool SuppressConfirmations { get; set; }
         [Default(21)]

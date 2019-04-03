@@ -75,11 +75,7 @@ namespace ORTS
         {
             get
             {
-                var programNormal = System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe");
-                var programLAA = System.IO.Path.Combine(Application.StartupPath, "RunActivityLAA.exe");
-                if (Settings.UseLargeAddressAware && File.Exists(programLAA))
-                    return programLAA;
-                return programNormal;
+                return System.IO.Path.Combine(Application.StartupPath, "RunActivity.exe"); ;
             }
         }
         
