@@ -84,8 +84,6 @@ namespace Orts.Viewer3D.Popups
             Viewer = owner.Viewer;
             LastTextPage = LocomotivePage;
 
-            ProcessHandle = OpenProcess(0x410 /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, false, Process.GetCurrentProcess().Id);
-            ProcessMemoryCounters = new PROCESS_MEMORY_COUNTERS() { Size = 40 };
             ProcessVirtualAddressLimit = GetVirtualAddressLimit();
 
             try
@@ -1046,40 +1044,15 @@ namespace Orts.Viewer3D.Popups
             public ulong AvailableExtendedVirtual;
         }
 
-        [StructLayout(LayoutKind.Sequential, Size = 40)]
-        struct PROCESS_MEMORY_COUNTERS
-        {
-            public int Size;
-            public int PageFaultCount;
-            public int PeakWorkingSetSize;
-            public int WorkingSetSize;
-            public int QuotaPeakPagedPoolUsage;
-            public int QuotaPagedPoolUsage;
-            public int QuotaPeakNonPagedPoolUsage;
-            public int QuotaNonPagedPoolUsage;
-            public int PagefileUsage;
-            public int PeakPagefileUsage;
-        }
-
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX buffer);
 
-        [DllImport("psapi.dll", SetLastError = true)]
-        static extern bool GetProcessMemoryInfo(IntPtr hProcess, out PROCESS_MEMORY_COUNTERS counters, int size);
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr OpenProcess(int dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, int dwProcessId);
-
-        readonly IntPtr ProcessHandle;
-        PROCESS_MEMORY_COUNTERS ProcessMemoryCounters;
         readonly ulong ProcessVirtualAddressLimit;
         #endregion
 
         public uint GetWorkingSetSize()
         {
-            // Get memory usage (working set).
-            GetProcessMemoryInfo(ProcessHandle, out ProcessMemoryCounters, ProcessMemoryCounters.Size);
-            return (uint)ProcessMemoryCounters.WorkingSetSize;
+            return (uint)Process.GetCurrentProcess().WorkingSet64;
         }
 
         public ulong GetVirtualAddressLimit()

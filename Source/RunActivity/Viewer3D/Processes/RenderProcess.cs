@@ -101,7 +101,7 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             GraphicsDeviceManager.IsFullScreen = false;
-            GraphicsDeviceManager.PreferMultiSampling = true;
+            GraphicsDeviceManager.PreferMultiSampling = Game.Settings.EnableMultisampling;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
             var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
             if (screen.Primary)
