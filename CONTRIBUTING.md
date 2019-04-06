@@ -16,15 +16,19 @@ If you've got an idea for Open Rails, please report it in [our road-map on Trell
 
 ## Writing code
 
-You are free to make any modifications to the Open Rails code that you like; that's the benefit of open source. However, if you would like your contribution to be included in the official version, please be sure that you are [fixing a confirmed bug](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED) or [implementing an accepted feature request (anything except the first two columns)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
+You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, we won't necessarily include all changes in the official version, so here are the ways to ensure what you're working on will be accepted:
 
-We will also treat your contribution according to the following bug and feature prioritization:
+* If you'd like to work on something that is already known about and accepted, please check through [the confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED) and [accepted feature requests (anything except the first two columns)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
+* If you don't see anything you'd like to work on in the _confirmed bugs_ or _accepted feature requests_, please reach out to us in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/). You can also report a bug or make a suggestion for the road-map directly. In both cases, we'll get back to you on whether we think it is appropriate for inclusion.
+
+When choosing what to work on from the road-map, if multiple things are interesting to you, we would prefer that you choose the item with the highest priority (see list below). This is only a guideline for helping to choose, though, so if you do want to work on something with a low priority, that's fine - all we ask is that you let us know in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/).
 
 1. The next minor release (e.g. 1.4)
 2. Current major release (e.g. 1.x)
 3. Next major release (e.g. 2.x)
+4. Future
 
-If you're unsure what you could contribute to in the code, please get in touch on the [Elvas Tower](http://www.elvastower.com/) forums, giving us some idea of your experience and interests, and we'll do our best to find something for you.
+If you're unsure what you could contribute to in the code, and nothing looks interesting in the _confirmed bugs_ and _accepted feature requests_, please get in touch on the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/), giving us some idea of your experience and interests, and we'll do our best to find something for you.
 
 ### General requirements
 
