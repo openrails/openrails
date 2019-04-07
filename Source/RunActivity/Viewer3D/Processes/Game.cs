@@ -86,7 +86,7 @@ namespace Orts.Viewer3D.Processes
         {
             Settings = settings;
             ContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath), "Content");
-            Exiting += new System.EventHandler(Game_Exiting);
+            Exiting += new System.EventHandler<System.EventArgs>(Game_Exiting);
             WatchdogProcess = new WatchdogProcess(this);
             RenderProcess = new RenderProcess(this);
             UpdaterProcess = new UpdaterProcess(this);
@@ -202,7 +202,7 @@ namespace Orts.Viewer3D.Processes
             {
                 try
                 {
-                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(Settings.Language);
+                    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(Settings.Language);
                 }
                 catch { }
             }

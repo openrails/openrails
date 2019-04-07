@@ -200,7 +200,7 @@ namespace ORTS.Common
 
         static void WriteGraphicsAdapter(TextWriter output)
         {
-            foreach (var adapter in GraphicsAdapter.Adapters)
+ /*           foreach (var adapter in GraphicsAdapter.Adapters)
             {
                 try
                 {
@@ -220,7 +220,7 @@ namespace ORTS.Common
                     output.WriteLine("    Clip Planes    = {0}", caps.MaxUserClipPlanes);
                 }
                 catch (Exception error) { }
-            }
+            }*/
         }
 
         static T SafeReadKey<T>(RegistryKey key, string name, T defaultValue)

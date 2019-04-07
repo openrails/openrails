@@ -105,6 +105,10 @@ namespace Orts.Viewer3D
 			RenderPrimitiveSequence.OverlayOpaque,
 		};
 
+        protected static VertexBuffer DummyVertexBuffer;
+        protected static readonly VertexDeclaration DummyVertexDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
+        protected static readonly Matrix[] DummyVertexData = new Matrix[] { Matrix.Identity };
+
         /// <summary>
         /// This is an adjustment for the depth buffer calculation which may be used to reduce the chance of co-planar primitives from fighting each other.
         /// </summary>
@@ -354,10 +358,8 @@ namespace Orts.Viewer3D
         readonly Game Game;
 
         // Shared shadow map data.
-        static Texture2D[] ShadowMap;
+        static RenderTarget2D[] ShadowMap;
         static RenderTarget2D[] ShadowMapRenderTarget;
-        static DepthStencilBuffer ShadowMapStencilBuffer;
-        static DepthStencilBuffer NormalStencilBuffer;
         static Vector3 SteppedSolarDirection = Vector3.UnitX;
 
         // Local shadow map data.
@@ -398,12 +400,13 @@ namespace Orts.Viewer3D
                 if (ShadowMap == null)
                 {
                     var shadowMapSize = Game.Settings.ShadowMapResolution;
-                    ShadowMap = new Texture2D[RenderProcess.ShadowMapCount];
+                    ShadowMap = new RenderTarget2D[RenderProcess.ShadowMapCount];
                     ShadowMapRenderTarget = new RenderTarget2D[RenderProcess.ShadowMapCount];
                     for (var shadowMapIndex = 0; shadowMapIndex < RenderProcess.ShadowMapCount; shadowMapIndex++)
-                        ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, RenderProcess.ShadowMapMipCount, SurfaceFormat.Rg32, RenderTargetUsage.PreserveContents);
-                    ShadowMapStencilBuffer = new DepthStencilBuffer(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, DepthFormat.Depth16);
-                    NormalStencilBuffer = Game.RenderProcess.GraphicsDevice.DepthStencilBuffer;
+                    {
+                        ShadowMapRenderTarget[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
+                        ShadowMap[shadowMapIndex] = new RenderTarget2D(Game.RenderProcess.GraphicsDevice, shadowMapSize, shadowMapSize, false, SurfaceFormat.Rg32, DepthFormat.Depth16, 0, RenderTargetUsage.PreserveContents);
+                    }
                 }
 
                 ShadowMapLightView = new Matrix[RenderProcess.ShadowMapCount];
@@ -514,6 +517,7 @@ namespace Orts.Viewer3D
                     // grid based on the size of a shadow texel (shadowMapSize / shadowMapSize) along the axes of the sun direction
                     // and up/left.
                     var shadowMapAlignmentGrid = (float)shadowMapDiameter / Game.Settings.ShadowMapResolution;
+                    var shadowMapSize = Game.Settings.ShadowMapResolution;
                     var adjustX = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisX, shadowMapLocation), shadowMapAlignmentGrid);
                     var adjustY = (float)Math.IEEERemainder(Vector3.Dot(shadowMapAlignAxisY, shadowMapLocation), shadowMapAlignmentGrid);
                     shadowMapLocation.X -= shadowMapAlignAxisX.X * adjustX;
@@ -525,7 +529,7 @@ namespace Orts.Viewer3D
 
                     ShadowMapLightView[shadowMapIndex] = Matrix.CreateLookAt(shadowMapLocation + viewingDistance * SteppedSolarDirection, shadowMapLocation, Vector3.Up);
                     ShadowMapLightProj[shadowMapIndex] = Matrix.CreateOrthographic(shadowMapDiameter, shadowMapDiameter, 0, viewingDistance + shadowMapDiameter / 2);
-                    ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / ShadowMapStencilBuffer.Width, 0.5f + 0.5f / ShadowMapStencilBuffer.Height, 0, 1);
+                    ShadowMapLightViewProjShadowProj[shadowMapIndex] = ShadowMapLightView[shadowMapIndex] * ShadowMapLightProj[shadowMapIndex] * new Matrix(0.5f, 0, 0, 0, 0, -0.5f, 0, 0, 0, 0, 1, 0, 0.5f + 0.5f / shadowMapSize, 0.5f + 0.5f / shadowMapSize, 0, 1);
                     ShadowMapCenter[shadowMapIndex] = shadowMapLocation;
                 }
             }
@@ -662,9 +666,9 @@ namespace Orts.Viewer3D
         public void Draw(GraphicsDevice graphicsDevice)
         {
 #if DEBUG_RENDER_STATE
-			DebugRenderState(graphicsDevice.RenderState, "RenderFrame.Draw");
+			DebugRenderState(graphicsDevice, "RenderFrame.Draw");
 #endif
-            var logging = UserInput.IsPressed(UserCommands.DebugLogRenderFrame);
+            var logging = UserInput.InputSettings != null && UserInput.IsPressed(UserCommands.DebugLogRenderFrame);
             if (logging)
             {
                 Console.WriteLine();
@@ -702,9 +706,8 @@ namespace Orts.Viewer3D
             if (logging) Console.WriteLine("    {0} {{", shadowMapIndex);
 
             // Prepare renderer for drawing the shadow map.
-            graphicsDevice.SetRenderTarget(0, ShadowMapRenderTarget[shadowMapIndex]);
-            graphicsDevice.DepthStencilBuffer = ShadowMapStencilBuffer;
-            graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.TransparentBlack, 1, 0);
+            graphicsDevice.SetRenderTarget(ShadowMapRenderTarget[shadowMapIndex]);
+            graphicsDevice.Clear(ClearOptions.DepthBuffer | ClearOptions.Target, Color.White, 1, 0);
 
             // Prepare for normal (non-blocking) rendering of scenery.
             ShadowMapMaterial.SetState(graphicsDevice, ShadowMapMaterial.Mode.Normal);
@@ -725,7 +728,6 @@ namespace Orts.Viewer3D
 
             // Render terrain shadow items now, with their magic.
             if (logging) Console.WriteLine("      {0,-5} * TerrainMaterial (normal)", RenderShadowTerrainItems[shadowMapIndex].Count);
-            graphicsDevice.VertexDeclaration = TerrainPrimitive.SharedPatchVertexDeclaration;
             graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
             ShadowMapMaterial.Render(graphicsDevice, RenderShadowTerrainItems[shadowMapIndex], ref ShadowMapLightView[shadowMapIndex], ref ShadowMapLightProj[shadowMapIndex]);
 
@@ -739,20 +741,20 @@ namespace Orts.Viewer3D
             // All done.
             ShadowMapMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
-            DebugRenderState(graphicsDevice.RenderState, ShadowMapMaterial.ToString());
+            DebugRenderState(graphicsDevice, ShadowMapMaterial.ToString());
 #endif
-            graphicsDevice.DepthStencilBuffer = NormalStencilBuffer;
-            graphicsDevice.SetRenderTarget(0, null);
-            ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex].GetTexture();
+            graphicsDevice.SetRenderTarget(null);
 
             // Blur the shadow map.
             if (Game.Settings.ShadowMapBlur)
             {
-                ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex], ShadowMapStencilBuffer, NormalStencilBuffer);
+				ShadowMap[shadowMapIndex] = ShadowMapMaterial.ApplyBlur(graphicsDevice, ShadowMap[shadowMapIndex], ShadowMapRenderTarget[shadowMapIndex]);
 #if DEBUG_RENDER_STATE
-                DebugRenderState(graphicsDevice.RenderState, ShadowMapMaterial.ToString() + " ApplyBlur()");
+                DebugRenderState(graphicsDevice, ShadowMapMaterial.ToString() + " ApplyBlur()");
 #endif
             }
+            else
+                ShadowMap[shadowMapIndex] = ShadowMapRenderTarget[shadowMapIndex];
 
             if (logging) Console.WriteLine("    }");
         }
@@ -767,18 +769,18 @@ namespace Orts.Viewer3D
             if (Game.Settings.DistantMountains)
             {
                 if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.TransparentBlack, 1, 0);
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
                 DrawSequencesDistantMountains(graphicsDevice, logging);
                 if (logging) Console.WriteLine("  }");
                 if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.TransparentBlack, 1, 0);
+                graphicsDevice.Clear(ClearOptions.DepthBuffer, Color.Transparent, 1, 0);
                 DrawSequences(graphicsDevice, logging);
                 if (logging) Console.WriteLine("  }");
             }
             else
             {
                 if (logging) Console.WriteLine("  DrawSimple {");
-                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.TransparentBlack, 1, 0);
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
                 DrawSequences(graphicsDevice, logging);
                 if (logging) Console.WriteLine("  }");
             }
@@ -817,7 +819,7 @@ namespace Orts.Viewer3D
                                     lastMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 								if (lastMaterial != null)
-									DebugRenderState(graphicsDevice.RenderState, lastMaterial.ToString());
+									DebugRenderState(graphicsDevice, lastMaterial.ToString());
 #endif
                                 renderItem.Material.SetState(graphicsDevice, lastMaterial);
                                 lastMaterial = renderItem.Material;
@@ -834,7 +836,7 @@ namespace Orts.Viewer3D
                             lastMaterial.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
 						if (lastMaterial != null)
-							DebugRenderState(graphicsDevice.RenderState, lastMaterial.ToString());
+							DebugRenderState(graphicsDevice, lastMaterial.ToString());
 #endif
                     }
                     else
@@ -848,7 +850,7 @@ namespace Orts.Viewer3D
                         sequenceMaterial.Key.Render(graphicsDevice, sequenceMaterial.Value, ref XNACameraView, ref XNACameraProjection);
                         sequenceMaterial.Key.ResetState(graphicsDevice);
 #if DEBUG_RENDER_STATE
-						DebugRenderState(graphicsDevice.RenderState, sequenceMaterial.Key.ToString());
+						DebugRenderState(graphicsDevice, sequenceMaterial.Key.ToString());
 #endif
                     }
                 }
@@ -888,64 +890,64 @@ namespace Orts.Viewer3D
 #if DEBUG_RENDER_STATE
         static void DebugRenderState(RenderState renderState, string location)
         {
-            if (renderState.AlphaBlendEnable != false) throw new InvalidOperationException(String.Format("RenderState.AlphaBlendEnable is {0}; expected {1} in {2}.", renderState.AlphaBlendEnable, false, location));
-            if (renderState.AlphaBlendOperation != BlendFunction.Add) throw new InvalidOperationException(String.Format("RenderState.AlphaBlendOperation is {0}; expected {1} in {2}.", renderState.AlphaBlendOperation, BlendFunction.Add, location));
+//            if (renderState.AlphaBlendEnable != false) throw new InvalidOperationException(String.Format("RenderState.AlphaBlendEnable is {0}; expected {1} in {2}.", renderState.AlphaBlendEnable, false, location));
+            if (graphicsDevice.BlendState.AlphaBlendFunction != BlendFunction.Add) throw new InvalidOperationException(String.Format("RenderState.AlphaBlendOperation is {0}; expected {1} in {2}.", graphicsDevice.BlendState.AlphaBlendFunction, BlendFunction.Add, location));
             // DOCUMENTATION IS WRONG, it says Blend.One:
-            if (renderState.AlphaDestinationBlend != Blend.Zero) throw new InvalidOperationException(String.Format("RenderState.AlphaDestinationBlend is {0}; expected {1} in {2}.", renderState.AlphaDestinationBlend, Blend.Zero, location));
-            if (renderState.AlphaFunction != CompareFunction.Always) throw new InvalidOperationException(String.Format("RenderState.AlphaFunction is {0}; expected {1} in {2}.", renderState.AlphaFunction, CompareFunction.Always, location));
-            if (renderState.AlphaSourceBlend != Blend.One) throw new InvalidOperationException(String.Format("RenderState.AlphaSourceBlend is {0}; expected {1} in {2}.", renderState.AlphaSourceBlend, Blend.One, location));
-            if (renderState.AlphaTestEnable != false) throw new InvalidOperationException(String.Format("RenderState.AlphaTestEnable is {0}; expected {1} in {2}.", renderState.AlphaTestEnable, false, location));
-            if (renderState.BlendFactor != Color.White) throw new InvalidOperationException(String.Format("RenderState.BlendFactor is {0}; expected {1} in {2}.", renderState.BlendFactor, Color.White, location));
-            if (renderState.BlendFunction != BlendFunction.Add) throw new InvalidOperationException(String.Format("RenderState.BlendFunction is {0}; expected {1} in {2}.", renderState.BlendFunction, BlendFunction.Add, location));
+            if (graphicsDevice.BlendState.AlphaDestinationBlend != Blend.Zero) throw new InvalidOperationException(String.Format("RenderState.AlphaDestinationBlend is {0}; expected {1} in {2}.", graphicsDevice.BlendState.AlphaDestinationBlend, Blend.Zero, location));
+//            if (renderState.AlphaFunction != CompareFunction.Always) throw new InvalidOperationException(String.Format("RenderState.AlphaFunction is {0}; expected {1} in {2}.", renderState.AlphaFunction, CompareFunction.Always, location));
+            if (graphicsDevice.BlendState.AlphaSourceBlend != Blend.One) throw new InvalidOperationException(String.Format("RenderState.AlphaSourceBlend is {0}; expected {1} in {2}.", graphicsDevice.BlendState.AlphaSourceBlend, Blend.One, location));
+//            if (renderState.AlphaTestEnable != false) throw new InvalidOperationException(String.Format("RenderState.AlphaTestEnable is {0}; expected {1} in {2}.", renderState.AlphaTestEnable, false, location));
+            if (graphicsDevice.BlendFactor != Color.White) throw new InvalidOperationException(String.Format("RenderState.BlendFactor is {0}; expected {1} in {2}.", graphicsDevice.BlendFactor, Color.White, location));
+            if (graphicsDevice.BlendState.ColorBlendFunction != BlendFunction.Add) throw new InvalidOperationException(String.Format("RenderState.BlendFunction is {0}; expected {1} in {2}.",graphicsDevice.BlendState.ColorBlendFunction, BlendFunction.Add, location));
             // DOCUMENTATION IS WRONG, it says ColorWriteChannels.None:
-            if (renderState.ColorWriteChannels != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels is {0}; expected {1} in {2}.", renderState.ColorWriteChannels, ColorWriteChannels.All, location));
+            if (graphicsDevice.BlendState.ColorWriteChannels != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels is {0}; expected {1} in {2}.", graphicsDevice.BlendState.ColorWriteChannels, ColorWriteChannels.All, location));
             // DOCUMENTATION IS WRONG, it says ColorWriteChannels.None:
-            if (renderState.ColorWriteChannels1 != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels1 is {0}; expected {1} in {2}.", renderState.ColorWriteChannels1, ColorWriteChannels.All, location));
+            if (graphicsDevice.BlendState.ColorWriteChannels1 != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels1 is {0}; expected {1} in {2}.", graphicsDevice.BlendState.ColorWriteChannels1, ColorWriteChannels.All, location));
             // DOCUMENTATION IS WRONG, it says ColorWriteChannels.None:
-            if (renderState.ColorWriteChannels2 != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels2 is {0}; expected {1} in {2}.", renderState.ColorWriteChannels2, ColorWriteChannels.All, location));
+            if (graphicsDevice.BlendState.ColorWriteChannels2 != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels2 is {0}; expected {1} in {2}.", graphicsDevice.BlendState.ColorWriteChannels2, ColorWriteChannels.All, location));
             // DOCUMENTATION IS WRONG, it says ColorWriteChannels.None:
-            if (renderState.ColorWriteChannels3 != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels3 is {0}; expected {1} in {2}.", renderState.ColorWriteChannels3, ColorWriteChannels.All, location));
-            if (renderState.CounterClockwiseStencilDepthBufferFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilDepthBufferFail is {0}; expected {1} in {2}.", renderState.CounterClockwiseStencilDepthBufferFail, StencilOperation.Keep, location));
-            if (renderState.CounterClockwiseStencilFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilFail is {0}; expected {1} in {2}.", renderState.CounterClockwiseStencilFail, StencilOperation.Keep, location));
-            if (renderState.CounterClockwiseStencilFunction != CompareFunction.Always) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilFunction is {0}; expected {1} in {2}.", renderState.CounterClockwiseStencilFunction, CompareFunction.Always, location));
-            if (renderState.CounterClockwiseStencilPass != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilPass is {0}; expected {1} in {2}.", renderState.CounterClockwiseStencilPass, StencilOperation.Keep, location));
-            if (renderState.CullMode != CullMode.CullCounterClockwiseFace) throw new InvalidOperationException(String.Format("RenderState.CullMode is {0}; expected {1} in {2}.", renderState.CullMode, CullMode.CullCounterClockwiseFace, location));
-            if (renderState.DepthBias != 0.0f) throw new InvalidOperationException(String.Format("RenderState.DepthBias is {0}; expected {1} in {2}.", renderState.DepthBias, 0.0f, location));
-            if (renderState.DepthBufferEnable != true) throw new InvalidOperationException(String.Format("RenderState.DepthBufferEnable is {0}; expected {1} in {2}.", renderState.DepthBufferEnable, true, location));
-            if (renderState.DepthBufferFunction != CompareFunction.LessEqual) throw new InvalidOperationException(String.Format("RenderState.DepthBufferFunction is {0}; expected {1} in {2}.", renderState.DepthBufferFunction, CompareFunction.LessEqual, location));
-            if (renderState.DepthBufferWriteEnable != true) throw new InvalidOperationException(String.Format("RenderState.DepthBufferWriteEnable is {0}; expected {1} in {2}.", renderState.DepthBufferWriteEnable, true, location));
-            if (renderState.DestinationBlend != Blend.Zero) throw new InvalidOperationException(String.Format("RenderState.DestinationBlend is {0}; expected {1} in {2}.", renderState.DestinationBlend, Blend.Zero, location));
-            if (renderState.FillMode != FillMode.Solid) throw new InvalidOperationException(String.Format("RenderState.FillMode is {0}; expected {1} in {2}.", renderState.FillMode, FillMode.Solid, location));
-            if (renderState.FogColor != Color.TransparentBlack) throw new InvalidOperationException(String.Format("RenderState.FogColor is {0}; expected {1} in {2}.", renderState.FogColor, Color.TransparentBlack, location));
-            if (renderState.FogDensity != 1.0f) throw new InvalidOperationException(String.Format("RenderState.FogDensity is {0}; expected {1} in {2}.", renderState.FogDensity, 1.0f, location));
-            if (renderState.FogEnable != false) throw new InvalidOperationException(String.Format("RenderState.FogEnable is {0}; expected {1} in {2}.", renderState.FogEnable, false, location));
-            if (renderState.FogEnd != 1.0f) throw new InvalidOperationException(String.Format("RenderState.FogEnd is {0}; expected {1} in {2}.", renderState.FogEnd, 1.0f, location));
-            if (renderState.FogStart != 0.0f) throw new InvalidOperationException(String.Format("RenderState.FogStart is {0}; expected {1} in {2}.", renderState.FogStart, 0.0f, location));
-            if (renderState.FogTableMode != FogMode.None) throw new InvalidOperationException(String.Format("RenderState.FogTableMode is {0}; expected {1} in {2}.", renderState.FogTableMode, FogMode.None, location));
-            if (renderState.FogVertexMode != FogMode.None) throw new InvalidOperationException(String.Format("RenderState.FogVertexMode is {0}; expected {1} in {2}.", renderState.FogVertexMode, FogMode.None, location));
-            if (renderState.MultiSampleAntiAlias != true) throw new InvalidOperationException(String.Format("RenderState.MultiSampleAntiAlias is {0}; expected {1} in {2}.", renderState.MultiSampleAntiAlias, true, location));
-            if (renderState.MultiSampleMask != -1) throw new InvalidOperationException(String.Format("RenderState.MultiSampleMask is {0}; expected {1} in {2}.", renderState.MultiSampleMask, -1, location));
-            //if (renderState.PointSize != 64) throw new InvalidOperationException(String.Format("RenderState.e.PointSize is {0}; expected {1} in {2}.", renderState.e.PointSize, 64, location));
-            //if (renderState.PointSizeMax != 64.0f) throw new InvalidOperationException(String.Format("RenderState.PointSizeMax is {0}; expected {1} in {2}.", renderState.PointSizeMax, 64.0f, location));
-            //if (renderState.PointSizeMin != 1.0f) throw new InvalidOperationException(String.Format("RenderState.PointSizeMin is {0}; expected {1} in {2}.", renderState.PointSizeMin, 1.0f, location));
-            if (renderState.PointSpriteEnable != false) throw new InvalidOperationException(String.Format("RenderState.PointSpriteEnable is {0}; expected {1} in {2}.", renderState.PointSpriteEnable, false, location));
-            if (renderState.RangeFogEnable != false) throw new InvalidOperationException(String.Format("RenderState.RangeFogEnable is {0}; expected {1} in {2}.", renderState.RangeFogEnable, false, location));
-            if (renderState.ReferenceAlpha != 0) throw new InvalidOperationException(String.Format("RenderState.ReferenceAlpha is {0}; expected {1} in {2}.", renderState.ReferenceAlpha, 0, location));
-            if (renderState.ReferenceStencil != 0) throw new InvalidOperationException(String.Format("RenderState.ReferenceStencil is {0}; expected {1} in {2}.", renderState.ReferenceStencil, 0, location));
-            if (renderState.ScissorTestEnable != false) throw new InvalidOperationException(String.Format("RenderState.ScissorTestEnable is {0}; expected {1} in {2}.", renderState.ScissorTestEnable, false, location));
-            if (renderState.SeparateAlphaBlendEnabled != false) throw new InvalidOperationException(String.Format("RenderState.SeparateAlphaBlendEnabled is {0}; expected {1} in {2}.", renderState.SeparateAlphaBlendEnabled, false, location));
-            if (renderState.SlopeScaleDepthBias != 0) throw new InvalidOperationException(String.Format("RenderState.SlopeScaleDepthBias is {0}; expected {1} in {2}.", renderState.SlopeScaleDepthBias, 0, location));
-            if (renderState.SourceBlend != Blend.One) throw new InvalidOperationException(String.Format("RenderState.SourceBlend is {0}; expected {1} in {2}.", renderState.SourceBlend, Blend.One, location));
-            if (renderState.StencilDepthBufferFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.StencilDepthBufferFail is {0}; expected {1} in {2}.", renderState.StencilDepthBufferFail, StencilOperation.Keep, location));
-            if (renderState.StencilEnable != false) throw new InvalidOperationException(String.Format("RenderState.StencilEnable is {0}; expected {1} in {2}.", renderState.StencilEnable, false, location));
-            if (renderState.StencilFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.StencilFail is {0}; expected {1} in {2}.", renderState.StencilFail, StencilOperation.Keep, location));
-            if (renderState.StencilFunction != CompareFunction.Always) throw new InvalidOperationException(String.Format("RenderState.StencilFunction is {0}; expected {1} in {2}.", renderState.StencilFunction, CompareFunction.Always, location));
+            if (graphicsDevice.BlendState.ColorWriteChannels3 != ColorWriteChannels.All) throw new InvalidOperationException(String.Format("RenderState.ColorWriteChannels3 is {0}; expected {1} in {2}.", graphicsDevice.BlendState.ColorWriteChannels3, ColorWriteChannels.All, location));
+            if (graphicsDevice.DepthStencilState.CounterClockwiseStencilDepthBufferFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilDepthBufferFail is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.CounterClockwiseStencilDepthBufferFail, StencilOperation.Keep, location));
+            if (graphicsDevice.DepthStencilState.CounterClockwiseStencilFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilFail is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.CounterClockwiseStencilFail, StencilOperation.Keep, location));
+            if (graphicsDevice.DepthStencilState.CounterClockwiseStencilFunction != CompareFunction.Always) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilFunction is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.CounterClockwiseStencilFunction, CompareFunction.Always, location));
+            if (graphicsDevice.DepthStencilState.CounterClockwiseStencilPass != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.CounterClockwiseStencilPass is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.CounterClockwiseStencilPass, StencilOperation.Keep, location));
+            if (graphicsDevice.RasterizerState.CullMode != CullMode.CullCounterClockwiseFace) throw new InvalidOperationException(String.Format("RenderState.CullMode is {0}; expected {1} in {2}.", graphicsDevice.RasterizerState.CullMode, CullMode.CullCounterClockwiseFace, location));
+            if (graphicsDevice.RasterizerState.DepthBias != 0.0f) throw new InvalidOperationException(String.Format("RenderState.DepthBias is {0}; expected {1} in {2}.", graphicsDevice.RasterizerState.DepthBias, 0.0f, location));
+            if (graphicsDevice.DepthStencilState.DepthBufferEnable != true) throw new InvalidOperationException(String.Format("RenderState.DepthBufferEnable is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.DepthBufferEnable, true, location));
+            if (graphicsDevice.DepthStencilState.DepthBufferFunction != CompareFunction.LessEqual) throw new InvalidOperationException(String.Format("RenderState.DepthBufferFunction is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.DepthBufferFunction, CompareFunction.LessEqual, location));
+            if (graphicsDevice.DepthStencilState.DepthBufferWriteEnable != true) throw new InvalidOperationException(String.Format("RenderState.DepthBufferWriteEnable is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.DepthBufferWriteEnable, true, location));
+            if (graphicsDevice.BlendState.ColorDestinationBlend != Blend.Zero) throw new InvalidOperationException(String.Format("RenderState.DestinationBlend is {0}; expected {1} in {2}.", graphicsDevice.BlendState.ColorDestinationBlend, Blend.Zero, location));
+            if (graphicsDevice.RasterizerState.FillMode != FillMode.Solid) throw new InvalidOperationException(String.Format("RenderState.FillMode is {0}; expected {1} in {2}.", graphicsDevice.RasterizerState.FillMode, FillMode.Solid, location));
+//            if (renderState.FogColor != Color.TransparentBlack) throw new InvalidOperationException(String.Format("RenderState.FogColor is {0}; expected {1} in {2}.", renderState.FogColor, Color.TransparentBlack, location));
+//            if (renderState.FogDensity != 1.0f) throw new InvalidOperationException(String.Format("RenderState.FogDensity is {0}; expected {1} in {2}.", renderState.FogDensity, 1.0f, location));
+//            if (renderState.FogEnable != false) throw new InvalidOperationException(String.Format("RenderState.FogEnable is {0}; expected {1} in {2}.", renderState.FogEnable, false, location));
+//            if (renderState.FogEnd != 1.0f) throw new InvalidOperationException(String.Format("RenderState.FogEnd is {0}; expected {1} in {2}.", renderState.FogEnd, 1.0f, location));
+//            if (renderState.FogStart != 0.0f) throw new InvalidOperationException(String.Format("RenderState.FogStart is {0}; expected {1} in {2}.", renderState.FogStart, 0.0f, location));
+//            if (renderState.FogTableMode != FogMode.None) throw new InvalidOperationException(String.Format("RenderState.FogTableMode is {0}; expected {1} in {2}.", renderState.FogTableMode, FogMode.None, location));
+//            if (renderState.FogVertexMode != FogMode.None) throw new InvalidOperationException(String.Format("RenderState.FogVertexMode is {0}; expected {1} in {2}.", renderState.FogVertexMode, FogMode.None, location));
+            if (graphicsDevice.RasterizerState.MultiSampleAntiAlias != true) throw new InvalidOperationException(String.Format("RenderState.MultiSampleAntiAlias is {0}; expected {1} in {2}.", graphicsDevice.RasterizerState.MultiSampleAntiAlias, true, location));
+            if (graphicsDevice.BlendState.MultiSampleMask != -1) throw new InvalidOperationException(String.Format("RenderState.MultiSampleMask is {0}; expected {1} in {2}.", graphicsDevice.BlendState.MultiSampleMask, -1, location));
+//            //if (renderState.PointSize != 64) throw new InvalidOperationException(String.Format("RenderState.e.PointSize is {0}; expected {1} in {2}.", renderState.e.PointSize, 64, location));
+//            //if (renderState.PointSizeMax != 64.0f) throw new InvalidOperationException(String.Format("RenderState.PointSizeMax is {0}; expected {1} in {2}.", renderState.PointSizeMax, 64.0f, location));
+//            //if (renderState.PointSizeMin != 1.0f) throw new InvalidOperationException(String.Format("RenderState.PointSizeMin is {0}; expected {1} in {2}.", renderState.PointSizeMin, 1.0f, location));
+//            if (renderState.PointSpriteEnable != false) throw new InvalidOperationException(String.Format("RenderState.PointSpriteEnable is {0}; expected {1} in {2}.", renderState.PointSpriteEnable, false, location));
+//            if (renderState.RangeFogEnable != false) throw new InvalidOperationException(String.Format("RenderState.RangeFogEnable is {0}; expected {1} in {2}.", renderState.RangeFogEnable, false, location));
+//            if (renderState.ReferenceAlpha != 0) throw new InvalidOperationException(String.Format("RenderState.ReferenceAlpha is {0}; expected {1} in {2}.", renderState.ReferenceAlpha, 0, location));
+            if (graphicsDevice.DepthStencilState.ReferenceStencil != 0) throw new InvalidOperationException(String.Format("RenderState.ReferenceStencil is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.ReferenceStencil, 0, location));
+            if (graphicsDevice.RasterizerState.ScissorTestEnable != false) throw new InvalidOperationException(String.Format("RenderState.ScissorTestEnable is {0}; expected {1} in {2}.", graphicsDevice.RasterizerState.ScissorTestEnable, false, location));
+//            if (renderState.SeparateAlphaBlendEnabled != false) throw new InvalidOperationException(String.Format("RenderState.SeparateAlphaBlendEnabled is {0}; expected {1} in {2}.", renderState.SeparateAlphaBlendEnabled, false, location));
+            if (graphicsDevice.RasterizerState.SlopeScaleDepthBias != 0) throw new InvalidOperationException(String.Format("RenderState.SlopeScaleDepthBias is {0}; expected {1} in {2}.", graphicsDevice.RasterizerState.SlopeScaleDepthBias, 0, location));
+            if (graphicsDevice.BlendState.ColorSourceBlend != Blend.One) throw new InvalidOperationException(String.Format("RenderState.SourceBlend is {0}; expected {1} in {2}.", graphicsDevice.BlendState.ColorSourceBlend, Blend.One, location));
+            if (graphicsDevice.DepthStencilState.StencilDepthBufferFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.StencilDepthBufferFail is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.StencilDepthBufferFail, StencilOperation.Keep, location));
+            if (graphicsDevice.DepthStencilState.StencilEnable != false) throw new InvalidOperationException(String.Format("RenderState.StencilEnable is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.StencilEnable, false, location));
+            if (graphicsDevice.DepthStencilState.StencilFail != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.StencilFail is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.StencilFail, StencilOperation.Keep, location));
+            if (graphicsDevice.DepthStencilState.StencilFunction != CompareFunction.Always) throw new InvalidOperationException(String.Format("RenderState.StencilFunction is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.StencilFunction, CompareFunction.Always, location));
             // DOCUMENTATION IS WRONG, it says Int32.MaxValue:
-            if (renderState.StencilMask != -1) throw new InvalidOperationException(String.Format("RenderState.StencilMask is {0}; expected {1} in {2}.", renderState.StencilMask, -1, location));
-            if (renderState.StencilPass != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.StencilPass is {0}; expected {1} in {2}.", renderState.StencilPass, StencilOperation.Keep, location));
+            if (graphicsDevice.DepthStencilState.StencilMask != -1) throw new InvalidOperationException(String.Format("RenderState.StencilMask is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.StencilMask, -1, location));
+            if (graphicsDevice.DepthStencilState.StencilPass != StencilOperation.Keep) throw new InvalidOperationException(String.Format("RenderState.StencilPass is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.StencilPass, StencilOperation.Keep, location));
             // DOCUMENTATION IS WRONG, it says Int32.MaxValue:
-            if (renderState.StencilWriteMask != -1) throw new InvalidOperationException(String.Format("RenderState.StencilWriteMask is {0}; expected {1} in {2}.", renderState.StencilWriteMask, -1, location));
-            if (renderState.TwoSidedStencilMode != false) throw new InvalidOperationException(String.Format("RenderState.TwoSidedStencilMode is {0}; expected {1} in {2}.", renderState.TwoSidedStencilMode, false, location));
+            if (graphicsDevice.DepthStencilState.StencilWriteMask != -1) throw new InvalidOperationException(String.Format("RenderState.StencilWriteMask is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.StencilWriteMask, -1, location));
+            if (graphicsDevice.DepthStencilState.TwoSidedStencilMode != false) throw new InvalidOperationException(String.Format("RenderState.TwoSidedStencilMode is {0}; expected {1} in {2}.", graphicsDevice.DepthStencilState.TwoSidedStencilMode, false, location));
         }
 #endif
     }

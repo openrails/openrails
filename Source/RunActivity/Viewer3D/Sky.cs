@@ -205,9 +205,7 @@ namespace Orts.Viewer3D
     public class SkyPrimitive : RenderPrimitive
     {
         private VertexBuffer SkyVertexBuffer;
-        private static VertexDeclaration SkyVertexDeclaration;
         private static IndexBuffer SkyIndexBuffer;
-        private static int SkyVertexStride;  // in bytes
         public int drawIndex;
 
         VertexPositionNormalTexture[] vertexList;
@@ -249,8 +247,7 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = SkyVertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(SkyVertexBuffer, 0, SkyVertexStride);
+            graphicsDevice.SetVertexBuffer(SkyVertexBuffer);
             graphicsDevice.Indices = SkyIndexBuffer;
 
             switch (drawIndex)
@@ -427,13 +424,8 @@ namespace Orts.Viewer3D
         /// </summary>
         private void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
         {
-            if (SkyVertexDeclaration == null)
-            {
-                SkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                SkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
-            }
             // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            SkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
+            SkyVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexList.Length, BufferUsage.WriteOnly);
             SkyVertexBuffer.SetData(vertexList);
             if (SkyIndexBuffer == null)
             {
@@ -502,40 +494,38 @@ namespace Orts.Viewer3D
             SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
             SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
+            for (var i = 0; i < 5; i++)
+                graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
+            
             // Sky dome
-            var rs = graphicsDevice.RenderState;
-            rs.DepthBufferWriteEnable = false;
+            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
 
             SkyShader.CurrentTechnique = SkyShader.Techniques["Sky"];
             Viewer.World.Sky.Primitive.drawIndex = 1;
 
+            graphicsDevice.BlendState = BlendState.Opaque;
+
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
             SkyShader.SetViewMatrix(ref XNAViewMatrix);
-            SkyShader.Begin();
             ShaderPassesSky.Reset();
             while (ShaderPassesSky.MoveNext())
             {
-                ShaderPassesSky.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     SkyShader.SetMatrix(ref wvp);
-                    SkyShader.CommitChanges();
+                    ShaderPassesSky.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesSky.Current.End();
             }
-            SkyShader.End();
 
             // Moon
             SkyShader.CurrentTechnique = SkyShader.Techniques["Moon"];
             Viewer.World.Sky.Primitive.drawIndex = 2;
 
-            rs.AlphaBlendEnable = true;
-            rs.CullMode = CullMode.CullClockwiseFace;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             // Send the transform matrices to the shader
             int skyRadius = Viewer.World.Sky.Primitive.skyRadius;
@@ -543,52 +533,41 @@ namespace Orts.Viewer3D
             XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.Sky.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
-            SkyShader.Begin();
             ShaderPassesMoon.Reset();
             while (ShaderPassesMoon.MoveNext())
             {
-                ShaderPassesMoon.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
                     SkyShader.SetMatrix(ref wvp);
-                    SkyShader.CommitChanges();
+                    ShaderPassesMoon.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesMoon.Current.End();
             }
-            SkyShader.End();
 
             // Clouds
             SkyShader.CurrentTechnique = SkyShader.Techniques["Clouds"];
             Viewer.World.Sky.Primitive.drawIndex = 3;
 
-            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
-            SkyShader.Begin();
             ShaderPassesClouds.Reset();
             while (ShaderPassesClouds.MoveNext())
             {
-                ShaderPassesClouds.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     SkyShader.SetMatrix(ref wvp);
-                    SkyShader.CommitChanges();
+                    ShaderPassesClouds.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesClouds.Current.End();
             }
-            SkyShader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DepthBufferWriteEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         public override bool GetBlending()

@@ -124,8 +124,6 @@ namespace ORTS.Settings
         public bool GraduatedRelease { get; set; }
         [Default(false)]
         public bool RetainersOnAllCars { get; set; }
-        [Default(true)]
-        public bool UseLargeAddressAware { get; set; }
         [Default(false)]
         public bool SuppressConfirmations { get; set; }
         [Default(21)]
@@ -164,6 +162,8 @@ namespace ORTS.Settings
         public bool Wire { get; set; }
         [Default(false)]
         public bool VerticalSync { get; set; }
+        [Default(true)]
+        public bool EnableMultisampling { get; set; }
         [Default(0)]
         public int Cab2DStretch { get; set; }
         [Default(2000)]

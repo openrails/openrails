@@ -40,6 +40,7 @@ using System.Net;
 using System.Windows.Forms;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
+using Color = System.Drawing.Color;								   
 
 namespace Orts.Viewer3D.Debugging
 {
