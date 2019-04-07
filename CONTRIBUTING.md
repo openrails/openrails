@@ -81,6 +81,9 @@ If you are reviewing someone elses code for Open Rails, you will need to ensure 
 
 * Check for linked bug report or feature request
 * Check bug report is triaged, and feature request is approved
+  * For a bug, it should have status "Triaged"
+  * For a road-map card, it should not be in the first two columns ("Unsorted" and "Not planned")
+  * For a blueprint, it should have direction "Approved"
 * Read through all of the changes to the code
 * Be sure that all of the changes are necessary
 * Be sure that no changes are missing
