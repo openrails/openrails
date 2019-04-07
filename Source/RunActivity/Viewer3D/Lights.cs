@@ -218,7 +218,7 @@ namespace Orts.Viewer3D
 			var mstsLocomotive = locomotive as MSTSLocomotive;
 
             // Headlight
-			var newTrainHeadlight = locomotive != null ? locomotive.Headlight : 2;
+			var newTrainHeadlight = locomotive != null ? locomotive.Headlight : Car.Train != null && Car.Train.TrainType != Train.TRAINTYPE.STATIC ? 2 : 0;
             // Unit
 			var locomotiveFlipped = locomotive != null && locomotive.Flipped;
 			var locomotiveReverseCab = mstsLocomotive != null && mstsLocomotive.UsingRearCab;
