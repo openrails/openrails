@@ -1199,7 +1199,10 @@ controlled by the mouse with the right button depressed.
   to select a target toward the rear. The 2-View selects the train's head 
   end as the initial target, the 3-View the last car. Alt+Home resets the 
   target to the front, ``<Alt+End>`` to the rear of the train. 
-
+  With commands ``<Shift+Alt+7(Numpad)>`` and ``<Shift+Alt+1(Numpad)>`` 
+  cameras 2 or 3 move gently forward or backward along a stopped or moving 
+  train. By pressing a second time the key sequence the motion stops. 
+  
 The camera's position with respect to the target car is manipulated by the 
 four arrow keys -- left or right arrows rotate the camera's position left or 
 right, up or down arrows rotate the camera's position up or down while 
