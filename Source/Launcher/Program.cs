@@ -148,7 +148,8 @@ namespace ORTS
                 "GNU.Gettext.WinForms.dll",
                 "ICSharpCode.SharpZipLib.dll",
                 "Ionic.Zip.dll",
-                "PIEHidDotNet.dll",
+                "PIEHid32Net.dll",
+                "PIEHid64Net.dll",
                 // Programs:
                 "Menu.exe",
                 "RunActivity.exe",
