@@ -42,6 +42,7 @@ using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml.Serialization;
+using Color = System.Drawing.Color;
 
 namespace ActivityEditor.Engine
 {

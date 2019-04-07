@@ -50,7 +50,7 @@ namespace ORTS.TrackViewer.UserInterface
             RecolorAll();
         }
 
-        private static Color? ConvertXnaColorToMediaColor(Microsoft.Xna.Framework.Graphics.Color? originalColor)
+        private static Color? ConvertXnaColorToMediaColor(Microsoft.Xna.Framework.Color? originalColor)
         {
             if (originalColor == null)
             {

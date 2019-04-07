@@ -20,19 +20,158 @@ using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Settings;
-using PIEHidDotNet;
+using PIEHid32Net;
+using PIEHid64Net;
 using System;
 using System.Diagnostics;
 using System.IO;
 
 namespace Orts.Viewer3D
 {
+    internal delegate void RailDriverDataRead(byte[] data, RailDriverBase sourceDevice);
+
+    internal abstract class RailDriverBase
+    {
+        private static RailDriverBase instance;
+
+        public static RailDriverBase GetInstance()
+        {
+            if (null == instance)
+            {
+                if (Environment.Is64BitProcess)
+                {
+                    instance = new RailDriver64();
+                }
+                else
+                {
+                    instance = new RailDriver32();
+                }
+            }
+            return instance;
+        }
+
+        public abstract int WriteBufferSize { get; }
+
+        public abstract int WriteData(byte[] writeBuffer);
+
+        public abstract int ReadData(ref byte[] readBuffer);
+
+        public abstract event RailDriverDataRead OnDataRead;
+
+    }
+
+    internal class RailDriver32 : RailDriverBase, PIEHid32Net.PIEDataHandler, PIEHid32Net.PIEErrorHandler
+    {
+        private readonly PIEHid32Net.PIEDevice device;                   // Our RailDriver
+
+        public override event RailDriverDataRead OnDataRead;
+
+        public RailDriver32()
+        {
+            try
+            {
+                foreach (PIEHid32Net.PIEDevice currentDevice in PIEHid32Net.PIEDevice.EnumeratePIE())
+                {
+                    if (currentDevice.HidUsagePage == 0xc && currentDevice.Pid == 210)
+                    {
+                        device = currentDevice;
+                        device.SetupInterface();
+                        device.SetErrorCallback(this);
+                        device.SetDataCallback(this);
+                        device.suppressDuplicateReports = true;
+                        break;
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                device = null;
+                Trace.WriteLine(error);
+            }
+        }
+
+        public void HandlePIEHidData(byte[] data, PIEHid32Net.PIEDevice sourceDevice, int error)
+        {
+            OnDataRead?.Invoke(data, this);
+        }
+
+        public void HandlePIEHidError(PIEHid32Net.PIEDevice sourceDevices, int error)
+        {
+            Trace.TraceWarning("RailDriver Error: {0}", error);
+        }
+
+        public override int WriteBufferSize => device?.WriteLength ?? 0;
+
+        public override int WriteData(byte[] writeBuffer)
+        {
+            return device?.WriteData(writeBuffer) ?? -1;
+        }
+
+        public override int ReadData(ref byte[] readBuffer)
+        {
+            return device?.ReadData(ref readBuffer) ?? -1;
+        }
+    }
+
+    internal class RailDriver64 : RailDriverBase, PIEHid64Net.PIEDataHandler, PIEHid64Net.PIEErrorHandler
+    {
+        private readonly PIEHid64Net.PIEDevice device;                   // Our RailDriver
+
+        public override event RailDriverDataRead OnDataRead;
+
+        public RailDriver64()
+        {
+            try
+            {
+                foreach (PIEHid64Net.PIEDevice currentDevice in PIEHid64Net.PIEDevice.EnumeratePIE())
+                {
+                    if (currentDevice.HidUsagePage == 0xc && currentDevice.Pid == 210)
+                    {
+                        device = currentDevice;
+                        device.SetupInterface();
+                        device.SetErrorCallback(this);
+                        device.SetDataCallback(this);
+                        device.suppressDuplicateReports = true;
+                        break;
+                    }
+                }
+            }
+            catch (Exception error)
+            {
+                device = null;
+                Trace.WriteLine(error);
+            }
+        }
+
+        public void HandlePIEHidData(byte[] data, PIEHid64Net.PIEDevice sourceDevice, int error)
+        {
+            OnDataRead?.Invoke(data, this);
+        }
+
+        public void HandlePIEHidError(PIEHid64Net.PIEDevice sourceDevices, long error)
+        {
+            Trace.TraceWarning("RailDriver Error: {0}", error);
+        }
+
+        public override int WriteBufferSize => (int)(device?.WriteLength ?? 0);
+
+        public override int WriteData(byte[] writeBuffer)
+        {
+            return device?.WriteData(writeBuffer) ?? -1;
+        }
+
+        public override int ReadData(ref byte[] readBuffer)
+        {
+            return device?.ReadData(ref readBuffer) ?? -1;
+        }
+    }
+
     /// <summary>
     /// Class to get data from RailDriver and translate it into something useful for UserInput
     /// </summary>
-    public class UserInputRailDriver : PIEDataHandler, PIEErrorHandler
+    public class UserInputRailDriver
     {
-        PIEDevice Device;                   // Our RailDriver
+        RailDriverBase Device;                   // Our RailDriver
         byte[] WriteBuffer;                 // Buffer for sending data to RailDriver
         bool Active;                        // True when RailDriver values are used to control player loco
         RailDriverState State;              // Interpreted data from RailDriver passed to UserInput
@@ -69,21 +208,14 @@ namespace Orts.Viewer3D
         {
             try
             {
-                PIEDevice[] devices = PIEHidDotNet.PIEDevice.EnumeratePIE();
-                for (int i = 0; i < devices.Length; i++)
+                Device = RailDriverBase.GetInstance();
+                if (Device != null)
                 {
-                    if (devices[i].HidUsagePage == 0xc && devices[i].Pid == 210)
-                    {
-                        Device = devices[i];
-                        Device.SetupInterface();
-                        Device.SetErrorCallback(this);
-                        Device.SetDataCallback(this, DataCallbackFilterType.callOnChangedData);
-                        WriteBuffer = new byte[Device.WriteLength];
-                        State = new RailDriverState();
-                        SetLEDs(0x40, 0x40, 0x40);
-                        ReadCalibrationData(basePath);
-                        break;
-                    }
+                    WriteBuffer = new byte[Device.WriteBufferSize];
+                    State = new RailDriverState();
+                    SetLEDs(0x40, 0x40, 0x40);
+                    ReadCalibrationData(basePath);
+                    Device.OnDataRead += HandlePIEHidData;
                 }
             }
             catch (Exception error)
@@ -98,7 +230,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="data"></param>
         /// <param name="sourceDevice"></param>
-        public void HandlePIEHidData(Byte[] data, PIEDevice sourceDevice)
+        private void HandlePIEHidData(byte[] data, RailDriverBase sourceDevice)
         {
             if (sourceDevice != Device)
                 return;
@@ -152,16 +284,6 @@ namespace Orts.Viewer3D
             State.Changed = true;
         }
         
-        /// <summary>
-        /// Error callback
-        /// </summary>
-        /// <param name="error"></param>
-        /// <param name="sourceDevice"></param>
-        public void HandlePIEHidError(Int32 error, PIEDevice sourceDevice)
-        {
-            Trace.TraceWarning("RailDriver Error: {0}", error);
-        }
-
         static float Percentage(float x, float x0, float x100)
         {
             float p= 100 * (x - x0) / (x100 - x0);

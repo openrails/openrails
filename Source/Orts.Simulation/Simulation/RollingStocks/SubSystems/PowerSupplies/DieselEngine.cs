@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions;
@@ -756,8 +756,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "maxexhaust":      MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxExhaust; break;
                     case "exhaustdynamics": ExhaustAccelIncrease = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ExhaustDynamics; break;
                     case "exhaustdynamicsdown": ExhaustDecelReduction = stf.ReadFloatBlock(STFReader.UNITS.None, null); initLevel |= SettingsFlags.ExhaustDynamics; break;
-                    case "exhaustcolor":    ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue); initLevel |= SettingsFlags.ExhaustColor; break;
-                    case "exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue);initLevel |= SettingsFlags.ExhaustTransientColor; break;
+                    case "exhaustcolor":
+                        // Color byte order changed in XNA 4 from BGRA to RGBA
+                        ExhaustSteadyColor.PackedValue = stf.ReadHexBlock(Color.Gray.PackedValue);
+                        var tempSR = ExhaustSteadyColor.R;
+                        ExhaustSteadyColor.R = ExhaustSteadyColor.B;
+                        ExhaustSteadyColor.B = tempSR;
+                        initLevel |= SettingsFlags.ExhaustColor;
+                        break;
+                    case "exhausttransientcolor":
+                        ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue);
+                        var tempTR = ExhaustTransientColor.R;
+                        ExhaustTransientColor.R = ExhaustTransientColor.B;
+                        ExhaustTransientColor.B = tempTR;
+                        initLevel |= SettingsFlags.ExhaustTransientColor;
+                        break;
                     case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselPowerTab; break;
                     case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselConsumptionTab; break;
                     case "throttlerpmtab": ThrottleRPMTab = new Interpolator(stf); initLevel |= SettingsFlags.ThrottleRPMTab; break;

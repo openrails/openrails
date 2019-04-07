@@ -516,6 +516,10 @@ namespace Orts.Viewer3D
         /// Used for InGame sounds and activity sounds of type "Overall"
         /// </summary>
         public bool IsUnattenuated = false;
+        /// <summary>
+        /// Used for Horns
+        /// </summary>
+        public float HornRolloffFactor = 0.05f;
 
         /// <summary>
         /// Construct a SoundSource attached to a train car.
@@ -1167,8 +1171,20 @@ namespace Orts.Viewer3D
             SoundSource = soundSource;
             MSTSStream = mstsStream;
             Volume = MSTSStream.Volume;
+            var rolloffFactor = SoundSource.RolloffFactor;
 
-            ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, soundSource.RolloffFactor);
+            // Insert lower RollOff for horns
+            if (mstsStream.Triggers != null)
+            {
+                foreach (Orts.Formats.Msts.Trigger trigger in mstsStream.Triggers)
+                    if (trigger.GetType() == typeof(Orts.Formats.Msts.Discrete_Trigger) && soundSource.Car != null && (trigger as Discrete_Trigger).TriggerID == 8)
+                    {
+                        rolloffFactor = SoundSource.HornRolloffFactor;
+                        break;
+                    }
+            }
+
+            ALSoundSource = new ALSoundSource(soundSource.IsEnvSound, rolloffFactor);
 
             if (mstsStream.Triggers != null)
                 foreach (Orts.Formats.Msts.Trigger trigger in mstsStream.Triggers)

@@ -186,7 +186,7 @@ namespace Orts.Simulation.RollingStocks
         public bool VacuumPumpOperating = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public bool VacuumPumpFitted;
-        public bool SmallEjectorFitted;
+        public bool SmallEjectorFitted = false;
         public float VacuumPumpResistanceN;
         public float EjectorSmallSteamConsumptionLbpS;
         public float EjectorLargeSteamConsumptionLbpS;
