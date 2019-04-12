@@ -23,11 +23,11 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using GNU.Gettext;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ORTS.Common;
-using GNU.Gettext;
 using ORTS.Common.Input;
 
 namespace ORTS.Settings

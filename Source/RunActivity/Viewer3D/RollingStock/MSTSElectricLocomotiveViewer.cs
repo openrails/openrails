@@ -17,11 +17,10 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Orts.Simulation.RollingStocks;
-using Orts.Common;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
+using Orts.Common;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
 using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock

@@ -15,12 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using MSTS;
-using ORTS.Common.Input;
-using ORTS.Settings;
-using ORTS.Updater;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -28,6 +22,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using MSTS;
+using ORTS.Common.Input;
+using ORTS.Settings;
+using ORTS.Updater;
 
 namespace ORTS
 {

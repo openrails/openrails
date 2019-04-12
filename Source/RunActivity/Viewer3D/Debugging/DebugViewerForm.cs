@@ -21,6 +21,14 @@
 //    Richard Plokhaar / Signalsoft Rail Consultancy Ltd.
 // 
 
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Forms;
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
@@ -30,14 +38,6 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
 

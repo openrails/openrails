@@ -17,6 +17,10 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Orts.Common;
 using Orts.Formats.Msts;
@@ -24,13 +28,8 @@ using Orts.Formats.OR;
 using Orts.MultiPlayer;
 using Orts.Simulation;
 using ORTS.Common;
-using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Diagnostics;
-using Events = Orts.Common.Events;
 using ORTS.Common.Input;
+using Events = Orts.Common.Events;
 
 namespace Orts.Viewer3D
 {

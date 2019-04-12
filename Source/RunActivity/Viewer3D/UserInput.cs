@@ -29,11 +29,11 @@
 // This logs every UserCommandInput change from pressed to released.
 //#define DEBUG_USER_INPUT
 
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework.Input;
 using ORTS.Common.Input;
 using ORTS.Settings;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Game = Orts.Viewer3D.Processes.Game;
 
 namespace Orts.Viewer3D
