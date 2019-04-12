@@ -22,6 +22,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using ORTS.Common;
+using ORTS.Common.Input;
 using ORTS.Settings;
 using System;
 
@@ -183,7 +184,7 @@ namespace Orts.Viewer3D.Popups
                 (PickedTrainFromList as AITrain).IncorporatingTrain.IsPathless && (PickedTrainFromList as AITrain).IncorporatingTrain == Viewer.SelectedTrain)) && !PickedTrainFromList.IsActualPlayerTrain &&
                 Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable)
             {
-                if (UserInput.IsDown(UserCommands.GameSuspendOldPlayer))
+                if (UserInput.IsDown(UserCommand.GameSuspendOldPlayer))
                     Viewer.Simulator.TrainSwitcher.SuspendOldPlayer = true;
                 //Ask for change of driven train
                 Viewer.Simulator.TrainSwitcher.SelectedAsPlayer = PickedTrainFromList;

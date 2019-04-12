@@ -919,11 +919,11 @@ namespace Orts.Viewer3D.Debugging
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
 						switchPickedLocation.Y -= 22;
-						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
 						switchPickedLocation.Y += 8;
 					}
 					switchPickedLocation.Y -= 30;
-					g.DrawString(InputSettings.Commands[(int)UserCommands.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
+					g.DrawString(InputSettings.Commands[(int)UserCommand.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
 				}
 				if (signalPickedItem != null /*&& signalPickedItemChanged == true*/ && !signalPickedItemHandled && simulator.GameTime - signalPickedTime < 5)
 				{
@@ -936,7 +936,7 @@ namespace Orts.Viewer3D.Debugging
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
 						signalPickedLocation.Y -= 24;
-						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
 					}
 				}
 #endif

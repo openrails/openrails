@@ -31,6 +31,7 @@
 
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using ORTS.Common.Input;
 using ORTS.Settings;
 using System;
 using System.Diagnostics;
@@ -103,7 +104,7 @@ namespace Orts.Viewer3D
 
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.DebugLogger))
+            if (UserInput.IsPressed(UserCommand.DebugLogger))
             {
                 Viewer.Settings.DataLogger = !Viewer.Settings.DataLogger;
                 if (Viewer.Settings.DataLogger)

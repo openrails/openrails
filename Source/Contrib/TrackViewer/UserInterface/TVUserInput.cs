@@ -114,7 +114,7 @@ namespace ORTS.TrackViewer.UserInterface
                 Console.WriteLine("Mouse scrollwheel changed by {0}", MouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue);
 #endif
 #if DEBUG_USER_INPUT
-            foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+            foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
             {
                 if (TVUserInputut.IsPressed(command))
                     Console.WriteLine("Pressed  {0} - {1}", command, TVInputSettings.Commands[(int)command]);

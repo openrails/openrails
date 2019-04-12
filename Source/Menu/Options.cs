@@ -18,6 +18,7 @@
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
 using MSTS;
+using ORTS.Common.Input;
 using ORTS.Settings;
 using ORTS.Updater;
 using System;
@@ -358,14 +359,14 @@ namespace ORTS
             var columnWidth = (panelKeys.ClientSize.Width - 20) / 2;
 
             var tempLabel = new Label();
-            var tempKIC = new KeyInputControl(Settings.Input.Commands[(int)UserCommands.GameQuit], InputSettings.DefaultCommands[(int)UserCommands.GameQuit]);
+            var tempKIC = new KeyInputControl(Settings.Input.Commands[(int)UserCommand.GameQuit], InputSettings.DefaultCommands[(int)UserCommand.GameQuit]);
             var rowTop = Math.Max(tempLabel.Margin.Top, tempKIC.Margin.Top);
             var rowHeight = tempKIC.Height;
             var rowSpacing = rowHeight + tempKIC.Margin.Vertical;
 
             var lastCategory = "";
             var i = 0;
-            foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+            foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
             {
                 var name = InputSettings.GetPrettyLocalizedName(command);
                 var category = ParseCategoryFrom(name);
