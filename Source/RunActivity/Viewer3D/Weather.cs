@@ -17,6 +17,10 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
@@ -25,11 +29,7 @@ using Orts.Formats.OR;
 using Orts.MultiPlayer;
 using Orts.Simulation;
 using ORTS.Common;
-using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Diagnostics;
+using ORTS.Common.Input;
 using Events = Orts.Common.Events;
 
 namespace Orts.Viewer3D
@@ -356,7 +356,7 @@ namespace Orts.Viewer3D
             else if (!MPManager.IsClient())
             {
                 // The user is able to change the weather for debugging. This will cycle through clear, rain and snow.
-                if (UserInput.IsPressed(UserCommands.DebugWeatherChange))
+                if (UserInput.IsPressed(UserCommand.DebugWeatherChange))
                 {
                     switch (Viewer.Simulator.WeatherType)
                     {
@@ -381,13 +381,13 @@ namespace Orts.Viewer3D
                 }
 
                 // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
-                if (UserInput.IsDown(UserCommands.DebugOvercastIncrease))
+                if (UserInput.IsDown(UserCommand.DebugOvercastIncrease))
                 {
                     Weather.OvercastFactor = MathHelper.Clamp(Weather.OvercastFactor + elapsedTime.RealSeconds / 10, 0, 1);
                     weatherChangeOn = false;
                     if (dynamicWeather != null) dynamicWeather.ORTSOvercast = -1;
                 }
-                if (UserInput.IsDown(UserCommands.DebugOvercastDecrease))
+                if (UserInput.IsDown(UserCommand.DebugOvercastDecrease))
                 {
                     Weather.OvercastFactor = MathHelper.Clamp(Weather.OvercastFactor - elapsedTime.RealSeconds / 10, 0, 1);
                     weatherChangeOn = false;
@@ -397,7 +397,7 @@ namespace Orts.Viewer3D
                 // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                 // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
                 // 0xFFFF represents 65535 which is the max for 16bit devices.
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease))
+                if (UserInput.IsDown(UserCommand.DebugPrecipitationIncrease))
                 {
                     if (Viewer.Simulator.WeatherType == WeatherType.Clear)
                     {
@@ -418,7 +418,7 @@ namespace Orts.Viewer3D
                     weatherChangeOn = false;
                     if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
                 }
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationDecrease))
+                if (UserInput.IsDown(UserCommand.DebugPrecipitationDecrease))
                 {
                     Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2,
                         Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef ? PrecipitationViewer.MaxIntensityPPSPM2 : PrecipitationViewer.MaxIntensityPPSPM2_16);
@@ -435,10 +435,10 @@ namespace Orts.Viewer3D
                     weatherChangeOn = false;
                     if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
                 }
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationDecrease)) UpdateVolume();
+                if (UserInput.IsDown(UserCommand.DebugPrecipitationIncrease) || UserInput.IsDown(UserCommand.DebugPrecipitationDecrease)) UpdateVolume();
  
                 // Change in precipitation liquidity, passing from rain to snow and vice-versa
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityIncrease))
+                if (UserInput.IsDown(UserCommand.DebugPrecipitationLiquidityIncrease))
                 {
                     Weather.PrecipitationLiquidity = MathHelper.Clamp(Weather.PrecipitationLiquidity + 0.01f, 0, 1);
                     weatherChangeOn = false;
@@ -452,7 +452,7 @@ namespace Orts.Viewer3D
 
                     }
                 }
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityDecrease))
+                if (UserInput.IsDown(UserCommand.DebugPrecipitationLiquidityDecrease))
                 {
                     Weather.PrecipitationLiquidity = MathHelper.Clamp(Weather.PrecipitationLiquidity - 0.01f, 0, 1);
                     weatherChangeOn = false;
@@ -465,16 +465,16 @@ namespace Orts.Viewer3D
                         Viewer.SoundProcess.AddSoundSources(this, SnowSound);
                     }
                 }
-                if (UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityIncrease) || UserInput.IsDown(UserCommands.DebugPrecipitationLiquidityDecrease)) UpdateVolume();
+                if (UserInput.IsDown(UserCommand.DebugPrecipitationLiquidityIncrease) || UserInput.IsDown(UserCommand.DebugPrecipitationLiquidityDecrease)) UpdateVolume();
 
                 // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
-                if (UserInput.IsDown(UserCommands.DebugFogIncrease))
+                if (UserInput.IsDown(UserCommand.DebugFogIncrease))
                 {
                     Weather.FogDistance = MathHelper.Clamp(Weather.FogDistance - elapsedTime.RealSeconds * Weather.FogDistance, 10, 100000);
                     weatherChangeOn = false;
                     if (dynamicWeather != null) dynamicWeather.ORTSFog = -1;
                 }
-                if (UserInput.IsDown(UserCommands.DebugFogDecrease))
+                if (UserInput.IsDown(UserCommand.DebugFogDecrease))
                 {
                     Weather.FogDistance = MathHelper.Clamp(Weather.FogDistance + elapsedTime.RealSeconds * Weather.FogDistance, 10, 100000);
                     if (dynamicWeather != null) dynamicWeather.ORTSFog = -1;
@@ -487,16 +487,16 @@ namespace Orts.Viewer3D
             if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
             {
                 // Shift the clock forwards or backwards at 1h-per-second.
-                if (UserInput.IsDown(UserCommands.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
-                if (UserInput.IsDown(UserCommands.DebugClockBackwards)) Viewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
+                if (UserInput.IsDown(UserCommand.DebugClockForwards)) Viewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
+                if (UserInput.IsDown(UserCommand.DebugClockBackwards)) Viewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
             }
 
             // If we're a multiplayer server, send out the new overcastFactor, pricipitationIntensity and fogDistance to all clients.
             if (MPManager.IsServer())
             {
-                if (UserInput.IsReleased(UserCommands.DebugOvercastIncrease) || UserInput.IsReleased(UserCommands.DebugOvercastDecrease)
-                    || UserInput.IsReleased(UserCommands.DebugPrecipitationIncrease) || UserInput.IsReleased(UserCommands.DebugPrecipitationDecrease)
-                    || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
+                if (UserInput.IsReleased(UserCommand.DebugOvercastIncrease) || UserInput.IsReleased(UserCommand.DebugOvercastDecrease)
+                    || UserInput.IsReleased(UserCommand.DebugPrecipitationIncrease) || UserInput.IsReleased(UserCommand.DebugPrecipitationDecrease)
+                    || UserInput.IsReleased(UserCommand.DebugFogIncrease) || UserInput.IsReleased(UserCommand.DebugFogDecrease))
                 {
                     MPManager.Instance().SetEnvInfo(Weather.OvercastFactor, Weather.FogDistance);
                     MPManager.Notify((new MSGWeather(-1, Weather.OvercastFactor, Weather.PricipitationIntensityPPSPM2, Weather.FogDistance)).ToString());
