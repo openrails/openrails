@@ -68,6 +68,7 @@
     <Compile Include="SmoothedData.cs" />
     <Compile Include="SystemInfo.cs" />
     <Compile Include="TrackMonitorSignalAspect.cs" />
+    <Compile Include="Input\UserCommand.cs" />
     <Compile Include="VersionInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
