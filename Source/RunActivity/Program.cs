@@ -32,7 +32,7 @@ namespace Orts
 {
     static class NativeMethods
     {
-        [DllImport("kernel32.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("kernel32.dll", CallingConvention = CallingConvention.StdCall)]
         internal static extern bool SetDllDirectory(string pathName);
     }
 
@@ -56,7 +56,7 @@ namespace Orts
 
             //enables loading of dll for specific architecture(32 or 64bit) from distinct folders, useful when both versions require same name (as for OpenAL32.dll)
             string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Native");
-            path = Path.Combine(path, (IntPtr.Size == 8) ? "X64" : "X86"); //IntPtr check will be changed after .NET 4.0 to: if(Environment.Is64BitProcess)
+            path = Path.Combine(path, (Environment.Is64BitProcess) ? "X64" : "X86");
             NativeMethods.SetDllDirectory(path);
 
             var game = new Game(settings);
