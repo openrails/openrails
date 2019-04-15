@@ -24,15 +24,15 @@
 // complex feature and performance is not guaranteed.
 #define RENDER_BLEND_SORTING
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Viewer3D.Processes;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Processes;
+using ORTS.Common;
+using ORTS.Common.Input;
 using Game = Orts.Viewer3D.Processes.Game;
 
 namespace Orts.Viewer3D
@@ -484,7 +484,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public void PrepareFrame(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.DebugLockShadows))
+            if (UserInput.IsPressed(UserCommand.DebugLockShadows))
                 LockShadows = !LockShadows;
 
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
@@ -664,7 +664,7 @@ namespace Orts.Viewer3D
 #if DEBUG_RENDER_STATE
 			DebugRenderState(graphicsDevice.RenderState, "RenderFrame.Draw");
 #endif
-            var logging = UserInput.IsPressed(UserCommands.DebugLogRenderFrame);
+            var logging = UserInput.IsPressed(UserCommand.DebugLogRenderFrame);
             if (logging)
             {
                 Console.WriteLine();
