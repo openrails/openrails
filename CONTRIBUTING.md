@@ -89,3 +89,17 @@ If you are reviewing someone elses code for Open Rails, you will need to ensure 
 * Be sure that no changes are missing
 * Check that any new classes, fields, methods, etc., follow the naming guidelines
 * Be on the lookout for data being access across threads
+
+### Leeway when reviewing
+
+Although we'd like all code written to exactly match the guidelines given in this document, that is not practical - not least because nobody is likely able to remember every single detail of the guidelines at any one time, whether writing or reviewing code. Therefore, there is always going to be some leeway between the guidelines and what is accepted into Open Rails.
+
+You should take special care when reviewing first-time and new contributors, to ensure that we accept their contribution even when it does not strictly conform to the guidelines, as this will encourage them to continue contributing.
+
+For all contributions that deviate from the guidelines, there are a few approaches you can take:
+
+* Politely and constructively suggest changes on the pull request (if possible, include the desired code)
+* Make the changes yourself (GitHub provides instructions to push changes to other people's pull requests)
+* Accept the code as-is, leaving a note for how to improve for the next pull request
+
+It is expected that most contributors will quickly correct their code based on feedback, either in the same pull request or subsequent ones, depending on the path taken above. However, if a contributor continues to not meet the same part of the guidelines, you are free to become more strict with them - it's still helpful to suggest the corrected code, but do not feel obliged to spend time helping the same person with the same part of the guidelines repeatedly.
