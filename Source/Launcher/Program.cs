@@ -59,7 +59,6 @@ namespace ORTS
             CheckNetFx(missingDependencies);
             CheckXNA(missingDependencies);
             CheckDXRuntime(missingDependencies);
-            CheckOpenAL(missingDependencies);
 
             if (missingDependencies.Count > 0)
             {
@@ -145,20 +144,6 @@ namespace ORTS
             });
         }
 
-        static void CheckOpenAL(List<DependencyHint> missingDependencies)
-        {
-            if (File.Exists(Path.Combine(Environment.SystemDirectory, "OpenAL32.dll")))
-                return;
-
-            missingDependencies.Add(new DependencyHint()
-            {
-                Name = "OpenAL Runtime",
-                Text = "Please go to\n https://www.openal.org/downloads/oalinst.zip \nto download the installer package for " +
-                "OpenAL Audio Library. Please unzip the downloaded package and run the oalinst.exe file.",
-                Url = "https://www.openal.org/downloads/oalinst.zip"
-            });
-        }
-
         static void CheckOR(List<string> missingFiles, string path)
         {
             foreach (var file in new[] {
@@ -168,6 +153,8 @@ namespace ORTS
                 "ICSharpCode.SharpZipLib.dll",
                 "Ionic.Zip.dll",
                 "PIEHidDotNet.dll",
+                @"Native/X86/OpenAL32.dll",
+                @"Native/X64/OpenAL32.dll",
                 // Programs:
                 "Menu.exe",
                 "RunActivity.exe",

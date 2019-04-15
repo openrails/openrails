@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Text;
 
 namespace Orts.Viewer3D
 {
@@ -409,6 +410,7 @@ namespace Orts.Viewer3D
         public static int HornEffectID;
         public static void Initialize()
         {
+            CheckMaxSourcesConfig();
             //if (alcIsExtensionPresent(IntPtr.Zero, "ALC_ENUMERATION_EXT") == AL_TRUE)
             //{
             //    string deviceList = alcGetString(IntPtr.Zero, ALC_DEVICE_SPECIFIER);
@@ -422,6 +424,45 @@ namespace Orts.Viewer3D
 
             // Note: Must use custom marshalling here because the returned strings must NOT be automatically deallocated by runtime.
             Trace.TraceInformation("Initialized OpenAL {0}; device '{1}' by '{2}'", Marshal.PtrToStringAnsi(alGetString(AL_VERSION)), Marshal.PtrToStringAnsi(alGetString(AL_RENDERER)), Marshal.PtrToStringAnsi(alGetString(AL_VENDOR)));
+        }
+
+        /// <summary>
+        /// checking and if necessary updating the maximum number of sound sources possible with OpenAL to be loaded
+        /// OpenAL has a limit of 256 sources in code, but higher values can be configured through alsoft.ini-file read from %AppData%\Roaming folder
+        /// As some dense routes in OR can have more than 256 sources, we provide a new default limit of 1024 sources
+        /// ini-file format is following standard text based ini-files with sections and key/value pairs
+        /// [General]
+        /// sources=# of sound source
+        /// </summary>
+        private static void CheckMaxSourcesConfig()
+        {
+            string configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "alsoft.ini");
+            try
+            {
+                if (!File.Exists(configFile))
+                {
+                    File.CreateText(configFile);
+                }
+                StringBuilder result = new StringBuilder(255);
+                if (ORTS.Common.NativeMethods.GetPrivateProfileString("General", "sources", string.Empty, result, 255, configFile) > 0)
+                {
+                    if (int.TryParse(result.ToString(), out int sources))
+                    {
+                        if (sources < 1024)
+                        {
+                            ORTS.Common.NativeMethods.WritePrivateProfileString("General", "sources", "1024", configFile);
+                        }
+                    }
+                }
+                else
+                {
+                    ORTS.Common.NativeMethods.WritePrivateProfileString("General", "sources", "1024", configFile);
+                }
+            }
+            catch(Exception ex)
+            {
+                Trace.TraceError("Couldn't check or set OpenAL max sound sources in %AppData%\\Roaming\\alsoft.ini: ", ex.Message);
+            }
         }
     }
 

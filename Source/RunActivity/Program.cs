@@ -15,6 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using Orts.Common;
 using Orts.Simulation;
 using Orts.Viewer3D;
@@ -22,10 +27,15 @@ using Orts.Viewer3D.Debugging;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
 using ORTS.Settings;
-using System.Linq;
 
 namespace Orts
 {
+    static class NativeMethods
+    {
+        [DllImport("kernel32.dll", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern bool SetDllDirectory(string pathName);
+    }
+
     static class Program
     {
         public static Simulator Simulator;
@@ -43,6 +53,11 @@ namespace Orts
         {
             var options = args.Where(a => a.StartsWith("-") || a.StartsWith("/")).Select(a => a.Substring(1));
             var settings = new UserSettings(options);
+
+            //enables loading of dll for specific architecture(32 or 64bit) from distinct folders, useful when both versions require same name (as for OpenAL32.dll)
+            string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Native");
+            path = Path.Combine(path, (IntPtr.Size == 8) ? "X64" : "X86"); //IntPtr check will be changed after .NET 4.0 to: if(Environment.Is64BitProcess)
+            NativeMethods.SetDllDirectory(path);
 
             var game = new Game(settings);
             game.PushState(new GameStateRunActivity(args));
