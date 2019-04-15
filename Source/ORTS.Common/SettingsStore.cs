@@ -22,6 +22,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32;
 
 namespace ORTS.Common
@@ -532,6 +533,23 @@ namespace ORTS.Common
         /// In the event the initialization file specified by <paramref name="fileName"/> is not found, or contains invalid values, this function will set errorno with a value of '0x2' (File Not Found). To retrieve extended error information, call GetLastError.</returns>
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         public static extern int GetPrivateProfileString(string sectionName, string keyName, string defaultValue, string value, int size, string fileName);
+
+        /// <summary>
+        /// Retrieves a string from the specified section in an initialization file.
+        /// </summary>
+        /// <param name="sectionName">The name of the section containing the key name. If this parameter is <c>null</c>, the <see cref="GetPrivateProfileString"/> function copies all section names in the file to the supplied buffer.</param>
+        /// <param name="keyName">The name of the key whose associated string is to be retrieved. If this parameter is <c>null</c>, all key names in the section specified by the <paramref name="sectionName"/> parameter are copied to the buffer specified by the <paramref name="value"/> parameter.</param>
+        /// <param name="defaultValue">A default string. If the <paramref name="keyName"/> key cannot be found in the initialization file, <see cref="GetPrivateProfileString"/> copies the default string to the <paramref name="value"/> buffer. If this parameter is <c>null</c>, the default is an empty string, <c>""</c>.
+        /// Avoid specifying a default string with trailing blank characters. The function inserts a <c>null</c> character in the <paramref name="value"/> buffer to strip any trailing blanks.</param>
+        /// <param name="value">A pointer to the buffer that receives the retrieved string. </param>
+        /// <param name="size">The size of the buffer pointed to by the <paramref name="value"/> parameter, in characters.</param>
+        /// <param name="fileName">The name of the initialization file. If this parameter does not contain a full path to the file, the system searches for the file in the Windows directory.</param>
+        /// <returns>The return value is the number of characters copied to the buffer, not including the terminating <c>null</c> character.
+        /// If neither <paramref name="sectionName"/> nor <paramref name="keyName"/> is <c>null</c> and the supplied destination buffer is too small to hold the requested string, the string is truncated and followed by a <c>null</c> character, and the return value is equal to <paramref name="size"/> minus one.
+        /// If either <paramref name="sectionName"/> or <paramref name="keyName"/> is <c>null</c> and the supplied destination buffer is too small to hold all the strings, the last string is truncated and followed by two <c>null</c> characters. In this case, the return value is equal to <paramref name="size"/> minus two.
+        /// In the event the initialization file specified by <paramref name="fileName"/> is not found, or contains invalid values, this function will set errorno with a value of '0x2' (File Not Found). To retrieve extended error information, call GetLastError.</returns>
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        public static extern int GetPrivateProfileString(string sectionName, string keyName, string defaultValue, StringBuilder value, int size, string fileName);
 
         /// <summary>
         /// Copies a string into the specified section of an initialization file.

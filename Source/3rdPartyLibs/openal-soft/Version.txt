@@ -1,0 +1,5 @@
+Current Version used: 	openal-soft-1.16.0
+
+Github: 		https://github.com/kcat/openal-soft
+Project Homepage: 	https://kcat.strangesoft.net/openal.html
+Binaries Archive: 	https://kcat.strangesoft.net/openal-binaries/
