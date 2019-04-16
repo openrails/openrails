@@ -7668,7 +7668,7 @@ namespace Orts.Simulation.Timetables
                         if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
                         {
                             TTTrainCommands.TTTrainComQualifiers thisQualifier = thisCommand.CommandQualifiers[0]; // takes only 1 qualifier
-                            if (String.Equals(thisQualifier.QualifierName.Trim().ToLower(), "depart"))
+                            if (thisQualifier.QualifierName.Trim().ToLower() == "depart")
                             {
                                 thisTrigger.activationType = TriggerActivationType.StationDepart;
                             }
