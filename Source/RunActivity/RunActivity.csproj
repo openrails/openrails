@@ -14,6 +14,31 @@
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
     <TargetFrameworkProfile />
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\Program\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WINDOWS;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\Program\</OutputPath>
+    <DefineConstants>TRACE;WINDOWS;NEW_ACTION;WITH_NEW_SAVE;ACTIVITY_EDITOR</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
+    <PlatformTarget>x86</PlatformTarget>
+    <NoWarn>1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Orts.Program</StartupObject>
   </PropertyGroup>
