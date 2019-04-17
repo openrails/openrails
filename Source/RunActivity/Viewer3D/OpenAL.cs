@@ -439,10 +439,6 @@ namespace Orts.Viewer3D
             string configFile = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "alsoft.ini");
             try
             {
-                if (!File.Exists(configFile))
-                {
-                    File.CreateText(configFile);
-                }
                 StringBuilder result = new StringBuilder(255);
                 if (ORTS.Common.NativeMethods.GetPrivateProfileString("General", "sources", string.Empty, result, 255, configFile) > 0)
                 {
