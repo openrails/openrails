@@ -929,6 +929,9 @@ namespace Orts.Simulation.AIs
                         car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                     }
 
+                    // associate location events
+                    Simulator.ActivityRun.AssociateEvents(train);
+
                 }
                 catch (Exception error)
                 {

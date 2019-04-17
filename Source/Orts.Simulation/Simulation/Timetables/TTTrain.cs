@@ -8672,7 +8672,6 @@ namespace Orts.Simulation.Timetables
 
                 if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
-//                    ReverseFormation(false);
                     ReverseFormation(TrainType == TRAINTYPE.PLAYER);
 
 #if DEBUG_REPORTS
@@ -8682,7 +8681,6 @@ namespace Orts.Simulation.Timetables
                 }
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
-//                    ReverseFormation(false);
                     ReverseFormation(TrainType == TRAINTYPE.PLAYER);
 
 #if DEBUG_REPORTS
@@ -9677,12 +9675,10 @@ namespace Orts.Simulation.Timetables
             {
                 if (positionNow == PresentPosition[0].TCSectionIndex && directionNow != PresentPosition[0].TCDirection)
                 {
-//                    ReverseFormation(TrainType != TRAINTYPE.PLAYER);
                     ReverseFormation(true);
                 }
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
-//                    ReverseFormation(TrainType != TRAINTYPE.PLAYER);
                     ReverseFormation(true);
                 }
 
@@ -10014,7 +10010,6 @@ namespace Orts.Simulation.Timetables
                             PresentPosition[1].Reverse(ValidRoute[0][PresentPosition[1].RouteListIndex].Direction, tempRoute, 0.0f, signalRef);
 
                             // reverse formation
-//                            ReverseFormation(false);
                             ReverseFormation(true);
                             attachPositionInfo = Simulator.Catalog.GetString(", backward");
 
@@ -11062,7 +11057,6 @@ namespace Orts.Simulation.Timetables
             // check on reverse formation
             if (thisTrainFront == attachTrainFront)
             {
-//                ReverseFormation(false);
                 ReverseFormation(TrainType == TRAINTYPE.PLAYER);
             }
 

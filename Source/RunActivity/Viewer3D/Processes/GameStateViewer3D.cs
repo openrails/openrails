@@ -30,11 +30,11 @@ namespace Orts.Viewer3D.Processes
         bool FirstFrame = true;
         int ProfileFrames = 0;
 
-        public GameStateViewer3D(Viewer viewer, bool paused)
+        public GameStateViewer3D(Viewer viewer)
         {
             Viewer = viewer;
-            Viewer.Simulator.Paused = paused;
-            Viewer.QuitWindow.Visible = paused;
+            Viewer.Simulator.Paused = true;
+            Viewer.QuitWindow.Visible = true;
         }
 
         internal override void BeginRender(RenderFrame frame)
