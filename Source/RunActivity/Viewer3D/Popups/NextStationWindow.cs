@@ -230,7 +230,16 @@ namespace Orts.Viewer3D.Popups
                                 {
                                     Message.Text = Viewer.Catalog.GetString("Train not active.");
                                 }
-                                Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" Activation time : "), activateDT.ToString("HH:mm:ss"));
+
+                                // set activation message or time
+                                if (playerTimetableTrain.TriggeredActivationRequired)
+                                {
+                                    Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" Activated by other train."));
+                                }
+                                else
+                                {
+                                    Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" Activation time : "), activateDT.ToString("HH:mm:ss"));
+                                }
                             }
                             else
                             {
@@ -286,72 +295,8 @@ namespace Orts.Viewer3D.Popups
                             StationNextDepartScheduled.Text = "";
                             StationNextDistance.Text = "";
 
-                            // check transfer details
-                            bool transferValid = false;
-                            string TransferMessage = String.Empty;
-
-                            if (playerTimetableTrain.TransferStationDetails != null && playerTimetableTrain.TransferStationDetails.Count > 0 &&
-                                playerTimetableTrain.StationStops != null && playerTimetableTrain.StationStops.Count > 0)
-                            {
-                                if (playerTimetableTrain.TransferStationDetails.ContainsKey(playerTimetableTrain.StationStops[0].PlatformReference))
-                                {
-                                    TransferInfo thisTransfer = playerTimetableTrain.TransferStationDetails[playerTimetableTrain.StationStops[0].PlatformReference];
-                                    TransferMessage = Viewer.Catalog.GetString("Transfer units at next station with train ");
-                                    TransferMessage = String.Concat(TransferMessage, thisTransfer.TransferTrainName);
-                                    transferValid = true;
-                                }
-                            }
-                            else if (playerTimetableTrain.TransferTrainDetails != null && playerTimetableTrain.TransferTrainDetails.Count > 0)
-                            {
-                                foreach (KeyValuePair <int, List<TransferInfo>> transferDetails in playerTimetableTrain.TransferTrainDetails)
-                                {
-                                    TransferInfo thisTransfer = transferDetails.Value[0];
-                                    TransferMessage = Viewer.Catalog.GetString("Transfer units with train ");
-                                    TransferMessage = String.Concat(TransferMessage, thisTransfer.TransferTrainName);
-                                    transferValid = true;
-                                    break;  // only show first
-                                }
-                            }
-
-                            // general details
-                            if (playerTimetableTrain.AttachDetails != null && playerTimetableTrain.AttachDetails.Valid)
-                            {
-                                Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
-                                Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
-                                Message.Color = Color.Orange;
-                            }
-                            else if (playerTimetableTrain.AttachDetails != null)
-                            {
-                                Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
-                                Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
-                                Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" ; other train not yet ready"));
-                                Message.Color = Color.Orange;
-                            }
-                            else if (playerTimetableTrain.PickUpStaticOnForms)
-                            {
-                                Message.Text = Viewer.Catalog.GetString("Train is to pickup train at end of path");
-                                Message.Color = Color.Orange;
-                            }
-                            else if (playerTimetableTrain.NeedPickUp)
-                            {
-                                Message.Text = Viewer.Catalog.GetString("Pick up train ahead");
-                                Message.Color = Color.Orange;
-                            }
-                            else if (transferValid)
-                            {
-                                Message.Text = String.Copy(TransferMessage);
-                                Message.Color = Color.Orange;
-                            }
-                            else if (playerTimetableTrain.NeedTransfer)
-                            {
-                                Message.Text = Viewer.Catalog.GetString("Transfer units with train ahead");
-                                Message.Color = Color.Orange;
-                            }
-                            else
-                            {
-                                Message.Text = Viewer.Catalog.GetString("No more stations.");
-                                Message.Color = Color.White;
-                            }
+                            Message.Text = Viewer.Catalog.GetString("No more stations.");
+                            Message.Color = Color.White;
                         }
                         else
                         {
@@ -387,6 +332,68 @@ namespace Orts.Viewer3D.Popups
                                 StationNextDepartScheduled.Text = "";
                                 StationNextDistance.Text = "";
                             }
+                        }
+
+                        // check transfer details
+                        bool transferValid = false;
+                        string TransferMessage = String.Empty;
+
+                        if (playerTimetableTrain.TransferStationDetails != null && playerTimetableTrain.TransferStationDetails.Count > 0 &&
+                            playerTimetableTrain.StationStops != null && playerTimetableTrain.StationStops.Count > 0)
+                        {
+                            if (playerTimetableTrain.TransferStationDetails.ContainsKey(playerTimetableTrain.StationStops[0].PlatformReference))
+                            {
+                                TransferInfo thisTransfer = playerTimetableTrain.TransferStationDetails[playerTimetableTrain.StationStops[0].PlatformReference];
+                                TransferMessage = Viewer.Catalog.GetString("Transfer units at next station with train ");
+                                TransferMessage = String.Concat(TransferMessage, thisTransfer.TransferTrainName);
+                                transferValid = true;
+                            }
+                        }
+                        else if (playerTimetableTrain.TransferTrainDetails != null && playerTimetableTrain.TransferTrainDetails.Count > 0)
+                        {
+                            foreach (KeyValuePair<int, List<TransferInfo>> transferDetails in playerTimetableTrain.TransferTrainDetails)
+                            {
+                                TransferInfo thisTransfer = transferDetails.Value[0];
+                                TransferMessage = Viewer.Catalog.GetString("Transfer units with train ");
+                                TransferMessage = String.Concat(TransferMessage, thisTransfer.TransferTrainName);
+                                transferValid = true;
+                                break;  // only show first
+                            }
+                        }
+
+                        // general details
+                        if (playerTimetableTrain.AttachDetails != null && playerTimetableTrain.AttachDetails.Valid)
+                        {
+                            Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
+                            Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
+                            Message.Color = Color.Orange;
+                        }
+                        else if (playerTimetableTrain.AttachDetails != null)
+                        {
+                            Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
+                            Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
+                            Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" ; other train not yet ready"));
+                            Message.Color = Color.Orange;
+                        }
+                        else if (playerTimetableTrain.PickUpStaticOnForms)
+                        {
+                            Message.Text = Viewer.Catalog.GetString("Train is to pickup train at end of path");
+                            Message.Color = Color.Orange;
+                        }
+                        else if (playerTimetableTrain.NeedPickUp)
+                        {
+                            Message.Text = Viewer.Catalog.GetString("Pick up train ahead");
+                            Message.Color = Color.Orange;
+                        }
+                        else if (transferValid)
+                        {
+                            Message.Text = String.Copy(TransferMessage);
+                            Message.Color = Color.Orange;
+                        }
+                        else if (playerTimetableTrain.NeedTransfer)
+                        {
+                            Message.Text = Viewer.Catalog.GetString("Transfer units with train ahead");
+                            Message.Color = Color.Orange;
                         }
                     }
                 }
