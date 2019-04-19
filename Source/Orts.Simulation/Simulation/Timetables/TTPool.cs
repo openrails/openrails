@@ -553,6 +553,60 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
+        /// TestPoolExit : test if end of route is access to required pool
+        /// </summary>
+        /// <param name="train"></param>
+        public bool TestPoolExit(TTTrain train)
+        {
+
+            bool validPool = false;
+
+            // set dispose states
+            train.FormsStatic = true;
+            train.Closeup = true;
+
+            // find relevant access path
+            int lastSectionIndex = train.TCRoute.TCRouteSubpaths.Last().Last().TCSectionIndex;
+            int lastSectionDirection = train.TCRoute.TCRouteSubpaths.Last().Last().Direction;
+
+            // use first storage path to get pool access path
+
+            PoolDetails thisStorage = StoragePool[0];
+            int reqPath = -1;
+            int reqPathIndex = -1;
+
+            // find relevant access path
+            for (int iPath = 0; iPath < thisStorage.AccessPaths.Count && reqPath < 0; iPath++)
+            {
+                Train.TCSubpathRoute accessPath = thisStorage.AccessPaths[iPath];
+                reqPathIndex = accessPath.GetRouteIndex(lastSectionIndex, 0);
+
+                // path is defined outbound, so directions must be opposite
+                if (reqPathIndex >= 0 && accessPath[reqPathIndex].Direction != lastSectionDirection)
+                {
+                    reqPath = iPath;
+                }
+            }
+
+            // none found
+            if (reqPath < 0)
+            {
+                Trace.TraceWarning("Train : " + train.Name + " : no valid path found to access pool storage " + PoolName + "\n");
+                train.FormsStatic = false;
+                train.Closeup = false;
+            }
+            // path found : extend train path with access and storage paths
+            else
+            {
+                train.PoolAccessSection = lastSectionIndex;
+                validPool = true;
+            }
+
+            return (validPool);
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// SetPoolExit : adjust train dispose details and path to required pool exit
         /// </summary>
         /// <param name="train"></param>
@@ -1047,6 +1101,10 @@ namespace Orts.Simulation.Timetables
                     train.OrgAINumber = train.Number;
                     train.Number = 0;
                     train.LeadLocomotiveIndex = selectedTrain.LeadLocomotiveIndex;
+                    for (int carid = 0; carid < train.Cars.Count; carid++ )
+                    {
+                        train.Cars[carid].CarID = selectedTrain.Cars[carid].CarID;
+                    }
                     train.AI.TrainsToAdd.Add(train);
                     train.Simulator.Trains.Add(train);
 
@@ -1056,6 +1114,9 @@ namespace Orts.Simulation.Timetables
                     train.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
 
                     // inform viewer about player train switch
+                    train.Simulator.PlayerLocomotive = train.LeadLocomotive;
+                    train.Simulator.OnPlayerLocomotiveChanged();
+
                     train.Simulator.OnPlayerTrainChanged(selectedTrain, train);
                     train.Simulator.PlayerLocomotive.Train = train;
 

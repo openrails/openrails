@@ -863,7 +863,18 @@ namespace Orts.Viewer3D.Popups
 
         void TextPageDispatcherInfo(TableData table)
         {
-            TextPageHeading(table, Viewer.Catalog.GetString("DISPATCHER INFORMATION"));
+            // count active trains
+            int totalactive = 0;
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+                {
+                    totalactive++;
+                }
+            }
+
+            TextPageHeading(table, Viewer.Catalog.GetString("DISPATCHER INFORMATION : active trains : " + totalactive));
+
             TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Train"),
                 Viewer.Catalog.GetString("Travelled"),
@@ -897,17 +908,37 @@ namespace Orts.Viewer3D.Popups
                 }
             }
 
-            // next is active AI trains
+            // next is active AI trains which are delayed
             foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
             {
                 if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
                     && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
                 {
-                    var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
-                    status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
-                    for (var iCell = 0; iCell < status.Length; iCell++)
-                        TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
-                    TableAddLine(table);
+                    if (thisTrain.Delay.HasValue && thisTrain.Delay.Value.TotalMinutes >= 1)
+                    {
+                        var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                        status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
+                        for (var iCell = 0; iCell < status.Length; iCell++)
+                            TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                        TableAddLine(table);
+                    }
+                }
+            }
+
+            // next is active AI trains which are not delayed
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
+                    && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+                {
+                    if (!thisTrain.Delay.HasValue || thisTrain.Delay.Value.TotalMinutes < 1)
+                    {
+                        var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                        status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
+                        for (var iCell = 0; iCell < status.Length; iCell++)
+                            TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                        TableAddLine(table);
+                    }
                 }
             }
 

@@ -654,7 +654,7 @@ namespace Orts.Simulation.AIs
 
             if (MovementState == AI_MOVEMENT_STATE.AI_STATIC)
             {
-                physicsUpdate(elapsedClockSeconds);   //required to make train visible 
+                physicsUpdate(0);   //required to make train visible ; set elapsed time to zero to avoid actual movement
             }
             else
             {
@@ -1742,7 +1742,7 @@ namespace Orts.Simulation.AIs
                 else if (nextAspect == MstsSignalAspect.STOP)
                 {
                     // if stop but train is well away from signal allow to close; also if at end of path.
-                    if (distanceToSignal > 5 * signalApproachDistanceM ||
+                    if (DistanceToSignal.HasValue && DistanceToSignal.Value > 5 * signalApproachDistanceM ||
                         (TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 == PresentPosition[0].RouteListIndex))
                     {
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
@@ -1836,7 +1836,8 @@ namespace Orts.Simulation.AIs
                     }
                 }
             }
-            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED && tryBraking && distanceToSignal > clearingDistanceM
+            float distanceToNextSignal = DistanceToSignal.HasValue ? DistanceToSignal.Value : 0.1f;
+            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED && tryBraking && distanceToNextSignal > clearingDistanceM
                 && EndAuthorityType[0] != END_AUTHORITY.RESERVED_SWITCH && DistanceToEndNodeAuthorityM[0] <= 2.0f * junctionOverlapM)   // && ControlMode == TRAIN_CONTROL.AUTO_NODE)
             {
                 MovementState = AI_MOVEMENT_STATE.BRAKING;
@@ -3706,7 +3707,7 @@ namespace Orts.Simulation.AIs
             else if (LastSpeedMpS == 0 || (((SpeedMpS - LastSpeedMpS) / timeS) < 0.5f * MaxAccelMpSS))
             {
                 float ds = timeS * (reqAccelMpSS);
-                SpeedMpS = SpeedMpS + ds;
+                SpeedMpS = LastSpeedMpS + ds;
                 foreach (TrainCar car in Cars)
                 {
                     //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
@@ -3714,6 +3715,12 @@ namespace Orts.Simulation.AIs
                     //  car.SpeedMpS = car.Flipped ? -SpeedMpS : SpeedMpS;
                     car.SpeedMpS = car.Flipped ^ (car.IsDriveable && car.Train.IsActualPlayerTrain && ((MSTSLocomotive)car).UsingRearCab) ? -SpeedMpS : SpeedMpS;
                 }
+
+                if (CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Forced speed increase : was " + LastSpeedMpS + " - now " + SpeedMpS + "\n");
+                }
+
             }
 
             SetPercentsFromTrainToTrainset();
@@ -4152,10 +4159,12 @@ namespace Orts.Simulation.AIs
             }
             var removeIt = true;
             var distanceThreshold = PreUpdate ? 5.0f : 2.0f;
+            var distanceToNextSignal = DistanceToSignal.HasValue ? DistanceToSignal.Value : 0.1f;
+
             if (Simulator.TimetableMode) removeIt = true;
             else if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Simulator.OriginalPlayerTrain == this) removeIt = false;
             else if (TCRoute.TCRouteSubpaths.Count == 1 || TCRoute.activeSubpath != TCRoute.TCRouteSubpaths.Count - 1) removeIt = true;
-            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToSignal < 25 && distanceToSignal >= 0 && PresentPosition[1].DistanceTravelledM < distanceThreshold)
+            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToNextSignal < 25 && distanceToNextSignal >= 0 && PresentPosition[1].DistanceTravelledM < distanceThreshold)
             {
                 removeIt = false;
                 MovementState = AI_MOVEMENT_STATE.FROZEN;
@@ -5695,6 +5704,18 @@ namespace Orts.Simulation.AIs
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt", "allowing minimum gap : " + newposition.ToString() + " and " + actposition.ToString() + "\n");
                         }
+
+                        // if still earlier : check if signal really beyond start of platform
+                        if (earlier && (StationStops[0].DistanceToTrainM - thisItem.ActiveItem.distance_to_train) < StationStops[0].StopOffset)
+                        {
+                            earlier = false;
+                            if (CheckTrain)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt", "station stop position corrected due to signal location ; was : "
+                                    + StationStops[0].DistanceToTrainM.ToString() + " ; now is " + thisItem.ActiveItem.distance_to_train.ToString() + "\n");
+                            }
+                            StationStops[0].DistanceToTrainM = thisItem.ActiveItem.distance_to_train;
+                        } 
                     }
 
                     // check if present action is signal and new action is station - if so, check actual position of signal in relation to stop
