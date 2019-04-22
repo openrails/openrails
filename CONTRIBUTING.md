@@ -41,7 +41,11 @@ Code is expected to follow the [Framework Design Guidelines](https://docs.micros
 
 Code style (placement of braces, etc.) is expected to follow the default Visual Studio rules; the [C# Coding Conventions](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions) provides a good basis for many aspects of this.
 
-Code should be well structured, with small methods performing a single key task (indicated by their name), and larger complex operations formed through calls to such methods.
+### Architecture requirements
+
+Code should be well structured, with small methods performing a single key task (indicated by their name), and larger complex operations formed through calls to multiple smaller methods.
+
+Code architecture, especially for new features, should be consistent with the [Open Rails Architecture](ARCHITECTURE.md).
 
 ### Physics requirements
 
@@ -51,7 +55,7 @@ All physical formula used must be documented to identify the source of the formu
 
 All fixed values used in formula must be placed in a constant, with a name and unit suffix, for readability.
 
-### Multi-threading
+### Multi-threading requirements
 
 Open Rails is a multi-threaded application, which presents some additional complexity. There are four key threads to be aware of:
 
@@ -85,9 +89,13 @@ If you are reviewing someone elses code for Open Rails, you will need to ensure 
   * For a road-map card, it should not be in the first two columns ("Unsorted" and "Not planned")
   * For a blueprint, it should have direction "Approved"
 * Read through all of the changes to the code
+* Check that all new code follows the requirements:
+  * General (including naming)
+  * Architecture
+  * Physics
+  * Multi-threading
 * Be sure that all of the changes are necessary
 * Be sure that no changes are missing
-* Check that any new classes, fields, methods, etc., follow the naming guidelines
 * Be on the lookout for data being access across threads
 
 ### Leeway when reviewing
