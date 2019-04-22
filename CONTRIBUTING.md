@@ -85,7 +85,7 @@ If you are reviewing someone elses code for Open Rails, you will need to ensure 
 
 * Check for linked bug report or feature request
 * Check bug report is triaged, and feature request is approved
-  * For a bug, it should have status "Triaged"
+  * For a bug report, it should have status "Triaged"
   * For a road-map card, it should not be in the first two columns ("Unsorted" and "Not planned")
   * For a blueprint, it should have direction "Approved"
 * Read through all of the changes to the code
@@ -111,3 +111,13 @@ For all contributions that deviate from the guidelines, there are a few approach
 * Accept the code as-is, leaving a note for how to improve for the next pull request
 
 It is expected that most contributors will quickly correct their code based on feedback, either in the same pull request or subsequent ones, depending on the path taken above. However, if a contributor continues to not meet the same part of the guidelines, you are free to become more strict with them - it's still helpful to suggest the corrected code, but do not feel obliged to spend time helping the same person with the same part of the guidelines repeatedly.
+
+## Merging pull requests
+
+If you are merging a pull request, you will need to ensure that the merge commit message contains links to whichever of the following are appropriate:
+
+* Bug report
+* Road-map card
+* Blueprint
+
+These links will be used by automated and manual processes to check on the progress of the project.
