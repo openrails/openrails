@@ -197,6 +197,7 @@ namespace Orts.Viewer3D.Popups
                                         ResumeMenu();
                                         PopupTime = DateTime.Now;
                                     }
+                                    Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
                                 }
                                 else
                                 {
@@ -211,9 +212,9 @@ namespace Orts.Viewer3D.Popups
                                             else NoPauseMenu();
                                         }
                                         PopupTime = DateTime.Now;
+                                        Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
                                     }
-                                }
-                                Visible = Owner.Viewer.HelpWindow.ActivityUpdated = true;
+                                }                              
                             }
                             else
                             {
