@@ -16,10 +16,10 @@ If you've got an idea for Open Rails, please report it in [our road-map on Trell
 
 ## Writing code
 
-You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, we won't necessarily include all changes in the official version, so here are the ways to ensure what you're working on will be accepted:
+You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, we won't necessarily include all changes in the official version, so here are the ways to ensure that what you're working on will be accepted:
 
 * If you'd like to work on something that is already known about and accepted, please check through [the confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED) and [accepted feature requests (anything except the first two columns)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
-* If you don't see anything you'd like to work on in the _confirmed bugs_ or _accepted feature requests_, please reach out to us in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/). You can also report a bug or make a suggestion for the road-map directly. In both cases, we'll get back to you on whether we think it is appropriate for inclusion.
+* If you don't see anything you'd like to work on in the _confirmed bugs_ or _accepted feature requests_, please reach out to us in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/). You can also [report a bug](https://bugs.launchpad.net/or/+filebug) or [make a suggestion for the road-map](https://trello.com/c/zznjApL8/102-click-me-to-read-how-this-works) yourself. In both cases, we'll get back to you on whether we think it is appropriate for inclusion.
 
 When choosing what to work on from the road-map, if multiple things are interesting to you, we would prefer that you choose the item with the highest priority (see list below). This is only a guideline for helping to choose, though, so if you do want to work on something with a low priority, that's fine - all we ask is that you let us know in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/).
 
