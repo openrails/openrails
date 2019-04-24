@@ -19,7 +19,7 @@ If you've got an idea for Open Rails, please report it in [our road-map on Trell
 You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, we won't necessarily include all changes in the official version, so here are the ways to ensure that what you're working on will be accepted:
 
 * If you'd like to work on something that is already known about and accepted, please check through [the confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED) and [accepted feature requests (anything except the first two columns)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
-* If you don't see anything you'd like to work on in the _confirmed bugs_ or _accepted feature requests_, please reach out to us in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/). You can also [report a bug](https://bugs.launchpad.net/or/+filebug) or [make a suggestion for the road-map](https://trello.com/c/zznjApL8/102-click-me-to-read-how-this-works) yourself. In both cases, we'll get back to you on whether we think it is appropriate for inclusion.
+* If you don't see anything you'd like to work on in the _confirmed bugs_ or _accepted feature requests_, please reach out to us in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/). You can also [report a bug](https://bugs.launchpad.net/or/+filebug), [make a suggestion for the road-map](https://trello.com/c/zznjApL8/102-click-me-to-read-how-this-works), or [create a blueprint](https://blueprints.launchpad.net/or/+addspec) yourself. Blueprints should only be used by seasoned Open Rails developers. In each case, we'll get back to you on whether we think it is appropriate for inclusion (see [how bugs and feature requests are accepted](#how-bugs-and-features-are-accepted)).
 
 When choosing what to work on from the road-map, if multiple things are interesting to you, we would prefer that you choose the item with the highest priority (see list below). This is only a guideline for helping to choose, though, so if you do want to work on something with a low priority, that's fine - all we ask is that you let us know in the [Elvas Tower forums](http://www.elvastower.com/forums/index.php?/forum/299-open-rails-development-testing-and-support/).
 
@@ -78,6 +78,24 @@ If you are in any doubt about the use of data by multiple threads, or your imple
 ### Pull requests
 
 Pull requests should contain exactly one bug fix or new feature; do not mix multiple bug fixes, multiple features, or bug fixes and features together in any way. The bug report or feature request must be linked from the pull request.
+
+## How bugs and features are accepted
+
+### Bug reports
+
+A member of [our developer team](https://launchpad.net/~ordevs/+members) will mark the bug as "Triaged" once they have confirmed that the problem is real and needs fixing.
+
+### Road-map cards
+
+We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically won't approve a feature request until it has had a week for discussion, and there are no unresolved objections.
+
+A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, classify it by type (using labels), and place it into an appropriate list in Trello. It the rare event that we do not agree with the feature being added to Open Rails, it will be placed in the "Not planned at this time" list and a comment added explaining why.
+
+### Blueprints
+
+We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically won't approve a feature request until it has had a week for discussion, and there are no unresolved objections.
+
+A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, and approve its direction if appropriate.
 
 ## Reviewing pull requests
 
