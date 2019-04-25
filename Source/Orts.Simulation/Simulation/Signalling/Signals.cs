@@ -5241,7 +5241,7 @@ namespace Orts.Simulation.Signalling
             // set physical state
 
             //            if (!MPManager.IsServer() && !Simulator.Settings.HumanDispatcher)
-            if (Simulator.TimetableMode)
+            if (!MPManager.IsServer())
                 if (switchReserved) return (false);
             //this should not be enforced in MP, as a train may need to be allowed to go out of the station from the side line
 
@@ -8341,6 +8341,7 @@ namespace Orts.Simulation.Signalling
         public bool ClaimLocked;                // claim is locked in case of approach control
         public bool ForcePropOnApproachControl; // force propagation if signal is held on close control
         public double TimingTriggerValue;        // used timing trigger if time trigger is required, hold trigger time
+        public bool RouteRecomputed;            // flag indicating that route of enabled train has been recomputed after switch manually forced
 
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
@@ -8520,6 +8521,7 @@ namespace Orts.Simulation.Signalling
                 LockedTrains.Add(lockInfo);
 
             }
+            RouteRecomputed = inf.ReadBoolean();
         }
 
         //================================================================================================//
@@ -8652,6 +8654,7 @@ namespace Orts.Simulation.Signalling
                 outf.Write(LockedTrains[cnt].Key);
                 outf.Write(LockedTrains[cnt].Value);
             }
+            outf.Write(RouteRecomputed);
 
         }
 
@@ -10507,6 +10510,7 @@ namespace Orts.Simulation.Signalling
 
             if (enabledTrain != null && enabledTrain == thisTrain && signalRoute != null && signalRoute.Count > 0)
             {
+                var recomputeRoute = false;
                 foreach (Train.TCRouteElement routeElement in signalRoute)
                 {
                     TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
@@ -10514,6 +10518,18 @@ namespace Orts.Simulation.Signalling
                     {
                         return;  // train has passed signal - clear request is invalid
                     }
+                    if (routeSection.CircuitState.Forced && !RouteRecomputed)
+                    {
+                        // route must be recomputed after switch moved by dispatcher
+                        recomputeRoute = true;
+                        break;
+                    }
+                }
+                if (recomputeRoute)
+                {
+                    RouteRecomputed = true;
+                    thisTrain.Train.ResetValidRoute();
+                    thisTrain.Train.GenerateValidRoute();
                 }
             }
 

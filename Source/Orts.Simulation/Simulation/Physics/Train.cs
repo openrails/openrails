@@ -5127,85 +5127,90 @@ namespace Orts.Simulation.Physics
                 int originalRouteIndex = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].GetRouteIndex(PresentPosition[0].TCSectionIndex, LastListIndexInOriginalPath);
                 if (originalRouteIndex >= 0)
                 {
-                    // Yes, it has; regenerate second part of route
-                    // first clear all reserved sections etc. - both directions
-                    if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+                    int previousPositionOriginalRouteIndex = TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].GetRouteIndex(PreviousPosition[0].TCSectionIndex, LastListIndexInOriginalPath);
+                    // we must be sure that we were already outside of the original route
+                    if (previousPositionOriginalRouteIndex < 0)
                     {
-                        if (NextSignalObject[0] != null && NextSignalObject[0].enabledTrain == routedForward)
+                        // Yes, it has; regenerate second part of route
+                        // first clear all reserved sections etc. - both directions
+                        if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
                         {
-                            NextSignalObject[0].ResetSignal(true);
+                            if (NextSignalObject[0] != null && NextSignalObject[0].enabledTrain == routedForward)
+                            {
+                                NextSignalObject[0].ResetSignal(true);
+                            }
+                            if (NextSignalObject[1] != null && NextSignalObject[1].enabledTrain == routedBackward)
+                            {
+                                NextSignalObject[1].ResetSignal(true);
+                            }
                         }
-                        if (NextSignalObject[1] != null && NextSignalObject[1].enabledTrain == routedBackward)
+                        signalRef.BreakDownRoute(LastReservedSection[0], routedForward);
+                        TCSubpathRoute newRoute = new TCSubpathRoute();
+                        // Copy part of route already run
+                        for (int routeListIndex = 0; routeListIndex <= PreviousPosition[0].RouteListIndex + 1; routeListIndex++) newRoute.Add(ValidRoute[0][routeListIndex]);
+                        // Add new part of route; at least one
+                        for (int routeListIndex = originalRouteIndex; routeListIndex < TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count; routeListIndex++)
                         {
-                            NextSignalObject[1].ResetSignal(true);
+                            TCRouteElement thisElement = new TCRouteElement(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][routeListIndex]);
+                            newRoute.Add(thisElement);
                         }
-                    }
-                    signalRef.BreakDownRoute(LastReservedSection[0], routedForward);
-                    TCSubpathRoute newRoute = new TCSubpathRoute();
-                    // Copy part of route already run
-                    for (int routeListIndex = 0; routeListIndex <= PreviousPosition[0].RouteListIndex + 1; routeListIndex++) newRoute.Add(ValidRoute[0][routeListIndex]);
-                    // Add new part of route; at least one
-                    for (int routeListIndex = originalRouteIndex; routeListIndex < TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count; routeListIndex++)
-                    {
-                        TCRouteElement thisElement = new TCRouteElement(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][routeListIndex]);
-                        newRoute.Add(thisElement);
-                    }
 
-                    // Reindexes ReversalInfo items
-                    var countDifference = newRoute.Count - ValidRoute[0].Count;
-                    if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex >= 0)
-                        TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
-                    if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex >= 0)
-                        TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
+                        // Reindexes ReversalInfo items
+                        var countDifference = newRoute.Count - ValidRoute[0].Count;
+                        if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex >= 0)
+                            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastDivergeIndex + countDifference;
+                        if (TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex >= 0)
+                            TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex = TCRoute.ReversalInfo[TCRoute.activeSubpath].LastSignalIndex + countDifference;
 
-                    // then we pass this route to ValidRoute[0]
-                    ValidRoute[0] = newRoute;
-                    TCRoute.TCRouteSubpaths[TCRoute.activeSubpath] = newRoute;
+                        // then we pass this route to ValidRoute[0]
+                        ValidRoute[0] = newRoute;
+                        TCRoute.TCRouteSubpaths[TCRoute.activeSubpath] = newRoute;
 
 
-                    // reset signal information
-                    IsOutOfOriginalPath = false;
-                    routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                    PresentPosition[0].RouteListIndex = routeIndex;
+                        // reset signal information
+                        IsOutOfOriginalPath = false;
+                        routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                        PresentPosition[0].RouteListIndex = routeIndex;
 
-                    tn = RearTDBTraveller.TN;
-                    offset = RearTDBTraveller.TrackNodeOffset;
-                    direction = (int)RearTDBTraveller.Direction;
+                        tn = RearTDBTraveller.TN;
+                        offset = RearTDBTraveller.TrackNodeOffset;
+                        direction = (int)RearTDBTraveller.Direction;
 
-                    PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
-                    routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
-                    PresentPosition[1].RouteListIndex = routeIndex;
+                        PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+                        routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+                        PresentPosition[1].RouteListIndex = routeIndex;
 
-                    // get reserved length
-                    ReservedTrackLengthM = GetReservedLength();
-                    SignalObjectItems.Clear();
-                    NextSignalObject[0] = null;
+                        // get reserved length
+                        ReservedTrackLengthM = GetReservedLength();
+                        SignalObjectItems.Clear();
+                        NextSignalObject[0] = null;
 
-                    InitializeSignals(true);
+                        InitializeSignals(true);
 
-                     // find new next signal
-                     for (int iObject = 0; iObject <= SignalObjectItems.Count - 1 && NextSignalObject[0] == null; iObject++)
-                    {
-                        if (SignalObjectItems[iObject].ObjectType == ObjectItemInfo.ObjectItemType.Signal)
+                        // find new next signal
+                        for (int iObject = 0; iObject <= SignalObjectItems.Count - 1 && NextSignalObject[0] == null; iObject++)
                         {
-                            NextSignalObject[0] = SignalObjectItems[iObject].ObjectDetails;
+                            if (SignalObjectItems[iObject].ObjectType == ObjectItemInfo.ObjectItemType.Signal)
+                            {
+                                NextSignalObject[0] = SignalObjectItems[iObject].ObjectDetails;
+                            }
                         }
-                    }
 
-                    if (NextSignalObject[0] != null)
-                    {
-                        NextSignalObject[0].requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
-                    }
+                        if (NextSignalObject[0] != null)
+                        {
+                            NextSignalObject[0].requestClearSignal(ValidRoute[0], routedForward, 0, false, null);
+                        }
 
-                    LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
-                    if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
-                    {
-                        SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-                    }
-                    // reset actions to recalculate distances
+                        LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
+                        if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+                        {
+                            SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
+                        }
+                        // reset actions to recalculate distances
 
-                    if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
-                    return;
+                        if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
+                        return;
+                    }
                 }
             }
             routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
@@ -5705,6 +5710,7 @@ namespace Orts.Simulation.Physics
                     {
                         MstsSignalAspect signalState = GetNextSignalAspect(direction);
                         passedSignalIndex = NextSignalObject[direction].thisRef;
+                        NextSignalObject[direction].RouteRecomputed = false;
 
 #if DEBUG_REPORTS
                         String report = "Passing signal ";
@@ -9754,110 +9760,105 @@ namespace Orts.Simulation.Physics
             }
             else
             {
-                // We don't kill the AI train and build a new route for it
-                // first of all we have to find out the new route
-                List<int> tempSections = new List<int>();
+                GenerateValidRoute();
+            }
+        }
 
-                tempSections = signalRef.ScanRoute(this, PresentPosition[0].TCSectionIndex, PresentPosition[0].TCOffset,
-                        PresentPosition[0].TCDirection, true, 0, true, true,
-                        false, false, true, false, false, false, false, IsFreight);
-
-                TCSubpathRoute newRoute = new TCSubpathRoute();
-                // Copy part of route already run
-                for (int routeListIndex = 0; routeListIndex <= PreviousPosition[0].RouteListIndex + 1; routeListIndex++) newRoute.Add(ValidRoute[0][routeListIndex]);
-                LastListIndexInOriginalPath = PreviousPosition[0].RouteListIndex;
-                if (tempSections.Count > 0)
+        //================================================================================================//
+        /// <summary>
+        /// Resets ValidRoute after some event like a switch moved
+        /// </summary>
+        
+        public void ResetValidRoute()
+        {
+            // clear all reserved sections etc. - both directions
+            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+            {
+                if (NextSignalObject[0] != null && NextSignalObject[0].enabledTrain == routedForward)
                 {
-                    // Add new part of route
-                    TCRouteElement thisElement = null;
-                    int prevSection = -2;    // preset to invalid
-
-                    foreach (int sectionIndex in tempSections)
-                    {
-                        int sectionDirection = sectionIndex > 0 ? 0 : 1;
-                        thisElement = new TCRouteElement(signalRef.TrackCircuitList[Math.Abs(sectionIndex)],
-                                sectionDirection, signalRef, prevSection);
-                        newRoute.Add(thisElement);
-                        prevSection = Math.Abs(sectionIndex);
-                    }
-
+                    var routeIndexBeforeSignal = NextSignalObject[0].thisTrainRouteIndex - 1;
+                    NextSignalObject[0].ResetSignal(true);
+                    if (routeIndexBeforeSignal >= 0)
+                        signalRef.BreakDownRoute(ValidRoute[0][routeIndexBeforeSignal].TCSectionIndex, routedForward);
                 }
-                // then we pass this route to ValidRoute[0]
-                ValidRoute[0] = newRoute;
-                // we set the routelistindex of the present position, that was set to -1
+                if (NextSignalObject[1] != null && NextSignalObject[1].enabledTrain == routedBackward)
+                {
+                    NextSignalObject[1].ResetSignal(true);
+                }
+            }
+            else if (ControlMode == TRAIN_CONTROL.AUTO_NODE)
+            {
+                signalRef.BreakDownRoute(LastReservedSection[0], routedForward);
+            }
+        }
+
+
+        //================================================================================================//
+        /// <summary>
+        /// Generates a new ValidRoute after some event like a switch moved
+        /// </summary>
+
+        public void GenerateValidRoute()
+        {
+            // We don't kill the AI train and build a new route for it
+            // first of all we have to find out the new route
+            List<int> tempSections = new List<int>();
+
+            tempSections = signalRef.ScanRoute(this, PresentPosition[0].TCSectionIndex, PresentPosition[0].TCOffset,
+                    PresentPosition[0].TCDirection, true, 0, true, true,
+                    false, false, true, false, false, false, false, IsFreight);
+
+            TCSubpathRoute newRoute = new TCSubpathRoute();
+            // Copy part of route already run
+            if (PresentPosition[0].RouteListIndex > 0)
+            {
+                for (int routeListIndex = 0; routeListIndex <= PresentPosition[0].RouteListIndex - 1; routeListIndex++) newRoute.Add(ValidRoute[0][routeListIndex]);
+                LastListIndexInOriginalPath = PresentPosition[0].RouteListIndex;
+            }
+            else if (PresentPosition[0].RouteListIndex < 0)
+            {
+                for (int routeListIndex = 0; routeListIndex <= PreviousPosition[0].RouteListIndex + 1; routeListIndex++) newRoute.Add(ValidRoute[0][routeListIndex]); // maybe + 1 is wrong?
+                LastListIndexInOriginalPath = PreviousPosition[0].RouteListIndex;
+            }
+            if (tempSections.Count > 0)
+            {
+                // Add new part of route
+                TCRouteElement thisElement = null;
+                int prevSection = -2;    // preset to invalid
+
+                foreach (int sectionIndex in tempSections)
+                {
+                    int sectionDirection = sectionIndex > 0 ? 0 : 1;
+                    thisElement = new TCRouteElement(signalRef.TrackCircuitList[Math.Abs(sectionIndex)],
+                            sectionDirection, signalRef, prevSection);
+                    newRoute.Add(thisElement);
+                    prevSection = Math.Abs(sectionIndex);
+                }
+
+            }
+            // then we pass this route to ValidRoute[0]
+            ValidRoute[0] = newRoute;
+            // we set the routelistindex of the present position in case it was = -1
+            if (PresentPosition[0].RouteListIndex == -1)
                 PresentPosition[0].RouteListIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, PreviousPosition[0].RouteListIndex);
 
-                // Now we have to check for signals
-                // set signal route
-                // part upto split
+            // reset signal information
 
+            SignalObjectItems.Clear();
+            NextSignalObject[0] = null;
+            // create new list
+            InitializeSignals(true);
+            LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
 
-                // reset signal information
-
-                SignalObjectItems.Clear();
-                NextSignalObject[0] = null;
-
-                /*                    TCSubpathRoute newSignalRoute = new TCSubpathRoute();
-
-                                     int splitSignalIndex = nextSignal.signalRoute.GetRouteIndex(thisRoute[startElementIndex].TCSectionIndex, 0);
-                                     for (int iElement = 0; iElement < splitSignalIndex; iElement++)
-                                     {
-                                         newSignalRoute.Add(nextSignal.signalRoute[iElement]);
-                                     }
-
-                                     // extract new route upto next signal
-
-                                     TCSubpathRoute nextPart = ExtractAlternativeRoute_locationBased(altRoute);
-                                     foreach (TCRouteElement thisElement in nextPart)
-                                     {
-                                         newSignalRoute.Add(thisElement);
-                                     }
-
-                                     // set new signal route
-                                     // reset signal
-                                     // if train in signal mode, request clear signal
-
-                                     nextSignal.ResetSignal(true);
-                                     nextSignal.signalRoute = newSignalRoute;
-
-                                     if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
-                                     {
-                                         // keep any items allready passed
-                                         List<ObjectItemInfo> keeplist = new List<ObjectItemInfo>();
-                                         foreach (ObjectItemInfo checkItem in SignalObjectItems)
-                                         {
-                                             float actualDistance = GetObjectDistanceToTrain(checkItem);
-                                             if (actualDistance < 0)
-                                             {
-                                                 keeplist.Add(checkItem);
-                                             }
-                                         }
-
-                                         // create new list
-                                         InitializeSignals(true);
-
-                                         // add any passed items (in reverse order at start of list)
-                                         if (keeplist.Count > 0)
-                                         {
-                                             for (int iObject = keeplist.Count - 1; iObject >= 0; iObject--)
-                                             {
-                                                 SignalObjectItems.Insert(0, keeplist[iObject]);
-                                             }
-                                         }*/
-                // create new list
-                InitializeSignals(true);
-                LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
-
-                IsOutOfOriginalPath = true;
-                // switch to NODE mode
-                if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
-                {
-                    SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-                }
-                // reset actions to recalculate distances
-
-                if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
+            IsOutOfOriginalPath = true;
+            // switch to NODE mode
+            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+            {
+                SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
             }
+            // reset actions to recalculate distances
+
+            if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
         }
 
         //================================================================================================//
