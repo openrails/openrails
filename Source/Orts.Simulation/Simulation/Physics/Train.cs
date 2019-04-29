@@ -5121,6 +5121,17 @@ namespace Orts.Simulation.Physics
             int routeIndex;
 
             PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction);
+            routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+            PresentPosition[0].RouteListIndex = routeIndex;
+
+            tn = RearTDBTraveller.TN;
+            offset = RearTDBTraveller.TrackNodeOffset;
+            direction = (int)RearTDBTraveller.Direction;
+
+            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
+            routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
+            PresentPosition[1].RouteListIndex = routeIndex;
+
             if (IsOutOfOriginalPath && PresentPosition[0].TCSectionIndex != PreviousPosition[0].TCSectionIndex)
             {
                 // Check if train has returned in original route
@@ -5144,7 +5155,8 @@ namespace Orts.Simulation.Physics
                                 NextSignalObject[1].ResetSignal(true);
                             }
                         }
-                        signalRef.BreakDownRoute(LastReservedSection[0], routedForward);
+                        if (PresentPosition[0].RouteListIndex < ValidRoute[0].Count - 1)
+                            signalRef.BreakDownRoute(ValidRoute[0][PresentPosition[0].RouteListIndex + 1].TCSectionIndex, routedForward);
                         TCSubpathRoute newRoute = new TCSubpathRoute();
                         // Copy part of route already run
                         for (int routeListIndex = 0; routeListIndex <= PreviousPosition[0].RouteListIndex + 1; routeListIndex++) newRoute.Add(ValidRoute[0][routeListIndex]);
@@ -5152,6 +5164,14 @@ namespace Orts.Simulation.Physics
                         for (int routeListIndex = originalRouteIndex; routeListIndex < TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count; routeListIndex++)
                         {
                             TCRouteElement thisElement = new TCRouteElement(TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][routeListIndex]);
+                            if (signalRef.TrackCircuitList[thisElement.TCSectionIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Junction && thisElement.FacingPoint == true)
+                            {
+                                var TCSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                                if (routeListIndex < TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 &&
+                                    TCSection.Pins[thisElement.Direction, 1].Link == TCRoute.TCRouteSubpaths[TCRoute.activeSubpath][routeListIndex + 1].TCSectionIndex)
+                                    thisElement.OutPin[1] = 1;
+                                else thisElement.OutPin[1] = 0;
+                            }
                             newRoute.Add(thisElement);
                         }
 
@@ -5213,16 +5233,6 @@ namespace Orts.Simulation.Physics
                     }
                 }
             }
-            routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-            PresentPosition[0].RouteListIndex = routeIndex;
-
-            tn = RearTDBTraveller.TN;
-            offset = RearTDBTraveller.TrackNodeOffset;
-            direction = (int)RearTDBTraveller.Direction;
-
-            PresentPosition[1].SetTCPosition(tn.TCCrossReference, offset, direction);
-            routeIndex = ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
-            PresentPosition[1].RouteListIndex = routeIndex;
 
             if (doJump) // jump do be performed in multiplayer mode when train re-enters game in different position
             {
@@ -5710,7 +5720,6 @@ namespace Orts.Simulation.Physics
                     {
                         MstsSignalAspect signalState = GetNextSignalAspect(direction);
                         passedSignalIndex = NextSignalObject[direction].thisRef;
-                        NextSignalObject[direction].RouteRecomputed = false;
 
 #if DEBUG_REPORTS
                         String report = "Passing signal ";
@@ -9761,6 +9770,13 @@ namespace Orts.Simulation.Physics
             else
             {
                 GenerateValidRoute();
+                // switch to NODE mode
+                if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
+                {
+                    SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
+                }
+                // reset actions to recalculate distances
+                if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
             }
         }
 
@@ -9825,14 +9841,23 @@ namespace Orts.Simulation.Physics
                 // Add new part of route
                 TCRouteElement thisElement = null;
                 int prevSection = -2;    // preset to invalid
-
+                var tempSectionsIndex = 0;
                 foreach (int sectionIndex in tempSections)
                 {
                     int sectionDirection = sectionIndex > 0 ? 0 : 1;
                     thisElement = new TCRouteElement(signalRef.TrackCircuitList[Math.Abs(sectionIndex)],
                             sectionDirection, signalRef, prevSection);
+                    // if junction, you have to adjust the OutPin
+                    if (signalRef.TrackCircuitList[Math.Abs(sectionIndex)].CircuitType == TrackCircuitSection.TrackCircuitType.Junction && thisElement.FacingPoint == true)
+                    {
+                        var TCSection = signalRef.TrackCircuitList[Math.Abs(sectionIndex)];
+                        if (tempSectionsIndex < tempSections.Count - 1 && TCSection.Pins[sectionDirection, 1].Link == tempSections[tempSectionsIndex + 1])
+                            thisElement.OutPin[1] = 1;
+                        else thisElement.OutPin[1] = 0;
+                    }
                     newRoute.Add(thisElement);
                     prevSection = Math.Abs(sectionIndex);
+                    tempSectionsIndex++;
                 }
 
             }
@@ -9851,14 +9876,6 @@ namespace Orts.Simulation.Physics
             LastReservedSection[0] = PresentPosition[0].TCSectionIndex;
 
             IsOutOfOriginalPath = true;
-            // switch to NODE mode
-            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL)
-            {
-                SwitchToNodeControl(PresentPosition[0].TCSectionIndex);
-            }
-            // reset actions to recalculate distances
-
-            if (TrainType == TRAINTYPE.AI || TrainType == TRAINTYPE.AI_PLAYERHOSTING) ((AITrain)this).ResetActions(true);
         }
 
         //================================================================================================//

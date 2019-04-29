@@ -8341,7 +8341,6 @@ namespace Orts.Simulation.Signalling
         public bool ClaimLocked;                // claim is locked in case of approach control
         public bool ForcePropOnApproachControl; // force propagation if signal is held on close control
         public double TimingTriggerValue;        // used timing trigger if time trigger is required, hold trigger time
-        public bool RouteRecomputed;            // flag indicating that route of enabled train has been recomputed after switch manually forced
 
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
@@ -8521,7 +8520,6 @@ namespace Orts.Simulation.Signalling
                 LockedTrains.Add(lockInfo);
 
             }
-            RouteRecomputed = inf.ReadBoolean();
         }
 
         //================================================================================================//
@@ -8654,7 +8652,6 @@ namespace Orts.Simulation.Signalling
                 outf.Write(LockedTrains[cnt].Key);
                 outf.Write(LockedTrains[cnt].Value);
             }
-            outf.Write(RouteRecomputed);
 
         }
 
@@ -10510,7 +10507,7 @@ namespace Orts.Simulation.Signalling
 
             if (enabledTrain != null && enabledTrain == thisTrain && signalRoute != null && signalRoute.Count > 0)
             {
-                var recomputeRoute = false;
+                var forcedRouteElementIndex = -1;
                 foreach (Train.TCRouteElement routeElement in signalRoute)
                 {
                     TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
@@ -10518,18 +10515,21 @@ namespace Orts.Simulation.Signalling
                     {
                         return;  // train has passed signal - clear request is invalid
                     }
-                    if (routeSection.CircuitState.Forced && !RouteRecomputed)
+                    if (routeSection.CircuitState.Forced)
                     {
                         // route must be recomputed after switch moved by dispatcher
-                        recomputeRoute = true;
+                        forcedRouteElementIndex = signalRoute.IndexOf(routeElement);
                         break;
                     }
                 }
-                if (recomputeRoute)
+                if (forcedRouteElementIndex >= 0)
                 {
-                    RouteRecomputed = true;
+                    var forcedRouteSection = signalRef.TrackCircuitList[signalRoute[forcedRouteElementIndex].TCSectionIndex];
                     thisTrain.Train.ResetValidRoute();
                     thisTrain.Train.GenerateValidRoute();
+                    if (thisTrain.Train.TrainType == Train.TRAINTYPE.AI || thisTrain.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                        (thisTrain.Train as AITrain).ResetActions(true);
+                    forcedRouteSection.CircuitState.Forced = false;
                 }
             }
 
