@@ -5238,9 +5238,6 @@ namespace Orts.Simulation.Signalling
             bool switchSet = false;
 
             if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
-            // set physical state
-
-            //            if (!MPManager.IsServer() && !Simulator.Settings.HumanDispatcher)
             if (!MPManager.IsServer())
                 if (switchReserved) return (false);
             //this should not be enforced in MP, as a train may need to be allowed to go out of the station from the side line
@@ -5251,7 +5248,7 @@ namespace Orts.Simulation.Signalling
                 trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
                 switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
                 switchSet = true;
-                switchSection.CircuitState.Forced = true;
+                if (!Simulator.TimetableMode) switchSection.CircuitState.Forced = true;
                 /*if (switchSection.SignalsPassingRoutes != null)
                 {
                     foreach (var thisSignalIndex in switchSection.SignalsPassingRoutes)
@@ -6037,11 +6034,6 @@ namespace Orts.Simulation.Signalling
                         }
                         SignalsPassingRoutes.Clear();
                     }
-                    else
-                    {
-                        // generate new route
-                    }
-
                 }
 
                 // enable all signals along section in direction of train
@@ -10524,7 +10516,7 @@ namespace Orts.Simulation.Signalling
                 }
                 if (forcedRouteElementIndex >= 0)
                 {
-                    var forcedRouteSection = signalRef.TrackCircuitList[signalRoute[forcedRouteElementIndex].TCSectionIndex];
+                    TrackCircuitSection forcedRouteSection = signalRef.TrackCircuitList[signalRoute[forcedRouteElementIndex].TCSectionIndex];
                     thisTrain.Train.ResetValidRoute();
                     thisTrain.Train.GenerateValidRoute();
                     if (thisTrain.Train.TrainType == Train.TRAINTYPE.AI || thisTrain.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
