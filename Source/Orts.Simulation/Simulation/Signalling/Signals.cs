@@ -5237,7 +5237,8 @@ namespace Orts.Simulation.Signalling
             bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
             bool switchSet = false;
 
-            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
+            // It must be possible to force a switch also in its present state, not only in the opposite state
+//            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
             if (!MPManager.IsServer())
                 if (switchReserved) return (false);
             //this should not be enforced in MP, as a train may need to be allowed to go out of the station from the side line
