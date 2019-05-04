@@ -14390,19 +14390,21 @@ namespace Orts.Simulation.Physics
             {
                 List<StationStop> newStops = new List<StationStop>();
                 int firstIndex = -1;
+                int countRemoved = 0;
 
                 foreach (KeyValuePair<int, StationStop> abdStop in abdStations)
                 {
                     if (firstIndex < 0) firstIndex = abdStop.Key;
                     StationStop newStop = SetAlternativeStationStop(abdStop.Value, altRoute);
-                    StationStops.RemoveAt(abdStop.Key);
+                    StationStops.RemoveAt(abdStop.Key - countRemoved);
+                    countRemoved++;
                     if (newStop != null)
                     {
                         newStops.Add(newStop);
                     }
                 }
 
-                for (int iStop = newStops.Count - 1; iStop == 0; iStop--)
+                for (int iStop = newStops.Count - 1; iStop >= 0; iStop--)
                 {
                     StationStops.Insert(firstIndex, newStops[iStop]);
                 }
