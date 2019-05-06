@@ -30,7 +30,7 @@ namespace Orts.Viewer3D.Popups
     public class TTDetachWindow : Window
     {
         const int WindowImageSizeWidth = 600;
-        const int WindowImageSizeHeightFactor = 6;
+        const int WindowImageSizeHeightFactor = 7;
 
         Label ThisPortionLine;
         Label OtherPortionLine;
@@ -58,6 +58,9 @@ namespace Orts.Viewer3D.Popups
 
             var hbox3 = vbox.AddLayoutHorizontalLineOfText();
             hbox3.Add(OtherPortionLine = new Label(boxWidth, hbox3.RemainingHeight, "", LabelAlignment.Left));
+
+            var hbox4 = vbox.AddLayoutHorizontalLineOfText();
+            hbox4.Add(new Label(boxWidth, hbox4.RemainingHeight, Viewer.Catalog.GetString("Use 'cab switch' command to select cab in required portion."), LabelAlignment.Left));
 
             vbox.AddSpace(0, Owner.TextFontDefault.Height);
             vbox.AddHorizontalSeparator();

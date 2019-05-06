@@ -27,16 +27,8 @@
 // This logs every UserCommandInput change from pressed to released.
 //#define DEBUG_USER_INPUT
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace ORTS.TrackViewer.UserInterface
@@ -114,11 +106,11 @@ namespace ORTS.TrackViewer.UserInterface
                 Console.WriteLine("Mouse scrollwheel changed by {0}", MouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue);
 #endif
 #if DEBUG_USER_INPUT
-            foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+            foreach (TVUserCommands command in Enum.GetValues(typeof(TVUserCommands)))
             {
-                if (TVUserInputut.IsPressed(command))
+                if (TVUserInput.IsPressed(command))
                     Console.WriteLine("Pressed  {0} - {1}", command, TVInputSettings.Commands[(int)command]);
-                if (TVUserInputut.IsReleased(command))
+                if (TVUserInput.IsReleased(command))
                     Console.WriteLine("Released {0} - {1}", command, TVInputSettings.Commands[(int)command]);
             }
 #endif

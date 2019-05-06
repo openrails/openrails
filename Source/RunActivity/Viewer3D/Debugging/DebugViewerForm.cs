@@ -21,6 +21,14 @@
 //    Richard Plokhaar / Signalsoft Rail Consultancy Ltd.
 // 
 
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Forms;
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
@@ -30,14 +38,6 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
 using Color = System.Drawing.Color;								   
@@ -920,11 +920,11 @@ namespace Orts.Viewer3D.Debugging
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
 						switchPickedLocation.Y -= 22;
-						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
 						switchPickedLocation.Y += 8;
 					}
 					switchPickedLocation.Y -= 30;
-					g.DrawString(InputSettings.Commands[(int)UserCommands.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
+					g.DrawString(InputSettings.Commands[(int)UserCommand.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
 				}
 				if (signalPickedItem != null /*&& signalPickedItemChanged == true*/ && !signalPickedItemHandled && simulator.GameTime - signalPickedTime < 5)
 				{
@@ -937,7 +937,7 @@ namespace Orts.Viewer3D.Debugging
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
 						signalPickedLocation.Y -= 24;
-						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
 					}
 				}
 #endif

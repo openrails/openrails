@@ -537,6 +537,8 @@ namespace Orts.Simulation.AIs
                         Simulator.Signals.Update(true);
                         clockTime = runTime;
                         runTime += deltaTime;
+                        if (cancellation.IsCancellationRequested) // ping loader watchdog
+                            return;
 
                         int fullsec = Convert.ToInt32(runTime);
                         if (fullsec % 3600 == 0) Trace.Write(" " + (fullsec / 3600).ToString("00") + ":00 ");
@@ -571,6 +573,11 @@ namespace Orts.Simulation.AIs
                             PlayTrain = Simulator.Trains.GetAITrainByNumber(0) as TTTrain;
                             // train exists - set as player train
                             playerTrainStarted = (PlayTrain != null);
+
+                            if (playerTrain.LeadLocomotive == null)
+                            {
+                                playerTrainStarted = false;
+                            }
                         }
                         else
                         {
@@ -578,13 +585,9 @@ namespace Orts.Simulation.AIs
                         }
                     }
 
-                    if (playerTrain.LeadLocomotive == null)
-                    {
-                        playerTrainStarted = false;
-                    }
-
                     TimeSpan delayedStart = new TimeSpan((long)(Math.Pow(10, 7) * (clockTime - Simulator.ClockTime)));
                     Trace.TraceInformation("Start delayed by : {0}", delayedStart.ToString());
+                    StartList.RemovePlayerTrain();
                     TTTrain playerTTTrain = playerTrain as TTTrain;
                     playerTTTrain.InitalizePlayerTrain();
                     Simulator.ClockTime = runTime;
@@ -925,8 +928,10 @@ namespace Orts.Simulation.AIs
                         car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                         car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
                     }
+
                     // associate location events
                     Simulator.ActivityRun.AssociateEvents(train);
+
                 }
                 catch (Exception error)
                 {
