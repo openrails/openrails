@@ -23,7 +23,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
@@ -37,7 +36,6 @@
     <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
     <NoWarn>1591</NoWarn>
-    <LangVersion>7.3</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
