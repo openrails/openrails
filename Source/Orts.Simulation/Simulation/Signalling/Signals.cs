@@ -6451,8 +6451,6 @@ namespace Orts.Simulation.Signalling
                     thisSignal.ResetRoute(Index);
                 }
                 SignalsPassingRoutes.Clear();
-
-                CircuitState.Forced = false; // train has passed, if it was a switch it may again be influenced by train path;
             }
 
             // reset manual junction setting if train is in manual mode
