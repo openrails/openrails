@@ -3861,6 +3861,7 @@ namespace Orts.Simulation.Signalling
         ///   - if valid path only is requested and unreserved section is found (variable thisTrain required)
         ///   - end of track
         ///   - looped track
+        ///   - re-enter in original route (for manual re-routing)
         ///
         /// Returned is list of sections, with positive no. indicating direction 0 and negative no. indicating direction 1
         /// If signal or speedpost is required, list will contain index of required item (>0 facing direction, <0 backing direction)
@@ -3869,7 +3870,7 @@ namespace Orts.Simulation.Signalling
         public List<int> ScanRoute(Train thisTrain, int firstSectionIndex, float firstOffset, int firstDirection, bool forward,
                 float routeLength, bool honourManualSwitch, bool autoAlign, bool stopAtFacingSignal, bool reservedOnly, bool returnSections,
                 bool searchFacingSignal, bool searchBackwardSignal, bool searchFacingSpeedpost, bool searchBackwardSpeedpost,
-                bool isFreight, bool considerSpeedReset = false)
+                bool isFreight, bool considerSpeedReset = false, bool checkReenterOriginalRoute = false)
         {
 
             int sectionIndex = firstSectionIndex;
@@ -4042,6 +4043,25 @@ namespace Orts.Simulation.Signalling
                         break;
 
                     case TrackCircuitSection.TrackCircuitType.Junction:
+//                        if (checkReenterOriginalRoute && foundItems.Count > 2)
+                        if (checkReenterOriginalRoute)
+                        {
+                            Train.TCSubpathRoute originalSubpath = thisTrain.TCRoute.TCRouteSubpaths[thisTrain.TCRoute.OriginalSubpath];
+                            if (outPinIndex == 0)
+                            {
+                                // loop on original route to check if we are re-entering it
+                                for (int routeIndex = 0; routeIndex < originalSubpath.Count; routeIndex++)
+                                {
+                                    if (thisIndex == originalSubpath[routeIndex].TCSectionIndex)
+                                    // nice, we are returning into the original route
+                                    {
+                                        endOfRoute = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                         if (thisSection.ActivePins[outPinIndex, 0].Link > 0)
                         {
                             nextIndex = thisSection.ActivePins[outPinIndex, 0].Link;
@@ -10517,12 +10537,13 @@ namespace Orts.Simulation.Signalling
                 }
                 if (forcedRouteElementIndex >= 0)
                 {
-                    TrackCircuitSection forcedRouteSection = signalRef.TrackCircuitList[signalRoute[forcedRouteElementIndex].TCSectionIndex];
-                    thisTrain.Train.ResetValidRoute();
-                    thisTrain.Train.GenerateValidRoute();
+                    int forcedTCSectionIndex = signalRoute[forcedRouteElementIndex].TCSectionIndex;
+                    TrackCircuitSection forcedTrackSection = signalRef.TrackCircuitList[forcedTCSectionIndex];
+                    int forcedRouteSectionIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(forcedTCSectionIndex, 0);
+                    thisTrain.Train.ReRouteTrain(forcedRouteSectionIndex, forcedTCSectionIndex);
                     if (thisTrain.Train.TrainType == Train.TRAINTYPE.AI || thisTrain.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
                         (thisTrain.Train as AITrain).ResetActions(true);
-                    forcedRouteSection.CircuitState.Forced = false;
+                    forcedTrackSection.CircuitState.Forced = false;
                 }
             }
 
