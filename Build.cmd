@@ -134,6 +134,7 @@ IF "%ERRORLEVEL%" == "9009" GOTO :error
 
 CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
 editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
+copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
 ECHO Created large address aware version of RunActivity.exe.
 
 REM Copy version number from OpenRails.exe into all other 1st party files
