@@ -6241,6 +6241,7 @@ namespace Orts.Simulation.Signalling
             int routeIndex = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex].GetRouteIndex(Index, thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex == 0 ? 1 : 0].RouteListIndex);
             int direction = routeIndex < 0 ? 0 : thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][routeIndex].Direction;
             CircuitState.TrainOccupy.Add(thisTrain, direction);
+            CircuitState.Forced = false;
             thisTrain.Train.OccupiedTrack.Add(this);
 	    
             // clear all reservations

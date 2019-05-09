@@ -9680,13 +9680,18 @@ namespace Orts.Simulation.Physics
         public void ReRouteTrain(int forcedRouteSectionIndex, int forcedTCSectionIndex)
         {
             // check for any stations in abandoned path
-            int actSubpath = TCRoute.activeSubpath;
-            Dictionary<int, StationStop> abdStations = new Dictionary<int, StationStop>();
-            CheckAbandonedStations(forcedRouteSectionIndex, ValidRoute[0].Count - 1, actSubpath, abdStations);
-            ResetValidRoute();
-            GenerateValidRoute(forcedRouteSectionIndex, forcedTCSectionIndex);
-            // check for abandoned stations - try to find alternative on passing path
-            LookForReplacementStations(abdStations, ValidRoute[0], ValidRoute[0]);
+            if (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE)
+                // Local trains, having a defined TCRoute
+            {
+                int actSubpath = TCRoute.activeSubpath;
+                Dictionary<int, StationStop> abdStations = new Dictionary<int, StationStop>();
+
+                CheckAbandonedStations(forcedRouteSectionIndex, ValidRoute[0].Count - 1, actSubpath, abdStations);
+                ResetValidRoute();
+                GenerateValidRoute(forcedRouteSectionIndex, forcedTCSectionIndex);
+                // check for abandoned stations - try to find alternative on passing path
+                LookForReplacementStations(abdStations, ValidRoute[0], ValidRoute[0]);
+            }
         }
 
         //================================================================================================//
@@ -13061,7 +13066,7 @@ namespace Orts.Simulation.Physics
                 {
                     circuitString = String.Concat(circuitString, "x", (TCRoute.activeSubpath + 1).ToString());
                 }
-                if (TCRoute.OriginalSubpath != -1) circuitString += "???";
+                if (TCRoute != null && TCRoute.OriginalSubpath != -1) circuitString += "???";
             }
             else
             {
