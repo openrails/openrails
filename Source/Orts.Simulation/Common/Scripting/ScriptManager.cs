@@ -34,7 +34,7 @@ namespace Orts.Common.Scripting
     {
         readonly Simulator Simulator;
         readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
-        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v4.0" } });
+        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider();
 
         static CompilerParameters GetCompilerParameters()
         {
