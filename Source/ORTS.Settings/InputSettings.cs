@@ -63,7 +63,7 @@ namespace ORTS.Settings
     /// </remarks>
     public class InputSettings : SettingsBase
     {
-        static GettextResourceManager catalog = new GettextResourceManager("ORTS.Settings");
+        static GettextResourceManager catalog = new GettextResourceManager("ORTS.Common");
 
         public static readonly UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
         public readonly UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
