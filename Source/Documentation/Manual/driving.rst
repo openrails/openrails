@@ -734,8 +734,8 @@ By left- or right-clicking on a switch, a small pop-up menu with the two
 selections ``Main route`` and ``Side route`` appears. By clicking on them 
 you can throw the switch, provided the OR AI dispatcher allows it.
 
-With respect to AI trains, as a general rule you can command their signals 
-but not their switches, because AI trains are not allowed to exit their path.
+Using the dispatcher window for AI trains is described 
+:ref:`here below<driving-dispatcher-for-ai-trains>`.
 
 The two checkboxes ``Pick Signals`` and ``Pick Switches`` are checked as 
 default. You can uncheck one of them when a signal and a switch are 
@@ -762,6 +762,46 @@ if the trains are far away, can lead to memory overflows.
 
 If after a train selection you click on ``Follow`` the dispatcher window 
 will remain centered on that train.
+
+.. _driving-dispatcher-for-ai-trains:
+
+Using dispatcher window for AI trains
+-------------------------------------
+
+What is described here is valid only for activity mode and explore in 
+activity mode.
+
+There are cases where it would be advisable to re-route an AI train to manage standoffs, 
+train passings, train priorities.
+In this case, using the dispatcher window it is possible to re-route an AI train (e.g. on a siding) 
+and then to get it back on the original route. The feature anyhow also allows to 
+re-route it without getting it back on the original route.
+
+It is suggested to look at this video which explains some practical case 
+https://youtu.be/-f0XVg7bSgU before continuing reading.
+
+To perform this correctly and in a way more similar to reality, some rules have to 
+be followed.
+The concept is that switches must be manually thrown only if they aren't reserved by a train. 
+To be sure of this it is necessary to force to stop the last signal(s) between train(s) 
+and switch, in case such signal is not already at stop. Once the switch is manually 
+thrown, the signal in front of the train that has to be re-routed must be set to the 
+"System controlled" state if it had been forced to stop before.
+At that point OR breaks down the old train's route and re-computes a new one, taking 
+into account the moved switch. 
+More switches may be forced on the route (e.g. both the switches to enter the siding 
+and the ones to re-enter the main line).
+
+Signals must never be forced to clear or approach. 
+
+If an AI train is re-routed on a route which isn't at the moment re-entering the 
+original route, its path information in the dispatcher info HUD is displayed in yellow.
+
+Station platform stops are re-assigned to adjacent platforms, if available. Events and 
+waiting points in the abandoned part of route will be lost.
+
+The re-routed train may be also the player train (be it autopiloted or not), provided the
+Autopilot option is checked.
 
 Additional Train Operation Commands
 ===================================
