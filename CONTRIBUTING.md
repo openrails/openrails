@@ -16,6 +16,8 @@ If you've got an idea for Open Rails, please report it in [our road-map on Trell
 
 ## Writing code
 
+### Choosing what to work on
+
 You are free to make any modifications to the Open Rails code that you like; that's how open source works. However, we won't necessarily include all changes in the official version, so here are the ways to ensure that what you're working on will be accepted:
 
 * If you'd like to work on something that is already known about and accepted, please check through [the confirmed bugs](https://bugs.launchpad.net/or/+bugs?orderby=-importance&field.status%3Alist=TRIAGED) and [accepted feature requests (anything except the first two columns)](https://trello.com/b/DS2h3Pxc/open-rails-roadmap).
@@ -75,9 +77,15 @@ For each object stored in a field or property that is accessed from multiple thr
 
 If you are in any doubt about the use of data by multiple threads, or your implementation of the above rules, please ask in the [Elvas Tower](http://www.elvastower.com/) forums.
 
-### Pull requests
+### Getting your code accepted
 
-Pull requests should contain exactly one bug fix or new feature; do not mix multiple bug fixes, multiple features, or bug fixes and features together in any way. The bug report or feature request must be linked from the pull request.
+Your code should be fixing exactly one bug or adding a single new feature; mixing multiple bug fixes or new features makes it harder to review your changes and risks them not being accepted.
+
+When you're done writing code, you should make a pull request on GitHub or a merge request on Launchpad. The title and description of the requests should clearly and concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
+
+* Bug report
+* Road-map card
+* Blueprint
 
 ## How bugs and features are accepted
 
@@ -87,13 +95,13 @@ A member of [our developer team](https://launchpad.net/~ordevs/+members) will ma
 
 ### Road-map cards
 
-We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically won't approve a feature request until it has had a week for discussion, and there are no unresolved objections.
+We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
 
-A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, classify it by type (using labels), and place it into an appropriate list in Trello. It the rare event that we do not agree with the feature being added to Open Rails, it will be placed in the "Not planned at this time" list and a comment added explaining why.
+A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, classify it by type (using labels), and place it into an appropriate list in Trello. In the rare event that we do not agree with the feature being added to Open Rails, it will be placed in the "Not planned at this time" list and a comment added explaining why.
 
 ### Blueprints
 
-We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically won't approve a feature request until it has had a week for discussion, and there are no unresolved objections.
+We highly recommend that a [forum thread is created](http://www.elvastower.com/forums/index.php?/forum/256-developing-features/) with each feature request, so that the community may discuss it and flag up any potential issues. We typically allow at least a week for discussion and identification of any issues.
 
 A member of [our management team](https://launchpad.net/~orsupervisors/+members) will read the request and follow the forum discussion being had by the community, and approve its direction if appropriate.
 
