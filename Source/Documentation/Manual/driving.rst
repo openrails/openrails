@@ -783,7 +783,7 @@ https://youtu.be/-f0XVg7bSgU before continuing reading.
 To perform this correctly and in a way more similar to reality, some rules have to 
 be followed.
 The concept is that switches must be manually thrown only if they aren't reserved by a train. 
-To be sure of this it is necessary to force to stop the las signal(s) between train(s) 
+To be sure of this it is necessary to force to stop the last signal(s) between train(s) 
 and switch, in case such signal is not already at stop. Once the switch is manually 
 thrown, the signal in front of the train that has to be re-routed must be set to the 
 "System controlled" state if it had been forced to stop before.
@@ -797,7 +797,8 @@ Signals must never be forced to clear or approach.
 If an AI train is re-routed on a route which isn't at the moment re-entering the 
 original route, its path information in the dispatcher info HUD is displayed in yellow.
 
-Station platform stops are re-assigned to adjacent platforms, if available.
+Station platform stops are re-assigned to adjacent platforms, if available. Events and 
+waiting points in the abandoned part of route will be lost.
 
 The re-routed train may be also the player train (be it autopiloted or not), provided the
 Autopilot option is checked.
