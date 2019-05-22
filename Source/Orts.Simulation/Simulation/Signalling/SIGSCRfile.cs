@@ -133,7 +133,7 @@ namespace Orts.Simulation.Signalling
         public void SH_process_script(SignalHead thisHead, SignalScripts.SCRScripts signalScript, SIGSCRfile sigscr)
         {
 
-            int[] localFloats = new int[signalScript.totalLocalFloats];
+            int[] localFloats = new int[signalScript.TotalLocalFloats];
 
             // process script
 
@@ -353,9 +353,9 @@ namespace Orts.Simulation.Signalling
                 SignalScripts.SCRScripts.SCRParameterType thisParameter = thisTerm.PartParameter[0];
                 termvalue = SH_termvalue(thisHead, thisParameter, localFloats, sigscr);
             }
-            else if (thisTerm.sublevel > 0)
+            else if (thisTerm.TermNumber > 0)
             {
-                termvalue = SH_processSubTerm(thisHead, StatementTerms, thisTerm.sublevel, localFloats, sigscr);
+                termvalue = SH_processSubTerm(thisHead, StatementTerms, thisTerm.TermNumber, localFloats, sigscr);
             }
 
             return termvalue;
@@ -382,11 +382,11 @@ namespace Orts.Simulation.Signalling
                 }
 
                 SignalScripts.SCRTermOperator thisOperator = thisTerm.TermOperator;
-                if (thisTerm.issublevel == sublevel)
+                if (thisTerm.TermLevel == sublevel)
                 {
                     termvalue =
                             SH_processAssignTerm(thisHead, StatementTerms, thisTerm, sublevel, localFloats, sigscr);
-                    if (thisTerm.negate)
+                    if (thisTerm.Negated)
                     {
                         termvalue = termvalue == 0 ? 1 : 0;
                     }
@@ -1605,7 +1605,7 @@ namespace Orts.Simulation.Signalling
 
             // if only one value : check for NOT
             {
-                if (thisCond.negate1)
+                if (thisCond.Term1.Negated)
                 {
                     condition = !(Convert.ToBoolean(term1value));
                 }

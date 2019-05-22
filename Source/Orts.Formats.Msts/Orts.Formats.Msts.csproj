@@ -50,6 +50,10 @@
     <Compile Include="CabViewFile.cs" />
     <Compile Include="EngineFile.cs" />
     <Compile Include="EnvironmentFile.cs" />
+    <Compile Include="Signalling\Enums.cs" />
+    <Compile Include="Signalling\Parser.cs" />
+    <Compile Include="Signalling\Tokenizer.cs" />
+    <Compile Include="Signalling\Tokens.cs" />
     <Compile Include="SignalScripts.cs" />
     <Compile Include="TerrainFlagsFile.cs" />
     <Compile Include="HazardFile.cs" />
