@@ -50,7 +50,7 @@ namespace Orts.Formats.Msts.Signalling
                 case ">":
                     return (c == '=' || c == '#');
                 case "#":
-                    return false;
+                    return (c == '='); ;
                 case "==":
                 case "!=":
                 case "<=":

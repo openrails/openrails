@@ -97,7 +97,7 @@ namespace Orts.Formats.Msts.Signalling
                                 case "NOT":
                                 case "MOD":
                                 case "DIV":
-                                    currentBlock = currentBlock.Add(new OperatorToken(token.Value));
+                                    currentBlock = currentBlock.Add(new OperatorToken(token.Value, tokenizer.LineNumber));
                                     continue;
                                 default:
                                     currentBlock = currentBlock.Add(new ScriptToken() { Token = token.Value });
@@ -114,7 +114,7 @@ namespace Orts.Formats.Msts.Signalling
                             }
                             else
                             {
-                                currentBlock = currentBlock.Add(new OperatorToken(token.Value));
+                                currentBlock = currentBlock.Add(new OperatorToken(token.Value, tokenizer.LineNumber));
                             }
                             continue;
                         default:

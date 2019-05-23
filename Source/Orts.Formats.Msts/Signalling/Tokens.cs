@@ -30,7 +30,7 @@ namespace Orts.Formats.Msts.Signalling
 
     internal class OperatorToken : ScriptToken
     {
-        public OperatorToken(string token)
+        public OperatorToken(string token, int lineNumber)
         {
             Token = token;
 
@@ -84,7 +84,7 @@ namespace Orts.Formats.Msts.Signalling
                     break;
                 default:
                     OperatorType = OperatorType.Other;
-                    Trace.TraceWarning($"sigscr-file : Invalid operator token {token}");
+                    Trace.TraceWarning($"sigscr-file : Invalid operator token {token} in line number {lineNumber}");
                     break;
             }
         }
