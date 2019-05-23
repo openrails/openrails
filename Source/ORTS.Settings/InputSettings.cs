@@ -63,7 +63,8 @@ namespace ORTS.Settings
     /// </remarks>
     public class InputSettings : SettingsBase
     {
-        static GettextResourceManager catalog = new GettextResourceManager("ORTS.Settings");
+        static GettextResourceManager commonCatalog = new GettextResourceManager("ORTS.Common");
+        static GettextResourceManager settingsCatalog = new GettextResourceManager("ORTS.Settings");
 
         public static readonly UserCommandInput[] DefaultCommands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
         public readonly UserCommandInput[] Commands = new UserCommandInput[Enum.GetNames(typeof(UserCommand)).Length];
@@ -501,11 +502,11 @@ namespace ORTS.Settings
                 if (modInput != null)
                 {
                     if (modInput.Shift && modInput.IgnoreShift)
-                        errors.Add(catalog.GetStringFmt("{0} requires and is modified by Shift", GetPrettyLocalizedName(command)));
+                        errors.Add(settingsCatalog.GetStringFmt("{0} requires and is modified by Shift", GetPrettyLocalizedName(command)));
                     if (modInput.Control && modInput.IgnoreControl)
-                        errors.Add(catalog.GetStringFmt("{0} requires and is modified by Control", GetPrettyLocalizedName(command)));
+                        errors.Add(settingsCatalog.GetStringFmt("{0} requires and is modified by Control", GetPrettyLocalizedName(command)));
                     if (modInput.Alt && modInput.IgnoreAlt)
-                        errors.Add(catalog.GetStringFmt("{0} requires and is modified by Alt", GetPrettyLocalizedName(command)));
+                        errors.Add(settingsCatalog.GetStringFmt("{0} requires and is modified by Alt", GetPrettyLocalizedName(command)));
                 }
             }
 
@@ -536,7 +537,7 @@ namespace ORTS.Settings
                     var unique2 = input2.GetUniqueInputs();
                     var sharedUnique = unique1.Where(id => unique2.Contains(id));
                     foreach (var uniqueInput in sharedUnique)
-                        errors.Add(catalog.GetStringFmt("{0} and {1} both match {2}", GetPrettyLocalizedName(command1), GetPrettyLocalizedName(command2), GetPrettyUniqueInput(uniqueInput)));
+                        errors.Add(settingsCatalog.GetStringFmt("{0} and {1} both match {2}", GetPrettyLocalizedName(command1), GetPrettyLocalizedName(command2), GetPrettyUniqueInput(uniqueInput)));
                 }
             }
 
@@ -545,7 +546,7 @@ namespace ORTS.Settings
 
         public static string GetPrettyLocalizedName(Enum value)
         {
-            return catalog.GetString(GetStringAttribute.GetPrettyName(value));
+            return commonCatalog.GetString(GetStringAttribute.GetPrettyName(value));
         }
 
         public static string GetPrettyCommandName(UserCommand command)
