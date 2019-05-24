@@ -930,6 +930,12 @@ namespace Orts.Formats.Msts
                         }
                         else
                         {
+                            //substitute a trailing + or - operator token to become part of the (numeric) parameter 
+                            if (block.Tokens.Count > 1 && ((block.Tokens[0] as OperatorToken)?.Token == "-" || (block.Tokens[0] as OperatorToken)?.Token == "+"))
+                            {
+                                block.Tokens[1].Token = block.Tokens[0].Token + block.Tokens[1].Token;
+                                block.Tokens.RemoveAt(0);
+                            }
                             SCRParameterType parameter = ParameterFromToken(block.Tokens[0], block.LineNumber, localFloats, orSignalTypes, orNormalSubtypes);
                             result.Add(parameter);
                         }
@@ -1037,7 +1043,12 @@ namespace Orts.Formats.Msts
                         statement.Tokens.RemoveAt(0);
                         negated = true;
                     }
-
+                    //substitute a trailing + or - operator token to become part of the (numeric) term 
+                    if (statement.Tokens.Count > 1 && ((statement.Tokens[0] as OperatorToken)?.Token == "-" || (statement.Tokens[0] as OperatorToken)?.Token == "+"))
+                    {
+                        statement.Tokens[1].Token = statement.Tokens[0].Token + statement.Tokens[1].Token;
+                        statement.Tokens.RemoveAt(0);
+                    }
                     if (statement.Tokens.Count > 1 && Enum.TryParse(statement.Tokens[0].Token, out SCRExternalFunctions externalFunctionsResult) && statement.Tokens[1] is Enclosure)   //check if it is a Sub Function ()
                     {
                         Term1 = new SCRStatTerm(externalFunctionsResult, statement.Tokens[1] as Enclosure, 0, string.Empty, negated, localFloats, orSignalTypes, orNormalSubtypes);
@@ -1072,14 +1083,18 @@ namespace Orts.Formats.Msts
 
                         if (statement.Tokens.Count > 0)
                         {
-
                             //Term 2
                             if ((statement.Tokens[0] as OperatorToken)?.OperatorType == OperatorType.Negator)
                             {
                                 statement.Tokens.RemoveAt(0);
                                 negated = true;
                             }
-
+                            //substitute a trailing + or - operator token to become part of the (numeric) term 
+                            if (statement.Tokens.Count > 1 && ((statement.Tokens[0] as OperatorToken)?.Token == "-" || (statement.Tokens[0] as OperatorToken)?.Token == "+"))
+                            {
+                                statement.Tokens[1].Token = statement.Tokens[0].Token + statement.Tokens[1].Token;
+                                statement.Tokens.RemoveAt(0);
+                            }
                             if (statement.Tokens.Count > 1 && Enum.TryParse(statement.Tokens[0].Token, out SCRExternalFunctions externalFunctionsResult2) && statement.Tokens[1] is Enclosure)   //check if it is a Sub Function ()
                             {
                                 Term2 = new SCRStatTerm(externalFunctionsResult2, statement.Tokens[1] as Enclosure, 0, string.Empty, negated, localFloats, orSignalTypes, orNormalSubtypes);
