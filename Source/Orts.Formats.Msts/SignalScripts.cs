@@ -804,6 +804,10 @@ namespace Orts.Formats.Msts
                             AssignParameter = value;
                             AssignType = SCRTermType.LocalFloat;
                         }
+                        else
+                        {
+                            Trace.TraceWarning($"Invalid Assignment target in line {statementBlock.LineNumber} - could not find {statement.Tokens[0].Token} as local or external float");
+                        }
                         // Assignment term
                         statement.Tokens.RemoveRange(0, 2);
                     }

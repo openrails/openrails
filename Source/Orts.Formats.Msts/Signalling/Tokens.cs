@@ -155,9 +155,9 @@ namespace Orts.Formats.Msts.Signalling
             return builder.ToString();
         }
 
-        public virtual BlockBase Add(ScriptToken token)
+        public virtual BlockBase Add(ScriptToken token, int lineNumber)
         {
-            Current = Current ?? new Statement(this, LineNumber);
+            Current = Current ?? new Statement(this, lineNumber);
             //token should be Value or Operator only added to current statement or enclosing
             Current.Tokens.Add(token);
             return Current;
@@ -212,7 +212,7 @@ namespace Orts.Formats.Msts.Signalling
         public Statement(BlockBase parent, int lineNumber) : base(parent, lineNumber)
         { }
 
-        public override BlockBase Add(ScriptToken token)
+        public override BlockBase Add(ScriptToken token, int lineNumber)
         {
             Tokens.Add(token);
             return this;
@@ -251,7 +251,7 @@ namespace Orts.Formats.Msts.Signalling
         public Enclosure(BlockBase parent, int lineNumber) : base(parent, lineNumber)
         { }
 
-        public override BlockBase Add(ScriptToken token)
+        public override BlockBase Add(ScriptToken token, int lineNumber)
         {
             Tokens.Add(token);
             return this;
@@ -292,9 +292,9 @@ namespace Orts.Formats.Msts.Signalling
 
         internal bool SkipOnReturn;
 
-        public override BlockBase Add(ScriptToken token)
+        public override BlockBase Add(ScriptToken token, int lineNumber)
         {
-            return base.Add(token);
+            return base.Add(token, lineNumber);
         }
 
         public override BlockBase CompleteBlock()
