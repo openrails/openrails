@@ -792,6 +792,12 @@ namespace Orts.Formats.Msts
 
                     //TODO: may want to process other Assignment Operations as well (+=, -= etc)
                     Statement statement = statementBlock as Statement;
+                    //there are some scripts misusing equality operators (==, ==#) for assignment (=, #=), so we are warning them and trying to correct adhoc
+                    if (statement?.Tokens.Count > 1 && (statement?.Tokens[1] as OperatorToken)?.OperatorType == OperatorType.Equality && statement?.Tokens[1].Token[0] == '=')
+                    {
+                        Trace.TraceWarning($"Invalid equality operation {statement?.Tokens[1].Token} in line {statementBlock.LineNumber} - processing as {new OperatorToken(statement?.Tokens[1].Token.Substring(1).Replace("==", "=").Replace("=#", "#="), statement.LineNumber)} assignment operation.");
+                        statement.Tokens[1] = new OperatorToken(statement?.Tokens[1].Token.Substring(1).Replace("==", "=").Replace("=#", "#="), statement.LineNumber);
+                    }
                     if (statement?.Tokens.Count > 1 && (statement?.Tokens[1] as OperatorToken)?.OperatorType == OperatorType.Assignment)
                     {
                         if (Enum.TryParse(statement.Tokens[0].Token, out SCRExternalFloats result))
@@ -1064,23 +1070,31 @@ namespace Orts.Formats.Msts
                         }
                         statement.Tokens.RemoveAt(0);
 
-                        //Term 2
-                        if ((statement.Tokens[0] as OperatorToken)?.OperatorType == OperatorType.Negator)
+                        if (statement.Tokens.Count > 0)
                         {
-                            statement.Tokens.RemoveAt(0);
-                            negated = true;
-                        }
 
-                        if (statement.Tokens.Count > 1 && Enum.TryParse(statement.Tokens[0].Token, out SCRExternalFunctions externalFunctionsResult2) && statement.Tokens[1] is Enclosure)   //check if it is a Sub Function ()
-                        {
-                            Term2 = new SCRStatTerm(externalFunctionsResult2, statement.Tokens[1] as Enclosure, 0, string.Empty, negated, localFloats, orSignalTypes, orNormalSubtypes);
+                            //Term 2
+                            if ((statement.Tokens[0] as OperatorToken)?.OperatorType == OperatorType.Negator)
+                            {
+                                statement.Tokens.RemoveAt(0);
+                                negated = true;
+                            }
+
+                            if (statement.Tokens.Count > 1 && Enum.TryParse(statement.Tokens[0].Token, out SCRExternalFunctions externalFunctionsResult2) && statement.Tokens[1] is Enclosure)   //check if it is a Sub Function ()
+                            {
+                                Term2 = new SCRStatTerm(externalFunctionsResult2, statement.Tokens[1] as Enclosure, 0, string.Empty, negated, localFloats, orSignalTypes, orNormalSubtypes);
+                                statement.Tokens.RemoveAt(0);
+                            }
+                            else
+                            {
+                                Term2 = new SCRStatTerm(statement.Tokens[0], 0, string.Empty, statement.LineNumber, negated, localFloats, orSignalTypes, orNormalSubtypes);
+                            }
                             statement.Tokens.RemoveAt(0);
                         }
                         else
                         {
-                            Term2 = new SCRStatTerm(statement.Tokens[0], 0, string.Empty, statement.LineNumber, negated, localFloats, orSignalTypes, orNormalSubtypes);
+                            Trace.TraceWarning($"Invalid statement in line {statement.LineNumber}");
                         }
-                        statement.Tokens.RemoveAt(0);
                     }
                 }
             } // class SCRConditions
