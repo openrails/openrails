@@ -72,11 +72,14 @@ namespace Orts.Viewer3D
                             DDSLib.DDSFromFile(path, GraphicsDevice, true, out texture);
                         }
                         else
+                        // This solves the case where the global shapes have been overwritten and point to .dds textures
+                        // therefore avoiding that routes providing .ace textures show blank global shapes
                         {
                             var aceTexture = Path.ChangeExtension(path, ".ace");
                             if (File.Exists(aceTexture))
                             {
                                 texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, aceTexture);
+                                Trace.TraceWarning("Required texture {1} not existing; using existing texture {2}", path, aceTexture);
                             }
                             else texture = defaultTexture;
                         }
