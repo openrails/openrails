@@ -65,9 +65,21 @@ namespace Orts.Viewer3D
                 try
                 {
                     Texture2D texture;
-                    if (Path.GetExtension(path) == ".dds" && File.Exists(path))
+                    if (Path.GetExtension(path) == ".dds")
                     {
-                        DDSLib.DDSFromFile(path, GraphicsDevice, true, out texture);
+                        if (File.Exists(path))
+                        {
+                            DDSLib.DDSFromFile(path, GraphicsDevice, true, out texture);
+                        }
+                        else
+                        {
+                            var aceTexture = Path.ChangeExtension(path, ".ace");
+                            if (File.Exists(aceTexture))
+                            {
+                                texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, aceTexture);
+                            }
+                            else texture = defaultTexture;
+                        }
                     }
                     else if (Path.GetExtension(path) == ".ace")
                     {
