@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Menu\n"
-"POT-Creation-Date: 2017-08-13 15:13:24+0200\n"
-"PO-Revision-Date: 2017-08-13 15:13:24+0200\n"
+"POT-Creation-Date: 2019-05-19 02:21:32+0200\n"
+"PO-Revision-Date: 2019-05-19 02:21:32+0200\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -13,44 +13,52 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 
-#: ../../ORTS.Menu/Activities.cs:46
+#: ../../ORTS.Menu/Activities.cs:47
 msgid "- Explore Route -"
 msgstr "[- Éжƥℓôřè Rôúƭè - !!!]"
 
-#: ../../ORTS.Menu/Activities.cs:75
+#: ../../ORTS.Menu/Activities.cs:51
+msgid "+ Explore in Activity Mode +"
+msgstr "[+ Éжƥℓôřè ïñ ÂçƭïƲïƭ¥ Môδè + !!!]"
+
+#: ../../ORTS.Menu/Activities.cs:81
+msgid "Not same route:"
+msgstr "[Nôƭ ƨá₥è řôúƭè: !!!]"
+
+#: ../../ORTS.Menu/Activities.cs:85
 #: ../../ORTS.Menu/Consists.cs:47
 #: ../../ORTS.Menu/Consists.cs:71
 #: ../../ORTS.Menu/Consists.cs:199
 #: ../../ORTS.Menu/ORTimetables.cs:55
 #: ../../ORTS.Menu/ORTimetables.cs:77
 #: ../../ORTS.Menu/Paths.cs:63
-#: ../../ORTS.Menu/Routes.cs:47
+#: ../../ORTS.Menu/Routes.cs:49
 msgid "load error:"
 msgstr "[ℓôáδ èřřôř: !!!]"
 
-#: ../../ORTS.Menu/Activities.cs:78
+#: ../../ORTS.Menu/Activities.cs:88
 #: ../../ORTS.Menu/Consists.cs:50
 #: ../../ORTS.Menu/Consists.cs:74
 #: ../../ORTS.Menu/Consists.cs:202
 #: ../../ORTS.Menu/Paths.cs:65
 #: ../../ORTS.Menu/Paths.cs:66
 #: ../../ORTS.Menu/Paths.cs:67
-#: ../../ORTS.Menu/Routes.cs:49
+#: ../../ORTS.Menu/Routes.cs:51
 msgid "unnamed:"
 msgstr "[úññá₥èδ: !!!]"
 
-#: ../../ORTS.Menu/Activities.cs:84
+#: ../../ORTS.Menu/Activities.cs:94
 #: ../../ORTS.Menu/Consists.cs:54
 #: ../../ORTS.Menu/Consists.cs:78
 #: ../../ORTS.Menu/Consists.cs:207
 #: ../../ORTS.Menu/ORTimetables.cs:60
 #: ../../ORTS.Menu/ORTimetables.cs:82
 #: ../../ORTS.Menu/Paths.cs:71
-#: ../../ORTS.Menu/Routes.cs:54
+#: ../../ORTS.Menu/Routes.cs:56
 msgid "missing:"
 msgstr "[₥ïƨƨïñϱ: !!!]"
 
-#: ../../ORTS.Menu/Activities.cs:77
+#: ../../ORTS.Menu/Activities.cs:87
 #, csharp-format
 msgid "Activity '{0}' is excluded."
 msgstr "[ÂçƭïƲïƭ¥ '{0}' ïƨ èжçℓúδèδ. !!!]"
