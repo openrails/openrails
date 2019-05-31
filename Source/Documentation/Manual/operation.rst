@@ -1671,7 +1671,7 @@ user settings, and as such are kind of an extension to the four available
 
 Function call::
 
-    state = HASHEAD(headname);
+    state = HASHEAD(Index of SignalSubObj);
 
 Function returns 1 if head is set, else 0. 
 
