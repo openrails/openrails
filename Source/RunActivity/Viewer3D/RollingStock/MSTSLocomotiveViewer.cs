@@ -263,7 +263,7 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (ThreeDimentionCabViewer != null)
                     ThreeDimentionCabViewer.PrepareFrame(frame, elapsedTime);
-                return;
+                //return;
             }
 
             // Wiper animation
