@@ -45,11 +45,10 @@ namespace Orts.Viewer3D
         static MouseState MouseState;
         static KeyboardState LastKeyboardState;
         static MouseState LastMouseState;
-        static bool MouseButtonsSwapped;
 
         public static RailDriverState RDState;
 
-        public static InputSettings InputSettings;
+        static InputSettings InputSettings;
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys key);
@@ -63,9 +62,6 @@ namespace Orts.Viewer3D
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
             KeyboardState = game.IsActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
             MouseState = game.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
-            // Monogame returns swapped button status anyway.
-            //MouseButtonsSwapped = System.Windows.Forms.SystemInformation.MouseButtonsSwapped;
-            MouseButtonsSwapped = false;
 
 #if DEBUG_RAW_INPUT
             for (Keys key = 0; key <= Keys.OemClear; key++)
@@ -175,16 +171,16 @@ namespace Orts.Viewer3D
         public static bool IsMouseWheelChanged { get { return MouseState.ScrollWheelValue != LastMouseState.ScrollWheelValue; } }
         public static int MouseWheelChange { get { return MouseState.ScrollWheelValue - LastMouseState.ScrollWheelValue; } }
 
-        public static bool IsMouseLeftButtonDown { get { return MouseButtonsSwapped ? MouseState.RightButton == ButtonState.Pressed : MouseState.LeftButton == ButtonState.Pressed; } }
-        public static bool IsMouseLeftButtonPressed { get { return MouseButtonsSwapped ? MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released : MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released; } }
-        public static bool IsMouseLeftButtonReleased { get { return MouseButtonsSwapped ? MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed : MouseState.LeftButton == ButtonState.Released && LastMouseState.LeftButton == ButtonState.Pressed; } }
+        public static bool IsMouseLeftButtonDown { get { return MouseState.LeftButton == ButtonState.Pressed; } }
+        public static bool IsMouseLeftButtonPressed { get { return MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released; } }
+        public static bool IsMouseLeftButtonReleased { get { return MouseState.LeftButton == ButtonState.Released && LastMouseState.LeftButton == ButtonState.Pressed; } }
 
         public static bool IsMouseMiddleButtonDown { get { return MouseState.MiddleButton == ButtonState.Pressed; } }
         public static bool IsMouseMiddleButtonPressed { get { return MouseState.MiddleButton == ButtonState.Pressed && LastMouseState.MiddleButton == ButtonState.Released; } }
         public static bool IsMouseMiddleButtonReleased { get { return MouseState.MiddleButton == ButtonState.Released && LastMouseState.MiddleButton == ButtonState.Pressed; } }
 
-        public static bool IsMouseRightButtonDown { get { return MouseButtonsSwapped ? MouseState.LeftButton == ButtonState.Pressed : MouseState.RightButton == ButtonState.Pressed; } }
-        public static bool IsMouseRightButtonPressed { get { return MouseButtonsSwapped ? MouseState.LeftButton == ButtonState.Pressed && LastMouseState.LeftButton == ButtonState.Released : MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; } }
-        public static bool IsMouseRightButtonReleased { get { return MouseButtonsSwapped ? MouseState.LeftButton == ButtonState.Released && LastMouseState.LeftButton == ButtonState.Pressed : MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; } }
+        public static bool IsMouseRightButtonDown { get { return MouseState.RightButton == ButtonState.Pressed; } }
+        public static bool IsMouseRightButtonPressed { get { return MouseState.RightButton == ButtonState.Pressed && LastMouseState.RightButton == ButtonState.Released; } }
+        public static bool IsMouseRightButtonReleased { get { return MouseState.RightButton == ButtonState.Released && LastMouseState.RightButton == ButtonState.Pressed; } }
     }
 }

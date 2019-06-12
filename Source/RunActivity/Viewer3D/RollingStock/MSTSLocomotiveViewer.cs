@@ -1008,7 +1008,6 @@ namespace Orts.Viewer3D.RollingStock
 
     public class CabRenderer : RenderPrimitive
     {
-        //private SpriteBatchMaterial _Sprite2DCabView;
         private CabSpriteBatchMaterial _SpriteShader2DCabView;
         private Rectangle _CabRect = new Rectangle();
         private Matrix _Scale = Matrix.Identity;
@@ -1018,7 +1017,6 @@ namespace Orts.Viewer3D.RollingStock
 
         private Point _PrevScreenSize;
 
-        //private List<CabViewControls> CabViewControlsList = new List<CabViewControls>();
         private List<List<CabViewControlRenderer>> CabViewControlRenderersList = new List<List<CabViewControlRenderer>>();
         private Viewer _Viewer;
         private MSTSLocomotive _Locomotive;

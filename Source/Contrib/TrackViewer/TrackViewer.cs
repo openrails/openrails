@@ -1136,7 +1136,7 @@ namespace ORTS.TrackViewer
 
         void CalculateFPS(GameTime gameTime)
         {
-            float elapsedRealTime = (float)gameTime.TotalGameTime.TotalSeconds;
+            float elapsedRealTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
             FrameRate.Update(elapsedRealTime, 1f / elapsedRealTime);
         }
 

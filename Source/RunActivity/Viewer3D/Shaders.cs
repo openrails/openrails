@@ -17,9 +17,6 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-// Enables debugging of shaders via PIX and other tools, by loading shaders by filename with debugging enabled.
-//#define DEBUG_SHADER_CODE
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content.Pipeline;
@@ -52,24 +49,6 @@ namespace Orts.Viewer3D
             EffectProcessor processor = new EffectProcessor();
             CompiledEffectContent compiledEffect = processor.Process(effectSource, new ProcessorContext());
             return compiledEffect.GetEffectCode();
-            
-#if DEBUG_SHADER_CODE
-            // NOTE: We may need to implement a CompilerIncludeHandler here if we ever use #include in our shaders.
-            var compiledEffect = Effect.CompileEffectFromFile(effectFileName, null, null, CompilerOptions.Debug, TargetPlatform.Windows);
-            if (!compiledEffect.Success)
-                throw new InvalidOperationException(compiledEffect.ErrorsAndWarnings);
-            return compiledEffect.GetEffectCode();
-#else
-            // We have to use a file stream instead of passing the file name directly because the latter method just botches up non-ASCII paths. :(
-            //using (var effectFileStream = File.OpenRead(effectFileName))
-            //{
-            //    // NOTE: We may need to implement a CompilerIncludeHandler here if we ever use #include in our shaders.
-            //    var compiledEffect = Effect.CompileEffectFromFile(effectFileStream, null, null, CompilerOptions.None, TargetPlatform.Windows);
-            //    if (!compiledEffect.Success)
-            //        throw new InvalidOperationException(compiledEffect.ErrorsAndWarnings);
-            //    return compiledEffect.GetEffectCode();
-            //}
-#endif
         }
     }
 
