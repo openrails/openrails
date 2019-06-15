@@ -1671,9 +1671,10 @@ user settings, and as such are kind of an extension to the four available
 
 Function call::
 
-    state = HASHEAD(Index of SignalSubObj);
+    state = HASHEAD( n );
 
-Function returns 1 if head is set, else 0. 
+where n is the SignalSubObj-Number in question.
+Function returns 1 if head SignalSubObj is set, else 0.
 
 
 Signalling flag OR_NOSPEEDREDUCTION
