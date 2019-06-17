@@ -698,9 +698,9 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                // Skip drawing if CAB view - draw 2D view instead - by GeorgeS
+                // Skip drawing if 2D or 3D Cab view - Cab view already drawn - by GeorgeS changed by DennisAT
                 if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                    Viewer.Camera.Style == Camera.Styles.Cab)
+                    (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
                     return;
 
                 // We are outside the passenger cabin
