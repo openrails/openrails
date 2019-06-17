@@ -64,6 +64,7 @@ namespace Orts.Formats.Msts
                             ESD_Bounding_Box = null;
                     }),
                     new STFReader.TokenProcessor("esd_ortssoundfilename", ()=>{ ESD_SoundFileName = stf.ReadStringBlock(null); }),
+                    new STFReader.TokenProcessor("esd_ortsbellanimationfps", ()=>{ ESD_BellAnimationFPS = stf.ReadFloatBlock(STFReader.UNITS.Frequency, null); }),
                 });
                 // TODO - some objects have no bounding box - ie JP2BillboardTree1.sd
                 //if (ESD_Bounding_Box == null) throw new STFException(stf, "Missing ESD_Bound_Box statement");
@@ -75,6 +76,7 @@ namespace Orts.Formats.Msts
             public bool ESD_Snapable;
             public bool ESD_SubObj;
             public string ESD_SoundFileName = "";
+            public float ESD_BellAnimationFPS = 8;
         }
 
         public class ESD_Bounding_Box

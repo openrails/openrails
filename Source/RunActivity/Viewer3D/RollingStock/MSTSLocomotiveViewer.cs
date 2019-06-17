@@ -266,8 +266,9 @@ namespace Orts.Viewer3D.RollingStock
                 //return;
             }
 
-            // Wiper animation
+            // Wipers and bell animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
+            Bell.UpdateLoop(Locomotive.Bell, elapsedTime, TrainCarShape.SharedShape.BellAnimationFPS);
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&

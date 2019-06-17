@@ -60,6 +60,7 @@ namespace Orts.Viewer3D.RollingStock
         AnimatedPart RightDoor;
         AnimatedPart Mirrors;
         protected AnimatedPart Wipers;
+        protected AnimatedPart Bell;
         AnimatedPart UnloadingParts;
 
         public Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
@@ -182,6 +183,7 @@ namespace Orts.Viewer3D.RollingStock
             Mirrors = new AnimatedPart(TrainCarShape);
             Wipers = new AnimatedPart(TrainCarShape);
             UnloadingParts = new AnimatedPart(TrainCarShape);
+            Bell = new AnimatedPart(TrainCarShape);
 
             if (car.FreightAnimations != null)
                 FreightAnimations = new FreightAnimationsViewer(viewer, car, wagonFolderSlash);
@@ -406,6 +408,10 @@ namespace Orts.Viewer3D.RollingStock
                     if (HasFirstPanto) Pantograph1.AddMatrix(matrix); //some may have no first panto, will put it as panto 2
                     else Pantograph2.AddMatrix(matrix);
                 }
+            }
+            else if (matrixName.StartsWith("ORTSBELL")) // wipers
+            {
+                Bell.AddMatrix(matrix);
             }
             else
             {
