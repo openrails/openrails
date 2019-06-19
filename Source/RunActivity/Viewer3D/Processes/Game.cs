@@ -103,7 +103,7 @@ namespace Orts.Viewer3D.Processes
             LoaderProcess.Start();
             UpdaterProcess.Start();
             RenderProcess.Start();
-            //WatchdogProcess.Start();
+            WatchdogProcess.Start();
             base.BeginRun();
         }
 
