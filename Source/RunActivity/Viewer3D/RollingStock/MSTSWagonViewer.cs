@@ -598,7 +598,7 @@ namespace Orts.Viewer3D.RollingStock
             // It appears that only one MSTS type FA can be used per vehicle (to be confirmed?)
             // For coal load variation, C should be absent (set to 1 when read in WAG file) or >0 - sets FreightAnimFlag; and A > B
             // To disable coal load variation and insert a static (crew) shape on the tender breech, one of the conditions indicated above
-            if (FreightShape != null)
+            if (FreightShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Define default position of shape
                 FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
@@ -655,6 +655,9 @@ namespace Orts.Viewer3D.RollingStock
             {
                 foreach (var freightAnim in FreightAnimations.Animations)
                 {
+                    if (freightAnim.Animation is FreightAnimationStatic)
+                        if ((freightAnim.Animation as FreightAnimationStatic).Cab3DFreightAnim ^
+                            (Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab)) continue;
                     if (freightAnim.FreightShape != null && !((freightAnim.Animation is FreightAnimationContinuous) && (freightAnim.Animation as FreightAnimationContinuous).LoadPerCent == 0))
                     {
                         freightAnim.FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;

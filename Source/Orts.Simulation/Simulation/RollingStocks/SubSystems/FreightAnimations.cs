@@ -308,6 +308,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float ZOffset = 0;
         public float FreightWeight = 0;
         public bool Flipped = false;
+        public bool Cab3DFreightAnim = false;
 
         // additions to manage consequences of variable weight on friction and brake forces
         public float FullStaticORTSDavis_A = -9999;
@@ -343,6 +344,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     stf.MustMatch(")");
                 }),
                 new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+                new STFReader.TokenProcessor("cab3dfreightanim", ()=>{ Cab3DFreightAnim = stf.ReadBoolBlock(true);}),
                 // additions to manage consequences of variable weight on friction and brake forces
                 new STFReader.TokenProcessor("fullortsdavis_a", ()=>{ FullStaticORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
                 new STFReader.TokenProcessor("fullortsdavis_b", ()=>{ FullStaticORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, -1); }),
@@ -364,6 +366,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             YOffset = freightAnimStatic.YOffset;
             ZOffset = freightAnimStatic.ZOffset;
             Flipped = freightAnimStatic.Flipped;
+            Cab3DFreightAnim = freightAnimStatic.Cab3DFreightAnim;
             FreightWeight = freightAnimStatic.FreightWeight;
 
             // additions to manage consequences of variable weight on friction and brake forces
