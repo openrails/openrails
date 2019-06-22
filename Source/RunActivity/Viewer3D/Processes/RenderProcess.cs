@@ -140,27 +140,11 @@ namespace Orts.Viewer3D.Processes
 
             DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-            if (Game.Settings.ShaderModel == 0)
-            {
-                if (GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
-                    Game.Settings.ShaderModel = 3;
-                else if (GraphicsDevice.GraphicsProfile == GraphicsProfile.Reach)
-                    Game.Settings.ShaderModel = 2;
-            }
-            else if (Game.Settings.ShaderModel < 2)
-                Game.Settings.ShaderModel = 2;
-            else if (Game.Settings.ShaderModel > 3)
-                Game.Settings.ShaderModel = 3;
-
             if (Game.Settings.ShadowMapDistance == 0)
                 Game.Settings.ShadowMapDistance = Game.Settings.ViewingDistance / 2;
 
             ShadowMapCount = Game.Settings.ShadowMapCount;
-            if (!Game.Settings.DynamicShadows)
-                ShadowMapCount = 0;
-            else if ((ShadowMapCount > 1) && (Game.Settings.ShaderModel < 3))
-                ShadowMapCount = 1;
-            else if (ShadowMapCount < 0)
+            if (!Game.Settings.DynamicShadows || ShadowMapCount < 0)
                 ShadowMapCount = 0;
             else if (ShadowMapCount > ShadowMapCountMaximum)
                 ShadowMapCount = ShadowMapCountMaximum;

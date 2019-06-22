@@ -519,8 +519,8 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
+            shader.CurrentTechnique = shader.Techniques["TerrainPS"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques["TerrainPS"].Passes.GetEnumerator();
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;

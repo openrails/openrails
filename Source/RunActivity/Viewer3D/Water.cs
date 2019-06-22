@@ -175,8 +175,8 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
+            shader.CurrentTechnique = shader.Techniques["ImagePS"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques["ImagePS"].Passes.GetEnumerator();
             shader.ImageTexture = WaterTexture;
             shader.ReferenceAlpha = 10;
 

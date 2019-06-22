@@ -315,8 +315,6 @@ namespace ORTS.Settings
         public string LoggingPath { get; set; }
         [Default("")]
         public string ScreenshotPath { get; set; }
-        [Default(0)]
-        public int ShaderModel { get; set; }
         [Default(true)]
         public bool ShadowMapBlur { get; set; }
         [Default(4)]

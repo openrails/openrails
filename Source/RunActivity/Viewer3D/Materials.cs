@@ -790,11 +790,11 @@ namespace Orts.Viewer3D
             graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
 
             var shader = Viewer.MaterialManager.SceneryShader;
-            if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "DarkShadePS3" : "DarkShadePS2"].Passes.GetEnumerator();
-            if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "FullBrightPS3" : "FullBrightPS2"].Passes.GetEnumerator();
-            if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "HalfBrightPS3" : "HalfBrightPS2"].Passes.GetEnumerator();
-            if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
-            if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "VegetationPS3" : "VegetationPS2"].Passes.GetEnumerator();
+            if (ShaderPassesDarkShade == null) ShaderPassesDarkShade = shader.Techniques["DarkShadePS"].Passes.GetEnumerator();
+            if (ShaderPassesFullBright == null) ShaderPassesFullBright = shader.Techniques["FullBrightPS"].Passes.GetEnumerator();
+            if (ShaderPassesHalfBright == null) ShaderPassesHalfBright = shader.Techniques["HalfBrightPS"].Passes.GetEnumerator();
+            if (ShaderPassesImage == null) ShaderPassesImage = shader.Techniques["ImagePS"].Passes.GetEnumerator();
+            if (ShaderPassesVegetation == null) ShaderPassesVegetation = shader.Techniques["VegetationPS"].Passes.GetEnumerator();
 
             shader.LightingDiffuse = (Options & SceneryMaterialOptions.Diffuse) != 0 ? 1 : 0;
 
@@ -847,24 +847,24 @@ namespace Orts.Viewer3D
             switch (Options & SceneryMaterialOptions.ShaderMask)
             {
                 case SceneryMaterialOptions.ShaderImage:
-                    shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+                    shader.CurrentTechnique = shader.Techniques["ImagePS"];
                     ShaderPasses = ShaderPassesImage;
                     break;
                 case SceneryMaterialOptions.ShaderDarkShade:
-                    shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "DarkShadePS3" : "DarkShadePS2"];
+                    shader.CurrentTechnique = shader.Techniques["DarkShadePS"];
                     ShaderPasses = ShaderPassesDarkShade;
                     break;
                 case SceneryMaterialOptions.ShaderHalfBright:
-                    shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "HalfBrightPS3" : "HalfBrightPS2"];
+                    shader.CurrentTechnique = shader.Techniques["HalfBrightPS"];
                     ShaderPasses = ShaderPassesHalfBright;
                     break;
                 case SceneryMaterialOptions.ShaderFullBright:
-                    shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "FullBrightPS3" : "FullBrightPS2"];
+                    shader.CurrentTechnique = shader.Techniques["FullBrightPS"];
                     ShaderPasses = ShaderPassesFullBright;
                     break;
                 case SceneryMaterialOptions.ShaderVegetation:
                 case SceneryMaterialOptions.ShaderVegetation | SceneryMaterialOptions.ShaderFullBright:
-                    shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "VegetationPS3" : "VegetationPS2"];
+                    shader.CurrentTechnique = shader.Techniques["VegetationPS"];
                     ShaderPasses = ShaderPassesVegetation;
                     break;
                 default:
