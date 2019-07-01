@@ -15521,14 +15521,14 @@ namespace Orts.Simulation.Physics
                                 newDir = junctionNode.TrPins[firstpin].Direction;
                             }
                         }
-
-                        currentDir = newDir;
-
                         //
                         // find next junction path node
                         //
-
                         nextPathNode = thisPathNode.NextMainNode;
+
+                        // if we were on last main node, direction was already set
+                        if (nextPathNode != null) currentDir = newDir;
+
                     }
                     else
                     {
