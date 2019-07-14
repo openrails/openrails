@@ -67,7 +67,7 @@ namespace Orts.Simulation.Signalling
         public static string dpe_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
-        SignalScripts SignalScripts;
+        public SignalScripts SignalScripts;
 
         //================================================================================================//
         //
@@ -92,13 +92,11 @@ namespace Orts.Simulation.Signalling
 
         public static void SH_update(SignalHead thisHead, SIGSCRfile sigscr)
         {
-
-            SignalScripts.SCRScripts signalScript;
             if (thisHead.signalType == null)
                 return;
-            if (sigscr.SignalScripts.Scripts.TryGetValue(thisHead.signalType, out signalScript))
+            if (thisHead.usedSigScript != null)
             {
-                sigscr.SH_process_script(thisHead, signalScript, sigscr);
+                sigscr.SH_process_script(thisHead, thisHead.usedSigScript, sigscr);
             }
             else
             {
