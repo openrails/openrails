@@ -712,6 +712,31 @@ namespace Orts.Simulation.Signalling
                     return_value = (int)thisHead.dist_multi_sig_mr(parameter1_value, parameter2_value, dumpfile);
 
                     break;
+
+                // dist_multi_sig_mr_of_lr
+
+                case (SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR_OF_LR):
+
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc,"printproc.txt");
+                    }
+#endif
+
+                    return_value = (int)thisHead.dist_multi_sig_mr_of_lr(parameter1_value, parameter2_value, dumpfile);
+
+                    break;
+
                 // next_sig_id
 
                 case (SignalScripts.SCRExternalFunctions.NEXT_SIG_ID):
