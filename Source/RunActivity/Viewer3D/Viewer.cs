@@ -1007,7 +1007,7 @@ namespace Orts.Viewer3D
                 Settings.Save("CarVibratingLevel");
             }
 
-            if (UserInput.IsPressed(UserCommands.DebugToggleConfirmations))
+            if (UserInput.IsPressed(UserCommand.DebugToggleConfirmations))
             {
                 Simulator.Settings.SuppressConfirmations = !Simulator.Settings.SuppressConfirmations;
                 if (Simulator.Settings.SuppressConfirmations)
