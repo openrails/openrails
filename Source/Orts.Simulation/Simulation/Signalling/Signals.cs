@@ -3077,6 +3077,16 @@ namespace Orts.Simulation.Signalling
             TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
+
+            // update any linked signals
+            if (thisSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in thisSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
         }
 
         //================================================================================================//
@@ -5258,7 +5268,6 @@ namespace Orts.Simulation.Signalling
             bool switchSet = false;
 
             // It must be possible to force a switch also in its present state, not only in the opposite state
-//            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
             if (!MPManager.IsServer())
                 if (switchReserved) return (false);
             //this should not be enforced in MP, as a train may need to be allowed to go out of the station from the side line
@@ -5269,16 +5278,18 @@ namespace Orts.Simulation.Signalling
                 trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
                 switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
                 switchSet = true;
+
                 if (!Simulator.TimetableMode) switchSection.CircuitState.Forced = true;
-                /*if (switchSection.SignalsPassingRoutes != null)
+
+                if (switchSection.LinkedSignals != null)
                 {
-                    foreach (var thisSignalIndex in switchSection.SignalsPassingRoutes)
+                    foreach (int thisSignalIndex in switchSection.LinkedSignals)
                     {
-                        var signal = switchSection.signalRef.SignalObjects[thisSignalIndex];
-                        if (signal != null) signal.ResetRoute(switchSection.Index);
+                        SignalObject thisSignal = SignalObjects[thisSignalIndex];
+                        thisSignal.Update();
                     }
-                    switchSection.SignalsPassingRoutes.Clear();
-                }*/
+                }
+
                 var temptrains = Simulator.Trains.ToArray();
 
                 foreach (var t in temptrains)
@@ -5342,6 +5353,7 @@ namespace Orts.Simulation.Signalling
         public int JunctionDefaultRoute = -1;                     // jn default route, value is out-pin      //
         public int JunctionLastRoute = -1;                        // jn last route, value is out-pin         //
         public int JunctionSetManual = -1;                        // jn set manual, value is out-pin         //
+        public List<int> LinkedSignals = null;                    // switchstands linked with this switch    //
         public bool AILock;                                       // jn is locked agains AI trains           //
         public List<int> SignalsPassingRoutes;                    // list of signals reading passed junction //
 
@@ -8305,6 +8317,7 @@ namespace Orts.Simulation.Signalling
         public int TCDirection;                 // Direction within TrackCircuit
         public int TCNextTC = -1;               // Index of next TrackCircuit (NORMAL signals only)
         public int TCNextDirection;             // Direction of next TrackCircuit 
+        public int? nextSwitchIndex = null;     // index of first switch in path
 
         public List<int> JunctionsPassed = new List<int>();  // Junctions which are passed checking next signal //
 
@@ -9430,6 +9443,71 @@ namespace Orts.Simulation.Signalling
                 }
             }
             return (0);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// switchstand : link signal with next switch and set aspect according to switch state
+        /// </summary>
+
+        public int switchstand(int aspect1, int aspect2)
+        {
+            // if switch index not yet set, find first switch in path
+            if (!nextSwitchIndex.HasValue)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
+                int sectionDirection = TCDirection;
+
+                bool switchFound = false;
+
+                while (!switchFound)
+                {
+                    int pinIndex = sectionDirection;
+
+                    if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
+                    {
+                        if (thisSection.Pins[pinIndex, 1].Link >= 0) // facing point
+                        {
+                            switchFound = true;
+                            nextSwitchIndex = thisSection.Index;
+                            if (thisSection.LinkedSignals == null)
+                            {
+                                thisSection.LinkedSignals = new List<int>();
+                                thisSection.LinkedSignals.Add(thisRef);
+                            }
+                            else if (!thisSection.LinkedSignals.Contains(thisRef))
+                            {
+                                thisSection.LinkedSignals.Add(thisRef);
+                            }
+                        }
+
+                    }
+
+                    sectionDirection = thisSection.Pins[pinIndex, 0].Direction;
+
+                    if (thisSection.CircuitType != TrackCircuitSection.TrackCircuitType.EndOfTrack && thisSection.Pins[pinIndex, 0].Link >= 0)
+                    {
+                        thisSection = signalRef.TrackCircuitList[thisSection.Pins[pinIndex, 0].Link];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (!switchFound)
+                {
+                    nextSwitchIndex = -1;
+                }
+            }
+
+            if (nextSwitchIndex >= 0)
+            {
+                TrackCircuitSection switchSection = signalRef.TrackCircuitList[nextSwitchIndex.Value];
+                return (switchSection.JunctionLastRoute == 0 ? aspect1 : aspect2);
+            }
+
+            return (aspect1);
         }
 
         //================================================================================================//
@@ -12812,6 +12890,11 @@ namespace Orts.Simulation.Signalling
                 return (reqSignal.this_sig_hasnormalsubtype(reqSubtype));
             }
             return (0);
+        }
+
+        public int switchstand(int aspect1, int aspect2)
+        {
+            return mainSignal.switchstand(aspect1, aspect2);
         }
 
         //================================================================================================//
