@@ -25,6 +25,8 @@ There are several products which support modelling in 3D and produce the formats
 </p>
 <ul>
   <li><a href="http://www.amabilis.com">Amabilis 3DCrafter</a></li>
+  <li><a href="https://www.blender.org/">Blender</a> with 
+    <a href="http://www.elvastower.com/forums/index.php?/files/file/2251-blender-to-msts-exporter/">an exporter to MSTS/OR format</a></li>
   <li><a href="http://www.sketchup.com/">Google Sketch Up</a> (good for static models)</li>
   <li><a href="https://www.google.com/?q=gmax#q=gmax">Autodesk GMax</a></li>
   <li><a href="http://www.sketchup.com/">Autodesk 3ds Max</a></li>

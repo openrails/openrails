@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Open Rails")]
 [assembly: AssemblyProduct("Open Rails (disabled)")]
-[assembly: AssemblyCopyright("Copyright © 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018")]
+[assembly: AssemblyCopyright("Copyright © 2009 - 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

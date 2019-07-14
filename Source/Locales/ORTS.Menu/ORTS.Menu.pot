@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-10-10 21:29:31+0100\n"
-"PO-Revision-Date: 2018-10-10 21:29:31+0100\n"
+"POT-Creation-Date: 2019-05-19 00:50:57+0200\n"
+"PO-Revision-Date: 2019-05-19 00:50:57+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,48 +11,52 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../ORTS.Menu/Activities.cs:46
+#: ../../ORTS.Menu/Activities.cs:47
 msgid "- Explore Route -"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:50
+#: ../../ORTS.Menu/Activities.cs:51
 msgid "+ Explore in Activity Mode +"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:79
+#: ../../ORTS.Menu/Activities.cs:81
+msgid "Not same route:"
+msgstr ""
+
+#: ../../ORTS.Menu/Activities.cs:85
 #: ../../ORTS.Menu/Consists.cs:47
 #: ../../ORTS.Menu/Consists.cs:71
 #: ../../ORTS.Menu/Consists.cs:199
 #: ../../ORTS.Menu/ORTimetables.cs:55
 #: ../../ORTS.Menu/ORTimetables.cs:77
 #: ../../ORTS.Menu/Paths.cs:63
-#: ../../ORTS.Menu/Routes.cs:47
+#: ../../ORTS.Menu/Routes.cs:49
 msgid "load error:"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:82
+#: ../../ORTS.Menu/Activities.cs:88
 #: ../../ORTS.Menu/Consists.cs:50
 #: ../../ORTS.Menu/Consists.cs:74
 #: ../../ORTS.Menu/Consists.cs:202
 #: ../../ORTS.Menu/Paths.cs:65
 #: ../../ORTS.Menu/Paths.cs:66
 #: ../../ORTS.Menu/Paths.cs:67
-#: ../../ORTS.Menu/Routes.cs:49
+#: ../../ORTS.Menu/Routes.cs:51
 msgid "unnamed:"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:88
+#: ../../ORTS.Menu/Activities.cs:94
 #: ../../ORTS.Menu/Consists.cs:54
 #: ../../ORTS.Menu/Consists.cs:78
 #: ../../ORTS.Menu/Consists.cs:207
 #: ../../ORTS.Menu/ORTimetables.cs:60
 #: ../../ORTS.Menu/ORTimetables.cs:82
 #: ../../ORTS.Menu/Paths.cs:71
-#: ../../ORTS.Menu/Routes.cs:54
+#: ../../ORTS.Menu/Routes.cs:56
 msgid "missing:"
 msgstr ""
 
-#: ../../ORTS.Menu/Activities.cs:81
+#: ../../ORTS.Menu/Activities.cs:87
 #, csharp-format
 msgid "Activity '{0}' is excluded."
 msgstr ""

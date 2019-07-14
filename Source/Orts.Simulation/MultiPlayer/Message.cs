@@ -2093,8 +2093,9 @@ namespace Orts.MultiPlayer
             }
             else if (EventName == "BELL")
             {
-                if (t.LeadLocomotive != null)
+                if (t.LeadLocomotive != null && t.LeadLocomotive is MSTSLocomotive)
                 {
+                    (t.LeadLocomotive as MSTSLocomotive).Bell = (EventState == 0 ? false : true);
                     t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.BellOff : Event.BellOn);
                     MPManager.BroadCast(this.ToString()); //if the server, will broadcast
                 }

@@ -29,10 +29,11 @@
 // This logs every UserCommandInput change from pressed to released.
 //#define DEBUG_USER_INPUT
 
-using Microsoft.Xna.Framework.Input;
-using ORTS.Settings;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework.Input;
+using ORTS.Common.Input;
+using ORTS.Settings;
 using Game = Orts.Viewer3D.Processes.Game;
 
 namespace Orts.Viewer3D
@@ -106,7 +107,7 @@ namespace Orts.Viewer3D
                 Console.WriteLine("Mouse scrollwheel changed by {0}", MouseWheelChange);
 #endif
 #if DEBUG_USER_INPUT
-            foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+            foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
             {
                 if (UserInput.IsPressed(command))
                     Console.WriteLine("Pressed  {0} - {1}", command, InputSettings.Commands[(int)command]);
@@ -133,7 +134,7 @@ namespace Orts.Viewer3D
                 RDState.Handled();
         }
 
-        public static bool IsPressed(UserCommands command)
+        public static bool IsPressed(UserCommand command)
         {
             if (ComposingMessage == true) return false;
             if (RDState != null && RDState.IsPressed(command))
@@ -142,7 +143,7 @@ namespace Orts.Viewer3D
             return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
         }
 
-        public static bool IsReleased(UserCommands command)
+        public static bool IsReleased(UserCommand command)
         {
             if (ComposingMessage == true) return false;
             if (RDState != null && RDState.IsReleased(command))
@@ -151,7 +152,7 @@ namespace Orts.Viewer3D
             return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
         }
 
-        public static bool IsDown(UserCommands command)
+        public static bool IsDown(UserCommand command)
         {
             if (ComposingMessage == true) return false;
             if (RDState != null && RDState.IsDown(command))

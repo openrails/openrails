@@ -286,6 +286,8 @@ namespace Orts.Simulation.AIs
                 CheckSignalObjects();
                 if (MovementState != AI_MOVEMENT_STATE.SUSPENDED) ObtainRequiredActions(0);
             }
+            // associate location events
+            if (Simulator.ActivityRun != null) Simulator.ActivityRun.AssociateEvents(this);
         }
 
         //================================================================================================//
@@ -652,13 +654,13 @@ namespace Orts.Simulation.AIs
 
             if (MovementState == AI_MOVEMENT_STATE.AI_STATIC)
             {
-                physicsUpdate(elapsedClockSeconds);   //required to make train visible 
+                physicsUpdate(0);   //required to make train visible ; set elapsed time to zero to avoid actual movement
             }
             else
             {
                 if (!preUpdate)
                 {
-                    Update(elapsedClockSeconds);
+                    Update(elapsedClockSeconds, false);
                 }
                 else
                 {
@@ -1740,7 +1742,7 @@ namespace Orts.Simulation.AIs
                 else if (nextAspect == MstsSignalAspect.STOP)
                 {
                     // if stop but train is well away from signal allow to close; also if at end of path.
-                    if (distanceToSignal > 5 * signalApproachDistanceM ||
+                    if (DistanceToSignal.HasValue && DistanceToSignal.Value > 5 * signalApproachDistanceM ||
                         (TCRoute.TCRouteSubpaths[TCRoute.activeSubpath].Count - 1 == PresentPosition[0].RouteListIndex))
                     {
                         MovementState = AI_MOVEMENT_STATE.ACCELERATING;
@@ -1834,7 +1836,8 @@ namespace Orts.Simulation.AIs
                     }
                 }
             }
-            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED && tryBraking && distanceToSignal > clearingDistanceM
+            float distanceToNextSignal = DistanceToSignal.HasValue ? DistanceToSignal.Value : 0.1f;
+            if (AuxActionnextActionInfo != null && MovementState == AI_MOVEMENT_STATE.STOPPED && tryBraking && distanceToNextSignal > clearingDistanceM
                 && EndAuthorityType[0] != END_AUTHORITY.RESERVED_SWITCH && DistanceToEndNodeAuthorityM[0] <= 2.0f * junctionOverlapM)   // && ControlMode == TRAIN_CONTROL.AUTO_NODE)
             {
                 MovementState = AI_MOVEMENT_STATE.BRAKING;
@@ -3704,7 +3707,7 @@ namespace Orts.Simulation.AIs
             else if (LastSpeedMpS == 0 || (((SpeedMpS - LastSpeedMpS) / timeS) < 0.5f * MaxAccelMpSS))
             {
                 float ds = timeS * (reqAccelMpSS);
-                SpeedMpS = SpeedMpS + ds;
+                SpeedMpS = LastSpeedMpS + ds;
                 foreach (TrainCar car in Cars)
                 {
                     //TODO: next code line has been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
@@ -3712,6 +3715,12 @@ namespace Orts.Simulation.AIs
                     //  car.SpeedMpS = car.Flipped ? -SpeedMpS : SpeedMpS;
                     car.SpeedMpS = car.Flipped ^ (car.IsDriveable && car.Train.IsActualPlayerTrain && ((MSTSLocomotive)car).UsingRearCab) ? -SpeedMpS : SpeedMpS;
                 }
+
+                if (CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Forced speed increase : was " + LastSpeedMpS + " - now " + SpeedMpS + "\n");
+                }
+
             }
 
             SetPercentsFromTrainToTrainset();
@@ -4150,10 +4159,12 @@ namespace Orts.Simulation.AIs
             }
             var removeIt = true;
             var distanceThreshold = PreUpdate ? 5.0f : 2.0f;
+            var distanceToNextSignal = DistanceToSignal.HasValue ? DistanceToSignal.Value : 0.1f;
+
             if (Simulator.TimetableMode) removeIt = true;
             else if (TrainType == TRAINTYPE.AI_PLAYERHOSTING || Simulator.OriginalPlayerTrain == this) removeIt = false;
             else if (TCRoute.TCRouteSubpaths.Count == 1 || TCRoute.activeSubpath != TCRoute.TCRouteSubpaths.Count - 1) removeIt = true;
-            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToSignal < 25 && distanceToSignal >= 0 && PresentPosition[1].DistanceTravelledM < distanceThreshold)
+            else if (NextSignalObject[0] != null && NextSignalObject[0].isSignal && distanceToNextSignal < 25 && distanceToNextSignal >= 0 && PresentPosition[1].DistanceTravelledM < distanceThreshold)
             {
                 removeIt = false;
                 MovementState = AI_MOVEMENT_STATE.FROZEN;
@@ -5693,6 +5704,18 @@ namespace Orts.Simulation.AIs
                         {
                             File.AppendAllText(@"C:\temp\checktrain.txt", "allowing minimum gap : " + newposition.ToString() + " and " + actposition.ToString() + "\n");
                         }
+
+                        // if still earlier : check if signal really beyond start of platform
+                        if (earlier && (StationStops[0].DistanceToTrainM - thisItem.ActiveItem.distance_to_train) < StationStops[0].StopOffset)
+                        {
+                            earlier = false;
+                            if (CheckTrain)
+                            {
+                                File.AppendAllText(@"C:\temp\checktrain.txt", "station stop position corrected due to signal location ; was : "
+                                    + StationStops[0].DistanceToTrainM.ToString() + " ; now is " + thisItem.ActiveItem.distance_to_train.ToString() + "\n");
+                            }
+                            StationStops[0].DistanceToTrainM = thisItem.ActiveItem.distance_to_train;
+                        } 
                     }
 
                     // check if present action is signal and new action is station - if so, check actual position of signal in relation to stop
@@ -6529,6 +6552,86 @@ namespace Orts.Simulation.AIs
                             if (TrainType != TRAINTYPE.AI_PLAYERHOSTING) StationStops.RemoveAt(0);
                         }
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Restarts waiting train due to event triggered by player train
+        /// </summary>
+        public void RestartWaitingTrain(RestartWaitingTrain restartWaitingTrain)
+        {
+            var delayToRestart = restartWaitingTrain.DelayToRestart;
+            var matchingWPDelay = restartWaitingTrain.MatchingWPDelay;
+            int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+            var roughActualDepart = presentTime + delayToRestart;
+            if (MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay == matchingWPDelay ||
+                (AuxActionsContain.specRequiredActions.Count > 0 && ((AuxActSigDelegate)(AuxActionsContain.specRequiredActions).First.Value).currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION &&
+                (((AuxActSigDelegate)(AuxActionsContain.specRequiredActions).First.Value).ActionRef as AIActSigDelegateRef).Delay == matchingWPDelay)))
+            {
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay >= 30000 && ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay < 32400)
+                // absolute WP, use minutes as unit of measure
+                {
+                    (nextActionInfo as AuxActionWPItem).ActualDepart = (roughActualDepart / 60) * 60 + (roughActualDepart % 60 == 0 ? 0 : 60);
+                    // compute hrs and minutes
+                    var hrs = (nextActionInfo as AuxActionWPItem).ActualDepart / 3600;
+                    var minutes = ((nextActionInfo as AuxActionWPItem).ActualDepart - hrs * 3600) / 60;
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = 30000 + minutes + hrs * 100;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(30000 + minutes + hrs * 100);
+                }
+                else
+                {
+                    (nextActionInfo as AuxActionWPItem).ActualDepart = roughActualDepart;
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = delayToRestart;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(delayToRestart);
+                }
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).LinkedAuxAction)
+                // also a signal is connected with this WP
+                {
+                    if (AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate)
+                    // if should be true only for absolute WPs, where the linked aux action is started in parallel
+                    {
+                        (AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActualDepart = (nextActionInfo as AuxActionWPItem).ActualDepart;
+                        ((AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActionRef as AIActSigDelegateRef).Delay = ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay;
+                    }
+                }
+
+            }
+            else if (nextActionInfo != null & nextActionInfo is AuxActionWPItem && ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay == matchingWPDelay)
+            {
+                var actualDepart = 0;
+                var delay = 0;
+                // not yet at WP
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay >= 30000 && ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay < 32400)
+                {
+                    // compute hrs and minutes
+                    var hrs = roughActualDepart / 3600;
+                    var minutes = (roughActualDepart - hrs * 3600) / 60;
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = 30000 + minutes + hrs * 100;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(30000 + minutes + hrs * 100);
+                    if (AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef)
+                        (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay = 30000 + minutes + hrs * 100;
+                    actualDepart = (roughActualDepart / 60) * 60 + (roughActualDepart % 60 == 0 ? 0 : 60);
+                    delay = ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay;
+                }
+                else
+                {
+                    ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay = delayToRestart;
+                    (nextActionInfo as AuxActionWPItem).SetDelay(delayToRestart);
+                    actualDepart = roughActualDepart;
+                    delay = 1;
+                }
+                if (((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).LinkedAuxAction)
+                // also a signal is connected with this WP
+                {
+                    if (AuxActionsContain.specRequiredActions.Count > 0 && AuxActionsContain.specRequiredActions.First.Value is AuxActSigDelegate)
+                    // if should be true only for absolute WPs, where the linked aux action is started in parallel
+                    {
+                        (AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActualDepart = actualDepart;
+                        ((AuxActionsContain.specRequiredActions.First.Value as AuxActSigDelegate).ActionRef as AIActSigDelegateRef).Delay = ((nextActionInfo as AuxActionWPItem).ActionRef as AIActionWPRef).Delay;
+                    }
+                    if (AuxActionsContain.SpecAuxActions.Count > 1 && AuxActionsContain.SpecAuxActions[1] is AIActSigDelegateRef)
+                        (AuxActionsContain.SpecAuxActions[1] as AIActSigDelegateRef).Delay = delay;
                 }
             }
         }

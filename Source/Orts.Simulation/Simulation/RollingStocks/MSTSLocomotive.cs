@@ -186,7 +186,7 @@ namespace Orts.Simulation.RollingStocks
         public bool VacuumPumpOperating = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public bool VacuumPumpFitted;
-        public bool SmallEjectorFitted;
+        public bool SmallEjectorFitted = false;
         public float VacuumPumpResistanceN;
         public float EjectorSmallSteamConsumptionLbpS;
         public float EjectorLargeSteamConsumptionLbpS;
@@ -1895,12 +1895,12 @@ namespace Orts.Simulation.RollingStocks
             if (Bell && !PreviousBell)
             {
                 SignalEvent(Event.BellOn);
-                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
+                if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
             }
             else if (!Bell && PreviousBell)
             {
                 SignalEvent(Event.BellOff);
-                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
+                if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
             }
 
             PreviousHorn = Horn;

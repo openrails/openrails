@@ -73,7 +73,8 @@ Following are the native features Open Rails offers:
 - continuous OR freightanims are related to commodity loads, like coal, or 
   stones: the load level in the trainset varies accordingly to the amount of load
 - static OR freightanims are in fact additional shapes that can be attached to 
-  the main trainset shape
+  the main trainset shape. Such shapes may also include an animation (independent 
+  from train behaviour);
 - both types of OR freightanims can be present in the same trainset, and can 
   coexist with original MSTS freight animations
 - both types of OR freightanims can be related to locomotives or wagons
@@ -442,5 +443,29 @@ MSTS wagon::
 
 At runtime, when in passenger view, the player may pass from one viewpoint to 
 the other by pressing Shift-5.
+
+Bell animation
+==============
+
+Open Rails supports bell animation. The bell animation matrix must be named 
+ORTSBELL within the engine's .s file. Its default frame rate is 8 frames per 
+second. The default frame rate may be modified through the optional parameter 
+ESD_ORTSBellAnimationFPS (n), to be inserted within the .sd file related to the 
+.s file. n defines the animation FPS.
+It is advisable that the related sound stream within the .sms file is synchronized 
+with the visible animation. To accomplish this the .wav file should contain two 
+bell strokes, which time interval is equal to the time interval of a bell swing 
+from an oscillation end point to the opposite end point. As the first bell stroke 
+should not start immediately, but when the bell is about at the maximum of the 
+swing, the first stroke within the .wav file should be at the time distance equivalent 
+to the oscillation from center point to an oscillation end point. The file should have 
+one cue point at its beginning and one after the time interval of a complete bell swing 
+forward and backward, and should have a final fadeoff for best result. 
+
+
+
+  
+
+
 
 

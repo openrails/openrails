@@ -17,15 +17,15 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
-using ORTS.Settings;
-using System;
-using System.Collections.Generic;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D
 {
@@ -191,23 +191,23 @@ namespace Orts.Viewer3D
             if (!Orts.MultiPlayer.MPManager.IsClient())
             {
                 // Overcast ranges from 0 (completely clear) to 1 (completely overcast).
-                if (UserInput.IsDown(UserCommands.DebugOvercastIncrease)) mstsskyovercastFactor = MathHelper.Clamp(mstsskyovercastFactor + elapsedTime.RealSeconds / 10, 0, 1);
-                if (UserInput.IsDown(UserCommands.DebugOvercastDecrease)) mstsskyovercastFactor = MathHelper.Clamp(mstsskyovercastFactor - elapsedTime.RealSeconds / 10, 0, 1);
+                if (UserInput.IsDown(UserCommand.DebugOvercastIncrease)) mstsskyovercastFactor = MathHelper.Clamp(mstsskyovercastFactor + elapsedTime.RealSeconds / 10, 0, 1);
+                if (UserInput.IsDown(UserCommand.DebugOvercastDecrease)) mstsskyovercastFactor = MathHelper.Clamp(mstsskyovercastFactor - elapsedTime.RealSeconds / 10, 0, 1);
                 // Fog ranges from 10m (can't see anything) to 100km (clear arctic conditions).
-                if (UserInput.IsDown(UserCommands.DebugFogIncrease)) mstsskyfogDistance = MathHelper.Clamp(mstsskyfogDistance - elapsedTime.RealSeconds * mstsskyfogDistance, 10, 100000);
-                if (UserInput.IsDown(UserCommands.DebugFogDecrease)) mstsskyfogDistance = MathHelper.Clamp(mstsskyfogDistance + elapsedTime.RealSeconds * mstsskyfogDistance, 10, 100000);
+                if (UserInput.IsDown(UserCommand.DebugFogIncrease)) mstsskyfogDistance = MathHelper.Clamp(mstsskyfogDistance - elapsedTime.RealSeconds * mstsskyfogDistance, 10, 100000);
+                if (UserInput.IsDown(UserCommand.DebugFogDecrease)) mstsskyfogDistance = MathHelper.Clamp(mstsskyfogDistance + elapsedTime.RealSeconds * mstsskyfogDistance, 10, 100000);
             }
             // Don't let clock shift if multiplayer.
             if (!Orts.MultiPlayer.MPManager.IsMultiPlayer())
             {
                 // Shift the clock forwards or backwards at 1h-per-second.
-                if (UserInput.IsDown(UserCommands.DebugClockForwards)) MSTSSkyViewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
-                if (UserInput.IsDown(UserCommands.DebugClockBackwards)) MSTSSkyViewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
+                if (UserInput.IsDown(UserCommand.DebugClockForwards)) MSTSSkyViewer.Simulator.ClockTime += elapsedTime.RealSeconds * 3600;
+                if (UserInput.IsDown(UserCommand.DebugClockBackwards)) MSTSSkyViewer.Simulator.ClockTime -= elapsedTime.RealSeconds * 3600;
             }
             // Server needs to notify clients of weather changes.
             if (Orts.MultiPlayer.MPManager.IsServer())
             {
-                if (UserInput.IsReleased(UserCommands.DebugOvercastIncrease) || UserInput.IsReleased(UserCommands.DebugOvercastDecrease) || UserInput.IsReleased(UserCommands.DebugFogIncrease) || UserInput.IsReleased(UserCommands.DebugFogDecrease))
+                if (UserInput.IsReleased(UserCommand.DebugOvercastIncrease) || UserInput.IsReleased(UserCommand.DebugOvercastDecrease) || UserInput.IsReleased(UserCommand.DebugFogIncrease) || UserInput.IsReleased(UserCommand.DebugFogDecrease))
                 {
                     Orts.MultiPlayer.MPManager.Instance().SetEnvInfo(mstsskyovercastFactor, mstsskyfogDistance);
                     Orts.MultiPlayer.MPManager.Notify((new Orts.MultiPlayer.MSGWeather(-1, mstsskyovercastFactor, -1, mstsskyfogDistance)).ToString());
