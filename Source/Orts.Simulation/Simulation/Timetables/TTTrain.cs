@@ -992,7 +992,7 @@ namespace Orts.Simulation.Timetables
                         StationStops = new List<StationStop>();
                         StationStop newStop = nextTrain.StationStops[0].CreateCopy();
 
-                        int startvalue = ActivateTime.HasValue ? ActivateTime.Value : StartTime.Value;
+                        int startvalue = nextTrain.ActivateTime.HasValue ? nextTrain.ActivateTime.Value : nextTrain.StartTime.Value;
 
                         newStop.ArrivalTime = startvalue;
                         newStop.DepartTime = startvalue;
@@ -2159,6 +2159,12 @@ namespace Orts.Simulation.Timetables
                 atStation = true;
             }
 
+            // if front is beyond platform and rear is in platform section but ahead of position : train spans platform
+            else if (PresentPosition[0].RouteListIndex > stationIndex && PresentPosition[1].RouteListIndex == stationIndex && PresentPosition[1].TCOffset < platformEndOffset)
+            {
+                atStation = true;
+            }
+           
             return (atStation);
         }
 
