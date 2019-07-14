@@ -8398,6 +8398,17 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
+        /// TrainGetSectionStateClearNode
+        /// Override method from train
+        /// </summary>
+
+        public override bool TrainGetSectionStateClearNode(int elementDirection, Train.TCSubpathRoute routePart, TrackCircuitSection thisSection)
+        {
+            return (thisSection.getSectionState(routedForward, elementDirection, SignalObject.InternalBlockstate.Reserved, routePart, -1) <= SignalObject.InternalBlockstate.OccupiedSameDirection);
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Check for actual wait condition (for single train wait - $wait, $follow or $forcewait commands
         /// </summary>
         /// <param name="reqWait"></param>
