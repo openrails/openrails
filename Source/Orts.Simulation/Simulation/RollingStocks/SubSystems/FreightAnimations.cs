@@ -302,6 +302,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             DEFAULT
         }
+        // index of visibility flag vector
+        public enum VisibleFrom
+        {
+            Outside,
+            Cab2D,
+            Cab3D
+        }
         public Type SubType;
         public float XOffset = 0;
         public float YOffset = 0;
@@ -309,6 +316,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float FreightWeight = 0;
         public bool Flipped = false;
         public bool Cab3DFreightAnim = false;
+        public bool[] Visibility = { true, false, false };
 
         // additions to manage consequences of variable weight on friction and brake forces
         public float FullStaticORTSDavis_A = -9999;
@@ -325,35 +333,55 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
             new STFReader.TokenProcessor("subtype", ()=>
+            {
+                var typeString = stf.ReadStringBlock(null);
+                switch (typeString)
+	            {
+                    default:
+                        SubType = FreightAnimationStatic.Type.DEFAULT;
+                        break;
+	            }
+            }),
+            new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
+            new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
+            new STFReader.TokenProcessor("offset", ()=>{
+                stf.MustMatch("(");
+                XOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                YOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                ZOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
+                stf.MustMatch(")");
+            }),
+            new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
+            new STFReader.TokenProcessor("visibility", ()=>{
+                for (int index = 0; index < 3; index++)
+                    Visibility[index] = false;
+                foreach (var visibilityPlace in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
                 {
-                    var typeString = stf.ReadStringBlock(null);
-                    switch (typeString)
-	                {
-                        default:
-                            SubType = FreightAnimationStatic.Type.DEFAULT;
+                    switch (visibilityPlace)
+                    {
+                        case "outside":
+                            Visibility[(int)VisibleFrom.Outside] = true;
                             break;
-	                }
-                }),
-                new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
-                new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
-                new STFReader.TokenProcessor("offset", ()=>{
-                    stf.MustMatch("(");
-                    XOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    YOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    ZOffset = stf.ReadFloat(STFReader.UNITS.Distance, 0);
-                    stf.MustMatch(")");
-                }),
-                new STFReader.TokenProcessor("flip", ()=>{ Flipped = stf.ReadBoolBlock(true);}),
-                new STFReader.TokenProcessor("cab3dfreightanim", ()=>{ Cab3DFreightAnim = stf.ReadBoolBlock(true);}),
-                // additions to manage consequences of variable weight on friction and brake forces
-                new STFReader.TokenProcessor("fullortsdavis_a", ()=>{ FullStaticORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("fullortsdavis_b", ()=>{ FullStaticORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, -1); }),
-                new STFReader.TokenProcessor("fullortsdavis_c", ()=>{ FullStaticORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, -1); }),
-                new STFReader.TokenProcessor("fullortswagonfrontalarea", ()=>{ FullStaticORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
-                new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullStaticORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
-                new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullStaticMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullStaticMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
-                new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); })
+                        case "cab2d":
+                            Visibility[(int)VisibleFrom.Cab2D] = true;
+                            break;
+                        case "cab3d":
+                            Visibility[(int)VisibleFrom.Cab3D] = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }),
+            // additions to manage consequences of variable weight on friction and brake forces
+            new STFReader.TokenProcessor("fullortsdavis_a", ()=>{ FullStaticORTSDavis_A = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+            new STFReader.TokenProcessor("fullortsdavis_b", ()=>{ FullStaticORTSDavis_B = stf.ReadFloatBlock(STFReader.UNITS.Resistance, -1); }),
+            new STFReader.TokenProcessor("fullortsdavis_c", ()=>{ FullStaticORTSDavis_C = stf.ReadFloatBlock(STFReader.UNITS.ResistanceDavisC, -1); }),
+            new STFReader.TokenProcessor("fullortswagonfrontalarea", ()=>{ FullStaticORTSWagonFrontalAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, -1); }),
+            new STFReader.TokenProcessor("fullortsdavisdragconstant", ()=>{ FullStaticORTSDavisDragConstant = stf.ReadFloatBlock(STFReader.UNITS.Any, -1); }),
+            new STFReader.TokenProcessor("fullmaxbrakeforce", ()=>{ FullStaticMaxBrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+            new STFReader.TokenProcessor("fullmaxhandbrakeforce", ()=>{ FullStaticMaxHandbrakeForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, -1); }),
+            new STFReader.TokenProcessor("fullcentreofgravity_y", ()=>{ FullStaticCentreOfGravityM_Y = stf.ReadFloatBlock(STFReader.UNITS.Distance, -1); })
             });
         }
 
@@ -366,7 +394,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             YOffset = freightAnimStatic.YOffset;
             ZOffset = freightAnimStatic.ZOffset;
             Flipped = freightAnimStatic.Flipped;
-            Cab3DFreightAnim = freightAnimStatic.Cab3DFreightAnim;
+            for (int index = 0; index < 3; index++)
+                Visibility[index] = freightAnimStatic.Visibility[index];
             FreightWeight = freightAnimStatic.FreightWeight;
 
             // additions to manage consequences of variable weight on friction and brake forces

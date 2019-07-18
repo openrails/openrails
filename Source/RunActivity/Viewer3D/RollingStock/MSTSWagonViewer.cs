@@ -656,8 +656,15 @@ namespace Orts.Viewer3D.RollingStock
                 foreach (var freightAnim in FreightAnimations.Animations)
                 {
                     if (freightAnim.Animation is FreightAnimationStatic)
-                        if ((freightAnim.Animation as FreightAnimationStatic).Cab3DFreightAnim ^
-                            (Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab)) continue;
+                    {
+                        var animation = freightAnim.Animation as FreightAnimationStatic;
+                        if (!((animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Cab3D] &&
+                            Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab) ||
+                            (animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Cab2D] &&
+                            Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.Cab) ||
+                            (animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Outside] && (Viewer.Camera.AttachedCar != this.MSTSWagon ||
+                            (Viewer.Camera.Style != Camera.Styles.ThreeDimCab && Viewer.Camera.Style != Camera.Styles.Cab))))) continue;
+                    }
                     if (freightAnim.FreightShape != null && !((freightAnim.Animation is FreightAnimationContinuous) && (freightAnim.Animation as FreightAnimationContinuous).LoadPerCent == 0))
                     {
                         freightAnim.FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
