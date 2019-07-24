@@ -34,6 +34,7 @@ namespace ORTS.Menu
         public int Day;
         public int Season;
         public int Weather;
+        public String WeatherFile;
 
         // note : file is read preliminary only, extracting description and train information
         // all other information is read only when activity is started
@@ -88,6 +89,7 @@ namespace ORTS.Menu
             return Description;
         }
 
+        // get timetable information
         public static List<TimetableInfo> GetTimetableInfo(Folder folder, Route route)
         {
             var ORTTInfo = new List<TimetableInfo>();
@@ -137,6 +139,35 @@ namespace ORTS.Menu
             }
             return ORTTInfo;
         }
+
+        // get weatherfiles
+        public static List<String> GetTimetableWeatherFiles(Folder folder, Route route)
+        {
+            var weatherInfo = new List<String>();
+            if (route != null)
+            {
+                var directory = System.IO.Path.Combine(route.Path, "WeatherFiles");
+
+                if (Directory.Exists(directory))
+                {
+                    foreach (var weatherFile in Directory.GetFiles(directory, "*.weather-or"))
+                    {
+                        FileInfo weatherFileInfo = new FileInfo(weatherFile);
+                        weatherInfo.Add(weatherFileInfo.Name);
+                    }
+
+                }
+            }
+            return weatherInfo;
+        }
+
+        public String GetWeatherFileFullName(String selectedFile)
+        {
+            FileInfo TimeTableDir = new FileInfo(fileName);
+            DirectoryInfo MainDir = TimeTableDir.Directory.Parent.Parent;
+            var directory = System.IO.Path.Combine(MainDir.FullName, "WeatherFiles");
+            var weatherfileName = System.IO.Path.Combine(directory, selectedFile);
+            return (weatherfileName);
+        }
     }
 }
-
