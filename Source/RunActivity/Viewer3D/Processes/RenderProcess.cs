@@ -31,7 +31,6 @@ namespace Orts.Viewer3D.Processes
     public class RenderProcess
     {
         public const int ShadowMapCountMaximum = 4;
-        public const int ShadowMapMipCount = 1;
 
         public Point DisplaySize { get; private set; }
         public GraphicsDevice GraphicsDevice { get { return Game.GraphicsDevice; } }
@@ -42,8 +41,10 @@ namespace Orts.Viewer3D.Processes
 
         readonly Game Game;
         readonly Form GameForm;
-        readonly Point GameWindowSize;
+        readonly System.Drawing.Size gameWindowSize;
         readonly WatchdogToken WatchdogToken;
+        readonly System.Drawing.Point GameFullScreenOrigin = new System.Drawing.Point(0, 0);
+        private System.Drawing.Point GameWindowOrigin = new System.Drawing.Point(0, 0);
 
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
 
@@ -82,7 +83,7 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager = new GraphicsDeviceManager(game);
 
             var windowSizeParts = Game.Settings.WindowSize.Split(new[] { 'x' }, 2);
-            GameWindowSize = new Point(Convert.ToInt32(windowSizeParts[0]), Convert.ToInt32(windowSizeParts[1]));
+            gameWindowSize = new System.Drawing.Size(Convert.ToInt32(windowSizeParts[0]), Convert.ToInt32(windowSizeParts[1]));
 
             FrameRate = new SmoothedData();
             FrameTime = new SmoothedDataWithPercentiles();
@@ -97,10 +98,15 @@ namespace Orts.Viewer3D.Processes
             // Set up the rest of the graphics according to the settings.
             GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync;
             GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
-            GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth32;
+            GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             GraphicsDeviceManager.IsFullScreen = false;
             GraphicsDeviceManager.PreferMultiSampling = true;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
+
+            //setting inital Window location in middle of current screen (most likely the primary screen)
+            var wa = Screen.FromControl(GameForm).WorkingArea;
+            GameForm.Location = new System.Drawing.Point((wa.Right - gameWindowSize.Width) / 2, (wa.Bottom - gameWindowSize.Height) / 2);
+            GameWindowOrigin = GameForm.Location;
 
             if (Game.Settings.FullScreen)
                 ToggleFullScreen();
@@ -113,17 +119,19 @@ namespace Orts.Viewer3D.Processes
             // This enables NVIDIA PerfHud to be run on Open Rails.
             foreach (var adapter in GraphicsAdapter.Adapters)
             {
-                if (adapter.Description.Contains("PerfHUD"))
+                // FIXME: MonoGame fails with the following:
+                /*if (adapter.Description.Contains("PerfHUD"))
                 {
-                    e.GraphicsDeviceInformation.Adapter = adapter;
-                    e.GraphicsDeviceInformation.DeviceType = DeviceType.Reference;
+                    GraphicsAdapter.UseReferenceDevice = true;
                     break;
-                }
+                }*/
+                e.GraphicsDeviceInformation.GraphicsProfile = GraphicsProfile.HiDef;
             }
 
             // This stops ResolveBackBuffer() clearing the back buffer.
             e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-            e.GraphicsDeviceInformation.PresentationParameters.AutoDepthStencilFormat = DepthFormat.Depth24Stencil8;
+            e.GraphicsDeviceInformation.PresentationParameters.DepthStencilFormat = DepthFormat.Depth24Stencil8;
+            if (Game.Settings.EnableMultisampling == false) e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 4;
         }
 
         internal void Start()
@@ -132,22 +140,11 @@ namespace Orts.Viewer3D.Processes
 
             DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-            if (Game.Settings.ShaderModel == 0)
-                Game.Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
-            else if (Game.Settings.ShaderModel < 2)
-                Game.Settings.ShaderModel = 2;
-            else if (Game.Settings.ShaderModel > 3)
-                Game.Settings.ShaderModel = 3;
-
             if (Game.Settings.ShadowMapDistance == 0)
                 Game.Settings.ShadowMapDistance = Game.Settings.ViewingDistance / 2;
 
             ShadowMapCount = Game.Settings.ShadowMapCount;
-            if (!Game.Settings.DynamicShadows)
-                ShadowMapCount = 0;
-            else if ((ShadowMapCount > 1) && (Game.Settings.ShaderModel < 3))
-                ShadowMapCount = 1;
-            else if (ShadowMapCount < 0)
+            if (!Game.Settings.DynamicShadows || ShadowMapCount < 0)
                 ShadowMapCount = 0;
             else if (ShadowMapCount > ShadowMapCountMaximum)
                 ShadowMapCount = ShadowMapCountMaximum;
@@ -234,7 +231,7 @@ namespace Orts.Viewer3D.Processes
                 Viewer.DefaultViewport = GraphicsDevice.Viewport;
             }
 
-            if (gameTime.TotalRealTime.TotalSeconds > 0.001)
+            if (gameTime.TotalGameTime.TotalSeconds > 0.001)
             {
                 Game.UpdaterProcess.WaitTillFinished();
 
@@ -243,27 +240,30 @@ namespace Orts.Viewer3D.Processes
 
                 // Swap frames and start the next update (non-threaded updater does the whole update).
                 SwapFrames(ref CurrentFrame, ref NextFrame);
-                Game.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
+                Game.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalGameTime.TotalSeconds);
             }
         }
 
         void SynchronizeGraphicsDeviceManager()
         {
+            var screen = Screen.FromControl(GameForm);
             if (IsFullScreen)
             {
-                var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
                 GraphicsDeviceManager.PreferredBackBufferWidth = screen.Bounds.Width;
                 GraphicsDeviceManager.PreferredBackBufferHeight = screen.Bounds.Height;
+                GameWindowOrigin = GameForm.Location;
+                GameForm.Location = screen.Bounds.Location;
             }
             else
             {
-                GraphicsDeviceManager.PreferredBackBufferWidth = GameWindowSize.X;
-                GraphicsDeviceManager.PreferredBackBufferHeight = GameWindowSize.Y;
+                GraphicsDeviceManager.PreferredBackBufferWidth = gameWindowSize.Width;
+                GraphicsDeviceManager.PreferredBackBufferHeight = gameWindowSize.Height;
+                GameForm.Location = GameWindowOrigin;
             }
+            GraphicsDeviceManager.ApplyChanges();
             if (Game.Settings.FastFullScreenAltTab)
             {
-                GameForm.FormBorderStyle = IsFullScreen ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.FixedSingle;
-                GraphicsDeviceManager.ApplyChanges();
+                GameForm.FormBorderStyle = IsFullScreen ? FormBorderStyle.None : FormBorderStyle.FixedSingle;
             }
             else if (GraphicsDeviceManager.IsFullScreen != IsFullScreen)
             {
@@ -280,7 +280,7 @@ namespace Orts.Viewer3D.Processes
             WatchdogToken.Ping();
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
-            GraphicsDevice.RenderState.DepthBufferEnable = true;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             CurrentFrame.IsScreenChanged = (DisplaySize.X != GraphicsDevice.Viewport.Width) || (DisplaySize.Y != GraphicsDevice.Viewport.Height);
             if (CurrentFrame.IsScreenChanged)
@@ -331,7 +331,7 @@ namespace Orts.Viewer3D.Processes
             }
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
-            GraphicsDevice.RenderState.DepthBufferEnable = false;
+            GraphicsDevice.DepthStencilState = DepthStencilState.None;
 
             Profiler.Stop();
         }

@@ -381,7 +381,7 @@ namespace Orts.Viewer3D
         internal void Initialize()
         {
             GraphicsDevice = RenderProcess.GraphicsDevice;
-            UpdateAdapterInformation(GraphicsDevice.CreationParameters.Adapter);
+            UpdateAdapterInformation(GraphicsDevice.Adapter);
             DefaultViewport = GraphicsDevice.Viewport;
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
@@ -396,7 +396,7 @@ namespace Orts.Viewer3D
 
             TextureManager = new SharedTextureManager(this, GraphicsDevice);
 
-            AdjustCabHeight(DisplaySize.X, DisplaySize.Y); // needs TextureManager
+            AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
 
             MaterialManager = new SharedMaterialManager(this);
             ShapeManager = new SharedShapeManager(this);
@@ -661,7 +661,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         internal void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter)
         {
-            adapterDescription = graphicsAdapter.Description;
+            adapterDescription = GraphicsAdapter.DefaultAdapter.Description;
             try
             {
                 // Note that we might find multiple adapters with the same
@@ -1005,6 +1005,17 @@ namespace Orts.Viewer3D
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Vibrating at level {0}", Program.Simulator.CarVibrating));
                 Settings.CarVibratingLevel = Program.Simulator.CarVibrating;
                 Settings.Save("CarVibratingLevel");
+            }
+
+            if (UserInput.IsPressed(UserCommand.DebugToggleConfirmations))
+            {
+                Simulator.Settings.SuppressConfirmations = !Simulator.Settings.SuppressConfirmations;
+                if (Simulator.Settings.SuppressConfirmations)
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations suppressed"));
+                else
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations visible"));
+                Settings.SuppressConfirmations = Simulator.Settings.SuppressConfirmations;
+                Settings.Save();
             }
 
             //hit 9 key, get back to player train
@@ -1779,8 +1790,18 @@ namespace Orts.Viewer3D
         [CallOnThread("Render")]
         void SaveScreenshotToFile(GraphicsDevice graphicsDevice, string fileName, bool silent)
         {
-            var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
-            graphicsDevice.ResolveBackBuffer(screenshot);
+            if (graphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
+                return;
+
+            int w = graphicsDevice.PresentationParameters.BackBufferWidth;
+            int h = graphicsDevice.PresentationParameters.BackBufferHeight;
+            int[] backBuffer = new int[w * h];
+
+
+            graphicsDevice.GetBackBufferData(backBuffer);
+            //copy into a texture 
+            Texture2D screenshot = new Texture2D(GraphicsDevice, w, h, false, GraphicsDevice.PresentationParameters.BackBufferFormat);
+            screenshot.SetData(backBuffer);
             new Thread(() =>
             {
                 try
@@ -1795,7 +1816,10 @@ namespace Orts.Viewer3D
                     screenshot.SetData(data);
 
                     // Now save the modified image.
-                    screenshot.Save(fileName, ImageFileFormat.Png);
+                    using (var stream = File.OpenWrite(fileName))
+                    {
+                        screenshot.SaveAsPng(stream, w, h);
+                    }
                     screenshot.Dispose();
 
                     if (!silent)

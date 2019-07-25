@@ -103,7 +103,6 @@ namespace Orts.Viewer3D.Popups
                         Camera = Owner.Viewer.Camera.Name;
                         // Changing camera should not notify FOV change.
                         FieldOfView = Owner.Viewer.Camera.FieldOfView;
-                        SetNotice(Viewer.Catalog.GetStringFmt("Camera: {0}", Camera));
                     }
                     else if (FieldOfView != Owner.Viewer.Camera.FieldOfView)
                     {
@@ -143,7 +142,7 @@ namespace Orts.Viewer3D.Popups
                 else if (currentLength > AnimationLength - AnimationFade)
                     fade = (float)((currentLength - AnimationLength) / -AnimationFade);
 
-                var color = new Color(Color.White, fade);
+                var color = new Color(Color.White.R / 255f, Color.White.G / 255f, Color.White.B / 255f, fade);
                 var rectangle = new Rectangle((int)(Location.Width * LocationX), (int)(Location.Height * LocationY), 0, 0);
                 rectangle.Inflate(NoticeSize.X / 2 + (int)(NoticeSize.Y * PaddingX), NoticeSize.Y / 2 + (int)(NoticeSize.Y * PaddingY));
                 spriteBatch.Draw(WindowManager.NoticeTexture, rectangle, color);

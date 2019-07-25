@@ -1331,6 +1331,9 @@ Whenever frame rates fall to unacceptable levels players are advised to
 adjust camera positions to cull some models from being in view and to 
 adjust the camera again to include more models when frame rates are high.
 
+Some camera views (among them 2Dcabview, 3Dcabview and passenger view) feature 
+the ``<Ctrl+8>`` command, that resets the view position to the default one.
+
 Toggling Between Windowed Mode and Full-screen
 ==============================================
 
