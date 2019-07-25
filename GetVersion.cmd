@@ -1,26 +1,26 @@
 @ECHO OFF
 SETLOCAL ENABLEEXTENSIONS ENABLEDELAYEDEXPANSION
 
-REM Parse command line.
-SET Mode=%~1
-
-REM Get product version.
-REM TODO!
-
-REM Get code revision.
-REM   For Subversion, this is a positive integer.
-REM   For Git, this is the stable version, new commits, and latest commit ID hyphenated.
+REM Get product version and code revision.
+SET Version=
 SET Revision=
-IF EXIST ".svn" (
-	FOR /F "usebackq tokens=1" %%R IN (`svn --non-interactive info --show-item revision .`) DO SET Revision=%%R
+FOR /F "usebackq tokens=2" %%B IN (`git branch --points-at HEAD`) DO SET Branch=%%B
+FOR /F "usebackq tokens=1* delims=-" %%V IN (`git describe --first-parent --always --long`) DO (
+	SET Version=%%V
+	SET Revision=%%W
 )
-IF EXIST ".git" (
-	FOR /F "usebackq tokens=1" %%R IN (`git describe --first-parent --always`) DO SET Revision=%%R
+IF "%Branch%" == "unstable" (
+	SET TZ=UTC
+	FOR /F "usebackq tokens=1* delims=-" %%V IN (`git log -1 --pretty^=format:^%%ad --date^=format-local:^%%Y^.%%m^.%%d-^%%H^%%M`) DO (
+		SET Version=%%V
+		SET Revision=%%W
+	)
 )
-IF "%Revision%" == "" (
-	>&2 ECHO WARNING: No Subversion or Git revision found.
+IF "%Version%" == "" (
+	>&2 ECHO WARNING: No Git repository found.
 )
 
 REM Output version numbers.
+ECHO OpenRails_Branch=%Branch%
 ECHO OpenRails_Version=%Version%
 ECHO OpenRails_Revision=%Revision%
