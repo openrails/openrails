@@ -46,8 +46,15 @@ namespace ORTS.Common
                 using (var f = new StreamReader(Path.Combine(ApplicationPath, fileName)))
                 {
                     var revision = f.ReadLine().Trim();
-                    if (revision.StartsWith("$Revision:") && revision.EndsWith("$") && !revision.Contains(" 000 "))
-                        return revision.Substring(10, revision.Length - 11).Trim();
+                    if (revision.StartsWith("$Revision:") && revision.EndsWith("$"))
+                    {
+                        if (!revision.Contains(" 000 "))
+                            return revision.Substring(10, revision.Length - 11).Trim();
+                    }
+                    else
+                    {
+                        return revision;
+                    }
                 }
             }
             catch
@@ -64,7 +71,7 @@ namespace ORTS.Common
                 {
                     var version = f.ReadLine().Trim();
                     if (!String.IsNullOrEmpty(Revision))
-                        return version + Revision;
+                        return version + "-" + Revision;
                 }
             }
             catch
