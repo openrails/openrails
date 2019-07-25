@@ -87,7 +87,7 @@ IF "%Mode%" == "Stable" (
 )
 
 REM Get product version and code revision.
-FOR /F "usebackq tokens=1* delims==" %%A IN (`CALL GetVersion.cmd`) DO SET %%A=%%B
+FOR /F "usebackq tokens=1* delims==" %%A IN (`CALL GetVersion.cmd %Mode%`) DO SET %%A=%%B
 SET Version=%OpenRails_Version%
 SET Revision=%OpenRails_Revision%
 
