@@ -361,20 +361,46 @@ namespace Orts.Viewer3D.Popups
                             }
                         }
 
+                        // attach details
+                        if (playerTimetableTrain.AttachDetails != null)
+                        {
+                            bool attachDetailsValid = false;
+
+                            // attach is not at station - details valid
+                            if (playerTimetableTrain.AttachDetails.StationPlatformReference < 0)
+                            {
+                                attachDetailsValid = true;
+                            }
+                            // no further stations - details valid
+                            if (playerTimetableTrain.StationStops == null || playerTimetableTrain.StationStops.Count <= 0)
+                            {
+                                attachDetailsValid = true;
+                            }
+                            // attach is at next station - details valid
+                            else if (playerTimetableTrain.AttachDetails.StationPlatformReference == playerTimetableTrain.StationStops[0].PlatformReference)
+                            {
+                                attachDetailsValid = true;
+                            }
+
+                            if (attachDetailsValid)
+                            {
+                                if (playerTimetableTrain.AttachDetails.Valid)
+                                {
+                                    Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
+                                    Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
+                                    Message.Color = Color.Orange;
+                                }
+                                else
+                                {
+                                    Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
+                                    Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
+                                    Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" ; other train not yet ready"));
+                                    Message.Color = Color.Orange;
+                                }
+                            }
+                        }
+
                         // general details
-                        if (playerTimetableTrain.AttachDetails != null && playerTimetableTrain.AttachDetails.Valid)
-                        {
-                            Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
-                            Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
-                            Message.Color = Color.Orange;
-                        }
-                        else if (playerTimetableTrain.AttachDetails != null)
-                        {
-                            Message.Text = Viewer.Catalog.GetString("Train is to attach to : ");
-                            Message.Text = String.Concat(Message.Text, playerTimetableTrain.AttachDetails.AttachTrainName);
-                            Message.Text = String.Concat(Message.Text, Viewer.Catalog.GetString(" ; other train not yet ready"));
-                            Message.Color = Color.Orange;
-                        }
                         else if (playerTimetableTrain.PickUpStaticOnForms)
                         {
                             Message.Text = Viewer.Catalog.GetString("Train is to pickup train at end of path");
