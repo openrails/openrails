@@ -1345,6 +1345,12 @@ namespace Orts.Simulation.Signalling
                     return_value = thisHead.id_sig_hasnormalsubtype(parameter1_value, parameter2_value);
                     break;
 
+                // switchstand
+
+                case (SignalScripts.SCRExternalFunctions.SWITCHSTAND):
+                    return_value = thisHead.switchstand(parameter1_value, parameter2_value);
+                    break;
+
                 // def_draw_state
 
                 case (SignalScripts.SCRExternalFunctions.DEF_DRAW_STATE):
