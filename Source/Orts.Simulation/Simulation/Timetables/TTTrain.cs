@@ -901,8 +901,8 @@ namespace Orts.Simulation.Timetables
                 {
                     StationStop newStop = CalculateStationStop(signalRef.PlatformDetailsList[altPlatformIndex].PlatformReference[0],
                         orgStop.ArrivalTime, orgStop.DepartTime, orgStop.arrivalDT, orgStop.departureDT, clearingDistanceM, minStopDistanceM,
-                        orgStop.Terminal, orgStop.ActualMinStopTime, orgStop.KeepClearFront, orgStop.KeepClearRear, orgStop.ForcePosition, orgStop.CloseupSignal,
-                        orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop);
+                        orgStop.Terminal, orgStop.ActualMinStopTime, orgStop.KeepClearFront, orgStop.KeepClearRear, orgStop.ForcePosition, 
+                        orgStop.CloseupSignal, orgStop.Closeup, orgStop.RestrictPlatformToSignal, orgStop.ExtendPlatformToSignal, orgStop.EndStop);
 
 #if DEBUG_REPORTS
                     if (newStop != null)
@@ -1270,7 +1270,7 @@ namespace Orts.Simulation.Timetables
 
         public StationStop CalculateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
             float minStopDistance, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal, 
-            bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
         {
             int platformIndex;
             int activeSubroute = 0;
@@ -1326,7 +1326,8 @@ namespace Orts.Simulation.Timetables
                 // determine end stop position depending on direction
 
                 StationStop dummyStop = CalculateStationStopPosition(thisRoute, routeIndex, thisPlatform, activeSubroute,
-                    keepClearFront, keepClearRear, forcePosition, closeupSignal, restrictPlatformToSignal, extendPlatformToSignal, terminal, platformIndex);
+                    keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, 
+                    terminal, platformIndex);
 
                 // build and add station stop
 
@@ -1350,6 +1351,7 @@ namespace Orts.Simulation.Timetables
                         keepClearRear,
                         forcePosition,
                         closeupSignal,
+                        closeup,
                         restrictPlatformToSignal,
                         extendPlatformToSignal,
                         endStop,
@@ -1376,8 +1378,8 @@ namespace Orts.Simulation.Timetables
         /// <param name="platformIndex"></param>
         /// <returns></returns>
         public StationStop CalculateStationStopPosition(TCSubpathRoute thisRoute, int routeIndex, PlatformDetails thisPlatform, int activeSubroute,
-            float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal, bool restrictPlatformToSignal, bool ExtendPlatformToSignal,
-            bool terminal, int platformIndex)
+            float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal, bool closeup, 
+            bool restrictPlatformToSignal, bool ExtendPlatformToSignal, bool terminal, int platformIndex)
         {
             StationStop dummyStop = new StationStop();
 
@@ -1967,10 +1969,11 @@ namespace Orts.Simulation.Timetables
         /// <returns></returns>
         public bool CreateStationStop(int platformStartID, int arrivalTime, int departTime, DateTime arrivalDT, DateTime departureDT, float clearingDistanceM,
             float minStopDistanceM, bool terminal, int? actMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal, 
-            bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
+            bool closeup, bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop)
         {
             StationStop thisStation = CalculateStationStop(platformStartID, arrivalTime, departTime, arrivalDT, departureDT, clearingDistanceM,
-                minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, restrictPlatformToSignal, extendPlatformToSignal, endStop);
+                minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup,
+                restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
             if (thisStation != null)
             {
@@ -2291,8 +2294,9 @@ namespace Orts.Simulation.Timetables
                 PlatformDetails thisPlatform = actualStation.PlatformItem;
 
                 StationStop newStop = CalculateStationStopPosition(TCRoute.TCRouteSubpaths[actualStation.SubrouteIndex], actualStation.RouteIndex, actualStation.PlatformItem,
-                    actualStation.SubrouteIndex, actualStation.KeepClearFront, actualStation.KeepClearRear, actualStation.ForcePosition, actualStation.CloseupSignal, 
-                    actualStation.RestrictPlatformToSignal, actualStation.ExtendPlatformToSignal, actualStation.Terminal, actualStation.PlatformReference);
+                    actualStation.SubrouteIndex, actualStation.KeepClearFront, actualStation.KeepClearRear, actualStation.ForcePosition, 
+                    actualStation.CloseupSignal, actualStation.Closeup, actualStation.RestrictPlatformToSignal, actualStation.ExtendPlatformToSignal,
+                    actualStation.Terminal, actualStation.PlatformReference);
 
                 actualStation.RouteIndex = newStop.RouteIndex;
                 actualStation.TCSectionIndex = newStop.TCSectionIndex;
@@ -4876,12 +4880,29 @@ namespace Orts.Simulation.Timetables
                         else if (!attachToTrain && !pickUpTrain && !transferTrain)
                         {
                             keepDistanceTrainM = (OtherTrain.IsFreight || IsFreight) ? keepDistanceStatTrainM_F : keepDistanceStatTrainM_P;
+                            // if closeup is set for termination
                             if (Closeup)
                             {
                                 keepDistanceTrainM = keepDistanceTrainAheadCloseupM;
                             }
+                            // if train has station stop and closeup set, check if approaching train in station
+
+                            if (StationStops != null && StationStops.Count > 0 && StationStops[0].Closeup)
+                            {
+                                // other train at station and this is same station
+                                if (OtherTrain.AtStation && OtherTrain.StationStops[0].PlatformItem.Name == StationStops[0].PlatformItem.Name)
+                                {
+                                    keepDistanceTrainM = keepDistanceTrainAheadCloseupM;
+                                }
+                                // other train in station and this is same station
+                                else if (OtherTrain.PresentPosition[1].TCSectionIndex == StationStops[0].TCSectionIndex)
+                                {
+                                    keepDistanceTrainM = keepDistanceTrainAheadCloseupM;
+                                }
+                            }
+
                             // if reversing on track where train is located, also allow closeup
-                            else if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1 && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
+                            if (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1 && TCRoute.ReversalInfo[TCRoute.activeSubpath].Valid)
                             {
                                 if (TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex == OtherTrain.PresentPosition[0].TCSectionIndex ||
                                     TCRoute.ReversalInfo[TCRoute.activeSubpath].ReversalSectionIndex == OtherTrain.PresentPosition[1].TCSectionIndex)
@@ -7546,6 +7567,10 @@ namespace Orts.Simulation.Timetables
 
                 // no action for closeupsignal (processed in create station stop)
                 case "closeupsignal":
+                    break;
+
+                // no action for closeupsignal (processed in create station stop)
+                case "closeup":
                     break;
 
                 // no action for extendplatformtosignal (processed in create station stop)

@@ -12085,6 +12085,7 @@ namespace Orts.Simulation.Physics
                         false,
                         false,
                         false,
+                        false,
                         StationStop.STOPTYPE.STATION_STOP);
 
                 thisStation.arrivalDT = arrivalDT;
@@ -14773,6 +14774,7 @@ namespace Orts.Simulation.Physics
                         null,
                         null,
                         null,
+                        false,
                         false,
                         false,
                         false,
@@ -19011,6 +19013,7 @@ namespace Orts.Simulation.Physics
             public float? KeepClearRear = null;                                                   // distance to be kept clear behind train
             public bool ForcePosition = false;                                                    // front or rear clear position must be forced
             public bool CloseupSignal = false;                                                    // train may close up to signal within normal clearing distance
+            public bool Closeup = false;                                                          // train may close up to other train in platform
             public bool RestrictPlatformToSignal = false;                                         // restrict end of platform to signal position
             public bool ExtendPlatformToSignal = false;                                           // extend end of platform to next signal position
             public bool EndStop = false;                                                          // train terminates at station
@@ -19025,7 +19028,8 @@ namespace Orts.Simulation.Physics
 
             public StationStop(int platformReference, PlatformDetails platformItem, int subrouteIndex, int routeIndex,
                 int tcSectionIndex, int direction, int exitSignal, bool holdSignal, bool noWaitSignal, bool noClaimAllowed, float stopOffset,
-                int arrivalTime, int departTime, bool terminal, int? actualMinStopTime, float? keepClearFront, float? keepClearRear, bool forcePosition, bool closeupSignal,
+                int arrivalTime, int departTime, bool terminal, int? actualMinStopTime, float? keepClearFront, float? keepClearRear, 
+                bool forcePosition, bool closeupSignal, bool closeup,
                 bool restrictPlatformToSignal, bool extendPlatformToSignal, bool endStop, STOPTYPE actualStopType)
             {
                 ActualStopType = actualStopType;
@@ -19062,6 +19066,7 @@ namespace Orts.Simulation.Physics
                 KeepClearRear = keepClearRear;
                 ForcePosition = forcePosition;
                 CloseupSignal = closeupSignal;
+                Closeup = closeup;
                 RestrictPlatformToSignal = restrictPlatformToSignal;
                 ExtendPlatformToSignal = extendPlatformToSignal;
                 EndStop = endStop;
@@ -19175,6 +19180,7 @@ namespace Orts.Simulation.Physics
                 Terminal = inf.ReadBoolean();
                 ForcePosition = inf.ReadBoolean();
                 CloseupSignal = inf.ReadBoolean();
+                Closeup = inf.ReadBoolean();
                 RestrictPlatformToSignal = inf.ReadBoolean();
                 ExtendPlatformToSignal = inf.ReadBoolean();
                 EndStop = inf.ReadBoolean();
@@ -19297,6 +19303,7 @@ namespace Orts.Simulation.Physics
                 outf.Write(Terminal);
                 outf.Write(ForcePosition);
                 outf.Write(CloseupSignal);
+                outf.Write(Closeup);
                 outf.Write(RestrictPlatformToSignal);
                 outf.Write(ExtendPlatformToSignal);
                 outf.Write(EndStop);
