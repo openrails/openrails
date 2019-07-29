@@ -15014,6 +15014,17 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
+        /// TrainGetSectionStateClearNode
+        /// Virtual method to allow differentiation by child classes
+        /// </summary>
+
+        public virtual bool TrainGetSectionStateClearNode(int elementDirection, Train.TCSubpathRoute routePart, TrackCircuitSection thisSection)
+        {
+            return (thisSection.IsAvailable(this));
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// TestAbsDelay
         /// Tests if Waiting point delay >=30000 and <4000; under certain conditions this means that
         /// delay represents an absolute time of day, with format 3HHMM
