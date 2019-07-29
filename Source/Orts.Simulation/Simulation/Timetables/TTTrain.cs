@@ -103,6 +103,7 @@ namespace Orts.Simulation.Timetables
         // 2nd index = -1 indicates invalid (first index -1 is a valid index)
         public int DetachUnits = 0;                                       // no. of units to detach
         public bool DetachPosition = false;                               // if true detach from front
+        public bool DetachPending = false;                                // true when player detach window is displayed
 
         // attach details
         public AttachInfo AttachDetails;                                  // attach details
@@ -371,6 +372,7 @@ namespace Orts.Simulation.Timetables
             DetachActive[1] = inf.ReadInt32();
             DetachUnits = inf.ReadInt32();
             DetachPosition = inf.ReadBoolean();
+            DetachPending = inf.ReadBoolean();
 
             bool attachValid = inf.ReadBoolean();
             AttachDetails = null;
@@ -687,6 +689,7 @@ namespace Orts.Simulation.Timetables
             outf.Write(DetachActive[1]);
             outf.Write(DetachUnits);
             outf.Write(DetachPosition);
+            outf.Write(DetachPending);
 
             if (AttachDetails == null)
             {
@@ -6664,7 +6667,6 @@ namespace Orts.Simulation.Timetables
                             else if (otherTrain.TrainType == TRAINTYPE.PLAYER && otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
                             {
                                 AttachDetails.ReadyToAttach = true;
-                                AttachDetails.AttachTrain = otherTrain.Number;
                                 break;
                             }
                         }
@@ -9707,7 +9709,8 @@ namespace Orts.Simulation.Timetables
 
             // check if at station
             CheckStationTask();
-            
+            if (DetachPending) return (true);  // do not check for further actions if player train detach is pending
+
             bool[] nextRoute = UpdateRouteActions(elapsedClockSeconds);
             if (!nextRoute[0]) return (true);  // not at end of route
 
@@ -10315,7 +10318,6 @@ namespace Orts.Simulation.Timetables
                             else if (otherTrain.TrainType == TRAINTYPE.PLAYER && otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.AtStation)
                             {
                                 AttachDetails.ReadyToAttach = true;
-                                AttachDetails.AttachTrain = otherTrain.Number;
                             }
                             else if (otherTrain.Number == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
                             {
@@ -10324,7 +10326,6 @@ namespace Orts.Simulation.Timetables
                             else if (otherTrain.TrainType == TRAINTYPE.PLAYER && otherTrain.OrgAINumber == AttachDetails.AttachTrain && otherTrain.MovementState == AI_MOVEMENT_STATE.AI_STATIC && otherTrain.ActivateTime != null)
                             {
                                 AttachDetails.ReadyToAttach = true;
-                                AttachDetails.AttachTrain = otherTrain.Number;
                             }
                         }
                     }
@@ -11254,8 +11255,9 @@ namespace Orts.Simulation.Timetables
                         if (attachTrain.StationStops[0].SubrouteIndex == attachTrain.TCRoute.activeSubpath &&
                            attachTrain.ValidRoute[0].GetRouteIndex(attachTrain.StationStops[0].TCSectionIndex, attachTrain.PresentPosition[0].RouteListIndex) <= attachTrain.PresentPosition[0].RouteListIndex)
                         // assume to be in station
+                        // also set state of present train to station stop
                         {
-                            attachTrain.MovementState = AI_MOVEMENT_STATE.STATION_STOP;
+                            MovementState = attachTrain.MovementState = AI_MOVEMENT_STATE.STATION_STOP;
                             attachTrain.AtStation = true;
 
                             if (attachTrain.CheckTrain)
@@ -11323,10 +11325,12 @@ namespace Orts.Simulation.Timetables
                 if (indexRemove.HasValue) attachTrain.NeedAttach.Remove(indexRemove.Value);
             }
 
-            //if (!needAttachFound)
-            //{
-            //    Trace.TraceWarning("Train : {0} : coupling to train {1} : internal data error, needAttach reference not found", attachTrain.Name, Name);
-            //}
+#if DEBUG_REPORTS
+            if (!needAttachFound)
+            {
+                Trace.TraceWarning("Train : {0} : coupling to train {1} : internal data error, needAttach reference not found", attachTrain.Name, Name);
+            }
+#endif
 
             // if train is player or intended player and train has no player engine, determine new loco lead index
             if (attachTrain.TrainType == Train.TRAINTYPE.PLAYER || attachTrain.TrainType == Train.TRAINTYPE.INTENDED_PLAYER)
@@ -11392,7 +11396,12 @@ namespace Orts.Simulation.Timetables
 
                 attachTrain.SetFormedOccupied();
                 attachTrain.TrainType = Train.TRAINTYPE.PLAYER;
-                attachTrain.MovementState = MovementState;
+
+                // if present movement state is active state, copy to new train
+                if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)
+                {
+                    attachTrain.MovementState = MovementState;
+                }
 
                 // inform viewer about player train switch
                 attachTrain.Simulator.OnPlayerTrainChanged(this, attachTrain);
@@ -13193,8 +13202,9 @@ namespace Orts.Simulation.Timetables
                             train.AI.AutoGenTrains.Add(newTrain);
                             train.Simulator.AutoGenDictionary.Add(newTrain.Number, newTrain);
 
-                            // show window
+                            // show window, set detach action is pending
                             train.Simulator.OnRequestTTDetachWindow();
+                            train.DetachPending = true;
                             return (false);
                         }
 
@@ -13229,7 +13239,6 @@ namespace Orts.Simulation.Timetables
                             // set proper details for existing train
                             train.Number = train.OrgAINumber;
                             train.TrainType = Train.TRAINTYPE.AI;
-                            train.MovementState = AITrain.AI_MOVEMENT_STATE.AI_STATIC;
                             train.LeadLocomotiveIndex = -1;
                             train.Simulator.Trains.Remove(train);
                             train.AI.TrainsToRemoveFromAI.Add(train);
@@ -13351,6 +13360,7 @@ namespace Orts.Simulation.Timetables
         //================================================================================================//
         /// <summary>
         /// Perform detach for player train
+        /// Called from player detach selection window
         /// </summary>
         /// <param name="train"></param>
         /// <param name="newTrainNumber"></param>
@@ -13449,6 +13459,8 @@ namespace Orts.Simulation.Timetables
                     train.Simulator.Confirmer.Information("Player switched to train : " + newTrain.Name);
                 Trace.TraceInformation("Player switched to train : " + newTrain.Name);
             }
+
+            train.DetachPending = false;   // detach completed
         }
 
         //================================================================================================//
@@ -13843,7 +13855,7 @@ namespace Orts.Simulation.Timetables
             {
                 if (playerTrain != null && String.Compare(playerTrain.Name, AttachTrainName, true) == 0)
                 {
-                    AttachTrain = playerTrain.Number;
+                    AttachTrain = playerTrain.OrgAINumber;
                     attachedTrain = playerTrain;
                     trainFound = true;
                 }
