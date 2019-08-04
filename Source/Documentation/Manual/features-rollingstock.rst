@@ -226,6 +226,7 @@ following format::
         Offset(XOffset, YOffset, ZOffset)
         FreightWeight(weight)
         Flip()
+        Visibility ( "Outside,Cab2D,Cab3D" )
     )
 
 Where:
@@ -239,10 +240,20 @@ Where:
   wagon. If more static OR freightanims are present, each of their weights is 
   added to define the total weight of the wagon.
 - ``Flip()``, if present, flips the shape around its pivot point.
+- ``Visibility``, if present, changes the default visibility of the static 
+  freightanim. Default is visible only from outside cameras and from any inside 
+  camera of locomotives different from the one hosting the static freightanim. 
+  If substring ``Outside`` is present, the static freightanim is visible from outside 
+  cameras and from any inside camera of locomotives different from the one 
+  hosting the static freightanim; if ``Cab2D`` is present, the static freightanim 
+  is visible from the 2D cabview camera of loco hosting the freightanim; 
+  if ``Cab3D`` is present, the static freightanim is visible from the 3D cabview camera
+  of loco hosting the freightanim. 1, 2 or 3 of such substrings 
+  may be inserted in the ``Visibility`` line allowing for any combination of visibility.  
 
 Because more static OR freightanims may be defined for a wagon, in the case of a 
 container wagon that is able to carry more than one container, even as a double 
-stack, it is therefore possible to use a static OR freightanim for each 
+stack, it is possible to use a static OR freightanim for each 
 container, defining its position within the wagon. 
 
 Physics Variation with Loads
