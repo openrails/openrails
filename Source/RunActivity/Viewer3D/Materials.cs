@@ -642,7 +642,7 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             if (CabShader != null)
-                SpriteBatch.Begin(0, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, CabShader);
+                SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, CabShader);
             else
                 SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
         }
