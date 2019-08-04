@@ -2050,24 +2050,22 @@ namespace Orts.Simulation.Signalling
 
             if (thisItem.ItemType == TrItem.trItemType.trSIGNAL)
             {
-                if (!Simulator.TimetableMode)
+                try
                 {
-                    try
-                    {
-                        SignalItem tryItem = (SignalItem)thisItem;
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.TraceWarning(error.Message);
-                        Trace.TraceWarning("Signal item not consistent with signal database");
-                        return newLastDistance;
-                    }
+                    SignalItem tryItem = (SignalItem)thisItem;
                 }
+                catch (Exception error)
+                {
+                    Trace.TraceWarning(error.Message);
+                    Trace.TraceWarning("Signal item not consistent with signal database");
+                    return newLastDistance;
+                }
+
                 SignalItem sigItem = (SignalItem)thisItem;
                 if (sigItem.SigObj >= 0)
                 {
                     SignalObject thisSignal = SignalObjects[sigItem.SigObj];
-                    if (!Simulator.TimetableMode && thisSignal == null)
+                    if (thisSignal == null)
                     {
                         Trace.TraceWarning("Signal item with TrItemID = {0} not consistent with signal database", sigItem.TrItemId);
                         return newLastDistance;
@@ -4484,7 +4482,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            if (!Simulator.TimetableMode && Simulator.Activity != null &&
+            if (Simulator.Activity != null &&
                 Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting != null)
 
             // Override .tdb NumPassengersWaiting info with .act NumPassengersWaiting info if any available
@@ -5845,9 +5843,8 @@ namespace Orts.Simulation.Signalling
                     ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
                 }
             }
-            else if (!signalRef.Simulator.TimetableMode &&
-                thisTrain.Train.IsPlayerDriven && thisTrain.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL && thisTrain.Train.DistanceTravelledM == 0.0 &&
-                thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
+            else if (thisTrain.Train.IsPlayerDriven && thisTrain.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL && thisTrain.Train.DistanceTravelledM == 0.0 &&
+                     thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
             // Check if section is under train, and therefore can be unreserved from other trains
             {
                 int thisRouteIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(Index, 0);
@@ -6148,7 +6145,7 @@ namespace Orts.Simulation.Signalling
                             // no deadlock yet active - do not set deadlock if train has wait within deadlock section
                             if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
                             {
-                                if (!signalRef.Simulator.TimetableMode || !thisTrain.Train.HasActiveWait(Index, endSection.Index))
+                                if (!thisTrain.Train.HasActiveWait(Index, endSection.Index))
                                 {
                                     endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
                                 }
@@ -6810,21 +6807,12 @@ namespace Orts.Simulation.Signalling
         //================================================================================================//
         /// <summary>
         /// Get section state for request clear node
+        /// Method is put through to train class because of differences between activity and timetable mode
         /// </summary>
 
         public bool GetSectionStateClearNode(Train.TrainRouted thisTrain, int elementDirection, Train.TCSubpathRoute routePart)
         {
-            bool returnValue = false;
-
-            if (signalRef.Simulator.TimetableMode)
-            {
-                returnValue = getSectionState(thisTrain, elementDirection, SignalObject.InternalBlockstate.Reserved, routePart, -1) <= SignalObject.InternalBlockstate.OccupiedSameDirection;
-            }
-            else
-            {
-                returnValue = IsAvailable(thisTrain);
-            }
-
+            bool returnValue = thisTrain.Train.TrainGetSectionStateClearNode(elementDirection, routePart, this);
             return (returnValue);
         }
 
