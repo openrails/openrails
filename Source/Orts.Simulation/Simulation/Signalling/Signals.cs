@@ -12592,6 +12592,7 @@ namespace Orts.Simulation.Signalling
     public class SignalHead
     {
         public SignalType signalType;           // from sigcfg file
+        public SignalScripts.SCRScripts usedSigScript = null;   // used sigscript
         public MstsSignalAspect state = MstsSignalAspect.STOP;
         public int draw_state;
         public int trItemIndex;                 // Index to trItem   
@@ -12701,7 +12702,11 @@ namespace Orts.Simulation.Signalling
             // set signal type
             if (sigCFG.SignalTypes.ContainsKey(sigItem.SignalType))
             {
+                // set signal type
                 signalType = sigCFG.SignalTypes[sigItem.SignalType];
+
+                // get related signalscript
+                Signals.scrfile.SignalScripts.Scripts.TryGetValue(signalType, out usedSigScript);
 
                 // set signal speeds
                 foreach (SignalAspect thisAspect in signalType.Aspects)
