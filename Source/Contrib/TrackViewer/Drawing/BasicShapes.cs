@@ -140,7 +140,7 @@ namespace ORTS.TrackViewer.Drawing
                 pixels[i] = ColorWithHighlights.Highlighted(pixels[i], offset);
             }
 
-            Texture2D outTexture = new Texture2D(graphicsDevice, texture.Width, texture.Height, true, SurfaceFormat.Color);
+            Texture2D outTexture = new Texture2D(graphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
             outTexture.SetData<Color>(pixels);
             return outTexture;
         }
@@ -154,7 +154,7 @@ namespace ORTS.TrackViewer.Drawing
         private static Texture2D CreateCircleTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
             int radius = (outerRadius - 2)/2; // So circle doesn't go out of bounds
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius,  true, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius,  false, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
@@ -187,7 +187,7 @@ namespace ORTS.TrackViewer.Drawing
         private static Texture2D CreateDiscTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
             int radius = (outerRadius - 1) / 2;
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, true, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, false, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
@@ -221,7 +221,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             int radius = (outerRadius - 1) / 2;
             int innerRadius = (2 * radius) / 3;
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, true, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, false, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
@@ -257,7 +257,7 @@ namespace ORTS.TrackViewer.Drawing
             int radius = (outerRadius - 1) / 2;
             int innerRadius = (3 * radius) / 4;
             int crossWidth = 5;
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, true, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, false, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
