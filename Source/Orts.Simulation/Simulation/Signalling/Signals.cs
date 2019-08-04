@@ -12817,6 +12817,7 @@ namespace Orts.Simulation.Signalling
         //================================================================================================//
         /// <summary>
         ///  Returns most restrictive state of signal type A, for all type A upto type B
+        ///  Uses Most Restricted state per signal, but checks for valid routing
         /// </summary>
 
         public MstsSignalAspect dist_multi_sig_mr(int sigFN1, int sigFN2, string dumpfile)
@@ -12884,6 +12885,111 @@ namespace Orts.Simulation.Signalling
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[sigFN1]];
 
                 MstsSignalAspect thisState = thisSignal.this_sig_mr_routed(sigFN1, dumpfile);
+
+                // ensure correct next signals are located
+                if (sigFN1 != (int)MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())
+                {
+                    var sigFound = thisSignal.SONextSignal(sigFN1);
+                    if (sigFound >= 0) thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+                }
+                if (sigFN2 != (int)MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())
+                {
+                    var sigFound = thisSignal.SONextSignal(sigFN2);
+                    if (sigFound >= 0) thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
+                }
+
+                if (sig2Index == thisSignal.thisRef) // this signal also contains type 2 signal and is therefor valid
+                {
+                    foundValid = true;
+                    foundState = foundState < thisState ? foundState : thisState;
+                    return (foundState);
+                }
+                else if (sig2Index >= 0 && thisSignal.sigfound[sigFN2] != sig2Index)  // we are beyond type 2 signal
+                {
+                    return (foundValid ? foundState : MstsSignalAspect.STOP);
+                }
+                foundValid = true;
+                foundState = foundState < thisState ? foundState : thisState;
+            }
+
+            return (foundValid ? foundState : MstsSignalAspect.STOP);   // no type 2 or running out of signals before finding type 2
+        }
+
+        //================================================================================================//
+        /// <summary>
+        ///  Returns most restrictive state of signal type A, for all type A upto type B
+        ///  Uses Least Restrictive state per signal
+        /// </summary>
+
+        public MstsSignalAspect dist_multi_sig_mr_of_lr(int sigFN1, int sigFN2, string dumpfile)
+        {
+            MstsSignalAspect foundState = MstsSignalAspect.CLEAR_2;
+            bool foundValid = false;
+
+            // get signal of type 2 (end signal)
+
+            if (dumpfile.Length > 1)
+            {
+                File.AppendAllText(dumpfile,
+                    String.Format("DIST_MULTI_SIG_MR_OF_LR for {0} + upto {1}\n",
+                    sigFN1, sigFN2));
+            }
+
+            int sig2Index = mainSignal.sigfound[sigFN2];
+            if (sig2Index < 0)           // try renewed search with full route
+            {
+                sig2Index = mainSignal.SONextSignal(sigFN2);
+                mainSignal.sigfound[sigFN2] = sig2Index;
+            }
+
+            if (dumpfile.Length > 1)
+            {
+                if (sig2Index < 0)
+                    File.AppendAllText(dumpfile, "  no signal type 2 found\n");
+            }
+
+            if (dumpfile.Length > 1)
+            {
+                var sob = new StringBuilder();
+                sob.AppendFormat("  signal type 2 : {0}", mainSignal.sigfound[sigFN2]);
+
+                if (mainSignal.sigfound[(int)sigFN2] > 0)
+                {
+                    SignalObject otherSignal = mainSignal.signalRef.SignalObjects[mainSignal.sigfound[sigFN2]];
+                    sob.AppendFormat(" (");
+
+                    foreach (SignalHead otherHead in otherSignal.SignalHeads)
+                    {
+                        sob.AppendFormat(" {0} ", otherHead.TDBIndex);
+                    }
+
+                    sob.AppendFormat(") ");
+                }
+                sob.AppendFormat("\n");
+
+                File.AppendAllText(dumpfile, sob.ToString());
+            }
+
+            SignalObject thisSignal = mainSignal;
+
+            // ensure next signal of type 1 is located correctly (cannot be done for normal signals searching next normal signal)
+
+            if (!thisSignal.isSignalNormal() || sigFN1 != (int)MstsSignalFunction.NORMAL)
+            {
+                thisSignal.sigfound[sigFN1] = thisSignal.SONextSignal(sigFN1);
+            }
+
+            // loop through all available signals of type 1
+
+            while (thisSignal.sigfound[sigFN1] >= 0)
+            {
+                thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[sigFN1]];
+
+                MstsSignalAspect thisState = thisSignal.this_sig_lr(sigFN1);
+                if (dumpfile.Length > 1)
+                {
+                    File.AppendAllText(dumpfile, "Found lr state : " + thisState.ToString() + "\n");
+                }
 
                 // ensure correct next signals are located
                 if (sigFN1 != (int)MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())

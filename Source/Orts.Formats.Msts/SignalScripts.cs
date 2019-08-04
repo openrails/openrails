@@ -73,6 +73,7 @@ namespace Orts.Formats.Msts
             OPP_SIG_MR,
             NEXT_NSIG_LR,
             DIST_MULTI_SIG_MR,
+            DIST_MULTI_SIG_MR_OF_LR,
             NEXT_SIG_ID,
             NEXT_NSIG_ID,
             OPP_SIG_ID,
