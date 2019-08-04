@@ -108,6 +108,7 @@ namespace Orts.Formats.Msts
             THIS_SIG_HASNORMALSUBTYPE,
             NEXT_SIG_HASNORMALSUBTYPE,
             ID_SIG_HASNORMALSUBTYPE,
+            SWITCHSTAND,
             DEBUG_HEADER,
             DEBUG_OUT,
             RETURN,

@@ -916,8 +916,17 @@ namespace Orts.MultiPlayer
             TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-        }
 
+            // update linked signals
+            if (switchSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in switchSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
+        }
     }
 
 #endregion MGSwitch
@@ -1026,6 +1035,16 @@ namespace Orts.MultiPlayer
             TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+
+            // update linked signals
+            if (switchSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in switchSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
         }
 
         public override string ToString()
@@ -1147,6 +1166,16 @@ namespace Orts.MultiPlayer
             TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+
+            // update linked signals
+            if (switchSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in switchSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
         }
 
         static bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
