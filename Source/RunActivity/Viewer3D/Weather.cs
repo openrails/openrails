@@ -942,7 +942,7 @@ namespace Orts.Viewer3D
                 prevTime = weatherSet.Time;
 
                 // check settings
-                if (weatherSet.GetType() == typeof(WeatherSettingOvercast))
+                if (weatherSet is WeatherSettingOvercast)
                 {
                     WeatherSettingOvercast thisOvercast = weatherSet as WeatherSettingOvercast;
                     CheckValue(ref thisOvercast.Overcast, true, 0, 100, acttime, "Overcast");

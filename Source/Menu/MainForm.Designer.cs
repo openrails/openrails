@@ -84,7 +84,7 @@ namespace ORTS
             this.comboBoxDifficulty = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.panelModeTimetable = new System.Windows.Forms.Panel();
-            this.lableTimetableWeatherFile = new System.Windows.Forms.Label();
+            this.labelTimetableWeatherFile = new System.Windows.Forms.Label();
             this.comboBoxTimetableWeatherFile = new System.Windows.Forms.ComboBox();
             this.label24 = new System.Windows.Forms.Label();
             this.comboBoxTimetableTrain = new System.Windows.Forms.ComboBox();
