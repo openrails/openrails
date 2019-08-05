@@ -941,7 +941,7 @@ namespace Orts.Viewer3D
                 prevTime = weatherSet.Time;
 
                 // check settings
-                if (weatherSet.GetType() == typeof(WeatherSettingOvercast))
+                if (weatherSet is WeatherSettingOvercast)
                 {
                     WeatherSettingOvercast thisOvercast = weatherSet as WeatherSettingOvercast;
                     CheckValue(ref thisOvercast.Overcast, true, 0, 100, acttime, "Overcast");
@@ -950,7 +950,7 @@ namespace Orts.Viewer3D
                     CheckValue(ref thisOvercast.OvercastVisibility, false, 1000, 60000, acttime, "Overcast Visibility");
                 }
 
-                else if (weatherSet.GetType() == typeof(WeatherSettingPrecipitation))
+                else if (weatherSet is WeatherSettingPrecipitation)
                 {
                     WeatherSettingPrecipitation thisPrecipitation = weatherSet as WeatherSettingPrecipitation;
 
@@ -979,7 +979,7 @@ namespace Orts.Viewer3D
                     CheckValue(ref thisPrecipitation.PrecipitationEndPhase, false, 30, 360, acttime, "Precipitation End Phase");
                 }
 
-                else if (weatherSet.GetType() == typeof(WeatherSettingFog))
+                else if (weatherSet is WeatherSettingFog)
                 {
                     WeatherSettingFog thisFog = weatherSet as WeatherSettingFog;
                     CheckValue(ref thisFog.FogOvercast, true, 0, 100, acttime, "Fog Overcast");
@@ -1041,7 +1041,7 @@ namespace Orts.Viewer3D
             int nextIndex = AWActiveIndex < (weatherDetails.Count - 1) ? AWActiveIndex + 1 : -1;
 
             // fog
-            if (lastWeather.GetType() == typeof(WeatherSettingFog))
+            if (lastWeather is WeatherSettingFog)
             {
                 WeatherSettingFog lastWeatherFog = lastWeather as WeatherSettingFog;
                 float actualLiftingTime = (0.9f * lastWeatherFog.FogLiftTime) + (((float)Viewer.Random.Next(10) / 100) * lastWeatherFog.FogLiftTime); // defined time +- 10%
@@ -1062,14 +1062,14 @@ namespace Orts.Viewer3D
             }
 
             // precipitation
-            else if (lastWeather.GetType() == typeof(WeatherSettingPrecipitation))
+            else if (lastWeather is WeatherSettingPrecipitation)
             {
                 WeatherSettingPrecipitation lastWeatherPrecipitation = lastWeather as WeatherSettingPrecipitation;
                 StartPrecipitation(lastWeatherPrecipitation, (float)realTime, true);
             }
 
             // cloudcover
-            else if (lastWeather.GetType() == typeof(WeatherSettingOvercast))
+            else if (lastWeather is WeatherSettingOvercast)
             {
                 WeatherSettingOvercast lastWeatherOvercast = lastWeather as WeatherSettingOvercast;
                 AWOvercastCloudcover = Math.Max(0, Math.Min(1, (lastWeatherOvercast.Overcast/100) +
@@ -1143,7 +1143,7 @@ namespace Orts.Viewer3D
             fogActive = false;
 
             // check for fog
-            if (lastWeather.GetType() == typeof(WeatherSettingFog))
+            if (lastWeather is WeatherSettingFog)
             {
                 WeatherSettingFog lastWeatherFog = lastWeather as WeatherSettingFog;
                 CalculateFog(lastWeatherFog, nextIndex);
@@ -1158,7 +1158,7 @@ namespace Orts.Viewer3D
             }
 
             // check for precipitation
-            else if (lastWeather.GetType() == typeof(WeatherSettingPrecipitation))
+            else if (lastWeather is WeatherSettingPrecipitation)
             {
                 WeatherSettingPrecipitation lastWeatherPrecipitation = lastWeather as WeatherSettingPrecipitation;
 
@@ -1217,7 +1217,7 @@ namespace Orts.Viewer3D
                 }
             }
             // clear
-            else if (lastWeather.GetType() == typeof(WeatherSettingOvercast))
+            else if (lastWeather is WeatherSettingOvercast)
             {
                 WeatherSettingOvercast lastWeatherOvercast = lastWeather as WeatherSettingOvercast;
                 AWOvercastCloudcover = CalculateOvercast(lastWeatherOvercast.Overcast, lastWeatherOvercast.OvercastVariation, lastWeatherOvercast.OvercastRateOfChange, elapsedTime);
@@ -1285,11 +1285,11 @@ namespace Orts.Viewer3D
 #endif                    
 
                     WeatherSetting nextWeather = weatherDetails[AWActiveIndex];
-                    if (nextWeather.GetType() == typeof (WeatherSettingFog))
+                    if (nextWeather is WeatherSettingFog)
                     {
                         StartFog(nextWeather as WeatherSettingFog, Time, AWActiveIndex);
                     }
-                    else if (nextWeather.GetType() == typeof(WeatherSettingPrecipitation))
+                    else if (nextWeather is WeatherSettingPrecipitation)
                     {
                         StartPrecipitation(nextWeather as WeatherSettingPrecipitation, Time, false);
                     }
@@ -1300,17 +1300,17 @@ namespace Orts.Viewer3D
         float GetWeatherVisibility(WeatherSetting weatherDetail)
         {
             float nextVisibility = Weather.FogDistance; // present visibility
-            if (weatherDetail.GetType() == typeof(WeatherSettingFog))
+            if (weatherDetail is WeatherSettingFog)
             {
                 WeatherSettingFog weatherFog = weatherDetail as WeatherSettingFog;
                 nextVisibility = weatherFog.FogVisibility;
             }
-            else if (weatherDetail.GetType() == typeof(WeatherSettingOvercast))
+            else if (weatherDetail is WeatherSettingOvercast)
             {
                 WeatherSettingOvercast weatherOvercast = weatherDetail as WeatherSettingOvercast;
                 nextVisibility = weatherOvercast.OvercastVisibility;
             }
-            else if (weatherDetail.GetType() == typeof(WeatherSettingPrecipitation))
+            else if (weatherDetail is WeatherSettingPrecipitation)
             {
                 WeatherSettingPrecipitation weatherPrecipitation = weatherDetail as WeatherSettingPrecipitation;
                 nextVisibility = weatherPrecipitation.OvercastVisibility;
@@ -1418,7 +1418,8 @@ namespace Orts.Viewer3D
                 float actduration = (0.5f + ((float)Viewer.Random.Next(100) / 100)) * avduration;
                 float spellEndTime = Math.Min(startTime + actduration, AWNextChangeTime);
                 AWPrecipitationEndSpell = Math.Max(startTime, spellEndTime - spellEndPhase);
-                AWPrecipitationEndRate = (AWPrecipitationRequiredPPSPM2 - AWPrecipitationActualPPSPM2) / spellEndPhase;
+                // for end rate, use minimum precipitation
+                AWPrecipitationEndRate = (AWPrecipitationActualPPSPM2 - PrecipitationViewer.MinIntensityPPSPM2) / spellEndPhase;
                 AWPrecipitationTotalDuration -= actduration;
                 AWPrecipitationTotalSpread -= 1;
 
@@ -1591,17 +1592,17 @@ namespace Orts.Viewer3D
             // save input details
             foreach(WeatherSetting autoweather in weatherDetails)
             {
-                if (autoweather.GetType() == typeof(WeatherSettingFog))
+                if (autoweather is WeatherSettingFog)
                 {
                     WeatherSettingFog autofog = autoweather as WeatherSettingFog;
                     autofog.Save(outf);
                 }
-                else if (autoweather.GetType() == typeof(WeatherSettingPrecipitation))
+                else if (autoweather is WeatherSettingPrecipitation)
                 {
                     WeatherSettingPrecipitation autoprec = autoweather as WeatherSettingPrecipitation;
                     autoprec.Save(outf);
                 }
-                else if (autoweather.GetType() == typeof(WeatherSettingOvercast))
+                else if (autoweather is WeatherSettingOvercast)
                 {
                     WeatherSettingOvercast autoovercast = autoweather as WeatherSettingOvercast;
                     autoovercast.Save(outf);

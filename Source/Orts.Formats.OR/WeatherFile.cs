@@ -107,9 +107,9 @@ namespace Orts.Formats.OR
             if (base.TryParse(item)) return true;
             switch (item.Path)
             {
-                case "Overcast": Overcast = item.AsFloat(Overcast) >= 0 ? item.AsFloat(Overcast) : -1; break;
-                case "OvercastVariation": OvercastVariation = item.AsFloat(OvercastVariation) >= 0 ? item.AsFloat(OvercastVariation) : -1; break;
-                case "OvercastRateOfChange": OvercastRateOfChange = item.AsFloat(OvercastRateOfChange) >= 0 ? item.AsFloat(OvercastRateOfChange) : -1; break;
+                case "Overcast": Overcast = item.AsFloat(Overcast); break;
+                case "OvercastVariation": OvercastVariation = item.AsFloat(OvercastVariation); break;
+                case "OvercastRateOfChange": OvercastRateOfChange = item.AsFloat(OvercastRateOfChange); break;
                 case "OvercastVisibility": OvercastVisibility = item.AsFloat(OvercastVisibility); break;
                 default: return false;
             }
@@ -180,24 +180,24 @@ namespace Orts.Formats.OR
             switch (item.Path)
             {
                 case "PrecipitationType": PrecipitationType = item.AsEnum(PrecipitationType); break;
-                case "PrecipitationDensity": PrecipitationDensity = item.AsFloat(PrecipitationDensity) >= 0 ? item.AsFloat(PrecipitationDensity) : -1; break;
-                case "PrecipitationVariation": PrecipitationVariation = item.AsFloat(PrecipitationVariation) >= 0 ? item.AsFloat(PrecipitationVariation) : -1; break;
-                case "PrecipitationRateOfChange": PrecipitationRateOfChange = item.AsFloat(PrecipitationRateOfChange) >= 0 ? item.AsFloat(PrecipitationRateOfChange) : -1; break;
-                case "PrecipitationProbability": PrecipitationProbability = item.AsFloat(PrecipitationProbability) >= 0 ? item.AsFloat(PrecipitationProbability) : -1; break;
+                case "PrecipitationDensity": PrecipitationDensity = item.AsFloat(PrecipitationDensity); break;
+                case "PrecipitationVariation": PrecipitationVariation = item.AsFloat(PrecipitationVariation); break;
+                case "PrecipitationRateOfChange": PrecipitationRateOfChange = item.AsFloat(PrecipitationRateOfChange); break;
+                case "PrecipitationProbability": PrecipitationProbability = item.AsFloat(PrecipitationProbability); break;
                 case "PrecipitationSpread": PrecipitationSpread = item.AsFloat(PrecipitationSpread); break;
                 case "PrecipitationVisibilityAtMinDensity": PrecipitationVisibilityAtMinDensity = item.AsFloat(PrecipitationVisibilityAtMinDensity); break;
                 case "PrecipitationVisibilityAtMaxDensity": PrecipitationVisibilityAtMaxDensity = item.AsFloat(PrecipitationVisibilityAtMaxDensity); break;
 
-                case "OvercastPrecipitationStart": OvercastPrecipitationStart = item.AsFloat(OvercastPrecipitationStart) >= 0 ? item.AsFloat(OvercastPrecipitationStart) : -1; break;
-                case "OvercastBuildUp": OvercastBuildUp = item.AsFloat(OvercastBuildUp) >= 0 ? item.AsFloat(OvercastBuildUp) : -1; break;
-                case "PrecipitationStartPhase": PrecipitationStartPhase = item.AsFloat(PrecipitationStartPhase) >= 0 ? item.AsFloat(PrecipitationStartPhase) : -1; break;
+                case "OvercastPrecipitationStart": OvercastPrecipitationStart = item.AsFloat(OvercastPrecipitationStart); break;
+                case "OvercastBuildUp": OvercastBuildUp = item.AsFloat(OvercastBuildUp); break;
+                case "PrecipitationStartPhase": PrecipitationStartPhase = item.AsFloat(PrecipitationStartPhase); break;
 
-                case "OvercastDispersion": OvercastDispersion = item.AsFloat(OvercastDispersion) >= 0 ? item.AsFloat(OvercastDispersion) : -1; break;
-                case "PrecipitationEndPhase": PrecipitationEndPhase = item.AsFloat(PrecipitationEndPhase) >= 0 ? item.AsFloat(PrecipitationEndPhase) : -1; break;
+                case "OvercastDispersion": OvercastDispersion = item.AsFloat(OvercastDispersion); break;
+                case "PrecipitationEndPhase": PrecipitationEndPhase = item.AsFloat(PrecipitationEndPhase); break;
 
-                case "Overcast": Overcast = item.AsFloat(Overcast) >= 0 ? item.AsFloat(Overcast) : -1; break;
-                case "OvercastVariation": OvercastVariation = item.AsFloat(OvercastVariation) >= 0 ? item.AsFloat(OvercastVariation) : -1; break;
-                case "OvercastRateOfChange": OvercastRateOfChange = item.AsFloat(OvercastRateOfChange) >= 0 ? item.AsFloat(OvercastRateOfChange) : -1; break;
+                case "Overcast": Overcast = item.AsFloat(Overcast); break;
+                case "OvercastVariation": OvercastVariation = item.AsFloat(OvercastVariation); break;
+                case "OvercastRateOfChange": OvercastRateOfChange = item.AsFloat(OvercastRateOfChange); break;
                 case "OvercastVisibility": OvercastVisibility = item.AsFloat(OvercastVisibility); break;
                 default: return false;
             }
@@ -280,7 +280,7 @@ namespace Orts.Formats.OR
                 case "FogVisibility": FogVisibility = item.AsFloat(FogVisibility); break;
                 case "FogSetTime": FogSetTime = item.AsFloat(FogSetTime); break;
                 case "FogLiftTime": FogLiftTime = item.AsFloat(FogLiftTime); break;
-                case "FogOvercast": FogOvercast = item.AsFloat(FogOvercast) >= 0 ? item.AsFloat(FogOvercast) : -1; break;
+                case "FogOvercast": FogOvercast = item.AsFloat(FogOvercast); break;
                 default: return false;
             }
 

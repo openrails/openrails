@@ -704,7 +704,7 @@ namespace ORTS
             // 
             // panelModeTimetable
             // 
-            this.panelModeTimetable.Controls.Add(this.lableTimetableWeatherFile);
+            this.panelModeTimetable.Controls.Add(this.labelTimetableWeatherFile);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableWeatherFile);
             this.panelModeTimetable.Controls.Add(this.label24);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableTrain);
@@ -725,16 +725,16 @@ namespace ORTS
             this.panelModeTimetable.TabIndex = 10;
             this.panelModeTimetable.Visible = false;
             // 
-            // lableTimetableWeatherFile
+            // labelTimetableWeatherFile
             // 
-            this.lableTimetableWeatherFile.AutoSize = true;
-            this.lableTimetableWeatherFile.Location = new System.Drawing.Point(5, 212);
-            this.lableTimetableWeatherFile.Margin = new System.Windows.Forms.Padding(3);
-            this.lableTimetableWeatherFile.Name = "lableTimetableWeatherFile";
-            this.lableTimetableWeatherFile.Size = new System.Drawing.Size(70, 13);
-            this.lableTimetableWeatherFile.TabIndex = 14;
-            this.lableTimetableWeatherFile.Text = "Weather File:";
-            this.lableTimetableWeatherFile.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelTimetableWeatherFile.AutoSize = true;
+            this.labelTimetableWeatherFile.Location = new System.Drawing.Point(5, 212);
+            this.labelTimetableWeatherFile.Margin = new System.Windows.Forms.Padding(3);
+            this.labelTimetableWeatherFile.Name = "labelTimetableWeatherFile";
+            this.labelTimetableWeatherFile.Size = new System.Drawing.Size(70, 13);
+            this.labelTimetableWeatherFile.TabIndex = 14;
+            this.labelTimetableWeatherFile.Text = "Weather File:";
+            this.labelTimetableWeatherFile.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBoxTimetableWeatherFile
             // 
@@ -1043,7 +1043,7 @@ namespace ORTS
         private System.Windows.Forms.RadioButton radioButtonMPClient;
         private System.Windows.Forms.Button buttonStartMP;
         private System.Windows.Forms.CheckBox checkDebriefActivityEval;
-        private System.Windows.Forms.Label lableTimetableWeatherFile;
+        private System.Windows.Forms.Label labelTimetableWeatherFile;
         private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
     }
 }
