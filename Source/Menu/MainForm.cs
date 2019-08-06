@@ -61,14 +61,14 @@ namespace ORTS
         public List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
-        List<String> TimetableWeatherFileSet = new List<string>();
+        List<WeatherFileInfo> TimetableWeatherFileSet = new List<WeatherFileInfo>();
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
         Task<List<Consist>> ConsistLoader;
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> TimetableSetLoader;
-        Task<List<String>> TimetableWeatherFileLoader;
+        Task<List<WeatherFileInfo>> TimetableWeatherFileLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
@@ -100,7 +100,7 @@ namespace ORTS
         public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
         public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
-        public String SelectedWeatherFile { get { return (String)comboBoxTimetableWeatherFile.SelectedItem; } }
+        public WeatherFileInfo SelectedWeatherFile { get { return (WeatherFileInfo)comboBoxTimetableWeatherFile.SelectedItem; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
 
@@ -1023,7 +1023,7 @@ namespace ORTS
                 ShowTimetableSetList();
             });
 
-            TimetableWeatherFileLoader = new Task<List<String>>(this, () => TimetableInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
             {
                 TimetableWeatherFileSet = timetableWeatherFileSet;
                 ShowTimetableWeatherSet();
@@ -1061,7 +1061,7 @@ namespace ORTS
 
         void UpdateTimetableWeatherSet()
         {
-            SelectedTimetableSet.WeatherFile = SelectedTimetableSet.GetWeatherFileFullName(SelectedWeatherFile);
+            SelectedTimetableSet.WeatherFile = SelectedWeatherFile.GetFullName();
         }
 
         #endregion

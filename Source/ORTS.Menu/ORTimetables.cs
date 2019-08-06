@@ -139,11 +139,31 @@ namespace ORTS.Menu
             }
             return ORTTInfo;
         }
+    }
+
+    public class WeatherFileInfo
+    {
+        public FileInfo filedetails;
+
+        public WeatherFileInfo(string filename)
+        {
+            filedetails = new FileInfo(filename);
+        }
+
+        public override string ToString()
+        {
+            return (filedetails.Name);
+        }
+
+        public string GetFullName()
+        {
+            return (filedetails.FullName);
+        }
 
         // get weatherfiles
-        public static List<String> GetTimetableWeatherFiles(Folder folder, Route route)
+        public static List<WeatherFileInfo> GetTimetableWeatherFiles(Folder folder, Route route)
         {
-            var weatherInfo = new List<String>();
+            var weatherInfo = new List<WeatherFileInfo>();
             if (route != null)
             {
                 var directory = System.IO.Path.Combine(route.Path, "WeatherFiles");
@@ -152,22 +172,12 @@ namespace ORTS.Menu
                 {
                     foreach (var weatherFile in Directory.GetFiles(directory, "*.weather-or"))
                     {
-                        FileInfo weatherFileInfo = new FileInfo(weatherFile);
-                        weatherInfo.Add(weatherFileInfo.Name);
+                        weatherInfo.Add(new WeatherFileInfo(weatherFile));
                     }
 
                 }
             }
             return weatherInfo;
-        }
-
-        public String GetWeatherFileFullName(String selectedFile)
-        {
-            FileInfo TimeTableDir = new FileInfo(fileName);
-            DirectoryInfo MainDir = TimeTableDir.Directory.Parent.Parent;
-            var directory = System.IO.Path.Combine(MainDir.FullName, "WeatherFiles");
-            var weatherfileName = System.IO.Path.Combine(directory, selectedFile);
-            return (weatherfileName);
         }
     }
 }
