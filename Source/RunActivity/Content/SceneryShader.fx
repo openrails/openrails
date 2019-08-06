@@ -197,7 +197,7 @@ void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
-	Out.Normal_Light = EyeVector;
+	Out.Normal_Light.w = 1;
 }
 
 void _VSLightsAndShadows(in float4 InPosition, inout VERTEX_OUTPUT Out)
