@@ -524,7 +524,8 @@ namespace Orts.Viewer3D
                 }
             }
 
-            if (Viewer.Settings.ModelInstancing)
+            // Model instancing requires shader model 3 or higher.
+            if (Viewer.Settings.ModelInstancing && Viewer.Settings.ShaderModel >= 3)
             {
                 // Instancing collapsed multiple copies of the same model in to a single set of data (the normal model
                 // data, plus a list of position information for each copy) and then draws them in a single batch.

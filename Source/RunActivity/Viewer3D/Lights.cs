@@ -215,7 +215,7 @@ namespace Orts.Viewer3D
 			var locomotive = Car.Train != null && Car.Train.IsActualPlayerTrain ? Viewer.PlayerLocomotive : null;
             if (locomotive == null && Car.Train != null && Car.Train.TrainType == Train.TRAINTYPE.REMOTE && Car is MSTSLocomotive && (Car as MSTSLocomotive) == Car.Train.LeadLocomotive)
                 locomotive = Car.Train.LeadLocomotive;
-            var mstsLocomotive = locomotive as MSTSLocomotive;
+			var mstsLocomotive = locomotive as MSTSLocomotive;
 
             // Headlight
 			var newTrainHeadlight = locomotive != null ? locomotive.Headlight : Car.Train != null && Car.Train.TrainType != Train.TRAINTYPE.STATIC ? 2 : 0;
@@ -502,7 +502,7 @@ namespace Orts.Viewer3D
             Debug.Assert(light.Type == LightType.Glow, "LightGlowPrimitive is only for LightType.Glow lights.");
 
             if (VertexDeclaration == null)
-                VertexDeclaration = new VertexDeclaration(LightGlowVertex.SizeInBytes, LightGlowVertex.VertexElements);
+                VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightGlowVertex.VertexElements);
             if (VertexBuffer == null)
             {
                 var vertexData = new LightGlowVertex[6 * StateCount];
@@ -532,7 +532,7 @@ namespace Orts.Viewer3D
                     vertexData[6 * state + 4] = new LightGlowVertex(new Vector2(0, 1), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
                     vertexData[6 * state + 5] = new LightGlowVertex(new Vector2(0, 0), position1, position2, normal1, normal2, color1, color2, state1.Radius, state2.Radius);
                 });
-                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, VertexDeclaration, vertexData.Length, BufferUsage.WriteOnly);
+                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(LightGlowVertex), vertexData.Length, BufferUsage.WriteOnly);
                 VertexBuffer.SetData(vertexData);
             }
             if (IndexBuffer == null)
@@ -549,7 +549,8 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.SetVertexBuffer(VertexBuffer);
+            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, LightGlowVertex.SizeInBytes);
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 6 * State, 0, 6, 0, 2);
         }
@@ -581,13 +582,13 @@ namespace Orts.Viewer3D
         }
 
         public static readonly VertexElement[] VertexElements = {
-            new VertexElement(sizeof(float) * 0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
-            new VertexElement(sizeof(float) * (3), VertexElementFormat.Vector3, VertexElementUsage.Position, 1),
-            new VertexElement(sizeof(float) * (3 + 3), VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
-            new VertexElement(sizeof(float) * (3 + 3 + 3), VertexElementFormat.Vector3, VertexElementUsage.Normal, 1),
-            new VertexElement(sizeof(float) * (3 + 3 + 3 + 3), VertexElementFormat.Vector4, VertexElementUsage.Color, 0),
-            new VertexElement(sizeof(float) * (3 + 3 + 3 + 3 + 4), VertexElementFormat.Vector4, VertexElementUsage.Color, 1),
-            new VertexElement(sizeof(float) * (3 + 3 + 3 + 3 + 4 + 4), VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 0),
+            new VertexElement(0, sizeof(float) * 0, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0),
+            new VertexElement(0, sizeof(float) * (3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 1),
+            new VertexElement(0, sizeof(float) * (3 + 3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Normal, 0),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Normal, 1),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 3), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 0),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 3 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 1),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 3 + 3 + 4 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 0),
         };
 
         public static int SizeInBytes = sizeof(float) * (3 + 3 + 3 + 3 + 4 + 4 + 4);
@@ -600,7 +601,6 @@ namespace Orts.Viewer3D
         static VertexDeclaration VertexDeclaration;
         VertexBuffer VertexBuffer;
         static IndexBuffer IndexBuffer;
-        static BlendState BlendState_SourceZeroDestOne;
 
         public LightConePrimitive(LightViewer lightViewer, RenderProcess renderProcess, Light light)
             : base(light)
@@ -608,7 +608,7 @@ namespace Orts.Viewer3D
             Debug.Assert(light.Type == LightType.Cone, "LightConePrimitive is only for LightType.Cone lights.");
 
             if (VertexDeclaration == null)
-                VertexDeclaration = new VertexDeclaration(LightConeVertex.SizeInBytes, LightConeVertex.VertexElements);
+                VertexDeclaration = new VertexDeclaration(renderProcess.GraphicsDevice, LightConeVertex.VertexElements);
             if (VertexBuffer == null)
             {
                 var vertexData = new LightConeVertex[(CircleSegments + 2) * StateCount];
@@ -642,7 +642,7 @@ namespace Orts.Viewer3D
                     vertexData[(CircleSegments + 2) * state + CircleSegments + 0] = new LightConeVertex(position1, position2, color1, color2);
                     vertexData[(CircleSegments + 2) * state + CircleSegments + 1] = new LightConeVertex(new Vector3(position1.X, position1.Y, position1.Z - distance1), new Vector3(position2.X, position2.Y, position2.Z - distance2), color1, color2);
                 });
-                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, VertexDeclaration, vertexData.Length, BufferUsage.WriteOnly);
+                VertexBuffer = new VertexBuffer(renderProcess.GraphicsDevice, typeof(LightConeVertex), vertexData.Length, BufferUsage.WriteOnly);
                 VertexBuffer.SetData(vertexData);
             }
             if (IndexBuffer == null)
@@ -661,39 +661,36 @@ namespace Orts.Viewer3D
                 IndexBuffer = new IndexBuffer(renderProcess.GraphicsDevice, typeof(short), indexData.Length, BufferUsage.WriteOnly);
                 IndexBuffer.SetData(indexData);
             }
-            if (BlendState_SourceZeroDestOne == null)
-                BlendState_SourceZeroDestOne = new BlendState 
-                {
-                    ColorSourceBlend = Blend.Zero,
-                    ColorDestinationBlend = Blend.One,
-                    AlphaSourceBlend = Blend.Zero,
-                    AlphaDestinationBlend = Blend.One
-                };
 
             UpdateState(lightViewer);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.SetVertexBuffer(VertexBuffer);
+            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, LightConeVertex.SizeInBytes);
             graphicsDevice.Indices = IndexBuffer;
 
+            var rs = graphicsDevice.RenderState;
 #if DEBUG_LIGHT_CONE_FULL
-            graphicsDevice.BlendState = Blendstate.AlphaBlend;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.One;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 #else
-            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
-            graphicsDevice.DepthStencilState.StencilFunction = CompareFunction.Always;
-            graphicsDevice.DepthStencilState.StencilPass = StencilOperation.Increment;
-            graphicsDevice.DepthStencilState.DepthBufferFunction = CompareFunction.Greater;
-            graphicsDevice.BlendState = BlendState_SourceZeroDestOne;
+            rs.CullMode = CullMode.CullClockwiseFace;
+            rs.StencilFunction = CompareFunction.Always;
+            rs.StencilPass = StencilOperation.Increment;
+            rs.DepthBufferFunction = CompareFunction.Greater;
+            rs.DestinationBlend = Blend.One;
+            rs.SourceBlend = Blend.Zero;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 
-            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            graphicsDevice.DepthStencilState.StencilFunction = CompareFunction.Less;
-            graphicsDevice.DepthStencilState.StencilPass = StencilOperation.Zero;
-            graphicsDevice.DepthStencilState.DepthBufferFunction = CompareFunction.LessEqual;
-            graphicsDevice.BlendState = BlendState.AlphaBlend;
+            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            rs.StencilFunction = CompareFunction.Less;
+            rs.StencilPass = StencilOperation.Zero;
+            rs.DepthBufferFunction = CompareFunction.LessEqual;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.One;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
 #endif
         }
@@ -728,10 +725,10 @@ namespace Orts.Viewer3D
         }
 
         public static readonly VertexElement[] VertexElements = {
-            new VertexElement(sizeof(float) * 0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
-            new VertexElement(sizeof(float) * (3), VertexElementFormat.Vector3, VertexElementUsage.Position, 1),
-            new VertexElement(sizeof(float) * (3 + 3), VertexElementFormat.Vector4, VertexElementUsage.Color, 0),
-            new VertexElement(sizeof(float) * (3 + 3 + 4), VertexElementFormat.Vector4, VertexElementUsage.Color, 1),
+            new VertexElement(0, sizeof(float) * 0, VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 0),
+            new VertexElement(0, sizeof(float) * (3), VertexElementFormat.Vector3, VertexElementMethod.Default, VertexElementUsage.Position, 1),
+            new VertexElement(0, sizeof(float) * (3 + 3), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 0),
+            new VertexElement(0, sizeof(float) * (3 + 3 + 4), VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Color, 1),
         };
 
         public static int SizeInBytes = sizeof(float) * (3 + 3 + 4 + 4);
@@ -754,16 +751,21 @@ namespace Orts.Viewer3D
             shader.CurrentTechnique = shader.Techniques["LightGlow"];
             shader.LightGlowTexture = LightGlowTexture;
 
-            graphicsDevice.BlendState = BlendState.NonPremultiplied;
-            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DepthBufferWriteEnable = false;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.LightGlowShader;
 
+            shader.Begin();
             foreach (var pass in shader.CurrentTechnique.Passes)
             {
+                pass.Begin();
                 foreach (var item in renderItems)
                 {
                     // Glow lights were not working properly because farPlaneDistance used by XNASkyProjection is hardcoded at 6100.  So when view distance was greater than 6100, the 
@@ -771,16 +773,21 @@ namespace Orts.Viewer3D
                     Matrix wvp = item.XNAMatrix * XNAViewMatrix * Viewer.Camera.XnaProjection;
                     shader.SetMatrix(ref wvp);
                     shader.SetFade(((LightPrimitive)item.RenderPrimitive).Fade);
-                    pass.Apply();
+                    shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
+                pass.End();
             }
+            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.BlendState = BlendState.Opaque;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
         public override bool GetBlending()
@@ -807,17 +814,20 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.LightConeShader;
             shader.CurrentTechnique = shader.Techniques["LightCone"];
 
-            graphicsDevice.BlendState = BlendState.NonPremultiplied;
-            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
-            graphicsDevice.DepthStencilState.StencilEnable = true;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DepthBufferWriteEnable = false;
+            rs.StencilEnable = true;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.LightConeShader;
 
+            shader.Begin();
             foreach (var pass in shader.CurrentTechnique.Passes)
             {
+                pass.Begin();
                 foreach (var item in renderItems)
                 {
                     // Light cone was originally using XNASkyProjection, but with no problems.
@@ -825,17 +835,20 @@ namespace Orts.Viewer3D
                     Matrix wvp = item.XNAMatrix * XNAViewMatrix * Viewer.Camera.XnaProjection;
                     shader.SetMatrix(ref wvp);
                     shader.SetFade(((LightPrimitive)item.RenderPrimitive).Fade);
-                    pass.Apply();
+                    shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
+                pass.End();
             }
+            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.BlendState = BlendState.Opaque;
-            graphicsDevice.DepthStencilState = DepthStencilState.Default;
-            graphicsDevice.DepthStencilState.StencilEnable = false;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DepthBufferWriteEnable = true;
+            rs.StencilEnable = false;
         }
     }
 }

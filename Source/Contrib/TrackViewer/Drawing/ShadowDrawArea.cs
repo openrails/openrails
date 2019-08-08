@@ -186,9 +186,8 @@ namespace ORTS.TrackViewer.Drawing
             {
                 shadowMapCombined.Dispose();
             }
-            var pp = graphicsDevice.PresentationParameters;
-            shadowRenderTargetCombined = new RenderTarget2D(graphicsDevice, Nouter * blockW, Nouter * blockH, false, SurfaceFormat.Color,
-                pp.DepthStencilFormat, pp.MultiSampleCount, RenderTargetUsage.DiscardContents);
+            shadowRenderTargetCombined = new RenderTarget2D(graphicsDevice, Nouter * blockW, Nouter * blockH, 1, SurfaceFormat.Color,
+                graphicsDevice.DepthStencilBuffer.MultiSampleType, graphicsDevice.DepthStencilBuffer.MultiSampleQuality);
             shadowDrawArea.SetScreenSize(0, 0, blockW, blockH);
 
             // create initial empty subtextures
@@ -202,9 +201,8 @@ namespace ORTS.TrackViewer.Drawing
                 {
                     shadowMapsSingle[i].Dispose();
                 }
-                pp = graphicsDevice.PresentationParameters;
-                shadowRenderTargetSingle[i] = new RenderTarget2D(graphicsDevice, 1 * blockW, 1 * blockH, false, SurfaceFormat.Color,
-                    pp.DepthStencilFormat, pp.MultiSampleCount, RenderTargetUsage.DiscardContents);
+                shadowRenderTargetSingle[i] = new RenderTarget2D(graphicsDevice, 1 * blockW, 1 * blockH, 1, SurfaceFormat.Color, 
+                        graphicsDevice.DepthStencilBuffer.MultiSampleType, graphicsDevice.DepthStencilBuffer.MultiSampleQuality);
                 shadowMapsSingle[i] = new Texture2D(graphicsDevice, 1, 1);
             }
         }
@@ -419,7 +417,7 @@ namespace ORTS.TrackViewer.Drawing
                 try
                 {   // I got errors: The render target must not be set on the device when calling GetTexture()
                     // even if I just before this set graphicsDevice.SetRenderTarget(0, null); I have no idea why
-                    shadowMapsSingle[orderIndex] = shadowRenderTargetSingle[orderIndex];
+                    shadowMapsSingle[orderIndex] = shadowRenderTargetSingle[orderIndex].GetTexture();
                 }
                 catch { }
             }
@@ -537,21 +535,21 @@ namespace ORTS.TrackViewer.Drawing
                 shadowDrawArea.Update();
 
                 // Rendering the tracks to a single texture
-                graphicsDevice.SetRenderTarget(shadowRenderTargetSingle[nextRectangleToDraw]);
+                graphicsDevice.SetRenderTarget(0, shadowRenderTargetSingle[nextRectangleToDraw]);
                 graphicsDevice.Clear(backgroundColor);
                 spriteBatch.Begin();
                 drawRoutine(shadowDrawArea);
                 //shadowDrawArea.DrawBorder(Color.Black);  //debug
                 spriteBatch.End();
-                graphicsDevice.SetRenderTarget(null);
-                shadowMapsSingle[nextRectangleToDraw] = shadowRenderTargetSingle[nextRectangleToDraw];
+                graphicsDevice.SetRenderTarget(0, null);
+                shadowMapsSingle[nextRectangleToDraw] = shadowRenderTargetSingle[nextRectangleToDraw].GetTexture();
 
                 needToDrawRectangle[nextRectangleToDraw] = false;
             }
             catch {
-                graphicsDevice.SetRenderTarget(null); // return control to main render target
+                graphicsDevice.SetRenderTarget(0, null); // return control to main render target
             }
-            graphicsDevice.SetRenderTarget(null); 
+            graphicsDevice.SetRenderTarget(0, null); 
         }
 
         /// <summary>
@@ -565,7 +563,7 @@ namespace ORTS.TrackViewer.Drawing
                 // texture is (still) larger than the complete screen. In that case we want to draw something
                 // that is larger than the graphics device. This will give an error, which should not be there
                 // after rescaling has been done properly.
-                graphicsDevice.SetRenderTarget(shadowRenderTargetCombined);
+                graphicsDevice.SetRenderTarget(0, shadowRenderTargetCombined);
                 graphicsDevice.Clear(backgroundColor);
                 spriteBatch.Begin();
                 for (int i = 0; i < Nsubblocks; i++)
@@ -574,11 +572,11 @@ namespace ORTS.TrackViewer.Drawing
                     spriteBatch.Draw(shadowMapsSingle[i], position, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0);            
                 }
                 spriteBatch.End();
-                graphicsDevice.SetRenderTarget(null);
-                shadowMapCombined = shadowRenderTargetCombined;
+                graphicsDevice.SetRenderTarget(0, null);
+                shadowMapCombined = shadowRenderTargetCombined.GetTexture();
             }
             catch {
-                graphicsDevice.SetRenderTarget(null); // return control to main render target
+                graphicsDevice.SetRenderTarget(0, null); // return control to main render target
             }
         }
 

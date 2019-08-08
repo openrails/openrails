@@ -25,7 +25,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
@@ -195,7 +194,7 @@ namespace Orts.Viewer3D
 
         void UpdateVolume()
         {
-            if (Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+            if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // 0xFFFF represents 65535 which is the max for 16bit devices.
             {
                 foreach (var soundSource in RainSound) soundSource.Volume = Weather.PricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
                 foreach (var soundSource in SnowSound) soundSource.Volume = Weather.PricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
@@ -273,7 +272,7 @@ namespace Orts.Viewer3D
                 if (randValue > 40)
                 {
                     Weather.PricipitationIntensityPPSPM2 = (float)(randValue - 40f) / 1000f;
-                    if (Viewer.GraphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
+                    if (Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex <= 0xFFFF)
                         Weather.PricipitationIntensityPPSPM2 = Math.Min(Weather.PricipitationIntensityPPSPM2, 0.010f);
                     if (Viewer.Simulator.Season == SeasonType.Winter)
                     {
@@ -417,14 +416,14 @@ namespace Orts.Viewer3D
                         }
                     }
                     Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 * 1.05f, PrecipitationViewer.MinIntensityPPSPM2 + 0.0000001f,
-                            Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef ? PrecipitationViewer.MaxIntensityPPSPM2 : PrecipitationViewer.MaxIntensityPPSPM2_16);
+                            Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? PrecipitationViewer.MaxIntensityPPSPM2 : PrecipitationViewer.MaxIntensityPPSPM2_16);
                     weatherChangeOn = false;
                     if (dynamicWeather != null) dynamicWeather.ORTSPrecipitationIntensity = -1;
                 }
                 if (UserInput.IsDown(UserCommand.DebugPrecipitationDecrease))
                 {
                     Weather.PricipitationIntensityPPSPM2 = MathHelper.Clamp(Weather.PricipitationIntensityPPSPM2 / 1.05f, PrecipitationViewer.MinIntensityPPSPM2,
-                        Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef ? PrecipitationViewer.MaxIntensityPPSPM2 : PrecipitationViewer.MaxIntensityPPSPM2_16);
+                        Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? PrecipitationViewer.MaxIntensityPPSPM2 : PrecipitationViewer.MaxIntensityPPSPM2_16);
                     if (Weather.PricipitationIntensityPPSPM2 < PrecipitationViewer.MinIntensityPPSPM2 + 0.00001f)
                     {
                         Weather.PricipitationIntensityPPSPM2 = 0;
@@ -648,7 +647,7 @@ namespace Orts.Viewer3D
                     precipitationIntensityTimer = (float)ORTSPrecipitationIntensityTransitionTimeS;
                     // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                     // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
-                    if (weatherControl.Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+                    if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF)
                         precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
                             - weatherControl.Weather.PricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
                     else
@@ -785,7 +784,7 @@ namespace Orts.Viewer3D
                     if (randValue > 40)
                     {
                         ORTSPrecipitationIntensity = (float)(randValue - 40f) / 1000f;
-                        if (weatherControl.Viewer.GraphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
+                        if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex <= 0xFFFF)
                             ORTSPrecipitationIntensity = Math.Min(ORTSPrecipitationIntensity, 0.010f);
                         if (weatherControl.Viewer.Simulator.Season == SeasonType.Winter)
                         {
@@ -818,7 +817,7 @@ namespace Orts.Viewer3D
                     precipitationIntensityTimer = (float)ORTSPrecipitationIntensityTransitionTimeS;
                     // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                     // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
-                    if (weatherControl.Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+                    if (weatherControl.Viewer.GraphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF)
                         precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
                             - weatherControl.Weather.PricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
                     else
