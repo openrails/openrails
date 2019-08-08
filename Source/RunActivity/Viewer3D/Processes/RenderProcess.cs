@@ -41,7 +41,7 @@ namespace Orts.Viewer3D.Processes
 
         readonly Game Game;
         readonly Form GameForm;
-        readonly System.Drawing.Size gameWindowSize;
+        readonly Point GameWindowSize;
         readonly WatchdogToken WatchdogToken;
         readonly System.Drawing.Point GameFullScreenOrigin = new System.Drawing.Point(0, 0);
         private System.Drawing.Point GameWindowOrigin = new System.Drawing.Point(0, 0);
@@ -83,7 +83,7 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager = new GraphicsDeviceManager(game);
 
             var windowSizeParts = Game.Settings.WindowSize.Split(new[] { 'x' }, 2);
-            gameWindowSize = new System.Drawing.Size(Convert.ToInt32(windowSizeParts[0]), Convert.ToInt32(windowSizeParts[1]));
+            GameWindowSize = new Point(Convert.ToInt32(windowSizeParts[0]), Convert.ToInt32(windowSizeParts[1]));
 
             FrameRate = new SmoothedData();
             FrameTime = new SmoothedDataWithPercentiles();
@@ -102,10 +102,14 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.IsFullScreen = false;
             GraphicsDeviceManager.PreferMultiSampling = true;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
-
-            //setting inital Window location in middle of current screen (most likely the primary screen)
-            var wa = Screen.FromControl(GameForm).WorkingArea;
-            GameForm.Location = new System.Drawing.Point((wa.Right - gameWindowSize.Width) / 2, (wa.Bottom - gameWindowSize.Height) / 2);
+            var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
+            if (screen.Primary)
+            {
+                var wa = Screen.PrimaryScreen.WorkingArea;
+                GameForm.Location = new System.Drawing.Point((wa.Right - GameWindowSize.X) / 2, (wa.Bottom - GameWindowSize.Y) / 2);
+            }
+            else
+                GameForm.Location = new System.Drawing.Point((screen.Bounds.Width - GameWindowSize.X) / 2, (screen.Bounds.Height - GameWindowSize.Y) / 2);
             GameWindowOrigin = GameForm.Location;
 
             if (Game.Settings.FullScreen)
@@ -246,24 +250,30 @@ namespace Orts.Viewer3D.Processes
 
         void SynchronizeGraphicsDeviceManager()
         {
-            var screen = Screen.FromControl(GameForm);
+            var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
             if (IsFullScreen)
             {
                 GraphicsDeviceManager.PreferredBackBufferWidth = screen.Bounds.Width;
                 GraphicsDeviceManager.PreferredBackBufferHeight = screen.Bounds.Height;
-                GameWindowOrigin = GameForm.Location;
-                GameForm.Location = screen.Bounds.Location;
             }
             else
             {
-                GraphicsDeviceManager.PreferredBackBufferWidth = gameWindowSize.Width;
-                GraphicsDeviceManager.PreferredBackBufferHeight = gameWindowSize.Height;
-                GameForm.Location = GameWindowOrigin;
+                GraphicsDeviceManager.PreferredBackBufferWidth = GameWindowSize.X;
+                GraphicsDeviceManager.PreferredBackBufferHeight = GameWindowSize.Y;
             }
-            GraphicsDeviceManager.ApplyChanges();
             if (Game.Settings.FastFullScreenAltTab)
             {
-                GameForm.FormBorderStyle = IsFullScreen ? FormBorderStyle.None : FormBorderStyle.FixedSingle;
+                GameForm.FormBorderStyle = IsFullScreen ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.FixedSingle;
+                if (IsFullScreen)
+                {
+                    GameWindowOrigin = GameForm.Location;
+                    GameForm.Location = GameFullScreenOrigin;
+                }
+                else
+                {
+                    GameForm.Location = GameWindowOrigin;
+                }
+                GraphicsDeviceManager.ApplyChanges();
             }
             else if (GraphicsDeviceManager.IsFullScreen != IsFullScreen)
             {
