@@ -1235,7 +1235,6 @@ namespace Orts.Viewer3D.Processes
         class LoadingPrimitive : RenderPrimitive
         {
             public readonly LoadingMaterial Material;
-            readonly VertexDeclaration VertexDeclaration;
             readonly VertexBuffer VertexBuffer;
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -1243,8 +1242,7 @@ namespace Orts.Viewer3D.Processes
             {
                 Material = GetMaterial(game);
                 var verticies = GetVerticies(game);
-                VertexDeclaration = new VertexDeclaration(game.GraphicsDevice, VertexPositionTexture.VertexElements);
-                VertexBuffer = new VertexBuffer(game.GraphicsDevice, VertexPositionTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
+                VertexBuffer = new VertexBuffer(game.GraphicsDevice, typeof(VertexPositionTexture), verticies.Length, BufferUsage.WriteOnly);
                 VertexBuffer.SetData(verticies);
             }
 
@@ -1266,8 +1264,7 @@ namespace Orts.Viewer3D.Processes
             
             public override void Draw(GraphicsDevice graphicsDevice)
             {
-                graphicsDevice.VertexDeclaration = VertexDeclaration;
-                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionTexture.SizeInBytes);
+                graphicsDevice.SetVertexBuffer(VertexBuffer);
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
             }
         }
@@ -1361,30 +1358,22 @@ namespace Orts.Viewer3D.Processes
                 Shader.CurrentTechnique = Shader.Techniques["Loading"];
                 Shader.LoadingTexture = Texture;
 
-                graphicsDevice.RenderState.AlphaBlendEnable = true;
-                graphicsDevice.RenderState.DestinationBlend = Blend.InverseSourceAlpha;
-                graphicsDevice.RenderState.SourceBlend = Blend.SourceAlpha;
+                graphicsDevice.BlendState = BlendState.NonPremultiplied;
             }
 
             public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
             {
-                Shader.Begin();
-                Shader.CurrentTechnique.Passes[0].Begin();
                 foreach (var item in renderItems)
                 {
                     Shader.WorldViewProjection = item.XNAMatrix * XNAViewMatrix * XNAProjectionMatrix;
-                    Shader.CommitChanges();
+                    Shader.CurrentTechnique.Passes[0].Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                Shader.CurrentTechnique.Passes[0].End();
-                Shader.End();
             }
 
             public override void ResetState(GraphicsDevice graphicsDevice)
             {
-                graphicsDevice.RenderState.AlphaBlendEnable = false;
-                graphicsDevice.RenderState.DestinationBlend = Blend.Zero;
-                graphicsDevice.RenderState.SourceBlend = Blend.One;
+                graphicsDevice.BlendState = BlendState.Opaque;
             }
         }
 

@@ -164,6 +164,8 @@ namespace ORTS.Settings
         public bool Wire { get; set; }
         [Default(false)]
         public bool VerticalSync { get; set; }
+        [Default(true)]
+        public bool EnableMultisampling { get; set; }
         [Default(0)]
         public int Cab2DStretch { get; set; }
         [Default(2000)]
@@ -313,8 +315,6 @@ namespace ORTS.Settings
         public string LoggingPath { get; set; }
         [Default("")]
         public string ScreenshotPath { get; set; }
-        [Default(0)]
-        public int ShaderModel { get; set; }
         [Default(true)]
         public bool ShadowMapBlur { get; set; }
         [Default(4)]

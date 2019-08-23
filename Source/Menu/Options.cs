@@ -164,6 +164,7 @@ namespace ORTS
             checkModelInstancing.Checked = Settings.ModelInstancing;
             checkWire.Checked = Settings.Wire;
             checkVerticalSync.Checked = Settings.VerticalSync;
+            checkEnableMultisampling.Checked = Settings.EnableMultisampling;
             numericCab2DStretch.Value = Settings.Cab2DStretch;
             numericViewingDistance.Value = Settings.ViewingDistance;
             checkDistantMountains.Checked = Settings.DistantMountains;
@@ -451,6 +452,7 @@ namespace ORTS
             Settings.ModelInstancing = checkModelInstancing.Checked;
             Settings.Wire = checkWire.Checked;
             Settings.VerticalSync = checkVerticalSync.Checked;
+            Settings.EnableMultisampling = checkEnableMultisampling.Checked;
             Settings.Cab2DStretch = (int)numericCab2DStretch.Value;
             Settings.ViewingDistance = (int)numericViewingDistance.Value;
             Settings.DistantMountains = checkDistantMountains.Checked;
