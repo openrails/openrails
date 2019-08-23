@@ -128,6 +128,6 @@ float4 PSCircularSpeedGauge(PIXEL_INPUT In) : COLOR0
 
 technique CircularSpeedGauge {
 	pass Pass_0 {
-		PixelShader = compile ps_4_0_level_9_1 PSCircularSpeedGauge();
+		PixelShader = compile ps_4_0_level_9_3 PSCircularSpeedGauge();
 	}
 }

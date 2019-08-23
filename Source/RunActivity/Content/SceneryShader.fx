@@ -597,8 +597,8 @@ technique TransferPS {
 
 technique Forest {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSForest();
-		PixelShader = compile ps_4_0_level_9_1 PSVegetation();
+		VertexShader = compile vs_4_0_level_9_3 VSForest();
+		PixelShader = compile ps_4_0_level_9_3 PSVegetation();
 	}
 }
 
@@ -639,14 +639,14 @@ technique FullBrightPS {
 
 technique SignalLight {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSSignalLight();
-		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
+		VertexShader = compile vs_4_0_level_9_3 VSSignalLight();
+		PixelShader = compile ps_4_0_level_9_3 PSSignalLight();
 	}
 }
 
 technique SignalLightGlow {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSSignalLightGlow();
-		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
+		VertexShader = compile vs_4_0_level_9_3 VSSignalLightGlow();
+		PixelShader = compile ps_4_0_level_9_3 PSSignalLight();
 	}
 }

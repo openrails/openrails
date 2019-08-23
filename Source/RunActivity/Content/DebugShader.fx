@@ -97,14 +97,14 @@ float4 PSNormal(in VERTEX_OUTPUT In) : COLOR0
 
 technique Graph {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSGraph();
-		PixelShader = compile ps_4_0_level_9_1 PSGraph();
+		VertexShader = compile vs_4_0_level_9_3 VSGraph();
+		PixelShader = compile ps_4_0_level_9_3 PSGraph();
 	}
 }
 
 technique Normal {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSNormal();
-		PixelShader = compile ps_4_0_level_9_1 PSNormal();
+		VertexShader = compile vs_4_0_level_9_3 VSNormal();
+		PixelShader = compile ps_4_0_level_9_3 PSNormal();
 	}
 }

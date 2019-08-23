@@ -100,7 +100,7 @@ float4 PSLightGlow(in VERTEX_OUTPUT In) : COLOR0
 
 technique LightGlow {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSLightGlow();
-		PixelShader = compile ps_4_0_level_9_1 PSLightGlow();
+		VertexShader = compile vs_4_0_level_9_3 VSLightGlow();
+		PixelShader = compile ps_4_0_level_9_3 PSLightGlow();
 	}
 }

@@ -105,14 +105,14 @@ float4 PSLoadingBar(in VERTEX_OUTPUT In) : COLOR0
 
 technique Loading {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSLoading();
-		PixelShader = compile ps_4_0_level_9_1 PSLoading();
+		VertexShader = compile vs_4_0_level_9_3 VSLoading();
+		PixelShader = compile ps_4_0_level_9_3 PSLoading();
 	}
 }
 
 technique LoadingBar {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSLoadingBar();
-		PixelShader = compile ps_4_0_level_9_1 PSLoadingBar();
+		VertexShader = compile vs_4_0_level_9_3 VSLoadingBar();
+		PixelShader = compile ps_4_0_level_9_3 PSLoadingBar();
 	}
 }

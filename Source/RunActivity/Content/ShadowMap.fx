@@ -172,28 +172,28 @@ float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
 
 technique ShadowMap {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMap();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMap();
+		VertexShader = compile vs_4_0_level_9_3 VSShadowMap();
+		PixelShader = compile ps_4_0_level_9_3 PSShadowMap();
 	}
 }
 
 technique ShadowMapForest {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMapForest();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMap();
+		VertexShader = compile vs_4_0_level_9_3 VSShadowMapForest();
+		PixelShader = compile ps_4_0_level_9_3 PSShadowMap();
 	}
 }
 
 technique ShadowMapBlocker {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMap();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlocker();
+		VertexShader = compile vs_4_0_level_9_3 VSShadowMap();
+		PixelShader = compile ps_4_0_level_9_3 PSShadowMapBlocker();
 	}
 }
 
 technique ShadowMapBlur {
 	pass Pass_0 {
-		VertexShader = compile vs_4_0_level_9_1 VSShadowMapBlur();
-		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlur();
+		VertexShader = compile vs_4_0_level_9_3 VSShadowMapBlur();
+		PixelShader = compile ps_4_0_level_9_3 PSShadowMapBlur();
 	}
 }
