@@ -584,9 +584,9 @@ namespace Orts.Formats.Msts
             white.G = 255f;
             white.B = 255f;
             PositiveColor = white;
-            FontSize = 8;
+            FontSize = 10;
             FontStyle = 0;
-            FontFamily = "Lucida Sans";
+            FontFamily = "Courier New";
             
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -683,9 +683,9 @@ namespace Orts.Formats.Msts
 
         public CVCDigitalClock(STFReader stf, string basepath)
         {
-            FontSize = 8;
+            FontSize = 10;
             FontStyle = 0;
-            FontFamily = "Lucida Sans";
+            FontFamily = "Courier New";
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
