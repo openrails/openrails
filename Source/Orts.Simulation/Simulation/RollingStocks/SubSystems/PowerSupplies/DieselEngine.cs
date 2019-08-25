@@ -25,6 +25,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
@@ -205,7 +206,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
                 {
-                    temp += de.MaximalPowerW;
+                    temp += de.MaximumDieselPowerW;
                 }
                 return temp;
             }
@@ -221,12 +222,43 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 float temp = 0f;
                 foreach (DieselEngine de in DEList)
                 {
-                    temp += de.MaxOutputPowerW;
+                    temp += de.CurrentDieselOutputPowerW;
                 }
                 return temp;
             }
         }
 
+         /// <summary>
+        /// Maximum rail output power for all locomotives
+        /// </summary>
+        public float MaximumRailOutputPowerW
+        {
+            get
+            {
+                float temp = 0f;
+                foreach (DieselEngine de in DEList)
+                {
+                    temp += de.MaximumRailOutputPowerW;
+                }
+                return temp;
+            }
+        }
+
+        /// <summary>
+        /// A summary of current rail output power for all locomotives
+        /// </summary>
+        public float CurrentRailOutputPowerW
+        {
+            get
+            {
+                float temp = 0f;
+                foreach (DieselEngine de in DEList)
+                {
+                    temp += de.CurrentRailOutputPowerW;
+                }
+                return temp;
+            }
+        }
         /// <summary>
         /// A summary of fuel flow of all the auxiliaries
         /// </summary>
@@ -302,7 +334,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             result.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetParticularString("HUD", "Power"), FormatStrings.FormatPower(MaxOutputPowerW, Locomotive.IsMetric, false, false));
             foreach (var eng in DEList)
-                result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.MaxOutputPowerW, Locomotive.IsMetric, false, false));
+                result.AppendFormat("\t{0}", FormatStrings.FormatPower(eng.CurrentDieselOutputPowerW, Locomotive.IsMetric, false, false));
 
             result.AppendFormat("\t{0}", Simulator.Catalog.GetString("Load"));
             foreach (var eng in DEList)
@@ -451,7 +483,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             ChangeDownRPMpS = copy.ChangeDownRPMpS;
             RateOfChangeUpRPMpSS = copy.RateOfChangeUpRPMpSS;
             RateOfChangeDownRPMpSS = copy.RateOfChangeDownRPMpSS;
-            MaximalPowerW = copy.MaximalPowerW;
+            MaximumDieselPowerW = copy.MaximumDieselPowerW;
             initLevel = copy.initLevel;
             DieselPowerTab = new Interpolator(copy.DieselPowerTab);
             DieselConsumptionTab = new Interpolator(copy.DieselConsumptionTab);
@@ -576,15 +608,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// "Jerk" of the RPM when decelerating the engine
         /// </summary>
         public float RateOfChangeDownRPMpSS;
-
         /// <summary>
-        /// Power limit of the engine from ENG file
+        /// MAximum Power output of the diesel engine (prime mover)
         /// </summary>
-        public float MaximalPowerW;
+        public float MaximumDieselPowerW;
         /// <summary>
-        /// Actual power limit depending on the actual RPM
+        /// Current power available to the rail
         /// </summary>
-        public float MaxOutputPowerW;
+        public float CurrentDieselOutputPowerW;
+         /// <summary>
+        /// Maximum power available to the rail
+        /// </summary>
+        public float MaximumRailOutputPowerW;
+        /// <summary>
+        /// Actual current power output to the rail
+        /// </summary>
+        public float CurrentRailOutputPowerW;
         /// <summary>
         /// Real power output of the engine
         /// </summary>
@@ -592,7 +631,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// <summary>
         /// Relative output power to the MaximalPowerW
         /// </summary>
-        public float ThrottlePercent { get { return OutputPowerW / MaximalPowerW * 100f; } }
+        public float ThrottlePercent { get { return OutputPowerW / MaximumDieselPowerW * 100f; } }
         /// <summary>
         /// Fuel consumed at max power
         /// </summary>
@@ -719,7 +758,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         {
             get
             {
-                return (MaxOutputPowerW <= 0f ? 0f : (OutputPowerW * 100f / MaxOutputPowerW)) ;
+                return (CurrentDieselOutputPowerW <= 0f ? 0f : (OutputPowerW * 100f / CurrentDieselOutputPowerW)) ;
             }
         }
         /// <summary>
@@ -751,7 +790,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "changedownrpmps": ChangeDownRPMpS = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ChangeDownRPMpS; break;
                     case "rateofchangeuprpmpss": RateOfChangeUpRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.RateOfChangeUpRPMpSS; break;
                     case "rateofchangedownrpmpss": RateOfChangeDownRPMpSS = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.RateOfChangeDownRPMpSS; break;
-                    case "maximalpower":   MaximalPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 0);initLevel |= SettingsFlags.MaximalPowerW; break;
+                    case "maximalpower":   MaximumDieselPowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, 0);initLevel |= SettingsFlags.MaximalPowerW; break;
                     case "idleexhaust":     InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.IdleExhaust; break;
                     case "maxexhaust":      MaxExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, 0);initLevel |= SettingsFlags.MaxExhaust; break;
                     case "exhaustdynamics": ExhaustAccelIncrease = stf.ReadFloatBlock(STFReader.UNITS.None, 0); initLevel |= SettingsFlags.ExhaustDynamics; break;
@@ -861,19 +900,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 }
 
-            if ((OutputPowerW > (1.1f * MaxOutputPowerW)) && (EngineStatus == Status.Running))
-                dRPM = (MaxOutputPowerW - OutputPowerW) / MaximalPowerW * 0.01f * RateOfChangeDownRPMpSS;
+            if ((OutputPowerW > (1.1f * CurrentDieselOutputPowerW)) && (EngineStatus == Status.Running))
+                dRPM = (CurrentDieselOutputPowerW - OutputPowerW) / MaximumDieselPowerW * 0.01f * RateOfChangeDownRPMpSS;
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
 
             if (DieselPowerTab != null)
             {
-                MaxOutputPowerW = (DieselPowerTab[RealRPM] <= MaximalPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximalPowerW) * (1 - locomotive.PowerReduction);
-                MaxOutputPowerW = MaxOutputPowerW < 0f ? 0f : MaxOutputPowerW;
+                CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] <= MaximumDieselPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximumDieselPowerW) * (1 - locomotive.PowerReduction);
+                CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
+                // Rail output power will never be the same as the diesel prime mover output power it will always have some level of loss of efficiency
+                CurrentRailOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumRailOutputPowerW * (1 - locomotive.PowerReduction);
+                CurrentRailOutputPowerW = CurrentRailOutputPowerW < 0f ? 0f : CurrentRailOutputPowerW;
             }
              else
             {
-                MaxOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximalPowerW * (1 - locomotive.PowerReduction);
+                CurrentDieselOutputPowerW = (RealRPM - IdleRPM) / (MaxRPM - IdleRPM) * MaximumDieselPowerW * (1 - locomotive.PowerReduction);
             }
 
             if (EngineStatus == Status.Starting)
@@ -1078,14 +1120,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             if ((initLevel & SettingsFlags.ChangeDownRPMpS) == 0) ChangeDownRPMpS = loco.MaxRPMChangeRate;
             if ((initLevel & SettingsFlags.RateOfChangeUpRPMpSS) == 0) RateOfChangeUpRPMpSS = ChangeUpRPMpS;
             if ((initLevel & SettingsFlags.RateOfChangeDownRPMpSS) == 0) RateOfChangeDownRPMpSS = ChangeDownRPMpS;
-            if ((initLevel & SettingsFlags.MaximalPowerW) == 0) MaximalPowerW = loco.MaxPowerW;
+            // If diesel power output curves not defined then set to "standard defaults" in ENG file
+            if ((initLevel & SettingsFlags.MaximalPowerW) == 0) MaximumRailOutputPowerW = loco.MaxPowerW;
+            if ((initLevel & SettingsFlags.MaximalPowerW) == 0 & loco.MaximumDieselEnginePowerW != 0)
+            {
+                MaximumDieselPowerW = loco.MaximumDieselEnginePowerW;
+            }
+            else
+            {
+                MaximumDieselPowerW = loco.MaxPowerW;
+            }
             if ((initLevel & SettingsFlags.MaxOilPressure) == 0) DieselMaxOilPressurePSI = loco.DieselMaxOilPressurePSI;
             if ((initLevel & SettingsFlags.MinOilPressure) == 0) DieselMinOilPressurePSI = loco.DieselMinOilPressurePSI;
             if ((initLevel & SettingsFlags.MaxTemperature) == 0) DieselMaxTemperatureDeg = loco.DieselMaxTemperatureDeg;
             if ((initLevel & SettingsFlags.Cooling) == 0) EngineCooling = loco.DieselEngineCooling;
             if ((initLevel & SettingsFlags.TempTimeConstant) == 0) DieselTempTimeConstantSec = 720f;
-            //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.IdleRPM * 1.01f, diesel.MaxRPM * 0.5f, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxRPM * 0.1f, diesel.MaxRPM * 0.5f, diesel.MaxPowerW });
-            //DieselPowerTab = new Interpolator(new float[] { diesel.IdleRPM, diesel.MaxRPM }, new float[] { diesel.MaxPowerW * 0.05f, diesel.MaxPowerW });
             if ((initLevel & SettingsFlags.DieselConsumptionTab) == 0) 
                 DieselConsumptionTab = new Interpolator(new float[] { loco.IdleRPM, loco.MaxRPM }, new float[] { loco.DieselUsedPerHourAtIdleL, loco.DieselUsedPerHourAtMaxPowerL });
             if ((initLevel & SettingsFlags.ThrottleRPMTab) == 0) 
@@ -1104,14 +1153,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         rpm[i] = loco.IdleRPM;
                     else
                         rpm[i] = rpm[i - 1] + (loco.MaxRPM - loco.IdleRPM) / (count - 1);
-                    power[i] *= MaximalPowerW;
-                    torque[i] *= MaximalPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
+                    power[i] *= MaximumDieselPowerW;
+                    torque[i] *= MaximumDieselPowerW / (MaxRPM * 2f * 3.1415f / 60f) / 0.81f;
                 }
                 rpm[count] = loco.MaxRPM * 1.5f;
                 DieselPowerTab = new Interpolator(rpm, power);
-                //DieselPowerTab.test("PowerTab", count);
                 DieselTorqueTab = new Interpolator(rpm, torque);
-                //DieselTorqueTab.test("TorqueTab", count);
             }
 
             if (((initLevel & SettingsFlags.DieselTorqueTab) == 0) && ((initLevel & SettingsFlags.DieselPowerTab) == SettingsFlags.DieselPowerTab))
