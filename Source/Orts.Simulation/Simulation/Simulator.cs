@@ -359,6 +359,7 @@ namespace Orts.Simulation
             {
                 // We have an OR-specific addition to world file
                 Activity.InsertORSpecificData(activityPath);
+                Activity.Tr_Activity.Tr_Activity_File.OverrideUserSettings(Settings);  // Override user settings for the purposes of this activity
             }
 
             ActivityRun = new Activity(Activity, this);
