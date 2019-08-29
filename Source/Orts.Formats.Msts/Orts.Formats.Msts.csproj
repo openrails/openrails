@@ -89,6 +89,10 @@
       <Project>{6AB8B673-5775-4536-A58A-BA0A15899583}</Project>
       <Name>ORTS.IO</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ORTS.Settings\ORTS.Settings.csproj">
+      <Project>{67f84996-8769-4fd8-819b-464af269037b}</Project>
+      <Name>ORTS.Settings</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
