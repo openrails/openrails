@@ -1674,7 +1674,6 @@ namespace Orts.Simulation.Timetables
                 string createInPool = String.Empty;
                 bool startNextNight = false;
                 string createFromPool = String.Empty;
-                string createPoolDirection = String.Empty;
                 bool setConsistName = false;
                 bool activationRequired = false;
 
@@ -1742,7 +1741,7 @@ namespace Orts.Simulation.Timetables
                                 }
                                 break;
 
-                            // pool : created from pool - syntax : $pool = pool [/direction = backward | forward]
+                            // pool : created from pool - syntax : $pool = pool
                             case "pool":
                                 if (thisCommand.CommandValues == null || thisCommand.CommandValues.Count < 1)
                                 {
@@ -1751,7 +1750,7 @@ namespace Orts.Simulation.Timetables
                                 else
                                 {
                                     createFromPool = String.Copy(thisCommand.CommandValues[0]);
-                                    if (thisCommand.CommandQualifiers != null)
+                                    if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
                                     {
                                         foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
                                         {
@@ -1759,10 +1758,6 @@ namespace Orts.Simulation.Timetables
                                             {
                                                 case "set_consist_name":
                                                     setConsistName = true;
-                                                    break;
-
-                                                case "direction":
-                                                    createPoolDirection = String.Copy(thisQualifier.QualifierValues[0]);
                                                     break;
 
                                                 default:
@@ -1874,21 +1869,6 @@ namespace Orts.Simulation.Timetables
                         {
                             TTTrain.ForcedConsistName = String.Copy(consistInfo);
                         }
-
-                        switch (createPoolDirection)
-                        {
-                            case "backward":
-                                TTTrain.CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Backward;
-                                break;
-
-                            case "forward":
-                                TTTrain.CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Forward;
-                                break;
-
-                            default:
-                                TTTrain.CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
-                                break;
-                        }
                     }
 
                     StartTime = TTTrain.ActivateTime.Value;
@@ -1988,11 +1968,6 @@ namespace Orts.Simulation.Timetables
                         // delay on detaching
                         case "detach":
                             TTTrain.DelayedStartSettings.detachRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
-                            break;
-
-                        // delay for train and moving table
-                        case "movingtable":
-                            TTTrain.DelayedStartSettings.movingtableRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
                         // delay when restarting at reversal
@@ -2175,18 +2150,6 @@ namespace Orts.Simulation.Timetables
                                 try
                                 {
                                     TTTrain.SpeedSettings.detachSpeedMpS = Convert.ToSingle(thisCommand.CommandValues[0]) * actSpeedConv;
-                                }
-                                catch
-                                {
-                                    Trace.TraceInformation("Train {0} : invalid value for '{1}' speed setting : {2} \n",
-                                        TTTrain.Name, thisCommand.CommandToken, thisCommand.CommandValues[0]);
-                                }
-                                break;
-
-                            case "movingtable":
-                                try
-                                {
-                                    TTTrain.SpeedSettings.movingtableSpeedMpS = Convert.ToSingle(thisCommand.CommandValues[0]) * actSpeedConv;
                                 }
                                 catch
                                 {
@@ -2981,21 +2944,6 @@ namespace Orts.Simulation.Timetables
                     else
                     {
                         TTTrain.ExitPool = String.Copy(DisposeDetails.PoolName);
-
-                        switch (DisposeDetails.PoolExitDirection)
-                        {
-                            case "backward":
-                                TTTrain.PoolExitDirection = TimetablePool.PoolExitDirectionEnum.Backward;
-                                break;
-
-                            case "forward":
-                                TTTrain.PoolExitDirection = TimetablePool.PoolExitDirectionEnum.Forward;
-                                break;
-
-                            default:
-                                TTTrain.PoolExitDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
-                                break;
-                        }
                     }
                 }
                 return (loadPathNoFailure);
@@ -3686,7 +3634,6 @@ namespace Orts.Simulation.Timetables
 
             public bool Pool;
             public string PoolName;
-            public string PoolExitDirection;
 
             public float? DisposeSpeed;
             public bool RunRound;
@@ -3927,32 +3874,11 @@ namespace Orts.Simulation.Timetables
                         Pool = true;
                         FormType = formType;
                         PoolName = String.Copy(trainCommands.CommandValues[0]).ToLower().Trim();
-                        PoolExitDirection = String.Empty;
-
-                        if (trainCommands.CommandQualifiers != null)
-                        {
-                            foreach (TTTrainCommands.TTTrainComQualifiers poolQualifiers in trainCommands.CommandQualifiers)
-                            {
-                                switch (poolQualifiers.QualifierName)
-                                {
-                                    case "direction":
-                                        PoolExitDirection = String.Copy(poolQualifiers.QualifierValues[0]);
-                                        break;
-
-                                    default:
-                                        Trace.TraceInformation("Train : {0} : invalid qualifier for dispose to pool : {1} : {2}\n", trainName, PoolName, poolQualifiers.QualifierName);
-                                        break;
-                                }
-                            }
-                        }
-
                         break;
-
                     // end of pool
 
-                    // unknow type
+                    // unknow type, just skip
                     default:
-                        Trace.TraceInformation("Train : {0} : invalid qualifier for dispose {1}\n", trainName, typeOfDispose);
                         break;
                 }
             }

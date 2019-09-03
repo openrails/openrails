@@ -48,20 +48,8 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         public Poolholder (Simulator simulatorref, string[] arguments, CancellationToken cancellation)
         {
-            // process pools
             PoolInfo TTPool = new PoolInfo(simulatorref);
             Pools = TTPool.ProcessPools(arguments, cancellation);
-
-            // process turntables
-            TurntableInfo TTTurntable = new TurntableInfo(simulatorref);
-            Dictionary<string, TimetableTurntablePool> TTTurntables = new Dictionary<string, TimetableTurntablePool>();
-            TTTurntables = TTTurntable.ProcessTurntables(arguments, cancellation);
-
-            // add turntables to poolholder
-            foreach (KeyValuePair<string, TimetableTurntablePool> thisTTTurntable in TTTurntables)
-            {
-                Pools.Add(thisTTTurntable.Key, thisTTTurntable.Value);
-            }
         }
 
         //================================================================================================//
@@ -77,35 +65,21 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// loader for restore
         /// </summary>
-        public Poolholder(BinaryReader inf, Simulator simulatorref)
+        public Poolholder (BinaryReader inf, Simulator simulatorref)
         {
-            Pools = null;
-
             int nopools = inf.ReadInt32();
-            if (nopools > 0)
-            { 
+            if (nopools < 0)
+            {
+                Pools = null;
+            }
+            else
+            {
                 Pools = new Dictionary<string, TimetablePool>();
                 for (int iPool = 0; iPool < nopools; iPool++)
                 {
-                    string type = inf.ReadString();
-
-                    switch (type)
-                    {
-                        case "TimetablePool":
-                            string poolKey = inf.ReadString();
-                            TimetablePool newPool = new TimetablePool(inf, simulatorref);
-                            Pools.Add(poolKey, newPool);
-                            break;
-
-                        case "TimetableTurntablePool":
-                            string turntableKey = inf.ReadString();
-                            TimetableTurntablePool newTurntable = new TimetableTurntablePool(inf, simulatorref);
-                            Pools.Add(turntableKey, newTurntable);
-                            break;
-
-                        default:
-                            break;
-                    }
+                    string newKey = inf.ReadString();
+                    TimetablePool newPool = new TimetablePool(inf, simulatorref);
+                    Pools.Add(newKey, newPool);
                 }
             }
         }
@@ -126,19 +100,8 @@ namespace Orts.Simulation.Timetables
                 outf.Write(Pools.Count);
                 foreach (KeyValuePair<string, TimetablePool> thisPool in Pools)
                 {
-                    if (thisPool.Value.GetType() == typeof(TimetableTurntablePool))
-                    {
-                        outf.Write("TimetableTurntablePool");
-                        outf.Write(thisPool.Key);
-                        TimetableTurntablePool thisTurntable = thisPool.Value as TimetableTurntablePool;
-                        thisTurntable.Save(outf);
-                    }
-                    else
-                    {
-                        outf.Write("TimetablePool");
-                        outf.Write(thisPool.Key);
-                        thisPool.Value.Save(outf);
-                    }
+                    outf.Write(thisPool.Key);
+                    thisPool.Value.Save(outf);
                 }
             }
         }
@@ -161,14 +124,6 @@ namespace Orts.Simulation.Timetables
             Failed,
         }
 
-        public enum PoolExitDirectionEnum
-        {
-            Backward,
-            Forward,
-            Undefined,
-        }
-
-
         public string PoolName = String.Empty;
         public bool ForceCreation;
 
@@ -181,27 +136,11 @@ namespace Orts.Simulation.Timetables
             public float StorageLength;                       // available length
             public float StorageCorrection;                   // length correction (e.g. due to switch overlap safety) - difference between length of sections in path and actual storage length
 
-            public int TableExitIndex;                        // index in table exit list for this exit
-            public int TableVectorIndex;                      // index in VectorList of tracknode which is the table
-            public float TableMiddleEntry;                    // offset of middle of moving table when approaching table (for turntable and transfertable)
-            public float TableMiddleExit;                     // offset of middle of moving table when exiting table (for turntable and transfertable)
-
             public List<int> StoredUnits;                     // stored no. of units
-            public List<int> ClaimUnits;                      // units which have claimed storage but not yet in pool
-            public int? maxStoredUnits;                       // max. no of stored units for storage track
             public float RemLength;                           // remaining storage length
         }
 
         public List<PoolDetails> StoragePool = new List<PoolDetails>();
-
-        //================================================================================================//
-        /// <summary>
-        /// Empty constructor for use by children
-        /// </summary>
-        /// <param name="filePath"></param>
-        public TimetablePool()
-        {
-        }
 
         //================================================================================================//
         /// <summary>
@@ -251,7 +190,7 @@ namespace Orts.Simulation.Timetables
                         else
                         {
                             bool validStorage = true;
-                            PoolDetails thisPool = ExtractStorage(fileContents, simulatorref, ref lineindex, out validStorage, true);
+                            PoolDetails thisPool = ExtractStorage(fileContents, simulatorref, ref lineindex, out validStorage);
                             if (validStorage)
                             {
                                 StoragePool.Add(thisPool);
@@ -290,8 +229,6 @@ namespace Orts.Simulation.Timetables
             int noPools = inf.ReadInt32();
             for (int iPool = 0; iPool < noPools; iPool++)
             {
-                int maxStorage = 0;
-
                 PoolDetails newPool = new PoolDetails();
                 newPool.StoragePath = new Train.TCSubpathRoute(inf);
                 newPool.StoragePathTraveller = new Traveller(simulatorref.TSectionDat, simulatorref.TDB.TrackDB.TrackNodes, inf);
@@ -313,34 +250,9 @@ namespace Orts.Simulation.Timetables
                     newPool.StoredUnits.Add(inf.ReadInt32());
                 }
 
-                newPool.ClaimUnits = new List<int>();
-                int noClaimUnits = inf.ReadInt32();
-
-                for (int iUnits = 0; iUnits < noClaimUnits; iUnits++)
-                {
-                    newPool.ClaimUnits.Add(inf.ReadInt32());
-                }
-
                 newPool.StorageLength = inf.ReadSingle();
                 newPool.StorageCorrection = inf.ReadSingle();
-
-                newPool.TableExitIndex = inf.ReadInt32();
-                newPool.TableVectorIndex = inf.ReadInt32();
-                newPool.TableMiddleEntry = inf.ReadSingle();
-                newPool.TableMiddleExit = inf.ReadSingle();
-                    
                 newPool.RemLength = inf.ReadSingle();
-
-                maxStorage = inf.ReadInt32();
-                if (maxStorage <= 0)
-                {
-                    newPool.maxStoredUnits = null;
-                }
-                else
-                {
-                    newPool.maxStoredUnits = maxStorage;
-                }
-
                 StoragePool.Add(newPool);
             }
         }
@@ -350,7 +262,7 @@ namespace Orts.Simulation.Timetables
         /// Method to save pool
         /// </summary>
         /// <param name="outf"></param>
-        virtual public void Save(BinaryWriter outf)
+        public void Save(BinaryWriter outf)
         {
             outf.Write(PoolName);
             outf.Write(ForceCreation);
@@ -375,30 +287,9 @@ namespace Orts.Simulation.Timetables
                     outf.Write(storedUnit);
                 }
 
-                outf.Write(thisStorage.ClaimUnits.Count);
-                foreach (int claimUnit in thisStorage.ClaimUnits)
-                {
-                    outf.Write(claimUnit);
-                }
-
                 outf.Write(thisStorage.StorageLength);
                 outf.Write(thisStorage.StorageCorrection);
-
-                outf.Write(thisStorage.TableExitIndex);
-                outf.Write(thisStorage.TableVectorIndex);
-                outf.Write(thisStorage.TableMiddleEntry);
-                outf.Write(thisStorage.TableMiddleExit);
-
                 outf.Write(thisStorage.RemLength);
-
-                if (thisStorage.maxStoredUnits.HasValue)
-                {
-                    outf.Write(thisStorage.maxStoredUnits.Value);
-                }
-                else
-                {
-                    outf.Write(-1);
-                }
             }
         }
 
@@ -411,15 +302,13 @@ namespace Orts.Simulation.Timetables
         /// <param name="simulatorref"></param>
         /// <param name="validStorage"></param>
         /// <returns></returns>
-        public PoolDetails ExtractStorage(TimetableReader fileContents, Simulator simulatorref, ref int lineindex, out bool validStorage, bool reqAccess)
+        public PoolDetails ExtractStorage(TimetableReader fileContents, Simulator simulatorref, ref int lineindex, out bool validStorage)
         {
             PoolDetails newPool = new PoolDetails();
             List<string> accessPathNames = new List<string>();
 
             string[] inputLine = fileContents.Strings[lineindex];
             string storagePathName = String.Copy(inputLine[1]);
-
-            int? maxStoredUnits = null;
 
             lineindex++;
             inputLine = fileContents.Strings[lineindex];
@@ -446,20 +335,6 @@ namespace Orts.Simulation.Timetables
                     // storage : next storage area
                     case "#storage":
                         endOfStorage = true;
-                        break;
-
-                    // maxstorage : set max storage for this storage track
-                    case "#maxunits":
-                        try
-                        {
-                            maxStoredUnits = Convert.ToInt32(inputLine[1]);
-                        }
-                        catch
-                        {
-                            Trace.TraceInformation("Invalid value for maxunits : {0} for storage {1} in pool {2} ; definition ignored", inputLine, storagePathName, PoolName);
-                            maxStoredUnits = null;
-                        }
-                        lineindex++;
                         break;
 
                     // access paths : process
@@ -501,7 +376,7 @@ namespace Orts.Simulation.Timetables
             }
 
             // check if access paths defined
-            if (reqAccess && accessPathNames.Count <= 0)
+            if (accessPathNames.Count <= 0)
             {
                 Trace.TraceInformation("Pool : " + fileContents.FilePath + " : storage : " + storagePathName + " : no access paths defined \n");
                 validStorage = false;
@@ -511,10 +386,8 @@ namespace Orts.Simulation.Timetables
             // process storage paths
             newPool.AccessPaths = new List<Train.TCSubpathRoute>();
             newPool.StoredUnits = new List<int>();
-            newPool.ClaimUnits = new List<int>();
             newPool.StorageLength = 0.0f;
             newPool.RemLength = 0.0f;
-            newPool.maxStoredUnits = maxStoredUnits;
 
             bool pathValid = true;
             TimetableInfo TTInfo = new TimetableInfo(simulatorref);
@@ -526,8 +399,6 @@ namespace Orts.Simulation.Timetables
 
                 newPool.StoragePath = new Train.TCSubpathRoute(fullRoute.TCRouteSubpaths[0]);
                 newPool.StoragePathTraveller = new Traveller(simulatorref.TSectionDat, simulatorref.TDB.TrackDB.TrackNodes, newPath);
-                Traveller dummy = new Traveller(newPool.StoragePathTraveller);
-                dummy.Move(simulatorref.Signals.TrackCircuitList[newPool.StoragePath[0].TCSectionIndex].Length - newPool.StoragePathTraveller.TrackNodeOffset - 1.0f);
                 newPool.StorageName = String.Copy(storagePathName);
 
                 // if last element is end of track, remove it from path
@@ -649,7 +520,7 @@ namespace Orts.Simulation.Timetables
 
             float addedLength = 0;
 
-            foreach (Train.TCRouteElement thisElement in newPool.StoragePath)
+            foreach (Train.TCRouteElement thisElement in newPool.AccessPaths[0])
             {
                 TrackCircuitSection thisSection = simulatorref.Signals.TrackCircuitList[thisElement.TCSectionIndex];
                 if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
@@ -685,7 +556,7 @@ namespace Orts.Simulation.Timetables
         /// TestPoolExit : test if end of route is access to required pool
         /// </summary>
         /// <param name="train"></param>
-        virtual public bool TestPoolExit(TTTrain train)
+        public bool TestPoolExit(TTTrain train)
         {
 
             bool validPool = false;
@@ -736,30 +607,14 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
-        /// Create in pool : create train in pool
-        /// For this type of pool, a train is created in pool by running it into the pool as would be done on dispose
-        /// </summary>
-        /// <param name="train"></param>
-
-        virtual public Train.TCSubpathRoute CreateInPool(TTTrain train, out int poolStorageIndex, bool checkAccessPath)
-        {
-            int tempIndex;
-            Train.TCSubpathRoute newRoute = SetPoolExit(train, out tempIndex, checkAccessPath);
-            poolStorageIndex = tempIndex;
-            return (newRoute);
-        }
-
-        //================================================================================================//
-        /// <summary>
         /// SetPoolExit : adjust train dispose details and path to required pool exit
-        /// Returned poolStorageState : <0 : state (enum TTTrain.PoolAccessState); >0 : poolIndex
         /// </summary>
         /// <param name="train"></param>
-        virtual public Train.TCSubpathRoute SetPoolExit(TTTrain train, out int poolStorageState, bool checkAccessPath)
+        public Train.TCSubpathRoute SetPoolExit(TTTrain train, out int poolStorageIndex, bool checkAccessPath)
         {
             // new route
             Train.TCSubpathRoute newRoute = null;
-            poolStorageState = (int) TTTrain.PoolAccessState.PoolInvalid;
+            poolStorageIndex = -1;
 
             // set dispose states
             train.FormsStatic = true;
@@ -771,10 +626,29 @@ namespace Orts.Simulation.Timetables
 
             // find storage path with enough space to store train
 
-            poolStorageState = GetPoolExitIndex(train);
+            int reqPool = -1;
+            for (int iPool = 0; iPool < StoragePool.Count && reqPool < 0; iPool++)
+            {
+                PoolDetails thisStorage = StoragePool[iPool];
 
-            // pool overflow
-            if (poolStorageState == (int)TTTrain.PoolAccessState.PoolOverflow)
+                if (thisStorage.StoredUnits.Contains(train.Number))
+                {
+#if DEBUG_POOLINFO
+                    var sob = new StringBuilder();
+                    sob.AppendFormat("Pool {0} : error : train {1} ({2}) allready stored in pool \n", PoolName, train.Number, train.Name);
+                    sob.AppendFormat("           stored units : {0}", thisStorage.StoredUnits.Count);
+                    File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
+#endif
+                }
+                else if (thisStorage.RemLength > train.Length)
+                {
+                    reqPool = iPool;
+                    poolStorageIndex = iPool;
+                }
+            }
+
+            // no storage space found : pool overflow
+            if (reqPool < 0)
             {
                 Trace.TraceWarning("Pool : " + PoolName + " : overflow : cannot place train : " + train.Name + "\n");
 
@@ -794,31 +668,9 @@ namespace Orts.Simulation.Timetables
                 train.FormsStatic = false;
                 train.Closeup = false;
             }
-
-            // pool invalid
-            else if (poolStorageState == (int)TTTrain.PoolAccessState.PoolInvalid)
+            else
             {
-                Trace.TraceWarning("Pool : " + PoolName + " : no valid pool found : " + train.Name + "\n");
-
-                if (train.CheckTrain)
-                {
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "Required Pool Exit : " + PoolName + "\n");
-                    File.AppendAllText(@"C:\temp\checktrain.txt", "No valid pool found \n");
-                }
-
-                // train will be abandoned when reaching end of path
-                train.FormsStatic = false;
-                train.Closeup = false;
-            }
-
-            // no action if state is poolClaimed - state will resolve as train ahead is stabled in pool
-
-
-            // valid pool
-            else if (poolStorageState >= 0)
-            {
-                PoolDetails thisStorage = StoragePool[poolStorageState];
-                train.PoolStorageIndex = poolStorageState;
+                PoolDetails thisStorage = StoragePool[reqPool];
 
                 if (checkAccessPath)
                 {
@@ -844,7 +696,7 @@ namespace Orts.Simulation.Timetables
                         Trace.TraceWarning("Train : " + train.Name + " : no valid path found to access pool storage " + PoolName + "\n");
                         train.FormsStatic = false;
                         train.Closeup = false;
-                        poolStorageState = -1;
+                        poolStorageIndex = -1;
                     }
                     // path found : extend train path with access and storage paths
                     else
@@ -863,19 +715,16 @@ namespace Orts.Simulation.Timetables
                                 newRoute.Add(newElement);
                             }
                         }
-                        // add elements from storage
+                    // add elements from storage
                         for (int iElement = thisStorage.StoragePath.Count - 1; iElement >= 0; iElement--)
                         {
                             if (newRoute.GetRouteIndex(thisStorage.StoragePath[iElement].TCSectionIndex, 0) < 0)
                             {
-                                Train.TCRouteElement newElement = new Train.TCRouteElement(thisStorage.StoragePath[iElement]);
+                                Train.TCRouteElement newElement = new Train.TCRouteElement (thisStorage.StoragePath[iElement]);
                                 newElement.Direction = newElement.Direction == 1 ? 0 : 1;
                                 newRoute.Add(newElement);
                             }
                         }
-                        // set pool claim
-                        AddUnit(train, true);
-                        thisStorage.ClaimUnits.Add(train.Number);
                     }
                 }
                 // create new route from storage and access track only
@@ -899,159 +748,41 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
-        /// Base class to allow override for moving table classes
-        /// </summary>
-
-        virtual public float GetEndOfRouteDistance(Train.TCSubpathRoute thisRoute, Train.TCPosition frontPosition, int pathIndex, Signals signalRef)
-        {
-            return (0);
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// GetPoolExitIndex : get pool index for train exiting to pool
-        /// Returned poolStorageState : <0 : state (enum TTTrain.PoolAccessState); >0 : poolIndex
-        /// </summary>
-        /// <param name="train"></param>
-        public int GetPoolExitIndex(TTTrain train)
-        {
-            // find storage path with enough space to store train
-
-            int reqPool = (int)TTTrain.PoolAccessState.PoolInvalid;
-            for (int iPool = 0; iPool < StoragePool.Count && reqPool < 0; iPool++)
-            {
-                PoolDetails thisStorage = StoragePool[iPool];
-
-                // check on max units on storage track
-                bool maxUnitsReached = false;
-                if (thisStorage.maxStoredUnits.HasValue)
-                {
-                    maxUnitsReached = thisStorage.StoredUnits.Count >= thisStorage.maxStoredUnits.Value;
-                }
-
-                // train already has claimed space
-                if (thisStorage.ClaimUnits.Contains(train.Number))
-                {
-                    reqPool = iPool;
-                }
-
-                else if (thisStorage.StoredUnits.Contains(train.Number))
-                {
-
-#if DEBUG_POOLINFO
-                    var sob = new StringBuilder();
-                    sob.AppendFormat("Pool {0} : error : train {1} ({2}) allready stored in pool \n", PoolName, train.Number, train.Name);
-                    sob.AppendFormat("           stored units : {0}", thisStorage.StoredUnits.Count);
-                    File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
-#endif
-                }
-                else if (thisStorage.RemLength > train.Length && !maxUnitsReached)
-                {
-                    reqPool = iPool;
-                }
-            }
-
-            // if no valid pool found, check if any paths have a claimed train
-            // else state is pool overflow
-            if (reqPool < 0)
-            {
-                reqPool = (int)TTTrain.PoolAccessState.PoolOverflow;
-
-                foreach (PoolDetails thisPool in StoragePool)
-                {
-                    if (thisPool.ClaimUnits.Count > 0)
-                    {
-                        reqPool = (int)TTTrain.PoolAccessState.PoolClaimed;
-                        break;
-                    }
-                }
-            }
-
-            return (reqPool);
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// Test if route leads to pool
-        /// </summary>
-
-        public bool TestRouteLeadingToPool(Train.TCSubpathRoute testedRoute, int poolIndex, string dumpfile, string trainName)
-        {
-            Train.TCSubpathRoute poolStorage = StoragePool[poolIndex].StoragePath;
-
-            // check if signal route leads to pool
-            foreach (Train.TCRouteElement routeElement in poolStorage)
-            {
-                if (testedRoute.GetRouteIndex(routeElement.TCSectionIndex, 0) > 0)
-                {
-                    if (!String.IsNullOrEmpty(dumpfile))
-                    {
-                        var sob = new StringBuilder();
-                        sob.AppendFormat("CALL ON : Train {0} : valid - train is going into pool {1} \n", trainName, PoolName);
-                        File.AppendAllText(dumpfile, sob.ToString());
-                    }
-                    return (true);
-                }
-            }
-
-            return (false);
-        }
-
-        //================================================================================================//
-        /// <summary>
         /// AddUnit : add unit to pool, update remaining length
         /// </summary>
         /// <param name="train"></param>
-        public void AddUnit(TTTrain train, bool claimOnly)
+        public void AddUnit(TTTrain train)
         {
-            PoolDetails thisPool = StoragePool[train.PoolStorageIndex];
+            // check if unit allready in pool (error occurs during prerun)
+            // foreach (TimetablePool thisPool in )
+            // add train to pool
+            PoolDetails thisPool = StoragePool[train.PoolIndex];
+            thisPool.StoredUnits.Add(train.Number);
 
-            // if train has already claimed position, remove claim
-            if (thisPool.ClaimUnits.Contains(train.Number))
-            {
-                thisPool.ClaimUnits.Remove(train.Number);
-                thisPool.RemLength = CalculateStorageLength(thisPool, train);
-            }
-
-            else
-            {
-                // add train to pool
-                thisPool.StoredUnits.Add(train.Number);
-
-                thisPool.RemLength = CalculateStorageLength(thisPool, train);
-                StoragePool[train.PoolStorageIndex] = thisPool;
+            thisPool.RemLength = CalculateStorageLength(thisPool, train);
+            StoragePool[train.PoolIndex] = thisPool;
 
 #if DEBUG_POOLINFO
-                var sob = new StringBuilder();
-                sob.AppendFormat("Pool {0} : train {1} ({2}) added\n", PoolName, train.Number, train.Name);
-                sob.AppendFormat("           stored units : {0}\n", thisPool.StoredUnits.Count);
-                File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
+            var sob = new StringBuilder();
+            sob.AppendFormat("Pool {0} : train {1} ({2}) added\n", PoolName, train.Number, train.Name);
+            sob.AppendFormat("           stored units : {0}\n", thisPool.StoredUnits.Count);
+            File.AppendAllText(@"C:\temp\PoolAnal.csv", sob.ToString() + "\n");
 #endif
 
 #if DEBUG_TRACEINFO
-                Trace.TraceInformation("Pool {0} : added unit : {1} ; stored units : {2} ( last = {3} )", PoolName, train.Name, thisPool.StoredUnits.Count, thisPool.StoredUnits.Last());
+            Trace.TraceInformation("Pool {0} : added unit : {1} ; stored units : {2} ( last = {3} )", PoolName, train.Name, thisPool.StoredUnits.Count, thisPool.StoredUnits.Last());
 #endif
-            }
-
-            // update altered pool
-            StoragePool[train.PoolStorageIndex] = thisPool;
-
-            // if claim only, do not reset track section states
-            if (claimOnly)
-            {
-                return;
-            }
 
             // clear track behind engine, only keep actual occupied sections
             Train.TCSubpathRoute tempRoute = train.signalRef.BuildTempRoute(train, train.PresentPosition[1].TCSectionIndex, train.PresentPosition[1].TCOffset,
                 train.PresentPosition[1].TCDirection, train.Length, true, true, false);
             train.OccupiedTrack.Clear();
 
-            foreach (Train.TCRouteElement thisElement in tempRoute)
+            foreach(Train.TCRouteElement thisElement in tempRoute)
             {
                 train.OccupiedTrack.Add(train.signalRef.TrackCircuitList[thisElement.TCSectionIndex]);
             }
-
+            
             train.ClearActiveSectionItems();
         }
 
@@ -1120,7 +851,7 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         /// <param name="train"></param>
         /// <returns></returns>
-        virtual public TrainFromPool ExtractTrain(ref TTTrain train, int presentTime)
+        public TrainFromPool ExtractTrain(ref TTTrain train, int presentTime)
         {
 #if DEBUG_POOLINFO
             var sob = new StringBuilder();
@@ -1130,17 +861,11 @@ namespace Orts.Simulation.Timetables
             // check if any engines available
             int selectedTrainNumber = -1;
             int selectedStorage = -1;
-            bool claimActive = false;
 
             for (int iStorage = 0; iStorage < StoragePool.Count; iStorage++)
             {
                 PoolDetails thisStorage = StoragePool[iStorage];
-                // engine has claimed access - this storage cannot be used for exit right now
-                if (thisStorage.ClaimUnits.Count > 0)
-                {
-                    claimActive = true;
-                }
-                else if (thisStorage.StoredUnits.Count > 0)
+                if (thisStorage.StoredUnits.Count > 0)
                 {
                     selectedTrainNumber = thisStorage.StoredUnits[thisStorage.StoredUnits.Count - 1];
                     selectedStorage = iStorage;
@@ -1148,18 +873,9 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
+            // pool underflow : create engine from scratch
             if (selectedTrainNumber < 0)
             {
-                // no train found but claim is active - create engine is delayed
-                if (claimActive)
-                {
-#if DEBUG_TRACEINFO
-                Trace.TraceInformation("Pool {0} : train {1} : delayed through claimed access\n", PoolName, train.Name);
-#endif
-                    return (TrainFromPool.Delayed);
-                }
-
-                // pool underflow : create engine from scratch
                 DateTime baseDTA = new DateTime();
                 DateTime moveTimeA = baseDTA.AddSeconds(train.AI.clockTime);
 
@@ -1211,14 +927,67 @@ namespace Orts.Simulation.Timetables
 
             // if valid path found : build new path from storage area
 
-            train.TCRoute.AddSectionsAtStart(reqStorage.AccessPaths[reqAccessPath], train, false);
-            train.TCRoute.AddSectionsAtStart(reqStorage.StoragePath, train, false);
+            Train.TCSubpathRoute newRoute = new Train.TCSubpathRoute(train.TCRoute.TCRouteSubpaths[0]);
+
+            int addedSections = 0;
+
+            // add sections from access path at front
+            // add in reverse order as path is defined outbound
+            for (int iSection = reqStorage.AccessPaths[reqAccessPath].Count - 1; iSection >= 0; iSection--)
+            {
+                Train.TCRouteElement thisElement = reqStorage.AccessPaths[reqAccessPath][iSection];
+                if (newRoute.GetRouteIndex(thisElement.TCSectionIndex, 0) < 0)
+                {
+                    Train.TCRouteElement newElement = new Train.TCRouteElement(thisElement);
+                    newRoute.Insert(0, newElement);
+                    addedSections++;
+                }
+            }
+
+            // add sections from storage path
+            // add in reverse order as path is defined outbound
+            for (int iSection = reqStorage.StoragePath.Count - 1; iSection >= 0; iSection--)
+            {
+                Train.TCRouteElement thisElement = reqStorage.StoragePath[iSection];
+                if (newRoute.GetRouteIndex(thisElement.TCSectionIndex, 0) < 0)
+                {
+                    Train.TCRouteElement newElement = new Train.TCRouteElement(thisElement);
+                    newRoute.Insert(0, newElement);
+                    addedSections++;
+                }
+            }
+
+            // add number of added sections to reversal info
+            if (train.TCRoute.ReversalInfo[0].Valid)
+            {
+                train.TCRoute.ReversalInfo[0].FirstDivergeIndex += addedSections;
+                train.TCRoute.ReversalInfo[0].FirstSignalIndex += addedSections;
+                train.TCRoute.ReversalInfo[0].LastDivergeIndex += addedSections;
+                train.TCRoute.ReversalInfo[0].LastSignalIndex += addedSections;
+            }
+
+            // add number of sections to station stops
+            if (train.StationStops != null && train.StationStops.Count > 0)
+            {
+                for (int iStop = 0; iStop < train.StationStops.Count; iStop++)
+                {
+                    Train.StationStop thisStop = train.StationStops[iStop];
+                    if (thisStop.SubrouteIndex == 0)
+                    {
+                        thisStop.RouteIndex += addedSections;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
 
             // check all sections in route for engine heading for pool
             // if found, do not create engine as this may result in deadlock
 
             bool incomingEngine = false;
-            foreach (Train.TCRouteElement thisElement in train.TCRoute.TCRouteSubpaths[0])
+            foreach (Train.TCRouteElement thisElement in newRoute)
             {
                 TrackCircuitSection thisSection = train.signalRef.TrackCircuitList[thisElement.TCSectionIndex];
 
@@ -1297,7 +1066,8 @@ namespace Orts.Simulation.Timetables
             selectedTrain.Forms = -1;
             selectedTrain.RemoveTrain();
             train.FormedOfType = TTTrain.FormCommand.TerminationFormed;
-            train.ValidRoute[0] = new Train.TCSubpathRoute(train.TCRoute.TCRouteSubpaths[0]);
+            train.TCRoute.TCRouteSubpaths[0] = new Train.TCSubpathRoute(newRoute);
+            train.ValidRoute[0] = new Train.TCSubpathRoute(newRoute);
 
 #if DEBUG_POOLINFO
             sob = new StringBuilder();

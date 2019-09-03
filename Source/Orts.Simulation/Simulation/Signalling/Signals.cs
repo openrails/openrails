@@ -3265,7 +3265,7 @@ namespace Orts.Simulation.Signalling
             if (thisTrain.Train.LoopSection >= 0)
             {
                 thisSection = TrackCircuitList[thisTrain.Train.LoopSection];
-
+                
                 // test if train is really occupying this section
                 Train.TCSubpathRoute tempRoute = BuildTempRoute(thisTrain.Train, thisTrain.Train.PresentPosition[1].TCSectionIndex, thisTrain.Train.PresentPosition[1].TCOffset,
                     thisTrain.Train.PresentPosition[1].TCDirection, thisTrain.Train.Length, true, true, false);
@@ -3350,7 +3350,7 @@ namespace Orts.Simulation.Signalling
                     {
                         lastRouteIndex = routeIndex - 1;
                     }
-
+                    
                     if (thisTrain.Train.CheckTrain)
                     {
                         if (lastRouteIndex >= 0)
@@ -10399,49 +10399,49 @@ namespace Orts.Simulation.Signalling
 
             // find section in route part which follows signal
 
-            signalRoute.Clear();
+                signalRoute.Clear();
 
-            int firstIndex = -1;
-            if (lastSignal != null)
-            {
-                firstIndex = lastSignal.thisTrainRouteIndex;
-            }
-            if (firstIndex < 0)
-            {
-                firstIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
-            }
-
-            if (firstIndex >= 0)
-            {
-                for (int iNode = firstIndex;
-                         iNode < RoutePart.Count && foundFirstSection < 0;
-                         iNode++)
+                int firstIndex = -1;
+                if (lastSignal != null)
                 {
-                    Train.TCRouteElement thisElement = RoutePart[iNode];
-                    if (thisElement.TCSectionIndex == TCNextTC)
+                    firstIndex = lastSignal.thisTrainRouteIndex;
+                }
+                if (firstIndex < 0)
+                {
+                    firstIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+                }
+
+                if (firstIndex >= 0)
+                {
+                    for (int iNode = firstIndex;
+                             iNode < RoutePart.Count && foundFirstSection < 0;
+                             iNode++)
                     {
-                        foundFirstSection = iNode;
-                        thisTrainRouteIndex = iNode;
+                        Train.TCRouteElement thisElement = RoutePart[iNode];
+                        if (thisElement.TCSectionIndex == TCNextTC)
+                        {
+                            foundFirstSection = iNode;
+                            thisTrainRouteIndex = iNode;
+                        }
                     }
                 }
-            }
 
-            if (foundFirstSection < 0)
-            {
-                enabledTrain = null;
-
-                // if signal on holding list, set hold state
-                if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None)
+                if (foundFirstSection < 0)
                 {
-                    holdState = HoldState.StationStop;
+                    enabledTrain = null;
+
+                    // if signal on holding list, set hold state
+                    if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None)
+                    {
+                        holdState = HoldState.StationStop;
+                    }
+                    return false;
                 }
-                return false;
-            }
 
             // copy sections upto next normal signal
             // check for loop
 
-            List<int> sectionsInRoute = new List<int>();
+                List<int> sectionsInRoute = new List<int>();
 
             for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
             {
@@ -10465,13 +10465,6 @@ namespace Orts.Simulation.Signalling
                     {
                         enabledTrain = null;
                         signalRoute.Clear();
-
-                        if (thisTrain.Train.CheckTrain)
-                        {
-                            File.AppendAllText(@"C:\temp\checktrain.txt",
-                                String.Format("Reset signal for pool access : {0} \n", thisRef));
-                        }
-
                         return false;
                     }
 

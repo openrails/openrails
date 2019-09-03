@@ -173,7 +173,8 @@ namespace ContentChecker
                     IsFullScreen = false,
                 };
 
-                _graphicsDevice = new GraphicsDevice(GraphicsAdapter.DefaultAdapter, GraphicsProfile.HiDef, parameters);
+                _graphicsDevice = new GraphicsDevice(GraphicsAdapter.DefaultAdapter, DeviceType.NullReference, IntPtr.Zero,
+                                                    parameters);
             }
             return _graphicsDevice;
         }

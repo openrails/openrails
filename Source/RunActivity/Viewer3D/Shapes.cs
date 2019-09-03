@@ -645,8 +645,8 @@ namespace Orts.Viewer3D
     public class LevelCrossingShape : PoseableShape
     {
         readonly LevelCrossingObj CrossingObj;
-		readonly SoundSource Sound;
-		readonly LevelCrossing Crossing;
+        readonly SoundSource Sound;
+        readonly LevelCrossing Crossing;
 
         readonly float AnimationFrames;
         readonly float AnimationSpeed;
@@ -1023,7 +1023,6 @@ namespace Orts.Viewer3D
         {
             Turntable = turntable;
             Turntable.StartingY = (float)startingY;
-            Turntable.TurntableFrameRate = SharedShape.Animations[0].FrameRate;
             AnimationKey = (Turntable.YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
             for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
             {
@@ -1065,7 +1064,7 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
+            if (Turntable.GoToTarget)
             {
                 AnimationKey = (Turntable.TargetY / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
             }
@@ -1083,13 +1082,13 @@ namespace Orts.Viewer3D
 
             Turntable.YAngle = MathHelper.WrapAngle(AnimationKey / 1800.0f * (float)Math.PI);
 
-            if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
+            if ((Turntable.Clockwise || Turntable.Counterclockwise) && !Rotating)
             {
                 Rotating = true;
                 if (Sound != null) Sound.HandleEvent(Turntable.TrainsOnMovingTable.Count == 1 &&
                     Turntable.TrainsOnMovingTable[0].FrontOnBoard && Turntable.TrainsOnMovingTable[0].BackOnBoard ? Event.MovingTableMovingLoaded : Event.MovingTableMovingEmpty);
             }
-            else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && !Turntable.AutoClockwise && !Turntable.AutoCounterclockwise && Rotating))
+            else if ((!Turntable.Clockwise && !Turntable.Counterclockwise && Rotating))
             {
                 Rotating = false;
                 if (Sound != null) Sound.HandleEvent(Event.MovingTableStopped);
@@ -1210,11 +1209,12 @@ namespace Orts.Viewer3D
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
 
         protected internal VertexBuffer VertexBuffer;
+        protected internal VertexDeclaration VertexDeclaration;
+        protected internal int VertexBufferStride;
         protected internal IndexBuffer IndexBuffer;
         protected internal int MinVertexIndex;
         protected internal int NumVerticies;
         protected internal int PrimitiveCount;
-        protected internal VertexBufferBinding[] VertexBufferBindings;
 
         public ShapePrimitive()
         {
@@ -1224,16 +1224,14 @@ namespace Orts.Viewer3D
         {
             Material = material;
             VertexBuffer = vertexBufferSet.Buffer;
+            VertexDeclaration = vertexBufferSet.Declaration;
+            VertexBufferStride = vertexBufferSet.Declaration.GetVertexStrideSize(0);
             IndexBuffer = indexBuffer;
             MinVertexIndex = minVertexIndex;
             NumVerticies = numVerticies;
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
-
-            DummyVertexBuffer = new VertexBuffer(material.Viewer.GraphicsDevice, DummyVertexDeclaration, 1, BufferUsage.WriteOnly);
-            DummyVertexBuffer.SetData(DummyVertexData);
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(DummyVertexBuffer) };
         }
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, List<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
@@ -1248,7 +1246,8 @@ namespace Orts.Viewer3D
             if (PrimitiveCount > 0)
             {
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
-                graphicsDevice.SetVertexBuffers(VertexBufferBindings);
+                graphicsDevice.VertexDeclaration = VertexDeclaration;
+                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexBufferStride);
                 graphicsDevice.Indices = IndexBuffer;
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
             }
@@ -1268,13 +1267,16 @@ namespace Orts.Viewer3D
 #pragma warning restore 0649
 
         public static readonly VertexElement[] VertexElements = {
-            new VertexElement(sizeof(float) * 0, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 1),
-            new VertexElement(sizeof(float) * 4, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 2),
-            new VertexElement(sizeof(float) * 8, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 3),
-            new VertexElement(sizeof(float) * 12, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 4),
+            VertexPositionNormalTexture.VertexElements[0],
+            VertexPositionNormalTexture.VertexElements[1],
+            VertexPositionNormalTexture.VertexElements[2],
+            new VertexElement(1, sizeof(float) * 0, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 1),
+            new VertexElement(1, sizeof(float) * 4, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 2),
+            new VertexElement(1, sizeof(float) * 8, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 3),
+            new VertexElement(1, sizeof(float) * 12, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 4),
         };
 
-        public static int SizeInBytes = sizeof(float) * 16;
+        public static int SizeInBytes = VertexPositionNormalTexture.SizeInBytes + sizeof(float) * 16;
     }
 
     public class ShapePrimitiveInstances : RenderPrimitive
@@ -1296,7 +1298,6 @@ namespace Orts.Viewer3D
         protected VertexDeclaration InstanceDeclaration;
         protected int InstanceBufferStride;
         protected int InstanceCount;
-        protected VertexBufferBinding[] VertexBufferBindings;
 
         internal ShapePrimitiveInstances(GraphicsDevice graphicsDevice, ShapePrimitive shapePrimitive, Matrix[] positions, int subObjectIndex)
         {
@@ -1305,25 +1306,29 @@ namespace Orts.Viewer3D
             HierarchyIndex = shapePrimitive.HierarchyIndex;
             SubObjectIndex = subObjectIndex;
             VertexBuffer = shapePrimitive.VertexBuffer;
-            VertexDeclaration = shapePrimitive.VertexBuffer.VertexDeclaration;
+            VertexDeclaration = shapePrimitive.VertexDeclaration;
+            VertexBufferStride = shapePrimitive.VertexBufferStride;
             IndexBuffer = shapePrimitive.IndexBuffer;
             MinVertexIndex = shapePrimitive.MinVertexIndex;
             NumVerticies = shapePrimitive.NumVerticies;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
 
-            InstanceDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
-            InstanceBuffer = new VertexBuffer(graphicsDevice, InstanceDeclaration, positions.Length, BufferUsage.WriteOnly);
+            InstanceBuffer = new VertexBuffer(graphicsDevice, typeof(ShapeInstanceData), positions.Length, BufferUsage.WriteOnly);
             InstanceBuffer.SetData(positions);
+            InstanceDeclaration = new VertexDeclaration(graphicsDevice, ShapeInstanceData.VertexElements);
+            InstanceBufferStride = InstanceDeclaration.GetVertexStrideSize(1);
             InstanceCount = positions.Length;
-
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(InstanceBuffer, 0, 1) };
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            graphicsDevice.VertexDeclaration = InstanceDeclaration;
             graphicsDevice.Indices = IndexBuffer;
-            graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount, InstanceCount);
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexBufferStride);
+            graphicsDevice.Vertices[0].SetFrequencyOfIndexData(InstanceCount);
+            graphicsDevice.Vertices[1].SetSource(InstanceBuffer, 0, InstanceBufferStride);
+            graphicsDevice.Vertices[1].SetFrequencyOfInstanceData(1);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
         }
     }
 
@@ -1569,6 +1574,7 @@ namespace Orts.Viewer3D
                 SceneryMaterialOptions.TextureAddressModeWrap,
                 SceneryMaterialOptions.TextureAddressModeMirror,
                 SceneryMaterialOptions.TextureAddressModeClamp,
+                SceneryMaterialOptions.TextureAddressModeBorder,
             };
 
             static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {
@@ -1790,6 +1796,8 @@ namespace Orts.Viewer3D
         public class VertexBufferSet
         {
             public VertexBuffer Buffer;
+            public VertexDeclaration Declaration;
+            public int VertexCount;
 
 #if DEBUG_SHAPE_NORMALS
             public VertexBuffer DebugNormalsBuffer;
@@ -1800,7 +1808,9 @@ namespace Orts.Viewer3D
 
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
             {
-                Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexData.Length, BufferUsage.WriteOnly);
+                VertexCount = vertexData.Length;
+                Declaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
+                Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), VertexCount, BufferUsage.WriteOnly);
                 Buffer.SetData(vertexData);
             }
 
