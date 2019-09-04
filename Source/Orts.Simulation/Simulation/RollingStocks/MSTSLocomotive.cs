@@ -121,7 +121,6 @@ namespace Orts.Simulation.RollingStocks
         public bool Wiper;
         public bool BailOff;
         public bool DynamicBrake;
-        public float DynamicBrakeForceN = 0f; // Raw dynamic brake force for diesel and electric sound variable3
         public float MaxPowerW;
         public float MaxForceN;
         public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
@@ -1404,12 +1403,11 @@ namespace Orts.Simulation.RollingStocks
 
             ApplyDirectionToMotiveForce();
 
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
                 if (f > 0 && PowerOn)
                 {
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * f * (1 - PowerReduction);
                     DynamicBrakeForceN = f * (1 - PowerReduction);
                 }
                 else
@@ -3750,11 +3748,7 @@ namespace Orts.Simulation.RollingStocks
                                     else
                                         rangeFactor = direction == 0 ? -DynamicBrakeMaxCurrentA : (float)cvc.MaxValue;
                                 }
-                                if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                data = -Math.Abs(data);
+                                data = DynamicBrakeForceN / MaxDynamicBrakeForceN * rangeFactor;
                             }
                             if (direction == 1)
                                 data = -data;
@@ -3785,11 +3779,8 @@ namespace Orts.Simulation.RollingStocks
                         }
                         if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                         {
-                             if (FilteredMotiveForceN != 0)
-                                data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
-                            else
-                                data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
-                            data = -Math.Abs(data);
+                            data = DynamicBrakeForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
+                            data = -Math.Abs(data); // Ensure that dynamic force is seen as a "-ve force", changes colour on the load meter
                         }
                         if (direction == 1)
                             data = -data;
@@ -3819,7 +3810,7 @@ namespace Orts.Simulation.RollingStocks
                                  }
                                 if (DynamicBrakePercent > 0)
                                 {
-                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                    data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                                 }
                                 data = Math.Abs(data);
                                 break;
@@ -3845,10 +3836,7 @@ namespace Orts.Simulation.RollingStocks
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
                         data = 0.0f;
-                        if (FilteredMotiveForceN != 0)
-                            data = this.FilteredMotiveForceN;
-                        else
-                            data = this.LocomotiveAxle.AxleForceN;
+                        data = DynamicBrakeForceN;
                         if (data > 0 && SpeedMpS > 0 || data < 0 && SpeedMpS < 0)
                         {
                             data = 0;
@@ -3868,7 +3856,7 @@ namespace Orts.Simulation.RollingStocks
                                 }
                                 if (DynamicBrakePercent > 0)
                                 {
-                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                    data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                                 }
                                 data = Math.Abs(data);
                                 break;

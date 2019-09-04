@@ -356,8 +356,7 @@ namespace Orts.Simulation.RollingStocks
         public float GravityForceN;  // Newtons  - signed relative to direction of car.
         public float CurveForceN;   // Resistive force due to curve, in Newtons
         public float WindForceN;  // Resistive force due to wind
-
-        //private float _prevCurveForceN=0f;
+        public float DynamicBrakeForceN = 0f; // Raw dynamic brake force for diesel and electric locomotives
 
         // Derailment variables
         public float WagonVerticalDerailForceN; // Vertical force of wagon/car - essentially determined by the weight
