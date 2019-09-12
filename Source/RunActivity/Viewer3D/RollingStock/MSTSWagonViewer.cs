@@ -60,6 +60,7 @@ namespace Orts.Viewer3D.RollingStock
         AnimatedPart RightDoor;
         AnimatedPart Mirrors;
         protected AnimatedPart Wipers;
+        protected AnimatedPart Bell;
         AnimatedPart UnloadingParts;
 
         public Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
@@ -182,6 +183,7 @@ namespace Orts.Viewer3D.RollingStock
             Mirrors = new AnimatedPart(TrainCarShape);
             Wipers = new AnimatedPart(TrainCarShape);
             UnloadingParts = new AnimatedPart(TrainCarShape);
+            Bell = new AnimatedPart(TrainCarShape);
 
             if (car.FreightAnimations != null)
                 FreightAnimations = new FreightAnimationsViewer(viewer, car, wagonFolderSlash);
@@ -407,6 +409,10 @@ namespace Orts.Viewer3D.RollingStock
                     else Pantograph2.AddMatrix(matrix);
                 }
             }
+            else if (matrixName.StartsWith("ORTSBELL")) // wipers
+            {
+                Bell.AddMatrix(matrix);
+            }
             else
             {
                 if (matrixAnimated && matrix != 0)
@@ -592,7 +598,7 @@ namespace Orts.Viewer3D.RollingStock
             // It appears that only one MSTS type FA can be used per vehicle (to be confirmed?)
             // For coal load variation, C should be absent (set to 1 when read in WAG file) or >0 - sets FreightAnimFlag; and A > B
             // To disable coal load variation and insert a static (crew) shape on the tender breech, one of the conditions indicated above
-            if (FreightShape != null)
+            if (FreightShape != null && !(Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
             {
                 // Define default position of shape
                 FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
@@ -649,6 +655,16 @@ namespace Orts.Viewer3D.RollingStock
             {
                 foreach (var freightAnim in FreightAnimations.Animations)
                 {
+                    if (freightAnim.Animation is FreightAnimationStatic)
+                    {
+                        var animation = freightAnim.Animation as FreightAnimationStatic;
+                        if (!((animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Cab3D] &&
+                            Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.ThreeDimCab) ||
+                            (animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Cab2D] &&
+                            Viewer.Camera.AttachedCar == this.MSTSWagon && Viewer.Camera.Style == Camera.Styles.Cab) ||
+                            (animation.Visibility[(int)FreightAnimationStatic.VisibleFrom.Outside] && (Viewer.Camera.AttachedCar != this.MSTSWagon ||
+                            (Viewer.Camera.Style != Camera.Styles.ThreeDimCab && Viewer.Camera.Style != Camera.Styles.Cab))))) continue;
+                    }
                     if (freightAnim.FreightShape != null && !((freightAnim.Animation is FreightAnimationContinuous) && (freightAnim.Animation as FreightAnimationContinuous).LoadPerCent == 0))
                     {
                         freightAnim.FreightShape.Location.XNAMatrix = Car.WorldPosition.XNAMatrix;
@@ -692,9 +708,9 @@ namespace Orts.Viewer3D.RollingStock
             }
             else
             {
-                // Skip drawing if CAB view - draw 2D view instead - by GeorgeS
+                // Skip drawing if 2D or 3D Cab view - Cab view already drawn - by GeorgeS changed by DennisAT
                 if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
-                    Viewer.Camera.Style == Camera.Styles.Cab)
+                    (Viewer.Camera.Style == Camera.Styles.Cab || Viewer.Camera.Style == Camera.Styles.ThreeDimCab))
                     return;
 
                 // We are outside the passenger cabin

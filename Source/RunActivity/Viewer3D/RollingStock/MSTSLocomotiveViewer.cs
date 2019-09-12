@@ -263,17 +263,16 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (ThreeDimentionCabViewer != null)
                     ThreeDimentionCabViewer.PrepareFrame(frame, elapsedTime);
-                return;
             }
 
-            // Wiper animation
+            // Wipers and bell animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
+            Bell.UpdateLoop(Locomotive.Bell, elapsedTime, TrainCarShape.SharedShape.BellAnimationFPS);
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
                 Viewer.Camera.Style == Camera.Styles.Cab)
             {
-
                 if (_CabRenderer != null)
                     _CabRenderer.PrepareFrame(frame, elapsedTime);
             }

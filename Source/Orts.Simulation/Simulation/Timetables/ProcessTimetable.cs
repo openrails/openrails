@@ -3208,6 +3208,7 @@ namespace Orts.Simulation.Timetables
                     float? keepClearRear = null;
                     bool forcePosition = false;
                     bool closeupSignal = false;
+                    bool closeup = false;
                     bool restrictPlatformToSignal = false;
                     bool extendPlatformToSignal = false;
                     bool endStop = false;
@@ -3224,6 +3225,10 @@ namespace Orts.Simulation.Timetables
 
                                 case "closeupsignal":
                                     closeupSignal = true;
+                                    break;
+
+                                case "closeup":
+                                    closeup = true;
                                     break;
 
                                 case "restrictplatformtosignal":
@@ -3352,7 +3357,7 @@ namespace Orts.Simulation.Timetables
 
                     // create station stop info
                     validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, AITrain.clearingDistanceM,
-                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, restrictPlatformToSignal, extendPlatformToSignal, endStop);
+                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
                     // override holdstate using stop info - but only if exit signal is defined
 

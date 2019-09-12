@@ -1895,12 +1895,12 @@ namespace Orts.Simulation.RollingStocks
             if (Bell && !PreviousBell)
             {
                 SignalEvent(Event.BellOn);
-                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
+                if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
             }
             else if (!Bell && PreviousBell)
             {
                 SignalEvent(Event.BellOff);
-                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
+                if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
             }
 
             PreviousHorn = Horn;
@@ -3964,6 +3964,25 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.ORTS_MIRRORS:
                     data = MirrorOpen ? 1 : 0;
                     break;
+                case CABViewControlTypes.ORTS_HOURDIAL:
+                    float hour = (float)(Simulator.ClockTime / 3600) % 12;
+                    if (hour < 0)
+                        hour += 12;
+                    data = hour;
+                    break;
+                case CABViewControlTypes.ORTS_MINUTEDIAL:
+                    float minute = (float)(Simulator.ClockTime / 60) % 60;
+                    if (minute < 0)
+                        minute += 60;
+                    data = minute;
+                    break;
+                case CABViewControlTypes.ORTS_SECONDDIAL:
+                    int seconds = (int)Simulator.ClockTime % 60;
+                    if (seconds < 0)
+                        seconds += 60;
+                    data = seconds;
+                    break;
+
                 default:
                     {
                         data = 0;
