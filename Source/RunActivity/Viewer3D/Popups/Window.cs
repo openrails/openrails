@@ -229,6 +229,8 @@ namespace Orts.Viewer3D.Popups
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (WindowVertexDeclaration == null)
+                WindowVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionTexture.VertexElements);
             if (WindowVertexBuffer == null)
             {
                 // Edges/corners are 32px (1/4th image size).
@@ -269,7 +271,8 @@ namespace Orts.Viewer3D.Popups
                 WindowIndexBuffer.SetData(indexData);
             }
 
-            graphicsDevice.SetVertexBuffer(WindowVertexBuffer);
+            graphicsDevice.VertexDeclaration = WindowVertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(WindowVertexBuffer, 0, VertexPositionTexture.SizeInBytes);
             graphicsDevice.Indices = WindowIndexBuffer;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 0, 20);
         }

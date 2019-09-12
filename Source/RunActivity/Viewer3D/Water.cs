@@ -30,14 +30,17 @@ namespace Orts.Viewer3D
     [DebuggerDisplay("TileX = {TileX}, TileZ = {TileZ}, Size = {Size}")]
     public class WaterPrimitive : RenderPrimitive
     {
+        public static VertexDeclaration PatchVertexDeclaration;
+
         static KeyValuePair<float, Material>[] WaterLayers;
+
+        static int PatchVertexStride;
 
         readonly Viewer Viewer;
         readonly int TileX, TileZ, Size;
         readonly VertexBuffer VertexBuffer;
         readonly IndexBuffer IndexBuffer;
         readonly int PrimitiveCount;
-        readonly VertexBufferBinding[] VertexBufferBindings;
 
         Matrix xnaMatrix = Matrix.Identity;
 
@@ -48,14 +51,20 @@ namespace Orts.Viewer3D
             TileZ = tile.TileZ;
             Size = tile.Size;
 
+            if (PatchVertexDeclaration == null)
+                LoadStaticData();
+
+            LoadGeometry(Viewer.GraphicsDevice, tile, out PrimitiveCount, out IndexBuffer, out VertexBuffer);
+        }
+
+        void LoadStaticData()
+        {
             if (Viewer.ENVFile.WaterLayers != null)
             WaterLayers = Viewer.ENVFile.WaterLayers.Select(layer => new KeyValuePair<float, Material>(layer.Height, Viewer.MaterialManager.Load("Water", Viewer.Simulator.RoutePath + @"\envfiles\textures\" + layer.TextureName))).ToArray();
   
-            LoadGeometry(Viewer.GraphicsDevice, tile, out PrimitiveCount, out IndexBuffer, out VertexBuffer);
-
-            DummyVertexBuffer = new VertexBuffer(Viewer.GraphicsDevice, DummyVertexDeclaration, 1, BufferUsage.WriteOnly);
-            DummyVertexBuffer.SetData(new Matrix[] { Matrix.Identity });
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(DummyVertexBuffer) };
+            PatchVertexDeclaration = new VertexDeclaration(Viewer.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
+            PatchVertexStride = VertexPositionNormalTexture.SizeInBytes;
+            
         }
 
         [CallOnThread("Updater")]
@@ -80,7 +89,7 @@ namespace Orts.Viewer3D
         public override void Draw(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.Indices = IndexBuffer;
-            graphicsDevice.SetVertexBuffers(VertexBufferBindings);
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, PatchVertexStride);
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 17 * 17, 0, PrimitiveCount);
         }
 
@@ -175,13 +184,22 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques["ImagePS"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques["ImagePS"].Passes.GetEnumerator();
+            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "ImagePS3" : "ImagePS2"].Passes.GetEnumerator();
             shader.ImageTexture = WaterTexture;
             shader.ReferenceAlpha = 10;
 
-            graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
-            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            var samplerState = graphicsDevice.SamplerStates[0];
+            samplerState.AddressU = TextureAddressMode.Wrap;
+            samplerState.AddressV = TextureAddressMode.Wrap;
+            samplerState.MipMapLevelOfDetailBias = 0;
+
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
+
+            graphicsDevice.VertexDeclaration = WaterPrimitive.PatchVertexDeclaration;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -189,17 +207,21 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.SceneryShader;
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
+            shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
+                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    ShaderPasses.Current.Apply();
+                    shader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
+                ShaderPasses.Current.End();
             }
+            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
@@ -207,7 +229,10 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.SceneryShader;
             shader.ReferenceAlpha = 0;
 
-            graphicsDevice.BlendState = BlendState.Opaque;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
         public override bool GetBlending()

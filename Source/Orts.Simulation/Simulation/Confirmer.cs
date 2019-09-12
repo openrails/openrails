@@ -67,6 +67,8 @@ namespace Orts.Simulation
       , SmallEjector
       , TenderCoal
       , TenderWater
+      // General
+      , WaterScoop
       // Braking
       , TrainBrake
       , EngineBrake
@@ -198,7 +200,9 @@ namespace Orts.Simulation
                 , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
-                , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") } 
+                , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
+                // General
+                , new string [] { GetString("Water Scoop"), GetString("up"), null, GetString("down") }
                 // Braking
                 , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") } 
                 , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") } 

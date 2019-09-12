@@ -95,7 +95,7 @@ namespace Orts.Viewer3D.Popups
         {
             if (CompassTexture == null)
             {
-                CompassTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                CompassTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
                 CompassTexture.SetData(new[] { Color.White });
             }
             if (HeadingHalfWidths == null)

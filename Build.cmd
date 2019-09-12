@@ -86,17 +86,10 @@ IF "%Mode%" == "Stable" (
 	)
 )
 
-REM Get code revision.
-SET Revision=000
-IF EXIST ".svn" (
-	FOR /F "usebackq tokens=1" %%R IN (`svn --non-interactive info --show-item revision .`) DO SET Revision=%%R
-)
-IF EXIST ".git" (
-	FOR /F "usebackq tokens=1" %%R IN (`git describe --first-parent --always`) DO SET Revision=%%R
-)
-IF "%Revision%" == "000" (
-	>&2 ECHO WARNING: No Subversion or Git revision found.
-)
+REM Get product version and code revision.
+FOR /F "usebackq tokens=1* delims==" %%A IN (`CALL GetVersion.cmd %Mode%`) DO SET %%A=%%B
+SET Version=%OpenRails_Version%
+SET Revision=%OpenRails_Revision%
 
 REM Recreate Program directory for output.
 CALL :recreate "Program" || GOTO :error
@@ -113,16 +106,16 @@ REM Set update channel.
 ECHO Set update channel to "%Mode%".
 
 REM Set version number.
-IF NOT "%Version%" == "" (
-	>Program\Version.txt ECHO %Version%. || GOTO :error
+IF "%Mode%" == "Stable" (
+	>Program\Version.txt ECHO %Version% || GOTO :error
 	ECHO Set version number to "%Version%".
 ) ELSE (
-	>Program\Version.txt ECHO X || GOTO :error
-	ECHO Set version number to none.
+	>Program\Version.txt ECHO %Mode:~0,1%%Version% || GOTO :error
+	ECHO Set version number to "%Mode:~0,1%%Version%".
 )
 
 REM Set revision number.
->Program\Revision.txt ECHO $Revision: %Revision% $ || GOTO :error
+>Program\Revision.txt ECHO %Revision% || GOTO :error
 ECHO Set revision number to "%Revision%".
 
 REM Build locales.
@@ -139,11 +132,7 @@ ECHO Created large address aware version of RunActivity.exe.
 
 REM Copy version number from OpenRails.exe into all other 1st party files
 SET VersionInfoVersion=0.0.0.0
-IF NOT "%Version%" == "" (
-	SET VersionInfoVersion=%Version%.%Revision%
-) ELSE (
-	FOR /F "usebackq tokens=1" %%V IN (`rcedit-x86.exe "Program\OpenRails.exe" --get-version-string FileVersion`) DO SET VersionInfoVersion=%%V
-)
+FOR /F "usebackq tokens=1 delims=-" %%V IN (`ECHO %Revision%`) DO SET VersionInfoVersion=%Version%.%%V
 IF "%VersionInfoVersion%" == "0.0.0.0" (
 	>&2 ECHO ERROR: No VersionInfoVersion found in "Program\OpenRails.exe".
 	GOTO :error
