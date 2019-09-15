@@ -131,6 +131,7 @@ namespace Orts.Simulation.RollingStocks
         public float CarHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatVolumeM3;     // Volume of car for heating purposes
         public float CarHeatPipeAreaM2;  // Area of surface of car pipe
+        public bool IsTrainHeatingBoilerInitialised { get { return Train.TrainHeatingBoilerInitialised; } set { Train.TrainHeatingBoilerInitialised = value; } }
 
         // Used to calculate wheel sliding for locked brake
         public bool BrakeSkid = false;
