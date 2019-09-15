@@ -527,20 +527,23 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
             }
 
-            // Water spray for water scoop (uses steam effects currently) - Forward direction
-            if (car.Direction == Direction.Forward)
+            if (car.Train != null) // only process this visual feature if this is a valid car in the train
             {
-                foreach (var drawer in WaterScoop)
+                // Water spray for water scoop (uses steam effects currently) - Forward direction
+                if (car.Direction == Direction.Forward)
                 {
-                    drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    foreach (var drawer in WaterScoop)
+                    {
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    }
                 }
-            }
-            // If travelling in reverse turn on rearward facing effect
-            else if (car.Direction == Direction.Reverse)
-            {
-                foreach (var drawer in WaterScoopReverse)
+                // If travelling in reverse turn on rearward facing effect
+                else if (car.Direction == Direction.Reverse)
                 {
-                    drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    foreach (var drawer in WaterScoopReverse)
+                    {
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    }
                 }
             }
 
