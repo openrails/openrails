@@ -3769,6 +3769,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 if (Cars[idx].IsDriveable)
                     return Cars[idx];
             }
+            Trace.TraceWarning("Train {0} ({1}) has no locomotive!", Name, Number);
             return null;
         }
 
