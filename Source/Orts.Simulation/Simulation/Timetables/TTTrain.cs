@@ -29,7 +29,7 @@
 // #define DEBUG_TTANALYSIS
 // DEBUG flag for debug prints
 
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
@@ -64,8 +64,10 @@ namespace Orts.Simulation.Timetables
 
         public bool Created = false;                        // train is created at start
         public string CreateAhead = String.Empty;           // train is created ahead of other train
-        public string CreateFromPool = String.Empty;        // train is to be created from pool
         public string CreateInPool = String.Empty;          // train is to be created in pool at start of timetable
+        public string CreateFromPool = String.Empty;        // train is to be created from pool
+        public TimetablePool.PoolExitDirectionEnum CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
+                                                            // required direction on leaving pool (if applicable)
         public string ForcedConsistName = String.Empty;     // forced consist name for extraction from pool
 
         // Timetable Commands info
@@ -88,7 +90,20 @@ namespace Orts.Simulation.Timetables
         public bool FormsStatic = false;                                  //indicate if train is to remain as static
         public string ExitPool = String.Empty;                            //set if train is to be stabled in pool
         public int PoolAccessSection = -1;                                //set to last section index if train is to be stabled in pool, section is access section to pool
-        public int PoolIndex = -1;                                        //index in selected pool path
+
+        public enum PoolAccessState                                       // used to indicate access state to pool, combined with storage index
+                                                                          // values are <0, value >= 0 is returned storage index
+        {
+            PoolClaimed = -1,
+            PoolOverflow = -2,
+            PoolInvalid = -3,
+        }
+        public int PoolStorageIndex = -1;                                 // index in selected pool path (>=0)
+
+        public TimetablePool.PoolExitDirectionEnum PoolExitDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
+                                                                          // required exit direction from pool (if applicable) 
+        public TimetableTurntableControl ActiveTurntable = null;          //active turntable
+
         public int FormedOf = -1;                                         //indicates out of which train this train is formed
         public FormCommand FormedOfType = FormCommand.None;               //indicates type of formed-of command
         public int OrgAINumber = -1;                                      //original AI number of formed player train
@@ -147,6 +162,7 @@ namespace Orts.Simulation.Timetables
             public DelayedStartBase stationRestart;                       // delay on restart from station stop
             public DelayedStartBase attachRestart;                        // delay on restart after attaching
             public DelayedStartBase detachRestart;                        // delay between stop and detaching
+            public DelayedStartBase movingtableRestart;                   // delay for movement of train and moving table
             public float reverseAddedDelaySperM;                          // additional delay on reversal based on train length
         }
 
@@ -158,6 +174,7 @@ namespace Orts.Simulation.Timetables
             public float? creepSpeedMpS;                                  // timetable defined creep speed
             public float? attachSpeedMpS;                                 // timetable defined attach speed
             public float? detachSpeedMpS;                                 // timetable defined detach speed
+            public float? movingtableSpeedMpS;                            // timetable defined speed for moving tables
             public float routeSpeedMpS;                                   // route defined max speed
             public float consistSpeedMpS;                                 // consist defined max speed
             public bool restrictedSet;                                    // special speed has been set
@@ -225,6 +242,8 @@ namespace Orts.Simulation.Timetables
             DelayedStartSettings.attachRestart.randomPartS = 30;
             DelayedStartSettings.detachRestart.fixedPartS = 5;
             DelayedStartSettings.detachRestart.randomPartS = 20;
+            DelayedStartSettings.movingtableRestart.fixedPartS = 1;
+            DelayedStartSettings.movingtableRestart.randomPartS = 10;
             DelayedStartSettings.reverseAddedDelaySperM = 0.5f;
 
             // preset speed values
@@ -234,6 +253,7 @@ namespace Orts.Simulation.Timetables
             SpeedSettings.creepSpeedMpS = null;
             SpeedSettings.attachSpeedMpS = null;
             SpeedSettings.detachSpeedMpS = null;
+            SpeedSettings.movingtableSpeedMpS = null;
             SpeedSettings.restrictedSet = false;
         }
 
@@ -278,6 +298,7 @@ namespace Orts.Simulation.Timetables
             CreateFromPool = inf.ReadString();
             CreateInPool = inf.ReadString();
             ForcedConsistName = inf.ReadString();
+            CreatePoolDirection = (TimetablePool.PoolExitDirectionEnum)inf.ReadInt32();
 
             MaxAccelMpSSP = inf.ReadSingle();
             MaxAccelMpSSF = inf.ReadSingle();
@@ -345,7 +366,15 @@ namespace Orts.Simulation.Timetables
             FormsStatic = inf.ReadBoolean();
             ExitPool = inf.ReadString();
             PoolAccessSection = inf.ReadInt32();
-            PoolIndex = inf.ReadInt32();
+            PoolStorageIndex = inf.ReadInt32();
+            PoolExitDirection = (TimetablePool.PoolExitDirectionEnum)inf.ReadInt32();
+
+            ActiveTurntable = null;
+            if (inf.ReadBoolean())
+            {
+                ActiveTurntable = new TimetableTurntableControl(inf, AI.Simulator, this);
+            }
+
             FormedOf = inf.ReadInt32();
             FormedOfType = (FormCommand)inf.ReadInt32();
             OrgAINumber = inf.ReadInt32();
@@ -480,6 +509,8 @@ namespace Orts.Simulation.Timetables
             DelayedStartSettings.attachRestart.randomPartS = inf.ReadInt32();
             DelayedStartSettings.detachRestart.fixedPartS = inf.ReadInt32();
             DelayedStartSettings.detachRestart.randomPartS = inf.ReadInt32();
+            DelayedStartSettings.movingtableRestart.fixedPartS = inf.ReadInt32();
+            DelayedStartSettings.movingtableRestart.randomPartS = inf.ReadInt32();
             DelayedStartSettings.reverseAddedDelaySperM = inf.ReadSingle();
 
             DelayedStart = inf.ReadBoolean();
@@ -546,17 +577,42 @@ namespace Orts.Simulation.Timetables
                 SpeedSettings.detachSpeedMpS = null;
             }
 
+            if (inf.ReadBoolean())
+            {
+                SpeedSettings.movingtableSpeedMpS = inf.ReadSingle();
+            }
+            else
+            {
+                SpeedSettings.movingtableSpeedMpS = null;
+            }
+
             SpeedSettings.restrictedSet = inf.ReadBoolean();
 
             DriverOnlyOperation = inf.ReadBoolean();
             ForceReversal = inf.ReadBoolean();
+
+            // reset actions if train is active
+            bool activeTrain = true;
+
+            if (TrainType == TRAINTYPE.AI_NOTSTARTED) activeTrain = false;
+            if (TrainType == TRAINTYPE.AI_AUTOGENERATE) activeTrain = false;
+
+            if (activeTrain)
+            {
+                if (MovementState == AI_MOVEMENT_STATE.AI_STATIC || MovementState == AI_MOVEMENT_STATE.INIT) activeTrain = false;
+            }
+
+            if (activeTrain)
+            {
+                ResetActions(true);
+            }
         }
 
         //================================================================================================//
         /// <summary>
         /// Save
         /// Override from Train class
-        /// <\summary>
+        /// </summary>
 
         public override void Save(BinaryWriter outf)
         {
@@ -596,6 +652,7 @@ namespace Orts.Simulation.Timetables
             outf.Write(CreateFromPool);
             outf.Write(CreateInPool);
             outf.Write(ForcedConsistName);
+            outf.Write((int)CreatePoolDirection);
 
             outf.Write(MaxAccelMpSSP);
             outf.Write(MaxAccelMpSSF);
@@ -668,7 +725,19 @@ namespace Orts.Simulation.Timetables
             outf.Write(FormsStatic);
             outf.Write(ExitPool);
             outf.Write(PoolAccessSection);
-            outf.Write(PoolIndex);
+            outf.Write(PoolStorageIndex);
+            outf.Write((int)PoolExitDirection);
+
+            if (ActiveTurntable == null)
+            {
+                outf.Write(false);
+            }
+            else
+            {
+                outf.Write(true);
+                ActiveTurntable.Save(outf);
+            }
+
             outf.Write(FormedOf);
             outf.Write((int)FormedOfType);
             outf.Write(OrgAINumber);
@@ -778,6 +847,8 @@ namespace Orts.Simulation.Timetables
             outf.Write(DelayedStartSettings.attachRestart.randomPartS);
             outf.Write(DelayedStartSettings.detachRestart.fixedPartS);
             outf.Write(DelayedStartSettings.detachRestart.randomPartS);
+            outf.Write(DelayedStartSettings.movingtableRestart.fixedPartS);
+            outf.Write(DelayedStartSettings.movingtableRestart.randomPartS);
             outf.Write(DelayedStartSettings.reverseAddedDelaySperM);
 
             outf.Write(DelayedStart);
@@ -816,6 +887,11 @@ namespace Orts.Simulation.Timetables
             if (SpeedSettings.detachSpeedMpS.HasValue)
             {
                 outf.Write(SpeedSettings.detachSpeedMpS.Value);
+            }
+            outf.Write(SpeedSettings.movingtableSpeedMpS.HasValue);
+            if (SpeedSettings.movingtableSpeedMpS.HasValue)
+            {
+                outf.Write(SpeedSettings.movingtableSpeedMpS.Value);
             }
             outf.Write(SpeedSettings.restrictedSet);
             outf.Write(DriverOnlyOperation);
@@ -1038,7 +1114,7 @@ namespace Orts.Simulation.Timetables
             // on activation : if train is to join pool, set proper dispose details
             // copy new route if required
 
-            if (activateTrain && !String.IsNullOrEmpty(ExitPool))
+            if (activateTrain && !String.IsNullOrEmpty(ExitPool) && ActiveTurntable == null)
             {
                 TimetablePool thisPool = Simulator.PoolHolder.Pools[ExitPool];
                 bool validPool = thisPool.TestPoolExit(this);
@@ -1096,6 +1172,20 @@ namespace Orts.Simulation.Timetables
                 {
                     MovementState = AI_MOVEMENT_STATE.INIT;        // start in INIT mode to collect info
                     ControlMode = TRAIN_CONTROL.AUTO_NODE;         // start up in NODE control
+
+                    // if there is an active turntable and action is not completed, start in turntable state
+                    if (ActiveTurntable != null && ActiveTurntable.MovingTableState != TimetableTurntableControl.MovingTableStateEnum.Completed)
+                    {
+                        MovementState = AI_MOVEMENT_STATE.TURNTABLE;
+                        if (TrainType == TRAINTYPE.PLAYER)
+                        {
+                            if (ActiveTurntable.MovingTableState == TimetableTurntableControl.MovingTableStateEnum.WaitingMovingTableAvailability)
+                            {
+                                if (Simulator.Confirmer != null) // As Confirmer may not be created until after a restore.
+                                    Simulator.Confirmer.Information("Wait for turntable to become available");
+                            }
+                        }
+                    }
 
                     // recalculate station stops based on present train length
                     RecalculateStationStops(atStation);
@@ -2526,7 +2616,11 @@ namespace Orts.Simulation.Timetables
 
             // perform overall update
 
-            if (ValidRoute != null && MovementState != AI_MOVEMENT_STATE.AI_STATIC)             // no actions required for static objects //
+            if (ControlMode == TRAIN_CONTROL.TURNTABLE)
+            {
+                UpdateTurntable(elapsedClockSeconds);
+            }
+            else if (ValidRoute != null && MovementState != AI_MOVEMENT_STATE.AI_STATIC)        // no actions required for static objects //
             {
                 movedBackward = CheckBackwardClearance();                                       // check clearance at rear //
                 UpdateTrainPosition();                                                          // position update         //              
@@ -2538,6 +2632,13 @@ namespace Orts.Simulation.Timetables
                 UpdateSignalState(movedBackward);                                               // update signal state     //
 
                 UpdateMinimalDelay();
+
+                // if train ahead and approaching turntable, check if train is beyond turntable
+                if (ValidRoute[0].Last().MovingTableApproachPath > -1 && EndAuthorityType[0] == END_AUTHORITY.TRAIN_AHEAD)
+                {
+                    CheckTrainBeyondTurntable();
+                }
+
             }
         }
 
@@ -2584,11 +2685,170 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
+        /// Update train 
+        /// </summary>
+
+        public override void Update(float elapsedClockSeconds, bool auxiliaryUpdate = true)
+        {
+            // Update train physics, position and movement
+
+#if DEBUG_CHECKTRAIN
+            if (!CheckTrain)
+            {
+                if (Number == 160)
+                {
+                    DateTime baseDT = new DateTime();
+                    DateTime actTime = baseDT.AddSeconds(AI.clockTime);
+
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "Activated : ");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", actTime.ToString("HH:mm:ss") + "\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "--------\n");
+
+                    CheckTrain = true;
+                }
+            }
+#endif
+            physicsUpdate(elapsedClockSeconds);
+
+            // Update the UiD of First Wagon
+            FirstCarUiD = GetFirstWagonUiD();
+
+            // Check to see if wagons are attached to train
+            WagonsAttached = GetWagonsAttachedIndication();
+
+            //Exit here when train is static consist (no further actions required)
+
+            if (GetAIMovementState() == AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+            {
+                int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
+                UpdateAIStaticState(presentTime);
+            }
+
+            if (TrainType == TRAINTYPE.STATIC)
+                return;
+
+            // perform overall update
+
+            if (ControlMode == TRAIN_CONTROL.MANUAL)                                        // manual mode
+            {
+                UpdateManual(elapsedClockSeconds);
+            }
+
+            else if (TrainType == TRAINTYPE.PLAYER && ControlMode == TRAIN_CONTROL.TURNTABLE) // turntable mode
+            {
+                string infoString = String.Copy("Do NOT move the train");
+
+                if (LeadLocomotive.ThrottlePercent > 1)
+                {
+                    infoString = String.Concat(infoString, " ; set throttle to 0");
+                }
+                if (LeadLocomotive.Direction != Direction.N || Math.Abs(MUReverserPercent) > 1)
+                {
+                    infoString = String.Concat(infoString, " ; set reverser to neutral (or 0)");
+                }
+                Simulator.Confirmer.Warning(infoString);
+
+                ActiveTurntable.UpdateTurntableStatePlayer(elapsedClockSeconds);            // update turntable state
+            }
+            else if (ValidRoute[0] != null && GetAIMovementState() != AITrain.AI_MOVEMENT_STATE.AI_STATIC)     // no actions required for static objects //
+            {
+                if (ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL) movedBackward = CheckBackwardClearance();  // check clearance at rear if not out of control //
+                UpdateTrainPosition();                                                          // position update         //
+                UpdateTrainPositionInformation();                                               // position update         //
+                int SignalObjIndex = CheckSignalPassed(0, PresentPosition[0], PreviousPosition[0]);   // check if passed signal  //
+                UpdateSectionState(movedBackward);                                              // update track occupation //
+                ObtainRequiredActions(movedBackward);                                           // process list of actions //
+
+                bool stillExist = true;
+
+                if (TrainType == TRAINTYPE.PLAYER)                                              // player train is to check own stations
+                {
+                    if (MovementState == AI_MOVEMENT_STATE.TURNTABLE)
+                    {
+                        ActiveTurntable.UpdateTurntableStatePlayer(elapsedClockSeconds);
+                    }
+                    else
+                    {
+                        CheckStationTask();
+                        CheckPlayerAttachState();                                               // check for player attach
+
+                        if (ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                        {
+                            stillExist = CheckRouteActions(elapsedClockSeconds);                 // check routepath (AI check at other point) //
+                        }
+                    }
+                }
+                if (stillExist && ControlMode != TRAIN_CONTROL.OUT_OF_CONTROL)
+                {
+                    UpdateRouteClearanceAhead(SignalObjIndex, movedBackward, elapsedClockSeconds);  // update route clearance  //
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "MovementState : " + MovementState.ToString() + " ; End Authority : " + EndAuthorityType[0].ToString() + "\n");
+                    }
+
+                    if (MovementState != AI_MOVEMENT_STATE.TURNTABLE)
+                    {
+                        UpdateSignalState(movedBackward);                                           // update signal state but not when on turntable
+                    }
+
+                    // if train ahead and approaching turntable, check if train is beyond turntable
+                    if (ValidRoute[0].Last().MovingTableApproachPath > -1 && EndAuthorityType[0] == END_AUTHORITY.TRAIN_AHEAD)
+                    {
+                        CheckTrainBeyondTurntable();
+                    }
+                }
+            }
+
+            // calculate minimal delay (Timetable only)
+            UpdateMinimalDelay();
+
+            // check position of train wrt tunnels
+            ProcessTunnels();
+
+            // log train details
+
+            if (DatalogTrainSpeed)
+            {
+                LogTrainSpeed(Simulator.ClockTime);
+            }
+
+        } // end Update
+
+        //================================================================================================//
+        /// <summary>
+        /// If approaching turntable and there is a train ahead, check if train is beyond turntable
+        /// </summary>
+
+        public void CheckTrainBeyondTurntable()
+        {
+            TCRouteElement lastElement = ValidRoute[0].Last();
+            if (lastElement.MovingTableApproachPath > -1 && AI.Simulator.PoolHolder.Pools.ContainsKey(ExitPool))
+            {
+                TimetablePool thisPool = AI.Simulator.PoolHolder.Pools[ExitPool];
+                float lengthToGoM = thisPool.GetEndOfRouteDistance(TCRoute.TCRouteSubpaths.Last(), PresentPosition[0], lastElement.MovingTableApproachPath, signalRef);
+
+                if (CheckTrain)
+                {
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "State check if train ahead is beyond turntable\n");
+                    File.AppendAllText(@"C:\temp\checktrain.txt", "    Train Ahead : " + DistanceToEndNodeAuthorityM[0] + " ; Distance to turntable : " + lengthToGoM + "\n");
+                }
+
+                if (lengthToGoM < DistanceToEndNodeAuthorityM[0])
+                {
+                    EndAuthorityType[0] = END_AUTHORITY.END_OF_PATH;
+                    DistanceToEndNodeAuthorityM[0] = NextStopDistanceM = lengthToGoM + clearingDistanceM; // add clearing distance to avoid position lock short of turntable
+                }
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Calculate running delay if present time is later than next station arrival
         /// Override from Train class
         /// </summary>
 
-        public override void UpdateMinimalDelay()
+        public void UpdateMinimalDelay()
         {
             int presentTime = Convert.ToInt32(Math.Floor(Simulator.ClockTime));
 
@@ -3272,6 +3532,51 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
+        /// Update when train on turntable
+        /// </summary>
+
+        public override void UpdateTurntableState(float elapsedClockSeconds, int presentTime)
+        {
+
+            // check if delayed action is due
+            if (DelayedStart)
+            {
+                RestdelayS -= elapsedClockSeconds;
+                if (RestdelayS <= 0)   // wait time has elapsed - start moving
+                {
+                    DelayedStart = false;
+                    RestdelayS = 0;
+
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number + " : restart moving in turntable mode\n");
+                    }
+                }
+                else
+                {
+                    if (CheckTrain && DelayedStart)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Number + " delayed start (turntable mode) : " + RestdelayS.ToString() + "\n");
+                    }
+                    return;
+                }
+            }
+
+            // check if turntable available, else exit turntable mode
+            if (ActiveTurntable == null || ActiveTurntable.MovingTableState == TimetableTurntableControl.MovingTableStateEnum.Inactive)
+            {
+                MovementState = AI_MOVEMENT_STATE.STOPPED;  // set state to stopped to revert to normal working
+                return;
+            }
+
+            if (ActiveTurntable.CheckTurntableAvailable())
+            {
+                ActiveTurntable.UpdateTurntableStateAI(elapsedClockSeconds, presentTime);
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Update for train in Station state (train is at station)
         /// Override for AITrain class
         /// <\summary>
@@ -3781,7 +4086,12 @@ namespace Orts.Simulation.Timetables
             bool clearAction = false;
             float distanceToGoM = clearingDistanceM;
 
-            if (nextActionInfo == null) // action has been reset - keep status quo
+            if (MovementState == AI_MOVEMENT_STATE.TURNTABLE)
+            {
+                distanceToGoM = DistanceToEndNodeAuthorityM[0];
+            }
+
+            else if (nextActionInfo == null) // action has been reset - keep status quo
             {
                 if (ControlMode == TRAIN_CONTROL.AUTO_NODE)  // node control : use control distance
                 {
@@ -3791,9 +4101,9 @@ namespace Orts.Simulation.Timetables
                     {
                         distanceToGoM = DistanceToEndNodeAuthorityM[0] - 2.0f * junctionOverlapM;
                     }
-                    else if (EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH || EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH)
+                    else if (EndAuthorityType[0] == END_AUTHORITY.END_OF_PATH || EndAuthorityType[0] == END_AUTHORITY.END_OF_AUTHORITY)
                     {
-                        distanceToGoM = DistanceToEndNodeAuthorityM[0] - (Closeup ? clearingDistanceM : keepDistanceCloseupM);
+                        distanceToGoM = DistanceToEndNodeAuthorityM[0] - (Closeup ? keepDistanceCloseupM : clearingDistanceM);
                     }
 
                     if (distanceToGoM <= 0)
@@ -4081,7 +4391,25 @@ namespace Orts.Simulation.Timetables
             float requiredSpeedMpS = 0;
             float creepDistanceM = 3.0f * signalApproachDistanceM;
 
-            if (nextActionInfo != null)
+            if (MovementState == AI_MOVEMENT_STATE.TURNTABLE)
+            {
+                creepDistanceM = distanceToGoM + signalApproachDistanceM; // ensure creep distance always exceeds distance to go
+                NextStopDistanceM = distanceToGoM;
+
+                // if almost in the middle, apply full brakes
+                if (distanceToGoM < 0.25)
+                {
+                    AdjustControlsBrakeFull();
+                }
+
+                // if stopped, move to next state
+                if (distanceToGoM < 1 && Math.Abs(SpeedMpS) < 0.05f)
+                {
+                    ActiveTurntable.SetNextStageOnStopped();
+                    return;
+                }
+            }
+            else if (nextActionInfo != null)
             {
                 requiredSpeedMpS = nextActionInfo.RequiredSpeedMpS;
                 distanceToGoM = nextActionInfo.ActivateDistanceM - PresentPosition[0].DistanceTravelledM;
@@ -4273,7 +4601,6 @@ namespace Orts.Simulation.Timetables
 
             // preset, also valid for reqSpeed > 0
             float lowestSpeedMpS = requiredSpeedMpS;
-            creepDistanceM = 0.5f * signalApproachDistanceM;
 
             if (requiredSpeedMpS == 0)
             {
@@ -5444,6 +5771,11 @@ namespace Orts.Simulation.Timetables
                     randDelayPart = DelayedStartSettings.pathRestart.randomPartS * 10;
                     break;
 
+                case AI_START_MOVEMENT.TURNTABLE:
+                    baseDelayPart = DelayedStartSettings.movingtableRestart.fixedPartS;
+                    randDelayPart = DelayedStartSettings.movingtableRestart.randomPartS * 10;
+                    break;
+
                 default:
                     break;
             }
@@ -5473,6 +5805,13 @@ namespace Orts.Simulation.Timetables
                 MovementState = AI_MOVEMENT_STATE.FOLLOWING;
                 AITrainThrottlePercent = 25;
                 AdjustControlsBrakeOff();
+            }
+            else if (reason == AI_START_MOVEMENT.TURNTABLE)
+            {
+                if (MovementState != AI_MOVEMENT_STATE.AI_STATIC)  // do not restart while still in static mode)
+                {
+                    MovementState = AI_MOVEMENT_STATE.TURNTABLE;
+                }
             }
             else if (ControlMode == TRAIN_CONTROL.AUTO_NODE && EndAuthorityType[0] == END_AUTHORITY.TRAIN_AHEAD)
             {
@@ -6104,6 +6443,21 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
+        /// Clear moving table after moving off table
+        /// </summary>
+
+        public override void ClearMovingTable()
+        {
+            // only if valid reference
+            if (ActiveTurntable != null)
+            {
+                ActiveTurntable.RemoveTrainFromTurntable();
+                ActiveTurntable = null;
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Initialize player train
         /// </summary>
 
@@ -6130,7 +6484,7 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// Check couple actions for player train to other train
         /// </summary>
-        public override void CheckPlayerAttachState()
+        public void CheckPlayerAttachState()
         {
             // check for attach
             if (AttachDetails != null)
@@ -6347,24 +6701,75 @@ namespace Orts.Simulation.Timetables
                          Number.ToString() + ") at section " + sectionIndex + " exits to pool " + ExitPool + "\n");
                 }
 
-                PoolAccessSection = -1; // reset access
-
                 TimetablePool thisPool = Simulator.PoolHolder.Pools[ExitPool];
-                TCSubpathRoute newRoute = thisPool.SetPoolExit(this, out PoolIndex, true);
+                int PoolStorageState = (int)PoolAccessState.PoolInvalid;
+
+                TCSubpathRoute newRoute = thisPool.SetPoolExit(this, out PoolStorageState, true);
 
                 // if pool is valid, set new path
                 if (newRoute != null)
                 {
+                    // reset pool access
+                    PoolAccessSection = -1;
+
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Name + "(" +
+                             Number.ToString() + ") exits to pool " + ExitPool + "; pool valid, path extended \n");
+                    }
+
+                    PoolStorageIndex = PoolStorageState;
                     TCRoute.TCRouteSubpaths[TCRoute.TCRouteSubpaths.Count - 1] = new TCSubpathRoute(newRoute);
                     if (TCRoute.activeSubpath == TCRoute.TCRouteSubpaths.Count - 1)
                     {
                         ValidRoute[0] = new TCSubpathRoute(newRoute);
+
+                        // remove end-of-route action and recreate it as it may be altered on approach to moving table
+                        DistanceTravelledItem removeAction = null;
+                        foreach (DistanceTravelledItem thisAction in requiredActions)
+                        {
+                            if (thisAction.GetType() == typeof(AIActionItem))
+                            {
+                                AIActionItem thisAIAction = thisAction as AIActionItem;
+                                if (thisAIAction.NextAction == AIActionItem.AI_ACTION_TYPE.END_OF_ROUTE)
+                                {
+                                    removeAction = thisAction;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (removeAction != null) requiredActions.Remove(removeAction);
+
+                        // set new end of route action
+                        SetEndOfRouteAction();
                     }
                     validPool = true;
                 }
+
+                // if pool is claimed, set valid pool but take no further actions
+                else if (PoolStorageState == (int)PoolAccessState.PoolClaimed)
+                {
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Name + "(" +
+                             Number.ToString() + ") exits to pool " + ExitPool + "; pool claimed, path not extended \n");
+                    }
+
+                    validPool = true;
+                }
+
                 // if pool is not valid, reset pool info
                 else
                 {
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Train " + Name + "(" +
+                             Number.ToString() + ") exits to pool " + ExitPool + "; pool overflow, pool exit removed \n");
+                    }
+
+                    // reset pool access
+                    PoolAccessSection = -1;
                     ExitPool = String.Empty;
                 }
             }
@@ -6398,24 +6803,12 @@ namespace Orts.Simulation.Timetables
             }
 
             // test for pool
-            if (PoolIndex >= 0)
+            if (PoolStorageIndex >= 0)
             {
                 TimetablePool thisPool = AI.Simulator.PoolHolder.Pools[ExitPool];
-                TCSubpathRoute poolStorage = thisPool.StoragePool[PoolIndex].StoragePath;
-
-                // check if signal route leads to pool
-                foreach (TCRouteElement routeElement in poolStorage)
+                if (thisPool.TestRouteLeadingToPool(thisRoute, PoolStorageIndex, dumpfile, Name))
                 {
-                    if (thisRoute.GetRouteIndex(routeElement.TCSectionIndex, 0) > 0)
-                    {
-                        if (!String.IsNullOrEmpty(dumpfile))
-                        {
-                            var sob = new StringBuilder();
-                            sob.AppendFormat("CALL ON : Train {0} : valid - train is going into pool {1} \n", Name, ExitPool);
-                            File.AppendAllText(dumpfile, sob.ToString());
-                        }
-                        return (true);
-                    }
+                    return (true);
                 }
             }
 
@@ -6964,51 +7357,65 @@ namespace Orts.Simulation.Timetables
 
         public override void SetEndOfRouteAction()
         {
-            // remaining length first section
+            // check if route leads to moving table
 
-            TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
-            float lengthToGoM = thisSection.Length - PresentPosition[0].TCOffset;
-            // go through all further sections
+            float lengthToGoM = 0;
 
-            for (int iElement = PresentPosition[0].RouteListIndex + 1; iElement < ValidRoute[0].Count; iElement++)
+            TCRouteElement lastElement = ValidRoute[0].Last();
+            if (lastElement.MovingTableApproachPath > -1 && AI.Simulator.PoolHolder.Pools.ContainsKey(ExitPool))
             {
-                TCRouteElement thisElement = ValidRoute[0][iElement];
-                thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                lengthToGoM += thisSection.Length;
+                TimetablePool thisPool = AI.Simulator.PoolHolder.Pools[ExitPool];
+                lengthToGoM = thisPool.GetEndOfRouteDistance(TCRoute.TCRouteSubpaths.Last(), PresentPosition[0], lastElement.MovingTableApproachPath, signalRef);
             }
 
-            lengthToGoM -= 5.0f; // keep save distance from end
-
-            // if last section does not end at signal or next section is switch, set back overlap to keep clear of switch
-            // only do so for last subroute to avoid falling short of reversal points
-            // only do so if last section is not a station and closeup is not set for dispose
-
-            TCRouteElement lastElement = ValidRoute[0][ValidRoute[0].Count - 1];
-            TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
-            if (lastSection.EndSignals[lastElement.Direction] == null && TCRoute.activeSubpath == (TCRoute.TCRouteSubpaths.Count - 1))
+            // remaining length first section
+            else
             {
-                int nextIndex = lastSection.Pins[lastElement.Direction, 0].Link;
-                bool lastIsStation = false;
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[PresentPosition[0].TCSectionIndex];
+                lengthToGoM = thisSection.Length - PresentPosition[0].TCOffset;
+                // go through all further sections
 
-                if (StationStops != null && StationStops.Count > 0)
+                for (int iElement = PresentPosition[0].RouteListIndex + 1; iElement < ValidRoute[0].Count; iElement++)
                 {
-                    StationStop lastStop = StationStops.Last();
-                    if (lastStop.SubrouteIndex == TCRoute.TCRouteSubpaths.Count - 1 && lastStop.PlatformItem.TCSectionIndex.Contains(lastSection.Index))
-                    {
-                        lastIsStation = true;
-                    }
+                    TCRouteElement thisElement = ValidRoute[0][iElement];
+                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    lengthToGoM += thisSection.Length;
                 }
 
-                if (nextIndex >= 0 && !lastIsStation && !Closeup)
+                lengthToGoM -= 5.0f; // keep save distance from end
+
+                // if last section does not end at signal or next section is switch, set back overlap to keep clear of switch
+                // only do so for last subroute to avoid falling short of reversal points
+                // only do so if last section is not a station and closeup is not set for dispose
+
+                TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastElement.TCSectionIndex];
+                if (lastSection.EndSignals[lastElement.Direction] == null && TCRoute.activeSubpath == (TCRoute.TCRouteSubpaths.Count - 1))
                 {
-                    if (signalRef.TrackCircuitList[nextIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
+                    int nextIndex = lastSection.Pins[lastElement.Direction, 0].Link;
+                    bool lastIsStation = false;
+
+                    if (StationStops != null && StationStops.Count > 0)
                     {
-                        float lengthCorrection = Math.Max(Convert.ToSingle(signalRef.TrackCircuitList[nextIndex].Overlap), standardOverlapM);
-                        if (lastSection.Length - 2 * lengthCorrection < Length) // make sure train fits
+                        StationStop lastStop = StationStops.Last();
+                        if (lastStop.SubrouteIndex == TCRoute.TCRouteSubpaths.Count - 1 && lastStop.PlatformItem.TCSectionIndex.Contains(lastSection.Index))
                         {
-                            lengthCorrection = Math.Max(0.0f, (lastSection.Length - Length) / 2);
+                            lastIsStation = true;
                         }
-                        lengthToGoM -= lengthCorrection; // correct for stopping position
+                    }
+
+                    // closeup to junction if closeup is set except on last stop or when storing in pool
+                    bool reqcloseup = Closeup && String.IsNullOrEmpty(ExitPool);
+                    if (nextIndex >= 0 && !lastIsStation && !reqcloseup)
+                    {
+                        if (signalRef.TrackCircuitList[nextIndex].CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
+                        {
+                            float lengthCorrection = Math.Max(Convert.ToSingle(signalRef.TrackCircuitList[nextIndex].Overlap), standardOverlapM);
+                            if (lastSection.Length - 2 * lengthCorrection < Length) // make sure train fits
+                            {
+                                lengthCorrection = Math.Max(0.0f, (lastSection.Length - Length) / 2);
+                            }
+                            lengthToGoM -= lengthCorrection; // correct for stopping position
+                        }
                     }
                 }
             }
@@ -8798,6 +9205,13 @@ namespace Orts.Simulation.Timetables
             // check if any other train needs to be activated
             ActivateTriggeredTrain(TriggerActivationType.Dispose, -1);
 
+            // check if any outstanding moving table actions
+            List<DistanceTravelledItem> reqActions = requiredActions.GetActions(0.0f, typeof(ClearMovingTableAction));
+            foreach (DistanceTravelledItem thisAction in reqActions)
+            {
+                ClearMovingTable();
+            }
+
             // check if train is to form new train
             // note : if formed train == 0, formed train is player train which requires different actions
 
@@ -8875,13 +9289,13 @@ namespace Orts.Simulation.Timetables
                 {
                     TimetablePool thisPool = Simulator.PoolHolder.Pools[ExitPool];
 
-                    if (thisPool.StoragePool[PoolIndex].StoredUnits.Contains(Number))
+                    if (thisPool.StoragePool[PoolStorageIndex].StoredUnits.Contains(Number) && !thisPool.StoragePool[PoolStorageIndex].ClaimUnits.Contains(Number))
                     {
                         Trace.TraceWarning("Pool {0} : train : {1} ({2}) : adding train allready in pool \n", thisPool.PoolName, Name, Number);
                     }
                     else
                     {
-                        thisPool.AddUnit(this);
+                        thisPool.AddUnit(this, false);
                     }
                 }
             }
@@ -9120,6 +9534,11 @@ namespace Orts.Simulation.Timetables
 
         public bool CheckEndOfRoutePositionTT()
         {
+            if (CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Check end of route (TT) ; MovementState : " + MovementState + "\n");
+            }
+
             bool endOfRoute = false;
 
             // only allowed when stopped
@@ -9135,6 +9554,10 @@ namespace Orts.Simulation.Timetables
                 int poolAccessRouteIndex = ValidRoute[0].GetRouteIndex(PoolAccessSection, 0);
                 if (poolAccessRouteIndex >= 0)
                 {
+                    if (CheckTrain)
+                    {
+                        File.AppendAllText(@"C:\temp\checktrain.txt", "Pool Access required ; poolAccessRouteIndex : " + poolAccessRouteIndex + "\n");
+                    }
                     return (endOfRoute);
                 }
             }
@@ -9151,8 +9574,30 @@ namespace Orts.Simulation.Timetables
                 return (endOfRoute);
             }
 
-            // obtain reversal section index
+            // if stopped in last section of route and this section is exit to moving table switch to moving table mode
+            if (ValidRoute[0][PresentPosition[0].RouteListIndex].MovingTableApproachPath > -1)
+            {
+                if (AI.Simulator.PoolHolder.Pools.ContainsKey(ExitPool))
+                {
+                    TimetablePool thisPool = AI.Simulator.PoolHolder.Pools[ExitPool];
+                    if (thisPool.GetType() == typeof(TimetableTurntablePool))
+                    {
+                        TimetableTurntablePool thisTurntablePool = thisPool as TimetableTurntablePool;
+                        ActiveTurntable = new TimetableTurntableControl(thisTurntablePool, thisTurntablePool.PoolName, thisTurntablePool.AdditionalTurntableDetails.TurntableIndex,
+                            AI.Simulator, this);
+                        ActiveTurntable.MovingTableState = TimetableTurntableControl.MovingTableStateEnum.WaitingMovingTableAvailability;
+                        ActiveTurntable.MovingTableAction = TimetableTurntableControl.MovingTableActionEnum.FromAccess;
+                        MovementState = AI_MOVEMENT_STATE.TURNTABLE;
+                        if (CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt", "Moving table access ; Movement State : " + MovementState + "\n");
+                        }
+                        return (endOfRoute);
+                    }
+                }
+            }
 
+            // obtain reversal section index
             int reversalSectionIndex = -1;
             if (TCRoute != null && (ControlMode == TRAIN_CONTROL.AUTO_NODE || ControlMode == TRAIN_CONTROL.AUTO_SIGNAL))
             {
@@ -10592,7 +11037,7 @@ namespace Orts.Simulation.Timetables
                     if (!String.IsNullOrEmpty(ExitPool))
                     {
                         TimetablePool thisPool = Simulator.PoolHolder.Pools[ExitPool];
-                        thisPool.AddUnit(this);
+                        thisPool.AddUnit(this, false);
                     }
 
                     MovementState = AI_MOVEMENT_STATE.AI_STATIC;
@@ -10807,6 +11252,11 @@ namespace Orts.Simulation.Timetables
             if (!SpeedSettings.detachSpeedMpS.HasValue)
             {
                 SpeedSettings.detachSpeedMpS = TTTrain.couplingSpeedMpS;
+            }
+
+            if (!SpeedSettings.movingtableSpeedMpS.HasValue)
+            {
+                SpeedSettings.movingtableSpeedMpS = TTTrain.movingtableSpeedMpS;
             }
 
             TrainMaxSpeedMpS = SpeedSettings.maxSpeedMpS.Value;

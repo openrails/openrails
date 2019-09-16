@@ -67,7 +67,7 @@ namespace Orts.Viewer3D.Popups
         Matrix XNAView = Matrix.Identity;
 		Matrix XNAProjection = Matrix.Identity;
         internal Point ScreenSize = new Point(10000, 10000); // Arbitrary but necessary.
-		ResolveTexture2D Screen;
+        RenderTarget2D Screen;
 
         public WindowManager(Viewer viewer)
         {
@@ -84,13 +84,13 @@ namespace Orts.Viewer3D.Popups
 
             if (WhiteTexture == null)
             {
-                WhiteTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
+                WhiteTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
                 WhiteTexture.SetData(new[] { Color.White });
             }
             if (FlushTexture == null)
             {
-                FlushTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, 1, TextureUsage.None, SurfaceFormat.Color);
-                FlushTexture.SetData(new[] { Color.TransparentBlack });
+                FlushTexture = new Texture2D(Viewer.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                FlushTexture.SetData(new[] { Color.Transparent });
             }
             if (ScrollbarTexture == null)
                 // TODO: This should happen on the loader thread.
@@ -101,7 +101,7 @@ namespace Orts.Viewer3D.Popups
             if (NoticeTexture == null)
             {
                 var size = 256;
-                var background = new Color(Color.Black, 0.5f);
+                var background = Color.Black * 0.5f;
                 var borderRadius = size / 7;
                 var data = new Color[size * size * 2];
 
@@ -116,8 +116,8 @@ namespace Orts.Viewer3D.Popups
                             data[y * size + x] = background;
 
                 // Notice texture is just the rounded corner background.
-                NoticeTexture = new Texture2D(Viewer.GraphicsDevice, size, size, 1, TextureUsage.None, SurfaceFormat.Color);
-                NoticeTexture.SetData(data, 0, size * size, SetDataOptions.Discard);
+                NoticeTexture = new Texture2D(Viewer.GraphicsDevice, size, size, false, SurfaceFormat.Color);
+                NoticeTexture.SetData(data, 0, size * size);
 
                 // Clone the background for pause texture (it has two states).
                 Array.Copy(data, 0, data, size * size, size * size);
@@ -138,7 +138,7 @@ namespace Orts.Viewer3D.Popups
                         data[y * size + x] = Color.White;
                 }
 
-                PauseTexture = new Texture2D(Viewer.GraphicsDevice, size, size * 2, 1, TextureUsage.None, SurfaceFormat.Color);
+                PauseTexture = new Texture2D(Viewer.GraphicsDevice, size, size * 2, false, SurfaceFormat.Color);
                 PauseTexture.SetData(data);
             }
         }
@@ -183,7 +183,7 @@ namespace Orts.Viewer3D.Popups
 			{
 				if (Screen != null)
 					Screen.Dispose();
-				Screen = new ResolveTexture2D(Viewer.GraphicsDevice, ScreenSize.X, ScreenSize.Y, 1, Viewer.GraphicsDevice.PresentationParameters.BackBufferFormat);
+                Screen = new RenderTarget2D(Viewer.GraphicsDevice, ScreenSize.X, ScreenSize.Y, false, Viewer.GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24Stencil8);
 			}
 
 			// Reposition all the windows.
@@ -227,30 +227,25 @@ namespace Orts.Viewer3D.Popups
 			// Project into a flat view of the same size as the viewport.
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
-            var rs = graphicsDevice.RenderState;
 			foreach (var window in VisibleWindows)
 			{
 				var xnaWorld = window.XNAWorld;
 
-				if (Screen != null)
-					graphicsDevice.ResolveBackBuffer(Screen);
+                // FIXME: MonoGame cannot read backbuffer
+                //if (Screen != null)
+                //    graphicsDevice.ResolveBackBuffer(Screen);
                 PopupWindowMaterial.SetState(graphicsDevice, Screen);
                 PopupWindowMaterial.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
                 PopupWindowMaterial.ResetState(graphicsDevice);
-
-                SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
-				window.Draw(SpriteBatch);
-				SpriteBatch.End();
-			}
+                SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied, null, null, null, null);
+                window.Draw(SpriteBatch);
+                SpriteBatch.End();
+            }
             // For performance, we call SpriteBatch.Begin() with SaveStateMode.None above, but we now need to restore
             // the state ourselves.
-            rs.AlphaBlendEnable = false;
-            rs.AlphaFunction = CompareFunction.Always;
-            rs.AlphaTestEnable = false;
-            rs.DepthBufferEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
-		}
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
+        }
 
 		internal void Add(Window window)
 		{

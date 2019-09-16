@@ -101,6 +101,8 @@ float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 {
 	float4 Color = tex2D(WindowSampler, In.TexCoords_Pos.xy);
 	float Mask = tex2D(WindowSampler, In.TexCoords_Pos.xy + float2(0.5, 0.0)).r;
+    // FIXME: MonoGame cannot read backbuffer, thus screen data is unavailable in ScreenSampler
+    /*
 	float3 ScreenColor = tex2D(ScreenSampler, In.TexCoords_Pos.zw);
 	float3 ScreenColor1 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x, +1 / ScreenSize.y));
 	float3 ScreenColor2 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(+1 / ScreenSize.x,  0 / ScreenSize.y));
@@ -113,20 +115,24 @@ float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 	float3 ScreenColor9 = tex2D(ScreenSampler, In.TexCoords_Pos.zw + float2(-1 / ScreenSize.x, -1 / ScreenSize.y));
 	ScreenColor = lerp(ScreenColor, (22 * GlassColor + ScreenColor + ScreenColor1 + ScreenColor2 + ScreenColor3 + ScreenColor4 + ScreenColor5 + ScreenColor6 + ScreenColor7 + ScreenColor8 + ScreenColor9) / 32, Mask);
 	return float4(lerp(ScreenColor, Color.rgb, Color.a), 1);
+    */
+    // FIXME: Temporary replacement for the above commented out section:
+	float4 ScreenColor = float4(GlassColor, Mask * 0.6);
+	return lerp(ScreenColor, Color, Color.a);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
 
 technique PopupWindow {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSPopupWindow();
-		PixelShader = compile ps_2_0 PSPopupWindow();
+		VertexShader = compile vs_4_0_level_9_3 VSPopupWindow();
+		PixelShader = compile ps_4_0_level_9_3 PSPopupWindow();
 	}
 }
 
 technique PopupWindowGlass {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSPopupWindowGlass();
-		PixelShader = compile ps_2_0 PSPopupWindowGlass();
+		VertexShader = compile vs_4_0_level_9_3 VSPopupWindowGlass();
+		PixelShader = compile ps_4_0_level_9_3 PSPopupWindowGlass();
 	}
 }

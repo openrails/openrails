@@ -61,6 +61,7 @@
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
             this.checkMSTSBINSound = new System.Windows.Forms.CheckBox();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
+            this.checkEnableMultisampling = new System.Windows.Forms.CheckBox();
             this.checkShadowAllShapes = new System.Windows.Forms.CheckBox();
             this.checkDoubleWire = new System.Windows.Forms.CheckBox();
             this.label15 = new System.Windows.Forms.Label();
@@ -592,6 +593,7 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.checkEnableMultisampling);
             this.tabPageVideo.Controls.Add(this.checkShadowAllShapes);
             this.tabPageVideo.Controls.Add(this.checkDoubleWire);
             this.tabPageVideo.Controls.Add(this.label15);
@@ -624,6 +626,28 @@
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
+            // 
+            // checkShadowAllShapes
+            // 
+            this.checkShadowAllShapes.AutoSize = true;
+            this.checkShadowAllShapes.Location = new System.Drawing.Point(6, 29);
+            this.checkShadowAllShapes.Name = "checkShadowAllShapes";
+            this.checkShadowAllShapes.Size = new System.Drawing.Size(130, 17);
+            this.checkShadowAllShapes.TabIndex = 24;
+            this.checkShadowAllShapes.Text = "Shadow for all shapes";
+            this.checkShadowAllShapes.UseVisualStyleBackColor = true;
+            // 
+            // checkEnableMultisampling
+            // 
+            this.checkEnableMultisampling.AutoSize = true;
+            this.checkEnableMultisampling.Checked = true;
+            this.checkEnableMultisampling.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkEnableMultisampling.Location = new System.Drawing.Point(6, 144);
+            this.checkEnableMultisampling.Name = "checkEnableMultisampling";
+            this.checkEnableMultisampling.Size = new System.Drawing.Size(124, 17);
+            this.checkEnableMultisampling.TabIndex = 25;
+            this.checkEnableMultisampling.Text = "Enable multisampling";
+            this.checkEnableMultisampling.UseVisualStyleBackColor = true;
             // 
             // checkShadowAllShapes
             // 
@@ -2470,5 +2494,6 @@
         private System.Windows.Forms.NumericUpDown numericActWeatherRandomizationLevel;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
+        private System.Windows.Forms.CheckBox checkEnableMultisampling;
     }
 }
