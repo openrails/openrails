@@ -3850,6 +3850,7 @@ namespace Orts.Simulation.Physics
                 if (Cars[idx].IsDriveable)
                     return Cars[idx];
             }
+            Trace.TraceWarning("Train {0} ({1}) has no locomotive!", Name, Number);
             return null;
         }
 
