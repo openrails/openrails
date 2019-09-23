@@ -179,6 +179,7 @@ namespace Orts.Simulation.Physics
         Interpolator OutsideAutumnTempbyLatitudeC;
         Interpolator OutsideSpringTempbyLatitudeC;
         Interpolator OutsideSummerTempbyLatitudeC;
+        public bool TrainHeatingBoilerInitialised = false;
 
         // Values for Wind Direction and Speed - needed for wind resistance and lateral force
         public float PhysicsWindDirectionDeg;

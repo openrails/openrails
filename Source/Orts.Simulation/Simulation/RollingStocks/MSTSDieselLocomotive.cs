@@ -704,19 +704,10 @@ namespace Orts.Simulation.RollingStocks
                     if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
                     {
                         CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
-
-                        // Set values for visible exhaust based upon setting of steam controller
-                        HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
-                        HeatingSteamBoilerDurationS = 1.0f * SteamHeatController.CurrentValue;
-
-                        // Calculate fuel usage for steam heat boiler
-                        float FuelUsageL = SteamHeatController.CurrentValue * pS.FrompH(SteamHeatBoilerFuelUsageLpH) * elapsedClockSeconds;
-                        CurrentSteamHeatFuelCapacityL -= FuelUsageL; // Reduce Tank capacity as fuel used.
-                        MassKG -= FuelUsageL * 0.85f; // Reduce locomotive weight as Steam heat boiler uses fuel.
-
                     }
 
                     CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
+
 
                     if (CurrentSteamHeatPressurePSI < 0.1)
                     {
@@ -726,10 +717,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
+
                         Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
                         Train.CarSteamHeatOn = true; // turn on steam effects on wagons
                     }
                 }
+
             }
         }
 
