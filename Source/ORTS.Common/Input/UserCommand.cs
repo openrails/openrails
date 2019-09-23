@@ -181,7 +181,7 @@
         [GetString("Control Cylinder Compound")] ControlCylinderCompound,
         [GetString("Control Firing")] ControlFiring,
         [GetString("Control Refill")] ControlRefill,
-        [GetString("Control TroughRefill")] ControlTroughRefill,
+        [GetString("Control Water Scoop")] ControlWaterScoop,
         [GetString("Control ImmediateRefill")] ControlImmediateRefill,
         [GetString("Control Turntable Clockwise")] ControlTurntableClockwise,
         [GetString("Control Turntable Counterclockwise")] ControlTurntableCounterclockwise,
