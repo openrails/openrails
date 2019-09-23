@@ -169,6 +169,7 @@ namespace Orts.Formats.Msts
         ORTS_PANTOGRAPH3,
         ORTS_PANTOGRAPH4,
         ORTS_LARGE_EJECTOR,
+        ORTS_WATER_SCOOP,
         ORTS_HOURDIAL,
         ORTS_MINUTEDIAL,
         ORTS_SECONDDIAL,
