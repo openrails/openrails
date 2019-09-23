@@ -1243,6 +1243,24 @@ namespace Orts.Common
 
     // Cylinder Cocks command
     [Serializable()]
+    public sealed class ToggleWaterScoopCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleWaterScoopCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleWaterScoop();
+        }
+    }
+
+    [Serializable()]
     public sealed class ToggleCylinderCocksCommand : Command {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
