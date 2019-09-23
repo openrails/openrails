@@ -75,6 +75,7 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> TenderWaterOverflow = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> WagonSmoke = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> HeatingSteamBoiler = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> BearingHotBox = new List<ParticleEmitterViewer>();
 
         // Create viewers for special steam effects on car
         List<ParticleEmitterViewer> WagonGenerator = new List<ParticleEmitterViewer>();
@@ -105,15 +106,7 @@ namespace Orts.Viewer3D.RollingStock
 
                 // Exhaust for steam heating boiler
                 if (emitter.Key.ToLowerInvariant() == "heatingsteamboilerfx")
-                {
                     HeatingSteamBoiler.AddRange(emitter.Value);
-                    // set flag to indicate that heating boiler is active on this car only - only sets first boiler steam effect found in the train
-                    if (!car.IsTrainHeatingBoilerInitialised && !car.HeatingBoilerSet)
-                    {
-                        car.HeatingBoilerSet = true;
-                        car.IsTrainHeatingBoilerInitialised = true;
-                    }
-                }
 
                 foreach (var drawer in HeatingSteamBoiler)
                 {
@@ -134,6 +127,15 @@ namespace Orts.Viewer3D.RollingStock
                     WagonSmoke.AddRange(emitter.Value);
 
                 foreach (var drawer in WagonSmoke)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Smoke for bearing hot box
+                if (emitter.Key.ToLowerInvariant() == "bearinghotboxfx")
+                    BearingHotBox.AddRange(emitter.Value);
+
+                foreach (var drawer in BearingHotBox)
                 {
                     drawer.Initialize(steamTexture);
                 }
@@ -551,6 +553,12 @@ namespace Orts.Viewer3D.RollingStock
                 drawer.SetOutput(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowVolumeM3pS, car.TenderWaterOverflowParticleDurationS);
             }
 
+            // Bearing Hot box smoke
+            foreach (var drawer in BearingHotBox)
+            {
+                drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
+            }
+
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
                 foreach (ParticleEmitterViewer drawer in drawers)
                     drawer.PrepareFrame(frame, elapsedTime);
@@ -759,7 +767,8 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
-
+            // Get the current height above "sea level" for the relevant car
+            Car.CarHeightAboveSeaLevelM = Viewer.Tiles.GetElevation(Car.WorldPosition.WorldLocation);
 
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedCar == this.MSTSWagon

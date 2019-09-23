@@ -32,7 +32,7 @@ namespace Orts.Simulation.Timetables
     /// </summary>
     public class PoolInfo
     {
-        public Simulator simulator;
+        Simulator simulator;
 
         //================================================================================================//
         /// <summary>
