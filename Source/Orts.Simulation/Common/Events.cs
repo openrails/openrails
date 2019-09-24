@@ -165,10 +165,7 @@ namespace Orts.Common
         CylinderCocksOpen,
         CylinderCocksClose,
         SecondEnginePowerOff,
-        SecondEnginePowerOn,
-
-        HotBoxBearingOn,
-        HotBoxBearingOff
+        SecondEnginePowerOn
     }
 
     public static class Events
@@ -347,9 +344,6 @@ namespace Orts.Common
                         case 170: return Event.Pantograph3Down;
                         case 171: return Event.Pantograph4Up;
                         case 172: return Event.Pantograph4Down;
-
-                        case 173: return Event.HotBoxBearingOn;
-                        case 174: return Event.HotBoxBearingOff;
                         //
 
                         default: return 0;

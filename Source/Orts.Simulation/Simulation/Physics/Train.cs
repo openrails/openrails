@@ -151,23 +151,15 @@ namespace Orts.Simulation.Physics
         public bool IsWheelSlip;
         public bool IsBrakeSkid;
 
-        public bool HotBoxSetOnTrain = false;
-        public int ActivityDurationS
-        {
-            get
-            {
-                return Simulator.Activity.Tr_Activity.Tr_Activity_Header.Duration.ActivityDuration();
-            }
-        }
-
-// Carriage Steam Heating
-public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
+        // Carriage Steam Heating
+        public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         public float TrainInsideTempC;                  // Desired inside temperature for carriage steam heating depending upon season
         public float TrainOutsideTempC;                 // External ambient temeprature for carriage steam heating.
         public float TrainSteamHeatLossWpT;             // Total Steam Heat loss of train
         public float TrainHeatVolumeM3;                 // Total Volume of train to steam heat
         public float TrainHeatPipeAreaM2;               // Total area of heating pipe for steam heating
         public float TrainCurrentSteamHeatPipeTempC;                 // Temperature of steam in steam heat system based upon pressure setting
+//        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
         public bool CarSteamHeatOn = false;    // Is steam heating turned on
         public float TrainNetSteamHeatLossWpTime;        // Net Steam loss - Loss in Cars vs Steam Pipe Heat
         public float TrainCurrentTrainSteamHeatW;    // Current steam heat of air in train
@@ -183,6 +175,11 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
         float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
         bool IsTrainSteamHeatInitial = true; // Allow steam heat to be initialised.
+        Interpolator OutsideWinterTempbyLatitudeC;
+        Interpolator OutsideAutumnTempbyLatitudeC;
+        Interpolator OutsideSpringTempbyLatitudeC;
+        Interpolator OutsideSummerTempbyLatitudeC;
+        public bool TrainHeatingBoilerInitialised = false;
 
         // Values for Wind Direction and Speed - needed for wind resistance and lateral force
         public float PhysicsWindDirectionDeg;
@@ -196,6 +193,54 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             {
                return Simulator.Settings.WindResistanceDependent;
             }
+        }
+        
+
+        // Input values to allow the temperature for different values of latitude to be calculated
+        static float[] WorldLatitudeDeg = new float[]
+        {
+           -50.0f, -40.0f, -30.0f, -20.0f, -10.0f, 0.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f
+        };
+
+        // Temperature in deg Celcius
+        static float[] WorldTemperatureWinter = new float[]
+        {
+            0.9f, 8.7f, 12.4f, 17.2f, 20.9f, 25.9f, 22.8f, 18.2f, 11.1f, 1.1f, -10.2f, -18.7f
+         };
+
+        static float[] WorldTemperatureAutumn = new float[]
+        {
+            7.5f, 13.7f, 18.8f, 22.0f, 24.0f, 26.0f, 25.0f, 21.6f, 21.0f, 14.3f, 6.0f, 3.8f
+         };
+
+        static float[] WorldTemperatureSpring = new float[]
+        {
+            8.5f, 13.1f, 17.6f, 18.6f, 24.6f, 25.9f, 26.8f, 23.4f, 18.5f, 12.6f, 6.1f, 1.7f
+         };
+
+        static float[] WorldTemperatureSummer = new float[]
+        {
+            13.4f, 18.3f, 22.8f, 24.3f, 24.4f, 25.0f, 25.2f, 22.5f, 26.6f, 24.8f, 19.4f, 14.3f
+         };
+
+        public static Interpolator WorldWinterLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureWinter);
+        }
+
+        public static Interpolator WorldAutumnLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureAutumn);
+        }
+
+        public static Interpolator WorldSpringLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureSpring);
+        }
+
+        public static Interpolator WorldSummerLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureSummer);
         }
 
         // Auxiliary Water Tenders
@@ -1984,9 +2029,46 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             if (mstsLocomotive != null)
             { 
 
+            if (IsTrainSteamHeatInitial) // First time method processed do this loop to set up the temprature tables
+            {
+                OutsideWinterTempbyLatitudeC = WorldWinterLatitudetoTemperatureC();
+                OutsideAutumnTempbyLatitudeC = WorldAutumnLatitudetoTemperatureC();
+                OutsideSpringTempbyLatitudeC = WorldSpringLatitudetoTemperatureC();
+                OutsideSummerTempbyLatitudeC = WorldSummerLatitudetoTemperatureC();
+            }
+
                 // Check to confirm that train is player driven and has passenger cars in the consist.
                 if (IsPlayerDriven && PassengerCarsNumber > 0 && mstsLocomotive.TrainFittedSteamHeat)
                 {
+
+                    // Find the latitude reading and set outside temperature
+                    double latitude = 0;
+                    double longitude = 0;
+                    var location = this.FrontTDBTraveller;
+                    new Orts.Common.WorldLatLon().ConvertWTC(location.TileX, location.TileZ, location.Location, ref latitude, ref longitude);
+                    float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
+
+                    // Sets outside temperature dependent upon the season
+                    if (Simulator.Season == SeasonType.Winter)
+                    {
+                        // Winter temps
+                        TrainOutsideTempC = OutsideWinterTempbyLatitudeC[LatitudeDeg];
+                    }
+                    else if (Simulator.Season == SeasonType.Autumn)
+                    {
+                        // Autumn temps
+                        TrainOutsideTempC = OutsideAutumnTempbyLatitudeC[LatitudeDeg];
+                    }
+                    else if (Simulator.Season == SeasonType.Spring)
+                    {
+                        // Sping temps
+                        TrainOutsideTempC = OutsideSpringTempbyLatitudeC[LatitudeDeg];
+                    }
+                    else
+                    {
+                        // Summer temps
+                        TrainOutsideTempC = OutsideSummerTempbyLatitudeC[LatitudeDeg];
+                    }
 
                     // Reset Values to zero to recalculate values
                     TrainHeatVolumeM3 = 0.0f;
@@ -2099,7 +2181,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 #if DEBUG_CARSTEAMHEAT
 
         Trace.TraceInformation("***************************************** DEBUG_CARHEAT (Train.cs) ***************************************************************");
-        Trace.TraceInformation("Steam Heating Fitted {0} Player Driven {1} Passenger Cars {2}", mstsLocomotive.TrainFittedSteamHeat, IsPlayerDriven, PassengerCarsNumber);      
+        Trace.TraceInformation("Steam Heating Fitted {0} Player Driven {1} Passenger Cars {2}", TrainFittedSteamHeat, IsPlayerDriven, PassengerCarsNumber);       
         Trace.TraceInformation("Inside Temp {0} Outside Temp {1}", TrainInsideTempC, TrainOutsideTempC); 
         Trace.TraceInformation("Train heat loss {0} Train heat pipe area {1} Train heat volume {2}", TrainSteamHeatLossWpT, TrainHeatPipeAreaM2, TrainHeatVolumeM3);        
 
