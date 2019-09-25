@@ -35,6 +35,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -45,7 +46,6 @@ using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Settings;
 using System;
-using Orts.Parsers.Msts;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -200,11 +200,11 @@ namespace Orts.Simulation.RollingStocks
         public float HotBoxStartTimeS;
 
         // Setup for ambient temperature dependency
-        Interpolator OutsideWinterTempbyLatitudeC;
-        Interpolator OutsideAutumnTempbyLatitudeC;
-        Interpolator OutsideSpringTempbyLatitudeC;
-        Interpolator OutsideSummerTempbyLatitudeC;
-        public bool AmbientTemperatureInitialised;
+        Interpolator OutsideWinterTempbyLatitudeC;  // Interploator to calculate ambient Winter temperature based upon the latitude of the route
+        Interpolator OutsideAutumnTempbyLatitudeC;  // Interploator to calculate ambient Autumn temperature based upon the latitude of the route
+        Interpolator OutsideSpringTempbyLatitudeC;  // Interploator to calculate ambient Spring temperature based upon the latitude of the route
+        Interpolator OutsideSummerTempbyLatitudeC;  // Interploator to calculate ambient Summer temperature based upon the latitude of the route
+        public bool AmbientTemperatureInitialised;  // Flag to indicate that ambient temperature has been initialised
 
         // Input values to allow the temperature for different values of latitude to be calculated
         static float[] WorldLatitudeDeg = new float[]
