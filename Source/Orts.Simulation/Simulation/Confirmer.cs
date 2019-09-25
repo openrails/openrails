@@ -64,6 +64,7 @@ namespace Orts.Simulation
       , FireShovelfull
       , CylinderCocks
       , CylinderCompound
+      , LargeEjector
       , SmallEjector
       , TenderCoal
       , TenderWater
@@ -165,6 +166,7 @@ namespace Orts.Simulation
             Func<string, string> GetString = (value) => Simulator.Catalog.GetString(value);
             Func<string, string, string> GetParticularString = (context, value) => Simulator.Catalog.GetParticularString(context, value);
 
+            // The following list needs to be in the same order as the list above under CabControl
             ConfirmText = new string[][] {
                 new string [] { GetString("<none>") } 
                 // Power
@@ -197,7 +199,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
                 , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
-                , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") } 
+                , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("LargeEjector"), GetString("disable"), null, GetString("enable") }
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
