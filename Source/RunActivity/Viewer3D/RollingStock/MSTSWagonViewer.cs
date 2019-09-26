@@ -106,7 +106,15 @@ namespace Orts.Viewer3D.RollingStock
 
                 // Exhaust for steam heating boiler
                 if (emitter.Key.ToLowerInvariant() == "heatingsteamboilerfx")
+                {
                     HeatingSteamBoiler.AddRange(emitter.Value);
+                    // set flag to indicate that heating boiler is active on this car only - only sets first boiler steam effect found in the train
+                    if (!car.IsTrainHeatingBoilerInitialised && !car.HeatingBoilerSet)
+                    {
+                        car.HeatingBoilerSet = true;
+                        car.IsTrainHeatingBoilerInitialised = true;
+                    }
+                }
 
                 foreach (var drawer in HeatingSteamBoiler)
                 {
