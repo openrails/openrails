@@ -215,6 +215,7 @@ namespace Orts.Simulation.RollingStocks
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
         public bool SmallSteamEjectorIsOn = false;
         public bool LargeSteamEjectorIsOn = false;
+        public bool VacConServLargeSteamEjectorIsOn = false;
         public bool VacuumPumpOperating = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public bool VacuumPumpFitted;
@@ -226,6 +227,8 @@ namespace Orts.Simulation.RollingStocks
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
         public float LargeEjectorFeedFraction = 1.0f;
+        public bool HasLargeEjector = false;
+        public bool LargeEjectorEnabled = true;
         public float VacuumPumpChargingRateInHgpS = 0.0f;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
         public float HUDNetBPLossGainPSI;
@@ -1211,10 +1214,11 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Check TrainBrakesControllerMaxSystemPressure parameter for "correct" value 
-            // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi, and if no units are entered then a InHG value can be incorrectly converted.
-            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 12.5)
+            // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi due to way parameter is read, and if units are entered then a InHG value can be incorrectly converted.
+            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 10 && TrainBrakeController.MaxPressurePSI < 15)
             {
-                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being read as {0} Inhg, - defaulted to value of 21 InHg", Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being incorrectly read as {0} Inhg, - set to value of {1} InHg", TrainBrakeController.MaxPressurePSI, Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+                TrainBrakeController.MaxPressurePSI = Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI));
             }
 
             // Initialise Brake Time Factor
@@ -1874,11 +1878,11 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// This function updates periodically the state of the steam ejector on a vacuum braked system.
+        /// This function updates periodically the state of the steam ejector or vacuum pump on a vacuum braked system.
         /// </summary>
         protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
         {
-            if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease )
+            if (LargeEjectorEnabled && (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ && VacConServLargeSteamEjectorIsOn)))
             {
                 LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
             }
@@ -1908,8 +1912,6 @@ namespace Orts.Simulation.RollingStocks
             else if ((VacuumMainResVacuumPSIAorInHg < VacuumBrakesMainResMaxVacuumPSIAorInHg || !AuxPowerOn) && VacuumExhausterIsOn)
                 SignalEvent(Event.VacuumExhausterOff);
 
-            if (VacuumExhausterIsOn)
-                VacuumMainResVacuumPSIAorInHg -= elapsedClockSeconds * VacuumBrakesMainResChargingRatePSIAorInHgpS;
         }
 
         /// <summary>

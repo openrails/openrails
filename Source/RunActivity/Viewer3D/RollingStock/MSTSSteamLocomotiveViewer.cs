@@ -152,7 +152,8 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlCylinderCompound, new Action[] { Noop, () => new ToggleCylinderCompoundCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlSmallEjectorIncrease, new Action[] { () => SteamLocomotive.StopSmallEjectorIncrease(), () => SteamLocomotive.StartSmallEjectorIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
-             base.InitializeUserInputCommands();
+            UserInputCommands.Add(UserCommand.ControlLargeEjector, new Action[] { Noop, () => new ToggleLargeEjectorCommand(Viewer.Log) });
+            base.InitializeUserInputCommands();
         }
 
         /// <summary>
