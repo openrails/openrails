@@ -101,7 +101,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        public float MaxPressurePSI { get; private set; }
+        public float MaxPressurePSI { get; set; }
         public float ReleaseRatePSIpS { get; private set; }
         public float QuickReleaseRatePSIpS { get; private set; }
         public float ApplyRatePSIpS { get; private set; }

@@ -817,7 +817,7 @@ namespace Orts.Simulation.RollingStocks
                     IsFixGeared = String.Compare(typeString2, "Fixed") == 0;
                     IsSelectGeared = String.Compare(typeString2, "Select") == 0;
                     break;
-                case "engine(enginecontrollers(waterscoop": HasWaterScoop = true; break;
+                case "engine(enginecontrollers(ortslargeejector": HasLargeEjector = true; break;
 
                 default: base.Parse(lowercasetoken, stf); break;
             }
@@ -883,6 +883,7 @@ namespace Orts.Simulation.RollingStocks
             HasSuperheater = locoCopy.HasSuperheater;
             IsFixGeared = locoCopy.IsFixGeared;
             IsSelectGeared = locoCopy.IsSelectGeared;
+            HasLargeEjector = locoCopy.HasLargeEjector;
             CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
             CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
@@ -937,6 +938,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(FireMassKG);
             outf.Write(FlueTempK);
             outf.Write(SteamGearPosition);
+            outf.Write(LargeEjectorEnabled);
             ControllerFactory.Save(CutoffController, outf);
             ControllerFactory.Save(Injector1Controller, outf);
             ControllerFactory.Save(Injector2Controller, outf);
@@ -1000,6 +1002,7 @@ namespace Orts.Simulation.RollingStocks
             FireMassKG = inf.ReadSingle();
             FlueTempK = inf.ReadSingle();
             SteamGearPosition = inf.ReadSingle();
+            LargeEjectorEnabled = inf.ReadBoolean();
             ControllerFactory.Restore(CutoffController, inf);
             ControllerFactory.Restore(Injector1Controller, inf);
             ControllerFactory.Restore(Injector2Controller, inf);
@@ -5580,6 +5583,9 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.CYL_COCKS:
                     data = CylinderCocksAreOpen ? 1 : 0;
                     break;
+                case CABViewControlTypes.ORTS_LARGE_EJECTOR:
+                    data = LargeEjectorEnabled ? 1 : 0;
+                    break;
                 case CABViewControlTypes.ORTS_CYL_COMP:
                     data = CylinderCompoundOn ? 1 : 0;
                     break;
@@ -6289,15 +6295,15 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
                 FormatStrings.h);
 
-                status.AppendFormat("{0}\t{1}\t{2:N2}/{3}\t{4}\t{5:N2}\t{6}\t{7}",
+                status.AppendFormat("{0}\t{1}\t{2:N2}/{3}\t{4}\t{5:N2}\t{6}\t{7}\t{8}",
                 Simulator.Catalog.GetString("Large:"),
                 Simulator.Catalog.GetString("StCons"),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorLargeSteamConsumptionLbpS)), IsMetric),
                 FormatStrings.h,
                 Simulator.Catalog.GetString("Rate"),
                 LargeEjectorBrakePipeChargingRatePSIorInHgpS,
-                //                FormatStrings.FormatPressure(BrakePipeChargingRatePSIorInHgpS, PressureUnit.InHg, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Lg Ej"),
+                LargeEjectorEnabled ? Simulator.Catalog.GetString("En") : Simulator.Catalog.GetString("Dis"),
                 LargeSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
 
@@ -6311,7 +6317,6 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorSmallSteamConsumptionLbpS)), IsMetric),
                     FormatStrings.h,
                     Simulator.Catalog.GetString("Rate"),
-                    // FormatStrings.FormatPressure(SmallEjectorBrakePipeChargingRatePSIorInHgpS, PressureUnit.InHg, MainPressureUnit, true),
                     SmallEjectorBrakePipeChargingRatePSIorInHgpS,
                     Simulator.Catalog.GetString("Sm Ej"),
                     SmallSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
@@ -7007,7 +7012,18 @@ public void SteamStartGearBoxIncrease()
             SmokeColor.Update(1, 0);
         }
 
-        public void ToggleCylinderCocks()
+        public void ToggleLargeEjector()
+        {
+            if (HasLargeEjector) // Must have large Ejector control defined in engine controllers to enable control of large ejector
+            {
+                LargeEjectorEnabled = !LargeEjectorEnabled;
+            }
+
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.LargeEjector, LargeEjectorEnabled? CabSetting.On : CabSetting.Off);
+        }
+
+public void ToggleCylinderCocks()
         {
             CylinderCocksAreOpen = !CylinderCocksAreOpen;
             SignalEvent(Event.CylinderCocksToggle);
