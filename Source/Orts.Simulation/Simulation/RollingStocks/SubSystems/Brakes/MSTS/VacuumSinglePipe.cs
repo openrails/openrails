@@ -1115,6 +1115,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 {
                                     // Vacuum Pipe is > Desired value - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
                                     float EnginePipePressureDiffPSI = elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
+                                    if (brakeSystem.BrakeLine3PressurePSI - EnginePipePressureDiffPSI < EngineDesiredPipeVacuum)
+                                    {
+                                        EnginePipePressureDiffPSI = brakeSystem.BrakeLine3PressurePSI - EngineDesiredPipeVacuum;
+                                    }
+
                                     brakeSystem.BrakeLine3PressurePSI -= EnginePipePressureDiffPSI;
                                     if (brakeSystem.BrakeLine3PressurePSI < OneAtmospherePSI - MaxVacuumPipeLevelPSI)
                                         brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
