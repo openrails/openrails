@@ -92,6 +92,7 @@ namespace Orts.Simulation.AIs
             HANDLE_ACTION,
             SUSPENDED,
             FROZEN,
+            TURNTABLE,
             UNKNOWN
         }
 
@@ -105,6 +106,7 @@ namespace Orts.Simulation.AIs
             END_STATION_STOP,
             NEW,
             PATH_ACTION,
+            TURNTABLE,
             RESET             // used to clear state
         }
 
@@ -118,6 +120,7 @@ namespace Orts.Simulation.AIs
         public static float creepSpeedMpS = 2.5f;              // speed for creeping up behind train or upto signal
         public static float couplingSpeedMpS = 0.4f;           // speed for coupling to other train
         public static float maxFollowSpeedMpS = 15.0f;         // max. speed when following
+        public static float movingtableSpeedMpS = 2.5f;        // speed for moving tables (approx. max 8 kph)
         public static float hysterisMpS = 0.5f;                // speed hysteris value to avoid instability
         public static float clearingDistanceM = 30.0f;         // clear distance to stopping point
         public static float minStopDistanceM = 3.0f;           // minimum clear distance for stopping at signal in station
@@ -587,13 +590,13 @@ namespace Orts.Simulation.AIs
             efficiency /= 100;
         }
 
-    //================================================================================================//
-    /// <summary>
-    /// Update
-    /// Update function for a single AI train.
-    /// </summary>
+        //================================================================================================//
+        /// <summary>
+        /// Update
+        /// Update function for a single AI train.
+        /// </summary>
 
-    public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
+        public void AIUpdate(float elapsedClockSeconds, double clockTime, bool preUpdate)
         {
 #if DEBUG_CHECKTRAIN
             if (!CheckTrain)
@@ -719,6 +722,11 @@ namespace Orts.Simulation.AIs
             AuxActionsContain.ProcessGenAction(this, presentTime, elapsedClockSeconds, MovementState);
             MovementState = AuxActionsContain.ProcessSpecAction(this, presentTime, elapsedClockSeconds, MovementState);
 
+            if (CheckTrain)
+            {
+                File.AppendAllText(@"C:\temp\checktrain.txt", "Switch MovementState : " + MovementState + "\n");
+            }
+
             switch (MovementState)
             {
                 case AI_MOVEMENT_STATE.AI_STATIC:
@@ -735,15 +743,22 @@ namespace Orts.Simulation.AIs
                         if (stillExist[1])
                         {
                             if (nextActionInfo != null && nextActionInfo.GetType().IsSubclassOf(typeof(AuxActionItem)))
+                            {
                                 MovementState = nextActionInfo.ProcessAction(this, presentTime, elapsedClockSeconds, MovementState);
-                            else
+                            }
+                            else if (MovementState == AI_MOVEMENT_STATE.STOPPED) // process only if moving state has not changed
+                            {
                                 UpdateStoppedState(elapsedClockSeconds);
+                            }
                         }
                     }
                     break;
                 case AI_MOVEMENT_STATE.INIT:
                     stillExist = ProcessEndOfPath(presentTime);
                     if (stillExist[1]) UpdateStoppedState(elapsedClockSeconds);
+                    break;
+                case AI_MOVEMENT_STATE.TURNTABLE:
+                    UpdateTurntableState(elapsedClockSeconds, presentTime);
                     break;
                 case AI_MOVEMENT_STATE.STATION_STOP:
                     UpdateStationState(elapsedClockSeconds, presentTime);
@@ -1844,6 +1859,15 @@ namespace Orts.Simulation.AIs
             }
             return MovementState;
         }
+
+        //================================================================================================//
+        /// <summary>
+        /// Train is on turntable
+        /// Dummy method for child instancing
+        /// </summary>
+
+        public virtual void UpdateTurntableState(float elapsedTimeSeconds, int presentTime)
+        { }
 
         //================================================================================================//
         /// <summary>
@@ -5226,6 +5250,10 @@ namespace Orts.Simulation.AIs
                         SetAIPendingSpeedLimit(thisAction as ActivateSpeedLimit);
                     }
                 }
+                else if (thisAction is ClearMovingTableAction)
+                {
+                    ClearMovingTable();
+                }
                 else if (thisAction is AIActionItem && !(thisAction is AuxActionItem))
                 {
                     ProcessActionItem(thisAction as AIActionItem);
@@ -5872,6 +5900,7 @@ namespace Orts.Simulation.AIs
                     MovementState != AI_MOVEMENT_STATE.STOPPED && 
                     MovementState != AI_MOVEMENT_STATE.HANDLE_ACTION &&
                     MovementState != AI_MOVEMENT_STATE.FOLLOWING &&
+                    MovementState != AI_MOVEMENT_STATE.TURNTABLE &&
                     MovementState != AI_MOVEMENT_STATE.BRAKING)
                 {
                     MovementState = AI_MOVEMENT_STATE.BRAKING;
@@ -6651,6 +6680,7 @@ namespace Orts.Simulation.AIs
         public float ActivateDistanceM;
         public float InsertedDistanceM;
         public ObjectItemInfo ActiveItem;
+        public int ReqTablePath;
 
         public enum AI_ACTION_TYPE
         {
@@ -6664,6 +6694,7 @@ namespace Orts.Simulation.AIs
             END_OF_ROUTE,
             REVERSAL,
             AUX_ACTION,
+            APPROACHING_MOVING_TABLE,
             NONE
         }
 
@@ -6700,6 +6731,7 @@ namespace Orts.Simulation.AIs
             RequiredSpeedMpS = inf.ReadSingle();
             ActivateDistanceM = inf.ReadSingle();
             InsertedDistanceM = inf.ReadSingle();
+            ReqTablePath = inf.ReadInt32();
 
             bool validActiveItem = inf.ReadBoolean();
 
@@ -6752,6 +6784,7 @@ namespace Orts.Simulation.AIs
             outf.Write(RequiredSpeedMpS);
             outf.Write(ActivateDistanceM);
             outf.Write(InsertedDistanceM);
+            outf.Write(ReqTablePath);
 
             if (ActiveItem == null)
             {

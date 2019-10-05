@@ -136,7 +136,7 @@ namespace Orts.Simulation
         public FuelManager FuelManager;
         public bool InControl = true;//For multiplayer, a player may not control his/her own train (as helper)
         public TurntableFile TurntableFile;
-        public List<MovingTable> MovingTables;
+        public List<MovingTable> MovingTables = new List<MovingTable>();
         public ExtCarSpawnerFile ExtCarSpawnerFile;
         public List<CarSpawnerList> CarSpawnerLists;
 
@@ -177,7 +177,7 @@ namespace Orts.Simulation
             set
             {
                 ActiveMovingTableIndex = -1;
-                if (MovingTables == null) return;
+                if (MovingTables.Count < 1) return;
                 for (int i = 0; i < MovingTables.Count; i++)
                     if (value == MovingTables[i])
                     {
@@ -415,13 +415,7 @@ namespace Orts.Simulation
         public void Start(CancellationToken cancellation)
         {
             Signals = new Signals(this, SIGCFG, cancellation);
-            var turntableFile = RoutePath + @"\openrails\turntables.dat";
-            if (File.Exists(turntableFile))
-            {
-                MovingTables = new List<MovingTable>();
-                Trace.Write(" TURNTBL");
-                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
-            }
+            TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
             Trains = new TrainList(this);
@@ -458,6 +452,7 @@ namespace Orts.Simulation
         {
             TimetableMode = true;
             Signals = new Signals(this, SIGCFG, cancellation);
+            TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
             LevelCrossings = new LevelCrossings(this);
             FuelManager = new FuelManager(this);
             Trains = new TrainList(this);
@@ -518,19 +513,12 @@ namespace Orts.Simulation
 
             // initialization of turntables
             ActiveMovingTableIndex = inf.ReadInt32();
-            var turntableFile = RoutePath + @"\openrails\turntables.dat";
-            if (File.Exists(turntableFile))
+            TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
+            if (MovingTables.Count >= 0)
             {
-                MovingTables = new List<MovingTable>();
-                Trace.Write(" TURNTBL");
-                TurntableFile = new TurntableFile(RoutePath + @"\openrails\turntables.dat", RoutePath + @"\shapes\", MovingTables, this);
-            }
-            if (MovingTables != null && MovingTables.Count >= 0)
                 foreach (var movingTable in MovingTables) movingTable.Restore(inf, this);
-/*
-            if (Turntables != null && Turntables.Count >= 0)
-                foreach (var turntable in Turntables) turntable.ReInitTrainPositions();
-*/
+            }
+
             ActivityRun = Orts.Simulation.Activity.Restore(inf, this, ActivityRun);
             Signals.RestoreTrains(Trains);  // restore links to trains
             Signals.Update(true);           // update all signals once to set proper stat

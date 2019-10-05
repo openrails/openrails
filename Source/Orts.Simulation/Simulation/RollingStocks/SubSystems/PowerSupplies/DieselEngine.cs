@@ -850,7 +850,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Update(float elapsedClockSeconds)
         {
-            Trace.TraceInformation("Diesel - Rpm {0} MaximumRailOutputPower {1} CurrentRailOutputPower {2}", RealRPM, MaximumRailOutputPowerW, CurrentRailOutputPowerW);
 
             if (EngineStatus == DieselEngine.Status.Running)
                 DemandedThrottlePercent = locomotive.ThrottlePercent;
