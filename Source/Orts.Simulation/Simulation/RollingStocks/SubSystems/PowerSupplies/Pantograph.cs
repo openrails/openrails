@@ -191,7 +191,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public PantographState State { get; private set; }
         public float DelayS { get; private set; }
         public float TimeS { get; private set; }
-        public bool CommandUp {
+        public bool CommandUp
+        {
             get
             {
                 bool value;
@@ -254,7 +255,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void Restore(BinaryReader inf)
         {
-            State = (PantographState) Enum.Parse(typeof(PantographState), inf.ReadString());
+            State = (PantographState)Enum.Parse(typeof(PantographState), inf.ReadString());
             DelayS = inf.ReadSingle();
             TimeS = inf.ReadSingle();
         }

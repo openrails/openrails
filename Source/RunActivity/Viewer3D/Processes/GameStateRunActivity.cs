@@ -113,7 +113,7 @@ namespace Orts.Viewer3D.Processes
 
             // Look for an action to perform.
             var action = "";
-            var actions = new[] { "start", "resume", "replay", "replay_from_save", "test"};
+            var actions = new[] { "start", "resume", "replay", "replay_from_save", "test" };
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
                 {
@@ -302,7 +302,7 @@ namespace Orts.Viewer3D.Processes
             {
                 Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
                 // wait 5 seconds to see if you get a reply from server with updated position/consist data, else go on
-               
+
                 System.Threading.Thread.Sleep(5000);
                 if (Simulator.Trains[0].jumpRequested)
                 {
@@ -330,7 +330,7 @@ namespace Orts.Viewer3D.Processes
             // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
             var fileStem = String.Format("{0} {1} {2:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
                 (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName),
-                MPManager.IsMultiPlayer() && MPManager.IsServer() ? "$Multipl$ " : "" , DateTime.Now);
+                MPManager.IsMultiPlayer() && MPManager.IsServer() ? "$Multipl$ " : "", DateTime.Now);
 
             using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
@@ -368,7 +368,7 @@ namespace Orts.Viewer3D.Processes
                 Viewer.Save(outf, fileStem);
                 // Save multiplayer parameters
                 if (MPManager.IsMultiPlayer() && MPManager.IsServer())
-                    MPManager.OnlineTrains.Save (outf);
+                    MPManager.OnlineTrains.Save(outf);
 
                 // Write out position within file so we can check when restoring.
                 outf.Write(outf.BaseStream.Position);
@@ -379,7 +379,7 @@ namespace Orts.Viewer3D.Processes
             {
                 var dbfEvalFiles = Directory.GetFiles(UserSettings.UserDataFolder, Simulator.ActivityFileName + "*.dbfeval");
                 foreach (var files in dbfEvalFiles)
-                   File.Delete(files);//Delete all debrief eval files previously saved, for the same activity.//fileDbfEval
+                    File.Delete(files);//Delete all debrief eval files previously saved, for the same activity.//fileDbfEval
 
                 using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".dbfeval", FileMode.Create, FileAccess.Write)))
                 {
@@ -387,7 +387,7 @@ namespace Orts.Viewer3D.Processes
                     outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
                     for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
                     {
-                        outf.Write((string) ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
+                        outf.Write((string)ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
                     }
                     outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
                     outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
@@ -1263,7 +1263,7 @@ namespace Orts.Viewer3D.Processes
                     new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
                 };
             }
-            
+
             public override void Draw(GraphicsDevice graphicsDevice)
             {
                 graphicsDevice.VertexDeclaration = VertexDeclaration;

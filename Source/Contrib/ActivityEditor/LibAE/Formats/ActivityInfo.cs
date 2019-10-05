@@ -43,7 +43,7 @@ namespace LibAE.Formats
         [JsonProperty("ConsistPath")]
         string consistPath;
 
-        public ConsistInfo (string name, string path)
+        public ConsistInfo(string name, string path)
         {
             consistName = name;
             consistPath = path;
@@ -77,7 +77,7 @@ namespace LibAE.Formats
 
         }
 
-        public void config (List<string> routes)
+        public void config(List<string> routes)
         {
             foreach (string routeParent in routes)
             {
@@ -101,7 +101,7 @@ namespace LibAE.Formats
                     string fullPathConsist = Path.GetFullPath(consist);
                     ConsistFile consistName = new ConsistFile(fullPathConsist);
                     ConsistInfo conInfo = new ConsistInfo(consistName.ToString(), fullPathConsist);
-                    trainConsists.Add(conInfo); 
+                    trainConsists.Add(conInfo);
                 }
             }
         }

@@ -130,7 +130,7 @@ namespace Orts.Viewer3D
                 forestVertex = new Vector3(forest.forestArea.X / 2, 0, forest.forestArea.Z / 2);
                 Vector3.Transform(ref forestVertex, ref position.XNAMatrix, out forestVertex);
                 forestVertices.Add(forestVertex);
-                bool[] considerTile = new bool [4] {false, false, false, false};
+                bool[] considerTile = new bool[4] { false, false, false, false };
                 foreach (var fVertex in forestVertices)
                 {
                     if (fVertex.X > 1024) considerTile[0] = true;
@@ -162,22 +162,22 @@ namespace Orts.Viewer3D
                 }
                 if (considerTile[0] && considerTile[2])
                 {
-                    addList = FindTracksAndRoadsClose(position.TileX + 1, position.TileZ +1);
+                    addList = FindTracksAndRoadsClose(position.TileX + 1, position.TileZ + 1);
                     FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[0] && considerTile[3])
                 {
-                    addList = FindTracksAndRoadsClose(position.TileX + 1, position.TileZ -1);
+                    addList = FindTracksAndRoadsClose(position.TileX + 1, position.TileZ - 1);
                     FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[1] && considerTile[2])
                 {
-                    addList = FindTracksAndRoadsClose(position.TileX-1, position.TileZ + 1);
+                    addList = FindTracksAndRoadsClose(position.TileX - 1, position.TileZ + 1);
                     FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[1] && considerTile[3])
                 {
-                    addList = FindTracksAndRoadsClose(position.TileX-1, position.TileZ - 1);
+                    addList = FindTracksAndRoadsClose(position.TileX - 1, position.TileZ - 1);
                     FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
             }
@@ -336,7 +336,7 @@ namespace Orts.Viewer3D
 
             // Do a preliminary cull based on a bounding square around the track section.
             // Bounding distance is (radius * angle + error) by (radius * angle + error) around starting coordinates but no more than 2 for angle.
-            var boundingDistance = trackSection.SectionCurve.Radius * Math.Min(Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)), 2) + MaximumCenterlineOffset+treeWidth;
+            var boundingDistance = trackSection.SectionCurve.Radius * Math.Min(Math.Abs(MathHelper.ToRadians(trackSection.SectionCurve.Angle)), 2) + MaximumCenterlineOffset + treeWidth;
             var dx = Math.Abs(x - sx);
             var dz = Math.Abs(z - sz);
             if (dx > boundingDistance || dz > boundingDistance)

@@ -104,9 +104,9 @@ namespace Orts.Formats.Msts
                 texture = new Texture2D(graphicsDevice, width, height, 1, TextureUsage.None, textureFormat);
             else
                 if (imageCount > 1)
-                    texture = new Texture2D(graphicsDevice, width, height, imageCount, TextureUsage.None, textureFormat);
-                else
-                    texture = new Texture2D(graphicsDevice, width, height, 0, TextureUsage.AutoGenerateMipMap, textureFormat);
+                texture = new Texture2D(graphicsDevice, width, height, imageCount, TextureUsage.None, textureFormat);
+            else
+                texture = new Texture2D(graphicsDevice, width, height, 0, TextureUsage.AutoGenerateMipMap, textureFormat);
 
             // Read in the color channels; each one defines a size (in bits) and type (reg, green, blue, mask, alpha).
             var channels = new List<SimisAceChannel>();

@@ -34,7 +34,7 @@ namespace ORTS.TrackViewer.Drawing
     /// </summary>
     public class DrawMultiplePaths
     {
-        
+
         /// <summary>For each path name, store the full file name of the .pat file</summary>
         Dictionary<string, string> fullPathNames;
         /// <summary>The paths that have already been loaded (.pat file has been read and parsed)</summary>
@@ -43,14 +43,14 @@ namespace ORTS.TrackViewer.Drawing
         Dictionary<Trainpath, DrawPath> drawPaths;
         /// <summary>List of trainpaths that have been selected</summary>
         List<Trainpath> selectedTrainpaths;
-    
+
         private TrackDB trackDB;
         private TrackSectionsFile tsectionDat;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public DrawMultiplePaths (RouteData routeData, Collection<Path> paths)
+        public DrawMultiplePaths(RouteData routeData, Collection<Path> paths)
         {
             this.trackDB = routeData.TrackDB;
             this.tsectionDat = routeData.TsectionDat;
@@ -138,7 +138,7 @@ namespace ORTS.TrackViewer.Drawing
                 drawPaths[trainpath].ColorSchemeLast = shadedColor;
             }
         }
- 
+
         /// <summary>
         /// Draws the paths that have been selected
         /// </summary>

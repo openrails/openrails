@@ -703,7 +703,7 @@ namespace Orts.Formats.OR
                             }
                         }
 
-        // Track Item is speedpost - check if really limit
+                        // Track Item is speedpost - check if really limit
                         else if (TrItems[TDBRef].ItemType == TrItem.trItemType.trSPEEDPOST)
                         {
                             SpeedPostItem speedItem = (SpeedPostItem)TrItems[TDBRef];
@@ -959,7 +959,7 @@ namespace Orts.Formats.OR
         }
 #endif
 
-     }// class AESignals
+    }// class AESignals
 
     //================================================================================================//
     //

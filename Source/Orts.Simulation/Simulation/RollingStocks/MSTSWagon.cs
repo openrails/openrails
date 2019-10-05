@@ -235,7 +235,7 @@ namespace Orts.Simulation.RollingStocks
         {
             stf.MustMatch("(");
             string s;
-            
+
             while ((s = stf.ReadItem()) != ")")
             {
                 var data = new ParticleEmitterData(stf);
@@ -439,8 +439,8 @@ namespace Orts.Simulation.RollingStocks
                 else
                 {
                     LoadEmptyMassKg = MassKG;
-                }  
-                
+                }
+
                 if (FreightAnimations.EmptyORTSDavis_A > 0)
                 {
                     LoadEmptyORTSDavis_A = FreightAnimations.EmptyORTSDavis_A;
@@ -602,7 +602,7 @@ namespace Orts.Simulation.RollingStocks
                     else
                     {
                         LoadFullMassKg = MassKG;
-                    } 
+                    }
 
                     if (FreightAnimations.FullPhysicsContinuousOne.FullORTSDavis_A > 0)
                     {
@@ -679,30 +679,30 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 if (!FreightAnimations.MSTSFreightAnimEnabled) FreightShapeFileName = null;
-                    if (FreightAnimations.WagonEmptyWeight != -1)
+                if (FreightAnimations.WagonEmptyWeight != -1)
+                {
+
+                    MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
+
+                    if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
                     {
+                        // Update brake parameters   
+                        MaxBrakeForceN = LoadFullMaxBrakeForceN;
+                        MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
 
-                        MassKG = FreightAnimations.WagonEmptyWeight + FreightAnimations.FreightWeight + FreightAnimations.StaticFreightWeight;
+                        // Update friction related parameters
+                        DavisAN = LoadFullORTSDavis_A;
+                        DavisBNSpM = LoadFullORTSDavis_B;
+                        DavisCNSSpMM = LoadFullORTSDavis_C;
+                        DavisDragConstant = LoadFullDavisDragConstant;
+                        WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
 
-                        if (FreightAnimations.StaticFreightAnimationsPresent) // If it is static freight animation, set wagon physics to full wagon value
-                        {
-                            // Update brake parameters   
-                            MaxBrakeForceN = LoadFullMaxBrakeForceN;
-                            MaxHandbrakeForceN = LoadFullMaxHandbrakeForceN;
-
-                            // Update friction related parameters
-                            DavisAN = LoadFullORTSDavis_A;
-                            DavisBNSpM = LoadFullORTSDavis_B;
-                            DavisCNSSpMM = LoadFullORTSDavis_C;
-                            DavisDragConstant = LoadFullDavisDragConstant;
-                            WagonFrontalAreaM2 = LoadFullWagonFrontalAreaM2;
-
-                            // Update CoG related parameters
-                            CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
-
-                        }
+                        // Update CoG related parameters
+                        CentreOfGravityM.Y = LoadFullCentreOfGravityM_Y;
 
                     }
+
+                }
                 if (FreightAnimations.LoadedOne != null) // If it is a Continuouos freight animation, set freight wagon parameters to FullatStart
                 {
                     WeightLoadController.CurrentValue = FreightAnimations.LoadedOne.LoadPerCent / 100;
@@ -719,15 +719,15 @@ namespace Orts.Simulation.RollingStocks
                     DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempMassDiffRatio) + LoadEmptyORTSDavis_B;
                     DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempMassDiffRatio) + LoadEmptyORTSDavis_C;
 
-                    if (LoadEmptyDavisDragConstant > LoadFullDavisDragConstant ) // Due to wind turbulence empty drag might be higher then loaded drag, and therefore both scenarios need to be covered.
+                    if (LoadEmptyDavisDragConstant > LoadFullDavisDragConstant) // Due to wind turbulence empty drag might be higher then loaded drag, and therefore both scenarios need to be covered.
                     {
-                        DavisDragConstant = LoadEmptyDavisDragConstant -   ((LoadEmptyDavisDragConstant - LoadFullDavisDragConstant) * TempMassDiffRatio);
+                        DavisDragConstant = LoadEmptyDavisDragConstant - ((LoadEmptyDavisDragConstant - LoadFullDavisDragConstant) * TempMassDiffRatio);
                     }
                     else
                     {
                         DavisDragConstant = ((LoadFullDavisDragConstant - LoadEmptyDavisDragConstant) * TempMassDiffRatio) + LoadEmptyDavisDragConstant;
                     }
-                    
+
                     WagonFrontalAreaM2 = ((LoadFullWagonFrontalAreaM2 - LoadEmptyWagonFrontalAreaM2) * TempMassDiffRatio) + LoadEmptyWagonFrontalAreaM2;
 
                     // Update CoG related parameters
@@ -944,7 +944,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case "wagon(coupling(spring(ortsslack":
                     stf.MustMatch("(");
-                     // IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.  Temporarily disabled for v1.3 release
+                    // IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.  Temporarily disabled for v1.3 release
                     Couplers[Couplers.Count - 1].SetSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
                     stf.SkipRestOfBlock();
                     break;
@@ -1142,7 +1142,7 @@ namespace Orts.Simulation.RollingStocks
                     // If freight animations not used or else wagon is a tender or locomotive, use the "MSTS" type IntakePoints if present in WAG / ENG file
 
                     if (copyIntakePoint.LinkedFreightAnim == null)
-               //     if (copyIntakePoint.LinkedFreightAnim == null || WagonType == WagonTypes.Engine || WagonType == WagonTypes.Tender || AuxWagonType == "AuxiliaryTender")
+                        //     if (copyIntakePoint.LinkedFreightAnim == null || WagonType == WagonTypes.Engine || WagonType == WagonTypes.Tender || AuxWagonType == "AuxiliaryTender")
                         IntakePointList.Add(new IntakePoint(copyIntakePoint));
                 }
             }
@@ -1356,7 +1356,7 @@ namespace Orts.Simulation.RollingStocks
                 // Test to see if coupler forces have been exceeded, and coupler has broken. Exceeding this limit will break the coupler
                 if (IsPlayerTrain) // Only break couplers on player trains
                 {
-                    if (-CouplerForceU > coupler.Break2N )  // break couplers if forces exceeded
+                    if (-CouplerForceU > coupler.Break2N)  // break couplers if forces exceeded
                     {
                         CouplerExceedBreakLimit = true;
                     }
@@ -1372,7 +1372,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             Pantographs.Update(elapsedClockSeconds);
-            
+
             MSTSBrakeSystem.Update(elapsedClockSeconds);
 
             // Updates freight load animations when defined in WAG file - Locomotive and Tender load animation are done independently in UpdateTenderLoad() & UpdateLocomotiveLoadPhysics()
@@ -1388,13 +1388,13 @@ namespace Orts.Simulation.RollingStocks
                         if (WeightLoadController.UpdateValue != 0.0)
                             Simulator.Confirmer.UpdateWithPerCent(CabControl.FreightLoad,
                                 CabSetting.Increase, WeightLoadController.CurrentValue * 100);
-                    // Update wagon parameters sensitive to wagon mass change
-                    // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
+                        // Update wagon parameters sensitive to wagon mass change
+                        // Calculate the difference ratio, ie how full the wagon is. This value allows the relevant value to be scaled from the empty mass to the full mass of the wagon
                         TempMassDiffRatio = WeightLoadController.CurrentValue;
-                   // Update brake parameters
+                        // Update brake parameters
                         MaxBrakeForceN = ((LoadFullMaxBrakeForceN - LoadEmptyMaxBrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxBrakeForceN;
                         MaxHandbrakeForceN = ((LoadFullMaxHandbrakeForceN - LoadEmptyMaxHandbrakeForceN) * TempMassDiffRatio) + LoadEmptyMaxHandbrakeForceN;
-                  // Update friction related parameters
+                        // Update friction related parameters
                         DavisAN = ((LoadFullORTSDavis_A - LoadEmptyORTSDavis_A) * TempMassDiffRatio) + LoadEmptyORTSDavis_A;
                         DavisBNSpM = ((LoadFullORTSDavis_B - LoadEmptyORTSDavis_B) * TempMassDiffRatio) + LoadEmptyORTSDavis_B;
                         DavisCNSSpMM = ((LoadFullORTSDavis_C - LoadEmptyORTSDavis_C) * TempMassDiffRatio) + LoadEmptyORTSDavis_C;
@@ -1430,7 +1430,7 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-       private void UpdateLocomotiveLoadPhysics()
+        private void UpdateLocomotiveLoadPhysics()
         {
             // This section updates the weight and physics of the locomotive
             if (FreightAnimations != null && FreightAnimations.ContinuousFreightAnimationsPresent) // make sure that a freight animation INCLUDE File has been defined, and it contains "continuous" animation data.
@@ -1462,7 +1462,7 @@ namespace Orts.Simulation.RollingStocks
                         {
                             MassKG = LoadEmptyMassKg + Kg.FromLb(SteamLocomotiveIdentification.BoilerMassLB) + SteamLocomotiveIdentification.FireMassKG;
                             MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values        
-                        // Adjust drive wheel weight
+                                                                                                // Adjust drive wheel weight
                             SteamLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * SteamLocomotiveIdentification.InitialDrvWheelWeightKg;
                         }
 
@@ -1496,7 +1496,7 @@ namespace Orts.Simulation.RollingStocks
                 else if (this is MSTSDieselLocomotive)
                 // If diesel locomotive
                 {
-                   // set a process to pass relevant locomotive parameters from locomotive file to this wagon file
+                    // set a process to pass relevant locomotive parameters from locomotive file to this wagon file
                     var LocoIndex = 0;
                     for (var i = 0; i < Train.Cars.Count; i++) // test each car to find the where the Diesel locomotive is in the consist
                         if (Train.Cars[i] == this)  // If this car is a Diesel locomotive then set loco index
@@ -1535,7 +1535,7 @@ namespace Orts.Simulation.RollingStocks
 
                         // Update CoG related parameters
                         CentreOfGravityM.Y = ((LoadFullCentreOfGravityM_Y - LoadEmptyCentreOfGravityM_Y) * TempMassDiffRatio) + LoadEmptyCentreOfGravityM_Y;
-                        
+
                     }
                 }
             }
@@ -1879,7 +1879,7 @@ namespace Orts.Simulation.RollingStocks
 
                     // Determine the running resistance due to wheel bearing temperature
                     float WheelBearingTemperatureResistanceFactor = 0;
-                    
+
                     // Assume the running resistance is impacted by wheel bearing temperature, ie gets higher as tmperature decreasses. This will only impact the A parameter as it is related to
                     // bearing. Assume that resisnce will increase by 30% as temperature drops below 0 DegC.
                     // At -10 DegC it will be equal to the snowing value, as the temperature increases to 25 DegC, it will move towards the summer value
@@ -1909,7 +1909,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         WheelBearingTemperatureResistanceFactor = 2.0f;
                     }
-                    
+
                     FrictionForceN = DavisAN * WheelBearingTemperatureResistanceFactor + AbsSpeedMpS * (DavisBNSpM + AbsSpeedMpS * DavisCNSSpMM); // for normal speed operation
 
                     // if this car is a locomotive, but not the lead one then recalculate the resistance with lower value as drag will not be as high on trailing locomotives
@@ -1974,7 +1974,7 @@ namespace Orts.Simulation.RollingStocks
             // Keep track of Activity details if an activity, setup random wagon, and start time for hotbox
             if (Simulator.ActivityRun != null)
             {
-                if (ActivityElapsedDurationS<HotBoxStartTimeS)
+                if (ActivityElapsedDurationS < HotBoxStartTimeS)
                 {
                     ActivityElapsedDurationS += elapsedClockSeconds;
                 }
@@ -1984,29 +1984,29 @@ namespace Orts.Simulation.RollingStocks
                 {
                     // Activity randomizatrion needs to be active in Options menu, and HotBox will not be applied to a locomotive or tender.
                     if (Simulator.Settings.ActRandomizationLevel > 0 && WagonType != WagonTypes.Engine && WagonType != WagonTypes.Tender)
-                    {                        
+                    {
                         var HotboxRandom = Simulator.Random.Next(100) / Simulator.Settings.ActRandomizationLevel;
                         float PerCentRandom = 0.66f; // Set so that random time is always in first 66% of activity duration
                         var RawHotBoxTimeRandomS = Simulator.Random.Next(Train.ActivityDurationS);
                         if (!Train.HotBoxSetOnTrain) // only allow one hot box to be set per train 
                         {
-                            if (HotboxRandom< 10)
+                            if (HotboxRandom < 10)
                             {
                                 HotBoxActivated = true;
                                 Train.HotBoxSetOnTrain = true;
-                                HotBoxStartTimeS = PerCentRandom* RawHotBoxTimeRandomS;
+                                HotBoxStartTimeS = PerCentRandom * RawHotBoxTimeRandomS;
 
                                 Trace.TraceInformation("Hotbox Bearing Activated on CarID {0}. Hotbox to start from {1:F1} minutes into activity", CarID, S.ToM(HotBoxStartTimeS));
                             }
                         }
 
-                                            
+
                     }
                 }
 
                 HotBoxHasBeenInitialized = true; // Only allow to loop once at first pass
             }
-            
+
 
             float BearingSpeedMaximumTemperatureDegC = 0;
             float MaximumNormalBearingTemperatureDegC = 90.0f;
@@ -2041,11 +2041,11 @@ namespace Orts.Simulation.RollingStocks
 
             if (elapsedClockSeconds > 0) // Prevents zero values resetting temperature
             {
-                
+
                 // Keep track of wheel bearing temperature until activtaion time reached
-                if (ActivityElapsedDurationS<HotBoxStartTimeS) 
+                if (ActivityElapsedDurationS < HotBoxStartTimeS)
                 {
-                   InitialHotBoxRiseTemperatureDegS = WheelBearingTemperatureDegC;
+                    InitialHotBoxRiseTemperatureDegS = WheelBearingTemperatureDegC;
                 }
 
                 // Calculate Hot box bearing temperature
@@ -2061,7 +2061,7 @@ namespace Orts.Simulation.RollingStocks
                     HotBoxTemperatureRiseTimeS += elapsedClockSeconds;
 
                     // Calculate predicted bearing temperature based upon elapsed time
-                    WheelBearingTemperatureDegC = MaximumHotBoxBearingTemperatureDegC + (InitialHotBoxRiseTemperatureDegS - MaximumHotBoxBearingTemperatureDegC) * (float) (Math.Exp(HotBoxKConst* HotBoxTemperatureRiseTimeS));
+                    WheelBearingTemperatureDegC = MaximumHotBoxBearingTemperatureDegC + (InitialHotBoxRiseTemperatureDegS - MaximumHotBoxBearingTemperatureDegC) * (float)(Math.Exp(HotBoxKConst * HotBoxTemperatureRiseTimeS));
 
                     // Reset temperature decline values in preparation for next cylce
                     WheelBearingTemperatureDeclineTimeS = 0;
@@ -2074,12 +2074,12 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate maximum bearing temperature based on current speed using approximated linear graph y = 0.25x + 55
                     const float MConst = 0.25f;
                     const float BConst = 55;
-                    BearingSpeedMaximumTemperatureDegC = MConst* AbsSpeedMpS + BConst;
+                    BearingSpeedMaximumTemperatureDegC = MConst * AbsSpeedMpS + BConst;
 
                     WheelBearingTemperatureRiseTimeS += elapsedClockSeconds;
 
                     // Calculate predicted bearing temperature based upon elapsed time
-                    WheelBearingTemperatureDegC = MaximumNormalBearingTemperatureDegC + (InitialWheelBearingRiseTemperatureDegC - MaximumNormalBearingTemperatureDegC) * (float) (Math.Exp(HeatingKConst* WheelBearingTemperatureRiseTimeS));
+                    WheelBearingTemperatureDegC = MaximumNormalBearingTemperatureDegC + (InitialWheelBearingRiseTemperatureDegC - MaximumNormalBearingTemperatureDegC) * (float)(Math.Exp(HeatingKConst * WheelBearingTemperatureRiseTimeS));
 
                     // Cap bearing temperature depending upon speed
                     if (WheelBearingTemperatureDegC > BearingSpeedMaximumTemperatureDegC)
@@ -2098,7 +2098,7 @@ namespace Orts.Simulation.RollingStocks
                     if (WheelBearingTemperatureDegC > CarOutsideTempC)
                     {
                         WheelBearingTemperatureDeclineTimeS += elapsedClockSeconds;
-                        WheelBearingTemperatureDegC = CarOutsideTempC + (InitialWheelBearingDeclineTemperatureDegC - CarOutsideTempC) * (float) (Math.Exp(CoolingKConst* WheelBearingTemperatureDeclineTimeS));
+                        WheelBearingTemperatureDegC = CarOutsideTempC + (InitialWheelBearingDeclineTemperatureDegC - CarOutsideTempC) * (float)(Math.Exp(CoolingKConst * WheelBearingTemperatureDeclineTimeS));
                     }
 
                     WheelBearingTemperatureRiseTimeS = 0;
@@ -2108,7 +2108,7 @@ namespace Orts.Simulation.RollingStocks
 
                 WheelBearingTemperatureRiseTimeS = 0;
                 InitialWheelBearingRiseTemperatureDegC = WheelBearingTemperatureDegC;
-                
+
                 // Turn off Hotbox sounds
                 SignalEvent(Event.HotBoxBearingOff);
                 HotBoxSoundActivated = false;
@@ -2182,14 +2182,14 @@ namespace Orts.Simulation.RollingStocks
                     {
                         WagonDirectionDeg -= 360;
                     }
-                }                   
+                }
 
                 // If a westerly direction (ie -ve) convert to an angle between 0 and 360
                 if (WagonDirectionDeg < 0)
                     WagonDirectionDeg += 360;
 
                 float TrainSpeedMpS = Math.Abs(SpeedMpS);
-                
+
                 // Find angle between wind and direction of train
                 if (Train.PhysicsWindDirectionDeg > WagonDirectionDeg)
                     WagonResultantWindComponentDeg = Train.PhysicsWindDirectionDeg - WagonDirectionDeg;
@@ -2286,7 +2286,7 @@ namespace Orts.Simulation.RollingStocks
 
                 }
 
-                    WindForceN = LateralWindResistanceForceN + WindDragResistanceForceN;
+                WindForceN = LateralWindResistanceForceN + WindDragResistanceForceN;
 
             }
             else
@@ -2315,7 +2315,7 @@ namespace Orts.Simulation.RollingStocks
                         Trace.TraceInformation("Tender @ position {0} does not have a locomotive associated with. Check that it is preceeded by a steam locomotive.", CarID);
                     }
 
-                    MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderCoalMassKG + Kg.FromLb( (TendersSteamLocomotive.CurrentLocoTenderWaterVolumeUKG * WaterLBpUKG));
+                    MassKG = FreightAnimations.WagonEmptyWeight + TendersSteamLocomotive.TenderCoalMassKG + Kg.FromLb((TendersSteamLocomotive.CurrentLocoTenderWaterVolumeUKG * WaterLBpUKG));
                     MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values   
 
                     // Update wagon parameters sensitive to wagon mass change
@@ -2684,22 +2684,22 @@ namespace Orts.Simulation.RollingStocks
                 TendersSteamLocomotive = null;
         }
 
-         /// <summary>
+        /// <summary>
         /// This function checks each steam locomotive to see if it has a tender attached.
         /// </summary>
         public void ConfirmSteamLocomotiveTender()
         {
-            
+
             // Check each steam locomotive to see if it has a tender attached.
-            if (this is MSTSSteamLocomotive )
+            if (this is MSTSSteamLocomotive)
             {
 
                 if (Train == null || Train.Cars == null)
                 {
                     SteamLocomotiveTender = null;
-                     return;
+                    return;
                 }
-                else if(Train.Cars.Count == 1) // If car count is equal to 1, then there must be no tender attached
+                else if (Train.Cars.Count == 1) // If car count is equal to 1, then there must be no tender attached
                 {
                     SteamLocomotiveTender = Train.Cars[0] as MSTSSteamLocomotive;
                     SteamLocomotiveTender.HasTenderCoupled = false;
@@ -2764,15 +2764,15 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // If a "normal" tender is connected then the steam locomotive will be two cars away.
-                      
+
             if (!AuxTenderFound)
             {
-            
+
                 if (tenderIndex > 0 && Train.Cars[tenderIndex - 2] is MSTSSteamLocomotive)
                 {
                     AuxTendersSteamLocomotive = Train.Cars[tenderIndex - 2] as MSTSSteamLocomotive;
                 }
-                
+
                 if (tenderIndex < Train.Cars.Count - 2 && Train.Cars[tenderIndex + 2] is MSTSSteamLocomotive)
                 {
                     AuxTendersSteamLocomotive = Train.Cars[tenderIndex + 2] as MSTSSteamLocomotive;
@@ -2804,17 +2804,17 @@ namespace Orts.Simulation.RollingStocks
                 float zerolength;
                 if (Coupler != null)
                 {
-                   zerolength = Coupler.CouplerSlackAM;
+                    zerolength = Coupler.CouplerSlackAM;
                 }
                 else
                 {
-                   zerolength = base.GetCouplerZeroLengthM();
+                    zerolength = base.GetCouplerZeroLengthM();
                 }
 
                 // Ensure zerolength doesn't go higher then 0.15
                 if (zerolength > 0.5)
                 {
-                   zerolength = 0.5f;
+                    zerolength = 0.5f;
                 }
 
                 return zerolength;
@@ -2822,8 +2822,8 @@ namespace Orts.Simulation.RollingStocks
             }
             else
             {
-               return Coupler != null ? Coupler.R0X : base.GetCouplerZeroLengthM();
-            } 
+                return Coupler != null ? Coupler.R0X : base.GetCouplerZeroLengthM();
+            }
 
         }
 
@@ -2838,16 +2838,16 @@ namespace Orts.Simulation.RollingStocks
             {
                 return base.GetCouplerStiffness1NpM();
             }
-            return Coupler.Rigid? 10 * Coupler.Stiffness1NpM : Coupler.Stiffness1NpM;
+            return Coupler.Rigid ? 10 * Coupler.Stiffness1NpM : Coupler.Stiffness1NpM;
         }
- 
+
         public override float GetCouplerStiffness2NpM()
         {
             if (Coupler == null)
             {
                 return base.GetCouplerStiffness2NpM();
             }
-            return Coupler.Rigid? 10 * Coupler.Stiffness1NpM : Coupler.Stiffness2NpM;
+            return Coupler.Rigid ? 10 * Coupler.Stiffness1NpM : Coupler.Stiffness2NpM;
         }
 
         public override float GetCouplerDamping1NMpS()
@@ -2890,7 +2890,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (Coupler == null)
             {
-                 return base.GetCouplerRigidIndication();   // If no coupler defined
+                return base.GetCouplerRigidIndication();   // If no coupler defined
             }
             return Coupler.Rigid ? 1 : 2; // Return whether coupler Rigid or Flexible
         }
@@ -3001,7 +3001,7 @@ namespace Orts.Simulation.RollingStocks
         public override float GetUserBrakeShoeFrictionFactor()
         {
             var frictionfraction = 0.0f;
-            if ( BrakeShoeFrictionFactor == null)
+            if (BrakeShoeFrictionFactor == null)
             {
                 frictionfraction = 0.0f;
             }
@@ -3009,7 +3009,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 frictionfraction = BrakeShoeFrictionFactor[MpS.ToKpH(AbsSpeedMpS)];
             }
-            
+
             return frictionfraction;
         }
 
@@ -3030,10 +3030,10 @@ namespace Orts.Simulation.RollingStocks
             }
 
             return frictionfraction;
-        }       
-      
-        
-        
+        }
+
+
+
         /// <summary>
         /// Starts a continuous increase in controlled value.
         /// </summary>
@@ -3057,7 +3057,7 @@ namespace Orts.Simulation.RollingStocks
             }
             if (!unload)
             {
-                controller.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS/ MSTSNotchController.StandardBoost / FreightAnimations.LoadedOne.FreightWeightWhenFull);
+                controller.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / FreightAnimations.LoadedOne.FreightWeightWhenFull);
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Simulator.Catalog.GetString("Starting refill"));
                 controller.StartIncrease(controller.MaximumValue);
             }
@@ -3148,8 +3148,8 @@ namespace Orts.Simulation.RollingStocks
         }
         public void SetR0(float a, float b)
         {
-                R0X = a;
-                R0Y = b;
+            R0X = a;
+            R0Y = b;
             if (a == 0)
                 R0Diff = b / 2 * Stiffness2NpM / (Stiffness1NpM + Stiffness2NpM);
             else
@@ -3159,7 +3159,7 @@ namespace Orts.Simulation.RollingStocks
             // Ensure R0Diff stays within "reasonable limits"
             if (R0Diff < 0.001)
                 R0Diff = 0.001f;
-            else if (R0Diff > 0.1) 
+            else if (R0Diff > 0.1)
                 R0Diff = 0.1f;
 
         }
@@ -3174,7 +3174,7 @@ namespace Orts.Simulation.RollingStocks
 
         public void SetDamping(float a, float b)
         {
-            if (a + b< 0)
+            if (a + b < 0)
                 return;
 
             Damping1NMps = a;
@@ -3198,7 +3198,7 @@ namespace Orts.Simulation.RollingStocks
             Break1N = a;
 
             // Check if b = 0, as some stock has a zero value, set a default
-            if ( b == 0)
+            if (b == 0)
             {
                 Break2N = 2e7f;
             }
@@ -3206,7 +3206,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 Break2N = b;
             }
-            
+
         }
 
         /// <summary>

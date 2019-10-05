@@ -40,19 +40,19 @@ namespace Orts.Viewer3D.Popups
         List<Message> Messages = new List<Message>();
         bool MessagesChanged;
 
-		public List<string> GetTextMessages()
-		{
-			List<string> text = null;
-			foreach (var m in Messages)
-			{
-				if (true/*m.Text.StartsWith("TEXT")*/)
-				{
-					if (text == null) text = new List<string>();
-					text.Add(m.Text);
-				}
-			}
-			return text;
-		}
+        public List<string> GetTextMessages()
+        {
+            List<string> text = null;
+            foreach (var m in Messages)
+            {
+                if (true/*m.Text.StartsWith("TEXT")*/)
+                {
+                    if (text == null) text = new List<string>();
+                    text.Add(m.Text);
+                }
+            }
+            return text;
+        }
         public MessagesWindow(WindowManager owner)
             : base(owner, HorizontalPadding, VerticalPadding, "Messages")
         {
@@ -72,14 +72,14 @@ namespace Orts.Viewer3D.Popups
         {
             base.Restore(inf);
             var messages = new List<Message>(inf.ReadInt32());
-            for( var i = 0; i < messages.Capacity; i++ )
+            for (var i = 0; i < messages.Capacity; i++)
             {
                 messages.Add(new Message(inf));
                 // Reset the EndTime so the message lasts as long on restore as it did orginally.
                 // Without this reset, the band may last a very long time.
                 var last = messages.Count - 1;
                 var message = messages[last];
-                message.EndTime = Owner.Viewer.Simulator.GameTime + (message.EndTime - message.StartTime); 
+                message.EndTime = Owner.Viewer.Simulator.GameTime + (message.EndTime - message.StartTime);
                 MessagesChanged = true;
             }
             Messages = messages;
@@ -118,7 +118,7 @@ namespace Orts.Viewer3D.Popups
             var maxLines = vbox.RemainingHeight / TextSize;
             var messages = Messages.Take(maxLines).Reverse().ToList();
             vbox.AddSpace(0, vbox.RemainingHeight - TextSize * messages.Count());
-            foreach( var message in messages )
+            foreach (var message in messages)
             {
                 var hbox = vbox.AddLayoutHorizontal(TextSize);
                 var width = hbox.RemainingWidth;

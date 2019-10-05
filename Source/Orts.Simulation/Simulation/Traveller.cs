@@ -292,7 +292,7 @@ namespace Orts.Simulation
                     {
                         throw new MissingTrackNodeException();
                     }
-                    
+
                 }
 
                 // Figure out which end of the track node is closest and use that.

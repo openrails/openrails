@@ -225,7 +225,7 @@ namespace Orts.Viewer3D
         // Number of point indices (each dome = 912 for 24 sides: 7 levels of 24 triangle pairs each
         // plus 24 triangles at the zenith)
         // plus six more for the moon quad
-        private static short indexCount = 6 + 2 * (SkyConstants.skySides * 6 *SkyConstants.skyLevels + 3 * SkyConstants.skySides);
+        private static short indexCount = 6 + 2 * (SkyConstants.skySides * 6 * SkyConstants.skyLevels + 3 * SkyConstants.skySides);
 
         /// <summary>
         /// Constructor.
@@ -304,8 +304,8 @@ namespace Orts.Viewer3D
             {
                 // The "oblate" factor is used to flatten the dome to an ellipsoid. Used for the inner (cloud)
                 // dome only. Gives the clouds a flatter appearance.
-                float y = (float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (i-1))) * radius * oblate;
-                float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (i-1)));
+                float y = (float)Math.Sin(MathHelper.ToRadians((360 / skySides) * (i - 1))) * radius * oblate;
+                float yRadius = radius * (float)Math.Cos(MathHelper.ToRadians((360 / skySides) * (i - 1)));
                 for (int j = 0; j < skySides; j++) // (=24 for top overlay)
                 {
 

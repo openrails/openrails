@@ -235,7 +235,7 @@ namespace Orts.Viewer3D
             var uv = Tile.Shaders[Patch.ShaderIndex].terrain_uvcalcs;
             if (ts.Length > 1)
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename) +
-                    (uv[1].D != 0 && uv[1].D != 32 ? "\0" + uv[1].D.ToString(): ""));
+                    (uv[1].D != 0 && uv[1].D != 32 ? "\0" + uv[1].D.ToString() : ""));
             else
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
 
@@ -511,7 +511,7 @@ namespace Orts.Viewer3D
             PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
             var converted = textures.Length > 2 && Int32.TryParse(textures[2], out OverlayScale);
-            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32; 
+            OverlayScale = OverlayScale != 0 && converted ? OverlayScale : 32;
 
         }
 

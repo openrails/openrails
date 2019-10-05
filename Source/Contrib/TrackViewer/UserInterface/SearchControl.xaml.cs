@@ -37,7 +37,8 @@ namespace ORTS.TrackViewer.UserInterface
     /// <summary>
     /// The kind of items that can be searched from the search control
     /// </summary>
-    public enum SearchableItem {
+    public enum SearchableItem
+    {
         /// <summary>Search for (rail) track node</summary>
         TrackNode,
         /// <summary>Search for (rail) track item</summary>

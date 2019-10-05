@@ -39,7 +39,8 @@ namespace ORTS.ContentManager
             details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, content.Name);
             details.AppendFormat("Path:\t{1}{0}", Environment.NewLine, content.PathName);
 
-            try {
+            try
+            {
                 var stream = new MemoryStream();
                 var serializer = new BinaryFormatter();
                 serializer.Serialize(stream, content);

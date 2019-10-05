@@ -64,8 +64,8 @@ namespace ORTS
 
         readonly MainForm MainForm;
         readonly UserSettings Settings;
-		readonly string SummaryFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
-		readonly string LogFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingLog.txt");
+        readonly string SummaryFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingSummary.csv");
+        readonly string LogFilePath = Path.Combine(UserSettings.UserDataFolder, "TestingLog.txt");
 
         public TestingForm(MainForm mainForm, UserSettings settings)
         {

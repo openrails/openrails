@@ -79,7 +79,7 @@ namespace Orts.Viewer3D.RollingStock
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var car = this.Car as MSTSDieselLocomotive;
-            
+
             // Diesel exhaust
             var exhaustParticles = car.Train != null && car.Train.TrainType == Train.TRAINTYPE.STATIC ? 0 : car.ExhaustParticles.SmoothedValue;
             foreach (var drawer in Exhaust)
@@ -89,7 +89,7 @@ namespace Orts.Viewer3D.RollingStock
                 var colorB = car.ExhaustColorB.SmoothedValue / 255f;
                 drawer.SetOutput(exhaustParticles, car.ExhaustMagnitude.SmoothedValue, new Color((byte)car.ExhaustColorR.SmoothedValue, (byte)car.ExhaustColorG.SmoothedValue, (byte)car.ExhaustColorB.SmoothedValue));
             }
-            
+
             base.PrepareFrame(frame, elapsedTime);
         }
     }

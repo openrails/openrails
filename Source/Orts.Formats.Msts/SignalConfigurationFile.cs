@@ -392,7 +392,7 @@ namespace Orts.Formats.Msts
             Name = stf.ReadString().ToLowerInvariant();
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("colour", ()=>{
-				    stf.MustMatch("(");
+                    stf.MustMatch("(");
                     a = (byte)stf.ReadUInt(null);
                     r = (byte)stf.ReadUInt(null);
                     g = (byte)stf.ReadUInt(null);
@@ -516,7 +516,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("signalnumclearahead", ()=>{ numClearAhead = numClearAhead >= -1 ? numClearAhead : stf.ReadIntBlock(null); numdefs++;}),
                 new STFReader.TokenProcessor("semaphoreinfo", ()=>{ SemaphoreInfo = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("ortsdayglow", ()=>{ DayGlow = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
-                new STFReader.TokenProcessor("ortsnightglow", ()=>{ NightGlow = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),                
+                new STFReader.TokenProcessor("ortsnightglow", ()=>{ NightGlow = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("ortsdaylight", ()=>{ DayLight = stf.ReadBoolBlock(true); }),
                 new STFReader.TokenProcessor("ortsnormalsubtype", ()=>{ ORTSNormalSubtype = ReadORTSNormalSubtype(stf, ORTSNormalSubtypes); }),
                 new STFReader.TokenProcessor("sigflashduration", ()=>{
@@ -949,7 +949,7 @@ namespace Orts.Formats.Msts
         /// <summary>Set to true if SignalFlags ASAP option specified, meaning train needs to go to speed As Soon As Possible</summary>
         public bool Asap { get; private set; }
         /// <summary>Set to true if SignalFlags RESET option specified (ORTS only)</summary>
-        public bool Reset; 
+        public bool Reset;
         /// <summary>Set to true if no speed reduction is required for RESTRICTED or STOP_AND_PROCEED aspects (ORTS only) </summary>
         public bool NoSpeedReduction;
 
@@ -1008,7 +1008,7 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Describes a signal object shape and the set of signal heads and other sub-objects that are present on this.
     /// </summary>
-    
+
     public class ApproachControlLimits
     {
         public float? ApproachControlPositionM = null;
@@ -1090,7 +1090,7 @@ namespace Orts.Formats.Msts
             /// </summary>
             public static IList<string> SignalSubTypes =
                     new[] {"DECOR","SIGNAL_HEAD","DUMMY1","DUMMY2",
-				"NUMBER_PLATE","GRADIENT_PLATE","USER1","USER2","USER3","USER4"};
+                "NUMBER_PLATE","GRADIENT_PLATE","USER1","USER2","USER3","USER4"};
             // made public for access from SIGSCR processing
             // Altered to match definition in MSTS
 

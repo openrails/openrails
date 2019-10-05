@@ -41,12 +41,12 @@ namespace Orts.Simulation.Timetables
     /// </summary>
     public class Poolholder
     {
-        public Dictionary<string,TimetablePool> Pools;
+        public Dictionary<string, TimetablePool> Pools;
 
         /// <summary>
         /// loader for timetable mode
         /// </summary>
-        public Poolholder (Simulator simulatorref, string[] arguments, CancellationToken cancellation)
+        public Poolholder(Simulator simulatorref, string[] arguments, CancellationToken cancellation)
         {
             PoolInfo TTPool = new PoolInfo(simulatorref);
             Pools = TTPool.ProcessPools(arguments, cancellation);
@@ -65,7 +65,7 @@ namespace Orts.Simulation.Timetables
         /// <summary>
         /// loader for restore
         /// </summary>
-        public Poolholder (BinaryReader inf, Simulator simulatorref)
+        public Poolholder(BinaryReader inf, Simulator simulatorref)
         {
             int nopools = inf.ReadInt32();
             if (nopools < 0)
@@ -89,7 +89,7 @@ namespace Orts.Simulation.Timetables
         /// Save
         /// </summary>
         /// <param name="outf"></param>
-        public void Save (BinaryWriter outf)
+        public void Save(BinaryWriter outf)
         {
             if (Pools == null)
             {
@@ -715,12 +715,12 @@ namespace Orts.Simulation.Timetables
                                 newRoute.Add(newElement);
                             }
                         }
-                    // add elements from storage
+                        // add elements from storage
                         for (int iElement = thisStorage.StoragePath.Count - 1; iElement >= 0; iElement--)
                         {
                             if (newRoute.GetRouteIndex(thisStorage.StoragePath[iElement].TCSectionIndex, 0) < 0)
                             {
-                                Train.TCRouteElement newElement = new Train.TCRouteElement (thisStorage.StoragePath[iElement]);
+                                Train.TCRouteElement newElement = new Train.TCRouteElement(thisStorage.StoragePath[iElement]);
                                 newElement.Direction = newElement.Direction == 1 ? 0 : 1;
                                 newRoute.Add(newElement);
                             }
@@ -778,11 +778,11 @@ namespace Orts.Simulation.Timetables
                 train.PresentPosition[1].TCDirection, train.Length, true, true, false);
             train.OccupiedTrack.Clear();
 
-            foreach(Train.TCRouteElement thisElement in tempRoute)
+            foreach (Train.TCRouteElement thisElement in tempRoute)
             {
                 train.OccupiedTrack.Add(train.signalRef.TrackCircuitList[thisElement.TCSectionIndex]);
             }
-            
+
             train.ClearActiveSectionItems();
         }
 
@@ -881,7 +881,7 @@ namespace Orts.Simulation.Timetables
 
                 if (ForceCreation)
                 {
-                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName + 
+                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName +
                         " : no engines available in pool, engine is created, at " + moveTimeA.ToString("HH:mm:ss") + "\n");
 #if DEBUG_POOLINFO
                     sob = new StringBuilder();
@@ -892,7 +892,7 @@ namespace Orts.Simulation.Timetables
                 }
                 else
                 {
-                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName + 
+                    Trace.TraceInformation("Train request : " + train.Name + " from pool " + PoolName +
                         " : no engines available in pool, engine is not created , at " + moveTimeA.ToString("HH:mm:ss") + "\n");
 #if DEBUG_POOLINFO
                     sob = new StringBuilder();
@@ -1101,7 +1101,7 @@ namespace Orts.Simulation.Timetables
                     train.OrgAINumber = train.Number;
                     train.Number = 0;
                     train.LeadLocomotiveIndex = selectedTrain.LeadLocomotiveIndex;
-                    for (int carid = 0; carid < train.Cars.Count; carid++ )
+                    for (int carid = 0; carid < train.Cars.Count; carid++)
                     {
                         train.Cars[carid].CarID = selectedTrain.Cars[carid].CarID;
                     }

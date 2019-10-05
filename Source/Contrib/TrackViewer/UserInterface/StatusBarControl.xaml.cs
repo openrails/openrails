@@ -58,7 +58,7 @@ namespace ORTS.TrackViewer.UserInterface
         {
             InitializeComponent();
 
-            StatusbarHeight = (int) tvStatusbar.Height;
+            StatusbarHeight = (int)tvStatusbar.Height;
 
             //ElementHost object helps us to connect a WPF User Control.
             elementHost = new ElementHost
@@ -79,7 +79,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <param name="yBottom">Y-value in screen pixels at the bottom of the statusbar</param>
         public void SetScreenSize(int width, int height, int yBottom)
         {
-            elementHost.Location = new System.Drawing.Point(0, yBottom-height);
+            elementHost.Location = new System.Drawing.Point(0, yBottom - height);
             elementHost.Size = new System.Drawing.Size(width, height);
         }
 
@@ -241,16 +241,16 @@ namespace ORTS.TrackViewer.UserInterface
                 {
                     //gather some info on path status
                     List<string> statusItems = new List<string>();
-                    
+
                     if (trackViewer.PathEditor.HasEndingPath) statusItems.Add("good end");
                     if (trackViewer.PathEditor.HasBrokenPath) statusItems.Add("broken");
                     if (trackViewer.PathEditor.HasModifiedPath) statusItems.Add("modified");
                     if (trackViewer.PathEditor.HasStoredTail) statusItems.Add("stored tail");
-                    
+
                     string pathStatus = String.Join(", ", statusItems.ToArray());
-                    
+
                     ORTS.TrackViewer.Editing.TrainpathNode curNode = trackViewer.PathEditor.CurrentNode;
-                    
+
                     statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
                         " {0} ({4}): TVNs=[{1} {2}] (type={3})",
                         trackViewer.PathEditor.FileName, curNode.NextMainTvnIndex, curNode.NextSidingTvnIndex,
@@ -268,7 +268,7 @@ namespace ORTS.TrackViewer.UserInterface
                             " (wait-time={0}s)",
                             curVectorNode.WaitTimeS);
                     }
-            
+
                 }
                 else
                 {

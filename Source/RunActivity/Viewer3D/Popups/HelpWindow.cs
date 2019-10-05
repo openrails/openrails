@@ -48,7 +48,7 @@ namespace Orts.Viewer3D.Popups
         Dictionary<int, string> DbfEvalActDepart = new Dictionary<int, string>();//Debrief eval
 
         Dictionary<string, double> DbfEvalValues = new Dictionary<string, double>();//Debrief eval
-        
+
         public static string logFileName { get { return Program.logFileName; } set { Program.logFileName = value; } }
         ControlLayout scrollbox;
         ControlLayoutHorizontal line;
@@ -379,7 +379,7 @@ namespace Orts.Viewer3D.Popups
                             //Station stops remaining
                             foreach (var item in DbfEvalActArrive)
                             {
-                              if (item.Value == "")
+                                if (item.Value == "")
                                     dbfstationstopsremaining++;
                             }
                             if (!actualStatusVisible)
@@ -1076,11 +1076,11 @@ namespace Orts.Viewer3D.Popups
             string starBlack = " ★ ★ ★ ★ ★";
             string starWhite = " ☆ ☆ ☆ ☆ ☆";
 
-            star = (starBlack.Substring(0, value / 10).ToString() + starWhite.Substring(value / 10, 10 - (value/10)).ToString());
+            star = (starBlack.Substring(0, value / 10).ToString() + starWhite.Substring(value / 10, 10 - (value / 10)).ToString());
             return star;
         }
 
-        private void outmesssagecolorcenter( string text, int colW, Color color, bool lScroll)
+        private void outmesssagecolorcenter(string text, int colW, Color color, bool lScroll)
         {
             if (lScroll)
             {
@@ -1091,9 +1091,9 @@ namespace Orts.Viewer3D.Popups
                 if (!lDebriefEvalFile) wDbfEval.Write(text.PadLeft(40 + text.Length / 2));
 
             line.Add(indicator = new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(text), LabelAlignment.Center));
-            indicator.Color =color;
-        }    
-        
+            indicator.Color = color;
+        }
+
         private void outmesssagecolor(string text, int colW, Color color, bool bScroll, int nmargin, int nwriteline)
         {
             string[] atext = text.Split('=');
@@ -1102,11 +1102,11 @@ namespace Orts.Viewer3D.Popups
             if (bScroll)
             {
                 line = scrollbox.AddLayoutHorizontalLineOfText();
-                if (!lDebriefEvalFile) wDbfEval.WriteLine(atext.Length > 1 ? atext[0].PadRight(nvalmargin[nmargin]) + " = " + atext[1]: text);
+                if (!lDebriefEvalFile) wDbfEval.WriteLine(atext.Length > 1 ? atext[0].PadRight(nvalmargin[nmargin]) + " = " + atext[1] : text);
             }
             else
             {
-                if (!lDebriefEvalFile) wDbfEval.Write(atext.Length > 1 ? atext[0].PadRight(nvalmargin[nmargin]) + " = " + atext[1]: text.PadRight(nvalmargin[nmargin]));
+                if (!lDebriefEvalFile) wDbfEval.Write(atext.Length > 1 ? atext[0].PadRight(nvalmargin[nmargin]) + " = " + atext[1] : text.PadRight(nvalmargin[nmargin]));
             }
 
             if (!lDebriefEvalFile)
@@ -1153,7 +1153,7 @@ namespace Orts.Viewer3D.Popups
                 line.Add(new Label(colW, line.RemainingHeight, Viewer.Catalog.GetString(text)));
             }
         }
-        
+
         private void consolewltext(string text)
         {
             if (!lDebriefEvalFile) wDbfEval.WriteLine(text + ".");
@@ -1183,7 +1183,7 @@ namespace Orts.Viewer3D.Popups
                     var label = new Label(tabWidth, hbox.RemainingHeight, Tabs[i].TabLabel, LabelAlignment.Center) { Color = ActiveTab == i ? Color.White : Color.Gray, Tag = i };
                     label.Click += label_Click;
                     hbox.Add(label);
-                    
+
                 }
                 vbox.AddHorizontalSeparator();
                 Tabs[ActiveTab].Layout(vbox);
@@ -1222,10 +1222,10 @@ namespace Orts.Viewer3D.Popups
             }
         }
 
-        
+
         ActivityTask LastActivityTask;
         bool StoppedAt;
-        
+
         public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
         {
 

@@ -753,7 +753,7 @@ namespace Tests.Orts.Parsers.Msts.StfException
 
 }
 namespace Tests.Orts.Parsers.Msts.StfReader
-{   
+{
     // NEW_READER compilation flag is set for those tests that can be performed (compiled) only for the new STFReader, 
     // but not on the old reader. The new reader should also pass all tests that compile on the old reader.
     // This means in this file NEW_READER flag adds a number of tests, but it should also work if the flag is not set.
@@ -1453,14 +1453,14 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             var reader = Create.Reader("Comment(a)" + someFollowingToken);
             Assert.Equal(someFollowingToken, reader.ReadItem());
         }
-        
+
         [Fact]
         public static void WarnOnMissingBlockAfterComment()
         {
             // todo: old stf reader would simply return 'b'. Throwing an exception is perhaps harsh
             AssertWarnings.NotExpected();
             string someFollowingToken = "b";
-            AssertStfException.Throws(() => 
+            AssertStfException.Throws(() =>
             {
                 var reader = Create.Reader("comment a " + someFollowingToken);
                 Assert.Equal(someFollowingToken, reader.ReadItem());
@@ -2243,8 +2243,8 @@ namespace Tests.Orts.Parsers.Msts.StfReader
     public class OnReadingBoolBlockShould
     {
         static readonly bool SOMEDEFAULT = false;
-        static readonly bool[] SOMEDEFAULTS1 = new bool[] { false, true, false, true, true, true, true  };
-        static readonly string[] STRINGDEFAULTS1 = new string[] { "false", "true", "0", "1", "1.1", "-2.9e3", "non"  };
+        static readonly bool[] SOMEDEFAULTS1 = new bool[] { false, true, false, true, true, true, true };
+        static readonly string[] STRINGDEFAULTS1 = new string[] { "false", "true", "0", "1", "1.1", "-2.9e3", "non" };
 
         [Fact]
         public static void OnEofWarnAndReturnDefault()
@@ -2270,16 +2270,16 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         [Fact]
         public static void ReturnStringValueInBlock()
         {
-            string[] inputValues = {"true", "false"};
-            bool[] expectedValues = {true, false};
+            string[] inputValues = { "true", "false" };
+            bool[] expectedValues = { true, false };
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(false));
         }
 
         [Fact]
         public static void ReturnIntValueInBlock()
         {
-            string[] inputValues = {"0", "1", "-2"};
-            bool[] expectedValues = {false, true, true};
+            string[] inputValues = { "0", "1", "-2" };
+            bool[] expectedValues = { false, true, true };
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(false));
         }
 
@@ -2289,9 +2289,9 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             bool[] expectedValues;
             string[] inputValues = { "0.1", "1.1", "something", "()" };
             bool expectedValue = false;
-            expectedValues = new bool[]{ expectedValue, expectedValue, expectedValue, expectedValue};
+            expectedValues = new bool[] { expectedValue, expectedValue, expectedValue, expectedValue };
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(expectedValue));
-            
+
             expectedValue = true;
             expectedValues = new bool[] { expectedValue, expectedValue, expectedValue, expectedValue };
             StfTokenReaderCommon.ReturnValueInBlock<bool>(expectedValues, inputValues, reader => reader.ReadBoolBlock(expectedValue));
@@ -2338,7 +2338,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             var reader = Create.Reader(inputString);
             foreach (string testValue in testValues)
             {
-                bool result = ! expectedResult;
+                bool result = !expectedResult;
                 result = reader.ReadBoolBlock(expectedResult);
                 Assert.Equal(expectedResult, result);
             }

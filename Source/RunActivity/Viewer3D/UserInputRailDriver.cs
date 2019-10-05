@@ -151,7 +151,7 @@ namespace Orts.Viewer3D
             }
             State.Changed = true;
         }
-        
+
         /// <summary>
         /// Error callback
         /// </summary>
@@ -164,14 +164,14 @@ namespace Orts.Viewer3D
 
         static float Percentage(float x, float x0, float x100)
         {
-            float p= 100 * (x - x0) / (x100 - x0);
+            float p = 100 * (x - x0) / (x100 - x0);
             if (p < 5)
                 return 0;
             if (p > 95)
                 return 100;
             return p;
         }
-        
+
         static float Percentage(float x, float xminus100, float x0, float xplus100)
         {
             float p = 100 * (x - x0) / (xplus100 - x0);
@@ -215,7 +215,7 @@ namespace Orts.Viewer3D
             for (int i = 0; i < WriteBuffer.Length; i++)
                 WriteBuffer[i] = 0;
             WriteBuffer[1] = 133;
-            WriteBuffer[7] = (byte) (on ? 1 : 0);
+            WriteBuffer[7] = (byte)(on ? 1 : 0);
             Device.WriteData(WriteBuffer);
         }
 
@@ -234,7 +234,7 @@ namespace Orts.Viewer3D
             if (!Active || playerLoco == null || Device == null)
                 return;
             float speed = 10 * MpS.FromMpS(playerLoco.SpeedMpS, playerLoco.IsMetric);
-            int s = (int) (speed >= 0 ? speed + .5 : -speed + .5);
+            int s = (int)(speed >= 0 ? speed + .5 : -speed + .5);
             if (s != LEDSpeed)
             {
                 if (s < 100)
@@ -272,7 +272,7 @@ namespace Orts.Viewer3D
                     return;
                 }
             }
-			// TODO: This is... kinda weird and cool at the same time. STF parsing being used on RailDriver's calebration file. Probably should be a dedicated parser, though.
+            // TODO: This is... kinda weird and cool at the same time. STF parsing being used on RailDriver's calebration file. Probably should be a dedicated parser, though.
             STFReader reader = new STFReader(file, false);
             while (!reader.Eof)
             {
@@ -280,8 +280,8 @@ namespace Orts.Viewer3D
                 if (token == "Position")
                 {
                     string name = reader.ReadItem();
-                    int min= -1;
-                    int max= -1;
+                    int min = -1;
+                    int max = -1;
                     while (token != "}")
                     {
                         token = reader.ReadItem();
@@ -408,7 +408,7 @@ namespace Orts.Viewer3D
             //Commands[(int)UserCommand. gear shift] = new RailDriverUserCommand(4, 0x08);
             Commands[(int)UserCommand.ControlGearDown] = new RailDriverUserCommand(4, 0x08);
             //Commands[(int)UserCommand.ControlEmergency] = new RailDriverUserCommand(4, 0x30); handled elsewhere
-            Commands[(int)UserCommand. ControlAlerter] = new RailDriverUserCommand(4, 0x40);
+            Commands[(int)UserCommand.ControlAlerter] = new RailDriverUserCommand(4, 0x40);
             Commands[(int)UserCommand.ControlSander] = new RailDriverUserCommand(4, 0x80);
             Commands[(int)UserCommand.ControlPantograph1] = new RailDriverUserCommand(5, 0x01);
             Commands[(int)UserCommand.ControlBellToggle] = new RailDriverUserCommand(5, 0x02);
@@ -439,7 +439,7 @@ namespace Orts.Viewer3D
 
         public override string ToString()
         {
-            string s= String.Format("{0} {1} {2} {3} {4} {5} {6}", DirectionPercent, ThrottlePercent, DynamicBrakePercent, TrainBrakePercent, EngineBrakePercent, BailOff, Emergency);
+            string s = String.Format("{0} {1} {2} {3} {4} {5} {6}", DirectionPercent, ThrottlePercent, DynamicBrakePercent, TrainBrakePercent, EngineBrakePercent, BailOff, Emergency);
             for (int i = 0; i < 6; i++)
                 s += " " + ButtonData[i];
             return s;
@@ -455,29 +455,29 @@ namespace Orts.Viewer3D
             return (ButtonData[index] & mask) != 0 && (PreviousButtonData[index] & mask) == 0;
         }
 
-		public bool IsPressed(UserCommand command)
-		{
-			RailDriverUserCommand c = Commands[(int)command];
+        public bool IsPressed(UserCommand command)
+        {
+            RailDriverUserCommand c = Commands[(int)command];
             if (c == null || Changed == false)
                 return false;
-			return c.IsButtonDown(ButtonData) && !c.IsButtonDown(PreviousButtonData);
-		}
+            return c.IsButtonDown(ButtonData) && !c.IsButtonDown(PreviousButtonData);
+        }
 
-		public bool IsReleased(UserCommand command)
-		{
+        public bool IsReleased(UserCommand command)
+        {
             RailDriverUserCommand c = Commands[(int)command];
             if (c == null || Changed == false)
                 return false;
             return !c.IsButtonDown(ButtonData) && c.IsButtonDown(PreviousButtonData);
-		}
+        }
 
-		public bool IsDown(UserCommand command)
-		{
+        public bool IsDown(UserCommand command)
+        {
             RailDriverUserCommand c = Commands[(int)command];
             if (c == null)
                 return false;
             return c.IsButtonDown(ButtonData);
-		}
+        }
     }
 
     public class RailDriverUserCommand

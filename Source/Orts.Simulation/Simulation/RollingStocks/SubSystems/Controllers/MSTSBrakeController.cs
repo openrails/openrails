@@ -27,7 +27,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
      * has specific methods to update brake status.
      * 
      */
-    public class MSTSBrakeController: BrakeController
+    public class MSTSBrakeController : BrakeController
     {
         public MSTSNotchController NotchController;
 
@@ -119,7 +119,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             break;
                         case ControllerState.Lap:
                             // Lap position applies min service reduction when first selected, and previous contoller position was Running, then no change in pressure occurs 
-                            if (PreviousNotchPosition.Type == ControllerState.Running) 
+                            if (PreviousNotchPosition.Type == ControllerState.Running)
                             {
                                 pressureBar -= MinReductionBar();
                                 epState = -1;
@@ -182,7 +182,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 pressureBar = (MaxPressureBar() - FullServReductionBar()) * CurrentValue();
             }
             else
-            {                
+            {
                 float x = NotchController.GetNotchFraction();
                 switch (notch.Type)
                 {

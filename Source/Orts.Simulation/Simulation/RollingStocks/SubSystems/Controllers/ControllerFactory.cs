@@ -20,8 +20,8 @@ using System.IO;
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
     public enum ControllerTypes
-    {        
-        MSTSNotchController = 1,        
+    {
+        MSTSNotchController = 1,
         BrakeController
     }
 
@@ -35,13 +35,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 controller.Save(outf);
         }
 
-		public static void Restore(IController controller, BinaryReader inf)
+        public static void Restore(IController controller, BinaryReader inf)
         {
             if (!inf.ReadBoolean())
                 return;
 
             switch ((ControllerTypes)inf.ReadInt32())
-            {                
+            {
                 case ControllerTypes.MSTSNotchController:
                     if (controller == null)
                         controller = new MSTSNotchController();

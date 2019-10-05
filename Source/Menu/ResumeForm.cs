@@ -76,7 +76,7 @@ namespace ORTS
         List<Save> Saves = new List<Save>();
         Task<List<Save>> SaveLoader;
 
-        public class Save 
+        public class Save
         {
             public string File { get; private set; }
             public string PathName { get; private set; }
@@ -182,7 +182,7 @@ namespace ORTS
 
             if (SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame)
             {
-                Text =String.Format("{0} - {1} - {2}", Text, route.Name, Path.GetFileNameWithoutExtension(Timetable.fileName));
+                Text = String.Format("{0} - {1} - {2}", Text, route.Name, Path.GetFileNameWithoutExtension(Timetable.fileName));
                 pathNameDataGridViewTextBoxColumn.Visible = true;
             }
             else
@@ -248,7 +248,7 @@ namespace ORTS
                             if (save.RouteName == Route.Name)
                             {
                                 if (!save.IsMultiplayer ^ Multiplayer)
-                                saves.Add(save);
+                                    saves.Add(save);
                             }
                             else    // In case you receive a SavePack where the activity is recognised but the route has been renamed.
                                     // Checks the route is not in your list of routes.
@@ -311,7 +311,7 @@ namespace ORTS
 
             if (save.Valid != false) // I.e. true or null. Check is for safety as buttons should be disabled if Save is invalid.
             {
-                if( Found(save) )
+                if (Found(save))
                 {
                     if (save.Valid == null)
                         if (!AcceptUseOfNonvalidSave(save))
@@ -454,11 +454,11 @@ namespace ORTS
                     var save = new Save(saveFile, build, Settings.YoungestFailedToRestore);
                     if (save.Valid == false)
                     {
-                        foreach (var fileName in new[] { 
-                            save.File, 
-                            Path.ChangeExtension(save.File, "png"), 
+                        foreach (var fileName in new[] {
+                            save.File,
+                            Path.ChangeExtension(save.File, "png"),
                             Path.ChangeExtension(save.File, "txt"),
-                            Path.ChangeExtension(save.File, "replay") 
+                            Path.ChangeExtension(save.File, "replay")
                             }
                         )
                         {
@@ -481,17 +481,17 @@ namespace ORTS
             SelectedAction = MainForm.UserAction.SingleplayerReplaySave;
             InitiateReplay(true);
         }
-        
+
         private void buttonReplayFromPreviousSave_Click(object sender, EventArgs e)
         {
             SelectedAction = MainForm.UserAction.SingleplayerReplaySaveFromSave;
             InitiateReplay(false);
         }
-        
+
         private void InitiateReplay(bool fromStart)
         {
             var save = saveBindingSource.Current as Save;
-            if (Found(save) )
+            if (Found(save))
             {
                 if (fromStart && (save.Valid == null))
                     if (!AcceptUseOfNonvalidSave(save))
@@ -553,36 +553,36 @@ namespace ORTS
                     var rewriteNeeded = false;
                     // savedArgs[0] contains Activity or Path filepath
                     var filePath = savedArgs[0];
-                    if( !System.IO.File.Exists(filePath) )
+                    if (!System.IO.File.Exists(filePath))
                     {
                         // Show the dialog and get result.
                         openFileDialog1.InitialDirectory = MSTSPath.Base();
                         openFileDialog1.FileName = Path.GetFileName(filePath);
                         openFileDialog1.Title = @"Find location for file " + filePath;
-                        if( openFileDialog1.ShowDialog() != DialogResult.OK )
+                        if (openFileDialog1.ShowDialog() != DialogResult.OK)
                             return false;
                         rewriteNeeded = true;
                         savedArgs[0] = openFileDialog1.FileName;
                     }
-                    if( savedArgs.Length > 1 )  // Explore, not Activity
+                    if (savedArgs.Length > 1)  // Explore, not Activity
                     {
                         // savedArgs[1] contains Consist filepath
                         filePath = savedArgs[1];
-                        if( !System.IO.File.Exists(filePath) )
+                        if (!System.IO.File.Exists(filePath))
                         {
                             // Show the dialog and get result.
                             openFileDialog1.InitialDirectory = MSTSPath.Base();
                             openFileDialog1.FileName = Path.GetFileName(filePath);
                             openFileDialog1.Title = @"Find location for file " + filePath;
-                            if( openFileDialog1.ShowDialog() != DialogResult.OK )
+                            if (openFileDialog1.ShowDialog() != DialogResult.OK)
                                 return false;
                             rewriteNeeded = true;
                             savedArgs[1] = openFileDialog1.FileName;
                         }
                     }
-                    if( rewriteNeeded )
+                    if (rewriteNeeded)
                     {
-                        using( BinaryWriter outf = new BinaryWriter(new FileStream(save.File + ".tmp", FileMode.Create, FileAccess.Write)) )
+                        using (BinaryWriter outf = new BinaryWriter(new FileStream(save.File + ".tmp", FileMode.Create, FileAccess.Write)))
                         {
                             // copy the start of the file
                             outf.Write(version);
@@ -597,17 +597,17 @@ namespace ORTS
                             outf.Write(initialTileZ);
                             outf.Write(savedArgs.Length);
                             // copy the pars which may have changed
-                            for( var i = 0; i < savedArgs.Length; i++ )
+                            for (var i = 0; i < savedArgs.Length; i++)
                                 outf.Write(savedArgs[i]);
                             // copy the rest of the file
-                            while( inf.BaseStream.Position < inf.BaseStream.Length )
+                            while (inf.BaseStream.Position < inf.BaseStream.Length)
                             {
                                 outf.Write(inf.ReadByte());
                             }
                         }
                         inf.Close();
                         File.Replace(save.File + ".tmp", save.File, null);
-                    } 
+                    }
                     else
                     {
                         inf.Close();

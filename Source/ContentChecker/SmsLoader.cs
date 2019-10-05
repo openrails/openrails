@@ -102,8 +102,8 @@ namespace ContentChecker
             basePath = null;
             Stack<string> subDirectories = new Stack<string>();
             string directory = Path.GetDirectoryName(file);
-            var root=Path.GetPathRoot(file);
-            while (directory.Length > root.Length )
+            var root = Path.GetPathRoot(file);
+            while (directory.Length > root.Length)
             {
                 string subdDirectoryName = Path.GetFileName(directory);
                 if (subdDirectoryName.ToLowerInvariant().Equals("routes"))

@@ -213,7 +213,7 @@ namespace ORTS.TrackViewer
                 {
                     Properties.Settings.Default.installDirectory = MSTS.MSTSPath.Base();
                 }
-                catch {}
+                catch { }
             }
             InstallFolder = new Folder("default", Properties.Settings.Default.installDirectory);
 
@@ -244,7 +244,7 @@ namespace ORTS.TrackViewer
 
             //Some on-screen features depend on the actual font-height
             int halfHeight = (int)(fontManager.DefaultFont.Height / 2);
-            drawScaleRuler.SetLocationAndSize(halfHeight, ScreenH - statusbarHeight - halfHeight, 2*halfHeight);
+            drawScaleRuler.SetLocationAndSize(halfHeight, ScreenH - statusbarHeight - halfHeight, 2 * halfHeight);
             drawLongitudeLatitude = new DrawLongitudeLatitude(halfHeight, menuHeight);
             drawEditorAction = new DrawEditorAction(halfHeight, menuHeight + 2 * halfHeight);
         }
@@ -367,18 +367,18 @@ namespace ORTS.TrackViewer
 
             if (DrawPATfile != null && Properties.Settings.Default.showPATfile)
             {
-                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath))     DrawPATfile.ExtendPath();
+                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath)) DrawPATfile.ExtendPath();
                 if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) DrawPATfile.ExtendPathFull();
-                if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     DrawPATfile.ReducePath();
+                if (TVUserInput.IsPressed(TVUserCommands.ReducePath)) DrawPATfile.ReducePath();
                 if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) DrawPATfile.ReducePathFull();
                 if (TVUserInput.IsDown(TVUserCommands.ShiftToPathLocation)) DrawArea.ShiftToLocation(DrawPATfile.CurrentLocation);
             }
 
             if (PathEditor != null && Properties.Settings.Default.showTrainpath)
             {
-                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath))     PathEditor.ExtendPath();
+                if (TVUserInput.IsPressed(TVUserCommands.ExtendPath)) PathEditor.ExtendPath();
                 if (TVUserInput.IsPressed(TVUserCommands.ExtendPathFull)) PathEditor.ExtendPathFull();
-                if (TVUserInput.IsPressed(TVUserCommands.ReducePath))     PathEditor.ReducePath();
+                if (TVUserInput.IsPressed(TVUserCommands.ReducePath)) PathEditor.ReducePath();
                 if (TVUserInput.IsPressed(TVUserCommands.ReducePathFull)) PathEditor.ReducePathFull();
                 if (TVUserInput.IsDown(TVUserCommands.ShiftToPathLocation)) DrawArea.ShiftToLocation(PathEditor.CurrentLocation);
 
@@ -389,7 +389,7 @@ namespace ORTS.TrackViewer
             }
 
             var mouseLocationAbsoluteX = Window.ClientBounds.Left + TVUserInput.MouseLocationX;
-            var mouseLocationAbsoluteY = Window.ClientBounds.Top  + TVUserInput.MouseLocationY;
+            var mouseLocationAbsoluteY = Window.ClientBounds.Top + TVUserInput.MouseLocationY;
             if (PathEditor != null && PathEditor.EditingIsActive)
             {
                 if (TVUserInput.IsMouseRightButtonPressed())
@@ -570,7 +570,7 @@ namespace ORTS.TrackViewer
                 drawAreaInset.DrawBorder(Color.Black);
             }
 
-            if (DrawMultiplePaths != null ) DrawMultiplePaths.Draw(DrawArea);
+            if (DrawMultiplePaths != null) DrawMultiplePaths.Draw(DrawArea);
             if (DrawPATfile != null && Properties.Settings.Default.showPATfile) DrawPATfile.Draw(DrawArea);
             if (PathEditor != null && Properties.Settings.Default.showTrainpath) PathEditor.Draw(DrawArea);
             drawEditorAction.Draw(PathEditor);
@@ -622,7 +622,8 @@ namespace ORTS.TrackViewer
         public void Quit()
         {
             string message = String.Empty;
-            if (PathEditor!=null && PathEditor.HasModifiedPath)  {
+            if (PathEditor != null && PathEditor.HasModifiedPath)
+            {
                 message = catalog.GetString("The path you are working on has un-saved changes.\n");
             }
             message += catalog.GetString("Do you really want to Quit?");
@@ -740,7 +741,8 @@ namespace ORTS.TrackViewer
             }
 
             string installFolder = System.IO.Directory.GetParent(System.IO.Directory.GetParent(routeFolder).ToString()).ToString();
-            if (!SetSelectedInstallFolder(installFolder)) {
+            if (!SetSelectedInstallFolder(installFolder))
+            {
                 MessageBox.Show(string.Format(catalog.GetString("Route cannot be loaded.\nWhile trying to open {0} the folder {1} was inferred as (MSTS or similar) install folder but does not contain expected files"), givenPathOrFile, installFolder));
                 return;
             }

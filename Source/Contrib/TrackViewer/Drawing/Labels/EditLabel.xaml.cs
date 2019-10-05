@@ -70,7 +70,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
         {
             this.Close();
         }
-        
+
         /// <summary>
         /// Delete the label
         /// </summary>
@@ -81,7 +81,7 @@ namespace ORTS.TrackViewer.Drawing.Labels
             this.Close();
             callback(null);
         }
-        
+
         /// <summary>
         /// Handle an enter/return press on the textbox. If return is pressed, just do the same as the save button.
         /// </summary>

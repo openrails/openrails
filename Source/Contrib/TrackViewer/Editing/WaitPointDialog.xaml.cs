@@ -56,7 +56,7 @@ namespace ORTS.TrackViewer.Editing
             waitTimeMinutes.Text = "1";
             waitTimeSeconds.Text = "1";
             blowHornSeconds.Text = "1";
-            
+
             if (currentWaitTimeS >= 30000 && currentWaitTimeS < 40000)
             {
                 // Absolute time to wait until. 
@@ -106,7 +106,7 @@ namespace ORTS.TrackViewer.Editing
         ///<summary>Return the selected wait time in seconds</summary>
         public int GetWaitTime()
         {
-            
+
             if (selectUntil.IsChecked == true)
             {
                 // coding is 3HHMM
@@ -159,13 +159,14 @@ namespace ORTS.TrackViewer.Editing
 
         int GetIntOrZero(string inputText)
         {
-            int returnValue; 
+            int returnValue;
             try
             {
                 returnValue = Convert.ToInt32(inputText, System.Globalization.CultureInfo.CurrentCulture);
             }
-            catch {
-                returnValue=0;
+            catch
+            {
+                returnValue = 0;
             }
             return returnValue;
         }
@@ -270,6 +271,6 @@ namespace ORTS.TrackViewer.Editing
             }
             UpdateWaitTime();
         }
- 
+
     }
 }

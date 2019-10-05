@@ -402,7 +402,7 @@ namespace Orts.Viewer3D
                 return "Out Of Memory";
             else if (error == AL_NO_ERROR)
                 return "No Error";
-            
+
             return "";
         }
 
@@ -455,7 +455,7 @@ namespace Orts.Viewer3D
                     ORTS.Common.NativeMethods.WritePrivateProfileString("General", "sources", "1024", configFile);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Trace.TraceError("Couldn't check or set OpenAL max sound sources in %AppData%\\Roaming\\alsoft.ini: ", ex.Message);
             }
@@ -604,26 +604,26 @@ namespace Orts.Viewer3D
     public class WaveFileData
     {
         // Constants from C header files
-        private const ushort WAVE_FORMAT_PCM                = 1;
-        private const ushort WAVE_FORMAT_EXTENSIBLE         = 0xFFFE;
+        private const ushort WAVE_FORMAT_PCM = 1;
+        private const ushort WAVE_FORMAT_EXTENSIBLE = 0xFFFE;
 
-        private const ushort SPEAKER_FRONT_LEFT             = 0x1;
-        private const ushort SPEAKER_FRONT_RIGHT            = 0x2;
-        private const ushort SPEAKER_FRONT_CENTER           = 0x4;
-        private const ushort SPEAKER_LOW_FREQUENCY          = 0x8;
-        private const ushort SPEAKER_BACK_LEFT              = 0x10;
-        private const ushort SPEAKER_BACK_RIGHT             = 0x20;
-        private const ushort SPEAKER_FRONT_LEFT_OF_CENTER   = 0x40;
-        private const ushort SPEAKER_FRONT_RIGHT_OF_CENTER  = 0x80;
-        private const ushort SPEAKER_BACK_CENTER            = 0x100;
-        private const ushort SPEAKER_SIDE_LEFT              = 0x200;
-        private const ushort SPEAKER_SIDE_RIGHT             = 0x400;
-        private const ushort SPEAKER_TOP_CENTER             = 0x800;
-        private const ushort SPEAKER_TOP_FRONT_LEFT         = 0x1000;
-        private const ushort SPEAKER_TOP_FRONT_CENTER       = 0x2000;
-        private const ushort SPEAKER_TOP_FRONT_RIGHT        = 0x4000;
-        private const ushort SPEAKER_TOP_BACK_LEFT          = 0x8000;
-        
+        private const ushort SPEAKER_FRONT_LEFT = 0x1;
+        private const ushort SPEAKER_FRONT_RIGHT = 0x2;
+        private const ushort SPEAKER_FRONT_CENTER = 0x4;
+        private const ushort SPEAKER_LOW_FREQUENCY = 0x8;
+        private const ushort SPEAKER_BACK_LEFT = 0x10;
+        private const ushort SPEAKER_BACK_RIGHT = 0x20;
+        private const ushort SPEAKER_FRONT_LEFT_OF_CENTER = 0x40;
+        private const ushort SPEAKER_FRONT_RIGHT_OF_CENTER = 0x80;
+        private const ushort SPEAKER_BACK_CENTER = 0x100;
+        private const ushort SPEAKER_SIDE_LEFT = 0x200;
+        private const ushort SPEAKER_SIDE_RIGHT = 0x400;
+        private const ushort SPEAKER_TOP_CENTER = 0x800;
+        private const ushort SPEAKER_TOP_FRONT_LEFT = 0x1000;
+        private const ushort SPEAKER_TOP_FRONT_CENTER = 0x2000;
+        private const ushort SPEAKER_TOP_FRONT_RIGHT = 0x4000;
+        private const ushort SPEAKER_TOP_BACK_LEFT = 0x8000;
+
         // General info about current wave file
         public bool isKnownType;
         public WAVEFORMATEXTENSIBLE wfEXT;
@@ -677,7 +677,7 @@ namespace Orts.Viewer3D
             // Read Wave file header
             WAVEFILEHEADER waveFileHeader = new WAVEFILEHEADER();
             {
-                GetNextStructureValue<WAVEFILEHEADER>(pFile, out waveFileHeader, - 1);
+                GetNextStructureValue<WAVEFILEHEADER>(pFile, out waveFileHeader, -1);
                 // Check if wave file
                 string hdr = new string(waveFileHeader.szRIFF);
                 if (hdr != "RIFF" && hdr != "WAVE")
@@ -689,7 +689,7 @@ namespace Orts.Viewer3D
                     while (GetNextStructureValue<RIFFCHUNK>(pFile, out riffChunk, -1))
                     {
                         // Format chunk
-                        hdr = new string (riffChunk.szChunkName);
+                        hdr = new string(riffChunk.szChunkName);
                         if (hdr == "fmt ")
                         {
                             WAVEFORMATEXTENSIBLE waveFmt = new WAVEFORMATEXTENSIBLE();
@@ -701,7 +701,7 @@ namespace Orts.Viewer3D
                                 if (waveFmt.Format.wFormatTag == WAVE_FORMAT_PCM)
                                 {
                                     isKnownType = true;
-                                    wtType =  WAVEFORMATTYPE.WT_PCM;
+                                    wtType = WAVEFORMATTYPE.WT_PCM;
                                     waveFmt.wValidBitsPerSample = waveFmt.Format.wBitsPerSample;
                                 }
                                 else if (waveFmt.Format.wFormatTag == WAVE_FORMAT_EXTENSIBLE)
@@ -803,7 +803,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="pulFormat">Place to put the format number</param>
         /// <returns>True if success</returns>
-        private bool GetALFormat(ref int pulFormat, ref bool mstsMonoTreatment, ushort origNChannels )
+        private bool GetALFormat(ref int pulFormat, ref bool mstsMonoTreatment, ushort origNChannels)
         {
             pulFormat = 0;
 
@@ -1084,7 +1084,7 @@ namespace Orts.Viewer3D
                         wfi.CuePoints[i] = 0xFFFFFFFF;
                         adjPos = prevAdjPos;
                     }
-                    
+
                     BufferLens[i] = (int)adjPos - (int)prevAdjPos;
                     if (BufferLens[i] > 0)
                     {
@@ -1095,7 +1095,7 @@ namespace Orts.Viewer3D
                     {
                         BufferIDs[i] = 0;
                     }
-                    
+
                     if (i == wfi.CuePoints.Length - 1)
                     {
                         BufferLens[i + 1] = (int)wfi.ulDataSize - (int)adjPos;
@@ -1129,7 +1129,7 @@ namespace Orts.Viewer3D
             Buffer.BlockCopy(buffer, offset, retval, 0, len);
             return retval;
         }
-        
+
         /// <summary>
         /// Reads a given structure from a FileStream
         /// </summary>
@@ -1161,11 +1161,11 @@ namespace Orts.Viewer3D
                 handle.Free();
                 return true;
             }
-            catch 
+            catch
             {
                 return false;
             }
-        } 
+        }
     }
 }
 

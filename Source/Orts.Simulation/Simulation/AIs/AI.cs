@@ -174,7 +174,8 @@ namespace Orts.Simulation.AIs
                 }
 
                 // timetable mode trains
-                else {
+                else
+                {
                     TTTrain aiTrain = new TTTrain(Simulator, inf, this);
                     if (aiTrain.TrainType != Train.TRAINTYPE.PLAYER) // add to AITrains except when it is player train
                     {
@@ -612,7 +613,7 @@ namespace Orts.Simulation.AIs
                 Trace.TraceInformation("Player train started on time");
                 TTTrain playerTTTrain = playerTrain as TTTrain;
                 playerTTTrain.InitalizePlayerTrain();
-                
+
                 clockTime = Simulator.ClockTime = playerTTTrain.StartTime.Value;
             }
 

@@ -1504,7 +1504,7 @@ namespace Orts.Simulation.Timetables
                                             {
                                                 TTTrain.TransferTrainDetails.Add(-1, newList); // set key to -1 to work out reference later
                                             }
-                                        } 
+                                        }
                                         break;
 
                                     case "activate":
@@ -1811,7 +1811,7 @@ namespace Orts.Simulation.Timetables
                                 break;
 
                             // activated : set activated flag
-                            case "activated" :
+                            case "activated":
                                 activationRequired = true;
                                 break;
 
@@ -1907,7 +1907,7 @@ namespace Orts.Simulation.Timetables
                 if (activationRequired && !String.IsNullOrEmpty(createFromPool))
                 {
                     activationRequired = false;
-                    Trace.TraceInformation("Trigger activation not allowed when starting from pool, trigger activation reset for train {0}", TTTrain.Name);                  
+                    Trace.TraceInformation("Trigger activation not allowed when starting from pool, trigger activation reset for train {0}", TTTrain.Name);
                 }
 
             }
@@ -2548,7 +2548,7 @@ namespace Orts.Simulation.Timetables
                         newStop.Commands = new List<TTTrainCommands>();
                     }
 
-                    newStop.Commands.Add(new TTTrainCommands(String.Concat("stoptime=",stationDetails.actMinStopTime.Value.ToString().Trim())));
+                    newStop.Commands.Add(new TTTrainCommands(String.Concat("stoptime=", stationDetails.actMinStopTime.Value.ToString().Trim())));
                 }
 
                 // process restrict to signal
@@ -3357,7 +3357,7 @@ namespace Orts.Simulation.Timetables
 
                     // create station stop info
                     validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, AITrain.clearingDistanceM,
-                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
+                        AITrain.minStopDistanceM, terminal, actMinStopTime, keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
                     // override holdstate using stop info - but only if exit signal is defined
 

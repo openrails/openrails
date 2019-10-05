@@ -22,43 +22,43 @@ using System.Text;
 
 namespace ORTS.Common
 {
-	/// <summary>
-	/// Explicitly sets the name of the thread on which the target will run.
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-	public sealed class ThreadNameAttribute : Attribute
-	{
-		readonly string threadName;
+    /// <summary>
+    /// Explicitly sets the name of the thread on which the target will run.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+    public sealed class ThreadNameAttribute : Attribute
+    {
+        readonly string threadName;
 
-		// This is a positional argument
-		public ThreadNameAttribute(string threadName)
-		{
-			this.threadName = threadName;
-		}
+        // This is a positional argument
+        public ThreadNameAttribute(string threadName)
+        {
+            this.threadName = threadName;
+        }
 
-		public string ThreadName
-		{
-			get { return threadName; }
-		}
-	}
+        public string ThreadName
+        {
+            get { return threadName; }
+        }
+    }
 
-	/// <summary>
-	/// Defines a thread on which the target is allowed to run; multiple threads may be allowed for a single target.
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Constructor | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
+    /// <summary>
+    /// Defines a thread on which the target is allowed to run; multiple threads may be allowed for a single target.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Constructor | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public sealed class CallOnThreadAttribute : Attribute
-	{
-		readonly string threadName;
+    {
+        readonly string threadName;
 
-		// This is a positional argument
-		public CallOnThreadAttribute(string threadName)
-		{
-			this.threadName = threadName;
-		}
+        // This is a positional argument
+        public CallOnThreadAttribute(string threadName)
+        {
+            this.threadName = threadName;
+        }
 
-		public string ThreadName
-		{
-			get { return threadName; }
-		}
-	}
+        public string ThreadName
+        {
+            get { return threadName; }
+        }
+    }
 }

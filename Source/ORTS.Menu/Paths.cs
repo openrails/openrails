@@ -145,7 +145,8 @@ namespace ORTS.Menu
             {
                 path = new Path(file);
             }
-            catch {
+            catch
+            {
                 path = null;
             }
 

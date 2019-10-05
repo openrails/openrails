@@ -324,5 +324,5 @@ namespace ORTS.Common
         {
             return TileX.GetHashCode() ^ TileZ.GetHashCode() ^ Location.GetHashCode();
         }
-	}
+    }
 }

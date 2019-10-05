@@ -50,16 +50,16 @@ namespace Orts.Viewer3D.RollingStock.SubSystems
             {
                 foreach (var lodControl in FreightShape.SharedShape.LodControls)
                 {
-                    if ( lodControl.DistanceLevels.Length > 0)
+                    if (lodControl.DistanceLevels.Length > 0)
                     {
-                        foreach ( var distanceLevel in lodControl.DistanceLevels)
+                        foreach (var distanceLevel in lodControl.DistanceLevels)
                         {
                             if (distanceLevel.SubObjects.Length > 0
                                 && distanceLevel.SubObjects[0].ShapePrimitives.Length > 0
                                 && distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy.Length > 0)
-                    {
-                        distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy[0] = distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy.Length;
-                    }
+                            {
+                                distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy[0] = distanceLevel.SubObjects[0].ShapePrimitives[0].Hierarchy.Length;
+                            }
                         }
                     }
                 }

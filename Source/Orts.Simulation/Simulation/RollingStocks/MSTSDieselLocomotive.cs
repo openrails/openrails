@@ -189,7 +189,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             InitialMassKg = MassKG;
- 
+
         }
 
         /// <summary>
@@ -328,7 +328,7 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
 
             UpdateSteamHeat(elapsedClockSeconds);
-        
+
         }
 
 
@@ -428,7 +428,7 @@ namespace Orts.Simulation.RollingStocks
                             de.Stop();
                     }
                 }
- //               MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
+                //               MassKG = InitialMassKg - MaxDieselLevelL * DieselWeightKgpL + DieselLevelL * DieselWeightKgpL;
             }
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
@@ -549,12 +549,12 @@ namespace Orts.Simulation.RollingStocks
 
             if (DieselEngines.HasGearBox)
                 status.AppendFormat("\t{0} {1}", Simulator.Catalog.GetString("Gear"), DieselEngines[0].GearBox.CurrentGearIndex);
-            status.AppendFormat("\t{0} {1}\t\t{2}", 
-                Simulator.Catalog.GetString("Fuel"), 
+            status.AppendFormat("\t{0} {1}\t\t{2}",
+                Simulator.Catalog.GetString("Fuel"),
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
 
             if (IsSteamHeatFitted && TrainFittedSteamHeat && this.IsLeadLocomotive() && Train.PassengerCarsNumber > 0)
-               {
+            {
 
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive
                 // Display Steam Heat info
@@ -572,7 +572,7 @@ namespace Orts.Simulation.RollingStocks
                    Train.DisplayTrainNetSteamHeatLossWpTime,
                    Simulator.Catalog.GetString("FuelLvl"),
                    CurrentSteamHeatFuelCapacityL);
-               }
+            }
 
 
             return status.ToString();
@@ -625,7 +625,7 @@ namespace Orts.Simulation.RollingStocks
         public override void SetStepSize(PickupObj matchPickup)
         {
             if (MaxDieselLevelL != 0)
-                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / (MaxDieselLevelL * DieselWeightKgpL)); 
+                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / (MaxDieselLevelL * DieselWeightKgpL));
         }
 
         /// <summary>
@@ -779,7 +779,7 @@ namespace Orts.Simulation.RollingStocks
             if (GearBox != null && GearBox.mstsParams != null && GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN.Count > 0)
             {
                 if (ThrottleController != null && ThrottleController.MaximumValue > 1 && MaxForceN / GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN[0] > 3)
-                    // Tricky things have been made with this .eng file, see e.g Cravens 105; let's correct them
+                // Tricky things have been made with this .eng file, see e.g Cravens 105; let's correct them
                 {
                     for (int i = 0; i < GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN.Count; i++)
                         GearBox.mstsParams.GearBoxMaxTractiveForceForGearsN[i] *= ThrottleController.MaximumValue;
@@ -791,7 +791,7 @@ namespace Orts.Simulation.RollingStocks
                     {
                         if (cabView.CVFFile != null && cabView.CVFFile.CabViewControls != null && cabView.CVFFile.CabViewControls.Count > 0)
                         {
-                            foreach ( var control in cabView.CVFFile.CabViewControls)
+                            foreach (var control in cabView.CVFFile.CabViewControls)
                             {
                                 if (control is CVCDiscrete && control.ControlType == CABViewControlTypes.THROTTLE && (control as CVCDiscrete).Values.Count > 0 && (control as CVCDiscrete).Values[(control as CVCDiscrete).Values.Count - 1] > 1)
                                 {

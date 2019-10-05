@@ -109,7 +109,7 @@ namespace Orts.Formats.OR
         [JsonIgnore]
         public List<AuxActionRef> SpecAuxActions;          // Actions To Do during activity, like WP with specific location
         [JsonProperty("GenActions")]
-        public List<KeyValuePair<string,AuxActionRef>> GenAuxActions;          // Action To Do during activity, without specific location
+        public List<KeyValuePair<string, AuxActionRef>> GenAuxActions;          // Action To Do during activity, without specific location
         [JsonIgnore]
         protected List<KeyValuePair<System.Type, AuxActionRef>> GenFunctions;
         [JsonIgnore]
@@ -273,7 +273,7 @@ namespace Orts.Formats.OR
         //public float RequiredDistance;
         //[JsonProperty("Param")]
         //public List<Object> Parameter;
-        
+
 
         public enum AUX_ACTION
         {
@@ -360,7 +360,7 @@ namespace Orts.Formats.OR
         public float RequiredDistance;
 
         public AuxActionHorn(bool isGeneric, int delay = 2, float requiredDistance = 0) :    //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.SOUND_HORN, , float requiredDistance = 0) :
-            base(AUX_ACTION.SOUND_HORN ,isGeneric)                                          //location, requiredSpeedMpS, , endSignalIndex, actionType, delay, requiredDistance)
+            base(AUX_ACTION.SOUND_HORN, isGeneric)                                          //location, requiredSpeedMpS, , endSignalIndex, actionType, delay, requiredDistance)
         {
             Delay = delay;
             RequiredDistance = requiredDistance;
@@ -422,10 +422,10 @@ namespace Orts.Formats.OR
         }
 
     }
-    
+
     public class AuxControlStopped : AuxActionRef
     {
-        public AuxControlStopped(bool isGeneric):               //WorldLocation? location, float requiredSpeedMpS, bool isGeneric, int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.CONTROL_START, int delay = 2, float requiredDistance = 0, int duration = 10) :
+        public AuxControlStopped(bool isGeneric) :               //WorldLocation? location, float requiredSpeedMpS, bool isGeneric, int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.CONTROL_START, int delay = 2, float requiredDistance = 0, int duration = 10) :
             base(AUX_ACTION.CONTROL_STOPPED, isGeneric)           //location, requiredSpeedMpS, isGeneric, endSignalIndex, actionType, delay, requiredDistance)
         {
         }

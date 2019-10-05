@@ -161,7 +161,7 @@ namespace Orts.Formats.OR
         /// <param name="loc">Starting world location</param>
         public void place(WorldLocation loc)
         {
-            place (loc.TileX, loc.TileZ, loc.Location.X, loc.Location.Z);
+            place(loc.TileX, loc.TileZ, loc.Location.X, loc.Location.Z);
         }
 
         /// <summary>
@@ -889,7 +889,7 @@ namespace Orts.Formats.OR
             return TrackNodes[TrackNodeIndex];
         }
 
-       /// <summary>
+        /// <summary>
         /// Moves the traveller on to the next section of track, whether that is another section within the current track node or a new track node.
         /// </summary>
         /// <returns><c>true</c> if the next section exists, <c>false</c> if it does not.</returns>
@@ -1065,7 +1065,7 @@ namespace Orts.Formats.OR
 
         public float SuperElevationValue(float speed, float timeInterval, bool computed) //will test 1 second ahead, computed will return desired elev. only
         {
-            #if !ACTIVITY_EDITOR
+#if !ACTIVITY_EDITOR
             var tn = trackNode;
             if (tn.TrVectorNode == null) return 0f;
             var tvs = trackVectorSection;

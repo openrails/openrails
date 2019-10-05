@@ -148,7 +148,7 @@ namespace Orts.Viewer3D
         internal void Mark()
         {
             if (Material != null) // stops error messages if a special effect entry is not a defined OR parameter
-            Material.Mark();
+                Material.Mark();
         }
     }
 
@@ -210,7 +210,7 @@ namespace Orts.Viewer3D
 
         Viewer viewer;
         GraphicsDevice graphicsDevice;
-        
+
         static float windDisplacementX;
         static float windDisplacementZ;
 
@@ -473,7 +473,7 @@ namespace Orts.Viewer3D
             if (Viewer.Settings.UseMSTSEnv == false)
                 shader.LightVector = Viewer.World.Sky.solarDirection;
             else
-                shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection; 
+                shader.LightVector = Viewer.World.MSTSSky.mstsskysolarDirection;
 
             var rs = graphicsDevice.RenderState;
             rs.AlphaBlendEnable = true;

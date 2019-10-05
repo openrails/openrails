@@ -31,7 +31,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void UpdateTripleValveState(float controlPressurePSI)
         {
-            if (controlPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f) 
+            if (controlPressurePSI < AutoCylPressurePSI - (TripleValveState != ValveState.Release ? 2.2f : 0f)
                 || controlPressurePSI < 2.2f) // The latter is a UIC regulation (0.15 bar)
                 TripleValveState = ValveState.Release;
             else if (!BailOffOn && controlPressurePSI > AutoCylPressurePSI + (TripleValveState != ValveState.Apply ? 2.2f : 0f))

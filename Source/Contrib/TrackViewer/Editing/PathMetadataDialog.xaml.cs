@@ -29,10 +29,10 @@ namespace ORTS.TrackViewer.Editing
             InitializeComponent();
             this.Left = 100;
             this.Top = 10;
-            pathID.Text    = metadata[0];
-            pathName.Text  = metadata[1];
+            pathID.Text = metadata[0];
+            pathName.Text = metadata[1];
             pathStart.Text = metadata[2];
-            pathEnd.Text   = metadata[3];
+            pathEnd.Text = metadata[3];
             pathIsPlayerPath.IsChecked = isPlayerPath;
             pathID.Focus();
             pathID.SelectAll();

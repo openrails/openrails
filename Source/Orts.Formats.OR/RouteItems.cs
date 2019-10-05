@@ -340,7 +340,7 @@ namespace Orts.Formats.OR
     {
         public string Name;
         public float sizeSiding;
-        public TrItem trItem{ get; protected set; }
+        public TrItem trItem { get; protected set; }
         public TrItem.trItemType type { get { return trItem.ItemType; } protected set { } }
         public float icoAngle;
         public int typeSiding;
@@ -349,7 +349,7 @@ namespace Orts.Formats.OR
     public class SideStartItem : SideItem
     {
         public SideEndItem endSiding { get; set; }
-       
+
         /// <summary>
         /// The underlying track sideItem.
         /// </summary>
@@ -363,7 +363,7 @@ namespace Orts.Formats.OR
             else if (item.ItemType == TrItem.trItemType.trSIDING)
                 typeSiding = (int)TypeSiding.SIDING_START;
             typeItem = (int)TypeItem.SIDING_START;
-            
+
             trItem = item;
             Name = trItem.ItemName;
             Location = new PointF(trItem.TileX * 2048f + trItem.X, trItem.TileZ * 2048f + trItem.Z);

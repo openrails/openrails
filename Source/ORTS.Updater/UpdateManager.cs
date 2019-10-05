@@ -550,7 +550,7 @@ namespace ORTS.Updater
             var commonName = subjectLines.FirstOrDefault(line => line.StartsWith("CN="));
             var country = subjectLines.FirstOrDefault(line => line.StartsWith("C="));
             return certificate.Verify() + "\n" + commonName + "\n" + country;
-         }
+        }
 
         static List<X509Certificate2> GetCertificatesFromFile(string filename)
         {

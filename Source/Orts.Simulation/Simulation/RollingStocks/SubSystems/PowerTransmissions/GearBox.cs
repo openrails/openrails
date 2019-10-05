@@ -127,7 +127,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                if ((currentGearIndex >= 0)&&(currentGearIndex < NumOfGears))
+                if ((currentGearIndex >= 0) && (currentGearIndex < NumOfGears))
                     return Gears[currentGearIndex];
                 else
                     return null;
@@ -135,23 +135,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         }
 
         public int CurrentGearIndex { get { return currentGearIndex; } }
-        public Gear NextGear 
+        public Gear NextGear
         {
             get
             {
-                if ((nextGearIndex >= 0)&&(nextGearIndex < NumOfGears))
+                if ((nextGearIndex >= 0) && (nextGearIndex < NumOfGears))
                     return Gears[nextGearIndex];
                 else
                     return null;
             }
             set
             {
-                switch(GearBoxOperation)
+                switch (GearBoxOperation)
                 {
                     case GearBoxOperation.Manual:
                     case GearBoxOperation.Semiautomatic:
                         int temp = 0;
-                        if(value == null)
+                        if (value == null)
                             nextGearIndex = -1;
                         else
                         {
@@ -185,8 +185,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (!gearedUp)
                 {
-                    if(++nextGearIndex >= Gears.Count)
-                        nextGearIndex =  (Gears.Count - 1);
+                    if (++nextGearIndex >= Gears.Count)
+                        nextGearIndex = (Gears.Count - 1);
                     else
                         gearedUp = true;
                 }
@@ -202,8 +202,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             {
                 if (!gearedDown)
                 {
-                    if(--nextGearIndex <= 0)
-                        nextGearIndex =  0;
+                    if (--nextGearIndex <= 0)
+                        nextGearIndex = 0;
                     else
                         gearedDown = true;
                 }
@@ -240,25 +240,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         int currentGearIndex = -1;
         int nextGearIndex = -1;
 
-        public float CurrentSpeedMpS 
+        public float CurrentSpeedMpS
         {
             get
             {
-                if(DieselEngine.locomotive.Direction == Direction.Reverse)
+                if (DieselEngine.locomotive.Direction == Direction.Reverse)
                     return -(DieselEngine.locomotive.SpeedMpS);
                 else
                     return (DieselEngine.locomotive.SpeedMpS);
             }
         }
 
-        public float ShaftRPM 
+        public float ShaftRPM
         {
             get
             {
                 if (CurrentGear == null)
                     return DieselEngine.RealRPM;
                 else
-                    return CurrentSpeedMpS / CurrentGear.Ratio; 
+                    return CurrentSpeedMpS / CurrentGear.Ratio;
             }
         }
 
@@ -269,24 +269,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 if (CurrentGear == null)
                     return false;
                 else
-                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > CurrentGear.OverspeedPercentage); 
-            } 
+                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > CurrentGear.OverspeedPercentage);
+            }
         }
 
-        public bool IsOverspeedWarning 
+        public bool IsOverspeedWarning
         {
             get
             {
                 if (CurrentGear == null)
                     return false;
                 else
-                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > 100f); 
+                    return ((DieselEngine.RealRPM / DieselEngine.MaxRPM * 100f) > 100f);
             }
         }
 
         float clutch;
-        public float ClutchPercent { set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; }
-            get { return clutch * 100f; } }
+        public float ClutchPercent
+        {
+            set { clutch = (value > 100.0f ? 100f : (value < -100f ? -100f : value)) / 100f; }
+            get { return clutch * 100f; }
+        }
 
         public bool AutoClutch = true;
 
@@ -311,7 +314,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         float motiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                         if (CurrentSpeedMpS > 0)
                         {
-                            if (motiveForceN > (DieselEngine.CurrentDieselOutputPowerW/ CurrentSpeedMpS))
+                            if (motiveForceN > (DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS))
                                 motiveForceN = DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS;
                         }
                         return motiveForceN;
@@ -333,9 +336,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
             CopyFromMSTSParams(DieselEngine);
 
-        }      
+        }
 
-        
+
 
         public void Parse(string lowercasetoken, STFReader stf)
         {
@@ -365,14 +368,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(clutch);
         }
 
-        public void InitializeMoving ()
+        public void InitializeMoving()
         {
             for (int iGear = 0; iGear < Gears.Count; iGear++)
             {
                 if (Gears[iGear].MaxSpeedMpS < CurrentSpeedMpS) continue;
                 else currentGearIndex = nextGearIndex = iGear;
                 break;
-             } 
+            }
 
             gearedUp = false;
             gearedDown = false;
@@ -383,7 +386,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 
         public bool IsInitialized { get { return mstsParams.IsInitialized; } }
 
-        public void UseLocoGearBox (DieselEngine dieselEngine)
+        public void UseLocoGearBox(DieselEngine dieselEngine)
         {
             DieselEngine = dieselEngine;
         }

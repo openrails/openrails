@@ -41,7 +41,7 @@ namespace Orts.Formats.OR
                         else
                         {
                             stf.MustMatch("(");
-                            stf.MustMatch("ListName"); 
+                            stf.MustMatch("ListName");
                             listName = stf.ReadStringBlock(null);
                             var carSpawnerBlock = new CarSpawnerBlock(stf, shapePath, carSpawnerLists, listName);
                         }

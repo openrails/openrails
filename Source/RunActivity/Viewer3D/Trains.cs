@@ -67,27 +67,27 @@ namespace Orts.Viewer3D
                     if (cancellation.IsCancellationRequested)
                         break;
                     try
-					{
-						if (cars.ContainsKey(car))
-							newCars.Add(car, cars[car]);
-						else
-							newCars.Add(car, LoadCar(car));
-					}
-					catch (Exception error) 
+                    {
+                        if (cars.ContainsKey(car))
+                            newCars.Add(car, cars[car]);
+                        else
+                            newCars.Add(car, LoadCar(car));
+                    }
+                    catch (Exception error)
                     {
                         Trace.WriteLine(new FileLoadException(car.WagFilePath, error));
                     }
                 }
                 Cars = newCars;
-				//for those cars not visible now, will unload them (to remove attached sound)
-				foreach (var car in cars)
-				{
-					if (!visibleCars.Contains(car.Key))
-					{
-						car.Value.Unload();
-					}
-				}
-			}
+                //for those cars not visible now, will unload them (to remove attached sound)
+                foreach (var car in cars)
+                {
+                    if (!visibleCars.Contains(car.Key))
+                    {
+                        car.Value.Unload();
+                    }
+                }
+            }
 
             // Ensure the player locomotive has a cab view loaded and anything else they need.
             cars = Cars;

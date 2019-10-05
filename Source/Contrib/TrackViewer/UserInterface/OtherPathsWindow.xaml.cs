@@ -85,7 +85,7 @@ namespace ORTS.TrackViewer.UserInterface
                     if (backgroundColor == null)
                     {
                         checkBox.IsChecked = false;
-                        checkBox.Foreground = new SolidColorBrush(Color.FromArgb(255,0,0,0));
+                        checkBox.Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 0));
                     }
                     else
                     {

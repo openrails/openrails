@@ -86,7 +86,7 @@ namespace ORTS.TrackViewer.UserInterface
                 || LastMouseState.ScrollWheelValue != MouseState.ScrollWheelValue)
             {
                 Changed = true;
-             
+
             }
 #if DEBUG_RAW_INPUT
             for (Keys key = 0; key <= Keys.OemClear; key++)

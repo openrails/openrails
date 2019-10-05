@@ -124,7 +124,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public bool AlerterButtonPressed { get; private set; }
         public bool PowerAuthorization { get; private set; }
-        public bool CircuitBreakerClosingOrder { get; private set;  }
+        public bool CircuitBreakerClosingOrder { get; private set; }
         public bool CircuitBreakerOpeningOrder { get; private set; }
         public bool TractionAuthorization { get; private set; }
 
@@ -276,7 +276,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
                 {
                     Locomotive.TrainBrakeController.TCSFullServiceBraking = value;
-                    
+
                     //Debrief Eval
                     if (value && Locomotive.IsPlayerTrain && !ldbfevalfullbrakeabove16kmh && Math.Abs(Locomotive.SpeedMpS) > 4.44444)
                     {
@@ -286,7 +286,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         train.DbfEvalValueChanged = true;//Debrief eval
                     }
                     if (!value)
-                       ldbfevalfullbrakeabove16kmh = false;
+                        ldbfevalfullbrakeabove16kmh = false;
                 }
             };
             Script.SetEmergencyBrake = (value) =>
@@ -684,7 +684,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         float VigilanceAlarmTimeoutS;
         float CurrentSpeedLimitMpS;
         float NextSpeedLimitMpS;
-       
+
         MonitoringStatus Status;
 
         public ScriptedTrainControlSystem.MonitoringDevice VigilanceMonitor;
@@ -814,7 +814,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
 
             // TODO: NextSignalSpeedLimitMpS(0) should return 0 if the signal is at stop; cause seems to be updateSpeedInfo() within Train.cs
-            NextSpeedLimitMpS = NextSignalAspect(0) != Aspect.Stop ? (NextSignalSpeedLimitMpS(0) > 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS() ) : 0;
+            NextSpeedLimitMpS = NextSignalAspect(0) != Aspect.Stop ? (NextSignalSpeedLimitMpS(0) > 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS()) : 0;
 
             SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
             SetNextSpeedLimitMpS(NextSpeedLimitMpS);
@@ -822,7 +822,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public override void HandleEvent(TCSEvent evt, string message)
         {
-            switch(evt)
+            switch (evt)
             {
                 case TCSEvent.AlerterPressed:
                 case TCSEvent.AlerterReleased:
@@ -842,7 +842,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                                 VigilanceMonitorState = MonitorState.StandBy;
                                 break;
 
-                            // case VigilanceState.Emergency: do nothing
+                                // case VigilanceState.Emergency: do nothing
                         }
                     }
                     break;
@@ -954,12 +954,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         void UpdateSpeedControl()
         {
             var interventionSpeedMpS = CurrentSpeedLimitMpS + MpS.FromKpH(5.0f); // Default margin : 5 km/h
-            
+
             if (OverspeedMonitor.TriggerOnTrackOverspeed)
             {
                 interventionSpeedMpS = CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
             }
-            
+
             SetInterventionSpeedLimitMpS(interventionSpeedMpS);
 
             switch (OverspeedMonitorState)

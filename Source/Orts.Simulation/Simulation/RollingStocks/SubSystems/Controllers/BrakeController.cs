@@ -196,7 +196,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     break;
 
                 case "engine(trainbrakescontrollermaxreleaserate":
-                case "engine(enginebrakescontrollermaxreleaserate":    
+                case "engine(enginebrakescontrollermaxreleaserate":
                     ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
                     break;
 
@@ -392,7 +392,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             SignalEvent(BrakeControllerEvent.StartIncrease, target);
         }
 
-        public void StartDecrease(float? target , bool toZero = false)
+        public void StartDecrease(float? target, bool toZero = false)
         {
             if (toZero) SignalEvent(BrakeControllerEvent.StartDecreaseToZero, target);
             else SignalEvent(BrakeControllerEvent.StartDecrease, target);

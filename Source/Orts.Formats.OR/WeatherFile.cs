@@ -274,7 +274,7 @@ namespace Orts.Formats.OR
 
         protected override bool TryParse(JsonReader item)
         {
-        if (base.TryParse(item)) return true;
+            if (base.TryParse(item)) return true;
             switch (item.Path)
             {
                 case "FogVisibility": FogVisibilityM = item.AsFloat(FogVisibilityM); break;

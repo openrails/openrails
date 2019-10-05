@@ -67,7 +67,7 @@ namespace Orts.Formats.OR
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation("Load error for timetable {0} : {1}",System.IO.Path.GetFileNameWithoutExtension(filePath), ex.ToString());
+                Trace.TraceInformation("Load error for timetable {0} : {1}", System.IO.Path.GetFileNameWithoutExtension(filePath), ex.ToString());
                 Description = "<" + "load error:" + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
         }
@@ -141,7 +141,7 @@ namespace Orts.Formats.OR
 
                 if (!pathFound)
                 {
-                    if (String.Compare(Parts[0].Trim().Substring(0,5), "#path", true) == 0)
+                    if (String.Compare(Parts[0].Trim().Substring(0, 5), "#path", true) == 0)
                     {
                         pathFound = true;
                         foreach (TrainInformation train in Trains)
@@ -272,7 +272,7 @@ namespace Orts.Formats.OR
 
             public int CompareTo(TrainInformation otherInfo)
             {
-                return(String.Compare(this.Train, otherInfo.Train));
+                return (String.Compare(this.Train, otherInfo.Train));
             }
 
             override public string ToString()

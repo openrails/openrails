@@ -71,7 +71,7 @@ namespace Orts.Common.Scripting
 
             if (path == null || path == "")
                 return null;
-            
+
             path = path.ToLowerInvariant();
 
             var type = String.Format("ORTS.Scripting.Script.{0}", Path.GetFileNameWithoutExtension(path));

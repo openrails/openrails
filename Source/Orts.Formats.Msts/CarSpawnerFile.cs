@@ -93,17 +93,17 @@ namespace Orts.Formats.Msts
             dist = stf.ReadFloat(STFReader.UNITS.Distance, null);
             stf.SkipRestOfBlock();
         }
-    } 
+    }
 
-	public class CarSpawnerFile
-	{
-		public CarSpawnerFile(string filePath, string shapePath, List<CarSpawnerList> carSpawnerLists)
-		{
-			using (STFReader stf = new STFReader(filePath, false))
-			{
+    public class CarSpawnerFile
+    {
+        public CarSpawnerFile(string filePath, string shapePath, List<CarSpawnerList> carSpawnerLists)
+        {
+            using (STFReader stf = new STFReader(filePath, false))
+            {
                 var carSpawnerBlock = new CarSpawnerBlock(stf, shapePath, carSpawnerLists, "Default");
-			}
-		}
-	}
+            }
+        }
+    }
 }
 

@@ -45,7 +45,7 @@ namespace Orts.Viewer3D
         const float FontHeightDial = 16;
         const float FontHeightReleaseSpeed = 17;
         const float FontHeightCurrentSpeed = 18;
-        
+
         const int LineQuarter = 11;
         const int RadiusText = 99;
         readonly int[] CurrentSpeedPosition = new int[] { 150, 135, 120, 137 }; // x 10^0, x 10^1, x 10^2, y
@@ -64,10 +64,10 @@ namespace Orts.Viewer3D
         readonly Color ColorRed = new Color(191, 0, 2);
         //readonly Color ColorDarkYellow = new Color(105, 105, 0);
         //readonly Color ColorBackground = new Color(3, 17, 34); // dark blue
-        
+
         const string UnitMetricString = "km/h";
         const string UnitImperialString = "mph";
-        
+
         // Some national railways specify the unit (km/h or mph) is to be shown on dial, in contrast to ETA.
         bool UnitVisible;
         bool UnitMetric;
@@ -76,7 +76,7 @@ namespace Orts.Viewer3D
         // Some national railways specify the scale lines and numbers above a certain limit not to be visible
         int MaxVisibleScale;
         int[] StandardScales;
-        
+
         float MidSpeed;
         string Unit;
 
@@ -109,18 +109,18 @@ namespace Orts.Viewer3D
 
         readonly Rectangle SourceRectangle = new Rectangle(0, 0, Width, Height);
         public float Scale { get; private set; }
-        
+
         public CircularSpeedGauge(int width, int height, int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale, MSTSLocomotive locomotive, Viewer viewer)
         {
             UnitVisible = unitVisible;
             SetUnit(unitMetric);
-            
+
             DialQuarterLines = dialQuarterLines;
             MaxSpeed = maxSpeed;
             MaxVisibleScale = maxVisibleScale;
             Viewer = viewer;
             Locomotive = locomotive;
-            
+
             SizeTo(width, height);
             SetRange(MaxSpeed);
 
@@ -145,7 +145,7 @@ namespace Orts.Viewer3D
                         ) ? Color.White : Color.TransparentBlack;
             }
         }
-        
+
         /// <summary>
         /// Select the actual unit of measure for speed
         /// </summary>
@@ -168,7 +168,7 @@ namespace Orts.Viewer3D
                 StandardScales = StandardScalesMpH;
             }
         }
-        
+
         /// <summary>
         /// Set new font heights to match the actual scale.
         /// </summary>
@@ -243,7 +243,7 @@ namespace Orts.Viewer3D
                     {
                         DialLineCoords.Add(new Vector4(x, y, LineFull, angle + MathHelper.PiOver2));
 
-                        if (MaxSpeed != StandardScales[StandardScales.Length - 1] || speed < MidSpeed 
+                        if (MaxSpeed != StandardScales[StandardScales.Length - 1] || speed < MidSpeed
                             || UnitMetric && speed % 100 == 0
                             || !UnitMetric && speed % 40 == 0)
                         {
@@ -265,7 +265,7 @@ namespace Orts.Viewer3D
                     }
                     else
                         DialLineCoords.Add(new Vector4(x, y, LineHalf, angle + MathHelper.PiOver2));
-                    
+
                     longLine++;
                     longLine %= MaxSpeed != StandardScales[StandardScales.Length - 1] ? 2 : UnitMetric ? 5 : (speed + 5 > MidSpeed) ? 4 : 2;
                 }
@@ -274,13 +274,13 @@ namespace Orts.Viewer3D
                     DialLineCoords.Add(new Vector4(x, y, LineQuarter, angle + MathHelper.PiOver2));
                 }
             }
-            
+
             if (Unit != "")
             {
                 var unitPosition = new Point((int)(UnitCenterPosition[0] - FontDialSpeeds.MeasureString(Unit) / Scale / 2f), (int)(UnitCenterPosition[1] - textHeight / 2f));
                 DialSpeeds.Add(new TextPrimitive(unitPosition, Color.White, Unit, FontDialSpeeds));
             }
-            
+
             Active = true;
         }
 
@@ -363,7 +363,7 @@ namespace Orts.Viewer3D
             }
 
             if (!Active) return;
-            
+
             int x = 0, y = 0;
 
             foreach (var lines in DialLineCoords)
@@ -479,13 +479,13 @@ namespace Orts.Viewer3D
         {
             CircularSpeedGauge.PrepareFrame();
         }
-        
+
         internal override void Draw(SpriteBatch spriteBatch, Point position)
         {
             // Hack to adjust for track monitor
             position.X += 8;
             position.Y += 20;
-            
+
             CircularSpeedGauge.Draw(spriteBatch, position);
         }
     }
@@ -528,7 +528,7 @@ namespace Orts.Viewer3D
             }
         }
 
-		public override void Draw(GraphicsDevice graphicsDevice)
+        public override void Draw(GraphicsDevice graphicsDevice)
         {
             CircularSpeedGauge.Draw(ControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
         }

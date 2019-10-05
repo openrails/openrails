@@ -36,10 +36,10 @@ namespace ORTS.Menu
         {
             if (Directory.Exists(path))
             {
-				var trkFilePath = MSTSPath.GetTRKFileName(path);
+                var trkFilePath = MSTSPath.GetTRKFileName(path);
                 try
                 {
-					var trkFile = new RouteFile(trkFilePath);
+                    var trkFile = new RouteFile(trkFilePath);
                     Name = trkFile.Tr_RouteFile.Name.Trim();
                     RouteID = trkFile.Tr_RouteFile.RouteID;
                     Description = trkFile.Tr_RouteFile.Description.Trim();

@@ -77,7 +77,7 @@ namespace ORTS.TrackViewer.Drawing
             dz += 2048 * (location1.TileZ - location2.TileZ);
             return dx * dx + dz * dz;
         }
- 
+
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ namespace ORTS.TrackViewer.Drawing
     /// <summary>
     /// CloseToMouse item specifically for junctions and endnode. But will take any track point
     /// </summary>
-    public class CloseToMouseJunctionOrEnd:CloseToMousePoint
+    public class CloseToMouseJunctionOrEnd : CloseToMousePoint
     {
         /// <summary>Tracknode of the closest junction or end node</summary>
         public TrackNode JunctionOrEndNode { get; private set; }
@@ -158,13 +158,13 @@ namespace ORTS.TrackViewer.Drawing
     /// <summary>
     /// CloseToMouse track item. Stores item as well as its type (name)
     /// </summary>
-    public class CloseToMouseItem:CloseToMousePoint
+    public class CloseToMouseItem : CloseToMousePoint
     {
         /// <summary>Link to the item that is closest to the mouse</summary>
         public DrawableTrackItem DrawableTrackItem { get; protected set; }
-        
+
         /// <summary>The index of the original item in whatever table it was defined</summary>
-        public override uint Index { get { return DrawableTrackItem.Index;} }
+        public override uint Index { get { return DrawableTrackItem.Index; } }
         /// <summary>The X-coordinate within a tile of the original item in the track database</summary>
         public override float X { get { return worldLocation.Location.X; } }
         /// <summary>The Z-coordinate within a tile of the original item in the track database</summary>
@@ -172,7 +172,7 @@ namespace ORTS.TrackViewer.Drawing
 
         /// <summary>The world location of the item that is closest to the mouse</summary>
         private WorldLocation worldLocation;
-        
+
         /// <summary>
         /// Constructor, creating an empty object
         /// </summary>
@@ -200,7 +200,7 @@ namespace ORTS.TrackViewer.Drawing
             base.Reset();
             DrawableTrackItem = null;
             worldLocation = WorldLocation.None;
-       }
+        }
 
         /// <summary>
         /// Check wether this track Item is closest to the mouse location
@@ -313,7 +313,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="vectorSection">the vectorSection that will be stored when indeed it is closest to the mouse location</param>
         /// <param name="tvsi">Current index of the trackvectorsection</param>
         /// <param name="pixelsPerMeter"></param>
-        public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation, 
+        public void CheckMouseDistance(WorldLocation location, WorldLocation mouseLocation,
             TrackNode trackNode, TrVectorSection vectorSection, int tvsi, double pixelsPerMeter)
         {
             storedMouseLocation = mouseLocation;
@@ -356,7 +356,7 @@ namespace ORTS.TrackViewer.Drawing
                 TrackSection trackSection = tsectionDat.TrackSections.Get(trackCandidate.vectorSection.SectionIndex);
                 DistanceLon distanceLon = CalcRealDistanceSquared(trackCandidate.vectorSection, trackSection);
                 double realDistanceSquared = (double)distanceLon.distanceSquared;
-                
+
                 // Add the trackCandidate to the sorted list with its new distance squared as key
                 if (!sortedTrackCandidates.ContainsKey(realDistanceSquared))
                 {
@@ -436,7 +436,8 @@ namespace ORTS.TrackViewer.Drawing
     /// <summary>
     /// Struct to store a candidate for the track closest to the mouse, so we can keep an ordered list.
     /// </summary>
-    struct TrackCandidate {
+    struct TrackCandidate
+    {
         public TrackNode trackNode;
         public TrVectorSection vectorSection;
         public int trackVectorSectionIndex;  // which section within a trackNode that is a vector node

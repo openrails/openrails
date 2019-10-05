@@ -52,7 +52,7 @@ namespace LibAE.Formats
         ACTIVITY_STOP = 2,
         ACTIVITY_WAIT = 3
     };
-#endregion
+    #endregion
 
     #region PathEventItem
 
@@ -103,7 +103,7 @@ namespace LibAE.Formats
             typeItem = (int)TypeEvent.ACTIVITY_START;
             st = a.GetManifestResourceStream("LibAE.Icon.Start.ico");
             StartIcon = new System.Drawing.Icon(st);
- 
+
         }
 
         public void setNameStart(int info)
@@ -138,7 +138,7 @@ namespace LibAE.Formats
             Assembly a = Assembly.GetExecutingAssembly();
 
             typeItem = (int)TypeEvent.ACTIVITY_STOP;
-           st = a.GetManifestResourceStream("LibAE.Icon.Stop.ico");
+            st = a.GetManifestResourceStream("LibAE.Icon.Stop.ico");
             StopIcon = new System.Drawing.Icon(st);
 
         }

@@ -84,7 +84,7 @@ namespace ORTS
                 return programNormal;
             }
         }
-        
+
         // Base items
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
@@ -216,7 +216,8 @@ namespace ORTS
                             Process.Start("cmd", "/k \"" + toolPath + "\"");
                         else
                             Process.Start(toolPath);
-                    }) { Tag = executable });
+                    })
+                    { Tag = executable });
                 }
                 // Add all the tools in alphabetical order.
                 contextMenuStripTools.Items.AddRange((from tool in tools
@@ -241,7 +242,8 @@ namespace ORTS
                             {
                                 var docPath = (sender2 as ToolStripItem).Tag as string;
                                 Process.Start(docPath);
-                             }) { Tag = entry });
+                            })
+                            { Tag = entry });
                         }
                         contextMenuStripDocuments.Items.AddRange((from tool in docs
                                                                   orderby tool.Text
@@ -593,7 +595,7 @@ namespace ORTS
             OpenResumeForm(true);
         }
 
-        void OpenResumeForm (bool multiplayer)
+        void OpenResumeForm(bool multiplayer)
         {
             if (radioButtonModeTimetable.Checked)
             {
@@ -632,7 +634,7 @@ namespace ORTS
         {
             if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
-            SelectedAction = radioButtonMPClient.Checked? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
+            SelectedAction = radioButtonMPClient.Checked ? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
 

@@ -132,8 +132,8 @@ namespace Orts.Parsers.Msts
 
         public void VerifyID(TokenID desiredID)
         {
-           if (ID != desiredID)
-               TraceInformation("Expected block " + desiredID + "; got " + ID);
+            if (ID != desiredID)
+                TraceInformation("Expected block " + desiredID + "; got " + ID);
         }
 
         /// <summary>

@@ -62,7 +62,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public void InsertORSpecificData (string filename)
+        public void InsertORSpecificData(string filename)
         {
             using (var sbr = SBR.Open(filename))
             {
@@ -177,7 +177,7 @@ namespace Orts.Formats.Msts
             }
         }
 
-        public void InsertORSpecificData (SBR block, string filename)
+        public void InsertORSpecificData(SBR block, string filename)
         {
             block.VerifyID(TokenID.Tr_Worldfile);
             while (!block.EndOfBlock())
@@ -191,42 +191,42 @@ namespace Orts.Formats.Msts
                         if (!subBlock.EndOfBlock())
                         {
                             var subSubBlockUID = subBlock.ReadSubBlock();
-                                // check if a block with this UiD already present
-                                if (subSubBlockUID.ID == TokenID.UiD)
+                            // check if a block with this UiD already present
+                            if (subSubBlockUID.ID == TokenID.UiD)
+                            {
+                                uint UID = subSubBlockUID.ReadUInt();
+                                origObject = Find(x => x.UID == UID);
+                                if (origObject == null)
                                 {
-                                    uint UID = subSubBlockUID.ReadUInt();
-                                    origObject = Find(x => x.UID == UID);
-                                    if (origObject == null)
+                                    wrongBlock = true;
+                                    Trace.TraceWarning("Skipped world block {0} (0x{0:X}), UID {1} not matching with base file", subBlock.ID, UID);
+                                    subSubBlockUID.Skip();
+                                    subBlock.Skip();
+                                }
+                                else
+                                {
+                                    wrongBlock = !TestMatch(subBlock, origObject);
+                                    if (!wrongBlock)
                                     {
-                                        wrongBlock = true;
+                                        subSubBlockUID.Skip();
+                                        while (!subBlock.EndOfBlock() && !wrongBlock)
+                                        {
+                                            using (var subSubBlock = subBlock.ReadSubBlock())
+                                            {
+
+                                                origObject.AddOrModifyObj(subSubBlock);
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
                                         Trace.TraceWarning("Skipped world block {0} (0x{0:X}), UID {1} not matching with base file", subBlock.ID, UID);
                                         subSubBlockUID.Skip();
                                         subBlock.Skip();
                                     }
-                                    else
-                                    {
-                                        wrongBlock = !TestMatch(subBlock, origObject);
-                                        if (!wrongBlock)
-                                        {
-                                            subSubBlockUID.Skip();
-                                            while (!subBlock.EndOfBlock() && !wrongBlock)
-                                            {
-                                                using (var subSubBlock = subBlock.ReadSubBlock())
-                                                {
-
-                                                    origObject.AddOrModifyObj(subSubBlock);
-                                                }
-                                            }
-                                        }
-                                        else
-                                        {
-                                            Trace.TraceWarning("Skipped world block {0} (0x{0:X}), UID {1} not matching with base file", subBlock.ID, UID);
-                                            subSubBlockUID.Skip();
-                                            subBlock.Skip();
-                                        }
-                                    }
                                 }
- 
+                            }
+
                         }
                         subBlock.EndOfBlock();
                     }
@@ -322,13 +322,14 @@ namespace Orts.Formats.Msts
 
             ReadBlock(block);
         }
-            
+
         public override void AddOrModifyObj(SBR subBlock)
         {
             switch (subBlock.ID)
             {
                 case TokenID.SpeedRange: SpeedRange = new SpeedRangeItem(subBlock); break;
-                case TokenID.PickupType: PickupType = subBlock.ReadUInt();
+                case TokenID.PickupType:
+                    PickupType = subBlock.ReadUInt();
                     subBlock.Skip(); // Discard the 2nd value (0 or 1 but significance is not known)
                     break;
                 case TokenID.PickupAnimData: PickupAnimData = new PickupAnimDataItem(subBlock); break;
@@ -596,7 +597,7 @@ namespace Orts.Formats.Msts
         {
             StaticDetailLevel = detailLevel;
 
-            ReadBlock (block);
+            ReadBlock(block);
 
             IsYard = TreeTexture == null;
         }
@@ -705,8 +706,8 @@ namespace Orts.Formats.Msts
             ReadBlock(block);
 
         }
-            // TODO verify that we got all needed parameters otherwise null pointer failures will occur
-            // TODO, do this for all objects that iterate using a while loop
+        // TODO verify that we got all needed parameters otherwise null pointer failures will occur
+        // TODO, do this for all objects that iterate using a while loop
 
         public override void AddOrModifyObj(SBR subBlock)
         {
@@ -721,7 +722,7 @@ namespace Orts.Formats.Msts
                 case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
                 case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
                 case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-                default: subBlock.Skip(); break; 
+                default: subBlock.Skip(); break;
             }
         }
 
@@ -808,27 +809,28 @@ namespace Orts.Formats.Msts
             ReadBlock(block);
         }
 
-    public override void AddOrModifyObj(SBR subBlock)
-    {
-        switch (subBlock.ID)
+        public override void AddOrModifyObj(SBR subBlock)
         {
-            case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
-            case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
-            case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
-            case TokenID.LevelCrData: levelCrData = new LevelCrData(subBlock);
-                visible = (levelCrData.crData1 & 0x1) == 0;
-                silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
-                break;
-            case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock); break;
-            case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
-            case TokenID.FileName: FileName = subBlock.ReadString(); break;
-            case TokenID.Position: Position = new STFPositionItem(subBlock); break;
-            case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
-            case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
-            case TokenID.ORTSSoundFileName: SoundFileName = subBlock.ReadString(); break;
-            default: subBlock.Skip(); break;
+            switch (subBlock.ID)
+            {
+                case TokenID.StaticFlags: StaticFlags = subBlock.ReadFlags(); break;
+                case TokenID.LevelCrParameters: levelCrParameters = new LevelCrParameters(subBlock); break;
+                case TokenID.CrashProbability: crashProbability = subBlock.ReadInt(); break;
+                case TokenID.LevelCrData:
+                    levelCrData = new LevelCrData(subBlock);
+                    visible = (levelCrData.crData1 & 0x1) == 0;
+                    silent = !visible || (levelCrData.crData1 & 0x6) == 0x6;
+                    break;
+                case TokenID.LevelCrTiming: levelCrTiming = new LevelCrTiming(subBlock); break;
+                case TokenID.TrItemId: trItemIDList.Add(new TrItemId(subBlock)); break;
+                case TokenID.FileName: FileName = subBlock.ReadString(); break;
+                case TokenID.Position: Position = new STFPositionItem(subBlock); break;
+                case TokenID.QDirection: QDirection = new STFQDirectionItem(subBlock); break;
+                case TokenID.VDbId: VDbId = subBlock.ReadUInt(); break;
+                case TokenID.ORTSSoundFileName: SoundFileName = subBlock.ReadString(); break;
+                default: subBlock.Skip(); break;
+            }
         }
-    }
 
         public class LevelCrParameters
         {
@@ -932,10 +934,10 @@ namespace Orts.Formats.Msts
             CarFrequency = 5.0f;
             CarAvSpeed = 20.0f;
 
-            ReadBlock (block);
+            ReadBlock(block);
         }
 
-        public override void AddOrModifyObj (SBR subBlock)
+        public override void AddOrModifyObj(SBR subBlock)
         {
             switch (subBlock.ID)
             {
@@ -979,7 +981,7 @@ namespace Orts.Formats.Msts
                 block.VerifyEndOfBlock();
             }
         }
-     }
+    }
 
     /// <summary>
     /// Super-class for similar track items SidingObj and PlatformObj.
@@ -1118,7 +1120,7 @@ namespace Orts.Formats.Msts
 
         public virtual void AddOrModifyObj(SBR subBlock)
         {
-            
+
         }
 
         public void ReadBlock(SBR block)

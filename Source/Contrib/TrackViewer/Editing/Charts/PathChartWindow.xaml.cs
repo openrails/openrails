@@ -33,7 +33,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         public PathChartWindow()
         {
             InitializeComponent();
-            
+
             chartCanvasses = new Dictionary<string, Canvas> {
                 {"height", HeightCanvas},
                 {"grade", GradeCanvas},
@@ -76,7 +76,8 @@ namespace ORTS.TrackViewer.Editing.Charts
             {
                 ISubChart subChart;
                 subCharts.TryGetValue(chartName, out subChart);
-                if (subChart != null) {
+                if (subChart != null)
+                {
                     subChart.Draw(zoomRatioStart, zoomRatioStop, chartCanvasses[chartName], legendCanvasses[chartName]);
                 }
             }
@@ -144,7 +145,7 @@ namespace ORTS.TrackViewer.Editing.Charts
         }
 
         private bool mouseIsMoving = false;
-        private double realXatMouse=0;
+        private double realXatMouse = 0;
         private void Window_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton != MouseButtonState.Pressed)

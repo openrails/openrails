@@ -37,7 +37,7 @@ namespace ContentChecker
         /// <param name="file">The file that needs to be loaded</param>
         public override void TryLoading(string file)
         {
-            var wf = new WorldFile(file); 
+            var wf = new WorldFile(file);
         }
     }
 }

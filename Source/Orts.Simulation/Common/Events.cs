@@ -65,8 +65,8 @@ namespace Orts.Common
         EngineBrakeChange,
         EngineBrakePressureDecrease,
         EngineBrakePressureIncrease,
-        EnginePowerOff, 
-        EnginePowerOn, 
+        EnginePowerOff,
+        EnginePowerOn,
         FireboxDoorChange,
         FireboxDoorOpen,
         FireboxDoorClose,
@@ -79,8 +79,8 @@ namespace Orts.Common
         HornOff,
         HornOn,
         LightSwitchToggle,
-        MirrorClose, 
-        MirrorOpen, 
+        MirrorClose,
+        MirrorOpen,
         Pantograph1Down,
         PantographToggle,
         Pantograph1Up,
@@ -104,7 +104,7 @@ namespace Orts.Common
         WaterInjector1On,
         WaterInjector2Off,
         WaterInjector2On,
-        SteamHeatChange, 
+        SteamHeatChange,
         SteamPulse1,
         SteamPulse2,
         SteamPulse3,
@@ -281,7 +281,7 @@ namespace Orts.Common
                         case 104: return Event.ReverserToNeutral; // reversed moved to neutral
                         case 105: return Event.DoorOpen; // door opened; propagated to all locos and wagons of the consist
                         case 106: return Event.DoorClose; // door closed; propagated to all locos and wagons of the consist
-                        case 107: return Event.MirrorOpen; 
+                        case 107: return Event.MirrorOpen;
                         case 108: return Event.MirrorClose;
                         case 109: return Event.TrainControlSystemInfo1;
                         case 110: return Event.TrainControlSystemInfo2;
@@ -294,7 +294,7 @@ namespace Orts.Common
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
                         case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
-                        
+
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;

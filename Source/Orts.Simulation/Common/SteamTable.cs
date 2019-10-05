@@ -92,44 +92,44 @@ namespace Orts.Common
             75.83f, 81.88f, 83.75f, 85.63f, 87.50f, 89.37f, 91.25f, 93.12f, 93.75f, 94.37f,
             94.99f, 95.62f, 96.24f, 96.87f, 97.49f, 98.12f, 98.74f, 99.37f, 99.99f, 100.61f
         };
-        
-      // injector 14mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
+
+        // injector 14mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
         static float[] Injector14FlowTableUKGpM = new float[]
         {
             9.30f, 16.79f, 24.28f, 31.77f, 39.26f, 46.75f, 54.24f, 61.73f, 69.21f, 76.70f, 84.19f,
             91.68f, 99.17f, 100.81f, 102.45f, 104.09f, 105.72f, 107.36f, 109.00f, 111.65f, 114.30f,
             115.94f, 117.58f, 119.21f, 120.85f, 122.49f, 124.13f, 125.77f, 127.40f, 129.04f, 130.68f
         };
-        
-      // injector 15mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
+
+        // injector 15mm flowrates (gallons (uk) per minute) - data extrapolated below from info in 1928 Sellers Injector Manual
         static float[] Injector15FlowTableUKGpM = new float[]
         {
             9.30f, 17.82f, 26.33f, 34.85f, 43.36f, 51.88f, 60.40f, 68.91f, 77.43f, 85.94f, 94.46f,
             102.98f, 111.49f, 113.33f, 115.16f, 117.0f, 118.83f, 120.67f, 122.50f, 125.50f, 128.50f,
             130.14f, 131.78f, 133.41f, 135.05f, 136.69f, 138.33f, 139.97f, 141.60f, 143.24f, 144.88f
-        };        
+        };
 
         // Specific heat table for water - volume heat capacity?? - 
         static float[] SpecificHeatTableKJpKGpK = new float[]
         {
             4.2170f, 4.2049f, 4.2165f, 4.2223f, 4.2287f, 4.2355f, 4.2427f, 4.2505f, 4.2587f, 4.2675f, 4.2769f,
-            4.2926f, 4.3035f, 4.3151f, 4.3274f, 4.3405f, 4.3543f, 4.3690f, 4.3846f, 4.4012f, 4.4187f, 
-            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f 
+            4.2926f, 4.3035f, 4.3151f, 4.3274f, 4.3405f, 4.3543f, 4.3690f, 4.3846f, 4.4012f, 4.4187f,
+            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f
         };
 
         // Water temp in deg Kelvin
         static float[] WaterTemperatureTableK = new float[]
         {
             274.00f, 281.40f, 288.80f, 296.20f, 303.60f, 311.00f, 318.40f, 325.80f, 333.20f, 340.60f, 348.00f,
-            355.40f, 362.80f, 370.20f, 377.60f, 385.00f, 392.40f, 399.80f, 407.20f, 414.60f, 422.00f, 
-            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f 
+            355.40f, 362.80f, 370.20f, 377.60f, 385.00f, 392.40f, 399.80f, 407.20f, 414.60f, 422.00f,
+            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f
         };
-       
+
         static float[] SaturationPressureTablePSI = new float[]
         {
             0.00f, 10.00f, 20.00f, 30.00f, 40.00f, 50.00f, 60.00f, 70.00f, 80.00f, 90.00f, 100.00f,
-            110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f, 
-            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f 
+            110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f,
+            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f
         };
 
         // Temperature of water in deg Kelvin
@@ -145,7 +145,7 @@ namespace Orts.Common
         {
             0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f, 180.0f, 200.0f, 220.0f
         };
-        
+
         // Boiler Efficiency - based upon average results from test papers
         static float[] SatBoilerEfficiencyTableX = new float[]
         {
@@ -157,7 +157,7 @@ namespace Orts.Common
         {
             0.903f, 0.8484f, 0.7936f, 0.7390f, 0.6843f, 0.6296f, 0.5749f, 0.5202f, 0.4655f, 0.4108f, 0.3561f, 0.3014f
         };
-        
+
         // pressure tables for Injectors temperature and steam usage
         static float[] InjectorUsePressureTablePSI = new float[]
         {
@@ -187,8 +187,8 @@ namespace Orts.Common
         {
             0.366f, 0.395f, 0.419f, 0.454f, 0.509f
         };
- 
-// Cylinder Indicator Card Events
+
+        // Cylinder Indicator Card Events
 
         // cutoff fraction
         static float[] CutOffFractionEventTableX = new float[]
@@ -216,7 +216,7 @@ namespace Orts.Common
         };
 
 
-// Cylinder condensation and superheat
+        // Cylinder condensation and superheat
 
         // cutoff fraction
         static float[] CutOffFractionTableX = new float[]
@@ -242,7 +242,7 @@ namespace Orts.Common
             0.0f, 2000.0f, 4000.0f, 6000.0f, 8000.0f, 10000.0f, 12000.0f, 14000.0f, 16000.0f, 18000.0f, 20000.0f, 22000.0f, 24000.0f, 26000.0f, 28000.0f, 30000.0f,
             32000.0f, 34000.0f, 36000.0f
         };
-        
+
         // Superheat Temp - deg F - from BTC Test Results for Std 8
         static float[] SuperheatTempTableDegF = new float[]
         {
@@ -259,64 +259,64 @@ namespace Orts.Common
         // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources - Saturated
         static float[] SatInitialPressureDropRatio = new float[]
         {
-            0.98f, 0.965f, 0.95f, 0.935f, 0.92f, 0.905f, 0.89f, 0.875f, 0.87f, 0.8650f, 0.8625f, 0.86f, 0.8575f, 0.855f, 0.8525f, 0.85f 
-            
+            0.98f, 0.965f, 0.95f, 0.935f, 0.92f, 0.905f, 0.89f, 0.875f, 0.87f, 0.8650f, 0.8625f, 0.86f, 0.8575f, 0.855f, 0.8525f, 0.85f
+
         };
-        
-       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - (To be confirmed) - Superheated
+
+        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - (To be confirmed) - Superheated
         static float[] SuperInitialPressureDropRatio = new float[]
         {
             0.99f, 0.98f, 0.97f, 0.96f, 0.95f, 0.94f, 0.93f, 0.92f, 0.915f, 0.910f, 0.905f, 0.90f, 0.8975f, 0.8950f, 0.8925f, 0.8900f
         };
-        
-// piston speed (feet per minute) - American Locomotive Company
+
+        // piston speed (feet per minute) - American Locomotive Company
         static float[] PistonSpeedFtpMin = new float[]
         {
               0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100
         };
-        
-// Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - Based upon dat from American Locomotive Company
+
+        // Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - Based upon dat from American Locomotive Company
         static float[] SpeedFactorSat = new float[]
         {
              1.0f, 1.0f, 1.0f, 0.954f, 0.863f, 0.772f, 0.680f, 0.590f, 0.517f, 0.460f, 0.412f, 0.372f, 0.337f, 0.307f, 0.283f, 0.261f, 0.241f, 0.225f, 0.213f, 0.202f, 0.190f, 0.185f
         };
-        
-// Speed factor - Superheated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
+
+        // Speed factor - Superheated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
         static float[] SpeedFactorSuper = new float[]
         {
               1.0f, 1.0f, 1.0f, 0.988f, 0.965f, 0.912f, 0.859f, 0.800f, 0.753f, 0.706f, 0.659f, 0.612f, 0.571f, 0.535f, 0.500f, 0.471f, 0.447f, 0.433f, 0.424f, 0.420f, 0.410f, 0.410f
         };
 
-// Indicated HorsePower - 
+        // Indicated HorsePower - 
         static float[] IndicatedHorsepowerIHP = new float[]
         {
               0.0f, 200.0f, 400.0f, 600.0f, 800.0f, 1000.0f, 1200.0f, 1400.0f, 1600.0f,
               1800.0f, 2000.0f, 2200.0f, 2400.0f, 2600.0f, 2800.0f, 3000.0f
         };
 
-// BackPressure - Saturated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
+        // BackPressure - Saturated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
         static float[] BackPressureSatPSI = new float[]
         {
               0.0f, 1.0f, 2.0f, 2.33f, 3.0f, 5.3f, 5.6f, 8.0f, 11.2f,
               14.25f, 16.0f, 20.0f, 24.0f, 26.0f, 28.0f, 30.0f
         };
 
-// BackPressure - Superheated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
+        // BackPressure - Superheated locomotive -  Ref Principles of Locomotive Operation - Assume atmospheric - extrapolated beyond 1800IHP
         static float[] BackPressureSuperPSI = new float[]
         {
               0.0f, 0.25f, 0.5f, 0.75f, 1.25f, 1.75f, 2.5f, 3.5f, 4.8f,
               7.2f, 11.25f, 16.0f, 20.0f, 22.0f, 24.0f, 26.0f
         };
 
-  // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
         static float[] CondensationWheelRotationRpM = new float[]
         {
             0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
         };
 
-// Steam Tables
+        // Steam Tables
 
-// Indicator Diagram - Cylinder Events
+        // Indicator Diagram - Cylinder Events
 
         // Indicator Diagram Event - Exhaust Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
         public static Interpolator CylinderEventExhausttoCutoff()
@@ -334,88 +334,88 @@ namespace Orts.Common
         public static Interpolator CylinderEventAdmissiontoCutoff()
         {
             return new Interpolator(CutOffFractionEventTableX, CylinderAdmissionTableX);
-        }   
-          
-// cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
+        }
+
+        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
         public static Interpolator CylinderCondensationFractionInterpolatorX()
         {
             return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
         }
 
-// Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
+        // Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
         public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
         {
             return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
-        }           
+        }
 
-// Saturated Backpressure - Ref Principles of Locomotive Operation
+        // Saturated Backpressure - Ref Principles of Locomotive Operation
         public static Interpolator BackpressureSatIHPtoPSI()
         {
             return new Interpolator(IndicatedHorsepowerIHP, BackPressureSatPSI);
         }
 
-// Superheated Backpressure - Ref Principles of Locomotive Operation
+        // Superheated Backpressure - Ref Principles of Locomotive Operation
         public static Interpolator BackpressureSuperIHPtoPSI()
         {
             return new Interpolator(IndicatedHorsepowerIHP, BackPressureSuperPSI);
-        }  
+        }
 
 
-// Saturated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
+        // Saturated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
         public static Interpolator SaturatedSpeedFactorSpeedDropFtpMintoX()
         {
             return new Interpolator(PistonSpeedFtpMin, SpeedFactorSat);
-        }  
-        
-        
-// Superheated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
+        }
+
+
+        // Superheated Speed factor - ie drop in TE as speed increases due to piston impacts - Ref American locomotive Company
         public static Interpolator SuperheatedSpeedFactorSpeedDropFtpMintoX()
         {
             return new Interpolator(PistonSpeedFtpMin, SpeedFactorSuper);
-        }          
-        
+        }
 
-       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
+
+        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
         public static Interpolator SuperInitialPressureDropRatioInterpolatorRpMtoX()
         {
             return new Interpolator(WheelRotationRpM, SuperInitialPressureDropRatio);
-        }       
+        }
 
         // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
         public static Interpolator SatInitialPressureDropRatioInterpolatorRpMtoX()
         {
             return new Interpolator(WheelRotationRpM, SatInitialPressureDropRatio);
-        }    
+        }
 
         // Superheat temp per lbs of steam to cylinder - from BTC Test Results for Std 8
         public static Interpolator SuperheatTempInterpolatorLbpHtoDegF()
         {
             return new Interpolator(CylinderSteamTableLbpH, SuperheatTempTableDegF);
-        }    
+        }
 
         // Injector factor to determine the min capacity of the injector
         public static Interpolator InjCapMinFactorInterpolatorX()
         {
             return new Interpolator(InjectorUsePressureTablePSI, InjMinCapFactorTableX);
-        }       
+        }
 
         // Injector max delivery water temp (Fahr) per pressure of steam (psi)
         public static Interpolator InjDelWaterTempMaxPressureInterpolatorFtoPSI()
         {
             return new Interpolator(InjectorUsePressureTablePSI, WaterTemPDeliveryMaxTableF);
-        }        
-        
+        }
+
         // Injector min delivery water temp (Fahr) per pressure of steam (psi)
         public static Interpolator InjDelWaterTempMinPressureInterpolatorFtoPSI()
         {
             return new Interpolator(InjectorUsePressureTablePSI, WaterTemPDeliveryMinTableF);
-        }  
-        
+        }
+
         // Injector water fed per lb of steam at pressure of steam (psi)
         public static Interpolator InjWaterFedSteamPressureInterpolatorFtoPSI()
         {
             return new Interpolator(InjectorUsePressureTablePSI, WaterDelFedSteamTableLbs);
-        }    
+        }
 
         // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area - Saturated
         public static Interpolator SatBoilerEfficiencyGrateAreaInterpolatorLbstoX()
@@ -428,7 +428,7 @@ namespace Orts.Common
         {
             return new Interpolator(CoalGrateAreaTableLbspFt2, SuperBoilerEfficiencyTableX);
         }
-           
+
         // Saturated pressure of steam (psi) @ water temperature (K)
         public static Interpolator SaturationPressureInterpolatorKtoPSI()
         {
@@ -457,25 +457,25 @@ namespace Orts.Common
         public static Interpolator Injector11FlowrateInterpolatorPSItoUKGpM()
         {
             return new Interpolator(PressureTableGaugePSI, Injector11FlowTableUKGpM);
-        } 
- 
+        }
+
         // Flowrate table vs Boiler Pressure for 13mm Injector
         public static Interpolator Injector13FlowrateInterpolatorPSItoUKGpM()
         {
             return new Interpolator(PressureTableGaugePSI, Injector13FlowTableUKGpM);
-        } 
-        
+        }
+
         // Flowrate table vs Boiler Pressure for 14mm Injector
         public static Interpolator Injector14FlowrateInterpolatorPSItoUKGpM()
         {
             return new Interpolator(PressureTableGaugePSI, Injector14FlowTableUKGpM);
-        } 
-        
+        }
+
         // Flowrate table vs Boiler Pressure for 15mm Injector
         public static Interpolator Injector15FlowrateInterpolatorPSItoUKGpM()
         {
             return new Interpolator(PressureTableGaugePSI, Injector15FlowTableUKGpM);
-        }       
+        }
 
         public static Interpolator WaterHeatInterpolatorPSItoBTUpLB()
         {
@@ -524,18 +524,18 @@ namespace Orts.Common
         // revolutions - z value
         static float[] WheelRevolutionsRpM = new float[]
         {
-            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f  
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
         };
 
         // Cutoff - x Value
         static float[] CutOff = new float[]
         {
-            0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f  
+            0.0f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f
         };
-       
+
         // ++++++++++++++++++++++ Upper Limit ++++++++++++
 
-       // % Initial Pressure @ 0rpm - y Value
+        // % Initial Pressure @ 0rpm - y Value
         static float[] InitialPressureUpper0RpM = new float[]
         {
             1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
@@ -652,7 +652,7 @@ namespace Orts.Common
             return new Interpolator2D(WheelRevolutionsRpM, Initial_pressure_upper);
         }
 
-      // ++++++++++++++++++++++ Lower Limit ++++++++++++
+        // ++++++++++++++++++++++ Lower Limit ++++++++++++
 
         // % Initial Pressure @ 0rpm - y Value
         static float[] InitialPressureLower0RpM = new float[]

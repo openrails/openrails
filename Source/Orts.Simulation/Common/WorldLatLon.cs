@@ -35,7 +35,7 @@ using System;
 namespace Orts.Common
 {
     public class WorldLatLon
-    {      
+    {
         int earthRadius = 6370997; // Average radius of the earth, meters
         double Epsilon = 0.0000000001; // Error factor (arbitrary)
         double[] Lon_Center = new double[12];
@@ -159,7 +159,7 @@ namespace Orts.Common
             switch (region)
             {
                 case 1:
-                case 3: 
+                case 3:
                 case 4:
                 case 5:
                 case 8:

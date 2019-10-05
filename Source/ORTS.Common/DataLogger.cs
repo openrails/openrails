@@ -56,8 +56,8 @@ namespace ORTS.Common
         public void End()
         {
             Cache.AppendLine();
-			if (Cache.Length >= CacheSize)
-				Flush();
+            if (Cache.Length >= CacheSize)
+                Flush();
             FirstItem = true;
         }
 

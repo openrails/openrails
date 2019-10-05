@@ -75,7 +75,7 @@ namespace Orts.Viewer3D.Popups
                     {
                         var previousLocation = currentPosition.WorldLocation;
                         var remaining = currentPosition.MoveInSection(DisplaySegmentLength);
-                        if ((Math.Abs(remaining - DisplaySegmentLength ) < Tolerance) && !currentPosition.NextVectorSection())
+                        if ((Math.Abs(remaining - DisplaySegmentLength) < Tolerance) && !currentPosition.NextVectorSection())
                             break;
                         primitives.Add(new DispatcherLineSegment(previousLocation, currentPosition.WorldLocation, Color.LightBlue, 2));
                     }

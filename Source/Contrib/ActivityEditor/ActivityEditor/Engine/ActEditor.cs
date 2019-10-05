@@ -65,7 +65,7 @@ namespace ActivityEditor
         private bool loadEnabled = false;
         public List<Viewer2D> viewer2ds;
         public Viewer2D selectedViewer;
-        
+
         //public List<AEActivity> aeActivity;
         //public AEActivity selectedActivity;
         private bool focusOnViewer = false;
@@ -310,7 +310,7 @@ namespace ActivityEditor
 
         }
         #endregion
-        
+
         private void MoveSelected_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Move Tool");

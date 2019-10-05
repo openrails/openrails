@@ -23,7 +23,8 @@ using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 {
-    public class MSTSNotch {
+    public class MSTSNotch
+    {
         public float Value;
         public bool Smooth;
         public ControllerState Type;
@@ -110,7 +111,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
      * The user need to press the key multiple times to update this controller.
      * 
      */
-    public class MSTSNotchController: IController
+    public class MSTSNotchController : IController
     {
         public float CurrentValue { get; set; }
         public float IntermediateValue;
@@ -221,7 +222,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         private float GetNotchBoost()
         {
-            return (ToZero && ((CurrentNotch >= 0 && Notches[CurrentNotch].Smooth) || Notches.Count == 0 || 
+            return (ToZero && ((CurrentNotch >= 0 && Notches[CurrentNotch].Smooth) || Notches.Count == 0 ||
                 IntermediateValue - CurrentValue > StepSize) ? FastBoost : StandardBoost);
         }
 
@@ -246,7 +247,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             if (CurrentNotch >= 0 && !Notches[CurrentNotch].Smooth)
                 CurrentValue = Notches[CurrentNotch].Value;
 
-            var change = CurrentNotch > oldNotch || CurrentValue > OldValue + 0.1f || CurrentValue == 1 && OldValue < 1 
+            var change = CurrentNotch > oldNotch || CurrentValue > OldValue + 0.1f || CurrentValue == 1 && OldValue < 1
                 ? 1 : CurrentNotch < oldNotch || CurrentValue < OldValue - 0.1f || CurrentValue == 0 && OldValue > 0 ? -1 : 0;
             if (change != 0)
                 OldValue = CurrentValue;
@@ -268,7 +269,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     MSTSNotch notch = Notches[CurrentNotch];
                     if (CurrentNotch > 0 && v < notch.Value)
                     {
-                        MSTSNotch prev = Notches[CurrentNotch-1];
+                        MSTSNotch prev = Notches[CurrentNotch - 1];
                         if (!notch.Smooth && !prev.Smooth && v - prev.Value > .45 * (notch.Value - prev.Value))
                             break;
                         CurrentNotch--;
@@ -298,7 +299,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             return 100 * CurrentValue;
         }
 
-        public void StartIncrease( float? target ) {
+        public void StartIncrease(float? target)
+        {
             controllerTarget = target;
             ToZero = false;
             StartIncrease();
@@ -314,20 +316,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 ++CurrentNotch;
                 IntermediateValue = CurrentValue = Notches[CurrentNotch].Value;
             }
-		}
+        }
 
         public void StopIncrease()
         {
             UpdateValue = 0;
         }
 
-        public void StartDecrease( float? target, bool toZero = false)
+        public void StartDecrease(float? target, bool toZero = false)
         {
             controllerTarget = target;
             ToZero = toZero;
             StartDecrease();
         }
-        
+
         public void StartDecrease()
         {
             UpdateValue = -1;
@@ -361,12 +363,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         /// <summary>
         /// If a target has been set, then stop once it's reached and also cancel the target.
         /// </summary>
-        public void CheckControllerTargetAchieved() {
-            if( controllerTarget != null )
+        public void CheckControllerTargetAchieved()
+        {
+            if (controllerTarget != null)
             {
-                if( UpdateValue > 0.0 )
+                if (UpdateValue > 0.0)
                 {
-                    if( CurrentValue >= controllerTarget )
+                    if (CurrentValue >= controllerTarget)
                     {
                         StopIncrease();
                         controllerTarget = null;
@@ -374,7 +377,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
                 else
                 {
-                    if( CurrentValue <= controllerTarget )
+                    if (CurrentValue <= controllerTarget)
                     {
                         StopDecrease();
                         controllerTarget = null;
@@ -405,7 +408,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     CurrentNotch++;
                 }
                 //decreasing, again check if the current notch has changed
-                else if((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
+                else if ((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
                 {
                     CurrentNotch--;
                 }
@@ -489,25 +492,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         }
 
         protected virtual void SaveData(BinaryWriter outf)
-        {            
-            outf.Write(CurrentValue);            
+        {
+            outf.Write(CurrentValue);
             outf.Write(MinimumValue);
             outf.Write(MaximumValue);
             outf.Write(StepSize);
-            outf.Write(CurrentNotch);            
+            outf.Write(CurrentNotch);
             outf.Write(Notches.Count);
-            
-            foreach(MSTSNotch notch in Notches)
+
+            foreach (MSTSNotch notch in Notches)
             {
-                notch.Save(outf);                
-            }            
+                notch.Save(outf);
+            }
         }
 
         public virtual void Restore(BinaryReader inf)
         {
             Notches.Clear();
 
-            IntermediateValue = CurrentValue = inf.ReadSingle();            
+            IntermediateValue = CurrentValue = inf.ReadSingle();
             MinimumValue = inf.ReadSingle();
             MaximumValue = inf.ReadSingle();
             StepSize = inf.ReadSingle();
@@ -520,7 +523,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             for (int i = 0; i < count; ++i)
             {
                 Notches.Add(new MSTSNotch(inf));
-            }           
+            }
         }
 
         public MSTSNotch GetCurrentNotch()
@@ -542,12 +545,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        public void SetStepSize ( float stepSize)
+        public void SetStepSize(float stepSize)
         {
             StepSize = stepSize;
         }
 
-        public void Normalize (float ratio)
+        public void Normalize(float ratio)
         {
             for (int i = 0; i < Notches.Count; i++)
                 Notches[i].Value /= ratio;

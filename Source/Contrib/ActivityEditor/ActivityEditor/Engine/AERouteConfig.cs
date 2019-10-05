@@ -51,7 +51,7 @@ namespace ActivityEditor.Engine
         //  MSTS data
         public TrackNode[] nodes { get { return simulator.nodes; } set { } }
         AEConfig Parent;
-                
+
         public TrackSectionsFile TSectionDat { get { return Viewer.Simulator.TSectionDat; } protected set { } }
         public Viewer2D Viewer { get { return Parent.Viewer; } protected set { } }
         public PseudoSim simulator { get { return Viewer.Simulator; } protected set { } }

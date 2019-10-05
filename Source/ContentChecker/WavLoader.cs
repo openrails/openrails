@@ -37,7 +37,7 @@ namespace ContentChecker
         /// <param name="file">The file that needs to be loaded</param>
         public override void TryLoading(string file)
         {
-           var soundPiece = new SoundPiece(file, false, false);
+            var soundPiece = new SoundPiece(file, false, false);
         }
     }
 }

@@ -445,8 +445,8 @@ namespace Orts.Viewer3D
             World.LoadPrep();
             if (Simulator.Settings.ConditionalLoadOfDayOrNightTextures) // We need to compute sun height only in this case
             {
-            MaterialManager.LoadPrep();
-            LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+                MaterialManager.LoadPrep();
+                LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             }
             Load();
 
@@ -1156,7 +1156,7 @@ namespace Orts.Viewer3D
                 {
                     var success = ((AITrain)PlayerLocomotive.Train).SwitchToPlayerControl();
                     if (success)
-                    {   
+                    {
                         Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Switched to player control"));
                         DbfEvalAutoPilot = false;//Debrief eval
                     }
@@ -1178,8 +1178,8 @@ namespace Orts.Viewer3D
                 }
             }
 
-            if (DbfEvalAutoPilot && (Simulator.ClockTime - DbfEvalIniAutoPilotTimeS) > 1.0000 )
-            {              
+            if (DbfEvalAutoPilot && (Simulator.ClockTime - DbfEvalIniAutoPilotTimeS) > 1.0000)
+            {
                 DbfEvalAutoPilotTimeS = DbfEvalAutoPilotTimeS + (Simulator.ClockTime - DbfEvalIniAutoPilotTimeS);//Debrief eval
                 train.DbfEvalValueChanged = true;
                 DbfEvalIniAutoPilotTimeS = Simulator.ClockTime;//Debrief eval
@@ -1308,7 +1308,7 @@ namespace Orts.Viewer3D
 
             // explore 2D cabview controls
 
-            if (Camera is CabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer && MouseChangingControl == null && 
+            if (Camera is CabCamera && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer && MouseChangingControl == null &&
                 RenderProcess.IsMouseVisible)
             {
                 if (!UserInput.IsMouseLeftButtonPressed)
@@ -1359,7 +1359,7 @@ namespace Orts.Viewer3D
                         if (cabRenderer is CabViewDiscreteRenderer)
                         {
                             foreach (var iMatrix in animatedPart.Value.MatrixIndexes)
-                            { 
+                            {
                                 var matrix = Matrix.Identity;
                                 var hi = iMatrix;
                                 while (hi >= 0 && hi < trainCarShape.Hierarchy.Length && trainCarShape.Hierarchy[hi] != -1)
@@ -1482,7 +1482,7 @@ namespace Orts.Viewer3D
             // Diesel and electric locos have a Reverser lever and,
             // in the neutral position, direction == N
             return car.Direction == Direction.N
-                // Steam locos never have direction == N, so check for setting close to zero.
+            // Steam locos never have direction == N, so check for setting close to zero.
             || Math.Abs(car.Train.MUReverserPercent) <= 1;
         }
         /// <summary>

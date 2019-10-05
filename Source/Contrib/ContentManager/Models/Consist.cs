@@ -39,11 +39,12 @@ namespace ORTS.ContentManager.Models
                 Name = file.Name;
 
                 Cars = from car in file.Train.TrainCfg.WagonList
-                           select new Car(car);
+                       select new Car(car);
             }
         }
 
-        public enum Direction{
+        public enum Direction
+        {
             Forwards,
             Backwards,
         }

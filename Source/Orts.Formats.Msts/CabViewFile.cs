@@ -27,9 +27,9 @@ using Orts.Parsers.Msts;
 namespace Orts.Formats.Msts
 {
 
-	// TODO - this is an incomplete parse of the cvf file.
-	public class CabViewFile
-	{
+    // TODO - this is an incomplete parse of the cvf file.
+    public class CabViewFile
+    {
         public List<Vector3> Locations = new List<Vector3>();   // Head locations for front, left and right views
         public List<Vector3> Directions = new List<Vector3>();  // Head directions for each view
         public List<string> TwoDViews = new List<string>();     // 2D CAB Views - by GeorgeS
@@ -38,7 +38,7 @@ namespace Orts.Formats.Msts
         public CabViewControls CabViewControls;                 // Controls in CAB - by GeorgeS
 
         public CabViewFile(string filePath, string basePath)
-		{
+        {
             using (STFReader stf = new STFReader(filePath, false))
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("tr_cabviewfile", ()=>{ stf.MustMatch("("); stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -64,9 +64,9 @@ namespace Orts.Formats.Msts
                         new STFReader.TokenProcessor("cabviewcontrols", ()=>{ CabViewControls = new CabViewControls(stf, basePath); }),
                     });}),
                 });
-		}
+        }
 
-	} // class CVFFile
+    } // class CVFFile
 
     public enum CABViewControlTypes
     {
@@ -191,8 +191,8 @@ namespace Orts.Formats.Msts
         NOT_SPRUNG,
         WHILE_PRESSED,
         PRESSED,
-        ONOFF, 
-        _24HOUR, 
+        ONOFF,
+        _24HOUR,
         _12HOUR
     }
 
@@ -208,7 +208,7 @@ namespace Orts.Formats.Msts
         KILOVOLTS,
 
         KM_PER_HOUR,
-        MILES_PER_HOUR, 
+        MILES_PER_HOUR,
         METRESµSECµSEC,
         METRES_SEC_SEC,
         KMµHOURµHOUR,
@@ -220,7 +220,7 @@ namespace Orts.Formats.Msts
         MILES_HOUR_MIN,
         MILES_HOUR_HOUR,
 
-        NEWTONS, 
+        NEWTONS,
         KILO_NEWTONS,
         KILO_LBS,
         METRES_PER_SEC,
@@ -247,14 +247,14 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("tristate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
                 new STFReader.TokenProcessor("multistate", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
                 new STFReader.TokenProcessor("multistatedisplay", ()=>{ Add(new CVCMultiStateDisplay(stf, basepath)); }),
-                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
-                new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
+                new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }),
+                new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }),
                 new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
                 new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCFirebox(stf, basepath)); }),
                 new STFReader.TokenProcessor("dialclock", ()=>{ ProcessDialClock(stf, basepath);  }),
                 new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigitalClock(stf, basepath)); })
             });
-            
+
             //TODO Uncomment when parsed all type
             /*
             if (count != this.Count) STFException.ReportWarning(inf, "CabViewControl count mismatch");
@@ -297,7 +297,7 @@ namespace Orts.Formats.Msts
             {
                 ControlType = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), stf.ReadString());
             }
-            catch(ArgumentException)
+            catch (ArgumentException)
             {
                 stf.StepBackOneItem();
                 STFException.TraceInformation(stf, "Skipped unknown ControlType " + stf.ReadString());
@@ -340,7 +340,7 @@ namespace Orts.Formats.Msts
             {
                 string sStyle = stf.ReadString();
                 int checkNumeric = 0;
-                if(int.TryParse(sStyle.Substring(0, 1), out checkNumeric) == true)
+                if (int.TryParse(sStyle.Substring(0, 1), out checkNumeric) == true)
                 {
                     sStyle = sStyle.Insert(0, "_");
                 }
@@ -373,7 +373,7 @@ namespace Orts.Formats.Msts
             stf.SkipRestOfBlock();
         }
         // Used by subclasses CVCGauge and CVCDigital
-        protected virtual color ParseControlColor( STFReader stf )
+        protected virtual color ParseControlColor(STFReader stf)
         {
             stf.MustMatch("(");
             color colour = new color { A = 1, R = stf.ReadInt(0) / 255f, G = stf.ReadInt(0) / 255f, B = stf.ReadInt(0) / 255f };
@@ -474,7 +474,7 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("zeropos", ()=>{ ZeroPos = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("area", ()=>{ 
+                new STFReader.TokenProcessor("area", ()=>{
                     stf.MustMatch("(");
                     int x = stf.ReadInt(null);
                     int y = stf.ReadInt(null);
@@ -483,27 +483,27 @@ namespace Orts.Formats.Msts
                     Area = new Rectangle(x, y, width, height);
                     stf.SkipRestOfBlock();
                 }),
-                new STFReader.TokenProcessor("positivecolour", ()=>{ 
+                new STFReader.TokenProcessor("positivecolour", ()=>{
                     stf.MustMatch("(");
                     NumPositiveColors = stf.ReadInt(0);
                     if((stf.EndOfBlock() == false))
                     {
                        List <color> Colorset = new List<color>();
                        stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}),
                             new STFReader.TokenProcessor("switchval", () => { PositiveSwitchVal = ParseSwitchVal(stf); }) });
                     PositiveColor = Colorset [0];
                     if ((NumPositiveColors >= 2) && (Colorset.Count >= 2 ))SecondPositiveColor = Colorset [1];
                     }
                    }),
-               new STFReader.TokenProcessor("negativecolour", ()=>{ 
+               new STFReader.TokenProcessor("negativecolour", ()=>{
                     stf.MustMatch("(");
                     NumNegativeColors = stf.ReadInt(0);
                     if ((stf.EndOfBlock() == false))
                     {
                         List<color> Colorset = new List<color>();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}),
                             new STFReader.TokenProcessor("switchval", () => { NegativeSwitchVal = ParseSwitchVal(stf); }) });
                         NegativeColor = Colorset[0];
                         if ((NumNegativeColors >= 2) && (Colorset.Count >= 2)) SecondNegativeColor = Colorset[1];
@@ -526,7 +526,7 @@ namespace Orts.Formats.Msts
     {
         public string FireACEFile;
 
-        public CVCFirebox(STFReader stf, string basepath) 
+        public CVCFirebox(STFReader stf, string basepath)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -588,7 +588,7 @@ namespace Orts.Formats.Msts
             FontSize = 8;
             FontStyle = 0;
             FontFamily = "Lucida Sans";
-            
+
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
@@ -598,30 +598,30 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
                 new STFReader.TokenProcessor("leadingzeros", ()=>{ ParseLeadingZeros(stf); }),
-                new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
-                new STFReader.TokenProcessor("accuracyswitch", ()=>{ ParseAccuracySwitch(stf); }), 
+                new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }),
+                new STFReader.TokenProcessor("accuracyswitch", ()=>{ ParseAccuracySwitch(stf); }),
                 new STFReader.TokenProcessor("justification", ()=>{ ParseJustification(stf); }),
-                new STFReader.TokenProcessor("positivecolour", ()=>{ 
+                new STFReader.TokenProcessor("positivecolour", ()=>{
                     stf.MustMatch("(");
                     NumPositiveColors = stf.ReadInt(0);
                     if((stf.EndOfBlock() == false))
                     {
                        List <color> Colorset = new List<color>();
                        stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}),
                             new STFReader.TokenProcessor("switchval", () => { PositiveSwitchVal = ParseSwitchVal(stf); }) });
                     PositiveColor = Colorset [0];
                     if ((NumPositiveColors >= 2) && (Colorset.Count >= 2 ))SecondPositiveColor = Colorset [1];
                     }
                    }),
-               new STFReader.TokenProcessor("negativecolour", ()=>{ 
+               new STFReader.TokenProcessor("negativecolour", ()=>{
                     stf.MustMatch("(");
                     NumNegativeColors = stf.ReadInt(0);
                     if ((stf.EndOfBlock() == false))
                     {
                         List<color> Colorset = new List<color>();
                         stf.ParseBlock(new STFReader.TokenProcessor[] {
-                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}), 
+                            new STFReader.TokenProcessor("controlcolour", ()=>{ Colorset.Add(ParseControlColor(stf));}),
                             new STFReader.TokenProcessor("switchval", () => { NegativeSwitchVal = ParseSwitchVal(stf); }) });
                         NegativeColor = Colorset[0];
                         if ((NumNegativeColors >= 2) && (Colorset.Count >= 2)) SecondNegativeColor = Colorset[1];
@@ -676,7 +676,7 @@ namespace Orts.Formats.Msts
             var fontFamily = stf.ReadString();
             if (fontFamily != null) FontFamily = fontFamily;
             stf.SkipRestOfBlock();
-         }
+        }
     }
 
     public class CVCDigitalClock : CVCDigital
@@ -692,13 +692,13 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
                 new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
-                new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
+                new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }),
                 new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }),
                 new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); })
             });
         }
 
-        
+
     }
     #endregion
 
@@ -714,7 +714,7 @@ namespace Orts.Formats.Msts
         public int Orientation;
         public int Direction;
 
-        public List<double> Values 
+        public List<double> Values
         {
             get
             {
@@ -733,7 +733,7 @@ namespace Orts.Formats.Msts
 
         public CVCDiscrete(STFReader stf, string basepath)
         {
-//            try
+            //            try
             {
                 stf.MustMatch("(");
                 stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -794,7 +794,7 @@ namespace Orts.Formats.Msts
                             positionsRead++;
 
                         if (minPosition < 0)
-                        { 
+                        {
                             for (int iPos = 0; iPos <= Positions.Count - 1; iPos++)
                             {
                                 Positions[iPos] -= minPosition;
@@ -812,8 +812,8 @@ namespace Orts.Formats.Msts
                         // Check if eligible for filling
 
                         if (Positions.Count > 1 && Positions[0] != 0) canFill = false;
-                        else 
-                        { 
+                        else
+                        {
                             for (var iPos = 1; iPos <= Positions.Count - 1; iPos++)
                             {
                                 if (Positions[iPos] > Positions[iPos-1]) continue;
@@ -850,7 +850,7 @@ namespace Orts.Formats.Msts
                             // Avoid later repositioning, put every value to its Position
                             // But before resize Values if needed
                             if (numValues != numPositions)
-                            { 
+                            {
                                 while (Values.Count <= Positions[_ValuesRead])
                                 {
                                     Values.Add(0);
@@ -874,7 +874,7 @@ namespace Orts.Formats.Msts
                 //     The twostate, tristate, signal displays are not in these
                 // Need check the Values collection for validity
                 if (_ValuesRead > 0 || ControlStyle == CABViewControlStyles.SPRUNG || ControlStyle == CABViewControlStyles.NOT_SPRUNG ||
-                    FramesCount  > 0 || (FramesX > 0 && FramesY > 0 ))
+                    FramesCount > 0 || (FramesX > 0 && FramesY > 0))
                 {
                     // Check max number of Frames
                     if (FramesCount == 0)
@@ -897,7 +897,7 @@ namespace Orts.Formats.Msts
 
                     // Only shuffle data in following cases
 
-                    if (Values.Count != Positions.Count || (Values.Count < FramesCount & canFill)|| ( Values.Count > 0 && Values[0] == Values[Values.Count - 1] && Values[0] == 0))
+                    if (Values.Count != Positions.Count || (Values.Count < FramesCount & canFill) || (Values.Count > 0 && Values[0] == Values[Values.Count - 1] && Values[0] == 0))
                     {
 
                         // Fixup Positions and Values collections first
@@ -913,19 +913,19 @@ namespace Orts.Formats.Msts
                             //This if clause covers among others following cases:
                             // Case 1 (e.g. engine brake lever of Dash 9):
                             //NumFrames ( 22 11 2 )
-			                //NumPositions ( 1 0 )
-			                //NumValues ( 1 0 )
-			                //Orientation ( 1 )
-			                //DirIncrease ( 1 )
-			                //ScaleRange ( 0 1 )
+                            //NumPositions ( 1 0 )
+                            //NumValues ( 1 0 )
+                            //Orientation ( 1 )
+                            //DirIncrease ( 1 )
+                            //ScaleRange ( 0 1 )
                             //
                             // Case 2 (e.g. throttle lever of Acela):
-			                //NumFrames ( 25 5 5 )
-			                //NumPositions ( 0 )
-			                //NumValues ( 0 )
-			                //Orientation ( 1 )
-			                //DirIncrease ( 1 )
-			                //ScaleRange ( 0 1 )
+                            //NumFrames ( 25 5 5 )
+                            //NumPositions ( 0 )
+                            //NumValues ( 0 )
+                            //Orientation ( 1 )
+                            //DirIncrease ( 1 )
+                            //ScaleRange ( 0 1 )
                             //
                             // Clear existing
                             Positions.Clear();
@@ -948,29 +948,29 @@ namespace Orts.Formats.Msts
                         {
                             //This if clause covers among others following cases:
                             // Case 1 (e.g. engine brake lever of gp38):
-			                //NumFrames ( 18 2 9 )
-			                //NumPositions ( 2 0 1 )
-			                //NumValues ( 2 0 0.3 )
-			                //Orientation ( 0 )
-			                //DirIncrease ( 0 )
-			                //ScaleRange ( 0 1 )
+                            //NumFrames ( 18 2 9 )
+                            //NumPositions ( 2 0 1 )
+                            //NumValues ( 2 0 0.3 )
+                            //Orientation ( 0 )
+                            //DirIncrease ( 0 )
+                            //ScaleRange ( 0 1 )
                             Positions.Add(FramesCount);
                             // Fill empty Values
                             for (int i = Values.Count; i < FramesCount; i++)
                                 Values.Add(Values[1]);
-                            Values.Add(MaxValue);                            
+                            Values.Add(MaxValue);
                         }
 
                         else
                         {
                             //This if clause covers among others following cases:
                             // Case 1 (e.g. train brake lever of Acela): 
-			                //NumFrames ( 12 4 3 )
-			                //NumPositions ( 5 0 1 9 10 11 )
-			                //NumValues ( 5 0 0.2 0.85 0.9 0.95 )
-			                //Orientation ( 1 )
-			                //DirIncrease ( 1 )
-			                //ScaleRange ( 0 1 )
+                            //NumFrames ( 12 4 3 )
+                            //NumPositions ( 5 0 1 9 10 11 )
+                            //NumValues ( 5 0 0.2 0.85 0.9 0.95 )
+                            //Orientation ( 1 )
+                            //DirIncrease ( 1 )
+                            //ScaleRange ( 0 1 )
                             //
                             // Fill empty Values
                             int iValues = 1;
@@ -1028,19 +1028,19 @@ namespace Orts.Formats.Msts
                 if (ControlType == CABViewControlTypes.PANTOGRAPH || ControlType == CABViewControlTypes.PANTOGRAPH2 ||
                     ControlType == CABViewControlTypes.ORTS_PANTOGRAPH3 || ControlType == CABViewControlTypes.ORTS_PANTOGRAPH4)
                     ControlStyle = CABViewControlStyles.ONOFF;
-                if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL 
+                if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL
                     || ControlType == CABViewControlTypes.RESET)
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
                 if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;
             }
-//            catch (Exception error)
-//            {
-//                if (error is STFException) // Parsing error, so pass it on
-//                    throw;
-//                else                       // Unexpected error, so provide a hint
-//                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
-//            } // End of Need check the Values collection for validity
+            //            catch (Exception error)
+            //            {
+            //                if (error is STFException) // Parsing error, so pass it on
+            //                    throw;
+            //                else                       // Unexpected error, so provide a hint
+            //                    throw new STFException(stf, "Problem with NumPositions/NumValues/NumFrames/ScaleRange");
+            //            } // End of Need check the Values collection for validity
         } // End of Constructor
     }
     #endregion
@@ -1048,9 +1048,9 @@ namespace Orts.Formats.Msts
     #region Multistate Display Controls
     public class CVCMultiStateDisplay : CVCWithFrames
     {
-         public List<double> MSStyles = new List<double>();
+        public List<double> MSStyles = new List<double>();
 
-           public CVCMultiStateDisplay(STFReader stf, string basepath)
+        public CVCMultiStateDisplay(STFReader stf, string basepath)
         {
 
             stf.MustMatch("(");
@@ -1067,7 +1067,7 @@ namespace Orts.Formats.Msts
                     FramesX = stf.ReadInt(null);
                     FramesY = stf.ReadInt(null);
                     stf.ParseBlock(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("state", ()=>{ 
+                        new STFReader.TokenProcessor("state", ()=>{
                             stf.MustMatch("(");
                             stf.ParseBlock( new STFReader.TokenProcessor[] {
                                 new STFReader.TokenProcessor("style", ()=>{ MSStyles.Add(ParseNumStyle(stf));

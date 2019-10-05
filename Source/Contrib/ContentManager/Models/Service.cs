@@ -102,7 +102,7 @@ namespace ORTS.ContentManager.Models
                     }
                 }
                 ID = serviceColumn.ToString();
-                    var timeRE = new Regex(@"^(\d\d):(\d\d)(?:-(\d\d):(\d\d))?");
+                var timeRE = new Regex(@"^(\d\d):(\d\d)(?:-(\d\d):(\d\d))?");
                 var startTimeMatch = timeRE.Match(file.Strings[startRow][serviceColumn]);
                 if (startTimeMatch.Success)
                 {

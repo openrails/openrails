@@ -21,7 +21,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
     public class SeriesMotor : ElectricMotor
     {
         float armatureResistanceOhms;
-        public float ArmatureResistanceOhms 
+        public float ArmatureResistanceOhms
         {
             set
             {
@@ -166,11 +166,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             else
             {
                 fieldCurrentA = 0.0f;
-            }          
+            }
 
             UpdateField();
             backEMFvoltageV = RevolutionsRad * fieldWb;
-            developedTorqueNm = fieldWb * armatureCurrentA -(frictionTorqueNm * revolutionsRad /NominalRevolutionsRad * revolutionsRad/NominalRevolutionsRad);
+            developedTorqueNm = fieldWb * armatureCurrentA - (frictionTorqueNm * revolutionsRad / NominalRevolutionsRad * revolutionsRad / NominalRevolutionsRad);
 
             powerLossesW = ArmatureResistanceOhms * armatureCurrentA * armatureCurrentA +
                            FieldResistanceOhms * fieldCurrentA * fieldCurrentA;

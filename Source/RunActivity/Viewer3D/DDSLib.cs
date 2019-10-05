@@ -756,10 +756,10 @@ namespace Orts.Viewer3D
             }
         }
 
-        #if WINDOWS
+#if WINDOWS
         [ThreadStatic]
         private static byte[] mipData;
-        #else
+#else
 
         static DDSLib()
         {
@@ -797,7 +797,7 @@ namespace Orts.Viewer3D
             }
         }
 
-        #endif
+#endif
 
         //try to evaluate the xna compatible surface for the present data
         private static SurfaceFormat SurfaceFormatFromLoadFormat(LoadSurfaceFormat loadSurfaceFormat, FourCC compressionFormat, uint pixelFlags, int rgbBitCount)
@@ -814,28 +814,28 @@ namespace Orts.Viewer3D
                         return SurfaceFormat.Dxt5;
                     case 0:
                         if (rgbBitCount == 8)
-                    {
-                        return SurfaceFormat.Alpha8;
-                    }
-
-                    if (rgbBitCount == 16)
-                    {
-                        if (HasAlphaTest(pixelFlags))
                         {
-                            return SurfaceFormat.Bgr565;
+                            return SurfaceFormat.Alpha8;
                         }
-                        else
+
+                        if (rgbBitCount == 16)
                         {
-                            return SurfaceFormat.Bgra4444;
+                            if (HasAlphaTest(pixelFlags))
+                            {
+                                return SurfaceFormat.Bgr565;
+                            }
+                            else
+                            {
+                                return SurfaceFormat.Bgra4444;
+                            }
                         }
-                    }
 
-                    if (rgbBitCount == 32 || rgbBitCount == 24)
-                    {
-                        return SurfaceFormat.Color;
-                    }
+                        if (rgbBitCount == 32 || rgbBitCount == 24)
+                        {
+                            return SurfaceFormat.Color;
+                        }
 
-                    break;
+                        break;
                     default:
                         throw new Exception("Unsuported format");
                 }
@@ -908,7 +908,7 @@ namespace Orts.Viewer3D
 
             if (tx.Format != surfaceFormat)
             {
-                throw new Exception("Can't generate a " +surfaceFormat.ToString()+" surface.");
+                throw new Exception("Can't generate a " + surfaceFormat.ToString() + " surface.");
             }
 
             return tx;
@@ -1359,17 +1359,17 @@ namespace Orts.Viewer3D
                 case SurfaceFormat.Dxt3:
                 case SurfaceFormat.Dxt5:
                     pixelWidth = 0;
-                break;
+                    break;
 
                 case SurfaceFormat.Vector4:
                     pixelWidth = 16;
-                break;
+                    break;
 
                 case SurfaceFormat.Rgba64:
                 case SurfaceFormat.HalfVector4:
-                case SurfaceFormat.Vector2 :
+                case SurfaceFormat.Vector2:
                     pixelWidth = 8;
-                break;
+                    break;
 
                 case SurfaceFormat.Rg32:
                 case SurfaceFormat.Rgba1010102:
@@ -1378,7 +1378,7 @@ namespace Orts.Viewer3D
                 case SurfaceFormat.Single:
                 case SurfaceFormat.Color:
                     pixelWidth = 4;
-                break;
+                    break;
 
                 case SurfaceFormat.NormalizedByte2:
                 case SurfaceFormat.HalfSingle:
@@ -1386,11 +1386,11 @@ namespace Orts.Viewer3D
                 case SurfaceFormat.Bgra4444:
                 case SurfaceFormat.Bgr565:
                     pixelWidth = 2;
-                break;
+                    break;
 
                 case SurfaceFormat.Alpha8:
                     pixelWidth = 1;
-                break;
+                    break;
                 default:
                     throw new Exception(((Texture2D)texture).Format + " has no save as DDS support.");
             }
@@ -1471,7 +1471,7 @@ namespace Orts.Viewer3D
                         fourCC = 0x35545844;
                     }
                     return;
-                #if COLOR_SAVE_TO_ARGB
+#if COLOR_SAVE_TO_ARGB
                 case SurfaceFormat.Color:
                     flags = 0x41;
                     rgbBitCount = 32;
@@ -1481,7 +1481,7 @@ namespace Orts.Viewer3D
                     bBitMask = 0xff;
                     aBitMask = 0xff000000;
                     return;
-                #else
+#else
                 case SurfaceFormat.Color:
                     flags = 0x41;
                     rgbBitCount = 32;
@@ -1491,7 +1491,7 @@ namespace Orts.Viewer3D
                     bBitMask = 0xff0000;
                     aBitMask = 0xff000000;
                     return;
-                #endif
+#endif
 
                 //case DDS_FORMAT_X8R8G8B8:
                 //    flags = 0x40;
@@ -1633,7 +1633,7 @@ namespace Orts.Viewer3D
                     aBitMask = 0;
                     break;
 
-                case SurfaceFormat.NormalizedByte2 :
+                case SurfaceFormat.NormalizedByte2:
                     flags = 4;
                     fourCC = 117;
                     rgbBitCount = 16;
@@ -1716,19 +1716,19 @@ namespace Orts.Viewer3D
                 }
 
 
-                #if COLOR_SAVE_TO_ARGB
+#if COLOR_SAVE_TO_ARGB
                 if (((Texture2D)texture).Format == SurfaceFormat.Color)
+                {
+                    byte g, b;
+                    for (int k = 0; k < size - 3; k += 4)
                     {
-                        byte g, b;
-                        for (int k = 0; k < size - 3; k += 4)
-                        {
-                            g = data[k];
-                            b = data[k + 2];
-                            data[k] = b;
-                            data[k + 2] = g;
-                        }
+                        g = data[k];
+                        b = data[k + 2];
+                        data[k] = b;
+                        data[k + 2] = g;
                     }
-                #endif
+                }
+#endif
 
                 writer.Write(data, 0, size);
                 //for (int j = 0; j < size; j++)
@@ -1741,7 +1741,7 @@ namespace Orts.Viewer3D
         }
 
         //Write texture data to stream if the texture is a 2d texture the face is ignored.
-        private static void WriteTexture(BinaryWriter writer, CubeMapFace face, Texture texture, int mipLevel,int depth, int width, int height, bool isCompressed, FourCC fourCC, int rgbBitCount)
+        private static void WriteTexture(BinaryWriter writer, CubeMapFace face, Texture texture, int mipLevel, int depth, int width, int height, bool isCompressed, FourCC fourCC, int rgbBitCount)
         {
             int size = MipMapSizeInBytes(mipLevel, width, height, isCompressed, fourCC, rgbBitCount);
             byte[] data = mipData;
@@ -1764,23 +1764,23 @@ namespace Orts.Viewer3D
                 int localWidth = MipMapSize(mipLevel, width);
                 int localHeight = MipMapSize(mipLevel, height);
 
-                tex.GetData<byte>(mipLevel, 0, 0,localWidth, localHeight, depth, depth+1, data, 0, size);
+                tex.GetData<byte>(mipLevel, 0, 0, localWidth, localHeight, depth, depth + 1, data, 0, size);
             }
 
 
-            #if COLOR_SAVE_TO_ARGB
+#if COLOR_SAVE_TO_ARGB
             if (((Texture2D)texture).Format == SurfaceFormat.Color)
+            {
+                byte g, b;
+                for (int k = 0; k < size - 3; k += 4)
                 {
-                    byte g, b;
-                    for (int k = 0; k < size - 3; k += 4)
-                    {
-                        g = data[k];
-                        b = data[k + 2];
-                        data[k] = b;
-                        data[k + 2] = g;
-                    }
+                    g = data[k];
+                    b = data[k + 2];
+                    data[k] = b;
+                    data[k + 2] = g;
                 }
-            #endif
+            }
+#endif
 
             writer.Write(data, 0, size);
             //for (int j = 0; j < size; j++)
@@ -1846,7 +1846,7 @@ namespace Orts.Viewer3D
                 dwHeaderFlags |= DDSD_LINEARSIZE;
             }
 
-            if(texture.LevelCount > 1 && saveMipMaps)
+            if (texture.LevelCount > 1 && saveMipMaps)
             {
                 dwHeaderFlags |= DDSD_MIPMAPCOUNT;
             }
@@ -1861,7 +1861,7 @@ namespace Orts.Viewer3D
             int Width = 1;
             int Height = 1;
 
-            if(textureAs2D != null)
+            if (textureAs2D != null)
             {
                 Width = textureAs2D.Width;
                 Height = textureAs2D.Height;
@@ -1934,26 +1934,26 @@ namespace Orts.Viewer3D
             GenerateDdspf(((Texture2D)texture).Format, out flags, out rgbBitCount, out rBitMask, out gBitMask, out bBitMask, out aBitMask, out fourCC);
 
             //ddspf
-                //dwSize
-                writer.Write(32);
-                //dwFlags
-                writer.Write(flags);
-                //dwFourCC
-                writer.Write(fourCC);
-                //dwRGBBitCount
-                writer.Write(rgbBitCount);
-                //dwRBitMask;
-                writer.Write(rBitMask);
-                //dwGBitMask;
-                writer.Write(gBitMask);
-                //dwBBitMask;
-                writer.Write(bBitMask);
-                //dwABitMask;
-                writer.Write(aBitMask);
+            //dwSize
+            writer.Write(32);
+            //dwFlags
+            writer.Write(flags);
+            //dwFourCC
+            writer.Write(fourCC);
+            //dwRGBBitCount
+            writer.Write(rgbBitCount);
+            //dwRBitMask;
+            writer.Write(rBitMask);
+            //dwGBitMask;
+            writer.Write(gBitMask);
+            //dwBBitMask;
+            writer.Write(bBitMask);
+            //dwABitMask;
+            writer.Write(aBitMask);
             //ddspf end
 
             uint dwSurfaceFlags = DDSCAPS_TEXTURE;
-            if((texture.LevelCount > 1 && saveMipMaps))
+            if ((texture.LevelCount > 1 && saveMipMaps))
             {
                 dwSurfaceFlags |= DDSCAPS_MIPMAP;
                 dwSurfaceFlags |= DDSCAPS_COMPLEX;
@@ -2030,7 +2030,7 @@ namespace Orts.Viewer3D
         /// <param name="saveMipMaps">Save the complete mip-map chain ?</param>
         /// <param name="texture">The texture that you want to save.</param>
         /// <param name="throwExceptionIfFileExist">Throw an exception if the file exists ?</param>
-        public static void DDSToFile(string fileName, bool saveMipMaps, Texture texture,bool throwExceptionIfFileExist)
+        public static void DDSToFile(string fileName, bool saveMipMaps, Texture texture, bool throwExceptionIfFileExist)
         {
             if (throwExceptionIfFileExist && File.Exists(fileName))
             {
@@ -2044,13 +2044,13 @@ namespace Orts.Viewer3D
                 DDSToStream(fileStream, 0, saveMipMaps, texture);
 
             }
-            catch(Exception x)
+            catch (Exception x)
             {
                 throw x;
             }
             finally
             {
-                if(fileStream != null)
+                if (fileStream != null)
                 {
                     fileStream.Close();
                     fileStream = null;

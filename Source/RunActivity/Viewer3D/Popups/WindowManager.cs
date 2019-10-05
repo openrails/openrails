@@ -31,10 +31,10 @@ using System.Linq;
 namespace Orts.Viewer3D.Popups
 {
     public class WindowManager : RenderPrimitive
-	{
-		public static Texture2D WhiteTexture;
-		public static Texture2D ScrollbarTexture;
-		public static Texture2D LabelShadowTexture;
+    {
+        public static Texture2D WhiteTexture;
+        public static Texture2D ScrollbarTexture;
+        public static Texture2D LabelShadowTexture;
         public static Texture2D NoticeTexture;
         public static Texture2D PauseTexture;
 
@@ -48,7 +48,7 @@ namespace Orts.Viewer3D.Popups
             spriteBatch.Draw(FlushTexture, Vector2.Zero, Color.Black);
         }
 
-		public readonly Viewer Viewer;
+        public readonly Viewer Viewer;
         public readonly WindowTextManager TextManager;
         public readonly WindowTextFont TextFontDefault;
         public readonly WindowTextFont TextFontDefaultOutlined;
@@ -65,9 +65,9 @@ namespace Orts.Viewer3D.Popups
         SpriteBatch SpriteBatch;
         Matrix Identity = Matrix.Identity;
         Matrix XNAView = Matrix.Identity;
-		Matrix XNAProjection = Matrix.Identity;
+        Matrix XNAProjection = Matrix.Identity;
         internal Point ScreenSize = new Point(10000, 10000); // Arbitrary but necessary.
-		ResolveTexture2D Screen;
+        ResolveTexture2D Screen;
 
         public WindowManager(Viewer viewer)
         {
@@ -172,28 +172,28 @@ namespace Orts.Viewer3D.Popups
                 window.Restore(inf);
         }
 
-		[CallOnThread("Updater")]
-		public void ScreenChanged()
-		{
-			var oldScreenSize = ScreenSize;
-			ScreenSize = Viewer.DisplaySize;
+        [CallOnThread("Updater")]
+        public void ScreenChanged()
+        {
+            var oldScreenSize = ScreenSize;
+            ScreenSize = Viewer.DisplaySize;
 
-			// Buffer for screen texture, also same size as viewport and using the backbuffer format.
-			if (Viewer.Settings.WindowGlass)
-			{
-				if (Screen != null)
-					Screen.Dispose();
-				Screen = new ResolveTexture2D(Viewer.GraphicsDevice, ScreenSize.X, ScreenSize.Y, 1, Viewer.GraphicsDevice.PresentationParameters.BackBufferFormat);
-			}
+            // Buffer for screen texture, also same size as viewport and using the backbuffer format.
+            if (Viewer.Settings.WindowGlass)
+            {
+                if (Screen != null)
+                    Screen.Dispose();
+                Screen = new ResolveTexture2D(Viewer.GraphicsDevice, ScreenSize.X, ScreenSize.Y, 1, Viewer.GraphicsDevice.PresentationParameters.BackBufferFormat);
+            }
 
-			// Reposition all the windows.
+            // Reposition all the windows.
             foreach (var window in Windows)
             {
                 if (oldScreenSize.X - window.Location.Width > 0 && oldScreenSize.Y - window.Location.Height > 0)
                     window.MoveTo((ScreenSize.X - window.Location.Width) * window.Location.X / (oldScreenSize.X - window.Location.Width), (ScreenSize.Y - window.Location.Height) * window.Location.Y / (oldScreenSize.Y - window.Location.Height));
                 window.ScreenChanged();
             }
-		}
+        }
 
         double LastPrepareRealTime;
         [CallOnThread("Updater")]
@@ -214,34 +214,34 @@ namespace Orts.Viewer3D.Popups
 
         [CallOnThread("Render")]
         public override void Draw(GraphicsDevice graphicsDevice)
-		{
-			// Nothing visible? Nothing more to do!
-			if (!VisibleWindows.Any())
-				return;
+        {
+            // Nothing visible? Nothing more to do!
+            if (!VisibleWindows.Any())
+                return;
 
-			// Construct a view where (0, 0) is the top-left and (width, height) is
-			// bottom-right, so that popups can act more like normal window things.
-			XNAView = Matrix.CreateTranslation(-ScreenSize.X / 2, -ScreenSize.Y / 2, 0) *
-				Matrix.CreateTranslation(-0.5f, -0.5f, 0) *
-				Matrix.CreateScale(1, -1, 1);
-			// Project into a flat view of the same size as the viewport.
-			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
+            // Construct a view where (0, 0) is the top-left and (width, height) is
+            // bottom-right, so that popups can act more like normal window things.
+            XNAView = Matrix.CreateTranslation(-ScreenSize.X / 2, -ScreenSize.Y / 2, 0) *
+                Matrix.CreateTranslation(-0.5f, -0.5f, 0) *
+                Matrix.CreateScale(1, -1, 1);
+            // Project into a flat view of the same size as the viewport.
+            XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
 
             var rs = graphicsDevice.RenderState;
-			foreach (var window in VisibleWindows)
-			{
-				var xnaWorld = window.XNAWorld;
+            foreach (var window in VisibleWindows)
+            {
+                var xnaWorld = window.XNAWorld;
 
-				if (Screen != null)
-					graphicsDevice.ResolveBackBuffer(Screen);
+                if (Screen != null)
+                    graphicsDevice.ResolveBackBuffer(Screen);
                 PopupWindowMaterial.SetState(graphicsDevice, Screen);
                 PopupWindowMaterial.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
                 PopupWindowMaterial.ResetState(graphicsDevice);
 
                 SpriteBatch.Begin(SpriteBlendMode.AlphaBlend, SpriteSortMode.Immediate, SaveStateMode.None);
-				window.Draw(SpriteBatch);
-				SpriteBatch.End();
-			}
+                window.Draw(SpriteBatch);
+                SpriteBatch.End();
+            }
             // For performance, we call SpriteBatch.Begin() with SaveStateMode.None above, but we now need to restore
             // the state ourselves.
             rs.AlphaBlendEnable = false;
@@ -250,67 +250,67 @@ namespace Orts.Viewer3D.Popups
             rs.DepthBufferEnable = true;
             rs.DestinationBlend = Blend.Zero;
             rs.SourceBlend = Blend.One;
-		}
+        }
 
-		internal void Add(Window window)
-		{
-			Windows.Add(window);
+        internal void Add(Window window)
+        {
+            Windows.Add(window);
             WindowsZOrder = Windows.Concat(new[] { window }).ToArray();
         }
 
-		public bool HasVisiblePopupWindows()
-		{
+        public bool HasVisiblePopupWindows()
+        {
             return WindowsZOrder.Any(w => w.Visible);
-		}
+        }
 
-		public IEnumerable<Window> VisibleWindows
-		{
-			get
-			{
+        public IEnumerable<Window> VisibleWindows
+        {
+            get
+            {
                 return WindowsZOrder.Where(w => w.Visible);
-			}
-		}
+            }
+        }
 
-		public const int DragMinimumDistance = 2;
+        public const int DragMinimumDistance = 2;
 
-		Point mouseDownPosition;
-		public Point MouseDownPosition { get { return mouseDownPosition; } }
+        Point mouseDownPosition;
+        public Point MouseDownPosition { get { return mouseDownPosition; } }
 
-		Window mouseActiveWindow;
-		public Window MouseActiveWindow { get { return mouseActiveWindow; } }
+        Window mouseActiveWindow;
+        public Window MouseActiveWindow { get { return mouseActiveWindow; } }
 
-		double LastUpdateRealTime;
-		[CallOnThread("Updater")]
+        double LastUpdateRealTime;
+        [CallOnThread("Updater")]
         public void HandleUserInput(ElapsedTime elapsedTime)
         {
-			if (UserInput.IsMouseLeftButtonPressed)
-			{
-				mouseDownPosition = new Point(UserInput.MouseX, UserInput.MouseY);
+            if (UserInput.IsMouseLeftButtonPressed)
+            {
+                mouseDownPosition = new Point(UserInput.MouseX, UserInput.MouseY);
                 mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
                 if ((mouseActiveWindow != null) && (mouseActiveWindow != WindowsZOrder.Last()))
                     BringWindowToTop(mouseActiveWindow);
-			}
+            }
 
-			if (mouseActiveWindow != null)
-			{
-				if (UserInput.IsMouseLeftButtonPressed)
-					mouseActiveWindow.MouseDown();
-				else if (UserInput.IsMouseLeftButtonReleased)
-					mouseActiveWindow.MouseUp();
+            if (mouseActiveWindow != null)
+            {
+                if (UserInput.IsMouseLeftButtonPressed)
+                    mouseActiveWindow.MouseDown();
+                else if (UserInput.IsMouseLeftButtonReleased)
+                    mouseActiveWindow.MouseUp();
 
-				if (UserInput.IsMouseMoved)
-					mouseActiveWindow.MouseMove();
+                if (UserInput.IsMouseMoved)
+                    mouseActiveWindow.MouseMove();
 
-				if (Viewer.RealTime - LastUpdateRealTime >= 0.1)
-				{
-					LastUpdateRealTime = Viewer.RealTime;
-					mouseActiveWindow.HandleUserInput();
-				}
+                if (Viewer.RealTime - LastUpdateRealTime >= 0.1)
+                {
+                    LastUpdateRealTime = Viewer.RealTime;
+                    mouseActiveWindow.HandleUserInput();
+                }
 
-				if (UserInput.IsMouseLeftButtonReleased)
-					mouseActiveWindow = null;
-			}
-		}
+                if (UserInput.IsMouseLeftButtonReleased)
+                    mouseActiveWindow = null;
+            }
+        }
 
         public void BringWindowToTop(Window mouseActiveWindow)
         {
@@ -342,7 +342,7 @@ namespace Orts.Viewer3D.Popups
             WindowManagerMaterial.Mark();
             PopupWindowMaterial.Mark();
             Label3DMaterial.Mark();
-			foreach (var window in Windows)
+            foreach (var window in Windows)
                 window.Mark();
         }
 

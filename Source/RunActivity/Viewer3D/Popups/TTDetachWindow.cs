@@ -39,7 +39,7 @@ namespace Orts.Viewer3D.Popups
 
         DetachInfo reqDetach = null;
         TTTrain reqTrain;
-        
+
         public TTDetachWindow(WindowManager owner)
             : base(owner, Window.DecorationSize.X + WindowImageSizeWidth, Window.DecorationSize.Y + owner.TextFontDefault.Height * WindowImageSizeHeightFactor + ControlLayout.SeparatorSize * 2, Viewer.Catalog.GetString("Timetable Detach Menu"))
         {
@@ -95,7 +95,7 @@ namespace Orts.Viewer3D.Popups
                         }
                         else
                         {
-                            formedTrain = String.Concat(Viewer.Catalog.GetString("static consist"), " : ",reqDetach.DetachFormedTrainName);
+                            formedTrain = String.Concat(Viewer.Catalog.GetString("static consist"), " : ", reqDetach.DetachFormedTrainName);
                         }
                     }
 

@@ -27,15 +27,15 @@ using Orts.Parsers.Msts;
 namespace Orts.Formats.Msts
 {
 
-	public class SpeedpostDatFile
-	{
-		public string [] TempSpeedShapeNames = new string[3];
+    public class SpeedpostDatFile
+    {
+        public string[] TempSpeedShapeNames = new string[3];
 
-		public SpeedpostDatFile(string filePath, string shapePath)
-		{
-			using (STFReader stf = new STFReader(filePath, false))
-			{
-				stf.ParseBlock(new STFReader.TokenProcessor[] {
+        public SpeedpostDatFile(string filePath, string shapePath)
+        {
+            using (STFReader stf = new STFReader(filePath, false))
+            {
+                stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("speed_warning_sign_shape", ()=>
                          {
                             var dataItem = stf.ReadStringBlock(null);
@@ -76,8 +76,8 @@ namespace Orts.Formats.Msts
                          }
                          ),
                 });
-			}
-		}
+            }
+        }
 
     } // class SpeedpostDatFile
 }

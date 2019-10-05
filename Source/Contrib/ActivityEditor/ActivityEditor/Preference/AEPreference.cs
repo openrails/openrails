@@ -72,7 +72,7 @@ namespace ActivityEditor.Preference
         public bool ShowTrackInfo { get; set; }
         public bool ActivateHorn { get; set; }
         [XmlIgnore]
-        public ActionContainer ActionContainer 
+        public ActionContainer ActionContainer
         {
             get
             {
@@ -82,11 +82,11 @@ namespace ActivityEditor.Preference
                 }
                 return null;
             }
-            protected set { } 
+            protected set { }
         }
         //  Info for AuxAction option window.
         [XmlIgnore]
-        public List<string> AvailableActions 
+        public List<string> AvailableActions
         {
             get
             {
@@ -109,15 +109,15 @@ namespace ActivityEditor.Preference
         }
 
         public bool AllSignalProperty
-        { 
-            get 
-            { 
-                return ShowAllSignal; 
-            } 
-            set 
-            { 
-                ShowAllSignal = value; 
-            } 
+        {
+            get
+            {
+                return ShowAllSignal;
+            }
+            set
+            {
+                ShowAllSignal = value;
+            }
         }
 
         public AEPreference()

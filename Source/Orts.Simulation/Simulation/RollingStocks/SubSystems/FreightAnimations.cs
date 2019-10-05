@@ -45,7 +45,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float LoadingStartDelay = 0;
         public float UnloadingStartDelay = 0;
         public bool IsGondola = false;
- 
+
         // additions to manage consequences of variable weight on friction and brake forces
         public float EmptyORTSDavis_A = -9999;
         public float EmptyORTSDavis_B = -9999;
@@ -62,7 +62,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         {
             stf.MustMatch("(");
             bool empty = true;
-              stf.ParseBlock(new[] {
+            stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("mstsfreightanimenabled", ()=>{ MSTSFreightAnimEnabled = stf.ReadBoolBlock(true);}),
                 new STFReader.TokenProcessor("wagonemptyweight", ()=>{ WagonEmptyWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, -1); }),
                 new STFReader.TokenProcessor("loadingstartdelay", ()=>{ UnloadingStartDelay = stf.ReadFloatBlock(STFReader.UNITS.None, 0); }),
@@ -153,7 +153,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 if (freightAnim is FreightAnimationContinuous)
                 {
-                    if ((freightAnim as FreightAnimationContinuous).LinkedIntakePoint !=  null )
+                    if ((freightAnim as FreightAnimationContinuous).LinkedIntakePoint != null)
                     {
                         if ((freightAnim as FreightAnimationContinuous).LinkedIntakePoint.Type == FreightType)
                         {
@@ -179,7 +179,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     Animations.Add(new FreightAnimationContinuous(freightAnim as FreightAnimationContinuous, wagon));
                     if ((Animations.Last() as FreightAnimationContinuous).FullAtStart) LoadedOne = Animations.Last() as FreightAnimationContinuous;
-                    
+
                 }
                 else if (freightAnim is FreightAnimationStatic)
                 {
@@ -292,7 +292,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             FullORTSDavisDragConstant = freightAnimContin.FullORTSDavisDragConstant;
             FullMaxBrakeForceN = freightAnimContin.FullMaxBrakeForceN;
             FullMaxHandbrakeForceN = freightAnimContin.FullMaxHandbrakeForceN;
-            FullCentreOfGravityM_Y = freightAnimContin.FullCentreOfGravityM_Y;          
+            FullCentreOfGravityM_Y = freightAnimContin.FullCentreOfGravityM_Y;
         }
     }
 
@@ -336,11 +336,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             {
                 var typeString = stf.ReadStringBlock(null);
                 switch (typeString)
-	            {
+                {
                     default:
                         SubType = FreightAnimationStatic.Type.DEFAULT;
                         break;
-	            }
+                }
             }),
             new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
             new STFReader.TokenProcessor("freightweight", ()=>{ FreightWeight = stf.ReadFloatBlock(STFReader.UNITS.Mass, 0); }),
@@ -432,11 +432,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                         var typeString = stf.ReadStringBlock(null);
                         switch (typeString)
-	                    {
+                        {
                             default:
                                 SubType = FreightAnimationDiscrete.Type.DEFAULT;
                                 break;
-	                    }
+                        }
                 }),
                 new STFReader.TokenProcessor("shape", ()=>{ ShapeFileName = stf.ReadStringBlock(null); }),
                 new STFReader.TokenProcessor("offset", ()=>{

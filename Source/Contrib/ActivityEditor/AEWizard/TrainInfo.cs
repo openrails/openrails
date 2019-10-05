@@ -26,16 +26,16 @@ namespace AEWizard
         {
             this.trainConsistCB.DataSource = activityInfo.trainConsists.Select(o => o.consistName).ToList();
         }
-                // ==================================================================
+        // ==================================================================
         // Protected Properties
         // ==================================================================
-        
+
         /// <summary>
         /// Gets the <see cref="SMS.Windows.Forms.WizardForm">WizardForm</see>
         /// to which this <see cref="SMS.Windows.Forms.WizardPage">WizardPage</see>
         /// belongs.
         /// </summary>
-        
+
         // ==================================================================
         // Private Methods
         // ==================================================================
@@ -99,7 +99,7 @@ namespace AEWizard
             Wizard.SetWizardButtons(WizardButton.Next);
             return WizardForm.NextPage;
         }
-        
+
         #region Windows Form Designer generated code
         /// <summary>
         /// Required method for Designer support - do not modify

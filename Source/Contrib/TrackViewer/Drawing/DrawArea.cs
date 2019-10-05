@@ -780,7 +780,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <param name="angle">Rotation angle for the texture</param>
         /// <param name="size">Size of the texture in world-meters</param>
         ///<param name="flip">Whether the texture needs to be flipped (vertically)</param>
-        public void DrawTexture(WorldLocation location, string textureName, float size,  float angle, bool flip)
+        public void DrawTexture(WorldLocation location, string textureName, float size, float angle, bool flip)
         {
             if (OutOfArea(location)) return;
             float pixelSize = GetWindowSize(size);
@@ -857,12 +857,12 @@ namespace ORTS.TrackViewer.Drawing
             while (stepIndex >= discreteSteps.Count())
             {
                 stepIndex -= discreteSteps.Count();
-                powerOfTen ++;
+                powerOfTen++;
             }
             while (stepIndex < 0)
             {
                 stepIndex += discreteSteps.Count();
-                powerOfTen --;
+                powerOfTen--;
                 if (powerOfTen < minPowerOfTen)
                 {
                     powerOfTen = minPowerOfTen;
@@ -879,7 +879,7 @@ namespace ORTS.TrackViewer.Drawing
         public void ApproximateTo(double requestedValue)
         {
             powerOfTen = Convert.ToInt32(Math.Floor(Math.Log10(requestedValue))) - 1;
-            double restValue = requestedValue *  Math.Pow(10 , -(double)powerOfTen);
+            double restValue = requestedValue * Math.Pow(10, -(double)powerOfTen);
             for (stepIndex = 0; stepIndex < discreteSteps.Count() && discreteSteps[stepIndex] < restValue; stepIndex++) { };
             if (stepIndex == discreteSteps.Count())
             {   // the value requested is larger than 90. 10^n, which means we get 100.10^n.

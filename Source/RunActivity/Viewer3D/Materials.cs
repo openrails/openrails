@@ -87,7 +87,7 @@ namespace Orts.Viewer3D
                     else if (Path.GetExtension(path) == ".ace")
                     {
                         var alternativeTexture = Path.ChangeExtension(path, ".dds");
-                        
+
                         if (Viewer.Settings.PreferDDSTexture && File.Exists(alternativeTexture))
                         {
                             DDSLib.DDSFromFile(alternativeTexture, GraphicsDevice, true, out texture);
@@ -104,11 +104,12 @@ namespace Orts.Viewer3D
 
                                 p = System.IO.Directory.GetParent(p.FullName);//go up one level
                                 var s = p.FullName + "\\" + Path.GetFileName(path);
-                                if (File.Exists(s) &&  s.ToLower().Contains("texture")) //in texure and exists
+                                if (File.Exists(s) && s.ToLower().Contains("texture")) //in texure and exists
                                 {
                                     texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, s);
                                 }
-                                else {
+                                else
+                                {
                                     if (required)
                                         Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
                                     return defaultTexture;
@@ -173,7 +174,7 @@ namespace Orts.Viewer3D
                 return SharedMaterialManager.MissingTexture;
             }
         }
-        
+
         public void Mark()
         {
             TextureMarks = new Dictionary<string, bool>(Textures.Count);
@@ -361,53 +362,53 @@ namespace Orts.Viewer3D
             return Materials[materialKey];
         }
 
-       public bool LoadNightTextures()
+        public bool LoadNightTextures()
         {
             int count = 0;
             foreach (KeyValuePair<string, Material> materialPair in Materials)
             {
-                 if (materialPair.Value is SceneryMaterial)
+                if (materialPair.Value is SceneryMaterial)
                 {
                     var material = materialPair.Value as SceneryMaterial;
                     if (material.LoadNightTexture()) count++;
-                     if (count >= 20)
-                     {
-                         count = 0;
-                         // retest if there is enough free memory left;
-                         var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
-                         if (remainingMemorySpace < 0)
-                         { 
-                             return false; // too bad, no more space, other night textures won't be loaded
-                         }
-                     }
+                    if (count >= 20)
+                    {
+                        count = 0;
+                        // retest if there is enough free memory left;
+                        var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                        if (remainingMemorySpace < 0)
+                        {
+                            return false; // too bad, no more space, other night textures won't be loaded
+                        }
+                    }
                 }
             }
             return true;
-         }
+        }
 
-       public bool LoadDayTextures()
-       {
-           int count = 0;
-           foreach (KeyValuePair<string, Material> materialPair in Materials)
-           {
-               if (materialPair.Value is SceneryMaterial)
-               {
-                   var material = materialPair.Value as SceneryMaterial;
-                   if (material.LoadDayTexture()) count++;
-                   if (count >= 20)
-                   {
-                       count = 0;
-                       // retest if there is enough free memory left;
-                       var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
-                       if (remainingMemorySpace < 0)
-                       {
-                           return false; // too bad, no more space, other night textures won't be loaded
-                       }
-                   }
-               }
-           }
-           return true;
-       }
+        public bool LoadDayTextures()
+        {
+            int count = 0;
+            foreach (KeyValuePair<string, Material> materialPair in Materials)
+            {
+                if (materialPair.Value is SceneryMaterial)
+                {
+                    var material = materialPair.Value as SceneryMaterial;
+                    if (material.LoadDayTexture()) count++;
+                    if (count >= 20)
+                    {
+                        count = 0;
+                        // retest if there is enough free memory left;
+                        var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                        if (remainingMemorySpace < 0)
+                        {
+                            return false; // too bad, no more space, other night textures won't be loaded
+                        }
+                    }
+                }
+            }
+            return true;
+        }
 
         public void Mark()
         {
@@ -426,7 +427,7 @@ namespace Orts.Viewer3D
         {
             foreach (var path in MaterialMarks.Where(kvp => !kvp.Value).Select(kvp => kvp.Key))
                 Materials.Remove(path);
-		}
+        }
 
         public void LoadPrep()
         {
@@ -459,13 +460,13 @@ namespace Orts.Viewer3D
         float distance = 1000;
         internal void UpdateShaders()
         {
-            if(Viewer.Settings.UseMSTSEnv == false)
+            if (Viewer.Settings.UseMSTSEnv == false)
                 sunDirection = Viewer.World.Sky.solarDirection;
             else
                 sunDirection = Viewer.World.MSTSSky.mstsskysolarDirection;
 
             SceneryShader.SetLightVector_ZFar(sunDirection, Viewer.Settings.ViewingDistance);
-            
+
             // Headlight illumination
             if (Viewer.PlayerLocomotiveViewer != null
                 && Viewer.PlayerLocomotiveViewer.lightDrawer != null
@@ -504,13 +505,13 @@ namespace Orts.Viewer3D
                     else if (sunDirection.Y >= 0.15)
                     {
                         clampValue = 0.5f; // at daytime min headlight
-                        distance = lightDrawer.LightConeDistance*0.1f; // and min distance
+                        distance = lightDrawer.LightConeDistance * 0.1f; // and min distance
 
                     }
                     else
                     {
                         clampValue = 1 - 2.5f * (sunDirection.Y + 0.05f); // in the meantime interpolate
-                        distance = lightDrawer.LightConeDistance*(1-4.5f*(sunDirection.Y + 0.05f)); //ditto
+                        distance = lightDrawer.LightConeDistance * (1 - 4.5f * (sunDirection.Y + 0.05f)); //ditto
                     }
                     SceneryShader.SetHeadlight(ref lightDrawer.LightConePosition, ref lightDrawer.LightConeDirection, distance, lightDrawer.LightConeMinDotProduct, (float)(Viewer.Simulator.GameTime - fadeStartTimer), fadeDuration, clampValue, ref lightDrawer.LightConeColor);
                 }
@@ -566,7 +567,7 @@ namespace Orts.Viewer3D
         {
             if (String.IsNullOrEmpty(Key))
                 return 0;
-            return Key.Length%10;
+            return Key.Length % 10;
         }
 
         [CallOnThread("Loader")]
@@ -699,13 +700,13 @@ namespace Orts.Viewer3D
             Texture = SharedMaterialManager.MissingTexture;
             NightTexture = SharedMaterialManager.MissingTexture;
             // <CSComment> if "trainset" is in the path (true for night textures for 3DCabs) deferred load of night textures is disabled 
-            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.DontLoadNightTextures && !viewer.DontLoadDayTextures) 
+            if (!String.IsNullOrEmpty(texturePath) && (Options & SceneryMaterialOptions.NightTexture) != 0 && ((!viewer.DontLoadNightTextures && !viewer.DontLoadDayTextures)
                 || TexturePath.Contains(@"\trainset\")))
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, texturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
-               Texture = Viewer.TextureManager.Get(texturePath, true);
+                Texture = Viewer.TextureManager.Get(texturePath, true);
             }
             else if ((Options & SceneryMaterialOptions.NightTexture) != 0 && viewer.DontLoadNightTextures)
             {
@@ -736,14 +737,14 @@ namespace Orts.Viewer3D
 
         }
 
-       public bool LoadNightTexture ()
-         {
+        public bool LoadNightTexture()
+        {
             bool oneMore = false;
-            if (((Options & SceneryMaterialOptions.NightTexture) != 0) && (NightTexture == SharedMaterialManager.MissingTexture))               
+            if (((Options & SceneryMaterialOptions.NightTexture) != 0) && (NightTexture == SharedMaterialManager.MissingTexture))
             {
                 var nightTexturePath = Helpers.GetNightTextureFile(Viewer.Simulator, TexturePath);
                 if (!String.IsNullOrEmpty(nightTexturePath))
-                { 
+                {
                     NightTexture = Viewer.TextureManager.Get(nightTexturePath.ToLower());
                     oneMore = true;
                 }
@@ -751,16 +752,16 @@ namespace Orts.Viewer3D
             return oneMore;
         }
 
-       public bool LoadDayTexture ()
-       {
-           bool oneMore = false;
-           if (Texture == SharedMaterialManager.MissingTexture && !String.IsNullOrEmpty(TexturePath))
-           {
+        public bool LoadDayTexture()
+        {
+            bool oneMore = false;
+            if (Texture == SharedMaterialManager.MissingTexture && !String.IsNullOrEmpty(TexturePath))
+            {
                 Texture = Viewer.TextureManager.Get(TexturePath.ToLower());
                 oneMore = true;
-           }
-           return oneMore;
-       }
+            }
+            return oneMore;
+        }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
@@ -888,7 +889,7 @@ namespace Orts.Viewer3D
                 shader.ImageTexture = NightTexture;
                 shader.ImageTextureIsNight = true;
             }
-             else
+            else
             {
                 shader.ImageTexture = Texture;
                 shader.ImageTextureIsNight = false;
@@ -1019,11 +1020,11 @@ namespace Orts.Viewer3D
             BlurVertexDeclaration = new VertexDeclaration(Viewer.RenderProcess.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
             BlurVertexBuffer = new VertexBuffer(Viewer.RenderProcess.GraphicsDevice, typeof(VertexPositionNormalTexture), 4, BufferUsage.WriteOnly);
             BlurVertexBuffer.SetData(new[] {
-				new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
-				new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, shadowMapResolution)),
-				new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(shadowMapResolution, 0)),
-				new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(shadowMapResolution, shadowMapResolution)),
-			});
+                new VertexPositionNormalTexture(new Vector3(-1, +1, 0), Vector3.Zero, new Vector2(0, 0)),
+                new VertexPositionNormalTexture(new Vector3(-1, -1, 0), Vector3.Zero, new Vector2(0, shadowMapResolution)),
+                new VertexPositionNormalTexture(new Vector3(+1, +1, 0), Vector3.Zero, new Vector2(shadowMapResolution, 0)),
+                new VertexPositionNormalTexture(new Vector3(+1, -1, 0), Vector3.Zero, new Vector2(shadowMapResolution, shadowMapResolution)),
+            });
         }
 
         public void SetState(GraphicsDevice graphicsDevice, Mode mode)
@@ -1252,7 +1253,7 @@ namespace Orts.Viewer3D
             {
                 basicEffect = new BasicEffect(Viewer.RenderProcess.GraphicsDevice, null);
                 basicEffect.Alpha = a;
-                basicEffect.DiffuseColor = new Vector3(r , g , b );
+                basicEffect.DiffuseColor = new Vector3(r, g, b);
                 basicEffect.SpecularColor = new Vector3(0.25f, 0.25f, 0.25f);
                 basicEffect.SpecularPower = 5.0f;
                 basicEffect.AmbientLightColor = new Vector3(0.2f, 0.2f, 0.2f);

@@ -163,7 +163,7 @@ namespace Orts.Formats.OR
             int tileY = ((int)(point.Y / 2048f));
             X = (float)((point.X) % 2048f);
             Y = (float)((point.Y) % 2048f);
-            if (signX < 0) 
+            if (signX < 0)
             {
                 tileX -= 1;
                 X += 2048f;
@@ -209,13 +209,13 @@ namespace Orts.Formats.OR
             if (GetType() != obj.GetType())
                 return false;
 
-            MSTSCoord other = (MSTSCoord) obj;
+            MSTSCoord other = (MSTSCoord)obj;
             return (this.X == other.X && this.Y == other.Y && this.TileX == other.TileX && this.TileY == other.TileY);
         }
 
         public static bool operator ==(MSTSCoord x, MSTSCoord y)
         {
-            return Object.Equals(x, y);  
+            return Object.Equals(x, y);
         }
 
         public static bool operator !=(MSTSCoord x, MSTSCoord y)

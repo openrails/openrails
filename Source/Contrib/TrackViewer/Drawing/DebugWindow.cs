@@ -35,7 +35,8 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Draw all available debug windows
         /// </summary>
-        public static void DrawAll() {
+        public static void DrawAll()
+        {
             //Just a safety. Normally there should be no DebugWindows once released.
             if (!System.Diagnostics.Debugger.IsAttached) return;
             foreach (DebugWindow window in debugWindows)
