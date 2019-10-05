@@ -476,6 +476,7 @@ namespace Orts.Viewer3D
             BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             if (PlayerLocomotive is MSTSSteamLocomotive)
             {
                 ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
@@ -793,12 +794,12 @@ namespace Orts.Viewer3D
             {
                 // The AbovegroundCamera.Update() has been creating an odd sound issue when the locomotive is in the tunnel.
                 // Allowing the update to take place when only in cab view solved the issue.
-                if (Camera == CabCamera)
+                if (Camera == CabCamera || Camera == ThreeDimCabCamera)
                     AbovegroundCamera.Update(elapsedTime);
                 if (!AbovegroundCamera.IsUnderground)
                 {
                     // But only if the user hasn't selected another camera!
-                    if (Camera == CabCamera)
+                    if (Camera == CabCamera || Camera == ThreeDimCabCamera)
                         AbovegroundCamera.Activate();
                     AbovegroundCamera = null;
                 }

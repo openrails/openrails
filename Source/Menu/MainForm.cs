@@ -61,12 +61,14 @@ namespace ORTS
         public List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
+        List<WeatherFileInfo> TimetableWeatherFileSet = new List<WeatherFileInfo>();
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
         Task<List<Consist>> ConsistLoader;
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> TimetableSetLoader;
+        Task<List<WeatherFileInfo>> TimetableWeatherFileLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
@@ -98,6 +100,7 @@ namespace ORTS
         public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
         public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
+        public WeatherFileInfo SelectedWeatherFile { get { return (WeatherFileInfo)comboBoxTimetableWeatherFile.SelectedItem; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
 
@@ -274,6 +277,8 @@ namespace ORTS
                 PathLoader.Cancel();
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
+            if (TimetableWeatherFileLoader != null)
+                TimetableWeatherFileLoader.Cancel();
 
             // Remove any deleted saves
             if (Directory.Exists(UserSettings.DeletedSaveFolder))
@@ -473,6 +478,11 @@ namespace ORTS
         void comboBoxTimetableWeather_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateTimetableSet();
+        }
+
+        void comboBoxTimetableWeatherFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateTimetableWeatherSet();
         }
         #endregion
 
@@ -710,6 +720,7 @@ namespace ORTS
             comboBoxStartTime.DropDownStyle = SelectedActivity is ExploreActivity ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
             comboBoxTimetable.Enabled = comboBoxTimetableSet.Items.Count > 0;
             comboBoxTimetableTrain.Enabled = comboBoxTimetable.Items.Count > 0;
+            comboBoxTimetableWeatherFile.Enabled = comboBoxTimetableWeatherFile.Items.Count > 0;
             //Avoid to Start with a non valid Activity/Locomotive/Consist.
             buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked && !comboBoxActivity.Text.StartsWith("<") && !comboBoxLocomotive.Text.StartsWith("<") ?
                 SelectedActivity != null && (!(SelectedActivity is ExploreActivity) || (comboBoxConsist.Items.Count > 0 && comboBoxHeadTo.Items.Count > 0)) :
@@ -999,6 +1010,8 @@ namespace ORTS
         {
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
+            if (TimetableWeatherFileLoader != null)
+                TimetableWeatherFileLoader.Cancel();
 
             TimetableSets.Clear();
             ShowTimetableSetList();
@@ -1008,6 +1021,12 @@ namespace ORTS
             {
                 TimetableSets = timetableSets;
                 ShowTimetableSetList();
+            });
+
+            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            {
+                TimetableWeatherFileSet = timetableWeatherFileSet;
+                ShowTimetableWeatherSet();
             });
         }
 
@@ -1029,6 +1048,22 @@ namespace ORTS
                 SelectedTimetableSet.Weather = SelectedStartWeather;
             }
         }
+
+        void ShowTimetableWeatherSet()
+        {
+            comboBoxTimetableWeatherFile.Items.Clear();
+            foreach (var weatherFile in TimetableWeatherFileSet)
+            {
+                comboBoxTimetableWeatherFile.Items.Add(weatherFile);
+                UpdateEnabled();
+            }
+        }
+
+        void UpdateTimetableWeatherSet()
+        {
+            SelectedTimetableSet.WeatherFile = SelectedWeatherFile.GetFullName();
+        }
+
         #endregion
 
         #region Timetable list
