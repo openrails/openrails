@@ -70,8 +70,12 @@ namespace Orts.Viewer3D.RollingStock
 
         // Create viewers for special steam/smoke effects on car
         List<ParticleEmitterViewer> HeatingHose = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> WaterScoop = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> WaterScoopReverse = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> TenderWaterOverflow = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> WagonSmoke = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> HeatingSteamBoiler = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> BearingHotBox = new List<ParticleEmitterViewer>();
 
         // Create viewers for special steam effects on car
         List<ParticleEmitterViewer> WagonGenerator = new List<ParticleEmitterViewer>();
@@ -127,12 +131,51 @@ namespace Orts.Viewer3D.RollingStock
                     drawer.Initialize(steamTexture);
                 }
 
+                // Smoke for bearing hot box
+                if (emitter.Key.ToLowerInvariant() == "bearinghotboxfx")
+                    BearingHotBox.AddRange(emitter.Value);
+
+                foreach (var drawer in BearingHotBox)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
                 // Steam leak in heating hose 
 
                 if (emitter.Key.ToLowerInvariant() == "heatinghosefx")
                     HeatingHose.AddRange(emitter.Value);
 
                 foreach (var drawer in HeatingHose)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Water spray for when water scoop is in use (use steam effects for the time being) 
+                // Forward motion
+                if (emitter.Key.ToLowerInvariant() == "waterscoopfx")
+                    WaterScoop.AddRange(emitter.Value);
+
+                foreach (var drawer in WaterScoop)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Reverse motion
+
+                if (emitter.Key.ToLowerInvariant() == "waterscoopreversefx")
+                    WaterScoopReverse.AddRange(emitter.Value);
+
+                foreach (var drawer in WaterScoopReverse)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                // Water overflow when tender is over full during water trough filling (use steam effects for the time being) 
+
+                if (emitter.Key.ToLowerInvariant() == "tenderwateroverflowfx")
+                    TenderWaterOverflow.AddRange(emitter.Value);
+
+                foreach (var drawer in TenderWaterOverflow)
                 {
                     drawer.Initialize(steamTexture);
                 }
@@ -475,14 +518,45 @@ namespace Orts.Viewer3D.RollingStock
             // Exhaust for HEP/Electrical Generator
             foreach (var drawer in WagonGenerator)
             {
-               drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
+                drawer.SetOutput(car.WagonGeneratorVolumeM3pS, car.WagonGeneratorDurationS, car.WagonGeneratorSteadyColor);
             }
 
             // Wagon fire smoke
             foreach (var drawer in WagonSmoke)
             {
-                  drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
-               // drawer.SetOutput(car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+                drawer.SetOutput(car.WagonSmokeVelocityMpS, car.WagonSmokeVolumeM3pS, car.WagonSmokeDurationS, car.WagonSmokeSteadyColor);
+            }
+
+            if (car.Train != null) // only process this visual feature if this is a valid car in the train
+            {
+                // Water spray for water scoop (uses steam effects currently) - Forward direction
+                if (car.Direction == Direction.Forward)
+                {
+                    foreach (var drawer in WaterScoop)
+                    {
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    }
+                }
+                // If travelling in reverse turn on rearward facing effect
+                else if (car.Direction == Direction.Reverse)
+                {
+                    foreach (var drawer in WaterScoopReverse)
+                    {
+                        drawer.SetOutput(car.WaterScoopWaterVelocityMpS, car.WaterScoopWaterVolumeM3pS, car.WaterScoopParticleDurationS);
+                    }
+                }
+            }
+
+            // Water overflow from tender (uses steam effects currently)
+            foreach (var drawer in TenderWaterOverflow)
+            {
+                drawer.SetOutput(car.TenderWaterOverflowVelocityMpS, car.TenderWaterOverflowVolumeM3pS, car.TenderWaterOverflowParticleDurationS);
+            }
+
+            // Bearing Hot box smoke
+            foreach (var drawer in BearingHotBox)
+            {
+                drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
@@ -693,7 +767,8 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
-
+            // Get the current height above "sea level" for the relevant car
+            Car.CarHeightAboveSeaLevelM = Viewer.Tiles.GetElevation(Car.WorldPosition.WorldLocation);
 
             // Control visibility of passenger cabin when inside it
             if (Viewer.Camera.AttachedCar == this.MSTSWagon

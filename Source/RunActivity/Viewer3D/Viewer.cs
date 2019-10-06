@@ -476,6 +476,7 @@ namespace Orts.Viewer3D
             BailOffCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             RetainersCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             BrakeHoseConnectCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            ToggleWaterScoopCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             if (PlayerLocomotive is MSTSSteamLocomotive)
             {
                 ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
@@ -1005,6 +1006,17 @@ namespace Orts.Viewer3D
                 Simulator.Confirmer.Message(ConfirmLevel.Information, Catalog.GetStringFmt("Vibrating at level {0}", Program.Simulator.CarVibrating));
                 Settings.CarVibratingLevel = Program.Simulator.CarVibrating;
                 Settings.Save("CarVibratingLevel");
+            }
+
+            if (UserInput.IsPressed(UserCommand.DebugToggleConfirmations))
+            {
+                Simulator.Settings.SuppressConfirmations = !Simulator.Settings.SuppressConfirmations;
+                if (Simulator.Settings.SuppressConfirmations)
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations suppressed"));
+                else
+                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Catalog.GetString("Confirmations visible"));
+                Settings.SuppressConfirmations = Simulator.Settings.SuppressConfirmations;
+                Settings.Save();
             }
 
             //hit 9 key, get back to player train
