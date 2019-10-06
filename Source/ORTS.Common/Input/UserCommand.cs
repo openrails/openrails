@@ -69,6 +69,7 @@
         [GetString("Debug Toggle Advanced Adhesion")] DebugToggleAdvancedAdhesion,
         [GetString("Debug Sound Form")] DebugSoundForm,
         [GetString("Debug Physics Form")] DebugPhysicsForm,
+        [GetString("Debug Toggle Confirmations")] DebugToggleConfirmations,
 
         [GetString("Camera Cab")] CameraCab,
         [GetString("Camera Change Passenger Viewpoint")] CameraChangePassengerViewPoint,
