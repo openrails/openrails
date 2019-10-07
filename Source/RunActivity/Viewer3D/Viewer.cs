@@ -648,7 +648,7 @@ namespace Orts.Viewer3D
             if (cabTexture != SharedMaterialManager.MissingTexture)
             {
                 cabTextureInverseRatio = (float)cabTexture.Height / cabTexture.Width;
-                // if square cab texture files with dimension of at lest 1024 pixels are used, they are considered as stretched 4 : 3 ones
+                // if square cab texture files with dimension of at least 1024 pixels are used, they are considered as stretched 4 : 3 ones
                 if (cabTextureInverseRatio == 1 && cabTexture.Width >= 1024) cabTextureInverseRatio = 0.75f; 
             }
             return cabTextureInverseRatio;
