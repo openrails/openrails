@@ -261,6 +261,27 @@ namespace Orts.Simulation.RollingStocks
                 InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
             }
 
+            // Check force assumptions set for diesel
+            if (EngineType == EngineTypes.Diesel && SpeedOfMaxContinuousForceMpS != 0)
+            {
+
+                float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
+                if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
+                {
+                    float CalculatedMaxContinuousForceN = ThrottleSetting * DieselEngines.MaximumRailOutputPowerW / SpeedOfMaxContinuousForceMpS;
+                    Trace.TraceInformation("Diesel Force Settings (BASIC Config):Max Starting Force {0}, Max Continuous Force {1} @ speed of {2}", FormatStrings.FormatForce(MaxForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                    Trace.TraceInformation("Diesel Power Settings (BASIC Config):Prime Mover {0}, Rail Output Power {1}", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false), FormatStrings.FormatPower(DieselEngines.MaximumRailOutputPowerW, IsMetric, false, false));
+                }
+                else // Advanced configuration - 
+                {
+                    float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
+                    float StartingForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
+                    float CalculatedMaxContinuousForceN = TractiveForceCurves.Get(ThrottleSetting, SpeedOfMaxContinuousForceMpS);
+                    Trace.TraceInformation("Diesel Force Settings (ADVANCED Config): Max Starting Force {0} Max Continuous Force {1}, @ speed of {2}", FormatStrings.FormatForce(StartingForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+                    Trace.TraceInformation("Diesel Power Settings (ADVANCED Config):Prime Mover {0}, Rail Output Power {1} @ {2} rpm", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false), FormatStrings.FormatPower(DieselEngines.MaximumRailOutputPowerW, IsMetric, false, false), MaxRPM);
+                }
+            }
+
         }
 
         /// <summary>
