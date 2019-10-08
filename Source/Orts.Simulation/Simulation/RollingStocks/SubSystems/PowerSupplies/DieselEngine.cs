@@ -231,7 +231,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
          /// <summary>
-        /// Maximum rail output power for all locomotives
+        /// Maximum rail output power for all diesl prime movers
         /// </summary>
         public float MaximumRailOutputPowerW
         {
@@ -247,7 +247,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
 
         /// <summary>
-        /// A summary of current rail output power for all locomotives
+        /// A summary of current rail output power for all diesel prime movers
         /// </summary>
         public float CurrentRailOutputPowerW
         {
@@ -1332,6 +1332,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 if (DieselEngineConfigured)
                     Trace.TraceInformation("DieselPowerTab not found in Diesel Engine Config, set at default value");
+            }
+
+            if (loco.MaximumDieselEnginePowerW == 0 && DieselPowerTab != null)
+            {
+                loco.MaximumDieselEnginePowerW = DieselPowerTab[MaxRPM];
+                Trace.TraceInformation("Maximum Diesel Engine Power set by DieselPowerTab {0}", DieselPowerTab[MaxRPM]);
             }
 
             if (MaximumRailOutputPowerW == 0)
