@@ -5742,7 +5742,8 @@ namespace Orts.Simulation.AIs
                                 File.AppendAllText(@"C:\temp\checktrain.txt", "station stop position corrected due to signal location ; was : "
                                     + StationStops[0].DistanceToTrainM.ToString() + " ; now is " + thisItem.ActiveItem.distance_to_train.ToString() + "\n");
                             }
-                            StationStops[0].DistanceToTrainM = thisItem.ActiveItem.distance_to_train;
+                            StationStops[0].DistanceToTrainM = thisItem.ActiveItem.distance_to_train - 1;
+                            nextActionInfo.ActivateDistanceM = thisItem.ActivateDistanceM - 1;
                         } 
                     }
 
