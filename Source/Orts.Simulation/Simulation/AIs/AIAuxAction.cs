@@ -144,16 +144,21 @@ namespace Orts.Simulation.AIs
             {
 
                 if (ThisTrain is AITrain && ((aiTrain.MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && aiTrain.nextActionInfo != null &&
-                aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem)
+                aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && aiTrain.nextActionInfo is AuxActionWPItem)
                 || ( aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 &&
                 aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
                 (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
                 // WP is running
                 {
-                    int remainingDelay;                  
-                    if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
-                    else remainingDelay = ((AIActionWPRef)SpecAuxActions[0]).keepIt.ActualDepart - currentClock;
-                    ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
+                    // Do nothing if it is an absolute WP
+                    if (!(aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 && aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && 
+                        ((aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay >= 30000 || (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay < 40000)))
+                    {
+                        int remainingDelay;
+                        if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
+                        else remainingDelay = ((AIActionWPRef)SpecAuxActions[0]).keepIt.ActualDepart - currentClock;
+                        ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
+                    }
                 }
             }
             foreach (var action in SpecAuxActions)
