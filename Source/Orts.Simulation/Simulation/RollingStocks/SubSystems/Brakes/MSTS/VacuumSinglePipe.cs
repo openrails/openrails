@@ -247,21 +247,44 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             // Identify the lead locomotive as we don't want to change the BP pressure as this is catered for in the charging rates, etc
             bool LeadLoco = false;
+            bool EngineBrake = false;
             MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
             if (lead != null)
             {
                 LeadLoco = true;
+                if (lead.EngineBrakeFitted)
+                {
+                    EngineBrake = true;  // set to overcome potential null errors with lead var.
+                }
             }
-                       
-            // Brake information is updated for each vehicle
 
-            //            if (BrakeLine3PressurePSI > 3.0 && BrakeLine3PressurePSI < OneAtmospherePSI) // To be confirmed
-            if (BrakeLine3PressurePSI > 3.0 ) // To be confirmed
+            // Brake information is updated for each vehicle
+                        
+            if (EngineBrake) // Only apples when an engine brake is in place, otherwise processed by next loop
+            {
+                // The engine brake can only be applied when the train brake is released or partially released. It cannot be released whilever the train brake is applied.
+                if (BrakeLine1PressurePSI < 4.2 && BrakeLine3PressurePSI > 4.2) // If train brake is completely released & Engine brake is applied
                 {
                     CylPressurePSIA = BrakeLine3PressurePSI;
                 }
+                else if (BrakeLine1PressurePSI > 4.2) // if train brake is applied, then set engine brake to the higher of either the train brake or engine brake
+                {
+                    if (BrakeLine3PressurePSI > BrakeLine1PressurePSI)
+                    {
+                        CylPressurePSIA = BrakeLine3PressurePSI;
+                    }
+                    else
+                    {
+                        CylPressurePSIA = BrakeLine1PressurePSI;
+                    }
+                }
+                else // normally only the train brake will drive the cylinder pressure
+                {
+                    CylPressurePSIA = BrakeLine1PressurePSI;
+                }
+            }
             else
-                { 
+            {
                 if (BrakeLine1PressurePSI < VacResPressurePSIA)
                 {
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * BrakeCylVolM3 / VacResVolM3;
@@ -270,11 +293,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         dp = (VacResPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
                     VacResPressurePSIA -= dp;
 
-                  if (LeadLoco == false)
+                    if (LeadLoco == false)
                     {
                         BrakeLine1PressurePSI += dp * vr; // don't adjust the BP pressure if this is the lead locomotive
                     }
-                    
+
                     CylPressurePSIA = VacResPressurePSIA;
                 }
                 else if (BrakeLine1PressurePSI < CylPressurePSIA) // Increase BP pressure, hence vacuum brakes are being released
@@ -1093,7 +1116,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 if (brakeSystem.BrakeLine3PressurePSI < OneAtmospherePSI - MaxVacuumPipeLevelPSI)
                                     brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
                             }
-                            else if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)
+                            else if (lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.VacContServ || lead.EngineBrakeController.TrainBrakeControllerState == ControllerState.BrakeNotch)
                             {
                                 // Vac Cont Service allows the brake to be moved continuously between the ON and OFF position. Once stationary the brake will be held at the level set
                                 // Simulates turning steam onto the ejector, and adjusting the rate to get desired outcome out of ejector
