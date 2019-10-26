@@ -926,12 +926,12 @@ namespace Orts.Common
 
     // Large Ejector command
     [Serializable()]
-    public sealed class ToggleLargeEjectorCommand : Command
+    public sealed class ContinuousLargeEjectorCommand : ContinuousCommand
     {
         public static MSTSSteamLocomotive Receiver { get; set; }
 
-        public ToggleLargeEjectorCommand(CommandLog log)
-            : base(log)
+        public ContinuousLargeEjectorCommand(CommandLog log, int injector, bool toState, float? target, double startTime)
+            : base(log, toState, target, startTime)
         {
             Redo();
         }
@@ -939,10 +939,12 @@ namespace Orts.Common
         public override void Redo()
         {
             if (Receiver == null) return;
-            Receiver.ToggleLargeEjector();
+            {
+                Receiver.LargeEjectorChangeTo(ToState, Target);
+            }
             // Report();
         }
-     }
+    }
 
 
     [Serializable()]

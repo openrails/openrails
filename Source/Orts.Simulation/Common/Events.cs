@@ -99,6 +99,7 @@ namespace Orts.Common
         SanderOff,
         SanderOn,
         SemaphoreArm,
+        LargeEjectorChange,
         SmallEjectorChange,
         WaterInjector1Off,
         WaterInjector1On,
@@ -330,6 +331,7 @@ namespace Orts.Common
                         case 157: return Event.CircuitBreakerClosingAuthorizationOn;
                         case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
+                        case 159: return Event.LargeEjectorChange;
                         case 160: return Event.SmallEjectorChange;
 
                         case 161: return Event.CabLightSwitchToggle;

@@ -93,6 +93,7 @@
             this.checkExtendedAIShunting = new System.Windows.Forms.CheckBox();
             this.checkAutopilot = new System.Windows.Forms.CheckBox();
             this.checkHotStart = new System.Windows.Forms.CheckBox();
+            this.checkSimpleControlPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             this.checkCurveResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkTunnelResistanceDependent = new System.Windows.Forms.CheckBox();
@@ -961,6 +962,7 @@
             // 
             this.tabPageSimulation.Controls.Add(this.groupBox1);
             this.tabPageSimulation.Controls.Add(this.checkHotStart);
+            this.tabPageSimulation.Controls.Add(this.checkSimpleControlPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.checkCurveResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkTunnelResistanceDependent);
@@ -1045,6 +1047,16 @@
             this.checkHotStart.TabIndex = 8;
             this.checkHotStart.Text = "Steam locomotive hot start";
             this.checkHotStart.UseVisualStyleBackColor = true;
+            //
+            // checkSimpleControlPhysics
+            // 
+            this.checkSimpleControlPhysics.AutoSize = true;
+            this.checkSimpleControlPhysics.Location = new System.Drawing.Point(6, 215);
+            this.checkSimpleControlPhysics.Name = "checkSimpleControlPhysics";
+            this.checkSimpleControlPhysics.Size = new System.Drawing.Size(151, 17);
+            this.checkSimpleControlPhysics.TabIndex = 8;
+            this.checkSimpleControlPhysics.Text = "Simple Contol and Physics";
+            this.checkSimpleControlPhysics.UseVisualStyleBackColor = true;
             // 
             // checkCurveSpeedDependent
             // 
@@ -2441,6 +2453,7 @@
         private System.Windows.Forms.CheckBox checkAlerterExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkHotStart;
+        private System.Windows.Forms.CheckBox checkSimpleControlPhysics;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
         private System.Windows.Forms.CheckBox checkVerticalSync;
         private System.Windows.Forms.ComboBox comboPressureUnit;
