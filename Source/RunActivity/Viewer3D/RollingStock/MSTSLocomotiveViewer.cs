@@ -2754,7 +2754,7 @@ namespace Orts.Viewer3D.RollingStock
             Matrix m = XNAMatrix * mx;
 
             // TODO: Make this use AddAutoPrimitive instead.
-            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref m, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()
@@ -2970,7 +2970,7 @@ namespace Orts.Viewer3D.RollingStock
             Matrix m = XNAMatrix * mx;
 
             // TODO: Make this use AddAutoPrimitive instead.
-            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref m, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()
