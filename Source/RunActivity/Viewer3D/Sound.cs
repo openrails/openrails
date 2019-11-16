@@ -145,7 +145,6 @@ namespace Orts.Viewer3D
             var fullPath = ORTSPaths.GetFileFromFolders(pathArray, @"SOUND\" + filename);
             if (fullPath == null)
             {
-                Trace.TraceWarning("Skipped missing track sound {0}", filename);
                 return;
             }
             if (isInside)
@@ -293,23 +292,24 @@ namespace Orts.Viewer3D
                     }
                 }
 
-                //if (_curTType != _prevTType && _curTType != int.MaxValue)
                 if (_curTType != _prevTType)
                 {
                     if (_activeInSource != null)
                     {
                         _activeInSource.Uninitialize();
-                        //_activeInSource.Car = null;
-                        _activeInSource = _inSources[_curTType];
-                        //_activeInSource.Car = Car;
+                        if (_curTType < _inSources.Count())
+                            _activeInSource = _inSources[_curTType];
+                        else
+                            Trace.TraceWarning($"_curTType = {_curTType} but _inSources.Count() = {_inSources.Count()}");
                     }
 
                     if (_activeOutSource != null)
                     {
                         _activeOutSource.Uninitialize();
-                        //_activeOutSource.Car = null;
-                        _activeOutSource = _outSources[_curTType];
-                        //_activeOutSource.Car = Car;
+                        if (_curTType < _outSources.Count())
+                            _activeOutSource = _outSources[_curTType];
+                        else
+                            Trace.TraceWarning($"_curTType = {_curTType} but _outSources.Count() = {_outSources.Count()}");
                     }
 #if DEBUGSCR
                     Trace.TraceInformation("Sound region changed from {0} to {1}.", _prevTType, _curTType);
@@ -450,23 +450,25 @@ namespace Orts.Viewer3D
                 else
                     return stateChange;
 
-                //if (_curTType != _prevTType && _curTType != int.MaxValue)
                 if (_curTType != _prevTType)
                 {
                     if (_activeInSource != null)
                     {
                         _activeInSource.Uninitialize();
-                        //_activeInSource.Car = null;
-                        _activeInSource = _inSources[_curTType];
-                        //_activeInSource.Car = Car;
+
+                        if (_curTType < _inSources.Count())
+                            _activeInSource = _inSources[_curTType];
+                        else
+                            Trace.TraceWarning($"_curTType = {_curTType} but _inSources.Count() = {_inSources.Count()}");
                     }
 
                     if (_activeOutSource != null)
                     {
                         _activeOutSource.Uninitialize();
-                        //_activeOutSource.Car = null;
-                        _activeOutSource = _outSources[_curTType];
-                        //_activeOutSource.Car = Car;
+                        if (_curTType < _outSources.Count())
+                            _activeOutSource = _outSources[_curTType];
+                        else
+                            Trace.TraceWarning($"_curTType = {_curTType} but _outSources.Count() = {_outSources.Count()}");
                     }
 #if DEBUGSCR
                     Trace.TraceInformation("Sound region changed from {0} to {1}.", _prevTType, _curTType);
