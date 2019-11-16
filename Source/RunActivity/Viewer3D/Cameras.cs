@@ -1775,20 +1775,30 @@ namespace Orts.Viewer3D
             base.SetCameraCar(car);
             // Settings are held so that when switching back from another camera, view is not reset.
             // View is only reset on move to a different car and/or viewpoint or "Ctl + 8".
-            if (car.CarID != prevcar || ActViewPoint != prevViewPoint)
+            if (car.CarID != prevcar)
             {
-                prevcar = car.CarID;
-                prevViewPoint = ActViewPoint;
-                viewPointLocation = attachedCar.PassengerViewpoints[ActViewPoint].Location;
-                viewPointRotationXRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationXRadians;
-                viewPointRotationYRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationYRadians;
-                RotationXRadians = viewPointRotationXRadians;
-                RotationYRadians = viewPointRotationYRadians;
-                attachedLocation = viewPointLocation;
-                StartViewPointLocation = viewPointLocation;
-                StartViewPointRotationXRadians = viewPointRotationXRadians;
-                StartViewPointRotationYRadians = viewPointRotationYRadians;
+                ActViewPoint = 0;
+                ResetViewPoint(car);
             }
+            else if (ActViewPoint != prevViewPoint)
+            {
+                ResetViewPoint(car);
+            }
+        }
+
+        protected void ResetViewPoint (TrainCar car)
+        {
+            prevcar = car.CarID;
+            prevViewPoint = ActViewPoint;
+            viewPointLocation = attachedCar.PassengerViewpoints[ActViewPoint].Location;
+            viewPointRotationXRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationXRadians;
+            viewPointRotationYRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationYRadians;
+            RotationXRadians = viewPointRotationXRadians;
+            RotationYRadians = viewPointRotationYRadians;
+            attachedLocation = viewPointLocation;
+            StartViewPointLocation = viewPointLocation;
+            StartViewPointRotationXRadians = viewPointRotationXRadians;
+            StartViewPointRotationYRadians = viewPointRotationYRadians;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
