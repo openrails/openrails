@@ -278,7 +278,11 @@ namespace Orts.Simulation.RollingStocks
             public static bool Unload { get; set; }
         }
 
-        public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
+        public MSTSBrakeSystem MSTSBrakeSystem
+        {
+            get { return (MSTSBrakeSystem)base.BrakeSystem; }
+            set { base.BrakeSystem = value; } // value needs to be set to allow trailing cars to have same brake system as locomotive when in simple brake mode
+        }
 
         public MSTSWagon(Simulator simulator, string wagFilePath)
             : base(simulator, wagFilePath)
