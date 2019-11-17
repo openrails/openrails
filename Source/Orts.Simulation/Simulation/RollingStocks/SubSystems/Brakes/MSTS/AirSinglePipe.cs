@@ -285,6 +285,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // reducing size of Emergency Reservoir for short (fake) cars
             if (Car.Simulator.Settings.CorrectQuestionableBrakingParams && Car.CarLengthM <= 1)
             EmergResVolumeM3 = Math.Min (0.02f, EmergResVolumeM3);
+
+            // In simple brake mode set emergency reservoir volume, override high volume values to allow faster brake release.
+            if (Car.Simulator.Settings.SimpleControlPhysics && EmergResVolumeM3 > 2.0)
+                EmergResVolumeM3 = 0.7f;
+
             BrakeLine1PressurePSI = Car.Train.EqualReservoirPressurePSIorInHg;
             BrakeLine2PressurePSI = Car.Train.BrakeLine2PressurePSI;
             BrakeLine3PressurePSI = 0;
