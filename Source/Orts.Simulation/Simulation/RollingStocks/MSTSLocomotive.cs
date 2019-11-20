@@ -3798,7 +3798,7 @@ namespace Orts.Simulation.RollingStocks
                             data = this.LocomotiveAxle.AxleForceN;
                         if (DynamicBrakePercent > 0)
                         {
-                            data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                            data = DynamicBrakeForceN;
                         }
                         data = Math.Abs(data);
                         switch (cvc.Units)
