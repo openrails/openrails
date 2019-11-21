@@ -3796,6 +3796,10 @@ namespace Orts.Simulation.RollingStocks
                             data = this.FilteredMotiveForceN;
                         else
                             data = this.LocomotiveAxle.AxleForceN;
+                        if (DynamicBrakePercent > 0)
+                        {
+                            data = DynamicBrakeForceN;
+                        }
                         data = Math.Abs(data);
                         switch (cvc.Units)
                         {
