@@ -753,6 +753,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                     lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
+                       //         Trace.TraceInformation("Brake - serviceTime {0} Variation {1}", AdjBrakeServiceTimeFactorS, TrainPipeTimeVariationS);
                             }
                             else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                             {
@@ -773,20 +774,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                             // This section uses a linear transition between the normal application rate (at 0% on control valve) and the emergency application rate (at 100% on control valve)
                             // Thus as the valve is opened further then the rate at which the vacuum is destroyed increases
-                            float BrakeValveOpeningFraction = DesiredPipeVacuum / OneAtmospherePSI;
-                            float ApplyDeclineGradient = (AdjBrakeEmergencyTimeFactorS - AdjBrakeServiceTimeFactorS) / (1 - 0);
-                            float VacApplyServiceTimeFactorS = ApplyDeclineGradient * BrakeValveOpeningFraction + AdjBrakeServiceTimeFactorS;
-                            VacApplyServiceTimeFactorS = MathHelper.Clamp(VacApplyServiceTimeFactorS, AdjBrakeEmergencyTimeFactorS, AdjBrakeServiceTimeFactorS);
+                            float temppress = (OneAtmospherePSI - MaxVacuumPipeLevelPSI);
+                            // float BrakeValveOpeningFraction = DesiredPipeVacuum / OneAtmospherePSI;
+                            float BrakeValveOpeningFraction = (DesiredPipeVacuum - temppress) / MaxVacuumPipeLevelPSI;
+                            float ApplyDeclineGradient = AdjBrakeEmergencyTimeFactorS;
+                            float VacApplyServiceTimeFactorS = ApplyDeclineGradient * BrakeValveOpeningFraction;
+                            VacApplyServiceTimeFactorS = MathHelper.Clamp(VacApplyServiceTimeFactorS, 0, AdjBrakeEmergencyTimeFactorS);
 
-                            // Adjust brake pipe value as appropriate
-                            lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / VacApplyServiceTimeFactorS);
-                            if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
-                                lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
-
+                            if (VacApplyServiceTimeFactorS != 0)
+                            {
+//                                Trace.TraceInformation("Brakepipe Pressure#1 {0}", lead.BrakeSystem.BrakeLine1PressurePSI);
+                                // Adjust brake pipe value as appropriate
+                             //   lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / VacApplyServiceTimeFactorS);
+                                lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS / VacApplyServiceTimeFactorS;
+//                                Trace.TraceInformation("Brakepipe Pressure#2 {0}", lead.BrakeSystem.BrakeLine1PressurePSI);
+                                if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
+                                    lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
+                            }
+//                            Trace.TraceInformation("GWR - CarID {0} Fraction {1}  Grad {2} VacApply {3} Desired {4} MaxPipe {5} Temppress {6} Variation {7} BP {8}", trainCar.CarID, BrakeValveOpeningFraction, ApplyDeclineGradient, VacApplyServiceTimeFactorS, DesiredPipeVacuum, MaxVacuumPipeLevelPSI, temppress, TrainPipeTimeVariationS, lead.BrakeSystem.BrakeLine1PressurePSI);
                         }
                     }
                     // Keep brake line within relevant limits - ie between 21 or 25 InHg and Atmospheric pressure.
                     lead.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(lead.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+                    
                 }
 
                 // Propogate lead brake line pressure from lead locomotive along the train to each car
