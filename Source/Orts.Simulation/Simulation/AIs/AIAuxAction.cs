@@ -152,7 +152,7 @@ namespace Orts.Simulation.AIs
                 {
                     // Do nothing if it is an absolute WP
                     if (!(aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 && aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && 
-                        ((aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay >= 30000 || (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay < 40000)))
+                        (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay >= 30000 && (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay < 40000))
                     {
                         int remainingDelay;
                         if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
