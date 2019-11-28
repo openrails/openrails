@@ -1800,6 +1800,10 @@ On the other hand, a horn blow waiting point may be positioned just after a
 normal WP (thus achieving the effect that the train blows the horn when it 
 restarts).
 
+If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
+set to 1 in the .eng file, the bell is played for further 30 seconds after 
+the end of the horn blow.
+
 To implement this feature it is not necessary to proceed as described in the 
 first three paragraphs of this chapter. It is enough to insert the waiting 
 points within the paths with either the MSTS AE or through TrackViewer.
@@ -1823,6 +1827,10 @@ the route. The AI train will not blow the horn at these crossings. Examining
 the route with TrackViewer allows identification of the true level crossings. 
 If a horn blow is also desired for a *simple* road crossing, the feature *AI 
 Train Horn Blow* described above must be used.
+
+If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
+set to 1 in the .eng file, the bell is played for further 30 seconds after 
+the end of the horn blow.
 
 .. _operation-event-triggered-by-ai-train:
 
