@@ -81,13 +81,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             VacResVolM3 = thiscopy.VacResVolM3;
             HasDirectAdmissionValue = thiscopy.HasDirectAdmissionValue;
         }
-         
+
         // return vacuum reservior pressure adjusted for piston movement
+        // this section works out from the brake cylinder movement the amount of volume change in the reservoir, and hence the drop in vacuum in the reservoir. 
+        // Normally the reservoir is a closed space during brake application, and thus vacuum is not lost, but simply varied with volume change
         float VacResPressureAdjPSIA()
         {
             if (VacResPressurePSIA >= CylPressurePSIA)
                 return VacResPressurePSIA;
-            float p = VacResPressurePSIA / (1 - BrakeCylVolM3 / VacResVolM3);
+            // Calculate the new vacuum based upon the volume reduction in the reservoir due to brake cylinder movement
+            float p = VacResPressurePSIA * VacResVolM3 / (VacResVolM3 - (NumBrakeCylinders * BrakeCylFraction * BrakeCylVolM3));
             return p < CylPressurePSIA ? p : CylPressurePSIA;
         }
 
@@ -482,10 +485,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     TempTotalTrainBrakeCylinderVolumeM3 += car.BrakeSystem.GetVacBrakeCylNumber() * car.BrakeSystem.GetCylVolumeM3(); // Calculate total brake cylinder volume of train
 
-                    float BrakeCylFraction = 1.0f - (car.BrakeSystem.GetCylPressurePSI() / (MaxVacuumPipeLevelPSI));
-                    BrakeCylFraction = MathHelper.Clamp(BrakeCylFraction, 0.01f, 1.0f); // Keep fraction within bounds
+                    car.BrakeSystem.BrakeCylFraction = 1.0f - (car.BrakeSystem.GetCylPressurePSI() / (MaxVacuumPipeLevelPSI));
+                    car.BrakeSystem.BrakeCylFraction = MathHelper.Clamp(car.BrakeSystem.BrakeCylFraction, 0.01f, 1.0f); // Keep fraction within bounds
 
-                    TempCurrentBrakeCylinderVolumeM3 += (car.BrakeSystem.GetVacBrakeCylNumber() * car.BrakeSystem.GetCylVolumeM3() * BrakeCylFraction);
+                    TempCurrentBrakeCylinderVolumeM3 += (car.BrakeSystem.GetVacBrakeCylNumber() * car.BrakeSystem.GetCylVolumeM3() * car.BrakeSystem.BrakeCylFraction);
                 }
 
             }
