@@ -39,6 +39,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public float BrakeLine3PressurePSI;         // engine brake cylinder equalization pipe pressure
         public float BrakePipeVolumeM3 = 1.4e-2f;      // volume of a single brake line
         public bool ControllerRunningLock = false;  // Stops Running controller from becoming active until BP = EQ Res, used in EQ vacuum brakes
+        public float BrakeCylFraction;
 
         /// <summary>
         /// Front brake hoses connection status
