@@ -676,20 +676,17 @@ Dispatcher Window
 =================
 
 The dispatcher window is a very useful tool to monitor and control train 
-operation. The :ref:`Dispatcher window <options-dispatcher>` option 
-must be selected.
+operation. operation. To use it, select the :ref:`Dispatcher window 
+<options-dispatcher>` option before you start the route.
 
-The dispatcher window is actually created by pressing ``<Ctrl+9>``. The 
-window is created in a minimized state, so to display it in front of the OR 
-window you must click on ``<Alt+Tab>`` and select the dispatcher window 
-icon, or click on one of the OR icons in the taskbar. If you are running OR 
-in full-screen mode, you must also have the :ref:`Fast full screen Alt+Tab 
-<options-fullscreen>` option selected to have both the OR and the 
-dispatcher windows displayed at the same time. After the dispatcher window 
-has been selected with ``<Alt+Tab>``, successive Alt_Tabs will toggle 
-between the OR window and the dispatcher window.
+Open the dispatcher window by pressing ``<Ctrl+9>``. You can toggle 
+between the OR window and the dispatcher window by pressing ``<Alt+Tab>`` .
+
+If you have unchecked the option ``Windowed``, then the game window opens
+full screen and the dispatch window opens out of sight behind it. You can
+prevent this by checking the option Fast full-screen alt-tab in Options > Video.
  
-The dispatcher window is resizable and can also be maximized, e.g. on a 
+The dispatcher window is not resizable but can be maximized, e.g. on a 
 second display. You can define the level of zoom either by changing the 
 value within the ``Res`` box or by using the mouse wheel. You can pan 
 through the route by moving the mouse while pressing the left button. You 
