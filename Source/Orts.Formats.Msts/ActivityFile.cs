@@ -512,6 +512,7 @@ namespace Orts.Formats.Msts
         public int ORTSOptionsTunnelResistanceDependent = -1;
         public int ORTSOptionsWindResistanceDependent = -1;
         public int ORTSOptionsHotStart = -1;
+        public int ORTSOptionsSimpleControlPhysics = -1;
 
         // Experimental TAB
         public int ORTSOptionsUseLocationPassingPaths = -1;
@@ -523,6 +524,9 @@ namespace Orts.Formats.Msts
         public int ORTSOptionsSuperElevationLevel = -1;
         public int ORTSOptionsSuperElevationMinimumLength = -1;
         public int ORTSOptionsSuperElevationGauge = -1;
+
+        // Data Logger TAB
+        public int ORTSOptionsVerboseConfigurationMessages = -1;
 
         public Tr_Activity_File(STFReader stf) {
             stf.MustMatch("(");
@@ -578,6 +582,10 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortstunnelresistancedependent", ()=>{ ORTSOptionsTunnelResistanceDependent = stf.ReadIntBlock(ORTSOptionsTunnelResistanceDependent); IsActivityOverride = true; }),
                 new STFReader.TokenProcessor("ortswindresistancedependent", ()=>{ ORTSOptionsWindResistanceDependent = stf.ReadIntBlock(ORTSOptionsWindResistanceDependent); IsActivityOverride = true; }),
                 new STFReader.TokenProcessor("ortshotstart", ()=>{ ORTSOptionsHotStart = stf.ReadIntBlock(ORTSOptionsHotStart); IsActivityOverride = true; }),
+                new STFReader.TokenProcessor("ortssimplecontrolphysics", ()=>{ ORTSOptionsSimpleControlPhysics = stf.ReadIntBlock(ORTSOptionsSimpleControlPhysics); IsActivityOverride = true; }),
+
+                // Data Logger TAB
+                new STFReader.TokenProcessor("ortsverboseconfigurationmessages", ()=>{ ORTSOptionsVerboseConfigurationMessages = stf.ReadIntBlock(ORTSOptionsVerboseConfigurationMessages); IsActivityOverride = true; }),
 
                 // Experimental TAB
                 new STFReader.TokenProcessor("ortslocationlinkedpassingpaths", ()=>{ ORTSOptionsUseLocationPassingPaths = stf.ReadIntBlock(ORTSOptionsUseLocationPassingPaths); IsActivityOverride = true; }),
@@ -777,6 +785,33 @@ namespace Orts.Formats.Msts
                     setting.HotStart = false;
                     Trace.Write("\nHot Start                        =   False");
                 }
+
+                if (ORTSOptionsSimpleControlPhysics == 1)
+                {
+                    //    setting.SimpleControlPhysics = true;
+                    //    Trace.Write("\nHot Start                        =   True");
+                    Trace.Write("\nSimple Control/Physics                        =   Not Active");
+                }
+                else if (ORTSOptionsSimpleControlPhysics == 0)
+                {
+                    // setting.SimpleControlPhysics = false;
+                    // Trace.Write("\nHot Start                        =   False");
+                    Trace.Write("\nSimple Control/Physics                        =   Not Active");
+                }
+
+
+                // Data Logger TAB
+                if (ORTSOptionsVerboseConfigurationMessages == 1)
+                {
+                    //    setting.VerboseConfigurationMessages = true;
+                    Trace.Write("\nVerbose Configuration Messages               =   Not Active");
+                }
+                else if (ORTSOptionsVerboseConfigurationMessages == 0)
+                {
+                    // setting.VerboseConfigurationMessages = false;
+                    Trace.Write("\nVerbose Configuration Messages                        =   Not Active");
+                }
+
 
                 // Experimental TAB
                 if (ORTSOptionsUseLocationPassingPaths == 1)
