@@ -91,9 +91,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 return VacResPressurePSIA;           
             }
+            // TODO - review for a better approach
             // Calculate the new vacuum based upon the volume reduction in the reservoir due to brake cylinder movement
-            float p = VacResPressurePSIA * VacResVolM3 / (VacResVolM3 - (NumBrakeCylinders * BrakeCylFraction * BrakeCylVolM3));
-
+            // Using Boyles formula: PsVs = PfVf, and a starting pressure equal to 1 psi calculate the change in pressure
+            float PressureChange = VacResVolM3 / (VacResVolM3 - (NumBrakeCylinders * BrakeCylFraction * BrakeCylVolM3));
+            // Pressure Change should represent the incremental variation as the barke cylinder moves. 
+            // Pressure is not linear and reversed compared to vacuum values, and hence more work maybe required to tidy this section of code up.
+            float p = VacResPressurePSIA + PressureChange;
             return p < CylPressurePSIA ? p : CylPressurePSIA;
         }
 
