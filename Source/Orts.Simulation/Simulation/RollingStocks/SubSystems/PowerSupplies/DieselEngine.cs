@@ -1303,7 +1303,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     MaximumDieselPowerW = loco.MaximumDieselEnginePowerW;
 
                     if (loco.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, loco.IsMetric, false, false));
+                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (ORTSDieselEngineMaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, loco.IsMetric, false, false));
 
                 }
                 else if (loco.MaxPowerW == 0)
@@ -1319,7 +1319,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     MaximumDieselPowerW = loco.MaxPowerW;
 
                     if (loco.Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, loco.IsMetric, false, false));
+                        Trace.TraceInformation("MaximalPower not found in Diesel Engine Prime Mover Configuration (ADVANCED Config): set to default value (MaxPower) = {0}", FormatStrings.FormatPower(MaximumDieselPowerW, loco.IsMetric, false, false));
 
                 }
 
