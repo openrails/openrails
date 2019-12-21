@@ -2807,6 +2807,14 @@ namespace Orts.Simulation.RollingStocks
             ThrottleController.SetPercent(percent);
         }
 
+        public void SetThrottlePercentWithSound(float percent)
+        {
+            var oldThrottlePercent = ThrottleController.CurrentValue * 100;
+            SetThrottlePercent(percent);
+            if (Math.Abs(oldThrottlePercent - ThrottleController.CurrentValue * 100) > 2)
+                SignalEvent(Event.ThrottleChange);
+        }
+
         public void ThrottleToZero()
         {
             if (CombinedControlType == CombinedControl.ThrottleDynamic && ThrottleController.CurrentValue <= 0)
@@ -3287,6 +3295,16 @@ namespace Orts.Simulation.RollingStocks
                 return;
             DynamicBrakeController.SetPercent(percent);
             DynamicBrakeChangeActiveState(percent >= 0);
+        }
+
+        public void SetDynamicBrakePercentWithSound(float percent)
+        {
+            if (!CanUseDynamicBrake())
+                return;
+            var oldDynamicBrakePercent = DynamicBrakeController.CurrentValue * 100;
+            SetDynamicBrakePercent(percent);
+            if (Math.Abs(oldDynamicBrakePercent - DynamicBrakeController.CurrentValue * 100) > 2)
+                SignalEvent(Event.DynamicBrakeChange);
         }
 
         public void DynamicBrakeChangeActiveState(bool toState)
