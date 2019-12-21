@@ -114,8 +114,9 @@ namespace Orts.Viewer3D.Processes
             var myWebContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath),
                 "Content\\Web");
 
+            // 127.0.0.1 is a dummy, IPAddress.Any in WebServer.cs to accept any address
+            // on the local Lan
             webServer = new WebServer("127.0.0.1", 2150, 1, myWebContentPath);
-            //webServer = new WebServer("192.168.1.114", 2150, 1, myWebContentPath);
 
             webServer.Run();
         }

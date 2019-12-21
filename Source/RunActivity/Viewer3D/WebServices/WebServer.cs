@@ -151,7 +151,7 @@ namespace Orts.Viewer3D.WebServices
             try
             {
                 ServerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                ServerSocket.Bind(new IPEndPoint(ipAddress, Port));
+                ServerSocket.Bind(new IPEndPoint(IPAddress.Any, Port));
                 ServerSocket.Listen(MaxConnections);
                 ServerSocket.ReceiveTimeout = timeout;
                 ServerSocket.SendTimeout = timeout;
