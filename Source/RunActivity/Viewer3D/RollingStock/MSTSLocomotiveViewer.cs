@@ -203,11 +203,11 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     Locomotive.AlerterReset();
 
-                    Locomotive.SetThrottlePercent(UserInput.RDState.ThrottlePercent);
+                    Locomotive.SetThrottlePercentWithSound(UserInput.RDState.ThrottlePercent);
                     Locomotive.SetTrainBrakePercent(UserInput.RDState.TrainBrakePercent);
                     Locomotive.SetEngineBrakePercent(UserInput.RDState.EngineBrakePercent);
                     if (Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
-                        Locomotive.SetDynamicBrakePercent(UserInput.RDState.DynamicBrakePercent);
+                        Locomotive.SetDynamicBrakePercentWithSound(UserInput.RDState.DynamicBrakePercent);
                     if (UserInput.RDState.DirectionPercent > 50)
                         Locomotive.SetDirection(Direction.Forward);
                     else if (UserInput.RDState.DirectionPercent < -50)
@@ -224,9 +224,15 @@ namespace Orts.Viewer3D.RollingStock
                         Locomotive.SignalEvent(Event.WiperOn);
                     // changing Headlight more than one step at a time doesn't work for some reason
                     if (Locomotive.Headlight < UserInput.RDState.Lights - 1)
+                    {
                         Locomotive.Headlight++;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                     if (Locomotive.Headlight > UserInput.RDState.Lights - 1)
+                    {
                         Locomotive.Headlight--;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                 }
             }
 
