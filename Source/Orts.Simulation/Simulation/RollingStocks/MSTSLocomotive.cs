@@ -1403,6 +1403,7 @@ namespace Orts.Simulation.RollingStocks
 
             ApplyDirectionToMotiveForce();
 
+            // Update dynamic brake force
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
@@ -1415,7 +1416,8 @@ namespace Orts.Simulation.RollingStocks
                     DynamicBrakeForceN = 0f;
                 }
             }
-//            else if (DynamicBrakePercent == -1) DynamicBrakeForceN = 0;
+            else
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
