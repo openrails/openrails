@@ -297,6 +297,7 @@ namespace Orts.Simulation.RollingStocks
             MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
             MaximumDieselEnginePowerW = locoCopy.MaximumDieselEnginePowerW;
             PercentChangePerSec = locoCopy.PercentChangePerSec;
+            LocomotiveMaxRailOutputPowerW = locoCopy.LocomotiveMaxRailOutputPowerW;
 
             EngineRPMderivation = locoCopy.EngineRPMderivation;
             EngineRPMold = locoCopy.EngineRPMold;
