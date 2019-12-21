@@ -1417,7 +1417,7 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             else
-                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
 
