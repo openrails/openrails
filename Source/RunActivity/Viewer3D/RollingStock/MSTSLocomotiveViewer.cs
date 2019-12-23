@@ -1587,7 +1587,7 @@ namespace Orts.Viewer3D.RollingStock
                     {
                         DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
                         if (Gauge.Direction != 1 && !IsFire)
-                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos))) - Viewer.CabYOffsetPixels;
+                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos))) + Viewer.CabYOffsetPixels;
                         else
                         DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos))) + Viewer.CabYOffsetPixels;
                         DestinationRectangle.Width = (int)(xratio * xpos);
