@@ -111,8 +111,14 @@ namespace ORTS.Settings
         [Default(30000)]
         public int Multiplayer_Port { get; set; }
 
+
+
         // General settings:
         [Default(false)]
+
+        public bool WebServer { get; set; }
+        [Default(false)]
+
         public bool Alerter { get; set; }
         [Default(true)]
         public bool AlerterDisableExternal { get; set; }

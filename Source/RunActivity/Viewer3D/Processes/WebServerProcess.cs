@@ -39,6 +39,7 @@ namespace Orts.Viewer3D.Processes
         readonly ProcessState State = new ProcessState("WebServer");
         readonly Game Game;
         readonly Thread Thread;
+        private bool ThreadActive = false;
         // readonly WatchdogToken WatchdogToken;
         // readonly CancellationTokenSource CancellationTokenSource;
 
@@ -46,28 +47,39 @@ namespace Orts.Viewer3D.Processes
 
         public WebServerProcess(Game game)
         {
-            Game = game;
-            Thread = new Thread(WebServerThread);
-            //    WatchdogToken = new WatchdogToken(Thread);
-            //    WatchdogToken.SpecialDispensationFactor = 6;    // ???
-            //    CancellationTokenSource = new CancellationTokenSource(WatchdogToken.Ping);
+                Game = game;
+
+                Thread = new Thread(WebServerThread);
+                if (game.Settings.WebServer)
+                {
+                    ThreadActive = true;
+                    //    WatchdogToken = new WatchdogToken(Thread);
+                    //    WatchdogToken.SpecialDispensationFactor = 6;    // ???
+                    //    CancellationTokenSource = new CancellationTokenSource(WatchdogToken.Ping);
+                }
         }
 
         public void Start()
         {
-            Thread.Start();
+            if (ThreadActive)
+            {
+                Thread.Start();
+            }
         }
 
         public void Stop()
         {
+            if (ThreadActive)
+            {
             //public Socket ServerSocket = null;
             //Socket ServerSocket.Stop();
             webServer.stop();
 
-            // Game.WatchdogProcess.Unregister(WatchdogToken);
-            // CancellationTokenSource.Cancel();
-            State.SignalTerminate();
-            Thread.Abort();
+                // Game.WatchdogProcess.Unregister(WatchdogToken);
+                // CancellationTokenSource.Cancel();
+                State.SignalTerminate();
+                Thread.Abort();
+            }
         }
 
         public bool Finished
