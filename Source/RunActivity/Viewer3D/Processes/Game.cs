@@ -156,12 +156,12 @@ namespace Orts.Viewer3D.Processes
         {
             base.EndRun();
             WatchdogProcess.Stop();
-            WatchdogProcess.Stop();
-            // WJC Kill thread
             RenderProcess.Stop();
             UpdaterProcess.Stop();
             LoaderProcess.Stop();
             SoundProcess.Stop();
+            // WebServerProcess.Stop(); Again
+            WebServerProcess.Stop();
         }
 
         [ThreadName("Render")]

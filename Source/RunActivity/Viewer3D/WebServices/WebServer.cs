@@ -83,7 +83,7 @@ namespace Orts.Viewer3D.WebServices
     {
         private bool Running = false;
         private int timeout = 10;
-        private Socket ServerSocket = null;
+        public Socket ServerSocket = null;
         private static Encoding CharEncoder = Encoding.UTF8;
         private static string ContentPath = "";
         private IPAddress ipAddress = null;
@@ -311,7 +311,9 @@ namespace Orts.Viewer3D.WebServices
                     // wjc we are just streaming for now, so make sure the socket closes at end of game
                     // so that the socket is not hung when opening again
                     //ServerSocket.Shutdown(SocketShutdown.Both);
+                    //tcpListener.Stop();
                     ServerSocket.Close();
+                    
                 }
                 catch (Exception e)
                 {

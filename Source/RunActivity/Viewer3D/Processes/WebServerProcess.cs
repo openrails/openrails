@@ -19,6 +19,7 @@
 
 
 using System;
+using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -59,11 +60,14 @@ namespace Orts.Viewer3D.Processes
 
         public void Stop()
         {
+            //public Socket ServerSocket = null;
+            //Socket ServerSocket.Stop();
             webServer.stop();
 
             // Game.WatchdogProcess.Unregister(WatchdogToken);
             // CancellationTokenSource.Cancel();
             State.SignalTerminate();
+            Thread.Abort();
         }
 
         public bool Finished
