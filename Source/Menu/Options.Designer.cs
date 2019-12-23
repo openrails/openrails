@@ -41,6 +41,7 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.checkEnableWebServer = new System.Windows.Forms.CheckBox();
             this.checkSpeedControl = new System.Windows.Forms.CheckBox();
             this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
@@ -347,6 +348,7 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
             this.tabPageGeneral.Controls.Add(this.checkSpeedControl);
             this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
@@ -371,6 +373,16 @@
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
+            // 
+            // checkEnableWebServer
+            // 
+            this.checkEnableWebServer.AutoSize = true;
+            this.checkEnableWebServer.Location = new System.Drawing.Point(6, 313);
+            this.checkEnableWebServer.Name = "checkEnableWebServer";
+            this.checkEnableWebServer.Size = new System.Drawing.Size(116, 17);
+            this.checkEnableWebServer.TabIndex = 15;
+            this.checkEnableWebServer.Text = "Enable WebServer";
+            this.checkEnableWebServer.UseVisualStyleBackColor = true;
             // 
             // checkSpeedControl
             // 
@@ -2470,5 +2482,6 @@
         private System.Windows.Forms.NumericUpDown numericActWeatherRandomizationLevel;
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
+        private System.Windows.Forms.CheckBox checkEnableWebServer;
     }
 }
