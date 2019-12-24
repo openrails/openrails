@@ -40,9 +40,6 @@ namespace Orts.Viewer3D.Processes
         readonly Game Game;
         readonly Thread Thread;
         private bool ThreadActive = false;
-        // readonly WatchdogToken WatchdogToken;
-        // readonly CancellationTokenSource CancellationTokenSource;
-
         WebServer webServer;
 
         public WebServerProcess(Game game)
@@ -53,9 +50,6 @@ namespace Orts.Viewer3D.Processes
                 if (game.Settings.WebServer)
                 {
                     ThreadActive = true;
-                    //    WatchdogToken = new WatchdogToken(Thread);
-                    //    WatchdogToken.SpecialDispensationFactor = 6;    // ???
-                    //    CancellationTokenSource = new CancellationTokenSource(WatchdogToken.Ping);
                 }
         }
 
@@ -71,17 +65,11 @@ namespace Orts.Viewer3D.Processes
         {
             if (ThreadActive)
             {
-            //public Socket ServerSocket = null;
-            //Socket ServerSocket.Stop();
             webServer.stop();
-
-                // Game.WatchdogProcess.Unregister(WatchdogToken);
-                // CancellationTokenSource.Cancel();
                 State.SignalTerminate();
                 Thread.Abort();
             }
         }
-
         public bool Finished
         {
             get
@@ -89,29 +77,6 @@ namespace Orts.Viewer3D.Processes
                 return State.Finished;
             }
         }
-
-        /// <summary>
-        /// Returns a token (copyable object) which can be queried for the cancellation (termination) of the loader.
-        /// </summary>
-        /// <remarks>
-        /// <para>
-        /// All loading code should periodically (e.g. between loading each file) check the token and exit as soon
-        /// as it is cancelled (<see cref="CancellationToken.IsCancellationRequested"/>).
-        /// </para>
-        /// <para>
-        /// Reading <see cref="CancellationToken.IsCancellationRequested"/> causes the <see cref="WatchdogToken"/> to
-        /// be pinged, informing the <see cref="WatchdogProcess"/> that the loader is still responsive. Therefore the
-        /// remarks about the <see cref="WatchdogToken.Ping()"/> method apply to the token regarding when it should
-        /// and should not be used.
-        /// </para>
-        /// </remarks>
-        //public CancellationToken CancellationToken
-        //{
-        //    get
-        //    {
-        //        return CancellationTokenSource.Token;
-        //    }
-        //}
 
         public void WaitTillFinished()
         {
@@ -123,17 +88,14 @@ namespace Orts.Viewer3D.Processes
         {
             Profiler.SetThread();
             Game.SetThreadLanguage();
+            int port = Game.Settings.WebServerPort;
 
-            // //////////////////////////////////////////////////////////////////
-
-
-            var myWebContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Windows.Forms.Application.ExecutablePath),
-                "Content\\Web");
+            var myWebContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(
+                System.Windows.Forms.Application.ExecutablePath),"Content\\Web");
 
             // 127.0.0.1 is a dummy, IPAddress.Any in WebServer.cs to accept any address
             // on the local Lan
-            webServer = new WebServer("127.0.0.1", 2150, 1, myWebContentPath);
-
+            webServer = new WebServer("127.0.0.1", port, 1, myWebContentPath);
             webServer.Run();
         }
     }

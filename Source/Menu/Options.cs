@@ -149,9 +149,10 @@ namespace ORTS
             comboBoxOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
             checkEnableWebServer.Checked = Settings.WebServer;
-
+            numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
+
             checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;

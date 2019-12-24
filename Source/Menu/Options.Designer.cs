@@ -188,6 +188,8 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
+            this.label28 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
@@ -228,6 +230,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -348,6 +351,8 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.label28);
+            this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
             this.tabPageGeneral.Controls.Add(this.checkSpeedControl);
             this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
@@ -377,7 +382,7 @@
             // checkEnableWebServer
             // 
             this.checkEnableWebServer.AutoSize = true;
-            this.checkEnableWebServer.Location = new System.Drawing.Point(6, 313);
+            this.checkEnableWebServer.Location = new System.Drawing.Point(8, 315);
             this.checkEnableWebServer.Name = "checkEnableWebServer";
             this.checkEnableWebServer.Size = new System.Drawing.Size(116, 17);
             this.checkEnableWebServer.TabIndex = 15;
@@ -2253,6 +2258,37 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
+            // numericWebServerPort
+            // 
+            this.numericWebServerPort.Location = new System.Drawing.Point(8, 338);
+            this.numericWebServerPort.Maximum = new decimal(new int[] {
+            65534,
+            0,
+            0,
+            0});
+            this.numericWebServerPort.Minimum = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
+            this.numericWebServerPort.Name = "numericWebServerPort";
+            this.numericWebServerPort.Size = new System.Drawing.Size(70, 20);
+            this.numericWebServerPort.TabIndex = 16;
+            this.numericWebServerPort.Value = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(89, 340);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(66, 13);
+            this.label28.TabIndex = 17;
+            this.label28.Text = "Port Number";
+            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2320,6 +2356,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2483,5 +2520,7 @@
         private System.Windows.Forms.Label label26;
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
         private System.Windows.Forms.CheckBox checkEnableWebServer;
+        private System.Windows.Forms.NumericUpDown numericWebServerPort;
+        private System.Windows.Forms.Label label28;
     }
 }
