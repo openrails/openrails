@@ -221,10 +221,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             return Notches.Count;
         }
 
-        private float GetNotchBoost()
+        private float GetNotchBoost(float boost)
         {
             return (ToZero && ((CurrentNotch >= 0 && Notches[CurrentNotch].Smooth) || Notches.Count == 0 || 
-                IntermediateValue - CurrentValue > StepSize) ? FastBoost : StandardBoost);
+                IntermediateValue - CurrentValue > StepSize) ? FastBoost : boost);
         }
 
         /// <summary>
@@ -355,7 +355,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             if (UpdateValue == 1 || UpdateValue == -1)
             {
                 CheckControllerTargetAchieved();
-                UpdateValues(elapsedSeconds, UpdateValue);
+                UpdateValues(elapsedSeconds, UpdateValue, StandardBoost);
+            }
+            return CurrentValue;
+        }
+
+        public float UpdateAndSetBoost(float elapsedSeconds, float boost)
+        {
+            if (UpdateValue == 1 || UpdateValue == -1)
+            {
+                CheckControllerTargetAchieved();
+                UpdateValues(elapsedSeconds, UpdateValue, boost);
             }
             return CurrentValue;
         }
@@ -385,10 +395,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        private float UpdateValues(float elapsedSeconds, float direction)
+        private float UpdateValues(float elapsedSeconds, float direction, float boost)
         {
             //We increment the intermediate value first
-            IntermediateValue += StepSize * elapsedSeconds * GetNotchBoost() * direction;
+            IntermediateValue += StepSize * elapsedSeconds * GetNotchBoost(boost) * direction;
             IntermediateValue = MathHelper.Clamp(IntermediateValue, MinimumValue, MaximumValue);
 
             //Do we have notches
