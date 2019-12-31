@@ -824,7 +824,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 0); initLevel |= SettingsFlags.MaxOilPressure; break;
                     case "maxtemperature": DieselMaxTemperatureDeg = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 0); initLevel |= SettingsFlags.MaxTemperature; break;
                     case "cooling": EngineCooling = (Cooling)stf.ReadIntBlock((int)Cooling.Proportional); initLevel |= SettingsFlags.Cooling; break ; //ReadInt changed to ReadIntBlock
-                    case "temptimeconstant": DieselTempTimeConstantSec = stf.ReadFloatBlock(STFReader.UNITS.Time, 720f); initLevel |= SettingsFlags.TempTimeConstant; break;
+                    case "temptimeconstant": DieselTempTimeConstantSec = stf.ReadFloatBlock(STFReader.UNITS.Time, 0); initLevel |= SettingsFlags.TempTimeConstant; break;
                     case "opttemperature": DieselOptimalTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 95f); initLevel |= SettingsFlags.OptTemperature; break;
                     case "idletemperature": DieselIdleTemperatureDegC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, 75f); initLevel |= SettingsFlags.IdleTemperature; break;
                     default:
