@@ -19,6 +19,7 @@ using Orts.Parsers.Msts;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Event = Orts.Common.Event;
@@ -359,9 +360,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (soundEvent != Event.None)
             {
-                foreach (var eventHandler in Wagon.EventHandlers)
+                try
                 {
-                    eventHandler.HandleEvent(soundEvent);
+                    foreach (var eventHandler in Wagon.EventHandlers)
+                    {
+                        eventHandler.HandleEvent(soundEvent);
+                    }
+                }
+                catch (Exception error)
+                {
+                    Trace.TraceInformation("Sound event skipped due to thread safety problem " + error.Message);
                 }
             }
         }
