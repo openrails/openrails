@@ -2022,7 +2022,7 @@ namespace Orts.Simulation.RollingStocks
             var tileX = traveler.TileX;
             var tileZ = traveler.TileZ;
             if (Flipped == backToFront)
-            {
+             {
                 var o = -CarLengthM / 2 - CentreOfGravityM.Z;
                 for (var k = 0; k < WheelAxles.Count; k++)
                 {

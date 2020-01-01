@@ -576,7 +576,7 @@ namespace Orts.Viewer3D.Popups
                         StationPreviousDistance.Text = "";
                         if (playerTrain.StationStops.Count > 0 && playerTrain.StationStops[0].PlatformItem != null &&
                             String.Compare(playerTrain.StationStops[0].PlatformItem.Name, StationPreviousName.Text) == 0 &&
-                            playerTrain.StationStops[0].DistanceToTrainM > 0)
+                            playerTrain.StationStops[0].DistanceToTrainM > 0 && playerTrain.StationStops[0].DistanceToTrainM != 9999999f)
                         {
                             StationPreviousDistance.Text = FormatStrings.FormatDistanceDisplay(playerTrain.StationStops[0].DistanceToTrainM, metric);
                         }
@@ -606,7 +606,7 @@ namespace Orts.Viewer3D.Popups
                         StationCurrentDistance.Text = "";
                         if (playerTrain.StationStops.Count > 0 && playerTrain.StationStops[0].PlatformItem != null &&
                             String.Compare(playerTrain.StationStops[0].PlatformItem.Name, StationCurrentName.Text) == 0 &&
-                            playerTrain.StationStops[0].DistanceToTrainM > 0)
+                            playerTrain.StationStops[0].DistanceToTrainM > 0 && playerTrain.StationStops[0].DistanceToTrainM != 9999999f)
                         {
                             StationCurrentDistance.Text = FormatStrings.FormatDistanceDisplay(playerTrain.StationStops[0].DistanceToTrainM, metric);
                         }
@@ -632,7 +632,7 @@ namespace Orts.Viewer3D.Popups
                         StationNextDistance.Text = "";
                         if (playerTrain.StationStops.Count > 0 && playerTrain.StationStops[0].PlatformItem != null &&
                             String.Compare(playerTrain.StationStops[0].PlatformItem.Name, StationNextName.Text) == 0 &&
-                            playerTrain.StationStops[0].DistanceToTrainM > 0)
+                            playerTrain.StationStops[0].DistanceToTrainM > 0 && playerTrain.StationStops[0].DistanceToTrainM != 9999999f)
                         {
                             StationNextDistance.Text = FormatStrings.FormatDistanceDisplay(playerTrain.StationStops[0].DistanceToTrainM, metric);
                         }
