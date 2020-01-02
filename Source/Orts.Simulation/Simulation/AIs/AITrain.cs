@@ -6317,7 +6317,7 @@ namespace Orts.Simulation.AIs
             ResetActions(true, true);
             if (SpeedMpS != 0) MovementState = AI_MOVEMENT_STATE.BRAKING;
             else if (this == Simulator.OriginalPlayerTrain && Simulator.ActivityRun != null && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation(this) &&
-                ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingS > 0)
+                ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS > Simulator.ClockTime)
             {
                 StationStops[0].ActualDepart = (int)((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS;
                 StationStops[0].ActualArrival = -(int)(new DateTime().Add(TimeSpan.FromSeconds(0.0)) - ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).ActArrive).Value.TotalSeconds;
