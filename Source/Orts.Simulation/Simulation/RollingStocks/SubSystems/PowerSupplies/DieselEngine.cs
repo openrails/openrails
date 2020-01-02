@@ -1563,5 +1563,43 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             locomotive = loco;
         }
 
+        public void InitDieselRailPowers(MSTSDieselLocomotive loco)
+        {
+            // Set MaximumRailOutputPower if not already set
+            if (MaximumRailOutputPowerW == 0)
+            {
+                if (loco.TractiveForceCurves != null)
+                {
+                    float ThrottleSetting = 1;
+                    MaximumRailOutputPowerW = loco.TractiveForceCurves.Get(ThrottleSetting, loco.SpeedOfMaxContinuousForceMpS) * loco.SpeedOfMaxContinuousForceMpS;
+                    if (loco.Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Maximum Rail Output Power set by Diesel Traction Curves {0} value", FormatStrings.FormatPower(MaximumRailOutputPowerW, loco.IsMetric, false, false));
+                }
+                else if (loco.MaxPowerW != 0)
+                {
+                    MaximumRailOutputPowerW = loco.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+                }
+                else
+                {
+                    MaximumRailOutputPowerW = 0.8f * MaximumDieselPowerW; // set rail power to a default value on the basis that it is about 80% of the prime mover output power
+                }
+            }
+
+            // Check MaxRpM for loco as it is needed as well
+            if (loco.MaxRPM == 0)
+            {
+                if (MaxRPM != 0)
+                {
+                    loco.MaxRPM = MaxRPM;
+                }
+                else
+                {
+                    loco.MaxRPM = 600.0f;
+                }
+
+
+            }
+        }
+
     }
 }
