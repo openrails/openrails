@@ -162,15 +162,53 @@ namespace Orts.Simulation.RollingStocks
 
             NormalizeParams();
 
+            // Check to see if Speed of Max Tractive Force has been set - use ORTS value as first priority, if not use MSTS, last resort use an arbitary value.
+            if (SpeedOfMaxContinuousForceMpS == 0)
+            {
+                if (MSTSSpeedOfMaxContinuousForceMpS != 0)
+                {
+                    SpeedOfMaxContinuousForceMpS = MSTSSpeedOfMaxContinuousForceMpS; // Use MSTS value if present
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Speed Of Max Continuous Force: set to default value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+
+                }
+                else if (MaxPowerW != 0 && MaxContinuousForceN != 0)
+                {
+                    SpeedOfMaxContinuousForceMpS = MaxPowerW / MaxContinuousForceN;
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Speed Of Max Continuous Force: set to 'calculated' value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+
+                }
+                else
+                {
+                    SpeedOfMaxContinuousForceMpS = 10.0f; // If not defined then set at an "arbitary" value of 22mph
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Speed Of Max Continuous Force: set to 'arbitary' value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
+
+                }
+            }
+
             if (DieselEngines == null)
                 DieselEngines = new DieselEngines(this);
 
+            // Create a diesel engine block if none exits, typically for a MSTS or BASIC configuration
             if (DieselEngines.Count == 0)
             {
                 DieselEngines.Add(new DieselEngine());
 
                 DieselEngines[0].InitFromMSTS(this);
                 DieselEngines[0].Initialize(true);
+            }
+
+
+            // Check initialization of power values for diesel engines
+            for (int i = 0; i < DieselEngines.Count; i++)
+            {
+                DieselEngines[i].InitDieselRailPowers(this);
+
             }
 
             if (GearBox != null && GearBox.IsInitialized)
@@ -231,36 +269,6 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
-            // Check to see if Speed of Max Tractive Force has been set - use ORTS value as first priority, if not use MSTS, last resort use an arbitary value.
-            if (SpeedOfMaxContinuousForceMpS == 0)
-            {
-                if (MSTSSpeedOfMaxContinuousForceMpS != 0)
-                {
-                    SpeedOfMaxContinuousForceMpS = MSTSSpeedOfMaxContinuousForceMpS; // Use MSTS value if present
-
-                    if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Speed Of Max Continuous Force: set to default value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-
-                }
-                else if (MaxPowerW != 0 && MaxContinuousForceN !=0)
-                {
-                    SpeedOfMaxContinuousForceMpS = MaxPowerW / MaxContinuousForceN;
-                    
-                    if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Speed Of Max Continuous Force: set to 'calculated' value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-
-                }
-                else
-                {
-                    SpeedOfMaxContinuousForceMpS = 10.0f; // If not defined then set at an "arbitary" value of 22mph
-
-                    if (Simulator.Settings.VerboseConfigurationMessages)
-                        Trace.TraceInformation("Speed Of Max Continuous Force: set to 'arbitary' value {0}", FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-
-                }
-            }
-
-
             // Check force assumptions set for diesel
             if (Simulator.Settings.VerboseConfigurationMessages)
             {
@@ -284,7 +292,7 @@ namespace Orts.Simulation.RollingStocks
                     float StartingForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
                     float CalculatedMaxContinuousForceN = TractiveForceCurves.Get(ThrottleSetting, SpeedOfMaxContinuousForceMpS);
                     Trace.TraceInformation("Diesel Force Settings (ADVANCED Config): Max Starting Force {0} Calculated Max Continuous Force {1}, @ speed of {2}", FormatStrings.FormatForce(StartingForceN, IsMetric), FormatStrings.FormatForce(CalculatedMaxContinuousForceN, IsMetric), FormatStrings.FormatSpeedDisplay(SpeedOfMaxContinuousForceMpS, IsMetric));
-                    Trace.TraceInformation("Diesel Power Settings (ADVANCED Config): Prime Mover {0}, Max Rail Output Power {1} @ {2} rpm", FormatStrings.FormatPower(MaximumDieselEnginePowerW, IsMetric, false, false), FormatStrings.FormatPower(DieselEngines.MaximumRailOutputPowerW, IsMetric, false, false), MaxRPM);
+                    Trace.TraceInformation("Diesel Power Settings (ADVANCED Config): Prime Mover {0}, Max Rail Output Power {1} @ {2} rpm", FormatStrings.FormatPower(DieselEngines.MaxPowerW, IsMetric, false, false), FormatStrings.FormatPower(DieselEngines.MaximumRailOutputPowerW, IsMetric, false, false), MaxRPM);
 
                     if (StartingForceN < MaxContinuousForceN)
                     {
@@ -516,8 +524,15 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    if (t > (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW))
-                        t = (DieselEngines.MaxOutputPowerW / DieselEngines.MaxPowerW);
+                    // Caps throttle setting if more then one diesel engine fitted
+                    // As tractive force table is combined output, a ratio of diesel engine powers is used to adjust throttle setting. 
+                    // In principal, a locomotive with two engines should never exceed 50% throttle if one engine is shut down (if of equal power)
+                    if (DieselEngines.Count > 1)
+                    {
+                        if (t > (DieselEngines.CurrentRailOutputPowerW / DieselEngines.MaximumRailOutputPowerW))
+                            t = (DieselEngines.CurrentRailOutputPowerW / DieselEngines.MaximumRailOutputPowerW);
+                    }
+
                     MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
