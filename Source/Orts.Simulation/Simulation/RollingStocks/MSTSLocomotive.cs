@@ -1882,7 +1882,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
         {
-            if (Simulator.Settings.SimpleControlPhysics) // Simple braking - control Ejector automatically based upon the brake control position
+            if (Simulator.Settings.SimpleControlPhysics || !LargeEjectorFitted) // Simple braking or when large ejector is not fitted - control Ejector automatically based upon the brake control position
             {
                 if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ))
                 {
