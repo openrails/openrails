@@ -6287,7 +6287,7 @@ namespace Orts.Simulation.AIs
         public bool SwitchToAutopilotControl()
         {
             bool success = false;
-            MUDirection = Direction.Forward;
+            // MUDirection set within following method call
             Simulator.PlayerLocomotive.SwitchToAutopilotControl();
             LeadLocomotive = null;
             LeadLocomotiveIndex = -1;

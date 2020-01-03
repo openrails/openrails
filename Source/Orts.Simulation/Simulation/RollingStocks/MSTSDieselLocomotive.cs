@@ -799,6 +799,19 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
+        public override void SwitchToAutopilotControl()
+        {
+            SetDirection(Direction.Forward);
+            foreach (DieselEngine de in DieselEngines)
+            {
+                if (de.EngineStatus != DieselEngine.Status.Running)
+                    de.Initialize(true);
+                if (de.GearBox != null)
+                    de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
+            }
+            base.SwitchToAutopilotControl();
+        }
+
         private void UpdateSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System

@@ -1437,21 +1437,33 @@ namespace Orts.Simulation.RollingStocks
             {
                 case Train.TRAINTYPE.AI:
                 case Train.TRAINTYPE.AI_PLAYERHOSTING:
-                    if (!PowerOn && AcceptMUSignals)
+                    if (AcceptMUSignals)
                     {
-                        Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        if (!PowerOn)
+                        {
+                            Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
 
+                            if (this is MSTSDieselLocomotive)
+                            {
+                                foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
+                                {
+                                    if (de.EngineStatus != DieselEngine.Status.Running)
+                                        de.Initialize(true);
+                                }
+                            }
+                        }
                         if (this is MSTSDieselLocomotive)
                         {
                             foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
                             {
-                                if (de.EngineStatus != DieselEngine.Status.Running)
-                                    de.Initialize(true);
-                                if (de.GearBox != null)
+                                 if (de.GearBox != null)
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
                             }
                         }
                     }
+
+
+
                     AntiSlip = true; // Always set AI trains to AntiSlip
                     SimpleAdhesion();                         //let's call the basic physics instead for now
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
