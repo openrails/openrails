@@ -4966,7 +4966,8 @@ namespace Orts.Simulation.RollingStocks
                     LargeEjectorFeedFraction = ((1.1063f - (0.1063f * (SteamEjectorLargePressurePSI / MaxVaccuumMaxPressurePSI)))) * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
                 }
 
-                if (Simulator.Settings.SimpleControlPhysics)
+                // If simple brake controls chosen, then "automatically" set the large ejector value
+                if (Simulator.Settings.SimpleControlPhysics || !LargeEjectorFitted)
                 {
 
                     //  Provided BP is greater then max vacuum pressure large ejector will operate at full efficiency
