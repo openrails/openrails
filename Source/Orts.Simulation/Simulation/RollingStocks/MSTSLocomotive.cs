@@ -1902,8 +1902,8 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
         {
-            if (Simulator.Settings.SimpleControlPhysics || !LargeEjectorFitted)
-            // Simple braking or when large ejector is not fitted - control Ejector automatically based upon the brake control position
+            if (Simulator.Settings.SimpleControlPhysics)
+            // Simple braking - control Ejector automatically based upon the brake control position
             // Stop ejector operation if full vacuum pressure reached
             {
                 if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
@@ -1912,12 +1912,24 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, or full vacuum reached, then turn ejector off
                 }
             }
-            else  // Advanced braking - control ejector based upon large ejector control setting
+            else if (!LargeEjectorFitted) // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
             {
-                if (LargeEjectorFeedFraction > 0.1)
+                if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
+                {
+                    LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                }
+                else
+                {
+                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                }
+
+            }
+            else  // Advanced braking - control ejector based upon using a "manual" large ejector control setting
+            {
+                if (LargeEjectorFeedFraction > 0.05)
                 {
                     LargeSteamEjectorIsOn = true;  // turn ejector on
                 }
@@ -1927,13 +1939,12 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+
             // If diesel or electric locomotive, assume vacuum pump (exhauster) is continually running.
             if (!(this is MSTSSteamLocomotive))
             {
                 VacuumPumpOperating = true;
             }
-
-            
         }
 
         /// <summary>
