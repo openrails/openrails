@@ -236,6 +236,9 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
+            // process activation commands for all trains
+            FinalizeActivationCommands(ref trainList, ref reqPlayerTrain);
+
             // set timetable identification for simulator for saves etc.
             simulator.TimetableFileName = Path.GetFileNameWithoutExtension(arguments[0]);
 
@@ -1001,6 +1004,133 @@ namespace Orts.Simulation.Timetables
 
         //================================================================================================//
         /// <summary>
+        /// Finalize activation commands
+        /// </summary>
+
+        public void FinalizeActivationCommands(ref List<TTTrain> trainList, ref TTTrain reqPlayerTrain)
+        {
+            List<int> activatedTrains = new List<int>();
+
+            // build list of trains to be activated
+            // set original AI number for player train
+            foreach (TTTrain thisTrain in trainList)
+            {
+                if (thisTrain.TriggeredActivationRequired)
+                {
+                    if (thisTrain.Number == 0)
+                    {
+                        activatedTrains.Add(thisTrain.OrgAINumber);
+                    }
+                    else
+                    {
+                        activatedTrains.Add(thisTrain.Number);
+                    }
+                }
+            }
+
+            if (reqPlayerTrain.TriggeredActivationRequired)
+            {
+                activatedTrains.Add(reqPlayerTrain.OrgAINumber);
+            }
+
+            // process all activation commands
+            foreach (TTTrain thisTrain in trainList)
+            {
+                if (thisTrain.activatedTrainTriggers != null && thisTrain.activatedTrainTriggers.Count > 0)
+                {
+                    for (int itrigger = thisTrain.activatedTrainTriggers.Count - 1; itrigger >= 0; itrigger--)
+                    {
+                        TTTrain.TriggerActivation thisTrigger = thisTrain.activatedTrainTriggers[itrigger];
+                        thisTrain.activatedTrainTriggers.RemoveAt(itrigger);
+                        string otherTrainName = String.Copy(thisTrigger.activatedName);
+
+                        if (!otherTrainName.Contains(':'))
+                        {
+                            int seppos = thisTrain.Name.IndexOf(':');
+                            otherTrainName = String.Concat(otherTrainName, ":", thisTrain.Name.Substring(seppos + 1).ToLower());
+                        }
+
+                        TTTrain otherTrain = thisTrain.GetOtherTTTrainByName(otherTrainName);
+                        if (otherTrain == null)
+                        {
+                            Trace.TraceInformation("Invalid train activation command: train {0} not found, for train {1}", otherTrainName, thisTrain.Name);
+                        }
+                        else
+                        {
+                            if (activatedTrains.Contains(otherTrain.Number))
+                            {
+                                activatedTrains.Remove(otherTrain.Number);
+                                thisTrigger.activatedTrain = otherTrain.Number;
+                                thisTrain.activatedTrainTriggers.Insert(itrigger, thisTrigger);
+                            }
+                            else if (activatedTrains.Contains(otherTrain.OrgAINumber))
+                            {
+                                activatedTrains.Remove(otherTrain.OrgAINumber);
+                                thisTrigger.activatedTrain = otherTrain.Number;
+                                thisTrain.activatedTrainTriggers.Insert(itrigger, thisTrigger);
+                            }
+                            else
+                            {
+                                Trace.TraceInformation("Invalid train activation command: train {0} not waiting for activation, for train {1}", otherTrainName, thisTrain.Name);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // process activation request for player train
+            if (reqPlayerTrain.activatedTrainTriggers != null && reqPlayerTrain.activatedTrainTriggers.Count > 0)
+            {
+                for (int itrigger = reqPlayerTrain.activatedTrainTriggers.Count - 1; itrigger >= 0; itrigger--)
+                {
+                    TTTrain.TriggerActivation thisTrigger = reqPlayerTrain.activatedTrainTriggers[itrigger];
+                    reqPlayerTrain.activatedTrainTriggers.RemoveAt(itrigger);
+                    string otherTrainName = String.Copy(thisTrigger.activatedName);
+
+                    if (!otherTrainName.Contains(':'))
+                    {
+                        int seppos = reqPlayerTrain.Name.IndexOf(':');
+                        otherTrainName = String.Concat(otherTrainName, ":", reqPlayerTrain.Name.Substring(seppos + 1).ToLower());
+                    }
+
+                    TTTrain otherTrain = reqPlayerTrain.GetOtherTTTrainByName(otherTrainName);
+                    if (otherTrain == null)
+                    {
+                        Trace.TraceInformation("Invalid train activation command: train {0} not found, for train {1}", otherTrainName, reqPlayerTrain.Name);
+                    }
+                    else
+                    {
+                        if (activatedTrains.Contains(otherTrain.Number))
+                        {
+                            activatedTrains.Remove(otherTrain.Number);
+                            thisTrigger.activatedTrain = otherTrain.Number;
+                            reqPlayerTrain.activatedTrainTriggers.Insert(itrigger, thisTrigger);
+                        }
+                        else if (activatedTrains.Contains(otherTrain.OrgAINumber))
+                        {
+                            activatedTrains.Remove(otherTrain.OrgAINumber);
+                            thisTrigger.activatedTrain = otherTrain.Number;
+                            reqPlayerTrain.activatedTrainTriggers.Insert(itrigger, thisTrigger);
+                        }
+                        else
+                        {
+                            Trace.TraceInformation("Invalid train activation command: train {0} not waiting for activation, for train {1}", otherTrainName, reqPlayerTrain.Name);
+                        }
+                    }
+                }
+            }
+
+            // check if any activated trains remain untriggered
+            foreach (int inumber in activatedTrains)
+            {
+                TTTrain otherTrain = trainList[0].GetOtherTTTrainByNumber(inumber);
+                Trace.TraceInformation("Train activation required but no activation command set for train {0}", otherTrain.Name);
+                otherTrain.TriggeredActivationRequired = false;
+            }
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// Pre-process all routes : read routes and convert to AIPath structure
         /// </summary>
         public bool PreProcessRoutes(CancellationToken cancellation)
@@ -1183,7 +1313,7 @@ namespace Orts.Simulation.Timetables
             public TTTrainInfo(int icolumn, string trainName, Simulator simulator, int index, TimetableInfo thisParent)
             {
                 parentInfo = thisParent;
-                Name = String.Copy(trainName);
+                Name = String.Copy(trainName.Trim());
                 TTTrain = new TTTrain(simulator);
                 columnIndex = icolumn;
                 Index = index;
@@ -1221,7 +1351,7 @@ namespace Orts.Simulation.Timetables
                     else
                     {
                         string[] nameParts = Name.Split('$');
-                        TTTrain.Name = nameParts[0];
+                        TTTrain.Name = nameParts[0].Trim();
                     }
                 }
                 else
@@ -1298,7 +1428,6 @@ namespace Orts.Simulation.Timetables
                             if (!String.IsNullOrEmpty(thisDisposeString))
                             {
                                 TTTrainCommands disposeCommands = new TTTrainCommands(thisDisposeString);
-
                                 switch (disposeCommands.CommandToken)
                                 {
                                     case "forms":
@@ -1366,6 +1495,7 @@ namespace Orts.Simulation.Timetables
                                             TransferInfo thisTransfer = new TransferInfo(-1, disposeCommands, TTTrain);
                                             List<TransferInfo> newList = new List<TransferInfo>();
                                             newList.Add(thisTransfer);
+
                                             if (thisTransfer.TransferTrain == -99)
                                             {
                                                 TTTrain.TransferTrainDetails.Add(-99, newList); //set key to -99 as reference
@@ -1374,13 +1504,28 @@ namespace Orts.Simulation.Timetables
                                             {
                                                 TTTrain.TransferTrainDetails.Add(-1, newList); // set key to -1 to work out reference later
                                             }
-                                        }
+                                        } 
                                         break;
+
+                                    case "activate":
+                                        if (disposeCommands.CommandValues == null || disposeCommands.CommandValues.Count < 1)
+                                        {
+                                            Trace.TraceInformation("No train reference set for train activation, train {0}", Name);
+                                            break;
+                                        }
+
+                                        TTTrain.TriggerActivation thisTrigger = new TTTrain.TriggerActivation();
+
+                                        thisTrigger.activationType = TTTrain.TriggerActivationType.Dispose;
+                                        thisTrigger.activatedName = disposeCommands.CommandValues[0];
+                                        TTTrain.activatedTrainTriggers.Add(thisTrigger);
+
+                                        break;
+
                                     default:
                                         Trace.TraceWarning("Invalid dispose string defined for train {0} : {1}",
                                             TTTrain.Name, disposeCommands.CommandToken);
                                         break;
-
                                 }
                             }
                         }
@@ -1403,6 +1548,10 @@ namespace Orts.Simulation.Timetables
                                 if (Stops.ContainsKey(stationDetails.StationName))
                                 {
                                     Trace.TraceInformation("Double station reference : train " + Name + " ; station : " + stationDetails.StationName);
+                                }
+                                else if (fileStrings[iRow][columnIndex].StartsWith("P"))
+                                {
+                                    // allowed in timetable but not yet implemented
                                 }
                                 else
                                 {
@@ -1525,7 +1674,9 @@ namespace Orts.Simulation.Timetables
                 string createInPool = String.Empty;
                 bool startNextNight = false;
                 string createFromPool = String.Empty;
+                string createPoolDirection = String.Empty;
                 bool setConsistName = false;
+                bool activationRequired = false;
 
                 // process qualifier if set
 
@@ -1591,7 +1742,7 @@ namespace Orts.Simulation.Timetables
                                 }
                                 break;
 
-                            // pool : created from pool - syntax : $pool = pool
+                            // pool : created from pool - syntax : $pool = pool [/direction = backward | forward]
                             case "pool":
                                 if (thisCommand.CommandValues == null || thisCommand.CommandValues.Count < 1)
                                 {
@@ -1600,7 +1751,7 @@ namespace Orts.Simulation.Timetables
                                 else
                                 {
                                     createFromPool = String.Copy(thisCommand.CommandValues[0]);
-                                    if (thisCommand.CommandQualifiers != null && thisCommand.CommandQualifiers.Count > 0)
+                                    if (thisCommand.CommandQualifiers != null)
                                     {
                                         foreach (TTTrainCommands.TTTrainComQualifiers thisQualifier in thisCommand.CommandQualifiers)
                                         {
@@ -1608,6 +1759,10 @@ namespace Orts.Simulation.Timetables
                                             {
                                                 case "set_consist_name":
                                                     setConsistName = true;
+                                                    break;
+
+                                                case "direction":
+                                                    createPoolDirection = String.Copy(thisQualifier.QualifierValues[0]);
                                                     break;
 
                                                 default:
@@ -1660,6 +1815,11 @@ namespace Orts.Simulation.Timetables
                                 }
                                 break;
 
+                            // activated : set activated flag
+                            case "activated" :
+                                activationRequired = true;
+                                break;
+
                             // invalid command
                             default:
                                 Trace.TraceInformation("Train : " + Name + " invalid command for start value : " + thisCommand.CommandToken + "\n");
@@ -1683,6 +1843,7 @@ namespace Orts.Simulation.Timetables
                     TTTrain.StartTime = Math.Max(Convert.ToInt32(startingTime.TotalSeconds), 1);
                     TTTrain.ActivateTime = Math.Max(Convert.ToInt32(activateTime.TotalSeconds), 1);
                     TTTrain.Created = created;
+                    TTTrain.TriggeredActivationRequired = activationRequired;
 
                     // trains starting after midnight
                     if (startNextNight && TTTrain.StartTime.HasValue)
@@ -1712,6 +1873,21 @@ namespace Orts.Simulation.Timetables
                         if (setConsistName)
                         {
                             TTTrain.ForcedConsistName = String.Copy(consistInfo);
+                        }
+
+                        switch (createPoolDirection)
+                        {
+                            case "backward":
+                                TTTrain.CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Backward;
+                                break;
+
+                            case "forward":
+                                TTTrain.CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Forward;
+                                break;
+
+                            default:
+                                TTTrain.CreatePoolDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
+                                break;
                         }
                     }
 
@@ -1746,6 +1922,14 @@ namespace Orts.Simulation.Timetables
                     Trace.TraceInformation("Invalid starttime {0} for train {1}, train not included", startString, TTTrain.Name);
                     validTrain = false;
                 }
+
+                // activation is not allowed if started from pool
+                if (activationRequired && !String.IsNullOrEmpty(createFromPool))
+                {
+                    activationRequired = false;
+                    Trace.TraceInformation("Trigger activation not allowed when starting from pool, trigger activation reset for train {0}", TTTrain.Name);                  
+                }
+
             }
 
             //================================================================================================//
@@ -1804,6 +1988,11 @@ namespace Orts.Simulation.Timetables
                         // delay on detaching
                         case "detach":
                             TTTrain.DelayedStartSettings.detachRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
+                            break;
+
+                        // delay for train and moving table
+                        case "movingtable":
+                            TTTrain.DelayedStartSettings.movingtableRestart = ProcessRestartDelayValues(TTTrain.Name, thisCommand.CommandQualifiers, thisCommand.CommandToken);
                             break;
 
                         // delay when restarting at reversal
@@ -1986,6 +2175,18 @@ namespace Orts.Simulation.Timetables
                                 try
                                 {
                                     TTTrain.SpeedSettings.detachSpeedMpS = Convert.ToSingle(thisCommand.CommandValues[0]) * actSpeedConv;
+                                }
+                                catch
+                                {
+                                    Trace.TraceInformation("Train {0} : invalid value for '{1}' speed setting : {2} \n",
+                                        TTTrain.Name, thisCommand.CommandToken, thisCommand.CommandValues[0]);
+                                }
+                                break;
+
+                            case "movingtable":
+                                try
+                                {
+                                    TTTrain.SpeedSettings.movingtableSpeedMpS = Convert.ToSingle(thisCommand.CommandValues[0]) * actSpeedConv;
                                 }
                                 catch
                                 {
@@ -2270,6 +2471,7 @@ namespace Orts.Simulation.Timetables
                     {
                         cars.Add(car);
                     }
+
                     //}
                     //catch (Exception error)
                     //{
@@ -2295,8 +2497,6 @@ namespace Orts.Simulation.Timetables
             public StopInfo ProcessStopInfo(string stationInfo, StationInfo stationDetails)
             {
                 string[] arr_dep = new string[2] { String.Empty, String.Empty };
-                string[] pass = new string[1] { String.Empty };
-
                 string fullCommandString = String.Empty;
 
                 if (stationInfo.Contains('$'))
@@ -2781,6 +2981,21 @@ namespace Orts.Simulation.Timetables
                     else
                     {
                         TTTrain.ExitPool = String.Copy(DisposeDetails.PoolName);
+
+                        switch (DisposeDetails.PoolExitDirection)
+                        {
+                            case "backward":
+                                TTTrain.PoolExitDirection = TimetablePool.PoolExitDirectionEnum.Backward;
+                                break;
+
+                            case "forward":
+                                TTTrain.PoolExitDirection = TimetablePool.PoolExitDirectionEnum.Forward;
+                                break;
+
+                            default:
+                                TTTrain.PoolExitDirection = TimetablePool.PoolExitDirectionEnum.Undefined;
+                                break;
+                        }
                     }
                 }
                 return (loadPathNoFailure);
@@ -3045,6 +3260,7 @@ namespace Orts.Simulation.Timetables
                     float? keepClearRear = null;
                     bool forcePosition = false;
                     bool closeupSignal = false;
+                    bool closeup = false;
                     bool restrictPlatformToSignal = false;
                     bool extendPlatformToSignal = false;
                     bool endStop = false;
@@ -3061,6 +3277,10 @@ namespace Orts.Simulation.Timetables
 
                                 case "closeupsignal":
                                     closeupSignal = true;
+                                    break;
+
+                                case "closeup":
+                                    closeup = true;
                                     break;
 
                                 case "restrictplatformtosignal":
@@ -3189,7 +3409,7 @@ namespace Orts.Simulation.Timetables
 
                     // create station stop info
                     validStop = actTrain.CreateStationStop(actPlatformID, arrivalTime, departureTime, arrivalDT, departureDT, AITrain.clearingDistanceM,
-                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, restrictPlatformToSignal, extendPlatformToSignal, endStop);
+                        AITrain.minStopDistanceM, terminal, actMinStopTime,keepClearFront, keepClearRear, forcePosition, closeupSignal, closeup, restrictPlatformToSignal, extendPlatformToSignal, endStop);
 
                     // override holdstate using stop info - but only if exit signal is defined
 
@@ -3466,6 +3686,7 @@ namespace Orts.Simulation.Timetables
 
             public bool Pool;
             public string PoolName;
+            public string PoolExitDirection;
 
             public float? DisposeSpeed;
             public bool RunRound;
@@ -3706,11 +3927,32 @@ namespace Orts.Simulation.Timetables
                         Pool = true;
                         FormType = formType;
                         PoolName = String.Copy(trainCommands.CommandValues[0]).ToLower().Trim();
+                        PoolExitDirection = String.Empty;
+
+                        if (trainCommands.CommandQualifiers != null)
+                        {
+                            foreach (TTTrainCommands.TTTrainComQualifiers poolQualifiers in trainCommands.CommandQualifiers)
+                            {
+                                switch (poolQualifiers.QualifierName)
+                                {
+                                    case "direction":
+                                        PoolExitDirection = String.Copy(poolQualifiers.QualifierValues[0]);
+                                        break;
+
+                                    default:
+                                        Trace.TraceInformation("Train : {0} : invalid qualifier for dispose to pool : {1} : {2}\n", trainName, PoolName, poolQualifiers.QualifierName);
+                                        break;
+                                }
+                            }
+                        }
+
                         break;
+
                     // end of pool
 
-                    // unknow type, just skip
+                    // unknow type
                     default:
+                        Trace.TraceInformation("Train : {0} : invalid qualifier for dispose {1}\n", trainName, typeOfDispose);
                         break;
                 }
             }
@@ -3830,9 +4072,23 @@ namespace Orts.Simulation.Timetables
 
                 QualifierName = String.Copy(qualparts[0].Trim());
 
-                for (int iQualValue = 1; iQualValue < qualparts.Length; iQualValue++)
+                string[] valueStrings;
+
+                if (qualparts.Length > 1)
                 {
-                    QualifierValues.Add(String.Copy(qualparts[iQualValue]).Trim());
+                    if (qualparts[1].Contains('+'))
+                    {
+                        valueStrings = qualparts[1].Trim().Split('+');
+                    }
+                    else
+                    {
+                        valueStrings = new string[1] { qualparts[1].Trim() };
+                    }
+
+                    foreach (string thisValue in valueStrings)
+                    {
+                        QualifierValues.Add(thisValue.Trim());
+                    }
                 }
             }
 

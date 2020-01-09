@@ -35,6 +35,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Parsers.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks.SubSystems;
@@ -121,6 +122,7 @@ namespace Orts.Simulation.RollingStocks
         public bool HasFreightAnim = false;
         public bool HasPassengerCapacity = false;
         public bool HasInsideView = false;
+        public float CarHeightAboveSeaLevelM;
 
         public float MaxHandbrakeForceN;
         public float MaxBrakeForceN = 89e3f;
@@ -131,6 +133,8 @@ namespace Orts.Simulation.RollingStocks
         public float CarHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatVolumeM3;     // Volume of car for heating purposes
         public float CarHeatPipeAreaM2;  // Area of surface of car pipe
+        public float CarOutsideTempC;   // Ambient temperature outside of car
+        public float InitialCarOutsideTempC;
 
         // Used to calculate wheel sliding for locked brake
         public bool BrakeSkid = false;
@@ -175,6 +179,79 @@ namespace Orts.Simulation.RollingStocks
         public bool WheelSkid;  // True if wagon wheels lock up.
         public float _AccelerationMpSS;
         protected IIRFilter AccelerationFilter = new IIRFilter(IIRFilter.FilterTypes.Butterworth, 1, 1.0f, 0.1f);
+
+        // Wheel Bearing Temperature parameters
+        public float WheelBearingTemperatureDegC = 40.0f;
+        public string DisplayWheelBearingTemperatureStatus;
+        public float WheelBearingTemperatureRiseTimeS = 0;
+        public float HotBoxTemperatureRiseTimeS = 0;
+        public float WheelBearingTemperatureDeclineTimeS = 0;
+        public float InitialWheelBearingDeclineTemperatureDegC;
+        public float InitialWheelBearingRiseTemperatureDegC;
+        public float InitialHotBoxRiseTemperatureDegS;
+        public bool WheelBearingFailed = false;
+        public bool WheelBearingHot = false;
+        public bool HotBoxActivated = false;
+        public bool HotBoxHasBeenInitialized = false;
+        public bool HotBoxSoundActivated = false;
+        public float HotBoxDelayS;
+        public float ActivityHotBoxDurationS;
+        public float ActivityElapsedDurationS;
+        public float HotBoxStartTimeS;
+
+        // Setup for ambient temperature dependency
+        Interpolator OutsideWinterTempbyLatitudeC;  // Interploator to calculate ambient Winter temperature based upon the latitude of the route
+        Interpolator OutsideAutumnTempbyLatitudeC;  // Interploator to calculate ambient Autumn temperature based upon the latitude of the route
+        Interpolator OutsideSpringTempbyLatitudeC;  // Interploator to calculate ambient Spring temperature based upon the latitude of the route
+        Interpolator OutsideSummerTempbyLatitudeC;  // Interploator to calculate ambient Summer temperature based upon the latitude of the route
+        public bool AmbientTemperatureInitialised;  // Flag to indicate that ambient temperature has been initialised
+
+        // Input values to allow the temperature for different values of latitude to be calculated
+        static float[] WorldLatitudeDeg = new float[]
+        {
+           -50.0f, -40.0f, -30.0f, -20.0f, -10.0f, 0.0f, 10.0f, 20.0f, 30.0f, 40.0f, 50.0f, 60.0f
+        };
+
+        // Temperature in deg Celcius
+        static float[] WorldTemperatureWinter = new float[]
+        {
+            0.9f, 8.7f, 12.4f, 17.2f, 20.9f, 25.9f, 22.8f, 18.2f, 11.1f, 1.1f, -10.2f, -18.7f
+         };
+
+        static float[] WorldTemperatureAutumn = new float[]
+        {
+            7.5f, 13.7f, 18.8f, 22.0f, 24.0f, 26.0f, 25.0f, 21.6f, 21.0f, 14.3f, 6.0f, 3.8f
+         };
+
+        static float[] WorldTemperatureSpring = new float[]
+        {
+            8.5f, 13.1f, 17.6f, 18.6f, 24.6f, 25.9f, 26.8f, 23.4f, 18.5f, 12.6f, 6.1f, 1.7f
+         };
+
+        static float[] WorldTemperatureSummer = new float[]
+        {
+            13.4f, 18.3f, 22.8f, 24.3f, 24.4f, 25.0f, 25.2f, 22.5f, 26.6f, 24.8f, 19.4f, 14.3f
+         };
+
+        public static Interpolator WorldWinterLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureWinter);
+        }
+
+        public static Interpolator WorldAutumnLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureAutumn);
+        }
+
+        public static Interpolator WorldSpringLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureSpring);
+        }
+
+        public static Interpolator WorldSummerLatitudetoTemperatureC()
+        {
+            return new Interpolator(WorldLatitudeDeg, WorldTemperatureSummer);
+        }
 
         public bool AcceptMUSignals = true; //indicates if the car accepts multiple unit signals
         public bool IsMetric;
@@ -274,11 +351,12 @@ namespace Orts.Simulation.RollingStocks
         public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car - 
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
         public float PrevMotiveForceN;
-        public float GravityForceN;  // Newtons  - signed relative to direction of car - 
+        // Gravity forces have negative values on rising grade. 
+        // This means they have the same sense as the motive forces and will push the train downhill.
+        public float GravityForceN;  // Newtons  - signed relative to direction of car.
         public float CurveForceN;   // Resistive force due to curve, in Newtons
         public float WindForceN;  // Resistive force due to wind
-
-        //private float _prevCurveForceN=0f;
+        public float DynamicBrakeForceN = 0f; // Raw dynamic brake force for diesel and electric locomotives
 
         // Derailment variables
         public float WagonVerticalDerailForceN; // Vertical force of wagon/car - essentially determined by the weight
@@ -298,7 +376,10 @@ namespace Orts.Simulation.RollingStocks
         public float FrictionForceN; // in Newtons ( kg.m/s^2 ) unsigned, includes effects of curvature
         public float BrakeForceN;    // brake force applied to slow train (Newtons) - will be impacted by wheel/rail friction
         public float BrakeRetardForceN;    // brake force applied to wheel by brakeshoe (Newtons) independent of friction wheel/rail friction
-        public float TotalForceN; // sum of all the forces active on car relative train direction
+
+        // Sum of all the forces acting on a Traincar in the direction of driving.
+        // MotiveForceN and GravityForceN act to accelerate the train. The others act to brake the train.
+        public float TotalForceN; // 
 
         public string CarBrakeSystemType;
 
@@ -504,6 +585,33 @@ namespace Orts.Simulation.RollingStocks
         // called when it's time to update the MotiveForce and FrictionForce
         public virtual void Update(float elapsedClockSeconds)
         {
+
+            // Initialise ambient temperatures on first initial loop, then ignore
+            if (!AmbientTemperatureInitialised)
+            {
+                InitializeCarTemperatures();
+                AmbientTemperatureInitialised = true;
+            }
+            
+            // Update temperature variation for height of car above sea level
+            // Typically in clear conditions there is a 9.8 DegC variation for every 1000m (1km) rise, in snow/rain there is approx 5.5 DegC variation for every 1000m (1km) rise
+            float TemperatureHeightVariationDegC = 0;
+            const float DryLapseTemperatureC = 9.8f;
+            const float WetLapseTemperatureC = 5.5f;
+
+            if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow) // Apply snow/rain height variation
+            {
+                TemperatureHeightVariationDegC = Me.ToKiloM(CarHeightAboveSeaLevelM) * WetLapseTemperatureC;
+            }
+            else  // Apply dry height variation
+            {
+                TemperatureHeightVariationDegC = Me.ToKiloM(CarHeightAboveSeaLevelM) * DryLapseTemperatureC;
+            }
+            
+            TemperatureHeightVariationDegC = MathHelper.Clamp(TemperatureHeightVariationDegC, 0.00f, 30.0f);
+            
+            CarOutsideTempC = InitialCarOutsideTempC - TemperatureHeightVariationDegC;
+
             // gravity force, M32 is up component of forward vector
             GravityForceN = MassKG * GravitationalAccelerationMpS2 * WorldPosition.XNAMatrix.M32;
             CurrentElevationPercent = 100f * WorldPosition.XNAMatrix.M32;
@@ -525,6 +633,11 @@ namespace Orts.Simulation.RollingStocks
             UpdateBrakeSlideCalculation();
             UpdateTrainDerailmentRisk();
 
+            if (this is MSTSLocomotive) // Set train outside temperature the same as the locomotive - TO BE RECHECKED
+            {
+                Train.TrainOutsideTempC = CarOutsideTempC;
+            }
+
             // acceleration
             if (elapsedClockSeconds > 0.0f)
             {
@@ -535,6 +648,61 @@ namespace Orts.Simulation.RollingStocks
 
                 _PrevSpeedMpS = _SpeedMpS;
             }
+        }
+
+        /// <summary>
+        /// Initialise Train Temperatures
+        /// <\summary>           
+        public void InitializeCarTemperatures()
+        {
+            OutsideWinterTempbyLatitudeC = WorldWinterLatitudetoTemperatureC();
+            OutsideAutumnTempbyLatitudeC = WorldAutumnLatitudetoTemperatureC();
+            OutsideSpringTempbyLatitudeC = WorldSpringLatitudetoTemperatureC();
+            OutsideSummerTempbyLatitudeC = WorldSummerLatitudetoTemperatureC();
+
+            // Find the latitude reading and set outside temperature
+            double latitude = 0;
+            double longitude = 0;
+
+            new Orts.Common.WorldLatLon().ConvertWTC(WorldPosition.TileX, WorldPosition.TileZ, WorldPosition.Location, ref latitude, ref longitude);
+            
+            float LatitudeDeg = MathHelper.ToDegrees((float)latitude);
+                      
+
+            // Sets outside temperature dependent upon the season
+            if (Simulator.Season == SeasonType.Winter)
+            {
+                // Winter temps
+                InitialCarOutsideTempC = OutsideWinterTempbyLatitudeC[LatitudeDeg];
+            }
+            else if (Simulator.Season == SeasonType.Autumn)
+            {
+                // Autumn temps
+                InitialCarOutsideTempC = OutsideAutumnTempbyLatitudeC[LatitudeDeg];
+            }
+            else if (Simulator.Season == SeasonType.Spring)
+            {
+                // Spring temps
+                InitialCarOutsideTempC = OutsideSpringTempbyLatitudeC[LatitudeDeg];
+            }
+            else
+            {
+                // Summer temps
+                InitialCarOutsideTempC = OutsideSummerTempbyLatitudeC[LatitudeDeg];
+            }
+
+            // If weather is freezing. Snow will only be produced when temp is between 0 and 2 Deg C. Adjust temp as appropriate
+            const float SnowTemperatureC = 2;
+
+            if (Simulator.WeatherType == WeatherType.Snow && InitialCarOutsideTempC > SnowTemperatureC)
+            {
+                InitialCarOutsideTempC = 0;  // Weather snowing - freezing conditions. 
+            }
+
+            // Initialise wheel bearing temperature to ambient temperature
+            WheelBearingTemperatureDegC = InitialCarOutsideTempC;
+            InitialWheelBearingRiseTemperatureDegC = InitialCarOutsideTempC;
+            InitialWheelBearingDeclineTemperatureDegC = InitialCarOutsideTempC;
         }
 
         #region Calculate Brake Skid
@@ -692,8 +860,9 @@ namespace Orts.Simulation.RollingStocks
                 // Transmission heat loss = exposed area * heat transmission coeff (inside temp - outside temp)
                 // Calculate the heat loss through the roof, wagon sides, and floor separately  
 
+                CarOutsideTempC = Train.TrainOutsideTempC;  // Get Car Outside Temp from MSTSSteamLocomotive file
+
                 float CarriageHeatTempC = Train.TrainCurrentCarriageHeatTempC;     // Get current Car Heat Temp (Calculated in MSTSSteamLocomotive )
-                float CarOutsideTempC = Train.TrainOutsideTempC;  // Get Car Outside Temp from MSTSSteamLocomotive file
 
                 // Calculate the heat loss through the carriage sides, per degree of temp change
                 float HeatTransCoeffRoofWm2K = 1.7f; // 2 inch wood - uninsulated
@@ -1342,8 +1511,9 @@ namespace Orts.Simulation.RollingStocks
                 AcceptMUSignals ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 ThrottlePercent,
                 String.Format("{0}{1}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric), WheelSlip ? "!!!" : ""),
-                FormatStrings.FormatPower(MotiveForceN * SpeedMpS, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerExceedBreakLimit ? "???" : ""));
+                // For Locomotive HUD display shows "forward" motive power (& force) as a positive value, braking power (& force) will be shown as negative values.
+                FormatStrings.FormatPower((MotiveForceN - DynamicBrakeForceN) * SpeedMpS, IsMetric, false, false),   
+                String.Format("{0}{1}", FormatStrings.FormatForce((MotiveForceN - DynamicBrakeForceN), IsMetric), CouplerExceedBreakLimit ? "???" : ""));
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
@@ -2234,6 +2404,63 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
             return isOverTrough;
+        }
+
+        /// <summary>
+        /// Checks if traincar is over junction or crossover. Used to check if water scoop breaks
+        /// </summary>
+        /// <returns> returns true if car is over junction</returns>
+
+        public bool IsOverJunction()
+        {
+
+            // To Do - This identifies the start of the train, but needs to be further refined to work for each carriage.
+            var isOverJunction = false;
+            // start at front of train
+            int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
+            float thisSectionOffset = Train.PresentPosition[0].TCOffset;
+            int thisSectionDirection = Train.PresentPosition[0].TCDirection;
+
+
+            float usedCarLength = CarLengthM;
+
+            if (Train.PresentPosition[0].TCSectionIndex != Train.PresentPosition[1].TCSectionIndex)
+            {
+                try
+                {
+                    var copyOccupiedTrack = Train.OccupiedTrack.ToArray();
+                    foreach (var thisSection in copyOccupiedTrack)
+                    {
+
+                        //                    Trace.TraceInformation(" Track Section - Index {0} Ciruit Type {1}", thisSectionIndex, thisSection.CircuitType);
+
+                        if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction || thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Crossover)
+                        {
+
+                            // train is on a switch; let's see if car is on a switch too
+                            WorldLocation switchLocation = TileLocation(Simulator.TDB.TrackDB.TrackNodes[thisSection.OriginalIndex].UiD);
+                            var distanceFromSwitch = WorldLocation.GetDistanceSquared(WorldPosition.WorldLocation, switchLocation);
+                            if (distanceFromSwitch < CarLengthM * CarLengthM + Math.Min(SpeedMpS * 3, 150))
+                            {
+                                isOverJunction = true;
+                                return isOverJunction;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+
+            return isOverJunction;
+        }
+
+
+        public static WorldLocation TileLocation(UiD uid)
+        {
+            return new WorldLocation(uid.TileX, uid.TileZ, uid.X, uid.Y, uid.Z);
         }
 
         public virtual void SwitchToPlayerControl()

@@ -89,6 +89,10 @@ don't want to see these messages.
 OR uses the same message scheme for system messages such as "Game saved"
 or "Replay ended" but you cannot suppress these system messages.
 
+Control confirmations can also be toggled on and off at runtime using the 
+key combination Ctrl-Alt-F10. 
+
+
 .. _options-retainers:
 
 Retainer valve on all cars

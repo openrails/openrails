@@ -17,11 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Orts.Simulation.RollingStocks;
-using Orts.Common;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
+using Orts.Common;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -47,15 +47,15 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
-            UserInputCommands.Add(UserCommands.ControlCircuitBreakerClosingOrder, new Action[] {
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingOrder, new Action[] {
                 () => new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, false),
                 () => {
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingOrder);
                     new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, true);
                 }
             });
-            UserInputCommands.Add(UserCommands.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true)});
-            UserInputCommands.Add(UserCommands.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingAuthorization) });
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true)});
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingAuthorization) });
             base.InitializeUserInputCommands();
         }
 

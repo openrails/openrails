@@ -67,6 +67,7 @@ namespace Orts.Simulation.RollingStocks
         public float EngineRPMderivation;
         float EngineRPMold;
         float EngineRPMRatio; // used to compute Variable1 and Variable2
+        public float MaximumDieselEnginePowerW;
 
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.0025f);
         public float MaxDieselLevelL = 5000.0f;
@@ -124,7 +125,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-
+                case "engine(ortsdieselenginemaxpower": MaximumDieselEnginePowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "engine(dieselsmokeeffectinitialsmokerate": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectinitialmagnitude": InitialMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -206,7 +207,7 @@ namespace Orts.Simulation.RollingStocks
             IdleRPM = locoCopy.IdleRPM;
             MaxRPM = locoCopy.MaxRPM;
             MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
-
+            MaximumDieselEnginePowerW = locoCopy.MaximumDieselEnginePowerW;
             PercentChangePerSec = locoCopy.PercentChangePerSec;
 
             EngineRPMderivation = locoCopy.EngineRPMderivation;
@@ -382,8 +383,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsWheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
-                    float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
+                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsWheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * DieselEngines.CurrentRailOutputPowerW / AbsWheelSpeedMpS));
+                    float maxPowerW = 0.98f * DieselEngines.MaximumRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
                     if (DieselEngines.HasGearBox)
                     {

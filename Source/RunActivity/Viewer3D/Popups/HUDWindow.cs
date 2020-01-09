@@ -281,6 +281,16 @@ namespace Orts.Viewer3D.Popups
                             color = text.EndsWith("!!!") ? Color.OrangeRed : Color.Yellow;
                             text = text.Substring(0, text.Length - 3);
                         }
+                        else if (text.EndsWith("%%%"))
+                        {
+                            color = Color.Cyan;
+                            text = text.Substring(0, text.Length - 3);
+                        }
+                        else if (text.EndsWith("$$$"))
+                        {
+                            color = Color.Pink;
+                            text = text.Substring(0, text.Length - 3);
+                        }
                         TextFont.Draw(spriteBatch, new Rectangle(TextOffset + column * ColumnWidth, TextOffset + row * TextFont.Height, ColumnWidth, TextFont.Height), Point.Zero, text, align, color);
                     }
                 }
@@ -812,13 +822,14 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Gradient"),
                 Viewer.Catalog.GetString("Curve"),
                 Viewer.Catalog.GetString("Brk Frict."),
-                Viewer.Catalog.GetString("Brk Slide")
+                Viewer.Catalog.GetString("Brk Slide"),
+                Viewer.Catalog.GetString("Bear Temp")
 
                 // Possibly needed for buffing forces
-//                Viewer.Catalog.GetString("VertD"),
-//                Viewer.Catalog.GetString("VertL"),
-//                Viewer.Catalog.GetString("BuffExc"),
-//                Viewer.Catalog.GetString("CplAng")
+                //                Viewer.Catalog.GetString("VertD"),
+                //                Viewer.Catalog.GetString("VertL"),
+                //                Viewer.Catalog.GetString("BuffExc"),
+                //                Viewer.Catalog.GetString("CplAng")
 
                 );
             TableAddLine(table);
@@ -831,7 +842,7 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 0, "{0}", car.CarID);
                 TableSetCell(table, 1, "{0}", FormatStrings.FormatForce(car.TotalForceN, car.IsMetric));
                 TableSetCell(table, 2, "{0}", FormatStrings.FormatForce(car.MotiveForceN, car.IsMetric));
-                TableSetCell(table, 3, "{0}", FormatStrings.FormatForce(car.BrakeForceN, car.IsMetric));
+                TableSetCell(table, 3, "{0}", FormatStrings.FormatForce(car.BrakeForceN + car.DynamicBrakeForceN, car.IsMetric));
                 TableSetCell(table, 4, "{0}", FormatStrings.FormatForce(car.FrictionForceN, car.IsMetric));
                 TableSetCell(table, 5, "{0}", FormatStrings.FormatForce(car.GravityForceN, car.IsMetric));
                 TableSetCell(table, 6, "{0}", FormatStrings.FormatForce(car.CurveForceN, car.IsMetric));
@@ -845,16 +856,17 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
                 TableSetCell(table, 15, "{0:F0}%", car.BrakeShoeCoefficientFriction * 100.0f);
                 TableSetCell(table, 16, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : "No");
+                TableSetCell(table, 17, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);
 
                 // Possibly needed for buffing forces
-//                TableSetCell(table, 17, "{0}", FormatStrings.FormatForce(car.WagonVerticalDerailForceN, car.IsMetric));
-//                TableSetCell(table, 18, "{0}", FormatStrings.FormatForce(car.TotalWagonLateralDerailForceN, car.IsMetric));
-//                TableSetCell(table, 19, car.BuffForceExceeded ? Viewer.Catalog.GetString("Yes") : "No");
+                //                TableSetCell(table, 17, "{0}", FormatStrings.FormatForce(car.WagonVerticalDerailForceN, car.IsMetric));
+                //                TableSetCell(table, 18, "{0}", FormatStrings.FormatForce(car.TotalWagonLateralDerailForceN, car.IsMetric));
+                //                TableSetCell(table, 19, car.BuffForceExceeded ? Viewer.Catalog.GetString("Yes") : "No");
 
-//                TableSetCell(table, 20, "{0:F2}", MathHelper.ToDegrees(car.WagonFrontCouplerAngleRad));
+                //                TableSetCell(table, 20, "{0:F2}", MathHelper.ToDegrees(car.WagonFrontCouplerAngleRad));
 
 
-                TableSetCell(table, 17, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
+                TableSetCell(table, 18, car.Flipped ? Viewer.Catalog.GetString("Flipped") : "");
                 TableAddLine(table);
 
             }
@@ -865,7 +877,18 @@ namespace Orts.Viewer3D.Popups
 
         void TextPageDispatcherInfo(TableData table)
         {
-            TextPageHeading(table, Viewer.Catalog.GetString("DISPATCHER INFORMATION"));
+            // count active trains
+            int totalactive = 0;
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+                {
+                    totalactive++;
+                }
+            }
+
+            TextPageHeading(table, Viewer.Catalog.GetString("DISPATCHER INFORMATION : active trains : " + totalactive));
+
             TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Train"),
                 Viewer.Catalog.GetString("Travelled"),
@@ -899,17 +922,37 @@ namespace Orts.Viewer3D.Popups
                 }
             }
 
-            // next is active AI trains
+            // next is active AI trains which are delayed
             foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
             {
                 if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
                     && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
                 {
-                    var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
-                    status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
-                    for (var iCell = 0; iCell < status.Length; iCell++)
-                        TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
-                    TableAddLine(table);
+                    if (thisTrain.Delay.HasValue && thisTrain.Delay.Value.TotalMinutes >= 1)
+                    {
+                        var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                        status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
+                        for (var iCell = 0; iCell < status.Length; iCell++)
+                            TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                        TableAddLine(table);
+                    }
+                }
+            }
+
+            // next is active AI trains which are not delayed
+            foreach (var thisTrain in Viewer.Simulator.AI.AITrains)
+            {
+                if (thisTrain.MovementState != AITrain.AI_MOVEMENT_STATE.AI_STATIC && thisTrain.TrainType != Train.TRAINTYPE.PLAYER
+                    && thisTrain.TrainType != Train.TRAINTYPE.AI_INCORPORATED)
+                {
+                    if (!thisTrain.Delay.HasValue || thisTrain.Delay.Value.TotalMinutes < 1)
+                    {
+                        var status = thisTrain.GetStatus(Viewer.MilepostUnitsMetric);
+                        status = thisTrain.AddMovementState(status, Viewer.MilepostUnitsMetric);
+                        for (var iCell = 0; iCell < status.Length; iCell++)
+                            TableSetCell(table, table.CurrentRow, iCell, status[iCell]);
+                        TableAddLine(table);
+                    }
                 }
             }
 
@@ -990,6 +1033,7 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Intensity"), Viewer.Catalog.GetStringFmt("{0:F4} p/s/m^2", Viewer.Simulator.Weather.PricipitationIntensityPPSPM2));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Liquidity"), Viewer.Catalog.GetStringFmt("{0:F0} %", Viewer.Simulator.Weather.PrecipitationLiquidity * 100));
             TableAddLabelValue(table, Viewer.Catalog.GetString("Wind"), Viewer.Catalog.GetStringFmt("{0:F1},{1:F1} m/s", Viewer.Simulator.Weather.WindSpeedMpS.X, Viewer.Simulator.Weather.WindSpeedMpS.Y));
+            TableAddLabelValue(table, Viewer.Catalog.GetString("Amb Temp"), FormatStrings.FormatTemperature(Viewer.PlayerLocomotive.Train.TrainOutsideTempC, Viewer.PlayerLocomotive.IsMetric, false));
         }
 
         void TextPageDebugInfo(TableData table)
