@@ -28,61 +28,33 @@ Anyone can <a href="../../download/source/">download the source code</a> for Ope
     <a href=# id="public_changes"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Public Changes</h2></a>
     <div class="accordion_body">
       <p>
-If your changes might be useful to others, then we encourage you to <a href="#submitting_a_change">submit them for inclusion into the product</a>. We will respond to all
+If your changes might be useful to others, then we encourage you to submit them for inclusion into the product. We will respond to all
 submissions and give credit in the project record for submissions that are included.
+      </p><p>
+Click <a href="https://github.com/twpol/openrails/blob/feature/contributing/CONTRIBUTING.md">here for detailed advice and instructions for contributing to Open Rails</a>.
       </p>
     </div>
   </li><li>
     <a href=# id="source_code_repository"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Version Control System</h2></a>
     <div class="accordion_body">
       <p>
-The Open Rails project uses Subversion (SVN) as the versioning and revision control system for our software.
-Revisions are archived in a repository and can be compared, restored and merged, so that versions are safe and several developers can work
+The Open Rails project uses Git as the versioning and revision control system for our software.
+Revisions are kept in <a href="https://github.com/openrails/openrails">a public repository at GitHub.com</a> and can be compared, restored and merged, so that versions are safe and several developers can work
  independently without (too much) conflict.
       </p><p>
-The Open Rails source code is managed on <a href="http://svn.uktrainsim.com/svn/openrails/trunk">our Subversion server</a>.
-Read-only access is provided from the guest login:
-      </p>
-      <ul>
-        <li>Username: <span class="tt">orpublic</span></li>
-        <li>Password: <span class="tt">orpublic</span></li>
-      </ul><br>
-      <p>
-From your PC, you can use an Subversion client such as <a href="http://tortoisesvn.net">TortoiseSVN</a> to access the files, or simply view the repository from a web browser.
+From your PC, you can simply view the repository from a web browser. 
+GitHub.com provides the GitHub Desktop program to interface between GitHub.com and your PC (for 64-bit Windows only).
+Other Windows programs are SourceTree and TortoiseGit and also Visual Studio includes a Git tool.
       </p><p>
-P.S. - Our thanks to <a href="http://www.uktrainsim.com">UKTrainSim.com</a> for donating the Subversion server space and admin services.
-      </p>
-    </div>
-  </li><li>
-    <a href=# id="accessing_the_code"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Accessing The Code With TortoiseSVN</h2></a>
-    <div class="accordion_body">
-      <p>
-If you are not familiar with Subversion, please study the TortoiseSVN help first.
-      </p>
-      <ol>
-        <li>From <i>Windows Explorer</i>, choose a folder to hold the project code.</li>
-        <li>Right click on the folder, select <i>SVN Checkout...</i></li>
-        <li>In the <i>Checkout</i> dialog box, enter the <i>URL of repository</i> : 
-          <span class="tt">http://svn.uktrainsim.com/svn/openrails/trunk</span>
-        </li>
-        <li>Enter username <span class="tt">&nbsp;orpublic</span></li>
-        <li>Enter password <span class="tt">&nbsp;orpublic</span></li>
-        <li>Check that the <i>Checkout directory</i> shows the folder where you want the files extracted to - e.g. 
-          <span class="tt">C:\Users\Wayne\Desktop\openrails</span>
-        </li>
-        <li>Click OK.</li>
-      </ol><br>
-      <p>
 The main folders in the repository are:
-      </p>
+    </p>
       <ul>
         <li>Addons - accessory files shipped with the installation package</li>
         <li>Architecture - an incomplete experiment in restructuring the program</li>
-        <li>Archive - abandoned code</li>
         <li>Documentation - operations manual and other documentation</li>
         <li>Program - empty space for executables once they are compiled</li>
         <li>Source - the principal source code files</li>
-        <li>SVNTesting - sandbox for training new users on SVN</li>
+        <li>Website - source for this website</li>
       </ul>
     </div>
   </li><li>
@@ -92,7 +64,7 @@ The main folders in the repository are:
 To compile and debug the Open Rails source code, ensure you have the following Microsoft products installed:
       </p>
       <ul>
-        <li>Visual Studio 2015/17, any edition. The 
+        <li>Visual Studio 2015/17/19, any edition. The 
           <a href="https://www.visualstudio.com/downloads/">Community Edition</a> 
          is free
 		 <br />(Note 1: To save on disk space, all you need is the option Windows > .NET Development)
@@ -132,22 +104,6 @@ On the Visual Studio menu,
         <li>Press F5 to run RunActivity.exe using your activity.</li>
       </ol>
     </div>
-  </li><li>
-    <a href=# id="submitting_a_change"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Submitting A Change</h2></a>
-    <div class="accordion_body">
-      <p>
-A change is best packaged as a "patch" file - a file which contains instructions to alter the current version of Open Rails code to
-include your changes. Patches are short and readable. Subversion will usually apply your patch successfully 
-even after code has been changed by someone else.
-      </p><p>
-If you are offering a fix to a Bug Report, then simply attach your patch file to the <a href="http://launchpad.net/or">Bug Tracker</a> explaining what you have done.
-      </p><p>
-If you are offering an improvement or a new feature, then attach your file to a post on the Elvas Tower forum <a href="http://www.elvastower.com/forums/index.php?/forum/192-discussion/">Open Rails Discussion</a>. It would be helpful to post a message before
- you start work to give us some idea of your intentions.
-      </p><p>
-We cannot promise that your changes will make it into the code, but show us what you can do and then we can talk about it.
-      </p>
-    </div>
   </li>
   <li>
     <a href=# id="code_policy"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Policy for Code Changes</h2></a>
@@ -168,11 +124,12 @@ We cannot promise that your changes will make it into the code, but show us what
         <li><em>Targeted</em> means "Milestone" is set to the next planned stable version.</li>
         <li><em>Approved</em> means "Direction" is "Approved", "Milestone target" is unset or set to the next planned stable version, and at least 7 days of discussion has taken place.</li>
       </ol>
+      <br>
       <p>
         For members of the <a href="../../discover/project-team/">Development Team</a>, these policies are defined in more detail in
-        <a href="http://www.elvastower.com/forums/index.php?/topic/26392-new-policy-for-code-changes/">New policy for code changes</a>
+        <a href="http://www.elvastower.com/forums/index.php?/topic/26392-new-policy-for-code-changes/">Policy for code changes</a>
         and
-        <a href="http://www.elvastower.com/forums/index.php?/topic/27109-new-policy-for-blueprints/">New policy for blueprints</a>.
+        <a href="http://www.elvastower.com/forums/index.php?/topic/27109-new-policy-for-blueprints/">Policy for blueprints</a>.
       </p>
     </div>
   </li>
