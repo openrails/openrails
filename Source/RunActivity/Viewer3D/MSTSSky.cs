@@ -38,6 +38,10 @@ namespace Orts.Viewer3D
         public static int skyHeight;
         public const short skyLevels = 4;
         public static bool IsNight = false;
+        public static float mstsskyTileu;
+        public static float mstsskyTilev;
+        public static float mstscloudTileu;
+        public static float mstscloudTilev;
     }
 
     #endregion
@@ -306,6 +310,10 @@ namespace Orts.Viewer3D
         public int mstscloudDomeRadiusDiff = 600;
         // skyLevels: Used for iterating vertically through the "levels" of the hemisphere polygon
         private static int mstsskyLevels =  MSTSSkyConstants.skyLevels;
+        private static float mstsskytextureu = MSTSSkyConstants.mstsskyTileu;
+        private static float mstsskytexturev = MSTSSkyConstants.mstsskyTilev;
+        private static float mstscloudtextureu = MSTSSkyConstants.mstscloudTileu;
+        private static float mstscloudtexturev = MSTSSkyConstants.mstscloudTilev;
         // Number of vertices in the sky hemisphere. (each dome = 145 for 24-sided sky dome: 24 x 6 + 1)
         // plus four more for the moon quad
         private static int numVertices = 4 + 2 * (int)((mstsskyLevels + 1) * mstsskySides + 1);
@@ -324,10 +332,10 @@ namespace Orts.Viewer3D
             triangleListIndices = new short[indexCount];
 
             // Sky dome
-            MSTSSkyDomeVertexList(0, mstsskyRadius, 8.0f, 8.0f);
+            MSTSSkyDomeVertexList(0, mstsskyRadius, mstsskytextureu, mstsskytexturev);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
-            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, 2.0f, 2.0f);
+            MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius - mstscloudDomeRadiusDiff, mstscloudtextureu, mstscloudtexturev);
             MSTSSkyDomeTriangleList((short)((indexCount - 6) / 2), 1);
             // Moon quad
             MoonLists(numVertices - 5, indexCount - 6);//(144, 792);
@@ -412,7 +420,7 @@ namespace Orts.Viewer3D
             // Single vertex at zenith
             vertexList[vertexIndex].Position = new Vector3(0, radius, 0);
             vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f, 0.5f); // (top overlay)
+            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f * tile_u, 0.5f * tile_v); // (top overlay)
         }
 
         /// <summary>
@@ -539,6 +547,10 @@ namespace Orts.Viewer3D
         IEnumerator<EffectPass> ShaderPassesSky;
         IEnumerator<EffectPass> ShaderPassesMoon;
         List<IEnumerator<EffectPass>>ShaderPassesClouds = new List<IEnumerator<EffectPass>>();
+        private float mstsskytexturex;
+        private float mstsskytexturey;
+        private float mstscloudtexturex;
+        private float mstscloudtexturey;
 
 
         public MSTSSkyMaterial(Viewer viewer)
@@ -560,18 +572,27 @@ namespace Orts.Viewer3D
                     if( i == 0 )
                     {
                         MSTSDayTexture = MSTSSkyTexture[i];
+                        mstsskytexturex = mstsskytexture[i].TileX;
+                        mstsskytexturey = mstsskytexture[i].TileY;
                     }
                     else if(mstsskytexture[i].Fadein_Begin_Time != null)
                     {
                         MSTSSkyStarTexture = MSTSSkyTexture[i];
+                        mstsskytexturex = mstsskytexture[i].TileX;
+                        mstsskytexturey = mstsskytexture[i].TileY;
                     }
                     else
                     {
                         MSTSSkyCloudTexture.Add(Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyTexture[i]));
+                        mstscloudtexturex = mstsskytexture[i].TileX;
+                        mstscloudtexturey = mstsskytexture[i].TileY;
                     }
                 }
-                
-                
+
+                MSTSSkyConstants.mstsskyTileu = mstsskytexturex;
+                MSTSSkyConstants.mstsskyTilev = mstsskytexturey;
+                MSTSSkyConstants.mstscloudTileu = mstscloudtexturex;
+                MSTSSkyConstants.mstscloudTilev = mstscloudtexturey;
             }
             else
             {
