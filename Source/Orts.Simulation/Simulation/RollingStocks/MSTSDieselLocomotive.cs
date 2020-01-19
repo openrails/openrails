@@ -107,6 +107,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>        
         float partialFuelConsumption = 0;
 
+        private const float GearBoxControllerBoost = 1; // Slow boost to enable easy single gear up/down commands
 
         public MSTSDieselLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
@@ -362,14 +363,14 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (GearBoxController != null)
                 {
-                    GearboxGearIndex = (int)GearBoxController.Update(elapsedClockSeconds);
+                    GearboxGearIndex = (int)GearBoxController.UpdateAndSetBoost(elapsedClockSeconds, GearBoxControllerBoost);
                 }
             }
             else
             {
                 if (GearBoxController != null)
                 {
-                    GearBoxController.Update(elapsedClockSeconds);
+                    GearBoxController.UpdateAndSetBoost(elapsedClockSeconds, GearBoxControllerBoost);
                 }
             }
         }
