@@ -403,9 +403,10 @@ namespace Orts.Simulation.AIs
                 }
             }
 #endif
-            // check deadlocks
+            // check deadlocks; do it after placing for player train, like done for it when autopilot option unchecked
 
-            CheckDeadlock(ValidRoute[0], Number);
+            if (!IsActualPlayerTrain)
+                CheckDeadlock(ValidRoute[0], Number);
 
             // set initial position and state
 
@@ -465,6 +466,8 @@ namespace Orts.Simulation.AIs
                 }
 
                 InitializeSignals(false);           // Get signal information
+                if (IsActualPlayerTrain)
+                    CheckDeadlock(ValidRoute[0], Number);
                 TCRoute.SetReversalOffset(Length, false);  // set reversal information for first subpath
                 SetEndOfRouteAction();              // set action to ensure train stops at end of route
 
@@ -488,6 +491,9 @@ namespace Orts.Simulation.AIs
                     }
                 }
             }
+
+            if (IsActualPlayerTrain)
+                SetTrainSpeedLoggingFlag();
 
             if (CheckTrain)
             {
