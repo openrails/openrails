@@ -551,6 +551,9 @@ namespace Orts.Viewer3D.Popups
         {
         }
 
+        bool Dragging;
+        float DragThumbOffset;
+
         internal override void Initialize()
         {
             Client = InternalAdd(new ControlLayoutHorizontal(RemainingWidth, RemainingHeight));
@@ -592,22 +595,52 @@ namespace Orts.Viewer3D.Popups
                     var thumbOffset = (int)((float)(Position.Width - 3 * TextHeight) * (float)ScrollPosition / (float)ScrollSize);
 
                     // Mouse down occured within the scrollbar.
-                    if (e.MouseDownPosition.X < Position.Left + TextHeight)
+                    if (!Dragging && e.MouseDownPosition.X < Position.Left + TextHeight)
                         // Mouse down occured on left button.
                         SetScrollPosition(ScrollPosition - 10);
-                    else if (e.MouseDownPosition.X < Position.Left + TextHeight + thumbOffset)
+                    else if (!Dragging && e.MouseDownPosition.X < Position.Left + TextHeight + thumbOffset)
                         // Mouse down occured on left gutter.
                         SetScrollPosition(ScrollPosition - 100);
-                    else if (e.MouseDownPosition.X > Position.Right - TextHeight)
+                    else if (!Dragging && e.MouseDownPosition.X > Position.Right - TextHeight)
                         // Mouse down occured on right button.
                         SetScrollPosition(ScrollPosition + 10);
-                    else if (e.MouseDownPosition.X > Position.Left + 2 * TextHeight + thumbOffset)
+                    else if (!Dragging && e.MouseDownPosition.X > Position.Left + 2 * TextHeight + thumbOffset)
                         // Mouse down occured on right gutter.
                         SetScrollPosition(ScrollPosition + 100);
+                    else if (e.MouseDownPosition.X > Position.Left + TextHeight + thumbOffset && e.MouseDownPosition.X < Position.Left + 2 * TextHeight + thumbOffset && !Dragging)
+                    {
+                        // Mouse down occured on the thumb
+                        Dragging = true;
+                        DragThumbOffset = e.MousePosition.X - (Position.Left + TextHeight + thumbOffset);
+                    }
+
                     return true;
                 }
             }
             return base.HandleUserInput(e);
+        }
+
+        internal override bool HandleMouseMove(WindowMouseEvent e)
+        {
+            if (UserInput.IsMouseLeftButtonDown && Dragging && UserInput.MouseMovedLeft)
+            {
+                SetScrollPosition(ScrollPosition - (int)(DragThumbOffset * UserInput.MouseSpeedX));
+            }
+
+            if (UserInput.IsMouseLeftButtonDown && Dragging && UserInput.MouseMovedRight)
+            {
+                SetScrollPosition(ScrollPosition + (int)(DragThumbOffset * UserInput.MouseSpeedX));
+            }
+
+            return base.HandleMouseMove(e);
+        }
+
+        internal override bool HandleMouseUp(WindowMouseEvent e)
+        {
+            if (Dragging)
+                Dragging = false;
+
+            return base.HandleMouseUp(e);
         }
 
         public override int RemainingHeight
@@ -640,6 +673,9 @@ namespace Orts.Viewer3D.Popups
             : base(width, height)
         {
         }
+
+        float DragThumbOffset;
+        bool Dragging;
 
         internal override void Initialize()
         {
@@ -678,27 +714,61 @@ namespace Orts.Viewer3D.Popups
             if (UserInput.IsMouseLeftButtonDown)
             {
                 Client.Position.Height = Client.CurrentTop;
+                
                 if (e.MouseDownPosition.X > Position.Right - TextHeight)
                 {
                     var thumbOffset = (int)((float)(Position.Height - 3 * TextHeight) * (float)ScrollPosition / (float)ScrollSize);
 
                     // Mouse down occured within the scrollbar.
-                    if (e.MouseDownPosition.Y < Position.Top + TextHeight)
+                    if (!Dragging && e.MouseDownPosition.Y < Position.Top + TextHeight)
                         // Mouse down occured on top button.
                         SetScrollPosition(ScrollPosition - 10);
-                    else if (e.MouseDownPosition.Y < Position.Top + TextHeight + thumbOffset)
+                    else if (!Dragging && e.MouseDownPosition.Y < Position.Top + TextHeight + thumbOffset)
                         // Mouse down occured on top gutter.
                         SetScrollPosition(ScrollPosition - 100);
-                    else if (e.MouseDownPosition.Y > Position.Bottom - TextHeight)
+                    else if (!Dragging && e.MouseDownPosition.Y > Position.Bottom - TextHeight)
                         // Mouse down occured on bottom button.
                         SetScrollPosition(ScrollPosition + 10);
-                    else if (e.MouseDownPosition.Y > Position.Top + 2 * TextHeight + thumbOffset)
+                    else if (!Dragging && e.MouseDownPosition.Y > Position.Top + 2 * TextHeight + thumbOffset)
                         // Mouse down occured on bottom gutter.
                         SetScrollPosition(ScrollPosition + 100);
+                    else if (e.MouseDownPosition.Y > Position.Top + TextHeight + thumbOffset && e.MouseDownPosition.Y < Position.Top + 2 * TextHeight + thumbOffset && !Dragging)
+                    {
+                        Dragging = true;
+                        DragThumbOffset = e.MousePosition.Y - (Position.Top + TextHeight + thumbOffset);
+                    }
+
                     return true;
                 }
             }
+
+            if (UserInput.IsMouseWheelChanged)
+                SetScrollPosition(ScrollPosition - UserInput.MouseWheelChange);
+
             return base.HandleUserInput(e);
+        }
+
+        internal override bool HandleMouseMove(WindowMouseEvent e)
+        {
+            if (UserInput.IsMouseLeftButtonDown && Dragging && UserInput.MouseMovedUp)
+            {
+                SetScrollPosition(ScrollPosition - (int)(DragThumbOffset * UserInput.MouseSpeedY));
+            }
+
+            if (UserInput.IsMouseLeftButtonDown && Dragging && UserInput.MouseMovedDown)
+            {
+                SetScrollPosition(ScrollPosition + (int)(DragThumbOffset * UserInput.MouseSpeedY));
+            }
+
+            return base.HandleMouseMove(e);
+        }
+
+        internal override bool HandleMouseUp(WindowMouseEvent e)
+        {
+            if (Dragging)
+                Dragging = false;               
+
+            return base.HandleMouseUp(e);
         }
 
         public override int RemainingWidth
