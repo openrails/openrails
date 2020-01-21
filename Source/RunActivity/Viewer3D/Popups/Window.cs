@@ -229,6 +229,8 @@ namespace Orts.Viewer3D.Popups
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (WindowVertexDeclaration == null)
+                WindowVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionTexture.VertexElements);
             if (WindowVertexBuffer == null)
             {
                 // Edges/corners are 32px (1/4th image size).
@@ -269,7 +271,8 @@ namespace Orts.Viewer3D.Popups
                 WindowIndexBuffer.SetData(indexData);
             }
 
-            graphicsDevice.SetVertexBuffer(WindowVertexBuffer);
+            graphicsDevice.VertexDeclaration = WindowVertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(WindowVertexBuffer, 0, VertexPositionTexture.SizeInBytes);
             graphicsDevice.Indices = WindowIndexBuffer;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 0, 20);
         }
@@ -343,8 +346,18 @@ namespace Orts.Viewer3D.Popups
         internal override bool HandleMouseDown(WindowMouseEvent e)
         {
             DragWindowOffset = DragInvalid;
+         
             if (base.HandleMouseDown(e))
                 return true;
+
+            // prevent from dragging when clicking on vertical scrollbar
+            if (MathHelper.Distance(base.RemainingWidth, e.MousePosition.X) < 20)
+                return false;
+
+            // prevent from dragging when clicking on horizontal scrollbar
+            if (MathHelper.Distance(base.RemainingHeight, e.MousePosition.Y) < 20)
+                return false;
+
             DragWindowOffset = new Point(e.MouseDownScreenPosition.X - Window.Location.X, e.MouseDownScreenPosition.Y - Window.Location.Y);
             return true;
         }
