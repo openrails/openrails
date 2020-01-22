@@ -53,6 +53,13 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in Exhaust)
                 drawer.Initialize(dieselTexture);
 
+            if (car.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
+                ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN) &&
+                (car.Train.MUDirection != Direction.N && (car as MSTSDieselLocomotive).DieselEngines[0].EngineStatus == Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running))))
+            {
+                (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserToForwardBackward);
+                (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserChange);
+            }
         }
 
 
