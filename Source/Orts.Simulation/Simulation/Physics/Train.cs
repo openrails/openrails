@@ -2400,7 +2400,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
                 if (DatalogTSContents[4] == 1)
                 {
-                    stringBuild.Append((0 - Cars[LeadLocomotiveIndex].CurrentElevationPercent).ToString("00.0"));
+                    stringBuild.Append((0 - Simulator.PlayerLocomotive.CurrentElevationPercent).ToString("00.0"));
                     stringBuild.Append(Separator);
                 }
 
@@ -2438,7 +2438,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 if (DatalogTSContents[9] == 1)
                 {
                     //                    stringBuild.Append(BrakeLine1PressurePSIorInHg.ToString("000"));
-                    stringBuild.Append(Cars[LeadLocomotiveIndex].BrakeSystem.GetCylPressurePSI().ToString("000"));
+                    stringBuild.Append(Simulator.PlayerLocomotive.BrakeSystem.GetCylPressurePSI().ToString("000"));
                     stringBuild.Append(Separator);
                 }
 
@@ -2556,25 +2556,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
             if (IsActualPlayerTrain)
             {
-                DatalogTrainSpeed = Simulator.Settings.DataLogTrainSpeed;
-                DatalogTSInterval = Simulator.Settings.DataLogTSInterval;
+                SetTrainSpeedLoggingFlag();
 
-                DatalogTSContents = new int[Simulator.Settings.DataLogTSContents.Length];
-                Simulator.Settings.DataLogTSContents.CopyTo(DatalogTSContents, 0);
-
-                // if logging required, derive filename and open file
-                if (DatalogTrainSpeed)
-                {
-                    DataLogFile = Simulator.DeriveLogFile("Speed");
-                    if (String.IsNullOrEmpty(DataLogFile))
-                    {
-                        DatalogTrainSpeed = false;
-                    }
-                    else
-                    {
-                        CreateLogFile();
-                    }
-                }
 
                 // if debug, print out all passing paths
 
@@ -2584,6 +2567,34 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             }
 
             return (validPosition);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// set train speed logging flag (valid per activity, so will be restored after save)
+        /// </summary>
+        
+        protected void SetTrainSpeedLoggingFlag()
+        {
+            DatalogTrainSpeed = Simulator.Settings.DataLogTrainSpeed;
+            DatalogTSInterval = Simulator.Settings.DataLogTSInterval;
+
+            DatalogTSContents = new int[Simulator.Settings.DataLogTSContents.Length];
+            Simulator.Settings.DataLogTSContents.CopyTo(DatalogTSContents, 0);
+
+            // if logging required, derive filename and open file
+            if (DatalogTrainSpeed)
+            {
+                DataLogFile = Simulator.DeriveLogFile("Speed");
+                if (String.IsNullOrEmpty(DataLogFile))
+                {
+                    DatalogTrainSpeed = false;
+                }
+                else
+                {
+                    CreateLogFile();
+                }
+            }
         }
 
         //================================================================================================//
