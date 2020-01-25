@@ -1510,9 +1510,9 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Direction)),
                 AcceptMUSignals ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"),
                 ThrottlePercent,
-                String.Format("{0}{1}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric), WheelSlip ? "!!!" : ""),
+                String.Format("{0}", FormatStrings.FormatSpeedDisplay(SpeedMpS, IsMetric)),
                 FormatStrings.FormatPower(MotiveForceN * SpeedMpS, IsMetric, false, false),
-                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), CouplerExceedBreakLimit ? "???" : ""));
+                String.Format("{0}{1}", FormatStrings.FormatForce(MotiveForceN, IsMetric), WheelSlip ? "!!!" : WheelSlipWarning ? "???" : ""));
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
