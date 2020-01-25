@@ -203,11 +203,11 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     Locomotive.AlerterReset();
 
-                    Locomotive.SetThrottlePercent(UserInput.RDState.ThrottlePercent);
+                    Locomotive.SetThrottlePercentWithSound(UserInput.RDState.ThrottlePercent);
                     Locomotive.SetTrainBrakePercent(UserInput.RDState.TrainBrakePercent);
                     Locomotive.SetEngineBrakePercent(UserInput.RDState.EngineBrakePercent);
                     if (Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
-                        Locomotive.SetDynamicBrakePercent(UserInput.RDState.DynamicBrakePercent);
+                        Locomotive.SetDynamicBrakePercentWithSound(UserInput.RDState.DynamicBrakePercent);
                     if (UserInput.RDState.DirectionPercent > 50)
                         Locomotive.SetDirection(Direction.Forward);
                     else if (UserInput.RDState.DirectionPercent < -50)
@@ -224,9 +224,15 @@ namespace Orts.Viewer3D.RollingStock
                         Locomotive.SignalEvent(Event.WiperOn);
                     // changing Headlight more than one step at a time doesn't work for some reason
                     if (Locomotive.Headlight < UserInput.RDState.Lights - 1)
+                    {
                         Locomotive.Headlight++;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                     if (Locomotive.Headlight > UserInput.RDState.Lights - 1)
+                    {
                         Locomotive.Headlight--;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                 }
             }
 
@@ -1597,7 +1603,7 @@ namespace Orts.Viewer3D.RollingStock
                     {
                         DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
                         if (Gauge.Direction != 1 && !IsFire)
-                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos))) - Viewer.CabYOffsetPixels;
+                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos))) + Viewer.CabYOffsetPixels;
                         else
                         DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos))) + Viewer.CabYOffsetPixels;
                         DestinationRectangle.Width = (int)(xratio * xpos);
@@ -1973,7 +1979,7 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     break;
                 case CABViewControlTypes.STEAM_HEAT: Locomotive.SetSteamHeatValue(ChangedValue(Locomotive.SteamHeatController.IntermediateValue)); break;
-                case CABViewControlTypes.ORTS_WATER_SCOOP: if (((Locomotive as MSTSSteamLocomotive).WaterScoopDown ? 1 : 0) != ChangedValue(Locomotive.WaterScoopDown ? 1 : 0)) ; break;
+                case CABViewControlTypes.ORTS_WATER_SCOOP: if (((Locomotive as MSTSSteamLocomotive).WaterScoopDown ? 1 : 0) != ChangedValue(Locomotive.WaterScoopDown ? 1 : 0)) new ToggleWaterScoopCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
                     new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).PowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);
                     new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
@@ -2124,6 +2130,7 @@ namespace Orts.Viewer3D.RollingStock
             var digital = Control as CVCDigital;
 
             Num = Locomotive.GetDataOf(Control);
+            if (digital.MinValue < digital.MaxValue) Num = MathHelper.Clamp(Num, (float)digital.MinValue, (float)digital.MaxValue);
             if (Math.Abs(Num) < digital.AccuracySwitch)
                 Format = Format2;
             else
@@ -2782,7 +2789,7 @@ namespace Orts.Viewer3D.RollingStock
             Matrix m = XNAMatrix * mx;
 
             // TODO: Make this use AddAutoPrimitive instead.
-            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref m, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()
@@ -2998,7 +3005,7 @@ namespace Orts.Viewer3D.RollingStock
             Matrix m = XNAMatrix * mx;
 
             // TODO: Make this use AddAutoPrimitive instead.
-            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref m, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()

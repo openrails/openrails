@@ -1,4 +1,4 @@
-// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -30,18 +30,16 @@ namespace Orts.Simulation.Timetables
     /// <summary>
     /// Class to collect pool details
     /// </summary>
-    public class PoolInfo
+    public class TurntableInfo : PoolInfo
     {
-        public Simulator simulator;
 
         //================================================================================================//
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="simulatorref"></param>
-        public PoolInfo(Simulator simulatorref)
+        public TurntableInfo(Simulator simulatorref) : base(simulatorref)
         {
-            simulator = simulatorref;
         }
 
 
@@ -52,56 +50,56 @@ namespace Orts.Simulation.Timetables
         /// <param name="arguments"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public Dictionary<string, TimetablePool> ProcessPools(string[] arguments, CancellationToken cancellation)
+        public Dictionary<string, TimetableTurntablePool> ProcessTurntables(string[] arguments, CancellationToken cancellation)
         {
-            Dictionary<string, TimetablePool> pools = new Dictionary<string, TimetablePool>();
+            Dictionary<string, TimetableTurntablePool> turntables = new Dictionary<string, TimetableTurntablePool>();
             List<string> filenames;
 
             // get filenames to process
-            filenames = GetFilenames(arguments[0]);
+            filenames = GetTurntableFilenames(arguments[0]);
 
             // get file contents as strings
             Trace.Write("\n");
             foreach (string filePath in filenames)
             {
                 // get contents as strings
-                Trace.Write("Pool File : " + filePath + "\n");
-                var poolInfo = new TimetableReader(filePath);
+                Trace.Write("Turntable File : " + filePath + "\n");
+                var turntableInfo = new TimetableReader(filePath);
 
                 // read lines from input until 'Name' definition is found
                 int lineindex = 1;
-                while (lineindex < poolInfo.Strings.Count)
+                while (lineindex < turntableInfo.Strings.Count)
                 {
-                    switch (poolInfo.Strings[lineindex][0].ToLower().Trim())
+                    switch (turntableInfo.Strings[lineindex][0].ToLower().Trim())
                     {
                         // skip comment
-                        case "#comment" :
+                        case "#comment":
                             lineindex++;
                             break;
-                         
+
                         // process name
                         // do not increase lineindex as that is done in called method
-                        case "#name" :
-                            TimetablePool newPool = new TimetablePool(poolInfo, ref lineindex, simulator);
+                        case "#name":
+                            TimetableTurntablePool newTurntable = new TimetableTurntablePool(turntableInfo, ref lineindex, simulator);
                             // store if valid pool
-                            if (!String.IsNullOrEmpty(newPool.PoolName))
+                            if (!String.IsNullOrEmpty(newTurntable.PoolName))
                             {
-                                if (pools.ContainsKey(newPool.PoolName))
+                                if (turntables.ContainsKey(newTurntable.PoolName))
                                 {
-                                    Trace.TraceWarning("Duplicate pool defined : " + newPool.PoolName);
+                                    Trace.TraceWarning("Duplicate turntable defined : " + newTurntable.PoolName);
                                 }
                                 else
                                 {
-                                    pools.Add(newPool.PoolName, newPool);
+                                    turntables.Add(newTurntable.PoolName, newTurntable);
                                 }
                             }
                             break;
 
-                        default :
-                            if (!String.IsNullOrEmpty(poolInfo.Strings[lineindex][0]))
+                        default:
+                            if (!String.IsNullOrEmpty(turntableInfo.Strings[lineindex][0]))
                             {
                                 Trace.TraceInformation("Invalid definition in file " + filePath + " at line " + lineindex + " : " +
-                                    poolInfo.Strings[lineindex][0].ToLower().Trim() + "\n");
+                                    turntableInfo.Strings[lineindex][0].ToLower().Trim() + "\n");
                             }
                             lineindex++;
                             break;
@@ -109,8 +107,9 @@ namespace Orts.Simulation.Timetables
                 }
             }
 
-            return (pools);
+            return (turntables);
         }
+
 
         //================================================================================================//
         /// <summary>
@@ -118,25 +117,24 @@ namespace Orts.Simulation.Timetables
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        private List<string> GetFilenames(string filePath)
+        private List<string> GetTurntableFilenames(string filePath)
         {
             List<string> filenames = new List<string>();
 
             // check type of timetable file - list or single
             string fileDirectory = Path.GetDirectoryName(filePath);
 
-            foreach (var ORPoolFile in Directory.GetFiles(fileDirectory, "*.pool_or"))
+            foreach (var ORTurntableFile in Directory.GetFiles(fileDirectory, "*.turntable_or"))
             {
-                filenames.Add(ORPoolFile);
+                filenames.Add(ORTurntableFile);
             }
-            foreach (var ORPoolFile in Directory.GetFiles(fileDirectory, "*.pool-or"))
+            foreach (var ORTunrtableFile in Directory.GetFiles(fileDirectory, "*.turntable-or"))
             {
-                filenames.Add(ORPoolFile);
+                filenames.Add(ORTunrtableFile);
             }
 
             return (filenames);
         }
-
     }
 }
 

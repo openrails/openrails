@@ -41,6 +41,13 @@ namespace Orts.Simulation
     {
         public TurntableFile(string filePath, string shapePath, List<MovingTable> movingTables, Simulator simulator)
         {
+            if (!File.Exists(filePath))
+            {
+                return;
+            }
+
+            Trace.Write(" TURNTBL");
+
             using (STFReader stf = new STFReader(filePath, false))
             {
                 var count = stf.ReadInt(null);
@@ -70,9 +77,9 @@ namespace Orts.Simulation
         public string WFile;
         public int UID;
         public float Length;
-        protected int[] MyTrackNodesIndex;
+        public int[] MyTrackNodesIndex { get; protected set; }
         protected int[] MyTrVectorSectionsIndex;
-        protected bool[] MyTrackNodesOrientation; // true if forward, false if backward;
+        public bool[] MyTrackNodesOrientation { get; protected set; } // true if forward, false if backward
         public int TrackShapeIndex;
         // Dynamic data
         public WorldPosition WorldPosition = new WorldPosition();
@@ -81,6 +88,12 @@ namespace Orts.Simulation
         public bool Continuous; // continuous motion on
         public int ConnectedTrackEnd = 0; // 
         public bool GoToTarget = false;
+        public bool GoToAutoTarget = false;
+        public int? TurntableFrameRate;
+        public bool SendNotifications = true;      // send simulator confirmations
+        public bool InUse = false;                 // turntable is in use (used in auto mode for timetable)
+        public Queue<int> Q = new Queue<int>();    // Queue of trains waiting to access table
+
         // additions to manage rotation or transfer of wagons
         public List<TrainOnMovingTable> TrainsOnMovingTable = new List<TrainOnMovingTable>(); // List of trains on turntable or transfertable
         public Matrix AnimationXNAMatrix = Matrix.Identity;
@@ -100,13 +113,23 @@ namespace Orts.Simulation
         {
             outf.Write(Continuous);
             outf.Write(GoToTarget);
-            outf.Write(ConnectedTrackEnd); 
+            outf.Write(GoToAutoTarget);
+            outf.Write(TurntableFrameRate.HasValue);
+            if (TurntableFrameRate.HasValue)
+            {
+                outf.Write(TurntableFrameRate.Value);
+            }
+            outf.Write(ConnectedTrackEnd);
+            outf.Write(SendNotifications);
+            outf.Write(InUse);
             SaveVector(outf, RelativeFrontTravellerXNALocation);
             SaveVector(outf, RelativeRearTravellerXNALocation);
             SaveVector(outf, FinalFrontTravellerXNALocation);
             SaveVector(outf, FinalRearTravellerXNALocation);
             outf.Write(TrainsOnMovingTable.Count);
             foreach (var trainOnMovingTable in TrainsOnMovingTable) trainOnMovingTable.Save(outf);
+            outf.Write(Q.Count);
+            foreach (int iQ in Q) outf.Write(iQ);
         }
 
 
@@ -125,7 +148,15 @@ namespace Orts.Simulation
         {
             Continuous = inf.ReadBoolean();
             GoToTarget = inf.ReadBoolean();
+            GoToAutoTarget = inf.ReadBoolean();
+            TurntableFrameRate = null;
+            if (inf.ReadBoolean())
+            {
+                TurntableFrameRate = inf.ReadInt32();
+            }
             ConnectedTrackEnd = inf.ReadInt32();
+            SendNotifications = inf.ReadBoolean();
+            InUse = inf.ReadBoolean();
             RelativeFrontTravellerXNALocation = RestoreVector(inf);
             RelativeRearTravellerXNALocation = RestoreVector(inf);
             FinalFrontTravellerXNALocation = RestoreVector(inf);
@@ -138,8 +169,13 @@ namespace Orts.Simulation
                 trainsOnMovingTable--;
                 TrainsOnMovingTable.Add(trainOnMovingTable);
             }
-        }
 
+            int trainsInQ = inf.ReadInt32();
+            for (int iQ = 0; iQ < trainsInQ - 1; iQ++)
+            {
+                Q.Enqueue(iQ);
+            }
+        }
 
         private Vector3 RestoreVector(BinaryReader inf)
         {
@@ -192,7 +228,7 @@ namespace Orts.Simulation
                             return false;
                         }
                     }
-                    Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front on {0}", thisTableType));
+                    if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front on {0}", thisTableType));
                 }
                 TrainsOnMovingTable[trainIndex].SetFrontState(true);
             }
@@ -200,7 +236,7 @@ namespace Orts.Simulation
             {
                 if (trainIndex != -1 && TrainsOnMovingTable[trainIndex].FrontOnBoard)
                 {
-                    Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front outside {0}", thisTableType));
+                    if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train front outside {0}", thisTableType));
                     if (TrainsOnMovingTable[trainIndex].BackOnBoard) TrainsOnMovingTable[trainIndex].SetFrontState(false);
                     else
                     {
@@ -241,7 +277,7 @@ namespace Orts.Simulation
             {
                 if (trainIndex != -1 && TrainsOnMovingTable[trainIndex].BackOnBoard)
                 {
-                    Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train rear outside {0}", thisTableType));
+                    if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Train rear outside {0}", thisTableType));
                     if (TrainsOnMovingTable[trainIndex].FrontOnBoard) TrainsOnMovingTable[trainIndex].SetBackState(false);
                     else
                     {
@@ -310,6 +346,8 @@ namespace Orts.Simulation
         // Dynamic data
         public bool Clockwise; // clockwise motion on
         public bool Counterclockwise; // counterclockwise motion on
+        public bool AutoClockwise; // clockwise motion is on - auto control mode
+        public bool AutoCounterclockwise; // clockwise motion is on - auto control mode
         public float YAngle = 0; // Y angle of animated part, to be compared with Y angles of endpoints
         public bool ForwardConnected = true; // Platform has its forward part connected to a track
         public bool RearConnected = false; // Platform has its rear part connected to a track
@@ -354,17 +392,19 @@ namespace Orts.Simulation
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-        base.Save(outf);
-        outf.Write(Clockwise);
-        outf.Write(Counterclockwise);
-        outf.Write(YAngle);
-        outf.Write(ForwardConnected);
-        outf.Write(RearConnected);
-        outf.Write(SaveForwardConnected);
-        outf.Write(SaveRearConnected);
-        outf.Write(ForwardConnectedTarget);
-        outf.Write(RearConnectedTarget);
-        outf.Write(TargetY);
+            base.Save(outf);
+            outf.Write(Clockwise);
+            outf.Write(Counterclockwise);
+            outf.Write(AutoClockwise);
+            outf.Write(AutoCounterclockwise);
+            outf.Write(YAngle);
+            outf.Write(ForwardConnected);
+            outf.Write(RearConnected);
+            outf.Write(SaveForwardConnected);
+            outf.Write(SaveRearConnected);
+            outf.Write(ForwardConnectedTarget);
+            outf.Write(RearConnectedTarget);
+            outf.Write(TargetY);
         }
 
 
@@ -377,6 +417,8 @@ namespace Orts.Simulation
             base.Restore(inf, simulator);
             Clockwise = inf.ReadBoolean();
             Counterclockwise = inf.ReadBoolean();
+            AutoClockwise = inf.ReadBoolean();
+            AutoCounterclockwise = inf.ReadBoolean();
             YAngle = inf.ReadSingle();
             ForwardConnected = inf.ReadBoolean();
             RearConnected = inf.ReadBoolean();
@@ -554,7 +596,7 @@ namespace Orts.Simulation
                 Clockwise = false;
                 Counterclockwise = false;
                 Continuous = false;
-                Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train partially on turntable, can't rotate"));
+                if (SendNotifications) Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Train partially on turntable, can't rotate"));
                 return;
             }
             if (TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].FrontOnBoard && TrainsOnMovingTable[0].BackOnBoard)
@@ -565,41 +607,46 @@ namespace Orts.Simulation
                  || Math.Abs(train.MUReverserPercent) <= 1))) || (train.ControlMode != Train.TRAIN_CONTROL.MANUAL && train.ControlMode != Train.TRAIN_CONTROL.TURNTABLE &&
                  train.ControlMode != Train.TRAIN_CONTROL.EXPLORER && train.ControlMode != Train.TRAIN_CONTROL.UNDEFINED))
                 {
-                    Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Rotation can't start: check throttle, speed, direction and control mode"));
+                    if (SendNotifications) Simulator.Confirmer.Warning(Simulator.Catalog.GetStringFmt("Rotation can't start: check throttle, speed, direction and control mode"));
                     return;
                 }
                 if (train.ControlMode == Train.TRAIN_CONTROL.MANUAL || train.ControlMode == Train.TRAIN_CONTROL.EXPLORER || train.ControlMode == Train.TRAIN_CONTROL.UNDEFINED)
                 {
-                    SaveForwardConnected = ForwardConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd];
-                    SaveRearConnected = RearConnected;
-                    var invAnimationXNAMatrix = Matrix.Invert(AnimationXNAMatrix);
-                    RelativeCarPositions = new List<Matrix>();
-                    foreach (TrainCar trainCar in train.Cars)
-                    {
-                        var relativeCarPosition = Matrix.Identity;
-                        trainCar.WorldPosition.NormalizeTo(WorldPosition.TileX, WorldPosition.TileZ);
-                        relativeCarPosition = Matrix.Multiply(trainCar.WorldPosition.XNAMatrix, invAnimationXNAMatrix);
-                        RelativeCarPositions.Add(relativeCarPosition);
-                    }
-                    var XNALocation = train.FrontTDBTraveller.Location;
-                    XNALocation.Z = -XNALocation.Z;
-                    XNALocation.X = XNALocation.X + 2048 * (train.FrontTDBTraveller.TileX - WorldPosition.TileX);
-                    XNALocation.Z = XNALocation.Z - 2048 * (train.FrontTDBTraveller.TileZ - WorldPosition.TileZ);
-                    RelativeFrontTravellerXNALocation = Vector3.Transform(XNALocation, invAnimationXNAMatrix);
-                    XNALocation = train.RearTDBTraveller.Location;
-                    XNALocation.Z = -XNALocation.Z;
-                    XNALocation.X = XNALocation.X + 2048 * (train.RearTDBTraveller.TileX - WorldPosition.TileX);
-                    XNALocation.Z = XNALocation.Z - 2048 * (train.RearTDBTraveller.TileZ - WorldPosition.TileZ);
-                    RelativeRearTravellerXNALocation = Vector3.Transform(XNALocation, invAnimationXNAMatrix);
+                    ComputeTrainPosition(train);
                     train.ControlMode = Train.TRAIN_CONTROL.TURNTABLE;
                 }
-                Simulator.Confirmer.Information (Simulator.Catalog.GetStringFmt("Turntable starting rotation with train"));
-                // Computing position of cars relative to center of platform
+                if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable starting rotation with train"));
 
-             }
-             Clockwise = isClockwise;
-             Counterclockwise = !isClockwise;
-             Continuous = true;
+            }
+            Clockwise = isClockwise;
+            Counterclockwise = !isClockwise;
+            Continuous = true;
+        }
+
+        // Computing position of cars relative to center of platform
+        public void ComputeTrainPosition(Train train)
+        {
+            SaveForwardConnected = ForwardConnected ^ !MyTrackNodesOrientation[ConnectedTrackEnd];
+            SaveRearConnected = RearConnected;
+            var invAnimationXNAMatrix = Matrix.Invert(AnimationXNAMatrix);
+            RelativeCarPositions = new List<Matrix>();
+            foreach (TrainCar trainCar in train.Cars)
+            {
+                var relativeCarPosition = Matrix.Identity;
+                trainCar.WorldPosition.NormalizeTo(WorldPosition.TileX, WorldPosition.TileZ);
+                relativeCarPosition = Matrix.Multiply(trainCar.WorldPosition.XNAMatrix, invAnimationXNAMatrix);
+                RelativeCarPositions.Add(relativeCarPosition);
+            }
+            var XNALocation = train.FrontTDBTraveller.Location;
+            XNALocation.Z = -XNALocation.Z;
+            XNALocation.X = XNALocation.X + 2048 * (train.FrontTDBTraveller.TileX - WorldPosition.TileX);
+            XNALocation.Z = XNALocation.Z - 2048 * (train.FrontTDBTraveller.TileZ - WorldPosition.TileZ);
+            RelativeFrontTravellerXNALocation = Vector3.Transform(XNALocation, invAnimationXNAMatrix);
+            XNALocation = train.RearTDBTraveller.Location;
+            XNALocation.Z = -XNALocation.Z;
+            XNALocation.X = XNALocation.X + 2048 * (train.RearTDBTraveller.TileX - WorldPosition.TileX);
+            XNALocation.Z = XNALocation.Z - 2048 * (train.RearTDBTraveller.TileZ - WorldPosition.TileZ);
+            RelativeRearTravellerXNALocation = Vector3.Transform(XNALocation, invAnimationXNAMatrix);
         }
 
         public void ComputeCenter(WorldPosition worldPosition)
@@ -615,7 +662,7 @@ namespace Orts.Simulation
         public void RotateTrain(Matrix animationXNAMatrix)
         {
             AnimationXNAMatrix = animationXNAMatrix;
-            if ((Clockwise || Counterclockwise || GoToTarget) && TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].FrontOnBoard &&
+            if ((Clockwise || Counterclockwise || GoToTarget || GoToAutoTarget) && TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].FrontOnBoard &&
                 TrainsOnMovingTable[0].BackOnBoard && TrainsOnMovingTable[0].Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
             {
                 // Rotate together also train
@@ -626,6 +673,25 @@ namespace Orts.Simulation
                     iRelativeCarPositions++;
                 }
             }
+        }
+
+        public void AutoRotateTable(float elapsedClockSeconds)
+        {
+            GoToAutoTarget = true;
+
+            float angleStep = (YAngle / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
+            float usedFrameRate = TurntableFrameRate.HasValue ? TurntableFrameRate.Value : 30f;
+
+            if (AutoClockwise)
+            {
+                angleStep -= elapsedClockSeconds * usedFrameRate;
+            }
+            else if (AutoCounterclockwise)
+            {
+                angleStep += elapsedClockSeconds * usedFrameRate;
+            }
+
+            YAngle = TargetY = MathHelper.WrapAngle((angleStep / 1800.0f) * (float)Math.PI);
         }
 
         public override void Update()
@@ -647,7 +713,7 @@ namespace Orts.Simulation
             }
             else
             {
-                if (Clockwise)
+                if (Clockwise || AutoClockwise)
                 {
                     ForwardConnected = false;
                     RearConnected = false;
@@ -656,10 +722,11 @@ namespace Orts.Simulation
                         if (Math.Abs(MathHelper.WrapAngle(Angles[ForwardConnectedTarget] + YAngle)) < 0.005)
                         {
                             ForwardConnected = true;
+                            GoToTarget = Clockwise;  // only set if not in auto mode
                             Clockwise = false;
+                            AutoClockwise = false;
                             ConnectedTrackEnd = ForwardConnectedTarget;
-                            Simulator.Confirmer.Information (Simulator.Catalog.GetStringFmt("Turntable forward connected"));
-                            GoToTarget = true;
+                            if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable forward connected"));
                             TargetY = -Angles[ForwardConnectedTarget];
                         }
                     }
@@ -668,15 +735,16 @@ namespace Orts.Simulation
                         if (Math.Abs(MathHelper.WrapAngle(Angles[RearConnectedTarget] + YAngle + (float)Math.PI)) < 0.0055)
                         {
                             RearConnected = true;
+                            GoToTarget = Clockwise;  // only set if not in auto mode
                             Clockwise = false;
+                            AutoClockwise = false;
                             ConnectedTrackEnd = RearConnectedTarget;
-                            Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable backward connected"));
-                            GoToTarget = true;
+                            if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable backward connected"));
                             TargetY = -MathHelper.WrapAngle(Angles[RearConnectedTarget] + (float)Math.PI);
                         }
                     }
                 }
-                else if (Counterclockwise)
+                else if (Counterclockwise || AutoCounterclockwise)
                 {
                     ForwardConnected = false;
                     RearConnected = false;
@@ -685,10 +753,11 @@ namespace Orts.Simulation
                         if (Math.Abs(MathHelper.WrapAngle(Angles[ForwardConnectedTarget] + YAngle)) < 0.005)
                         {
                             ForwardConnected = true;
+                            GoToTarget = Counterclockwise;  // only set if not in auto mode
                             Counterclockwise = false;
+                            AutoCounterclockwise = false;
                             ConnectedTrackEnd = ForwardConnectedTarget;
-                            Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable forward connected"));
-                            GoToTarget = true;
+                            if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable forward connected"));
                             TargetY = -Angles[ForwardConnectedTarget];
                         }
                     }
@@ -697,10 +766,11 @@ namespace Orts.Simulation
                         if (Math.Abs(MathHelper.WrapAngle(Angles[RearConnectedTarget] + YAngle + (float)Math.PI)) < 0.0055)
                         {
                             RearConnected = true;
+                            GoToTarget = Counterclockwise;  // only set if not in auto mode
                             Counterclockwise = false;
+                            AutoCounterclockwise = false;
                             ConnectedTrackEnd = RearConnectedTarget;
-                            Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable backward connected"));
-                            GoToTarget = true;
+                            if (SendNotifications) Simulator.Confirmer.Information(Simulator.Catalog.GetStringFmt("Turntable backward connected"));
                             TargetY = -MathHelper.WrapAngle(Angles[RearConnectedTarget] + (float)Math.PI);
                         }
                     }
@@ -752,7 +822,7 @@ namespace Orts.Simulation
         public void PerformUpdateActions ( Matrix absAnimationMatrix)
         {
             RotateTrain(absAnimationMatrix);
-            if (GoToTarget && TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+            if ((GoToTarget || GoToAutoTarget) && TrainsOnMovingTable.Count == 1 && TrainsOnMovingTable[0].Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
             {
                 RecalculateTravellerXNALocations(absAnimationMatrix);
             }

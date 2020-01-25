@@ -26,6 +26,7 @@ using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
@@ -409,9 +410,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         private void SignalEvent(Event evt, TrainControlSystem script)
         {
-            foreach (var eventHandler in Locomotive.EventHandlers)
-                eventHandler.HandleEvent(evt, script);
-        }
+            try
+            { 
+                foreach (var eventHandler in Locomotive.EventHandlers)
+                    eventHandler.HandleEvent(evt, script);
+            }
+            catch (Exception error)
+            {
+                Trace.TraceInformation("Sound event skipped due to thread safety problem " + error.Message);
+            }
+}
 
         private static float SpeedCurve(float targetDistanceM, float targetSpeedMpS, float slope, float delayS, float decelerationMpS2)
         {

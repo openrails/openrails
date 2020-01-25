@@ -144,16 +144,44 @@ namespace Orts.Simulation.AIs
             {
 
                 if (ThisTrain is AITrain && ((aiTrain.MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION && aiTrain.nextActionInfo != null &&
-                aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem)
+                aiTrain.nextActionInfo.NextAction == AIActionItem.AI_ACTION_TYPE.AUX_ACTION && aiTrain.nextActionInfo is AuxActionWPItem)
                 || ( aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 &&
                 aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
                 (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
                 // WP is running
                 {
-                    int remainingDelay;                  
-                    if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
-                    else remainingDelay = ((AIActionWPRef)SpecAuxActions[0]).keepIt.ActualDepart - currentClock;
-                    ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
+                    // Do nothing if it is an absolute WP
+                    if (!(aiTrain.AuxActionsContain.SpecAuxActions.Count > 0 && aiTrain.AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && 
+                        (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay >= 30000 && (aiTrain.AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).Delay < 40000))
+                    {
+                        int remainingDelay;
+                        if (aiTrain.nextActionInfo != null && aiTrain.nextActionInfo is AuxActionWPItem) remainingDelay = ((AuxActionWPItem)aiTrain.nextActionInfo).ActualDepart - currentClock;
+                        else remainingDelay = ((AIActionWPRef)SpecAuxActions[0]).keepIt.ActualDepart - currentClock;
+                        ((AIActionWPRef)SpecAuxActions[0]).SetDelay(remainingDelay);
+                    }
+                }
+            }
+            // check for horn actions
+            if (ThisTrain is AITrain && aiTrain.AuxActionsContain.specRequiredActions.Count > 0)
+            {
+                foreach (AITrain.DistanceTravelledItem specRequiredAction in aiTrain.AuxActionsContain.specRequiredActions)
+                {
+                    if (specRequiredAction is AuxActionHornItem)
+                    {
+                        if (SpecAuxActions.Count > 0)
+                        {
+                            foreach (AuxActionRef specAuxAction in SpecAuxActions)
+                            {
+                                if (specAuxAction is AIActionHornRef)
+                                {
+                                    (specAuxAction as AIActionHornRef).Delay = (specRequiredAction as AuxActionHornItem).ActualDepart - currentClock;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                        else break;
+                    }
                 }
             }
             foreach (var action in SpecAuxActions)
@@ -1901,6 +1929,7 @@ namespace Orts.Simulation.AIs
         int Delay;
         [JsonIgnore]
         public int ActualDepart;
+        private const int BellPlayTime = 30;
         
 
         //================================================================================================//
@@ -1977,6 +2006,15 @@ namespace Orts.Simulation.AIs
             Processing = true;
             int correctedTime = presentTime;
             ActualDepart = correctedTime + Delay;
+            if (!Triggered)
+            {
+#if WITH_PATH_DEBUG
+                    File.AppendAllText(@"C:\temp\checkpath.txt", "Do Horn for AITRain " + thisTrain.Number + " , mvt state " + movementState.ToString() + " at " + presentTime + "\n");
+#endif
+                TrainCar locomotive = thisTrain.FindLeadLocomotive();
+                ((MSTSLocomotive)locomotive).ManualHorn = true;
+                Triggered = true;
+            }
             return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
         }
 
@@ -1984,29 +2022,27 @@ namespace Orts.Simulation.AIs
         {
             if (ActualDepart >= presentTime)
             {
-                if (!Triggered)
-                {
-#if WITH_PATH_DEBUG
-                    File.AppendAllText(@"C:\temp\checkpath.txt", "Do Horn for AITRain " + thisTrain.Number + " , mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                    TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                    ((MSTSLocomotive)locomotive).ManualHorn = true;
-                    Triggered = true;
-                }
                 movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
             }
             else
             {
-                thisTrain.AuxActionsContain.Remove(this);
-
+                TrainCar locomotive = thisTrain.FindLeadLocomotive();
                 if (Triggered)
                 {
 #if WITH_PATH_DEBUG
                 File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
 #endif
-                    TrainCar locomotive = thisTrain.FindLeadLocomotive();
                     ((MSTSLocomotive)locomotive).ManualHorn = false;
+                    Triggered = false;
                 }
+                if (((MSTSLocomotive)locomotive).DoesHornTriggerBell && ActualDepart + BellPlayTime >= presentTime)
+                {
+                    movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
+                    return movementState;
+                }
+                else if (((MSTSLocomotive)locomotive).DoesHornTriggerBell && ActualDepart + BellPlayTime < presentTime)
+                    ((MSTSLocomotive)locomotive).BellState = MSTSLocomotive.SoundState.Stopped;
+                thisTrain.AuxActionsContain.Remove(this);
                 return currentMvmtState;    //  Restore previous MovementState
             }
             return movementState;

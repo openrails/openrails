@@ -7194,14 +7194,9 @@ public void SteamStartGearBoxIncrease()
 
         public override void SwitchToAutopilotControl()
         {
-            if (Train.MUDirection == Direction.Forward)
-            {
-                Train.MUReverserPercent = 100;
-            }
-            else if (Train.MUDirection == Direction.Reverse)
-            {
-                Train.MUReverserPercent = -100;
-            }
+            if (Train.MUDirection != Direction.Forward) SignalEvent(Event.ReverserChange);
+            Train.MUDirection = Direction.Forward;
+            Train.MUReverserPercent = 100;
             base.SwitchToAutopilotControl();
         }
 
