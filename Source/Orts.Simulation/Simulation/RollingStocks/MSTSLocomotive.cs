@@ -2091,13 +2091,12 @@ namespace Orts.Simulation.RollingStocks
             
             if (LocoNumDrvWheels <= 0)
                 return;
-            //float max0 = MassKG * 9.8f * Adhesion3 / NumWheelsAdhesionFactor;   //Not used
 
             //Curtius-Kniffler computation
-            float uMax = 1.3f * (7.5f / (AbsSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
-            float adhesionUtil = 0.95f;   //Adhesion utilization
-
-            float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
+            // Set to a high level of adhesion to ensure that locomotive rarely slips in dry mode
+            float uMax = 1.3f * (7.5f / (AbsSpeedMpS + 44.0f) + 0.161f); // Curtius - Kniffler equation
+ 
+            float max0 = DrvWheelWeightKg * 9.81f * uMax;  //Ahesion limit in [N]
             float max1;
 
             if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
@@ -2108,11 +2107,11 @@ namespace Orts.Simulation.RollingStocks
                     Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
                 }
                 if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
-                    max0 *= .8f;
+                    max0 *= 0.8f;
                 if (Simulator.WeatherType == WeatherType.Rain)
-                    max0 *= .8f;
+                    max0 *= 0.8f;
                 else
-                    max0 *= .7f;
+                    max0 *= 0.7f;
             }
             //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
             max1 = MaxForceN;
@@ -2374,12 +2373,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else // if not proportional to precipitation use fixed friction value approximately equal to 0.2, thus factor will be 0.6 x friction coefficient of 0.33
                     {
-                        BaseFrictionCoefficientFactor = 0.607f;
+                        BaseFrictionCoefficientFactor = 0.8f;
                     }
                 }
                 else     // Snow weather
                 {
-                    BaseFrictionCoefficientFactor = 0.4f;
+                    BaseFrictionCoefficientFactor = 0.6f;
                 }
             }
             else // Default to Dry (Clear) weather
