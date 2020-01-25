@@ -220,9 +220,8 @@ namespace ORTS.Settings
         public bool DataLogMisc { get; set; }
         [Default(false)]
         public bool DataLogSteamPerformance { get; set; }
-        [Default(false)]
-        public bool VerboseConfigurationMessages { get; set; }
-
+        
+        
         // Evaluation settings:
         [Default(false)]
         public bool DataLogTrainSpeed { get; set; }

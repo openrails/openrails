@@ -320,8 +320,6 @@ namespace Orts.Simulation.RollingStocks
         public bool HasSmoothStruc;
 
         public float MaxContinuousForceN;
-        public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
-        public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
         public float ContinuousForceTimeFactor = 1800;
         public bool AntiSlip;
         public bool AdvancedAdhesionModel = false; // flag set depending upon adhesion model used.
@@ -702,8 +700,6 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxcurrent": MaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
-                case "engine(ortsspeedofmaxcontinuousforce": SpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-                case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
 
                 case "engine(type":
@@ -879,8 +875,6 @@ namespace Orts.Simulation.RollingStocks
             EngineType = locoCopy.EngineType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
-            SpeedOfMaxContinuousForceMpS = locoCopy.SpeedOfMaxContinuousForceMpS;
-            MSTSSpeedOfMaxContinuousForceMpS = locoCopy.MSTSSpeedOfMaxContinuousForceMpS;
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
