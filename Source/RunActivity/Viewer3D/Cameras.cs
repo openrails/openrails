@@ -1561,7 +1561,16 @@ namespace Orts.Viewer3D
         {
         }
 
-        public PassengerViewPoint viewPoint = null;
+        protected Vector3 viewPointLocation;
+        protected float viewPointRotationXRadians = 0;
+        protected float viewPointRotationYRadians = 0;
+        protected Vector3 StartViewPointLocation;
+        protected float StartViewPointRotationXRadians = 0;
+        protected float StartViewPointRotationYRadians = 0;
+        protected string prevcar = "";
+        protected int ActViewPoint = 0;
+        protected int prevViewPoint = -1;
+        protected bool PrevCabWasRear = false;
 
         /// <summary>
         /// A camera can use this method to handle any preparation when being activated.
@@ -1659,10 +1668,15 @@ namespace Orts.Viewer3D
         }
         public void MoveCameraXYZ(float x, float y, float z)
         {
+            if (PrevCabWasRear)
+            {
+                x = -x;
+                z = -z;
+            }
             attachedLocation.X += x;
             attachedLocation.Y += y;
             attachedLocation.Z += z;
-            viewPoint.Location.X = attachedLocation.X; viewPoint.Location.Y = attachedLocation.Y; viewPoint.Location.Z = attachedLocation.Z;
+            viewPointLocation.X = attachedLocation.X; viewPointLocation.Y = attachedLocation.Y; viewPointLocation.Z = attachedLocation.Z;
             if (attachedCar != null) UpdateLocation(attachedCar.WorldPosition);
         }
 
@@ -1673,7 +1687,7 @@ namespace Orts.Viewer3D
         protected override void RotateRight(float speed)
         {
             base.RotateRight(speed);
-            viewPoint.RotationYRadians = RotationYRadians;
+            viewPointRotationYRadians = RotationYRadians;
         }
 
         /// <summary>
@@ -1683,7 +1697,7 @@ namespace Orts.Viewer3D
         protected override void RotateDown(float speed)
         {
             base.RotateDown(speed);
-            viewPoint.RotationXRadians = RotationXRadians;
+            viewPointRotationXRadians = RotationXRadians;
         }
 
         /// <summary>
@@ -1695,9 +1709,48 @@ namespace Orts.Viewer3D
             base.RotateByMouse();
             if (UserInput.IsMouseRightButtonReleased)
             {
-                viewPoint.RotationXRadians = RotationXRadians;
-                viewPoint.RotationYRadians = RotationYRadians;
+                viewPointRotationXRadians = RotationXRadians;
+                viewPointRotationYRadians = RotationYRadians;
             }
+        }
+
+        protected internal override void Save(BinaryWriter outf)
+        {
+            base.Save(outf);
+            outf.Write(ActViewPoint);
+            outf.Write(prevViewPoint);
+            outf.Write(prevcar);
+            outf.Write(StartViewPointLocation.X);
+            outf.Write(StartViewPointLocation.Y);
+            outf.Write(StartViewPointLocation.Z);
+            outf.Write(StartViewPointRotationXRadians);
+            outf.Write(StartViewPointRotationYRadians);
+        }
+
+        protected internal override void Restore(BinaryReader inf)
+        {
+            base.Restore(inf);
+            ActViewPoint = inf.ReadInt32();
+            prevViewPoint = inf.ReadInt32();
+            prevcar = inf.ReadString();
+            StartViewPointLocation.X = inf.ReadSingle();
+            StartViewPointLocation.Y = inf.ReadSingle();
+            StartViewPointLocation.Z = inf.ReadSingle();
+            StartViewPointRotationXRadians = inf.ReadSingle();
+            StartViewPointRotationYRadians = inf.ReadSingle();
+        }
+
+        public override void Reset()
+        {
+            base.Reset();
+            viewPointLocation = StartViewPointLocation;
+            attachedLocation = StartViewPointLocation;
+            viewPointRotationXRadians = StartViewPointRotationXRadians;
+            viewPointRotationYRadians = StartViewPointRotationYRadians;
+            RotationXRadians = StartViewPointRotationXRadians;
+            RotationYRadians = StartViewPointRotationYRadians;
+            XRadians = StartViewPointRotationXRadians;
+            YRadians = StartViewPointRotationYRadians;
         }
     }
 
@@ -1706,7 +1759,6 @@ namespace Orts.Viewer3D
         public override Styles Style { get { return Styles.Passenger; } }
         public override bool IsAvailable { get { return Viewer.SelectedTrain != null && Viewer.SelectedTrain.Cars.Any(c => c.PassengerViewpoints.Count > 0); } }
         public override string Name { get { return Viewer.Catalog.GetString("Passenger"); } }
-        protected int ActViewPoint;
 
         public PassengerCamera(Viewer viewer)
             : base(viewer)
@@ -1721,12 +1773,32 @@ namespace Orts.Viewer3D
         protected override void SetCameraCar(TrainCar car)
         {
             base.SetCameraCar(car);
-            ActViewPoint = 0;
-            viewPoint = attachedCar.PassengerViewpoints[ActViewPoint];
-            attachedLocation = viewPoint.Location;
-            // Apply previous angle of camera for this type of car.
-            RotationXRadians = viewPoint.RotationXRadians;
-            RotationYRadians = viewPoint.RotationYRadians;
+            // Settings are held so that when switching back from another camera, view is not reset.
+            // View is only reset on move to a different car and/or viewpoint or "Ctl + 8".
+            if (car.CarID != prevcar)
+            {
+                ActViewPoint = 0;
+                ResetViewPoint(car);
+            }
+            else if (ActViewPoint != prevViewPoint)
+            {
+                ResetViewPoint(car);
+            }
+        }
+
+        protected void ResetViewPoint (TrainCar car)
+        {
+            prevcar = car.CarID;
+            prevViewPoint = ActViewPoint;
+            viewPointLocation = attachedCar.PassengerViewpoints[ActViewPoint].Location;
+            viewPointRotationXRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationXRadians;
+            viewPointRotationYRadians = attachedCar.PassengerViewpoints[ActViewPoint].RotationYRadians;
+            RotationXRadians = viewPointRotationXRadians;
+            RotationYRadians = viewPointRotationYRadians;
+            attachedLocation = viewPointLocation;
+            StartViewPointLocation = viewPointLocation;
+            StartViewPointRotationXRadians = viewPointRotationXRadians;
+            StartViewPointRotationYRadians = viewPointRotationYRadians;
         }
 
         public override void HandleUserInput(ElapsedTime elapsedTime)
@@ -1736,32 +1808,114 @@ namespace Orts.Viewer3D
                 new CameraChangePassengerViewPointCommand(Viewer.Log);
         }
         
-            public void SwitchSideCameraCar(TrainCar car)
+        public void SwitchSideCameraCar(TrainCar car)
         {
             attachedLocation.X = -attachedLocation.X;
-            RotationYRadians = -viewPoint.RotationYRadians;
+            RotationYRadians = -RotationYRadians;
         }
 
         public void ChangePassengerViewPoint(TrainCar car)
         {
             ActViewPoint++;
             if (ActViewPoint >= car.PassengerViewpoints.Count) ActViewPoint = 0;
-            viewPoint = attachedCar.PassengerViewpoints[ActViewPoint];
-            attachedLocation = viewPoint.Location;
-            RotationXRadians = viewPoint.RotationXRadians;
-            RotationYRadians = viewPoint.RotationYRadians;
+            SetCameraCar(car);
+        }
+    }
+
+    public class ThreeDimCabCamera : InsideThreeDimCamera
+    {
+        public override Styles Style { get { return Styles.ThreeDimCab; } }
+        public override bool IsAvailable
+        {
+            get
+            {
+                return Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
+                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null;
+            }
+        }
+        public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }
+
+        public ThreeDimCabCamera(Viewer viewer)
+            : base(viewer)
+        {
+        }
+
+        protected override List<TrainCar> GetCameraCars()
+        {
+            if (Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
+            Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null)
+            {
+                List<TrainCar> l = new List<TrainCar>();
+                l.Add(Viewer.PlayerLocomotive);
+                return l;
+            }
+            else return base.GetCameraCars();
+        }
+
+        protected override void SetCameraCar(TrainCar car)
+        {
+            base.SetCameraCar(car);
+            // Settings are held so that when switching back from another camera, view is not reset.
+            // View is only reset on move to a different cab or "Ctl + 8".
+            if (attachedCar.CabViewpoints != null)
+            {
+                if (ActViewPoint != prevViewPoint)
+                {
+                    prevViewPoint = ActViewPoint;
+                    viewPointLocation = attachedCar.CabViewpoints[ActViewPoint].Location;
+                    viewPointRotationXRadians = attachedCar.CabViewpoints[ActViewPoint].RotationXRadians;
+                    viewPointRotationYRadians = attachedCar.CabViewpoints[ActViewPoint].RotationYRadians;
+                    RotationXRadians = viewPointRotationXRadians;
+                    RotationYRadians = viewPointRotationYRadians;
+                    attachedLocation = viewPointLocation;
+                    StartViewPointLocation = viewPointLocation;
+                    StartViewPointRotationXRadians = viewPointRotationXRadians;
+                    StartViewPointRotationYRadians = viewPointRotationYRadians;
+                }
+            }
+        }
+
+        public void ChangeCab(TrainCar newCar)
+        {
+            try
+            {
+                var mstsLocomotive = newCar as MSTSLocomotive;
+                if (PrevCabWasRear != mstsLocomotive.UsingRearCab)
+                    RotationYRadians += MathHelper.Pi;
+                ActViewPoint = mstsLocomotive.UsingRearCab ? 1 : 0;
+                PrevCabWasRear = mstsLocomotive.UsingRearCab;
+                SetCameraCar(newCar);
+            }
+            catch
+            {
+                Trace.TraceInformation("Change Cab failed");
+            }
         }
 
         protected internal override void Save(BinaryWriter outf)
         {
             base.Save(outf);
-            outf.Write(ActViewPoint);
+            outf.Write(PrevCabWasRear);
         }
 
         protected internal override void Restore(BinaryReader inf)
         {
             base.Restore(inf);
-            ActViewPoint = inf.ReadInt32();
+            PrevCabWasRear = inf.ReadBoolean();
+        }
+
+        public override bool IsUnderground
+        {
+            get
+            {
+                // Camera is underground if target (base) is underground or
+                // track location is underground. The latter means we switch
+                // to cab view instead of putting the camera above the tunnel.
+                if (base.IsUnderground)
+                    return true;
+                var elevationAtCameraTarget = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
+                return attachedCar.WorldPosition.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget || attachedCar.CarTunnelData.LengthMOfTunnelAheadFront > 0;
+            }
         }
     }
 
@@ -2553,90 +2707,6 @@ namespace Orts.Viewer3D
             else
             {
                 NearRoadCar.ChangeSpeed(speed);
-            }
-        }
-    }
-
-    public class ThreeDimCabCamera : InsideThreeDimCamera
-    {
-        public override Styles Style { get { return Styles.ThreeDimCab; } }
-        public override bool IsAvailable
-        {
-            get
-            {
-                return Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
-                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null;
-            }
-        }
-        public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }
-        bool StartDirectionSet = false;
-        protected int CurrentViewpointIndex;
-        protected bool PrevCabWasRear;
-
-        public ThreeDimCabCamera(Viewer viewer)
-            : base(viewer)
-        {
-        }
-
-        protected override List<TrainCar> GetCameraCars()
-        {
-            if (Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
-            Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null)
-            {
-                List<TrainCar> l = new List<TrainCar>();
-                l.Add(Viewer.PlayerLocomotive);
-                return l;
-            }
-            else return base.GetCameraCars();
-        }
-
-        protected override void SetCameraCar(TrainCar car)
-        {
-            base.SetCameraCar(car);
-            if (attachedCar.CabViewpoints != null)
-            {
-                if (CurrentViewpointIndex >= attachedCar.CabViewpoints.Count) { viewPoint = attachedCar.CabViewpoints[0]; CurrentViewpointIndex = 0; }
-                else viewPoint = attachedCar.CabViewpoints[CurrentViewpointIndex];
-                attachedLocation = viewPoint.Location;
-                if (!StartDirectionSet) // Only set the initial direction on first use so, when switching back from another camera, direction is not reset.
-                {
-                    StartDirectionSet = true;
-                    RotationXRadians = MathHelper.ToRadians(viewPoint.StartDirection.X);
-                    RotationYRadians = MathHelper.ToRadians(viewPoint.StartDirection.Y);
-                }
-                else
-                {
-                    RotationXRadians = viewPoint.RotationXRadians;
-                    RotationYRadians = viewPoint.RotationYRadians;
-                }
-            }
-        }
-
-        public void ChangeCab(TrainCar newCar)
-        {
-            try
-            {
-                var mstsLocomotive = newCar as MSTSLocomotive;
-                if (PrevCabWasRear != mstsLocomotive.UsingRearCab)
-                    RotationYRadians += MathHelper.Pi;
-                CurrentViewpointIndex = mstsLocomotive.UsingRearCab ? 1 : 0;
-                PrevCabWasRear = mstsLocomotive.UsingRearCab;
-                SetCameraCar(newCar);
-            }
-            catch { }
-        }
-
-        public override bool IsUnderground
-        {
-            get
-            {
-                // Camera is underground if target (base) is underground or
-                // track location is underground. The latter means we switch
-                // to cab view instead of putting the camera above the tunnel.
-                if (base.IsUnderground)
-                    return true;
-                var elevationAtCameraTarget = Viewer.Tiles.GetElevation(attachedCar.WorldPosition.WorldLocation);
-                return attachedCar.WorldPosition.Location.Y + TerrainAltitudeMargin < elevationAtCameraTarget || attachedCar.CarTunnelData.LengthMOfTunnelAheadFront > 0;
             }
         }
     }

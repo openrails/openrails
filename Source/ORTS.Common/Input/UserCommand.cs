@@ -69,6 +69,7 @@
         [GetString("Debug Toggle Advanced Adhesion")] DebugToggleAdvancedAdhesion,
         [GetString("Debug Sound Form")] DebugSoundForm,
         [GetString("Debug Physics Form")] DebugPhysicsForm,
+        [GetString("Debug Toggle Confirmations")] DebugToggleConfirmations,
 
         [GetString("Camera Cab")] CameraCab,
         [GetString("Camera Change Passenger Viewpoint")] CameraChangePassengerViewPoint,
@@ -181,7 +182,7 @@
         [GetString("Control Cylinder Compound")] ControlCylinderCompound,
         [GetString("Control Firing")] ControlFiring,
         [GetString("Control Refill")] ControlRefill,
-        [GetString("Control TroughRefill")] ControlTroughRefill,
+        [GetString("Control Water Scoop")] ControlWaterScoop,
         [GetString("Control ImmediateRefill")] ControlImmediateRefill,
         [GetString("Control Turntable Clockwise")] ControlTurntableClockwise,
         [GetString("Control Turntable Counterclockwise")] ControlTurntableCounterclockwise,

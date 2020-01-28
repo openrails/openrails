@@ -156,14 +156,14 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Updates an animated part that loops only when enabled (e.g. wipers).
         /// </summary>
-        public void UpdateLoop(bool running, ElapsedTime elapsedTime)
+        public void UpdateLoop(bool running, ElapsedTime elapsedTime, float frameRateMultiplier = 1.5f)
         {
             if (PoseableShape.SharedShape.Animations == null || PoseableShape.SharedShape.Animations.Count == 0 || FrameCount == 0)
                 return;
 
-            // The speed of cycling is set at 1.5 frames of animation per second at 30 FPS.
-            var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * 1.5f / 30f;
-            if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds < FrameCount))
+            // The speed of cycling is as default 1.5 frames of animation per second at 30 FPS.
+            var frameRate = PoseableShape.SharedShape.Animations[0].FrameRate * frameRateMultiplier / 30f;
+            if (running || (AnimationKey > 0 && AnimationKey + elapsedTime.ClockSeconds * frameRate < FrameCount))
                 SetFrameWrap(AnimationKey + elapsedTime.ClockSeconds * frameRate);
             else
                 SetFrame(0);

@@ -226,6 +226,7 @@ following format::
         Offset(XOffset, YOffset, ZOffset)
         FreightWeight(weight)
         Flip()
+        Visibility ( "Outside,Cab2D,Cab3D" )
     )
 
 Where:
@@ -239,10 +240,20 @@ Where:
   wagon. If more static OR freightanims are present, each of their weights is 
   added to define the total weight of the wagon.
 - ``Flip()``, if present, flips the shape around its pivot point.
+- ``Visibility``, if present, changes the default visibility of the static 
+  freightanim. Default is visible only from outside cameras and from any inside 
+  camera of locomotives different from the one hosting the static freightanim. 
+  If substring ``Outside`` is present, the static freightanim is visible from outside 
+  cameras and from any inside camera of locomotives different from the one 
+  hosting the static freightanim; if ``Cab2D`` is present, the static freightanim 
+  is visible from the 2D cabview camera of loco hosting the freightanim; 
+  if ``Cab3D`` is present, the static freightanim is visible from the 3D cabview camera
+  of loco hosting the freightanim. 1, 2 or 3 of such substrings 
+  may be inserted in the ``Visibility`` line allowing for any combination of visibility.  
 
 Because more static OR freightanims may be defined for a wagon, in the case of a 
 container wagon that is able to carry more than one container, even as a double 
-stack, it is therefore possible to use a static OR freightanim for each 
+stack, it is possible to use a static OR freightanim for each 
 container, defining its position within the wagon. 
 
 Physics Variation with Loads
@@ -443,5 +454,29 @@ MSTS wagon::
 
 At runtime, when in passenger view, the player may pass from one viewpoint to 
 the other by pressing Shift-5.
+
+Bell animation
+==============
+
+Open Rails supports bell animation. The bell animation matrix must be named 
+ORTSBELL within the engine's .s file. Its default frame rate is 8 frames per 
+second. The default frame rate may be modified through the optional parameter 
+ESD_ORTSBellAnimationFPS (n), to be inserted within the .sd file related to the 
+.s file. n defines the animation FPS.
+It is advisable that the related sound stream within the .sms file is synchronized 
+with the visible animation. To accomplish this the .wav file should contain two 
+bell strokes, which time interval is equal to the time interval of a bell swing 
+from an oscillation end point to the opposite end point. As the first bell stroke 
+should not start immediately, but when the bell is about at the maximum of the 
+swing, the first stroke within the .wav file should be at the time distance equivalent 
+to the oscillation from center point to an oscillation end point. The file should have 
+one cue point at its beginning and one after the time interval of a complete bell swing 
+forward and backward, and should have a final fadeoff for best result. 
+
+
+
+  
+
+
 
 

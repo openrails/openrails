@@ -2050,24 +2050,22 @@ namespace Orts.Simulation.Signalling
 
             if (thisItem.ItemType == TrItem.trItemType.trSIGNAL)
             {
-                if (!Simulator.TimetableMode)
+                try
                 {
-                    try
-                    {
-                        SignalItem tryItem = (SignalItem)thisItem;
-                    }
-                    catch (Exception error)
-                    {
-                        Trace.TraceWarning(error.Message);
-                        Trace.TraceWarning("Signal item not consistent with signal database");
-                        return newLastDistance;
-                    }
+                    SignalItem tryItem = (SignalItem)thisItem;
                 }
+                catch (Exception error)
+                {
+                    Trace.TraceWarning(error.Message);
+                    Trace.TraceWarning("Signal item not consistent with signal database");
+                    return newLastDistance;
+                }
+
                 SignalItem sigItem = (SignalItem)thisItem;
                 if (sigItem.SigObj >= 0)
                 {
                     SignalObject thisSignal = SignalObjects[sigItem.SigObj];
-                    if (!Simulator.TimetableMode && thisSignal == null)
+                    if (thisSignal == null)
                     {
                         Trace.TraceWarning("Signal item with TrItemID = {0} not consistent with signal database", sigItem.TrItemId);
                         return newLastDistance;
@@ -3077,6 +3075,16 @@ namespace Orts.Simulation.Signalling
             TrackNode thisNode = trackDB.TrackNodes[nodeIndex];
             thisNode.TrJunctionNode.SelectedRoute = switchPos;
             thisSection.JunctionLastRoute = switchPos;
+
+            // update any linked signals
+            if (thisSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in thisSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
         }
 
         //================================================================================================//
@@ -3257,7 +3265,7 @@ namespace Orts.Simulation.Signalling
             if (thisTrain.Train.LoopSection >= 0)
             {
                 thisSection = TrackCircuitList[thisTrain.Train.LoopSection];
-                
+
                 // test if train is really occupying this section
                 Train.TCSubpathRoute tempRoute = BuildTempRoute(thisTrain.Train, thisTrain.Train.PresentPosition[1].TCSectionIndex, thisTrain.Train.PresentPosition[1].TCOffset,
                     thisTrain.Train.PresentPosition[1].TCDirection, thisTrain.Train.Length, true, true, false);
@@ -3342,7 +3350,7 @@ namespace Orts.Simulation.Signalling
                     {
                         lastRouteIndex = routeIndex - 1;
                     }
-                    
+
                     if (thisTrain.Train.CheckTrain)
                     {
                         if (lastRouteIndex >= 0)
@@ -3861,6 +3869,7 @@ namespace Orts.Simulation.Signalling
         ///   - if valid path only is requested and unreserved section is found (variable thisTrain required)
         ///   - end of track
         ///   - looped track
+        ///   - re-enter in original route (for manual re-routing)
         ///
         /// Returned is list of sections, with positive no. indicating direction 0 and negative no. indicating direction 1
         /// If signal or speedpost is required, list will contain index of required item (>0 facing direction, <0 backing direction)
@@ -3869,7 +3878,7 @@ namespace Orts.Simulation.Signalling
         public List<int> ScanRoute(Train thisTrain, int firstSectionIndex, float firstOffset, int firstDirection, bool forward,
                 float routeLength, bool honourManualSwitch, bool autoAlign, bool stopAtFacingSignal, bool reservedOnly, bool returnSections,
                 bool searchFacingSignal, bool searchBackwardSignal, bool searchFacingSpeedpost, bool searchBackwardSpeedpost,
-                bool isFreight, bool considerSpeedReset = false)
+                bool isFreight, bool considerSpeedReset = false, bool checkReenterOriginalRoute = false)
         {
 
             int sectionIndex = firstSectionIndex;
@@ -4042,6 +4051,25 @@ namespace Orts.Simulation.Signalling
                         break;
 
                     case TrackCircuitSection.TrackCircuitType.Junction:
+//                        if (checkReenterOriginalRoute && foundItems.Count > 2)
+                        if (checkReenterOriginalRoute)
+                        {
+                            Train.TCSubpathRoute originalSubpath = thisTrain.TCRoute.TCRouteSubpaths[thisTrain.TCRoute.OriginalSubpath];
+                            if (outPinIndex == 0)
+                            {
+                                // loop on original route to check if we are re-entering it
+                                for (int routeIndex = 0; routeIndex < originalSubpath.Count; routeIndex++)
+                                {
+                                    if (thisIndex == originalSubpath[routeIndex].TCSectionIndex)
+                                    // nice, we are returning into the original route
+                                    {
+                                        endOfRoute = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
                         if (thisSection.ActivePins[outPinIndex, 0].Link > 0)
                         {
                             nextIndex = thisSection.ActivePins[outPinIndex, 0].Link;
@@ -4454,7 +4482,7 @@ namespace Orts.Simulation.Signalling
                 }
             }
 
-            if (!Simulator.TimetableMode && Simulator.Activity != null &&
+            if (Simulator.Activity != null &&
                 Simulator.Activity.Tr_Activity.Tr_Activity_File.PlatformNumPassengersWaiting != null)
 
             // Override .tdb NumPassengersWaiting info with .act NumPassengersWaiting info if any available
@@ -5237,10 +5265,9 @@ namespace Orts.Simulation.Signalling
             bool switchReserved = (switchSection.CircuitState.SignalReserved >= 0 || switchSection.CircuitState.TrainClaimed.Count > 0);
             bool switchSet = false;
 
-            if (trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute == desiredState) return (false);
-            // set physical state
-
-            if (!MPManager.IsServer()) if (switchReserved) return (false);
+            // It must be possible to force a switch also in its present state, not only in the opposite state
+            if (!MPManager.IsServer())
+                if (switchReserved) return (false);
             //this should not be enforced in MP, as a train may need to be allowed to go out of the station from the side line
 
             if (!switchSection.CircuitState.HasTrainsOccupying())
@@ -5249,15 +5276,18 @@ namespace Orts.Simulation.Signalling
                 trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual;
                 switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
                 switchSet = true;
-                /*if (switchSection.SignalsPassingRoutes != null)
+
+                if (!Simulator.TimetableMode) switchSection.CircuitState.Forced = true;
+
+                if (switchSection.LinkedSignals != null)
                 {
-                    foreach (var thisSignalIndex in switchSection.SignalsPassingRoutes)
+                    foreach (int thisSignalIndex in switchSection.LinkedSignals)
                     {
-                        var signal = switchSection.signalRef.SignalObjects[thisSignalIndex];
-                        if (signal != null) signal.ResetRoute(switchSection.Index);
+                        SignalObject thisSignal = SignalObjects[thisSignalIndex];
+                        thisSignal.Update();
                     }
-                    switchSection.SignalsPassingRoutes.Clear();
-                }*/
+                }
+
                 var temptrains = Simulator.Trains.ToArray();
 
                 foreach (var t in temptrains)
@@ -5321,6 +5351,7 @@ namespace Orts.Simulation.Signalling
         public int JunctionDefaultRoute = -1;                     // jn default route, value is out-pin      //
         public int JunctionLastRoute = -1;                        // jn last route, value is out-pin         //
         public int JunctionSetManual = -1;                        // jn set manual, value is out-pin         //
+        public List<int> LinkedSignals = null;                    // switchstands linked with this switch    //
         public bool AILock;                                       // jn is locked agains AI trains           //
         public List<int> SignalsPassingRoutes;                    // list of signals reading passed junction //
 
@@ -5812,9 +5843,8 @@ namespace Orts.Simulation.Signalling
                     ClearSectionsOfTrainBehind(CircuitState.TrainReserved, this);
                 }
             }
-            else if (!signalRef.Simulator.TimetableMode &&
-                thisTrain.Train.IsPlayerDriven && thisTrain.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL && thisTrain.Train.DistanceTravelledM == 0.0 &&
-                thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
+            else if (thisTrain.Train.IsPlayerDriven && thisTrain.Train.ControlMode != Train.TRAIN_CONTROL.MANUAL && thisTrain.Train.DistanceTravelledM == 0.0 &&
+                     thisTrain.Train.TCRoute != null && thisTrain.Train.ValidRoute[0] != null && thisTrain.Train.TCRoute.activeSubpath == 0) // We are at initial placement
             // Check if section is under train, and therefore can be unreserved from other trains
             {
                 int thisRouteIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(Index, 0);
@@ -5999,38 +6029,41 @@ namespace Orts.Simulation.Signalling
 
                 if (CircuitType == TrackCircuitType.Junction || CircuitType == TrackCircuitType.Crossover)
                 {
-                    // set active pins for leading section
-
-                    JunctionSetManual = -1;  // reset manual setting (will have been honoured in route definition if applicable)
-
-                    int leadSectionIndex = -1;
-                    if (thisIndex > 0)
+                    if (CircuitState.Forced == false)
                     {
-                        thisElement = thisRoute[thisIndex - 1];
-                        leadSectionIndex = thisElement.TCSectionIndex;
+                        // set active pins for leading section
 
-                        alignSwitchPins(leadSectionIndex);
+                        JunctionSetManual = -1;  // reset manual setting (will have been honoured in route definition if applicable)
+
+                        int leadSectionIndex = -1;
+                        if (thisIndex > 0)
+                        {
+                            thisElement = thisRoute[thisIndex - 1];
+                            leadSectionIndex = thisElement.TCSectionIndex;
+
+                            alignSwitchPins(leadSectionIndex);
+                        }
+
+                        // set active pins for trailing section
+
+                        int trailSectionIndex = -1;
+                        if (thisIndex <= thisRoute.Count - 2)
+                        {
+                            thisElement = thisRoute[thisIndex + 1];
+                            trailSectionIndex = thisElement.TCSectionIndex;
+
+                            alignSwitchPins(trailSectionIndex);
+                        }
+
+                        // reset signals which routed through this junction
+
+                        foreach (int thisSignalIndex in SignalsPassingRoutes)
+                        {
+                            SignalObject thisSignal = signalRef.SignalObjects[thisSignalIndex];
+                            thisSignal.ResetRoute(Index);
+                        }
+                        SignalsPassingRoutes.Clear();
                     }
-
-                    // set active pins for trailing section
-
-                    int trailSectionIndex = -1;
-                    if (thisIndex <= thisRoute.Count - 2)
-                    {
-                        thisElement = thisRoute[thisIndex + 1];
-                        trailSectionIndex = thisElement.TCSectionIndex;
-
-                        alignSwitchPins(trailSectionIndex);
-                    }
-
-                    // reset signals which routed through this junction
-
-                    foreach (int thisSignalIndex in SignalsPassingRoutes)
-                    {
-                        SignalObject thisSignal = signalRef.SignalObjects[thisSignalIndex];
-                        thisSignal.ResetRoute(Index);
-                    }
-                    SignalsPassingRoutes.Clear();
                 }
 
                 // enable all signals along section in direction of train
@@ -6112,7 +6145,7 @@ namespace Orts.Simulation.Signalling
                             // no deadlock yet active - do not set deadlock if train has wait within deadlock section
                             if (thisTrain.Train.DeadlockInfo.ContainsKey(endSection.Index))
                             {
-                                if (!signalRef.Simulator.TimetableMode || !thisTrain.Train.HasActiveWait(Index, endSection.Index))
+                                if (!thisTrain.Train.HasActiveWait(Index, endSection.Index))
                                 {
                                     endSection.SetDeadlockTrap(thisTrain.Train, thisTrain.Train.DeadlockInfo[endSection.Index]);
                                 }
@@ -6217,6 +6250,7 @@ namespace Orts.Simulation.Signalling
             int routeIndex = thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex].GetRouteIndex(Index, thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex == 0 ? 1 : 0].RouteListIndex);
             int direction = routeIndex < 0 ? 0 : thisTrain.Train.ValidRoute[thisTrain.TrainRouteDirectionIndex][routeIndex].Direction;
             CircuitState.TrainOccupy.Add(thisTrain, direction);
+            CircuitState.Forced = false;
             thisTrain.Train.OccupiedTrack.Add(this);
 	    
             // clear all reservations
@@ -6773,21 +6807,12 @@ namespace Orts.Simulation.Signalling
         //================================================================================================//
         /// <summary>
         /// Get section state for request clear node
+        /// Method is put through to train class because of differences between activity and timetable mode
         /// </summary>
 
         public bool GetSectionStateClearNode(Train.TrainRouted thisTrain, int elementDirection, Train.TCSubpathRoute routePart)
         {
-            bool returnValue = false;
-
-            if (signalRef.Simulator.TimetableMode)
-            {
-                returnValue = getSectionState(thisTrain, elementDirection, SignalObject.InternalBlockstate.Reserved, routePart, -1) <= SignalObject.InternalBlockstate.OccupiedSameDirection;
-            }
-            else
-            {
-                returnValue = IsAvailable(thisTrain);
-            }
-
+            bool returnValue = thisTrain.Train.TrainGetSectionStateClearNode(elementDirection, routePart, this);
             return (returnValue);
         }
 
@@ -7839,6 +7864,7 @@ namespace Orts.Simulation.Signalling
         public bool RemoteOccupied;                                // remote occupied state         //
         public bool RemoteSignalReserved;                          // remote signal reserved        //
         public int RemoteReserved;                                 // remote reserved (number only) //
+        public bool Forced;                                        // forced by human dispatcher    //
 
         //================================================================================================//
         /// <summary>
@@ -7852,6 +7878,7 @@ namespace Orts.Simulation.Signalling
             SignalReserved = -1;
             TrainPreReserved = new TrainQueue();
             TrainClaimed = new TrainQueue();
+            Forced = false;
         }
 
 
@@ -7904,6 +7931,7 @@ namespace Orts.Simulation.Signalling
                 Train.TrainRouted thisRouted = new Train.TrainRouted(thisTrain, trainRouteIndex);
                 TrainClaimed.Enqueue(thisRouted);
             }
+            Forced = inf.ReadBoolean();
 
         }
 
@@ -8060,6 +8088,8 @@ namespace Orts.Simulation.Signalling
                 outf.Write(thisTrain.Train.Number);
                 outf.Write(thisTrain.TrainRouteDirectionIndex);
             }
+
+            outf.Write(Forced);
 
         }
 
@@ -8275,6 +8305,7 @@ namespace Orts.Simulation.Signalling
         public int TCDirection;                 // Direction within TrackCircuit
         public int TCNextTC = -1;               // Index of next TrackCircuit (NORMAL signals only)
         public int TCNextDirection;             // Direction of next TrackCircuit 
+        public int? nextSwitchIndex = null;     // index of first switch in path
 
         public List<int> JunctionsPassed = new List<int>();  // Junctions which are passed checking next signal //
 
@@ -8308,7 +8339,7 @@ namespace Orts.Simulation.Signalling
 
         public Train.TCSubpathRoute signalRoute = new Train.TCSubpathRoute();  // train route from signal
         public int trainRouteDirectionIndex;    // direction index in train route array (usually 0, value 1 valid for Manual only)
-        private int thisTrainRouteIndex;        // index of section after signal in train route list
+        public int thisTrainRouteIndex;        // index of section after signal in train route list
 
         private Train.TCSubpathRoute fixedRoute = new Train.TCSubpathRoute();     // fixed route from signal
         public bool hasFixedRoute;              // signal has fixed route
@@ -9404,6 +9435,71 @@ namespace Orts.Simulation.Signalling
 
         //================================================================================================//
         /// <summary>
+        /// switchstand : link signal with next switch and set aspect according to switch state
+        /// </summary>
+
+        public int switchstand(int aspect1, int aspect2)
+        {
+            // if switch index not yet set, find first switch in path
+            if (!nextSwitchIndex.HasValue)
+            {
+                TrackCircuitSection thisSection = signalRef.TrackCircuitList[TCReference];
+                int sectionDirection = TCDirection;
+
+                bool switchFound = false;
+
+                while (!switchFound)
+                {
+                    int pinIndex = sectionDirection;
+
+                    if (thisSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
+                    {
+                        if (thisSection.Pins[pinIndex, 1].Link >= 0) // facing point
+                        {
+                            switchFound = true;
+                            nextSwitchIndex = thisSection.Index;
+                            if (thisSection.LinkedSignals == null)
+                            {
+                                thisSection.LinkedSignals = new List<int>();
+                                thisSection.LinkedSignals.Add(thisRef);
+                            }
+                            else if (!thisSection.LinkedSignals.Contains(thisRef))
+                            {
+                                thisSection.LinkedSignals.Add(thisRef);
+                            }
+                        }
+
+                    }
+
+                    sectionDirection = thisSection.Pins[pinIndex, 0].Direction;
+
+                    if (thisSection.CircuitType != TrackCircuitSection.TrackCircuitType.EndOfTrack && thisSection.Pins[pinIndex, 0].Link >= 0)
+                    {
+                        thisSection = signalRef.TrackCircuitList[thisSection.Pins[pinIndex, 0].Link];
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                if (!switchFound)
+                {
+                    nextSwitchIndex = -1;
+                }
+            }
+
+            if (nextSwitchIndex >= 0)
+            {
+                TrackCircuitSection switchSection = signalRef.TrackCircuitList[nextSwitchIndex.Value];
+                return (switchSection.JunctionLastRoute == 0 ? aspect1 : aspect2);
+            }
+
+            return (aspect1);
+        }
+
+        //================================================================================================//
+        /// <summary>
         /// route_set : check if required route is set
         /// </summary>
 
@@ -10303,49 +10399,49 @@ namespace Orts.Simulation.Signalling
 
             // find section in route part which follows signal
 
-                signalRoute.Clear();
+            signalRoute.Clear();
 
-                int firstIndex = -1;
-                if (lastSignal != null)
-                {
-                    firstIndex = lastSignal.thisTrainRouteIndex;
-                }
-                if (firstIndex < 0)
-                {
-                    firstIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
-                }
+            int firstIndex = -1;
+            if (lastSignal != null)
+            {
+                firstIndex = lastSignal.thisTrainRouteIndex;
+            }
+            if (firstIndex < 0)
+            {
+                firstIndex = thisTrain.Train.PresentPosition[thisTrain.TrainRouteDirectionIndex].RouteListIndex;
+            }
 
-                if (firstIndex >= 0)
+            if (firstIndex >= 0)
+            {
+                for (int iNode = firstIndex;
+                         iNode < RoutePart.Count && foundFirstSection < 0;
+                         iNode++)
                 {
-                    for (int iNode = firstIndex;
-                             iNode < RoutePart.Count && foundFirstSection < 0;
-                             iNode++)
+                    Train.TCRouteElement thisElement = RoutePart[iNode];
+                    if (thisElement.TCSectionIndex == TCNextTC)
                     {
-                        Train.TCRouteElement thisElement = RoutePart[iNode];
-                        if (thisElement.TCSectionIndex == TCNextTC)
-                        {
-                            foundFirstSection = iNode;
-                            thisTrainRouteIndex = iNode;
-                        }
+                        foundFirstSection = iNode;
+                        thisTrainRouteIndex = iNode;
                     }
                 }
+            }
 
-                if (foundFirstSection < 0)
+            if (foundFirstSection < 0)
+            {
+                enabledTrain = null;
+
+                // if signal on holding list, set hold state
+                if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None)
                 {
-                    enabledTrain = null;
-
-                    // if signal on holding list, set hold state
-                    if (thisTrain.Train.HoldingSignals.Contains(thisRef) && holdState == HoldState.None)
-                    {
-                        holdState = HoldState.StationStop;
-                    }
-                    return false;
+                    holdState = HoldState.StationStop;
                 }
+                return false;
+            }
 
             // copy sections upto next normal signal
             // check for loop
 
-                List<int> sectionsInRoute = new List<int>();
+            List<int> sectionsInRoute = new List<int>();
 
             for (int iNode = foundFirstSection; iNode < RoutePart.Count && foundLastSection < 0; iNode++)
             {
@@ -10369,6 +10465,13 @@ namespace Orts.Simulation.Signalling
                     {
                         enabledTrain = null;
                         signalRoute.Clear();
+
+                        if (thisTrain.Train.CheckTrain)
+                        {
+                            File.AppendAllText(@"C:\temp\checktrain.txt",
+                                String.Format("Reset signal for pool access : {0} \n", thisRef));
+                        }
+
                         return false;
                     }
 
@@ -10489,6 +10592,7 @@ namespace Orts.Simulation.Signalling
 
             if (enabledTrain != null && enabledTrain == thisTrain && signalRoute != null && signalRoute.Count > 0)
             {
+                var forcedRouteElementIndex = -1;
                 foreach (Train.TCRouteElement routeElement in signalRoute)
                 {
                     TrackCircuitSection routeSection = signalRef.TrackCircuitList[routeElement.TCSectionIndex];
@@ -10496,6 +10600,22 @@ namespace Orts.Simulation.Signalling
                     {
                         return;  // train has passed signal - clear request is invalid
                     }
+                    if (routeSection.CircuitState.Forced)
+                    {
+                        // route must be recomputed after switch moved by dispatcher
+                        forcedRouteElementIndex = signalRoute.IndexOf(routeElement);
+                        break;
+                    }
+                }
+                if (forcedRouteElementIndex >= 0)
+                {
+                    int forcedTCSectionIndex = signalRoute[forcedRouteElementIndex].TCSectionIndex;
+                    TrackCircuitSection forcedTrackSection = signalRef.TrackCircuitList[forcedTCSectionIndex];
+                    int forcedRouteSectionIndex = thisTrain.Train.ValidRoute[0].GetRouteIndex(forcedTCSectionIndex, 0);
+                    thisTrain.Train.ReRouteTrain(forcedRouteSectionIndex, forcedTCSectionIndex);
+                    if (thisTrain.Train.TrainType == Train.TRAINTYPE.AI || thisTrain.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
+                        (thisTrain.Train as AITrain).ResetActions(true);
+                    forcedTrackSection.CircuitState.Forced = false;
                 }
             }
 
@@ -12467,6 +12587,7 @@ namespace Orts.Simulation.Signalling
     public class SignalHead
     {
         public SignalType signalType;           // from sigcfg file
+        public SignalScripts.SCRScripts usedSigScript = null;   // used sigscript
         public MstsSignalAspect state = MstsSignalAspect.STOP;
         public int draw_state;
         public int trItemIndex;                 // Index to trItem   
@@ -12576,7 +12697,11 @@ namespace Orts.Simulation.Signalling
             // set signal type
             if (sigCFG.SignalTypes.ContainsKey(sigItem.SignalType))
             {
+                // set signal type
                 signalType = sigCFG.SignalTypes[sigItem.SignalType];
+
+                // get related signalscript
+                Signals.scrfile.SignalScripts.Scripts.TryGetValue(signalType, out usedSigScript);
 
                 // set signal speeds
                 foreach (SignalAspect thisAspect in signalType.Aspects)
@@ -12767,9 +12892,15 @@ namespace Orts.Simulation.Signalling
             return (0);
         }
 
+        public int switchstand(int aspect1, int aspect2)
+        {
+            return mainSignal.switchstand(aspect1, aspect2);
+        }
+
         //================================================================================================//
         /// <summary>
         ///  Returns most restrictive state of signal type A, for all type A upto type B
+        ///  Uses Most Restricted state per signal, but checks for valid routing
         /// </summary>
 
         public MstsSignalAspect dist_multi_sig_mr(int sigFN1, int sigFN2, string dumpfile)
@@ -12837,6 +12968,111 @@ namespace Orts.Simulation.Signalling
                 thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[sigFN1]];
 
                 MstsSignalAspect thisState = thisSignal.this_sig_mr_routed(sigFN1, dumpfile);
+
+                // ensure correct next signals are located
+                if (sigFN1 != (int)MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())
+                {
+                    var sigFound = thisSignal.SONextSignal(sigFN1);
+                    if (sigFound >= 0) thisSignal.sigfound[(int)sigFN1] = thisSignal.SONextSignal(sigFN1);
+                }
+                if (sigFN2 != (int)MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())
+                {
+                    var sigFound = thisSignal.SONextSignal(sigFN2);
+                    if (sigFound >= 0) thisSignal.sigfound[(int)sigFN2] = thisSignal.SONextSignal(sigFN2);
+                }
+
+                if (sig2Index == thisSignal.thisRef) // this signal also contains type 2 signal and is therefor valid
+                {
+                    foundValid = true;
+                    foundState = foundState < thisState ? foundState : thisState;
+                    return (foundState);
+                }
+                else if (sig2Index >= 0 && thisSignal.sigfound[sigFN2] != sig2Index)  // we are beyond type 2 signal
+                {
+                    return (foundValid ? foundState : MstsSignalAspect.STOP);
+                }
+                foundValid = true;
+                foundState = foundState < thisState ? foundState : thisState;
+            }
+
+            return (foundValid ? foundState : MstsSignalAspect.STOP);   // no type 2 or running out of signals before finding type 2
+        }
+
+        //================================================================================================//
+        /// <summary>
+        ///  Returns most restrictive state of signal type A, for all type A upto type B
+        ///  Uses Least Restrictive state per signal
+        /// </summary>
+
+        public MstsSignalAspect dist_multi_sig_mr_of_lr(int sigFN1, int sigFN2, string dumpfile)
+        {
+            MstsSignalAspect foundState = MstsSignalAspect.CLEAR_2;
+            bool foundValid = false;
+
+            // get signal of type 2 (end signal)
+
+            if (dumpfile.Length > 1)
+            {
+                File.AppendAllText(dumpfile,
+                    String.Format("DIST_MULTI_SIG_MR_OF_LR for {0} + upto {1}\n",
+                    sigFN1, sigFN2));
+            }
+
+            int sig2Index = mainSignal.sigfound[sigFN2];
+            if (sig2Index < 0)           // try renewed search with full route
+            {
+                sig2Index = mainSignal.SONextSignal(sigFN2);
+                mainSignal.sigfound[sigFN2] = sig2Index;
+            }
+
+            if (dumpfile.Length > 1)
+            {
+                if (sig2Index < 0)
+                    File.AppendAllText(dumpfile, "  no signal type 2 found\n");
+            }
+
+            if (dumpfile.Length > 1)
+            {
+                var sob = new StringBuilder();
+                sob.AppendFormat("  signal type 2 : {0}", mainSignal.sigfound[sigFN2]);
+
+                if (mainSignal.sigfound[(int)sigFN2] > 0)
+                {
+                    SignalObject otherSignal = mainSignal.signalRef.SignalObjects[mainSignal.sigfound[sigFN2]];
+                    sob.AppendFormat(" (");
+
+                    foreach (SignalHead otherHead in otherSignal.SignalHeads)
+                    {
+                        sob.AppendFormat(" {0} ", otherHead.TDBIndex);
+                    }
+
+                    sob.AppendFormat(") ");
+                }
+                sob.AppendFormat("\n");
+
+                File.AppendAllText(dumpfile, sob.ToString());
+            }
+
+            SignalObject thisSignal = mainSignal;
+
+            // ensure next signal of type 1 is located correctly (cannot be done for normal signals searching next normal signal)
+
+            if (!thisSignal.isSignalNormal() || sigFN1 != (int)MstsSignalFunction.NORMAL)
+            {
+                thisSignal.sigfound[sigFN1] = thisSignal.SONextSignal(sigFN1);
+            }
+
+            // loop through all available signals of type 1
+
+            while (thisSignal.sigfound[sigFN1] >= 0)
+            {
+                thisSignal = thisSignal.signalRef.SignalObjects[thisSignal.sigfound[sigFN1]];
+
+                MstsSignalAspect thisState = thisSignal.this_sig_lr(sigFN1);
+                if (dumpfile.Length > 1)
+                {
+                    File.AppendAllText(dumpfile, "Found lr state : " + thisState.ToString() + "\n");
+                }
 
                 // ensure correct next signals are located
                 if (sigFN1 != (int)MstsSignalFunction.NORMAL || !thisSignal.isSignalNormal())

@@ -29,6 +29,7 @@
 // This logs every UserCommandInput change from pressed to released.
 //#define DEBUG_USER_INPUT
 
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework.Input;
@@ -45,6 +46,8 @@ namespace Orts.Viewer3D
         static MouseState MouseState;
         static KeyboardState LastKeyboardState;
         static MouseState LastMouseState;
+        public static int MouseSpeedX;
+        public static int MouseSpeedY;
 
         public static RailDriverState RDState;
 
@@ -62,6 +65,9 @@ namespace Orts.Viewer3D
             // Make sure we have an "idle" (everything released) keyboard and mouse state if the window isn't active.
             KeyboardState = game.IsActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
             MouseState = game.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
+
+            MouseSpeedX = Math.Abs(MouseState.X - LastMouseState.X);
+            MouseSpeedY = Math.Abs(MouseState.Y - LastMouseState.Y);
 
 #if DEBUG_RAW_INPUT
             for (Keys key = 0; key <= Keys.OemClear; key++)
@@ -165,6 +171,10 @@ namespace Orts.Viewer3D
         public static bool IsMouseMoved { get { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; } }
         public static int MouseMoveX { get { return MouseState.X - LastMouseState.X; } }
         public static int MouseMoveY { get { return MouseState.Y - LastMouseState.Y; } }
+        public static bool MouseMovedUp {  get { return MouseState.Y < LastMouseState.Y; } }
+        public static bool MouseMovedDown {  get { return MouseState.Y > LastMouseState.Y; } }
+        public static bool MouseMovedLeft {  get { return MouseState.X < LastMouseState.X; } }
+        public static bool MouseMovedRight {  get { return MouseState.X > LastMouseState.X; } }
         public static int MouseX { get { return MouseState.X; } }
         public static int MouseY { get { return MouseState.Y; } }
 
