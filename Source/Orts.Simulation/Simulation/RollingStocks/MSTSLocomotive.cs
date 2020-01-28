@@ -1265,9 +1265,8 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
             LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f;
             AdhesionFilter.Reset(0.5f);
-            LocalThrottlePercent = Train.MUThrottlePercent;
-            AverageForceN = MaxForceN * LocalThrottlePercent / 100;
-            float maxPowerW = MaxPowerW * LocalThrottlePercent * LocalThrottlePercent / 10000;
+            AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
+            float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             if (Train.IsActualPlayerTrain)
@@ -1707,7 +1706,7 @@ namespace Orts.Simulation.RollingStocks
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
+            if (this.IsLeadLocomotive())
             {
                 var throttleCurrentNotch = ThrottleController.CurrentNotch;
                 ThrottleController.Update(elapsedClockSeconds);
