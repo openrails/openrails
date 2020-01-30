@@ -633,6 +633,31 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // - Non EQ, where no equalising reservoir is fitted, and brake controller must be held in release or application position until brake pipe reaches the desired vacuum
                     if (lead.VacuumBrakeEQFitted) // Is an equalising reservoir fitted
                     {
+
+                        if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.VacApplyContServ)
+                        {
+                            // Vac Apply Cont Service - allows brake to be applied with an increasing rate. In other words the further that the valve is opened then the faster the brakes are applied.
+                            // Emergency operation would be equivalent to 100%, normal operation may only require the brake controller to be set at less then 50%
+                            // Brake valve control position is determined by DesiredPipeVacuum pressure, and the full pressure is used to determine a fraction. This fraction is then used to determine
+                            // the size of the valve opening.
+
+                            // This section uses a linear transition between the zero application rate (at 0% on control valve) and the emergency application rate (at 100% on control valve)
+                            // Thus as the valve is opened further then the rate at which the vacuum is destroyed increases
+                            float VacuumPressureDifference = (OneAtmospherePSI - MaxVacuumPipeLevelPSI);
+                            float BrakeValveOpeningFraction = (DesiredPipeVacuum - VacuumPressureDifference) / MaxVacuumPipeLevelPSI;
+                            float ApplyIncreaseGradient = TrainPipeTimeVariationS / AdjBrakeEmergencyTimeFactorS;
+                            float VacApplyServiceTimeFactorS = (1 + ApplyIncreaseGradient * BrakeValveOpeningFraction);
+                            VacApplyServiceTimeFactorS = MathHelper.Clamp(VacApplyServiceTimeFactorS, 1.0f, VacApplyServiceTimeFactorS);  // Make sure service time does not go below 1
+
+                            if (VacApplyServiceTimeFactorS != 0)  // Don't make any changes if increase value is zero
+                            {
+                                // Adjust brake pipe value as appropriate
+                                lead.BrakeSystem.BrakeLine1PressurePSI *= VacApplyServiceTimeFactorS;
+                                if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
+                                    lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
+                            }
+                        }
+
                         // Vacuum Pipe is < Desired value - increase brake pipe pressure (decrease vacuum value) - PSI goes from approx 4.189 to 14.5 - applying brakes
 
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Emergency && lead.BrakeSystem.BrakeLine1PressurePSI < DesiredPipeVacuum)
@@ -652,7 +677,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 lead.BrakeSystem.BrakeLine1PressurePSI = DesiredPipeVacuum;
                         }
 
-                        else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
+                        else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum) // Releasing brakes
                         {
                             // Exhauster flag
                             lead.VacuumExhausterIsOn = true;
