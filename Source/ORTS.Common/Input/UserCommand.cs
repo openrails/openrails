@@ -181,6 +181,7 @@
         [GetString("Control Large Ejector Decrease")] ControlLargeEjectorDecrease,
         [GetString("Control Small Ejector Increase")] ControlSmallEjectorIncrease,
         [GetString("Control Small Ejector Decrease")] ControlSmallEjectorDecrease,
+        [GetString("Control Vacuum Exhauster")] ControlVacuumExhausterPressed,
         [GetString("Control Cylinder Compound")] ControlCylinderCompound,
         [GetString("Control Firing")] ControlFiring,
         [GetString("Control Refill")] ControlRefill,

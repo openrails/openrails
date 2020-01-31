@@ -115,6 +115,8 @@ namespace Orts.Simulation.RollingStocks
         public bool Bell = false;
         protected bool PreviousBell = false;
 
+        public bool VacuumExhausterPressed = false;
+
         public bool AlerterSnd;
         public bool VigilanceMonitor;
         public bool Sander;
@@ -966,6 +968,7 @@ namespace Orts.Simulation.RollingStocks
             // we won't save the horn state
             outf.Write(Bell);
             outf.Write(Sander);
+            outf.Write(VacuumExhausterPressed);
             outf.Write(Wiper);
             outf.Write(OdometerResetPositionM);
             outf.Write(OdometerCountingUp);
@@ -1001,6 +1004,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (inf.ReadBoolean()) SignalEvent(Event.BellOn);
             if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
+            if (inf.ReadBoolean()) SignalEvent(Event.VacuumExhausterOn);
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             OdometerResetPositionM = inf.ReadSingle();
             OdometerCountingUp = inf.ReadBoolean();
@@ -3658,8 +3662,8 @@ namespace Orts.Simulation.RollingStocks
 
                 case Event.CompressorOn: { CompressorIsOn = true; break; }
                 case Event.CompressorOff: { CompressorIsOn = false; break; }
-                case Event.VacuumExhausterOn: { VacuumExhausterIsOn = true; break; }
-                case Event.VacuumExhausterOff : { VacuumExhausterIsOn = false; break; }
+                case Event.VacuumExhausterOn: { VacuumExhausterPressed = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.On); break; }
+                case Event.VacuumExhausterOff : { VacuumExhausterPressed = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.Off); break; }
 
                 case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
                 case Event.TrainBrakePressureDecrease:
@@ -4012,6 +4016,12 @@ namespace Orts.Simulation.RollingStocks
                         data = Wiper ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.VACUUM_EXHAUSTER:
+                    {
+                        data = VacuumExhausterPressed ? 1 : 0;
+                        break;
+                    }
+
                 case CABViewControlTypes.HORN:
                     {
                         data = Horn ? 1 : 0;
