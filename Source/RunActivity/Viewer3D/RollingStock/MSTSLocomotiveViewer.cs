@@ -1848,6 +1848,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.RIGHTDOOR:
                 case CABViewControlTypes.MIRRORS:
                 case CABViewControlTypes.HORN:
+                case CABViewControlTypes.VACUUM_EXHAUSTER:
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.BELL:
                 case CABViewControlTypes.SANDERS:
@@ -1939,6 +1940,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.FRONT_HLIGHT: var hl = ChangedValue(0); if (hl != 0) new HeadlightCommand(Viewer.Log, hl > 0); break;
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.HORN: new HornCommand(Viewer.Log, ChangedValue(Locomotive.Horn ? 1 : 0) > 0); break;
+                case CABViewControlTypes.VACUUM_EXHAUSTER: new VacuumExhausterCommand(Viewer.Log, ChangedValue(Locomotive.VacuumExhausterPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.BELL: new BellCommand(Viewer.Log, ChangedValue(Locomotive.Bell ? 1 : 0) > 0); break;
                 case CABViewControlTypes.SANDERS:
                 case CABViewControlTypes.SANDING: new SanderCommand(Viewer.Log, ChangedValue(Locomotive.Sander ? 1 : 0) > 0); break;

@@ -585,7 +585,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                 // Calculate the net loss/gain in terms of charging the BP - applies in regard to EQ Release positions
                 // Assume that EQ reservoir only fitted to diesel or electric locomotives
-                if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease)
+                if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Release && lead.VacuumExhausterPressed))
                 {
                     // Full Quick release - assumption that exhauster is in high speed mode
                     EQReleaseNetBPLossGainPSI = (AdjHighSExhausterChargingRateInHgpS + AdjLargeEjectorChargingRateInHgpS + AdjSmallEjectorChargingRateInHgpS + AdjVacuumPumpChargingRateInHgpS) - AdjTrainPipeLeakLossPSI;
@@ -633,7 +633,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // - Non EQ, where no equalising reservoir is fitted, and brake controller must be held in release or application position until brake pipe reaches the desired vacuum
                     if (lead.VacuumBrakeEQFitted) // Is an equalising reservoir fitted
                     {
-
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.VacApplyContServ)
                         {
                             // Vac Apply Cont Service - allows brake to be applied with an increasing rate. In other words the further that the valve is opened then the faster the brakes are applied.

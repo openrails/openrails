@@ -66,6 +66,7 @@ namespace Orts.Simulation
       , CylinderCompound
       , LargeEjector
       , SmallEjector
+      , VacuumExhauster
       , TenderCoal
       , TenderWater
       // General
@@ -201,7 +202,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
-                , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") } 
+                , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("VacuumExhauster"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
                 // General

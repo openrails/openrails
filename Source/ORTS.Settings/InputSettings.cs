@@ -360,6 +360,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlLargeEjectorDecrease] = new UserCommandKeyInput(0x24, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlSmallEjectorIncrease] = new UserCommandKeyInput(0x24);
             Commands[(int)UserCommand.ControlSmallEjectorDecrease] = new UserCommandKeyInput(0x24, KeyModifiers.Shift);
+            Commands[(int)UserCommand.ControlVacuumExhausterPressed] = new UserCommandKeyInput(0x24);
             Commands[(int)UserCommand.ControlCylinderCompound] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommand.ControlDamperDecrease] = new UserCommandKeyInput(0x32, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlDamperIncrease] = new UserCommandKeyInput(0x32);

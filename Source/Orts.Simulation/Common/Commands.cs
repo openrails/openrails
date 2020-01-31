@@ -753,6 +753,36 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class VacuumExhausterCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public VacuumExhausterCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (ToState)
+            {
+                if (!Receiver.VacuumExhausterPressed)
+                    Receiver.Train.SignalEvent(Event.VacuumExhausterOn);
+            }
+            else
+            {
+                Receiver.Train.SignalEvent(Event.VacuumExhausterOff);
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " " + (ToState ? "on" : "off");
+        }
+    }
+
+    [Serializable()]
     public sealed class HornCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 
