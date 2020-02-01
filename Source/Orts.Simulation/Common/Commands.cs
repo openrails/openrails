@@ -778,7 +778,7 @@ namespace Orts.Common
 
         public override string ToString()
         {
-            return base.ToString() + " " + (ToState ? "on" : "off");
+            return base.ToString() + " " + (ToState ? "fast" : "normal");
         }
     }
 
