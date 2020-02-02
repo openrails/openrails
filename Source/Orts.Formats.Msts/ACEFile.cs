@@ -103,10 +103,7 @@ namespace Orts.Formats.Msts
             if ((options & SimisAceFormatOptions.MipMaps) == 0)
                 texture = new Texture2D(graphicsDevice, width, height, false, textureFormat);
             else
-                if (imageCount > 1)
-                    texture = new Texture2D(graphicsDevice, width, height, true, textureFormat);
-                else
-                    texture = new Texture2D(graphicsDevice, width, height, true, textureFormat);
+                texture = new Texture2D(graphicsDevice, width, height, true, textureFormat);
 
             // Read in the color channels; each one defines a size (in bits) and type (reg, green, blue, mask, alpha).
             var channels = new List<SimisAceChannel>();
