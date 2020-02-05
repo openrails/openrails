@@ -734,7 +734,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
 
                         // Lap position for diesels and electric locomotives
-                        // In this position the BP is isolated from exhauster, and hence will suffer leakage
+                        // In this position the BP is isolated from the small ejector or exhauster, and hence will suffer leakage
                         else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Lap && (lead.BrakeSystem.BrakeLine1PressurePSI + (TrainPipeTimeVariationS * AdjTrainPipeLeakLossPSI)) < OneAtmospherePSI)
                         {
                             lead.BrakeSystem.BrakeLine1PressurePSI += TrainPipeTimeVariationS * LapNetBPLossGainPSI;
@@ -762,7 +762,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         // Brake Controller is in Release position - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
                         else if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                         {
-                            float TrainPipePressureDiffPSI = TrainPipeTimeVariationS * ReleaseNetBPLossGainPSI;
+                            float TrainPipePressureDiffPSI = 0;
+                            if (lead.EngineType == TrainCar.EngineTypes.Diesel || lead.EngineType == TrainCar.EngineTypes.Electric)
+                            {
+                                // diesel and electric locomotives use vacuum exhauster
+                                TrainPipePressureDiffPSI = TrainPipeTimeVariationS * EQReleaseNetBPLossGainPSI;
+                            }
+                            else
+                            {
+                                // steam locomotives use vacuum ejector
+                                TrainPipePressureDiffPSI = TrainPipeTimeVariationS * ReleaseNetBPLossGainPSI;
+                            }
                             lead.BrakeSystem.BrakeLine1PressurePSI -= TrainPipePressureDiffPSI;
                         }
 
