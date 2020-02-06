@@ -239,6 +239,7 @@ namespace Orts.Simulation.RollingStocks
         public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
         public float ExhausterHighSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
+        public bool BrakeCutoffActivated = false;
 
         public bool EngineBrakeFitted = false;
         public bool VacuumExhausterIsOn = false;
@@ -338,6 +339,7 @@ namespace Orts.Simulation.RollingStocks
 
         public bool DoesBrakeCutPower { get; private set; }
         public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
+        public float BrakeRestoresPowerAtBrakeCylinderPressurePSI { get; private set; }
         public bool DoesHornTriggerBell { get; private set; }
 
         protected const float DefaultCompressorRestartToMaxSysPressureDiff = 35;    // Used to check if difference between these two .eng parameters is correct, and to correct it
@@ -805,6 +807,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
                 case "engine(doesbrakecutpower": DoesBrakeCutPower = stf.ReadBoolBlock(false); break;
                 case "engine(brakecutspoweratbrakecylinderpressure": BrakeCutsPowerAtBrakeCylinderPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsbrakerestorespoweratbrakecylinderpressure": BrakeRestoresPowerAtBrakeCylinderPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
@@ -1225,6 +1228,20 @@ namespace Orts.Simulation.RollingStocks
             {
                 Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being incorrectly read as {0} Inhg, - set to value of {1} InHg", TrainBrakeController.MaxPressurePSI, Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
                 TrainBrakeController.MaxPressurePSI = Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI));
+            }
+
+            // Check initialisation of brake cutoff values
+            if (DoesBrakeCutPower)
+            {
+                if ((BrakeSystem is VacuumSinglePipe) && BrakeCutsPowerAtBrakeCylinderPressurePSI == 0)
+                {
+                    BrakeCutsPowerAtBrakeCylinderPressurePSI = 12.5f; // Power is cut @ 12.5 InHg
+                }
+
+                if ((BrakeSystem is VacuumSinglePipe) && BrakeRestoresPowerAtBrakeCylinderPressurePSI == 0)
+                {
+                    BrakeCutsPowerAtBrakeCylinderPressurePSI = 15.0f; // Power can be resotred once cylinder rises above 15 InHg
+                }
             }
 
             // Initialise Brake Time Factor
