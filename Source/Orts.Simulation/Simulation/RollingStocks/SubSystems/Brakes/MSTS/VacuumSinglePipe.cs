@@ -269,28 +269,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
 
                 // Brake cuts power
-                float BrakeCutoffPressurePSIA = Vac.ToPress(lead.BrakeCutsPowerAtBrakeCylinderPressurePSI);
-                float BrakeRestorePressurePSIA = Vac.ToPress(lead.BrakeRestoresPowerAtBrakeCylinderPressurePSI);
-                if (lead.DoesBrakeCutPower)
+                // Convert restore and cutoff limit values to a value on our "pressure" scale
+                float BrakeCutoffPressurePSI = OneAtmospherePSI - lead.BrakeCutsPowerAtBrakePipePressurePSI;
+                float BrakeRestorePressurePSI = OneAtmospherePSI - lead.BrakeRestoresPowerAtBrakePipePressurePSI;
+
+                if (lead.DoesVacuumBrakeCutPower)
                 {
-                    if (CylPressurePSIA < BrakeCutoffPressurePSIA)
+                // There are three zones of operation - (note logic reversed - O InHg = 14.73psi, and eg 21 InHg = 4.189psi)
+                // Cutoff - exceeds set value, eg 12.5InHg (= 8.5psi)
+                // Between cutoff and restore levels - only if cutoff has triggerd
+                // Restore - when value exceeds set value, eg 17InHg (= 6.36 psi) - resets throttle
+                    if (BrakeLine1PressurePSI < BrakeRestorePressurePSI)
                     {
-                        lead.ThrottleController.SetValue(0.0f);
-                        lead.BrakeCutoffActivated = true;
+                        lead.VacuumBrakeCutoffActivated = false;
                     }
-                    else if (CylPressurePSIA > BrakeRestorePressurePSIA)
+                    else if (BrakeLine1PressurePSI > BrakeCutoffPressurePSI )
                     {
-                        lead.BrakeCutoffActivated = false;
+                        lead.ThrottleToZero();
+                        lead.ThrottlePercent = 0;
+                        lead.VacuumBrakeCutoffActivated = true;
                     }
-                    else if (lead.BrakeCutoffActivated)
+                    else if (lead.VacuumBrakeCutoffActivated)
                     {
-                        lead.ThrottleController.SetValue(0.0f);
+                        lead.ThrottleToZero();
+                        lead.ThrottlePercent = 0;
                     }
                 }
             }
 
             // Brake information is updated for each vehicle
-                        
+
             if (EngineBrake) // Only apples when an engine brake is in place, otherwise processed by next loop
             {
                 // The engine brake can only be applied when the train brake is released or partially released. It cannot be released whilever the train brake is applied.
