@@ -270,6 +270,32 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
+            // Check that maximum force value has been set
+            if (MaxForceN == 0)
+            {
+
+                if (TractiveForceCurves == null)  // Basic configuration - ie no force and Power tables, etc
+                {
+                    float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
+                    MaxForceN = LocomotiveMaxRailOutputPowerW / StartingSpeedMpS;
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Maximum Force set to {0} value, calculated from Rail Power Value.", FormatStrings.FormatForce(MaxForceN, IsMetric));
+                }
+                else
+                {
+                    float ThrottleSetting = 1.0f; // Must be at full throttle for these calculations
+                    float StartingSpeedMpS = 0.1f; // Assumed starting speed for diesel - can't be zero otherwise error will occurr
+                    float MaxForceN = TractiveForceCurves.Get(ThrottleSetting, StartingSpeedMpS);
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                        Trace.TraceInformation("Maximum Force set to {0} value, calcuated from Tractive Force Tables", FormatStrings.FormatForce(MaxForceN, IsMetric));
+                }
+
+
+            }
+
+
             // Check force assumptions set for diesel
             if (Simulator.Settings.VerboseConfigurationMessages)
             {
@@ -500,12 +526,19 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected override void UpdateMotiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
+            // This section calculates the motive force of the locomotive as follows:
+            // Basic configuration (no TF table) - uses P = F /speed  relationship - requires power and force parameters to be set in the ENG file. 
+            // Advanced configuration (TF table) - use a user defined tractive force table
+            // With Simple adhesion apart from correction for rail adhesion, there is no further variation to the motive force. 
+            // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
             if (PowerOn)
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsWheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsWheelSpeedMpS));
-                    float maxPowerW = 0.98f * LocomotiveMaxRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
+                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), WheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / WheelSpeedMpS));
+                    // float maxPowerW = 0.98f * LocomotiveMaxRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering - Not sure why this is???
+
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW;
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -513,13 +546,21 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
+                        // Not sure why wheel speed is used?? - this gives a lower TE then expected for the speed travelling
+                        // if (maxForceN * AbsWheelSpeedMpS > maxPowerW)
+                        //    maxForceN = maxPowerW / AbsWheelSpeedMpS;
 
-                        if (maxForceN * AbsWheelSpeedMpS > maxPowerW)
-                            maxForceN = maxPowerW / AbsWheelSpeedMpS;
+                        if (maxForceN * AbsSpeedMpS > maxPowerW)
+                            maxForceN = maxPowerW / AbsSpeedMpS;
+
+                        // CTN - Not sure what impact that these following have???
                         if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
                             maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
+
+                        // CTN - Sets power to zero, which I don't think is correct
                         if (AbsSpeedMpS > (MaxSpeedMpS))
                             maxForceN = 0;
+
                         MotiveForceN = maxForceN;
                     }
                 }
@@ -534,7 +575,8 @@ namespace Orts.Simulation.RollingStocks
                             t = (DieselEngines.CurrentRailOutputPowerW / DieselEngines.MaximumRailOutputPowerW);
                     }
 
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
+                    //   MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction); - don't think it should use wheelspeed as TE tables use train speed.
+                    MotiveForceN = TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
