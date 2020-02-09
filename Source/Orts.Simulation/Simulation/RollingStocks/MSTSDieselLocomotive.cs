@@ -533,11 +533,15 @@ namespace Orts.Simulation.RollingStocks
             // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
             if (PowerOn)
             {
+                  // This factor links the change rate of the prime mover with the change rate in motive force.
+                float MotiveForceChangeFactor = DieselEngines.CurrentRailOutputPowerW / DieselEngines.MaximumRailOutputPowerW;
+
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), WheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / WheelSpeedMpS));
+                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
                     // float maxPowerW = 0.98f * LocomotiveMaxRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering - Not sure why this is???
 
+                    maxForceN *= MotiveForceChangeFactor; // reduce force if prime mover is not fully up to speed
                     float maxPowerW = LocomotiveMaxRailOutputPowerW;
 
                     if (DieselEngines.HasGearBox)
@@ -555,7 +559,9 @@ namespace Orts.Simulation.RollingStocks
 
                         // CTN - Not sure what impact that these following have???
                         if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
+                        {
                             maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
+                        }
 
                         // CTN - Sets power to zero, which I don't think is correct
                         if (AbsSpeedMpS > (MaxSpeedMpS))
@@ -576,7 +582,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     //   MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction); - don't think it should use wheelspeed as TE tables use train speed.
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
+                    MotiveForceN = MotiveForceChangeFactor * TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }

@@ -1565,6 +1565,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         public void InitDieselRailPowers(MSTSDieselLocomotive loco)
         {
+            // TODO - this value needs to be divided by the number of diesel engines in the locomotive
+            
             // Set MaximumRailOutputPower if not already set
             if (MaximumRailOutputPowerW == 0)
             {
@@ -1577,7 +1579,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 }
                 else if (loco.MaxPowerW != 0)
                 {
-                    MaximumRailOutputPowerW = loco.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowrW parameter
+                    MaximumRailOutputPowerW = loco.MaxPowerW; // set rail power to a default value on the basis that of the value specified in the MaxPowerW parameter
                 }
                 else
                 {
