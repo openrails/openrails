@@ -432,14 +432,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                if (AxleForceN == 0 && BrakeRetardForceN == 0)
-                {
-                    return 0.0f; // Assume slip will not occur if no braking force or motive force are applied to the axle - To be confirmed???
-                }
-                else
-                {
-                    return (axleSpeedMpS - TrainSpeedMpS);
-                }
+                return (axleSpeedMpS - TrainSpeedMpS);
             }
         }
 
