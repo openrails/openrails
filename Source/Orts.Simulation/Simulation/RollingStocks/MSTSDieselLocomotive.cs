@@ -541,7 +541,8 @@ namespace Orts.Simulation.RollingStocks
                     float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
                     // float maxPowerW = 0.98f * LocomotiveMaxRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering - Not sure why this is???
 
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW * MotiveForceChangeFactor; // Max power is varied by prime mover power output, hence produces maxpower @ the relevant throttle setting
+                    maxForceN *= MotiveForceChangeFactor; // reduce force if prime mover is not fully up to speed
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW * MotiveForceChangeFactor * t; // Max power is also varied by the throttle setting, and prime mover power output, hence maxpower @ the relevant throttle setting
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -581,7 +582,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     //   MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction); - don't think it should use wheelspeed as TE tables use train speed.
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
+                    MotiveForceN = MotiveForceChangeFactor * TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
