@@ -542,7 +542,7 @@ namespace Orts.Simulation.RollingStocks
                     // float maxPowerW = 0.98f * LocomotiveMaxRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering - Not sure why this is???
 
                     maxForceN *= MotiveForceChangeFactor; // reduce force if prime mover is not fully up to speed
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW * MotiveForceChangeFactor * t; // Max power is also varied by the throttle setting, and prime mover power output, hence maxpower @ the relevant throttle setting
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW;
 
                     if (DieselEngines.HasGearBox)
                     {
