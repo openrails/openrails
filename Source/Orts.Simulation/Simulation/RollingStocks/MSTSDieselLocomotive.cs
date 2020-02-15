@@ -582,7 +582,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     //   MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction); - don't think it should use wheelspeed as TE tables use train speed.
-                    MotiveForceN = MotiveForceChangeFactor * TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
+                    MotiveForceN = TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
