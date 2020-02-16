@@ -850,6 +850,9 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortswaterscoopfillelevation": WaterScoopFillElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopdepth": WaterScoopDepthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
                 case "engine(ortswaterscoopwidth": WaterScoopWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
+                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "engine(ortsmaxtracksandersandconsumption": TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "engine(ortsmaxtracksanderairconsumption": TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 default: base.Parse(lowercasetoken, stf); break;
                     
             }
@@ -893,6 +896,9 @@ namespace Orts.Simulation.RollingStocks
             InitialDrvWheelWeightKg = locoCopy.InitialDrvWheelWeightKg;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
+            MaxTrackSandBoxCapacityM3 = locoCopy.MaxTrackSandBoxCapacityM3;
+            TrackSanderSandConsumptionM3pS = locoCopy.TrackSanderSandConsumptionM3pS;
+            TrackSanderAirComsumptionM3pS = locoCopy.TrackSanderAirComsumptionM3pS;
             PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
@@ -992,6 +998,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(PowerReduction);
             outf.Write(ScoopIsBroken);
             outf.Write(IsWaterScoopDown);
+            outf.Write(CurrentTrackSandBoxCapacityM3);
 
             base.Save(outf);
         }
@@ -1027,6 +1034,7 @@ namespace Orts.Simulation.RollingStocks
             PowerReduction = inf.ReadSingle();
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
+            CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
 
             AdhesionFilter.Reset(0.5f);
 
