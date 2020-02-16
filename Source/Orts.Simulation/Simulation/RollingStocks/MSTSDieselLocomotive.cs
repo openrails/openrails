@@ -535,14 +535,14 @@ namespace Orts.Simulation.RollingStocks
             {
                   // This factor links the change rate of the prime mover with the change rate in motive force.
                 float MotiveForceChangeFactor = DieselEngines.CurrentRailOutputPowerW / DieselEngines.MaximumRailOutputPowerW;
+                MotiveForceChangeFactor = MathHelper.Clamp(MotiveForceChangeFactor, MotiveForceChangeFactor, 1.0f);  // Clamp factor so that it doesn't exceed 1.0
 
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
                     // float maxPowerW = 0.98f * LocomotiveMaxRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering - Not sure why this is???
 
-                    maxForceN *= MotiveForceChangeFactor; // reduce force if prime mover is not fully up to speed
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW;
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW * MotiveForceChangeFactor;
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -582,7 +582,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                     //   MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction); - don't think it should use wheelspeed as TE tables use train speed.
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsSpeedMpS) * (1 - PowerReduction);
+                    MotiveForceN = TractiveForceCurves.Get(MotiveForceChangeFactor, AbsSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
