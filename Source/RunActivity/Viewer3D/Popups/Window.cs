@@ -346,8 +346,18 @@ namespace Orts.Viewer3D.Popups
         internal override bool HandleMouseDown(WindowMouseEvent e)
         {
             DragWindowOffset = DragInvalid;
+         
             if (base.HandleMouseDown(e))
                 return true;
+
+            // prevent from dragging when clicking on vertical scrollbar
+            if (MathHelper.Distance(base.RemainingWidth, e.MousePosition.X) < 20)
+                return false;
+
+            // prevent from dragging when clicking on horizontal scrollbar
+            if (MathHelper.Distance(base.RemainingHeight, e.MousePosition.Y) < 20)
+                return false;
+
             DragWindowOffset = new Point(e.MouseDownScreenPosition.X - Window.Location.X, e.MouseDownScreenPosition.Y - Window.Location.Y);
             return true;
         }

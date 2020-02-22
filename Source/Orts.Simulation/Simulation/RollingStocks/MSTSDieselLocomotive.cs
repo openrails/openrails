@@ -67,6 +67,7 @@ namespace Orts.Simulation.RollingStocks
         public float EngineRPMderivation;
         float EngineRPMold;
         float EngineRPMRatio; // used to compute Variable1 and Variable2
+        public float MaximumDieselEnginePowerW;
 
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.0025f);
         public float MaxDieselLevelL = 5000.0f;
@@ -106,6 +107,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>        
         float partialFuelConsumption = 0;
 
+        private const float GearBoxControllerBoost = 1; // Slow boost to enable easy single gear up/down commands
 
         public MSTSDieselLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
@@ -124,7 +126,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dieselengineidlerpm": IdleRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselenginemaxrpm": MaxRPM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselenginemaxrpmchangerate": MaxRPMChangeRate = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
-
+                case "engine(ortsdieselenginemaxpower": MaximumDieselEnginePowerW = stf.ReadFloatBlock(STFReader.UNITS.Power, null); break;
                 case "engine(effects(dieselspecialeffects": ParseEffects(lowercasetoken, stf); break;
                 case "engine(dieselsmokeeffectinitialsmokerate": InitialExhaust = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(dieselsmokeeffectinitialmagnitude": InitialMagnitude = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -206,7 +208,7 @@ namespace Orts.Simulation.RollingStocks
             IdleRPM = locoCopy.IdleRPM;
             MaxRPM = locoCopy.MaxRPM;
             MaxRPMChangeRate = locoCopy.MaxRPMChangeRate;
-
+            MaximumDieselEnginePowerW = locoCopy.MaximumDieselEnginePowerW;
             PercentChangePerSec = locoCopy.PercentChangePerSec;
 
             EngineRPMderivation = locoCopy.EngineRPMderivation;
@@ -361,14 +363,14 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (GearBoxController != null)
                 {
-                    GearboxGearIndex = (int)GearBoxController.Update(elapsedClockSeconds);
+                    GearboxGearIndex = (int)GearBoxController.UpdateAndSetBoost(elapsedClockSeconds, GearBoxControllerBoost);
                 }
             }
             else
             {
                 if (GearBoxController != null)
                 {
-                    GearBoxController.Update(elapsedClockSeconds);
+                    GearBoxController.UpdateAndSetBoost(elapsedClockSeconds, GearBoxControllerBoost);
                 }
             }
         }
@@ -382,8 +384,8 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (TractiveForceCurves == null)
                 {
-                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsWheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * DieselEngines.MaxOutputPowerW / AbsWheelSpeedMpS));
-                    float maxPowerW = 0.98f * DieselEngines.MaxOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
+                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsWheelSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * DieselEngines.CurrentRailOutputPowerW / AbsWheelSpeedMpS));
+                    float maxPowerW = 0.98f * DieselEngines.MaximumRailOutputPowerW;      //0.98 added to let the diesel engine handle the adhesion-caused jittering
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -668,6 +670,19 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController.SetValue((float)GearBoxController.CurrentNotch);
             }
 
+        }
+
+        public override void SwitchToAutopilotControl()
+        {
+            SetDirection(Direction.Forward);
+            foreach (DieselEngine de in DieselEngines)
+            {
+                if (de.EngineStatus != DieselEngine.Status.Running)
+                    de.Initialize(true);
+                if (de.GearBox != null)
+                    de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
+            }
+            base.SwitchToAutopilotControl();
         }
 
         private void UpdateSteamHeat(float elapsedClockSeconds)

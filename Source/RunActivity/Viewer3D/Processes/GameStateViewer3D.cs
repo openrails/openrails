@@ -33,7 +33,8 @@ namespace Orts.Viewer3D.Processes
         public GameStateViewer3D(Viewer viewer)
         {
             Viewer = viewer;
-            Viewer.Simulator.Paused = false;
+            Viewer.Simulator.Paused = true;
+            Viewer.QuitWindow.Visible = true;
         }
 
         internal override void BeginRender(RenderFrame frame)

@@ -18,6 +18,7 @@
 using Microsoft.Xna.Framework;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using System.Diagnostics;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -94,12 +95,20 @@ namespace Orts.Viewer3D.RollingStock
             var sSIDsInitCount = -2;
             int[] soundSourceIDs = { 0 };
             int trialCount = 0;
-            while (sSIDsInitCount != sSIDsFinalCount && trialCount < 5)
+            try
             {
-                sSIDsInitCount = Car.SoundSourceIDs.Count;
-                soundSourceIDs = Car.SoundSourceIDs.ToArray();
-                sSIDsFinalCount = Car.SoundSourceIDs.Count;
-                trialCount++;
+                while (sSIDsInitCount != sSIDsFinalCount && trialCount < 5)
+                {
+                    sSIDsInitCount = Car.SoundSourceIDs.Count;
+                    soundSourceIDs = Car.SoundSourceIDs.ToArray();
+                    sSIDsFinalCount = Car.SoundSourceIDs.Count;
+                    trialCount++;
+                }
+            }
+            catch
+            {
+                Trace.TraceInformation("Skipped update of position and speed of sound sources");
+                return;
             }
             if (trialCount >= 5)
                 return;

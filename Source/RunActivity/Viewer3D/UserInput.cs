@@ -29,10 +29,12 @@
 // This logs every UserCommandInput change from pressed to released.
 //#define DEBUG_USER_INPUT
 
-using Microsoft.Xna.Framework.Input;
-using ORTS.Settings;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework.Input;
+using ORTS.Common.Input;
+using ORTS.Settings;
 using Game = Orts.Viewer3D.Processes.Game;
 
 namespace Orts.Viewer3D
@@ -45,6 +47,8 @@ namespace Orts.Viewer3D
         static KeyboardState LastKeyboardState;
         static MouseState LastMouseState;
         static bool MouseButtonsSwapped;
+        public static int MouseSpeedX;
+        public static int MouseSpeedY;
 
         public static RailDriverState RDState;
 
@@ -63,6 +67,9 @@ namespace Orts.Viewer3D
             KeyboardState = game.IsActive ? new KeyboardState(GetKeysWithPrintScreenFix(Keyboard.GetState())) : new KeyboardState();
             MouseState = game.IsActive ? Mouse.GetState() : new MouseState(0, 0, LastMouseState.ScrollWheelValue, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
             MouseButtonsSwapped = System.Windows.Forms.SystemInformation.MouseButtonsSwapped;
+
+            MouseSpeedX = Math.Abs(MouseState.X - LastMouseState.X);
+            MouseSpeedY = Math.Abs(MouseState.Y - LastMouseState.Y);
 
 #if DEBUG_RAW_INPUT
             for (Keys key = 0; key <= Keys.OemClear; key++)
@@ -106,7 +113,7 @@ namespace Orts.Viewer3D
                 Console.WriteLine("Mouse scrollwheel changed by {0}", MouseWheelChange);
 #endif
 #if DEBUG_USER_INPUT
-            foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+            foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
             {
                 if (UserInput.IsPressed(command))
                     Console.WriteLine("Pressed  {0} - {1}", command, InputSettings.Commands[(int)command]);
@@ -133,7 +140,7 @@ namespace Orts.Viewer3D
                 RDState.Handled();
         }
 
-        public static bool IsPressed(UserCommands command)
+        public static bool IsPressed(UserCommand command)
         {
             if (ComposingMessage == true) return false;
             if (RDState != null && RDState.IsPressed(command))
@@ -142,7 +149,7 @@ namespace Orts.Viewer3D
             return setting.IsKeyDown(KeyboardState) && !setting.IsKeyDown(LastKeyboardState);
         }
 
-        public static bool IsReleased(UserCommands command)
+        public static bool IsReleased(UserCommand command)
         {
             if (ComposingMessage == true) return false;
             if (RDState != null && RDState.IsReleased(command))
@@ -151,7 +158,7 @@ namespace Orts.Viewer3D
             return !setting.IsKeyDown(KeyboardState) && setting.IsKeyDown(LastKeyboardState);
         }
 
-        public static bool IsDown(UserCommands command)
+        public static bool IsDown(UserCommand command)
         {
             if (ComposingMessage == true) return false;
             if (RDState != null && RDState.IsDown(command))
@@ -166,6 +173,10 @@ namespace Orts.Viewer3D
         public static bool IsMouseMoved { get { return MouseState.X != LastMouseState.X || MouseState.Y != LastMouseState.Y; } }
         public static int MouseMoveX { get { return MouseState.X - LastMouseState.X; } }
         public static int MouseMoveY { get { return MouseState.Y - LastMouseState.Y; } }
+        public static bool MouseMovedUp {  get { return MouseState.Y < LastMouseState.Y; } }
+        public static bool MouseMovedDown {  get { return MouseState.Y > LastMouseState.Y; } }
+        public static bool MouseMovedLeft {  get { return MouseState.X < LastMouseState.X; } }
+        public static bool MouseMovedRight {  get { return MouseState.X > LastMouseState.X; } }
         public static int MouseX { get { return MouseState.X; } }
         public static int MouseY { get { return MouseState.Y; } }
 

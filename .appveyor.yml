@@ -1,0 +1,16 @@
+version: AV1.3.1-{build}
+skip_branch_with_pr: true
+image: Visual Studio 2017
+install:
+- ps: >-
+    choco install --yes --no-progress lazarus 7zip.portable xna31
+
+    (New-Object Net.WebClient).DownloadFile('https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x86.exe', 'rcedit-x86.exe')
+
+    $env:PATH="$env:PATH;C:\lazarus;$((Get-ChildItem -Recurse C:\lazarus\fpc\strip.exe).DirectoryName);C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
+build_script:
+- cmd: Build.cmd unstable
+test: off
+artifacts:
+- path: OpenRails-Unstable.zip
+- path: OpenRails-Unstable-Source.zip

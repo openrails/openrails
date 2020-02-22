@@ -17,15 +17,15 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
 using Orts.Simulation;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using ORTS.Common;
-using ORTS.Settings;
-using System;
-using System.Collections.Generic;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -131,28 +131,27 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
-            UserInputCommands.Add(UserCommands.ControlForwards, new Action[] { () => SteamLocomotive.StopReverseIncrease(), () => ReverserControlForwards() });
-            UserInputCommands.Add(UserCommands.ControlBackwards, new Action[] { () => SteamLocomotive.StopReverseDecrease(), () => ReverserControlBackwards() });
-            UserInputCommands.Add(UserCommands.ControlInjector1Increase, new Action[] { () => SteamLocomotive.StopInjector1Increase(), () => SteamLocomotive.StartInjector1Increase(null) });
-            UserInputCommands.Add(UserCommands.ControlInjector1Decrease, new Action[] { () => SteamLocomotive.StopInjector1Decrease(), () => SteamLocomotive.StartInjector1Decrease(null) });
-            UserInputCommands.Add(UserCommands.ControlInjector2Increase, new Action[] { () => SteamLocomotive.StopInjector2Increase(), () => SteamLocomotive.StartInjector2Increase(null) });
-            UserInputCommands.Add(UserCommands.ControlInjector2Decrease, new Action[] { () => SteamLocomotive.StopInjector2Decrease(), () => SteamLocomotive.StartInjector2Decrease(null) });
-            UserInputCommands.Add(UserCommands.ControlInjector1, new Action[] { Noop, () => new ToggleInjectorCommand(Viewer.Log, 1) });
-            UserInputCommands.Add(UserCommands.ControlInjector2, new Action[] { Noop, () => new ToggleInjectorCommand(Viewer.Log, 2) });
-            UserInputCommands.Add(UserCommands.ControlBlowerIncrease, new Action[] { () => SteamLocomotive.StopBlowerIncrease(), () => SteamLocomotive.StartBlowerIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlBlowerDecrease, new Action[] { () => SteamLocomotive.StopBlowerDecrease(), () => SteamLocomotive.StartBlowerDecrease(null) });
-            UserInputCommands.Add(UserCommands.ControlDamperIncrease, new Action[] { () => SteamLocomotive.StopDamperIncrease(), () => SteamLocomotive.StartDamperIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlDamperDecrease, new Action[] { () => SteamLocomotive.StopDamperDecrease(), () => SteamLocomotive.StartDamperDecrease(null) });
-            UserInputCommands.Add(UserCommands.ControlFireboxOpen, new Action[] { () => SteamLocomotive.StopFireboxDoorIncrease(), () => SteamLocomotive.StartFireboxDoorIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlFireboxClose, new Action[] { () => SteamLocomotive.StopFireboxDoorDecrease(), () => SteamLocomotive.StartFireboxDoorDecrease(null) });
-            UserInputCommands.Add(UserCommands.ControlFiringRateIncrease, new Action[] { () => SteamLocomotive.StopFiringRateIncrease(), () => SteamLocomotive.StartFiringRateIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlFiringRateDecrease, new Action[] { () => SteamLocomotive.StopFiringRateDecrease(), () => SteamLocomotive.StartFiringRateDecrease(null) });
-            UserInputCommands.Add(UserCommands.ControlFireShovelFull, new Action[] { Noop, () => new FireShovelfullCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlCylinderCocks, new Action[] { Noop, () => new ToggleCylinderCocksCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlCylinderCompound, new Action[] { Noop, () => new ToggleCylinderCompoundCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlTroughRefill, new Action[] { Noop, () => ToggleTroughRefill() });
-            UserInputCommands.Add(UserCommands.ControlSmallEjectorIncrease, new Action[] { () => SteamLocomotive.StopSmallEjectorIncrease(), () => SteamLocomotive.StartSmallEjectorIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlForwards, new Action[] { () => SteamLocomotive.StopReverseIncrease(), () => ReverserControlForwards() });
+            UserInputCommands.Add(UserCommand.ControlBackwards, new Action[] { () => SteamLocomotive.StopReverseDecrease(), () => ReverserControlBackwards() });
+            UserInputCommands.Add(UserCommand.ControlInjector1Increase, new Action[] { () => SteamLocomotive.StopInjector1Increase(), () => SteamLocomotive.StartInjector1Increase(null) });
+            UserInputCommands.Add(UserCommand.ControlInjector1Decrease, new Action[] { () => SteamLocomotive.StopInjector1Decrease(), () => SteamLocomotive.StartInjector1Decrease(null) });
+            UserInputCommands.Add(UserCommand.ControlInjector2Increase, new Action[] { () => SteamLocomotive.StopInjector2Increase(), () => SteamLocomotive.StartInjector2Increase(null) });
+            UserInputCommands.Add(UserCommand.ControlInjector2Decrease, new Action[] { () => SteamLocomotive.StopInjector2Decrease(), () => SteamLocomotive.StartInjector2Decrease(null) });
+            UserInputCommands.Add(UserCommand.ControlInjector1, new Action[] { Noop, () => new ToggleInjectorCommand(Viewer.Log, 1) });
+            UserInputCommands.Add(UserCommand.ControlInjector2, new Action[] { Noop, () => new ToggleInjectorCommand(Viewer.Log, 2) });
+            UserInputCommands.Add(UserCommand.ControlBlowerIncrease, new Action[] { () => SteamLocomotive.StopBlowerIncrease(), () => SteamLocomotive.StartBlowerIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlBlowerDecrease, new Action[] { () => SteamLocomotive.StopBlowerDecrease(), () => SteamLocomotive.StartBlowerDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlDamperIncrease, new Action[] { () => SteamLocomotive.StopDamperIncrease(), () => SteamLocomotive.StartDamperIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlDamperDecrease, new Action[] { () => SteamLocomotive.StopDamperDecrease(), () => SteamLocomotive.StartDamperDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlFireboxOpen, new Action[] { () => SteamLocomotive.StopFireboxDoorIncrease(), () => SteamLocomotive.StartFireboxDoorIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlFireboxClose, new Action[] { () => SteamLocomotive.StopFireboxDoorDecrease(), () => SteamLocomotive.StartFireboxDoorDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlFiringRateIncrease, new Action[] { () => SteamLocomotive.StopFiringRateIncrease(), () => SteamLocomotive.StartFiringRateIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlFiringRateDecrease, new Action[] { () => SteamLocomotive.StopFiringRateDecrease(), () => SteamLocomotive.StartFiringRateDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlFireShovelFull, new Action[] { Noop, () => new FireShovelfullCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlCylinderCocks, new Action[] { Noop, () => new ToggleCylinderCocksCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlCylinderCompound, new Action[] { Noop, () => new ToggleCylinderCompoundCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlSmallEjectorIncrease, new Action[] { () => SteamLocomotive.StopSmallEjectorIncrease(), () => SteamLocomotive.StartSmallEjectorIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
              base.InitializeUserInputCommands();
         }
 
@@ -163,16 +162,16 @@ namespace Orts.Viewer3D.RollingStock
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
-            if (UserInput.IsPressed(UserCommands.ControlFiring)) new ToggleManualFiringCommand(Viewer.Log);
+            if (UserInput.IsPressed(UserCommand.ControlFiring)) new ToggleManualFiringCommand(Viewer.Log);
 
             // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
-            if (UserInput.IsPressed(UserCommands.ControlAIFireOn)) new AIFireOnCommand(Viewer.Log);
+            if (UserInput.IsPressed(UserCommand.ControlAIFireOn)) new AIFireOnCommand(Viewer.Log);
 
             // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
-            if (UserInput.IsPressed(UserCommands.ControlAIFireOff)) new AIFireOffCommand(Viewer.Log);
+            if (UserInput.IsPressed(UserCommand.ControlAIFireOff)) new AIFireOffCommand(Viewer.Log);
 
             // Keeping separated, since it is not a real engine control. (Probably wrong classification?)
-            if (UserInput.IsPressed(UserCommands.ControlAIFireReset)) new AIFireResetCommand(Viewer.Log);
+            if (UserInput.IsPressed(UserCommand.ControlAIFireReset)) new AIFireResetCommand(Viewer.Log);
 
             if (UserInput.RDState != null && UserInput.RDState.Changed)
                 SteamLocomotive.SetCutoffPercent(UserInput.RDState.DirectionPercent);
@@ -206,84 +205,6 @@ namespace Orts.Viewer3D.RollingStock
             }
 #endif
         }
-
-        /// <summary>
-        /// Switches between refill start and refill end
-        /// </summary>
-        protected void ToggleTroughRefill()
-        {
-            if (SteamLocomotive.RefillingFromTrough) StopRefillingFromTrough(Viewer.Log);
-            else AttemptToRefillFromTrough();
-        }
-
-        /// <summary>
-        /// Checks if on trough. If not, tell that the scoop is destroyed; else, starts refilling
-        /// </summary>
-        public void AttemptToRefillFromTrough()
-        {
-            if (!SteamLocomotive.HasWaterScoop)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Warning, Viewer.Catalog.GetString("No scoop in this loco"));
-                return;
-            }
-            if (SteamLocomotive.ScoopIsBroken)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop is broken, can't refill"));
-                return;
-            }
-            if (!SteamLocomotive.IsOverTrough())
-            {
-                // Bad thing, scoop gets broken!
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Scoop broken because activated outside trough"));
-                return;
-            }
-            if (SteamLocomotive.SpeedMpS < SteamLocomotive.ScoopMinPickupSpeedMpS)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must exceed {0}.",
-                    FormatStrings.FormatSpeedLimit(SteamLocomotive.ScoopMinPickupSpeedMpS, Viewer.MilepostUnitsMetric)));
-                return;
-            }
-            if (SteamLocomotive.SpeedMpS > SteamLocomotive.ScoopMaxPickupSpeedMpS)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: Loco speed must not exceed {0}.",
-                    FormatStrings.FormatSpeedLimit(SteamLocomotive.ScoopMaxPickupSpeedMpS, Viewer.MilepostUnitsMetric)));
-                return;
-            }
-            var fraction = SteamLocomotive.GetFilledFraction((uint)MSTSWagon.PickupType.FuelWater);
-            if (fraction > 0.99)
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} supply now replenished.",
-                    PickupTypeDictionary[(uint)MSTSWagon.PickupType.FuelWater]));
-                return;
-            }
-            else
-            {
-                MSTSWagon.RefillProcess.OkToRefill = true;
-                MSTSWagon.RefillProcess.ActivePickupObjectUID = -1;
-                SteamLocomotive.RefillingFromTrough = true;
-                SteamLocomotive.SignalEvent(Event.WaterScoopDown);
-                StartRefilling((uint)MSTSWagon.PickupType.FuelWater, fraction);
-            }
-
-        }
-
-        /// <summary>
-        /// Ends a continuous increase in controlled value.
-        /// </summary>
-        public void StopRefillingFromTrough(CommandLog log)
-        {
-            MSTSWagon.RefillProcess.OkToRefill = false;
-            MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
-            SteamLocomotive.RefillingFromTrough = false;
-            var controller = new MSTSNotchController();
-            controller = SteamLocomotive.GetRefillController((uint)MSTSWagon.PickupType.FuelWater);
-
-            new RefillCommand(log, controller.CurrentValue, controller.CommandStartTime);  // for Replay to use
-            controller.StopIncrease();
-            SteamLocomotive.SignalEvent(Event.WaterScoopUp);
-        }
-
-
 
         /// <summary>
         /// We are about to display a video frame.  Calculate positions for 

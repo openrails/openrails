@@ -39,8 +39,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackViewer", "Contrib\Trac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Simulation", "Orts.Simulation\Orts.Simulation.csproj", "{333C4378-D82E-4B47-B561-6BA923B8FDFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Viewer3D", "ORTS.Viewer3D\ORTS.Viewer3D.csproj", "{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataCollector", "Contrib\DataCollector\DataCollector.csproj", "{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}"
@@ -133,10 +131,6 @@ Global
 		{333C4378-D82E-4B47-B561-6BA923B8FDFD}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{333C4378-D82E-4B47-B561-6BA923B8FDFD}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{333C4378-D82E-4B47-B561-6BA923B8FDFD}.Release|Mixed Platforms.Build.0 = Release|x86
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Release|Mixed Platforms.ActiveCfg = Release|x86
@@ -168,5 +162,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CDB79CD0-E20D-487C-91A8-27BD4A9CE8A2}
 	EndGlobalSection
 EndGlobal

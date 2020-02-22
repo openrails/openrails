@@ -291,7 +291,15 @@ namespace Orts.Viewer3D.Popups
                     BringWindowToTop(mouseActiveWindow);
 			}
 
-			if (mouseActiveWindow != null)
+            if (UserInput.IsMouseWheelChanged)
+            {
+                mouseActiveWindow = VisibleWindows.LastOrDefault(w => w.Interactive && w.Location.Contains(mouseDownPosition));
+                
+                if (mouseActiveWindow != null)
+                    mouseActiveWindow.HandleUserInput();
+            }
+
+            if (mouseActiveWindow != null)
 			{
 				if (UserInput.IsMouseLeftButtonPressed)
 					mouseActiveWindow.MouseDown();
@@ -301,7 +309,7 @@ namespace Orts.Viewer3D.Popups
 				if (UserInput.IsMouseMoved)
 					mouseActiveWindow.MouseMove();
 
-				if (Viewer.RealTime - LastUpdateRealTime >= 0.1)
+                if (Viewer.RealTime - LastUpdateRealTime >= 0.1)
 				{
 					LastUpdateRealTime = Viewer.RealTime;
 					mouseActiveWindow.HandleUserInput();
@@ -309,7 +317,7 @@ namespace Orts.Viewer3D.Popups
 
 				if (UserInput.IsMouseLeftButtonReleased)
 					mouseActiveWindow = null;
-			}
+            }
 		}
 
         public void BringWindowToTop(Window mouseActiveWindow)

@@ -734,8 +734,8 @@ By left- or right-clicking on a switch, a small pop-up menu with the two
 selections ``Main route`` and ``Side route`` appears. By clicking on them 
 you can throw the switch, provided the OR AI dispatcher allows it.
 
-With respect to AI trains, as a general rule you can command their signals 
-but not their switches, because AI trains are not allowed to exit their path.
+Using the dispatcher window for AI trains is described 
+:ref:`here below<driving-dispatcher-for-ai-trains>`.
 
 The two checkboxes ``Pick Signals`` and ``Pick Switches`` are checked as 
 default. You can uncheck one of them when a signal and a switch are 
@@ -762,6 +762,46 @@ if the trains are far away, can lead to memory overflows.
 
 If after a train selection you click on ``Follow`` the dispatcher window 
 will remain centered on that train.
+
+.. _driving-dispatcher-for-ai-trains:
+
+Using dispatcher window for AI trains
+-------------------------------------
+
+What is described here is valid only for activity mode and explore in 
+activity mode.
+
+There are cases where it would be advisable to re-route an AI train to manage standoffs, 
+train passings, train priorities.
+In this case, using the dispatcher window it is possible to re-route an AI train (e.g. on a siding) 
+and then to get it back on the original route. The feature anyhow also allows to 
+re-route it without getting it back on the original route.
+
+It is suggested to look at this video which explains some practical case 
+https://youtu.be/-f0XVg7bSgU before continuing reading.
+
+To perform this correctly and in a way more similar to reality, some rules have to 
+be followed.
+The concept is that switches must be manually thrown only if they aren't reserved by a train. 
+To be sure of this it is necessary to force to stop the last signal(s) between train(s) 
+and switch, in case such signal is not already at stop. Once the switch is manually 
+thrown, the signal in front of the train that has to be re-routed must be set to the 
+"System controlled" state if it had been forced to stop before.
+At that point OR breaks down the old train's route and re-computes a new one, taking 
+into account the moved switch. 
+More switches may be forced on the route (e.g. both the switches to enter the siding 
+and the ones to re-enter the main line).
+
+Signals must never be forced to clear or approach. 
+
+If an AI train is re-routed on a route which isn't at the moment re-entering the 
+original route, its path information in the dispatcher info HUD is displayed in yellow.
+
+Station platform stops are re-assigned to adjacent platforms, if available. Events and 
+waiting points in the abandoned part of route will be lost.
+
+The re-routed train may be also the player train (be it autopiloted or not), provided the
+Autopilot option is checked.
 
 Additional Train Operation Commands
 ===================================
@@ -1154,7 +1194,8 @@ Open Rails provides all of the MSTS views plus additional view options:
   in the simulation <driving-trainlist>`;
 - when in passenger view (key 5) it is possible to toggle the viewpoint from 
   one side to the other of the wagon, and to jump to other viewpoints if defined, 
-  as described below.
+  as described below;
+- a "special viewpoint" trackside view camera is available, as described below.  
 
 All of the required key presses are shown by the ``F1 Help`` key in the game. 
 Note that some of the key combinations are different in Open Rails than in 
@@ -1198,7 +1239,10 @@ controlled by the mouse with the right button depressed.
   to select a target toward the rear. The 2-View selects the train's head 
   end as the initial target, the 3-View the last car. Alt+Home resets the 
   target to the front, ``<Alt+End>`` to the rear of the train. 
-
+  With commands ``<Shift+Alt+7(Numpad)>`` and ``<Shift+Alt+1(Numpad)>`` 
+  cameras 2 or 3 move gently forward or backward along a stopped or moving 
+  train. By pressing a second time the key sequence the motion stops. 
+  
 The camera's position with respect to the target car is manipulated by the 
 four arrow keys -- left or right arrows rotate the camera's position left or 
 right, up or down arrows rotate the camera's position up or down while 
@@ -1215,6 +1259,15 @@ default position relative to the current target car.
   limited player control - the height of the camera can be adjusted with 
   the up and down arrow keys. Repeated pressing of the 4-key may change the 
   position along the track. 
+- Key ``<Shift+4>`` is a special viewpoint trackside view: the camera locates 
+  itself at platforms, or looks at the train following a spawned road car 
+  along the road, or at a level crossing, 
+  when such special viewpoints are near to the train; else it behaves like the 
+  standard trackside view camera. When the camera follows a spawned road car, 
+  speed of the road car can be increased and decreased within certain limits 
+  with keys ``<9(NumKey)>`` and ``<3(NumKey)>`` to adjust the speed of the 
+  camera with that of the train. By pressing key ``<Shift+4>`` when the camera 
+  is on a special viewpoint, another one, if available, is selected.  
 - Key ``<5>`` is an interior view that is active if the active train has a 
   *passenger view* declaration in any of its cars (or in the caboose). The 
   view direction can be rotated by the arrow keys or the mouse with right 
@@ -1277,6 +1330,9 @@ behavior.
 Whenever frame rates fall to unacceptable levels players are advised to 
 adjust camera positions to cull some models from being in view and to 
 adjust the camera again to include more models when frame rates are high.
+
+Some camera views (among them 2Dcabview, 3Dcabview and passenger view) feature 
+the ``<Ctrl+8>`` command, that resets the view position to the default one.
 
 Toggling Between Windowed Mode and Full-screen
 ==============================================

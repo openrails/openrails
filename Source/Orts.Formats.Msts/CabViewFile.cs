@@ -168,6 +168,10 @@ namespace Orts.Formats.Msts
         ORTS_MIRRORS,
         ORTS_PANTOGRAPH3,
         ORTS_PANTOGRAPH4,
+        ORTS_WATER_SCOOP,
+        ORTS_HOURDIAL,
+        ORTS_MINUTEDIAL,
+        ORTS_SECONDDIAL,
 
         // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
         EXTERNALWIPERS,
@@ -234,6 +238,7 @@ namespace Orts.Formats.Msts
         {
             stf.MustMatch("(");
             int count = stf.ReadInt(null);
+
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("gauge", ()=>{ Add(new CVCGauge(stf, basepath)); }),
@@ -245,16 +250,29 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("cabsignaldisplay", ()=>{ Add(new CVCSignal(stf, basepath)); }), 
                 new STFReader.TokenProcessor("digital", ()=>{ Add(new CVCDigital(stf, basepath)); }), 
                 new STFReader.TokenProcessor("combinedcontrol", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
-                new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCFirebox(stf, basepath)); }), 
+                new STFReader.TokenProcessor("firebox", ()=>{ Add(new CVCFirebox(stf, basepath)); }),
+                new STFReader.TokenProcessor("dialclock", ()=>{ ProcessDialClock(stf, basepath);  }),
                 new STFReader.TokenProcessor("digitalclock", ()=>{ Add(new CVCDigitalClock(stf, basepath)); })
             });
+            
             //TODO Uncomment when parsed all type
             /*
             if (count != this.Count) STFException.ReportWarning(inf, "CabViewControl count mismatch");
             */
         }
+
+        private void ProcessDialClock(STFReader stf, string basepath)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[]
+            {
+                new STFReader.TokenProcessor("hours", ()=>{ Add(new CVCDial(CABViewControlTypes.ORTS_HOURDIAL, 12, stf, basepath));  }),
+                new STFReader.TokenProcessor("minutes", ()=>{ Add(new CVCDial(CABViewControlTypes.ORTS_MINUTEDIAL, 60, stf, basepath));  }),
+                new STFReader.TokenProcessor("seconds", ()=>{ Add(new CVCDial(CABViewControlTypes.ORTS_SECONDDIAL, 60, stf, basepath));  }),
+            });
+        }
     }
-    
+
     #region CabViewControl
     public class CabViewControl
     {
@@ -379,7 +397,26 @@ namespace Orts.Formats.Msts
         public float ToDegree;
         public float Center;
         public int Direction;
-        
+
+        // constructor for clock dials
+        public CVCDial(CABViewControlTypes dialtype, int maxvalue, STFReader stf, string basepath)
+        {
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
+                });
+            ControlType = dialtype;
+            ControlStyle = CABViewControlStyles.NEEDLE;
+            Direction = 0;
+            MaxValue = maxvalue;
+            MinValue = 0;
+            FromDegree = 181;
+            ToDegree = 179;
+        }
+
+        // constructor for standard dials
         public CVCDial(STFReader stf, string basepath)
         {
             stf.MustMatch("(");
@@ -548,9 +585,9 @@ namespace Orts.Formats.Msts
             white.G = 255f;
             white.B = 255f;
             PositiveColor = white;
-            FontSize = 10;
+            FontSize = 8;
             FontStyle = 0;
-            FontFamily = "Courier New";
+            FontFamily = "Lucida Sans";
             
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
@@ -647,9 +684,9 @@ namespace Orts.Formats.Msts
 
         public CVCDigitalClock(STFReader stf, string basepath)
         {
-            FontSize = 10;
+            FontSize = 8;
             FontStyle = 0;
-            FontFamily = "Courier New";
+            FontFamily = "Lucida Sans";
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
