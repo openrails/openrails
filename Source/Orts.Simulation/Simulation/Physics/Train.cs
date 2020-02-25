@@ -106,8 +106,8 @@ namespace Orts.Simulation.Physics
         public Train UncoupledFrom;                      // train not to coupled back onto
         public float TotalCouplerSlackM;
         public float MaximumCouplerForceN;
-        public int NPull;
-        public int NPush;
+        public int NPull;                                // Count of number of couplings being stretched (pulled)
+        public int NPush;                                // Count of number of couplings being compressed (pushed)
         public int LeadLocomotiveIndex = -1;
         public bool IsFreight;                           // has at least one freight car
         public int PassengerCarsNumber = 0;              // Number of passenger cars
@@ -4575,19 +4575,41 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 //                    car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M(), car.GetCouplerDamping1NMpS(), car.GetCouplerDamping2NMpS(), 
                 //                    car.GetCouplerStiffness1NpM(), car.GetCouplerStiffness1NpM(), car.IsAdvancedCoupler, car.GetCouplerSlackAM(), car.GetCouplerSlackBM());
 
-                if (car.CouplerSlackM >= 0.001) // Coupler pulling
+                if (!car.HUDCouplerRigidIndication) // Flexible coupling - pulling and pushing value will be equal to slack when couplers faces touch
                 {
-                    NPull++;
-                    car.HUDCouplerForceIndication = 1;
+
+                    if (car.CouplerSlackM >= 0.001) // Coupler pulling
+                    {
+                        NPull++;
+                        car.HUDCouplerForceIndication = 1;
+                    }
+                    else if (car.CouplerSlackM <= -0.001) // Coupler pushing
+                    {
+                        NPush++;
+                        car.HUDCouplerForceIndication = 2;
+                    }
+                    else
+                    {
+                        car.HUDCouplerForceIndication = 0; // Coupler neutral
+                    }
                 }
-                else if (car.CouplerSlackM <= -0.001)
+                else if (car.HUDCouplerRigidIndication) // Rigid coupling - starts pulling/pushing at a lower value then flexible coupling
                 {
-                    NPush++;
-                    car.HUDCouplerForceIndication = 2;
-                }
-                else
-                {
-                    car.HUDCouplerForceIndication = 0;
+                    if (car.CouplerSlackM >= 0.000125) // Coupler pulling
+                    {
+                        NPull++;
+                        car.HUDCouplerForceIndication = 1;
+                    }
+                    else if (car.CouplerSlackM <= -0.000125) // Coupler pushing
+                    {
+                        NPush++;
+                        car.HUDCouplerForceIndication = 2;
+                    }
+                    else
+                    {
+                        car.HUDCouplerForceIndication = 0; // Coupler neutral
+                    }
+
                 }
 
             }

@@ -129,6 +129,17 @@ namespace Orts.Simulation.RollingStocks
         public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
         public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
 
+        // Coupler Animation
+        public string FrontCouplerShapeFileName;
+        public float FrontCouplerAnimLengthM;
+        public float FrontCouplerAnimWidthM;
+        public float FrontCouplerAnimHeightM;
+
+        public string RearCouplerShapeFileName;
+        public float RearCouplerAnimLengthM;
+        public float RearCouplerAnimWidthM;
+        public float RearCouplerAnimHeightM;
+
         // Used to calculate Carriage Steam Heat Loss
         public float CarHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatVolumeM3;     // Volume of car for heating purposes
@@ -171,7 +182,7 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
         public float CouplerDampingSpeedMpS; // Dampening applied to coupler
         public int HUDCouplerForceIndication = 0; // Flag to indicate whether coupler is 1 - pulling, 2 - pushing or 0 - neither
-        public int HUDCouplerRigidIndication = 0; // flag to indicate whether coupler is rigid of flexible. False indicates that coupler is flexible
+        public bool HUDCouplerRigidIndication = false; // Flag to indicate whether coupler is rigid of flexible. False indicates that coupler is flexible
         public float CouplerSlack2M;  // slack calculated using draft gear force
         public bool IsAdvancedCoupler = false; // Flag to indicate that coupler is to be treated as an advanced coupler
         public bool WheelSlip;  // true if locomotive wheels slipping
@@ -1677,9 +1688,9 @@ namespace Orts.Simulation.RollingStocks
             return 0.1f;
         }
 
-        public virtual int GetCouplerRigidIndication()
+        public virtual bool GetCouplerRigidIndication()
         {
-            return 0;
+            return false;
         }
 
         public virtual float GetMaximumCouplerSlack0M()
