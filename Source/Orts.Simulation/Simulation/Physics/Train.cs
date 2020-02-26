@@ -49,6 +49,9 @@
 // Debug for calculation of speed forces
 // #define DEBUG_SPEED_FORCES
 
+// Debug for calculation of Advanced coupler forces
+ // #define DEBUG_COUPLER_FORCES
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -4126,9 +4129,9 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         return true;
                     }
                 }
-                else // "Simple coupler" - operates on two extension zones, coupler faces not in contact, and coupler fuller in contact
+                else // "Simple coupler" - only operates on two extension zones, coupler faces not in contact, so set coupler forces to zero
                 {
-                    float maxs1 = car.GetMaximumCouplerSlack1M();
+                    float maxs1 = car.GetMaximumSimpleCouplerSlack1M();
                     // In Zone 1 set coupler forces to zero, as coupler faces not touching, or if coupler force is in the opposite direction, ie compressing ( +ve CouplerForceU )
                     if (car.CouplerSlackM < maxs1 || car.CouplerForceU > 0)
                     {
@@ -4160,10 +4163,10 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         return true;
                     }
                 }
-                else // "Simple coupler" - operates on two extension zones, coupler faces not in contact, and coupler fuller in contact
+                else // "Simple coupler" - only operates on two extension zones, coupler faces not in contact, so set coupler forces to zero
                 {
 
-                    float maxs1 = car.GetMaximumCouplerSlack1M();
+                    float maxs1 = car.GetMaximumSimpleCouplerSlack1M();
                     // In Zone 1 set coupler forces to zero, as coupler faces not touching, or if coupler force is in the opposite direction, ie in tension ( -ve CouplerForceU )
                     if (car.CouplerSlackM > -maxs1 || car.CouplerForceU < 0)
                     {
@@ -4318,7 +4321,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 if (Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
                 {
                     float max0 = car.GetMaximumCouplerSlack0M();
-                    float max1 = car.GetMaximumCouplerSlack1M();
+                    float max1 = car.GetMaximumSimpleCouplerSlack1M();
 
                     if (car.CouplerSlackM > -max0 && car.CouplerSlackM < max0) // Zone 1 coupler faces not in contact - no force generated
                     {
@@ -4335,9 +4338,9 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     }
 
                 }
-                else // "Simple coupler" - operates on two extension zones, coupler faces not in contact, and coupler fuller in contact
+                else // "Simple coupler" - only operates on two extension zones, coupler faces not in contact, so set coupler forces to zero
                 {
-                    float max = car.GetMaximumCouplerSlack1M();
+                    float max = car.GetMaximumSimpleCouplerSlack1M();
                     if (-max < car.CouplerSlackM && car.CouplerSlackM < max)
                     {
                         car.CouplerForceB = 1;
@@ -4365,7 +4368,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     MaximumCouplerForceN = Math.Abs(car.CouplerForceU);
 
                 // Update couplerslack2m which acts as an upper limit in slack calculations
-                float maxs = car.GetMaximumCouplerSlack2M();
+                float maxs = car.GetMaximumSimpleCouplerSlack2M();
 
                 if (Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
                 {
@@ -4375,7 +4378,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 {
                     if (car.CouplerForceU > 0)
                     {
-                        float f = -(car.CouplerSlackM + car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
+                        float f = -(car.CouplerSlackM + car.GetMaximumSimpleCouplerSlack1M()) * car.GetSimpleCouplerStiffnessNpM();
                         if (car.CouplerSlackM > -maxs && f > car.CouplerForceU)
                             car.CouplerSlack2M = -car.CouplerSlackM;
                         else
@@ -4385,7 +4388,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         car.CouplerSlack2M = maxs;
                     else
                     {
-                        float f = (car.CouplerSlackM - car.GetMaximumCouplerSlack1M()) * car.GetCouplerStiffnessNpM();
+                        float f = (car.CouplerSlackM - car.GetMaximumSimpleCouplerSlack1M()) * car.GetSimpleCouplerStiffnessNpM();
                         if (car.CouplerSlackM < maxs && f > car.CouplerForceU)
                             car.CouplerSlack2M = car.CouplerSlackM;
                         else
@@ -4478,7 +4481,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 {
                     f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN + car.DynamicBrakeForceN);
                     m += car.MassKG;
-                    if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumCouplerSlack2M())
+                    if (j == Cars.Count - 1 || car.CouplerSlackM < car.GetMaximumSimpleCouplerSlack2M())
                         break;
                     j++;
                     car = Cars[j];
@@ -4519,7 +4522,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 {
                     f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN + car.DynamicBrakeForceN;
                     m += car.MassKG;
-                    if (j == 0 || car.CouplerSlackM > -car.GetMaximumCouplerSlack2M())
+                    if (j == 0 || car.CouplerSlackM > -car.GetMaximumSimpleCouplerSlack2M())
                         break;
                     j--;
                     car = Cars[j];
@@ -4562,7 +4565,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 car.CouplerDampingSpeedMpS = car.SpeedMpS - Cars[i + 1].SpeedMpS;
 
                 // Make sure that coupler slack does not exceed the maximum coupler slack
-                float max = car.GetMaximumCouplerSlack2M();
+                float max = car.GetMaximumSimpleCouplerSlack2M();
                 if (car.CouplerSlackM < -max)
                     car.CouplerSlackM = -max;
                 else if (car.CouplerSlackM > max)
@@ -4570,10 +4573,25 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
                 TotalCouplerSlackM += car.CouplerSlackM; // Total coupler slack displayed in HUD only
 
-                //                Trace.TraceInformation("Slack - CarID {0} Slack {1} Zero {2} MaxSlack0 {3} MaxSlack1 {4} MaxSlack2 {5} Damping1 {6} Damping2 {7} Stiffness1 {8} Stiffness2 {9} AdvancedCpl {10} CplSlackA {11} CplSlackB {12}", 
-                //                    car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerSlack0M(),
-                //                    car.GetMaximumCouplerSlack1M(), car.GetMaximumCouplerSlack2M(), car.GetCouplerDamping1NMpS(), car.GetCouplerDamping2NMpS(), 
-                //                    car.GetCouplerStiffness1NpM(), car.GetCouplerStiffness1NpM(), car.IsAdvancedCoupler, car.GetCouplerSlackAM(), car.GetCouplerSlackBM());
+                
+#if DEBUG_COUPLER_FORCES
+                if (car.IsAdvancedCoupler)
+                {
+                    //                    Trace.TraceInformation("Advanced Coupler - Tension - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} MaxSlackZone3 {5} Stiffness1 {6} Stiffness2 {7} AdvancedCpl {8} CplSlackA {9} CplSlackB {10}  Rigid {11}",
+                    //                    car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerTensionSlack1M(), car.GetMaximumCouplerTensionSlack2M(), car.GetMaximumCouplerTensionSlack3M(),
+                    //                    car.GetCouplerTensionStiffness1N(), car.GetCouplerTensionStiffness2N(), car.IsAdvancedCoupler, car.GetCouplerTensionSlackAM(), car.GetCouplerTensionSlackBM(), car.HUDCouplerRigidIndication);
+
+                    //                    Trace.TraceInformation("Advanced Coupler - Compression - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} MaxSlackZone3 {5} Stiffness1 {6} Stiffness2 {7} AdvancedCpl {8} CplSlackA {9} CplSlackB {10}  Rigid {11}",
+                    //                    car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerCompressionSlack1M(), car.GetMaximumCouplerCompressionSlack2M(), car.GetMaximumCouplerCompressionSlack3M(),
+                    //                    car.GetCouplerCompressionStiffness1N(), car.GetCouplerCompressionStiffness2N(), car.IsAdvancedCoupler, car.GetCouplerCompressionSlackAM(), car.GetCouplerCompressionSlackBM(), car.HUDCouplerRigidIndication);
+                }
+                else
+                {
+                    Trace.TraceInformation("Simple Coupler - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} Stiffness {5}",
+                    car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumSimpleCouplerSlack1M(), car.GetMaximumSimpleCouplerSlack2M(),
+                    car.GetSimpleCouplerStiffnessNpM());
+                }
+#endif
 
                 if (!car.HUDCouplerRigidIndication) // Flexible coupling - pulling and pushing value will be equal to slack when couplers faces touch
                 {
@@ -20041,7 +20059,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         {
                             car.Update(elapsedClockSeconds);
                         }
-#endif  
+#endif
                 }
             }
 //            Trace.TraceWarning("SpeedMpS {0}  LastSpeedMpS {1}  AbsSpeedMpS {2}  targetSpeedMpS {7} x {3}  expectedTravelled {4}  travelled {5}  newDistanceTravelledM {6}",

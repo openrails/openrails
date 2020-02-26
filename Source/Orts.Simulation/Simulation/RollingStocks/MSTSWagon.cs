@@ -2878,25 +2878,23 @@ namespace Orts.Simulation.RollingStocks
                    zerolength = base.GetCouplerZeroLengthM();
                 }
 
-                // Ensure zerolength doesn't go higher then 0.15
+                // Ensure zerolength doesn't go higher then 0.5
                 if (zerolength > 0.5)
                 {
                    zerolength = 0.5f;
                 }
 
                 return zerolength;
-
             }
             else
             {
                return Coupler != null ? Coupler.R0X : base.GetCouplerZeroLengthM();
             } 
-
         }
 
-        public override float GetCouplerStiffnessNpM()
+        public override float GetSimpleCouplerStiffnessNpM()
         {
-            return Coupler != null && Coupler.R0X == 0 ? 7 * (Coupler.Stiffness1NpM + Coupler.Stiffness2NpM) : base.GetCouplerStiffnessNpM();
+            return Coupler != null && Coupler.R0X == 0 ? 7 * (Coupler.Stiffness1NpM + Coupler.Stiffness2NpM) : base.GetSimpleCouplerStiffnessNpM();
         }
 
         public override float GetCouplerStiffness1NpM()
@@ -2978,40 +2976,22 @@ namespace Orts.Simulation.RollingStocks
             return Coupler.Rigid ? 0.0001f : Coupler.CouplerSlackBM;
         }
 
-        public override float GetMaximumCouplerSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        public override float GetMaximumSimpleCouplerSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
         {
-            if (Simulator.UseAdvancedAdhesion && IsAdvancedCoupler)
-            {
-                if (Coupler == null)
-                    return base.GetMaximumCouplerSlack1M();
-                return Coupler.Rigid ? 0.0001f : Coupler.CouplerSlackBM + Coupler.R0X;
 
-            }
-            else
-            {
                 if (Coupler == null)
-                    return base.GetMaximumCouplerSlack1M();
+                    return base.GetMaximumSimpleCouplerSlack1M();
                 return Coupler.Rigid ? 0.0001f : Coupler.R0Diff;
-            }
-
 
         }
 
-        public override float GetMaximumCouplerSlack2M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack1M
+        public override float GetMaximumSimpleCouplerSlack2M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack1M
         {
             if (Simulator.UseAdvancedAdhesion && IsAdvancedCoupler) // for Advanced coupler
-            {
-                if (Coupler == null)
-                    return base.GetMaximumCouplerSlack2M();
-                return Coupler.Rigid ? 0.0002f : Coupler.CouplerSlackBM + Coupler.R0Y; //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
-            }
-            else  // for simple coupler
-            {
-                if (Coupler == null)
-                    return base.GetMaximumCouplerSlack2M();
-                return Coupler.Rigid ? 0.0002f : base.GetMaximumCouplerSlack2M(); //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
-            }
 
+                if (Coupler == null)
+                    return base.GetMaximumSimpleCouplerSlack2M();
+                return Coupler.Rigid ? 0.0002f : base.GetMaximumSimpleCouplerSlack2M(); //  GetMaximumCouplerSlack2M > GetMaximumCouplerSlack1M
 
         }
 
@@ -3025,9 +3005,9 @@ namespace Orts.Simulation.RollingStocks
             MSTSCoupling coupler = new MSTSCoupling();
             coupler.R0X = other.GetCouplerZeroLengthM();
             coupler.R0Y = other.GetCouplerZeroLengthM();
-            coupler.R0Diff = other.GetMaximumCouplerSlack1M();
-            coupler.Rigid = coupler.R0Diff < .0002f;
-            coupler.Stiffness1NpM = other.GetCouplerStiffnessNpM() / 7;
+            coupler.R0Diff = other.GetMaximumSimpleCouplerSlack1M();
+            coupler.Rigid = coupler.R0Diff < 0.0002f;
+            coupler.Stiffness1NpM = other.GetSimpleCouplerStiffnessNpM() / 7;
             coupler.Stiffness2NpM = 0;
             coupler.Damping1NMps = other.GetCouplerDamping1NMpS();
             coupler.Damping2NMps = other.GetCouplerDamping2NMpS();
@@ -3185,7 +3165,7 @@ namespace Orts.Simulation.RollingStocks
         public bool Rigid;
         public float R0X;
         public float R0Y;
-        public float R0Diff = .012f;
+        public float R0Diff = 0.012f;
         public float Stiffness1NpM = 1e7f;
         public float Stiffness2NpM = 2e7f;
         public float Damping1NMps = 1e7f;
