@@ -1713,6 +1713,78 @@ namespace Orts.Simulation.RollingStocks
             return 1e10f;
         }
 
+        // Advanced coupler parameters
+
+        public virtual float GetCouplerTensionStiffness1N()
+        {
+            return 1e7f;
+        }
+
+        public virtual float GetCouplerTensionStiffness2N()
+        {
+            return 2e7f;
+        }
+
+        public virtual float GetCouplerCompressionStiffness1N()
+        {
+            return 1e7f;
+        }
+
+        public virtual float GetCouplerCompressionStiffness2N()
+        {
+            return 2e7f;
+        }
+
+        public virtual float GetCouplerTensionSlackAM()
+        {
+            return 0;
+        }
+
+        public virtual float GetCouplerTensionSlackBM()
+        {
+            return 0.1f;
+        }
+ 
+        public virtual float GetCouplerCompressionSlackAM()
+        {
+            return 0;
+        }
+ 
+        public virtual float GetCouplerCompressionSlackBM()
+        {
+            return 0.1f;
+        }
+
+        public virtual float GetMaximumCouplerTensionSlack1M()
+        {
+            return 0.005f;
+        }
+         
+        public virtual float GetMaximumCouplerTensionSlack2M()
+        {
+            return 0.12f;
+        }
+ 
+        public virtual float GetMaximumCouplerTensionSlack3M()
+        {
+            return 0.13f;
+        }
+
+        public virtual float GetMaximumCouplerCompressionSlack1M()
+        {
+            return 0.005f;
+        }
+
+        public virtual float GetMaximumCouplerCompressionSlack2M()
+        {
+            return 0.012f;
+        }
+ 
+        public virtual float GetMaximumCouplerCompressionSlack3M()
+        {
+            return 0.13f;
+        }
+
         public virtual void CopyCoupler(TrainCar other)
         {
             CouplerSlackM = other.CouplerSlackM;

@@ -962,7 +962,38 @@ namespace Orts.Simulation.RollingStocks
                         CouplerCountLocation = Couplers.Count - 1;  // By default write info into 0 and 1 slots as required.
                     };
                     break;
-                    
+
+                // Used for simple or legacy coupler
+                case "wagon(coupling(spring(break":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetSimpleBreak(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(coupling(spring(r0":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetSimpleR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(spring(stiffness":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetSimpleStiffness(stf.ReadFloat(STFReader.UNITS.Stiffness, null), stf.ReadFloat(STFReader.UNITS.Stiffness, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(coupling(spring(damping":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetDamping(stf.ReadFloat(STFReader.UNITS.Resistance, null), stf.ReadFloat(STFReader.UNITS.Resistance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                case "wagon(coupling(spring(ortsslack":
+                    stf.MustMatch("(");
+                    // IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.  Temporarily disabled for v1.3 release
+                    Couplers[CouplerCountLocation].SetSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+                // Used for advanced coupler
+
                 case "wagon(coupling(frontcoupleranim":
                     stf.MustMatch("(");
                     FrontCouplerShapeFileName = stf.ReadString();
@@ -981,35 +1012,59 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
 
+               case "wagon(coupling(spring(ortstensionstiffness":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetTensionStiffness(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+               case "wagon(coupling(spring(ortscompressionstiffness":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetCompressionStiffness(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(spring(ortstensionslack":
+                    stf.MustMatch("(");
+                    IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.
+                    Couplers[CouplerCountLocation].SetTensionSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+               case "wagon(coupling(spring(ortscompressionslack":
+                    stf.MustMatch("(");
+                    IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.
+                    Couplers[CouplerCountLocation].SetCompressionSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                // This is for the advanced coupler and is designed to be used instead of the MSTS parameter Break
+
+                case "wagon(coupling(spring(ortsbreak":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetAdvancedBreak(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
+                    stf.SkipRestOfBlock();
+                    break;
+                    
+                    // This is for the advanced coupler and is designed to be used instead of the MSTS parameter R0
+               case "wagon(coupling(spring(ortstensionr0":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetTensionR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+               case "wagon(coupling(spring(ortscompressionr0":
+                    stf.MustMatch("(");
+                    Couplers[CouplerCountLocation].SetCompressionR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
+                    stf.SkipRestOfBlock();
+                    break;
+
+
+                // Used for both coupler types
                 case "wagon(coupling(couplinghasrigidconnection":
+                    Couplers[CouplerCountLocation].Rigid = false;
                     Couplers[CouplerCountLocation].Rigid = stf.ReadBoolBlock(true);
                     break;
-                case "wagon(coupling(spring(stiffness":
-                    stf.MustMatch("(");
-                    Couplers[CouplerCountLocation].SetStiffness(stf.ReadFloat(STFReader.UNITS.Stiffness, null), stf.ReadFloat(STFReader.UNITS.Stiffness, null));
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(coupling(spring(damping":
-                    stf.MustMatch("(");
-                    Couplers[CouplerCountLocation].SetDamping(stf.ReadFloat(STFReader.UNITS.Resistance, null), stf.ReadFloat(STFReader.UNITS.Resistance, null));
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(coupling(spring(ortsslack":
-                    stf.MustMatch("(");
-                     // IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.  Temporarily disabled for v1.3 release
-                    Couplers[CouplerCountLocation].SetSlack(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(coupling(spring(break":
-                    stf.MustMatch("(");
-                    Couplers[CouplerCountLocation].SetBreak(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
-                    stf.SkipRestOfBlock();
-                    break;
-                case "wagon(coupling(spring(r0":
-                    stf.MustMatch("(");
-                    Couplers[CouplerCountLocation].SetR0(stf.ReadFloat(STFReader.UNITS.Distance, null), stf.ReadFloat(STFReader.UNITS.Distance, null));
-                    stf.SkipRestOfBlock();
-                    break;
+               
+
+
                 case "wagon(adheasion":
                     stf.MustMatch("(");
                     Adhesion1 = stf.ReadFloat(STFReader.UNITS.None, null);
@@ -2857,21 +2912,21 @@ namespace Orts.Simulation.RollingStocks
 
         public MSTSCoupling Coupler
         {
-            get
+            get  // This determines which coupler to use from WAG file, typically it will be the first one as by convention the rear coupler is always read first.
             {
                 if (Couplers.Count == 0) return null;
                 if (Flipped && Couplers.Count > 1) return Couplers[1];
-                return Couplers[0];
+                return Couplers[0]; // defaults to the rear coupler (typically the first read)
             }
         }
         public override float GetCouplerZeroLengthM()
         {
-            if (Simulator.UseAdvancedAdhesion && IsAdvancedCoupler)
+            if (IsPlayerTrain && Simulator.UseAdvancedAdhesion && IsAdvancedCoupler)
             {
                 float zerolength;
                 if (Coupler != null)
                 {
-                   zerolength = Coupler.CouplerSlackAM;
+                   zerolength = Coupler.R0X;
                 }
                 else
                 {
@@ -2995,7 +3050,152 @@ namespace Orts.Simulation.RollingStocks
 
         }
 
+        // Advanced coupler parameters
 
+        public override float GetCouplerTensionStiffness1N()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerTensionStiffness1N();
+            }
+            return Coupler.Rigid ? 10 * Coupler.TensionStiffness1N : Coupler.TensionStiffness1N;
+        }
+
+        public override float GetCouplerTensionStiffness2N()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerTensionStiffness2N();
+            }
+            return Coupler.Rigid ? 10 * Coupler.TensionStiffness2N : Coupler.TensionStiffness2N;
+        }
+
+        public override float GetCouplerCompressionStiffness1N()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerCompressionStiffness1N();
+            }
+            return Coupler.Rigid ? 10 * Coupler.TensionStiffness1N : Coupler.TensionStiffness1N;
+        }
+
+        public override float GetCouplerCompressionStiffness2N()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerCompressionStiffness2N();
+            }
+            return Coupler.Rigid ? 10 * Coupler.TensionStiffness2N : Coupler.TensionStiffness2N;
+        }
+
+        public override float GetCouplerTensionSlackAM()
+        {
+            if (Coupler == null)
+            {
+
+                return base.GetCouplerTensionSlackAM();
+            }
+
+            return Coupler.CouplerTensionSlackAM;
+        }
+
+        public override float GetCouplerTensionSlackBM()
+        {
+            if (Coupler == null)
+            {
+
+                return base.GetCouplerTensionSlackBM();
+            }
+
+            return Coupler.CouplerTensionSlackBM;
+        }
+
+        public override float GetCouplerCompressionSlackAM()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerCompressionSlackAM();
+            }
+            return Coupler.CouplerCompressionSlackAM;
+        }
+
+        public override float GetCouplerCompressionSlackBM()
+        {
+            if (Coupler == null)
+            {
+                return base.GetCouplerCompressionSlackBM();
+            }
+            return Coupler.CouplerCompressionSlackBM;
+        }
+
+        public override float GetMaximumCouplerTensionSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerTensionSlack1M();
+
+            if (Coupler.TensionR0Y == 0)
+            {
+                Coupler.TensionR0Y = Coupler.R0Y; // if no value present, default value to tension value
+            }
+            return Coupler.Rigid ? 0.00001f : Coupler.TensionR0Y;
+        }
+        public override float GetMaximumCouplerTensionSlack2M()
+        {
+
+            // Zone 2 limit - ie Zone 1 + 2
+            if (Coupler == null)
+                return base.GetMaximumCouplerTensionSlack2M();
+            return Coupler.Rigid? 0.0001f : GetMaximumCouplerTensionSlack1M() + GetCouplerTensionSlackAM();
+        }
+
+        public override float GetMaximumCouplerTensionSlack3M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack2M
+        {
+            if (Coupler == null)
+
+            {
+                return base.GetMaximumCouplerTensionSlack3M();
+            }
+            float Coupler2MTemporary = GetCouplerTensionSlackBM();
+            if (Coupler2MTemporary == 0)
+            {
+                Coupler2MTemporary = 0.1f; // make sure that SlackBM is always > 0
+            }
+            return Coupler.Rigid ? 0.0002f : GetMaximumCouplerTensionSlack2M() + Coupler2MTemporary; //  GetMaximumCouplerSlack3M > GetMaximumCouplerSlack2M
+        }
+
+        public override float GetMaximumCouplerCompressionSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerCompressionSlack1M();
+            if (Coupler.CompressionR0Y == 0)
+            {
+                Coupler.CompressionR0Y = Coupler.R0Y; // if no value present, default value to tension value
+            }
+            return Coupler.Rigid ? 0.00005f : Coupler.CompressionR0Y;
+        }
+
+        public override float GetMaximumCouplerCompressionSlack2M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
+        {
+            if (Coupler == null)
+                return base.GetMaximumCouplerCompressionSlack2M();
+
+            return Coupler.Rigid ? 0.0001f : GetMaximumCouplerCompressionSlack1M() + GetCouplerCompressionSlackAM();
+        }
+
+        public override float GetMaximumCouplerCompressionSlack3M() // This limits the slack due to draft forces (?) and should be marginally greater then GetMaximumCouplerSlack1M
+        {
+            if (Coupler == null)
+            {
+                return base.GetMaximumCouplerCompressionSlack3M();
+            }
+            float Coupler2MTemporary = GetCouplerCompressionSlackBM();
+            if (Coupler2MTemporary == 0)
+            {
+                Coupler2MTemporary = 0.1f; // make sure that SlackBM is always > 0
+            }
+            return Coupler.Rigid ? 0.0002f : GetMaximumCouplerCompressionSlack2M() + Coupler2MTemporary; //  GetMaximumCouplerSlack3M > GetMaximumCouplerSlack2M
+        }
+               
         // TODO: This code appears to be being called by ReverseCars (in Trains.cs). 
         // Reverse cars moves the couplers along by one car, however this may be encountering a null coupler at end of train. 
         // Thus all coupler parameters need to be tested for null coupler and defasult values inserted (To be confirmed)
@@ -3013,6 +3213,10 @@ namespace Orts.Simulation.RollingStocks
             coupler.Damping2NMps = other.GetCouplerDamping2NMpS();
             coupler.CouplerSlackAM = other.GetCouplerSlackAM();
             coupler.CouplerSlackBM = other.GetCouplerSlackBM();
+            coupler.CouplerTensionSlackAM = other.GetCouplerTensionSlackAM();
+            coupler.CouplerTensionSlackBM = other.GetCouplerTensionSlackBM();
+            coupler.CouplerCompressionSlackAM = other.GetCouplerCompressionSlackAM();
+            coupler.CouplerCompressionSlackBM = other.GetCouplerCompressionSlackBM();
             if (Couplers.Count == 0)
                 Couplers.Add(coupler);
             else
@@ -3174,6 +3378,21 @@ namespace Orts.Simulation.RollingStocks
         public float Break2N = 1e10f;
         public float CouplerSlackAM;
         public float CouplerSlackBM;
+        public float CouplerTensionSlackAM;
+        public float CouplerTensionSlackBM;
+        public float TensionStiffness1N = 1e7f;
+        public float TensionStiffness2N = 2e7f;
+        public float TensionR0X;
+        public float TensionR0Y;
+        public float TensionR0Diff = 0.012f;
+        public float CompressionR0X;
+        public float CompressionR0Y;
+        public float CompressionStiffness1N;
+        public float CompressionStiffness2N;
+        public float CompressionR0Diff = 0.012f;
+        public float CouplerCompressionSlackAM;
+        public float CouplerCompressionSlackBM;
+
 
         public MSTSCoupling()
         {
@@ -3192,8 +3411,22 @@ namespace Orts.Simulation.RollingStocks
             Damping2NMps = copy.Damping2NMps;
             CouplerSlackAM = copy.CouplerSlackAM;
             CouplerSlackBM = copy.CouplerSlackBM;
+            TensionStiffness1N = copy.TensionStiffness1N;
+            TensionStiffness2N = copy.TensionStiffness2N;
+            CouplerTensionSlackAM = copy.CouplerTensionSlackAM;
+            CouplerTensionSlackBM = copy.CouplerTensionSlackBM;
+            TensionR0X = copy.TensionR0X;
+            TensionR0Y = copy.TensionR0Y;
+            TensionR0Diff = copy.TensionR0Diff;
+            CompressionR0X = copy.CompressionR0X;
+            CompressionR0Y = copy.CompressionR0Y;
+            CompressionStiffness1N = copy.CompressionStiffness1N;
+            CompressionStiffness2N = copy.CompressionStiffness2N;
+            CompressionR0Diff = copy.CompressionR0Diff;
+            CouplerCompressionSlackAM = copy.CouplerCompressionSlackAM;
+            CouplerCompressionSlackBM = copy.CouplerCompressionSlackBM;
         }
-        public void SetR0(float a, float b)
+        public void SetSimpleR0(float a, float b)
         {
                 R0X = a;
                 R0Y = b;
@@ -3210,7 +3443,7 @@ namespace Orts.Simulation.RollingStocks
                 R0Diff = 0.1f;
 
         }
-        public void SetStiffness(float a, float b)
+        public void SetSimpleStiffness(float a, float b)
         {
             if (a + b < 0)
                 return;
@@ -3228,6 +3461,98 @@ namespace Orts.Simulation.RollingStocks
             Damping2NMps = b;
         }
 
+        public void SetTensionR0(float a, float b)
+        {
+            TensionR0X = a;
+            TensionR0Y = b;
+            if (a == 0)
+                TensionR0Diff = b / 2 * TensionStiffness2N / (TensionStiffness1N + TensionStiffness2N);
+            else
+                TensionR0Diff = 0.012f;
+            //               R0Diff = b - a;
+
+            // Ensure R0Diff stays within "reasonable limits"
+            if (TensionR0Diff < 0.001)
+                TensionR0Diff = 0.001f;
+            else if (TensionR0Diff > 0.1)
+                TensionR0Diff = 0.1f;
+
+        }
+
+        public void SetCompressionR0(float a, float b)
+        {
+            CompressionR0X = a;
+            CompressionR0Y = b;
+            if (a == 0)
+                CompressionR0Diff = b / 2 * CompressionStiffness2N / (CompressionStiffness1N + CompressionStiffness2N);
+            else
+                CompressionR0Diff = 0.012f;
+            //               R0Diff = b - a;
+
+            // Ensure R0Diff stays within "reasonable limits"
+            if (CompressionR0Diff < 0.001)
+                CompressionR0Diff = 0.001f;
+            else if (CompressionR0Diff > 0.1)
+                CompressionR0Diff = 0.1f;
+
+        }
+
+public void SetTensionStiffness(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            TensionStiffness1N = a;
+            TensionStiffness2N = b;
+        }
+
+        public void SetCompressionStiffness(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            CompressionStiffness1N = a;
+            CompressionStiffness2N = b;
+        }
+
+        public void SetTensionSlack(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            CouplerTensionSlackAM = a;
+            CouplerTensionSlackBM = b;
+        }
+
+        public void SetCompressionSlack(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            CouplerCompressionSlackAM = a;
+            CouplerCompressionSlackBM = b;
+        }
+
+        public void SetAdvancedBreak(float a, float b)
+        {
+            if (a + b < 0)
+                return;
+
+            Break1N = a;
+
+            // Check if b = 0, as some stock has a zero value, set a default
+            if (b == 0)
+            {
+                Break2N = 2e7f;
+            }
+            else
+            {
+                Break2N = b;
+            }
+
+        }
+
+
         public void SetSlack(float a, float b)
         {
             if (a + b < 0)
@@ -3237,7 +3562,7 @@ namespace Orts.Simulation.RollingStocks
             CouplerSlackBM = b;
         }
 
-        public void SetBreak(float a, float b)
+        public void SetSimpleBreak(float a, float b)
         {
             if (a + b < 0)
                 return;
