@@ -4748,11 +4748,25 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 car.CouplerDampingSpeedMpS = car.SpeedMpS - Cars[i + 1].SpeedMpS;
 
                 // Make sure that coupler slack does not exceed the maximum coupler slack
-                float max = car.GetMaximumSimpleCouplerSlack2M();
-                if (car.CouplerSlackM < -max)
-                    car.CouplerSlackM = -max;
-                else if (car.CouplerSlackM > max)
-                    car.CouplerSlackM = max;
+
+                if (car.IsPlayerTrain && Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
+                {
+                    float MaxZ3TensionM = car.GetMaximumCouplerTensionSlack3M();
+                    float MaxZ3CompressionM = -car.GetMaximumCouplerCompressionSlack3M();
+
+                    if (car.CouplerSlackM < MaxZ3CompressionM) // Compression
+                        car.CouplerSlackM = MaxZ3CompressionM;
+                    else if (car.CouplerSlackM > MaxZ3TensionM) // Tension
+                        car.CouplerSlackM = MaxZ3TensionM;
+                }
+                else
+                {
+                    float max = car.GetMaximumSimpleCouplerSlack2M();
+                    if (car.CouplerSlackM < -max)  // Compression
+                        car.CouplerSlackM = -max;
+                    else if (car.CouplerSlackM > max) // Tension
+                        car.CouplerSlackM = max;
+                }
 
                 TotalCouplerSlackM += car.CouplerSlackM; // Total coupler slack displayed in HUD only
 
