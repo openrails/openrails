@@ -980,11 +980,6 @@ namespace Orts.Simulation.RollingStocks
                     Couplers[CouplerCountLocation].SetSimpleStiffness(stf.ReadFloat(STFReader.UNITS.Stiffness, null), stf.ReadFloat(STFReader.UNITS.Stiffness, null));
                     stf.SkipRestOfBlock();
                     break;
-                case "wagon(coupling(spring(damping":
-                    stf.MustMatch("(");
-                    Couplers[CouplerCountLocation].SetDamping(stf.ReadFloat(STFReader.UNITS.Resistance, null), stf.ReadFloat(STFReader.UNITS.Resistance, null));
-                    stf.SkipRestOfBlock();
-                    break;
                 case "wagon(coupling(spring(ortsslack":
                     stf.MustMatch("(");
                     // IsAdvancedCoupler = true; // If this parameter is present in WAG file then treat coupler as advanced ones.  Temporarily disabled for v1.3 release
@@ -2970,24 +2965,6 @@ namespace Orts.Simulation.RollingStocks
             return Coupler.Rigid? 10 * Coupler.Stiffness1NpM : Coupler.Stiffness2NpM;
         }
 
-        public override float GetCouplerDamping1NMpS()
-        {
-            if (Coupler == null)
-            {
-                return base.GetCouplerDamping1NMpS();
-            }
-            return Coupler.Damping1NMps;
-        }
-
-        public override float GetCouplerDamping2NMpS()
-        {
-            if (Coupler == null)
-            {
-                return base.GetCouplerDamping2NMpS();
-            }
-            return Coupler.Damping2NMps;
-        }
-
         public override float GetCouplerSlackAM()
         {
             if (Coupler == null)
@@ -3022,13 +2999,6 @@ namespace Orts.Simulation.RollingStocks
                 return base.GetAdvancedCouplerFlag();
             }
             return IsAdvancedCoupler;
-        }
-
-        public override float GetMaximumCouplerSlack0M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
-        {
-            if (Coupler == null)
-                return base.GetMaximumCouplerSlack0M();
-            return Coupler.Rigid ? 0.0001f : Coupler.CouplerSlackBM;
         }
 
         public override float GetMaximumSimpleCouplerSlack1M()  // This limits the maximum amount of slack, and typically will be equal to y - x of R0 statement
@@ -3209,8 +3179,6 @@ namespace Orts.Simulation.RollingStocks
             coupler.Rigid = coupler.R0Diff < 0.0002f;
             coupler.Stiffness1NpM = other.GetSimpleCouplerStiffnessNpM() / 7;
             coupler.Stiffness2NpM = 0;
-            coupler.Damping1NMps = other.GetCouplerDamping1NMpS();
-            coupler.Damping2NMps = other.GetCouplerDamping2NMpS();
             coupler.CouplerSlackAM = other.GetCouplerSlackAM();
             coupler.CouplerSlackBM = other.GetCouplerSlackBM();
             coupler.CouplerTensionSlackAM = other.GetCouplerTensionSlackAM();
@@ -3372,8 +3340,6 @@ namespace Orts.Simulation.RollingStocks
         public float R0Diff = 0.012f;
         public float Stiffness1NpM = 1e7f;
         public float Stiffness2NpM = 2e7f;
-        public float Damping1NMps = 1e7f;
-        public float Damping2NMps = 2e7f;
         public float Break1N = 1e10f;
         public float Break2N = 1e10f;
         public float CouplerSlackAM;
@@ -3407,8 +3373,6 @@ namespace Orts.Simulation.RollingStocks
             Break2N = copy.Break2N;
             Stiffness1NpM = copy.Stiffness1NpM;
             Stiffness2NpM = copy.Stiffness2NpM;
-            Damping1NMps = copy.Damping1NMps;
-            Damping2NMps = copy.Damping2NMps;
             CouplerSlackAM = copy.CouplerSlackAM;
             CouplerSlackBM = copy.CouplerSlackBM;
             TensionStiffness1N = copy.TensionStiffness1N;
@@ -3450,15 +3414,6 @@ namespace Orts.Simulation.RollingStocks
 
             Stiffness1NpM = a;
             Stiffness2NpM = b;
-        }
-
-        public void SetDamping(float a, float b)
-        {
-            if (a + b< 0)
-                return;
-
-            Damping1NMps = a;
-            Damping2NMps = b;
         }
 
         public void SetTensionR0(float a, float b)
@@ -3593,8 +3548,6 @@ public void SetTensionStiffness(float a, float b)
             outf.Write(R0Diff);
             outf.Write(Stiffness1NpM);
             outf.Write(Stiffness2NpM);
-            outf.Write(Damping1NMps);
-            outf.Write(Damping2NMps);
             outf.Write(CouplerSlackAM);
             outf.Write(CouplerSlackBM);
             outf.Write(Break1N);
@@ -3613,8 +3566,6 @@ public void SetTensionStiffness(float a, float b)
             R0Diff = inf.ReadSingle();
             Stiffness1NpM = inf.ReadSingle();
             Stiffness2NpM = inf.ReadSingle();
-            Damping1NMps = inf.ReadSingle();
-            Damping2NMps = inf.ReadSingle();
             CouplerSlackAM = inf.ReadSingle();
             CouplerSlackBM = inf.ReadSingle();
             Break1N = inf.ReadSingle();
