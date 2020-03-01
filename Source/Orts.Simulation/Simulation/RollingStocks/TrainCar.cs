@@ -184,6 +184,8 @@ namespace Orts.Simulation.RollingStocks
         public bool HUDCouplerRigidIndication = false; // Flag to indicate whether coupler is rigid of flexible. False indicates that coupler is flexible
         public float CouplerSlack2M;  // slack calculated using draft gear force
         public bool IsAdvancedCoupler = false; // Flag to indicate that coupler is to be treated as an advanced coupler
+        public float FrontCouplerSlackM; // Slack in car front coupler
+        public float RearCouplerSlackM;  // Slack in rear coupler
 
         public float AdvancedCouplerDynamicTensionSlackLimitM;   // Varies as coupler moves
         public float AdvancedCouplerDynamicCompressionSlackLimitM; // Varies as coupler moves
