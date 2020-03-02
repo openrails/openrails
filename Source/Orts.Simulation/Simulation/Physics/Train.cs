@@ -4380,6 +4380,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     float MaxZ2CompressionM = -car.GetMaximumCouplerCompressionSlack2M();
                     float MaxZ3CompressionM = -car.GetMaximumCouplerCompressionSlack3M();
 
+                    bool IsRigidCoupler = car.GetCouplerRigidIndication();
                     float IndividualCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
 
                     if (IndividualCouplerSlackM > MaxZ1CompressionM && IndividualCouplerSlackM < MaxZ1TensionM) // Zone 1 coupler faces not in contact - no force generated
@@ -4399,22 +4400,29 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         float ForceOnCouplerN = GradStiffness * Zone2Slack; // Calculate force on coupler based upon gradient of line
 
                         // Assign the correct (same) signage to the ForceOnCoupler as TotalForce, if Calculated Coupler Force is greater then TotalForce, 
-                        // then use the TotalForce value so that it is capped
-                        if (Cars[i + 1].TotalForceN > 0)
+                        // then use the TotalForce value so that it is capped. Rigid coupler use full force for zone 2 & 3
+                        if (!IsRigidCoupler)
                         {
-                            if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                            if (Cars[i + 1].TotalForceN > 0)
                             {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
-                            }
+                                if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
 
-                        }
-                        else if (Cars[i + 1].TotalForceN < 0)
-                        {
-                            ForceOnCouplerN = -ForceOnCouplerN;
-                            if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
-                            {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
                             }
+                            else if (Cars[i + 1].TotalForceN < 0)
+                            {
+                                ForceOnCouplerN = -ForceOnCouplerN;
+                                if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
+                            }
+                        }
+                        else // Rigid Coupler
+                        {
+                            ForceOnCouplerN = Cars[i + 1].TotalForceN;
                         }
 
                         // Trace.TraceInformation("Zone 2 Tension - ID {0} SlackDiff {1} GradStiff {2} Zone2Slack {3} Force {4} TotalForceN {5}", car.CarID, SlackDiff, GradStiffness, Zone2Slack, ForceOnCouplerN, Cars[i + 1].TotalForceN);
@@ -4426,7 +4434,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         // Zone 3 Tension - coupler faces in contact in tension, but stiffness may not be greater then then total force
 
                         // A linear curve is assumed for coupler stiffness - uses the first parameter in the Stiffness parameter of WAG file to plot a gradient for the "stiffness" line
-                        // The coupler force calculated from the slack, and the stiffness curve are then used to vary the TotalForceN
+                        // The coupler force calculated from the slack, and the stiffness curve are then used to vary the TotalForceN. 
                         float SlackDiff = MaxZ3TensionM - MaxZ2TensionM;
                         float GradStiffness = (car.GetCouplerTensionStiffness2N() - car.GetCouplerTensionStiffness1N()) / (SlackDiff);
                         float Zone3Slack = IndividualCouplerSlackM - MaxZ2TensionM; // This is the location  within Zone 3
@@ -4435,22 +4443,29 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         //                        Trace.TraceInformation("Gradstiffness - {0} Stiffness {1} Stiff#1 {2} Stiff#2 {3}", GradStiffness, (car.GetCouplerTensionStiffness2N() - car.GetCouplerTensionStiffness1N()), car.GetCouplerTensionStiffness1N(), car.GetCouplerTensionStiffness2N());
 
                         // Assign the correct (same) signage to the ForceOnCoupler as TotalForce, if Calculated Coupler Force is greater then TotalForce, 
-                        // then use the TotalForce value so that it is capped
-                        if (Cars[i + 1].TotalForceN > 0)
+                        // then use the TotalForce value so that it is capped. Rigid coupler use full force for zone 2 & 3
+                        if (!IsRigidCoupler)
                         {
-                            if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                            if (Cars[i + 1].TotalForceN > 0)
                             {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
-                            }
+                                if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
 
-                        }
-                        else if (Cars[i + 1].TotalForceN < 0)
-                        {
-                            ForceOnCouplerN = -ForceOnCouplerN;
-                            if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
-                            {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
                             }
+                            else if (Cars[i + 1].TotalForceN < 0)
+                            {
+                                ForceOnCouplerN = -ForceOnCouplerN;
+                                if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
+                            }
+                        }
+                        else // Rigid coupler
+                        {
+                            ForceOnCouplerN = Cars[i + 1].TotalForceN;
                         }
 
                         //                        Trace.TraceInformation("Zone 3 Tension - ID {0} SlackDiff {1} GradStiff {2} Zone3Slack {3} Force {4} TotalForceN {5}", car.CarID, SlackDiff, GradStiffness, Zone3Slack, ForceOnCouplerN, Cars[i + 1].TotalForceN);
@@ -4470,22 +4485,29 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         float ForceOnCouplerN = GradStiffness * Zone2Slack;
 
                         // Assign the correct (same) signage to the ForceOnCoupler as TotalForce, if Calculated Coupler Force is greater then TotalForce, 
-                        // then use the TotalForce value so that it is capped
-                        if (Cars[i + 1].TotalForceN > 0)
+                        // then use the TotalForce value so that it is capped. Rigid coupler use full force for zone 2 & 3
+                        if (!IsRigidCoupler)
                         {
-                            if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                            if (Cars[i + 1].TotalForceN > 0)
                             {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
-                            }
+                                if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
 
-                        }
-                        else if (Cars[i + 1].TotalForceN < 0)
-                        {
-                            ForceOnCouplerN = -ForceOnCouplerN;
-                            if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
-                            {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
                             }
+                            else if (Cars[i + 1].TotalForceN < 0)
+                            {
+                                ForceOnCouplerN = -ForceOnCouplerN;
+                                if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            ForceOnCouplerN = Cars[i + 1].TotalForceN;
                         }
 
                         //    Trace.TraceInformation("Zone 2 Compression - ID {0} SlackDiff {1} GradStiff {2} Zone2Slack {3} Force {4} TotalForceN {5}", car.CarID, SlackDiff, GradStiffness, Zone2Slack, ForceOnCouplerN, Cars[i + 1].TotalForceN);
@@ -4508,22 +4530,29 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         //            Trace.TraceInformation("Zone 3 Compression - ID {0} SlackDiff {1} Zone3Slack {2} Force {3} TotalForceN {4}", car.CarID, SlackDiff, Zone3Slack, ForceOnCouplerN, Cars[i + 1].TotalForceN);
 
                         // Assign the correct (same) signage to the ForceOnCoupler as TotalForce, if Calculated Coupler Force is greater then TotalForce, 
-                        // then use the TotalForce value so that it is capped
-                        if (Cars[i + 1].TotalForceN > 0)
+                        // then use the TotalForce value so that it is capped. Rigid coupler use full force for zone 2 & 3
+                        if (!IsRigidCoupler)
                         {
-                            if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                            if (Cars[i + 1].TotalForceN > 0)
                             {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
-                            }
+                                if (ForceOnCouplerN > Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
 
-                        }
-                        else if (Cars[i + 1].TotalForceN < 0)
-                        {
-                            ForceOnCouplerN = -ForceOnCouplerN;
-                            if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
-                            {
-                                ForceOnCouplerN = Cars[i + 1].TotalForceN;
                             }
+                            else if (Cars[i + 1].TotalForceN < 0)
+                            {
+                                ForceOnCouplerN = -ForceOnCouplerN;
+                                if (ForceOnCouplerN < Cars[i + 1].TotalForceN)
+                                {
+                                    ForceOnCouplerN = Cars[i + 1].TotalForceN;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            ForceOnCouplerN = Cars[i + 1].TotalForceN;
                         }
 
                         //    Trace.TraceInformation("Zone 3 Compression - ID {0} SlackDiff {1} GradStiff {2} Zone3Slack {3} Force {4} TotalForceN {5}", car.CarID, SlackDiff, GradStiffness, Zone3Slack, ForceOnCouplerN, Cars[i + 1].TotalForceN);
@@ -4572,6 +4601,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     // For the Advanced coupler the coupler slack is claculated from the actual coupler force on the coupler. The coupler slack, and maximum slack limit are then set to these values.
                     // Thus the coupler will be limited to the slack limit depending upon the coupler stiffness characteristices.
                     // Note different slack lengths can be used depending upon whether the coupler is in tension or compression
+                    // Rigid couplers use a fixed limit, and there is no variation.
                     float MaxZ1TensionM = car.GetMaximumCouplerTensionSlack1M();
                     float MaxZ2TensionM = car.GetMaximumCouplerTensionSlack2M();
                     float MaxZ3TensionM = car.GetMaximumCouplerTensionSlack3M();
@@ -4582,55 +4612,58 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     // Default initialisation of limits
                     car.AdvancedCouplerDynamicTensionSlackLimitM = MaxZ3TensionM * AdvancedCouplerDuplicationFactor;
                     car.AdvancedCouplerDynamicCompressionSlackLimitM = MaxZ3CompressionM * AdvancedCouplerDuplicationFactor;
+                    bool IsRigidCoupler = car.GetCouplerRigidIndication();
 
                     float IndividualCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
 
                     if (car.CouplerForceU < 0) // Tension
                     {
-                        if (IndividualCouplerSlackM > MaxZ1TensionM && IndividualCouplerSlackM < MaxZ2TensionM)
+                        if (!IsRigidCoupler)
                         {
-                            // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
-                            //These values are set to "lock" the coupler at this maximum slack length
-                            float SlackDiff = MaxZ2TensionM - MaxZ1TensionM;
-                            float GradStiffness = car.GetCouplerTensionStiffness1N() / (SlackDiff); // Calculate gradient of line
-                            float Zone2SlackM = IndividualCouplerSlackM - MaxZ1TensionM; // Current slack distance in this zone of coupler
-                            float ForceOnCouplerN = GradStiffness * Zone2SlackM; // Calculate force on coupler based upon gradient of line
-                            float ComputedZone2SlackM = (-car.CouplerForceU / GradStiffness) + MaxZ1TensionM; // Current slack distance in this zone of coupler
-                            
-
-                            ForceOnCouplerN = -ForceOnCouplerN; // Reverse coupler force as it will be -ve force when in tension
-
-                         //   Trace.TraceInformation("Zone 2 Tension - ID {0} SlackDiff {1} GradStiff {2} Zone2Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone2SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM);
-
-                            if (IndividualCouplerSlackM < MaxZ3TensionM && IndividualCouplerSlackM > ComputedZone2SlackM  && ForceOnCouplerN < car.CouplerForceU)
+                            if (IndividualCouplerSlackM > MaxZ1TensionM && IndividualCouplerSlackM < MaxZ2TensionM)
                             {
-                                car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor;
-                                car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
+                                // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
+                                //These values are set to "lock" the coupler at this maximum slack length
+                                float SlackDiff = MaxZ2TensionM - MaxZ1TensionM;
+                                float GradStiffness = car.GetCouplerTensionStiffness1N() / (SlackDiff); // Calculate gradient of line
+                                float Zone2SlackM = IndividualCouplerSlackM - MaxZ1TensionM; // Current slack distance in this zone of coupler
+                                float ForceOnCouplerN = GradStiffness * Zone2SlackM; // Calculate force on coupler based upon gradient of line
+                                float ComputedZone2SlackM = (-car.CouplerForceU / GradStiffness) + MaxZ1TensionM; // Current slack distance in this zone of coupler
+
+
+                                ForceOnCouplerN = -ForceOnCouplerN; // Reverse coupler force as it will be -ve force when in tension
+
+                                //   Trace.TraceInformation("Zone 2 Tension - ID {0} SlackDiff {1} GradStiff {2} Zone2Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone2SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM);
+
+                                if (IndividualCouplerSlackM < MaxZ3TensionM && IndividualCouplerSlackM > ComputedZone2SlackM && ForceOnCouplerN < car.CouplerForceU)
+                                {
+                                    car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor;
+                                    car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
+                                }
+
                             }
-
-                        }
-                        else if (IndividualCouplerSlackM > MaxZ2TensionM && IndividualCouplerSlackM < MaxZ3TensionM)
-                        {
-                            // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
-                            //These values are set to "lock" the coupler at this maximum slack length
-                            float SlackDiff = MaxZ3TensionM - MaxZ2TensionM;
-                            float GradStiffness = (car.GetCouplerTensionStiffness2N() - car.GetCouplerTensionStiffness1N()) / (SlackDiff);
-                            float Zone3SlackM = IndividualCouplerSlackM - MaxZ2TensionM; // This is the location  within Zone 3
-                            float ForceOnCouplerN = (GradStiffness * Zone3SlackM) + car.GetCouplerTensionStiffness1N();
-                            float ComputedZone3SlackM = (-car.CouplerForceU / GradStiffness) + MaxZ2TensionM;
-
-                            ForceOnCouplerN = -ForceOnCouplerN; // Reverse coupler force as it will be -ve
-
-                           // Trace.TraceInformation("Zone 3 Tension - ID {0} SlackDiff {1} GradStiff {2} Zone3Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone3SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM);
-
-                            if (IndividualCouplerSlackM < MaxZ3TensionM && IndividualCouplerSlackM > ComputedZone3SlackM && ForceOnCouplerN < car.CouplerForceU)
+                            else if (IndividualCouplerSlackM > MaxZ2TensionM && IndividualCouplerSlackM < MaxZ3TensionM)
                             {
-                                car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor;
-                                car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
+                                // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
+                                //These values are set to "lock" the coupler at this maximum slack length
+                                float SlackDiff = MaxZ3TensionM - MaxZ2TensionM;
+                                float GradStiffness = (car.GetCouplerTensionStiffness2N() - car.GetCouplerTensionStiffness1N()) / (SlackDiff);
+                                float Zone3SlackM = IndividualCouplerSlackM - MaxZ2TensionM; // This is the location  within Zone 3
+                                float ForceOnCouplerN = (GradStiffness * Zone3SlackM) + car.GetCouplerTensionStiffness1N();
+                                float ComputedZone3SlackM = (-car.CouplerForceU / GradStiffness) + MaxZ2TensionM;
+
+                                ForceOnCouplerN = -ForceOnCouplerN; // Reverse coupler force as it will be -ve
+
+                                // Trace.TraceInformation("Zone 3 Tension - ID {0} SlackDiff {1} GradStiff {2} Zone3Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone3SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM);
+
+                                if (IndividualCouplerSlackM < MaxZ3TensionM && IndividualCouplerSlackM > ComputedZone3SlackM && ForceOnCouplerN < car.CouplerForceU)
+                                {
+                                    car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor;
+                                    car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
+                                }
+
                             }
-
                         }
-
                     }
                     else if (car.CouplerForceU == 0)
                     {
@@ -4639,45 +4672,48 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     }
                     else   // Compression
                     {
-                        if (MaxZ2CompressionM < IndividualCouplerSlackM && IndividualCouplerSlackM < MaxZ1CompressionM)
+                        if (!IsRigidCoupler)
                         {
-                            // Zone 2 Compression - In this zone the force increases as the slack is taken up by the coupler - negative to the above section.
-
-                            // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
-                            //These values are set to "lock" the coupler at this maximum slack length
-                            float SlackDiff = Math.Abs(MaxZ2CompressionM - MaxZ1CompressionM); // convert to abs value, and add values as they are negative
-                            float GradStiffness = car.GetCouplerCompressionStiffness1N() / (SlackDiff);
-                            float Zone2SlackM = Math.Abs(IndividualCouplerSlackM - MaxZ1CompressionM);
-                            float ForceOnCouplerN = GradStiffness * Zone2SlackM;
-                            float ComputedZone2SlackM = -(car.CouplerForceU / GradStiffness) + MaxZ1CompressionM; // Current slack distance in this zone of coupler
-
-//Trace.TraceInformation("Zone 2 Compression - ID {0} SlackDiff {1} GradStiff {2} Zone2Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone2SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM);
-
-                            if (IndividualCouplerSlackM > MaxZ3CompressionM && IndividualCouplerSlackM < ComputedZone2SlackM && ForceOnCouplerN > car.CouplerForceU)
+                            if (MaxZ2CompressionM < IndividualCouplerSlackM && IndividualCouplerSlackM < MaxZ1CompressionM)
                             {
-                                car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor;
-                                car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
+                                // Zone 2 Compression - In this zone the force increases as the slack is taken up by the coupler - negative to the above section.
+
+                                // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
+                                //These values are set to "lock" the coupler at this maximum slack length
+                                float SlackDiff = Math.Abs(MaxZ2CompressionM - MaxZ1CompressionM); // convert to abs value, and add values as they are negative
+                                float GradStiffness = car.GetCouplerCompressionStiffness1N() / (SlackDiff);
+                                float Zone2SlackM = Math.Abs(IndividualCouplerSlackM - MaxZ1CompressionM);
+                                float ForceOnCouplerN = GradStiffness * Zone2SlackM;
+                                float ComputedZone2SlackM = -(car.CouplerForceU / GradStiffness) + MaxZ1CompressionM; // Current slack distance in this zone of coupler
+
+                                //Trace.TraceInformation("Zone 2 Compression - ID {0} SlackDiff {1} GradStiff {2} Zone2Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone2SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM);
+
+                                if (IndividualCouplerSlackM > MaxZ3CompressionM && IndividualCouplerSlackM < ComputedZone2SlackM && ForceOnCouplerN > car.CouplerForceU)
+                                {
+                                    car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor;
+                                    car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
+                                }
                             }
-                        }
-                        else if (MaxZ3CompressionM < IndividualCouplerSlackM && IndividualCouplerSlackM < MaxZ2CompressionM)
-                        {
-                            // Zone 3 Compression - In this zone the force increases as the slack is taken up by the coupler - negative to the above section.
-                            // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
-                            //These values are set to "lock" the coupler at this maximum slack length
-                            float SlackDiff = Math.Abs(MaxZ3CompressionM - MaxZ2CompressionM); // convert to abs value, and add values as they are negative
-                            float GradStiffness = (car.GetCouplerCompressionStiffness2N() - car.GetCouplerCompressionStiffness1N()) / (SlackDiff);
-                            float Zone3SlackM = Math.Abs(IndividualCouplerSlackM - MaxZ2CompressionM);
-                            float ForceOnCouplerN = GradStiffness * Zone3SlackM;
-                            float ComputedZone3SlackM = -(car.CouplerForceU / GradStiffness) + MaxZ2CompressionM;
-
-                          //  Trace.TraceInformation("Zone 3 Compression - ID {0} SlackDiff {1} GradStiff {2} Zone3Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone3SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM);
-
-                            if (IndividualCouplerSlackM > MaxZ3CompressionM && IndividualCouplerSlackM < ComputedZone3SlackM && ForceOnCouplerN > car.CouplerForceU)
+                            else if (MaxZ3CompressionM < IndividualCouplerSlackM && IndividualCouplerSlackM < MaxZ2CompressionM)
                             {
-                                car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor;
-                                car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                            }
+                                // Zone 3 Compression - In this zone the force increases as the slack is taken up by the coupler - negative to the above section.
+                                // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
+                                //These values are set to "lock" the coupler at this maximum slack length
+                                float SlackDiff = Math.Abs(MaxZ3CompressionM - MaxZ2CompressionM); // convert to abs value, and add values as they are negative
+                                float GradStiffness = (car.GetCouplerCompressionStiffness2N() - car.GetCouplerCompressionStiffness1N()) / (SlackDiff);
+                                float Zone3SlackM = Math.Abs(IndividualCouplerSlackM - MaxZ2CompressionM);
+                                float ForceOnCouplerN = GradStiffness * Zone3SlackM;
+                                float ComputedZone3SlackM = -(car.CouplerForceU / GradStiffness) + MaxZ2CompressionM;
 
+                                //  Trace.TraceInformation("Zone 3 Compression - ID {0} SlackDiff {1} GradStiff {2} Zone3Slack {3} Force {4} CouplerForceN {5} Slack {6} ComputedSlack {7}", car.CarID, SlackDiff, GradStiffness, Zone3SlackM, ForceOnCouplerN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM);
+
+                                if (IndividualCouplerSlackM > MaxZ3CompressionM && IndividualCouplerSlackM < ComputedZone3SlackM && ForceOnCouplerN > car.CouplerForceU)
+                                {
+                                    car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor;
+                                    car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
+                                }
+
+                            }
                         }
                     }
                 }
