@@ -3046,7 +3046,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 return base.GetCouplerCompressionStiffness1N();
             }
-            return Coupler.Rigid ? 10 * Coupler.TensionStiffness1N : Coupler.TensionStiffness1N;
+            return Coupler.Rigid ? 10 * Coupler.CompressionStiffness1N : Coupler.CompressionStiffness1N;
         }
 
         public override float GetCouplerCompressionStiffness2N()
@@ -3055,7 +3055,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 return base.GetCouplerCompressionStiffness2N();
             }
-            return Coupler.Rigid ? 10 * Coupler.TensionStiffness2N : Coupler.TensionStiffness2N;
+            return Coupler.Rigid ? 10 * Coupler.CompressionStiffness2N : Coupler.CompressionStiffness2N;
         }
 
         public override float GetCouplerTensionSlackAM()
