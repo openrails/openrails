@@ -1447,9 +1447,11 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
         public void ReverseCars()
         {
-            // Shift all the coupler data along the train by 1 car.
+            // Shift all the coupler data along the train by 1 car. Not sure whether this logic is correct, as it appears to give incorrect coupler information - To Be Checked
             for (var i = Cars.Count - 1; i > 0; i--)
+            {
                 Cars[i].CopyCoupler(Cars[i - 1]);
+            }
             // Reverse brake hose connections and angle cocks
             for (var i = 0; i < Cars.Count; i++)
             {
@@ -4580,10 +4582,19 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 SolveCouplerForceEquations();
             while (FixCouplerForceEquations());
 
+           
+
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 // Calculate total forces on cars
                 TrainCar car = Cars[i];
+
+                // Check to make sure that last car does not have any coulpler force on its coupler (no cars connected). When cars reversed, there is sometimes a "residual" coupler force.
+                if (i == Cars.Count-1 && Cars[i+1].CouplerForceU != 0)
+                {
+                    Cars[i].CouplerForceU = 0;
+                }
+
                 car.TotalForceN += car.CouplerForceU;
                 Cars[i + 1].TotalForceN -= car.CouplerForceU;
 
@@ -4962,21 +4973,21 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 {
                     Trace.TraceInformation("Advanced Coupler - Tension - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} MaxSlackZone3 {5} Stiffness1 {6} Stiffness2 {7} AdvancedCpl {8} CplSlackA {9} CplSlackB {10}  Rigid {11}",
                     car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerTensionSlack1M(), car.GetMaximumCouplerTensionSlack2M(), car.GetMaximumCouplerTensionSlack3M(),
-                    car.GetCouplerTensionStiffness1N(), car.GetCouplerTensionStiffness2N(), car.IsAdvancedCoupler, car.GetCouplerTensionSlackAM(), car.GetCouplerTensionSlackBM(), car.HUDCouplerRigidIndication);
+                    car.GetCouplerTensionStiffness1N(), car.GetCouplerTensionStiffness2N(), car.IsAdvancedCoupler, car.GetCouplerTensionSlackAM(), car.GetCouplerTensionSlackBM(), car.GetCouplerRigidIndication());
 
                     Trace.TraceInformation("Advanced Coupler - Compression - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} MaxSlackZone3 {5} Stiffness1 {6} Stiffness2 {7} AdvancedCpl {8} CplSlackA {9} CplSlackB {10}  Rigid {11}",
                     car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumCouplerCompressionSlack1M(), car.GetMaximumCouplerCompressionSlack2M(), car.GetMaximumCouplerCompressionSlack3M(),
-                    car.GetCouplerCompressionStiffness1N(), car.GetCouplerCompressionStiffness2N(), car.IsAdvancedCoupler, car.GetCouplerCompressionSlackAM(), car.GetCouplerCompressionSlackBM(), car.HUDCouplerRigidIndication);
+                    car.GetCouplerCompressionStiffness1N(), car.GetCouplerCompressionStiffness2N(), car.IsAdvancedCoupler, car.GetCouplerCompressionSlackAM(), car.GetCouplerCompressionSlackBM(), car.GetCouplerRigidIndication());
                 }
                 else
                 {
-                    Trace.TraceInformation("Simple Coupler - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} Stiffness {5}",
+                    Trace.TraceInformation("Simple Coupler - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} Stiffness {5} Rigid {6}",
                     car.CarID, car.CouplerSlackM, car.GetCouplerZeroLengthM(), car.GetMaximumSimpleCouplerSlack1M(), car.GetMaximumSimpleCouplerSlack2M(),
-                    car.GetSimpleCouplerStiffnessNpM());
+                    car.GetSimpleCouplerStiffnessNpM(), car.GetCouplerRigidIndication());
                 }
 #endif
 
-                if (!car.HUDCouplerRigidIndication) // Flexible coupling - pulling and pushing value will be equal to slack when couplers faces touch
+                if (!car.GetCouplerRigidIndication()) // Flexible coupling - pulling and pushing value will be equal to slack when couplers faces touch
                 {
 
                     if (car.CouplerSlackM >= 0.001) // Coupler pulling
@@ -4994,7 +5005,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         car.HUDCouplerForceIndication = 0; // Coupler neutral
                     }
                 }
-                else if (car.HUDCouplerRigidIndication) // Rigid coupling - starts pulling/pushing at a lower value then flexible coupling
+                else if (car.GetCouplerRigidIndication()) // Rigid coupling - starts pulling/pushing at a lower value then flexible coupling
                 {
                     if (car.CouplerSlackM >= 0.000125) // Coupler pulling
                     {

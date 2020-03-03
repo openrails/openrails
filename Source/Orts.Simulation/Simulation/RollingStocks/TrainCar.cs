@@ -181,7 +181,6 @@ namespace Orts.Simulation.RollingStocks
         public float AbsSpeedMpS; // Math.Abs(SpeedMps) expression is repeated many times in the subclasses, maybe this deserves a class variable
         public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
         public int HUDCouplerForceIndication = 0; // Flag to indicate whether coupler is 1 - pulling, 2 - pushing or 0 - neither
-        public bool HUDCouplerRigidIndication = false; // Flag to indicate whether coupler is rigid of flexible. False indicates that coupler is flexible
         public float CouplerSlack2M;  // slack calculated using draft gear force
         public bool IsAdvancedCoupler = false; // Flag to indicate that coupler is to be treated as an advanced coupler
         public float FrontCouplerSlackM; // Slack in car front coupler
@@ -1774,6 +1773,28 @@ namespace Orts.Simulation.RollingStocks
         {
             return 0.13f;
         }
+
+        public virtual float GetCouplerBreak1N() // Sets the break force????
+        {
+            return 1e10f;
+        }
+
+        public virtual float GetCouplerBreak2N() // Sets the break force????
+        {
+            return 1e10f;
+        }
+
+        public virtual float GetCouplerTensionR0Y() // Sets the break force????
+        {
+            return 0.0001f;
+        }
+
+        public virtual float GetCouplerCompressionR0Y() // Sets the break force????
+        {
+            return 0.0001f;
+        }
+
+
 
         public virtual void CopyCoupler(TrainCar other)
         {
