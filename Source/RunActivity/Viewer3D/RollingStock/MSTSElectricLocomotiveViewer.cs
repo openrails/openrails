@@ -35,7 +35,9 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             ElectricLocomotive = car;
-            if (ElectricLocomotive.Train != null && car.Train.TrainType == Train.TRAINTYPE.AI)
+            if (ElectricLocomotive.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
+                ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
+                (car.Train.MUDirection != Direction.N && ElectricLocomotive.PowerOn))))
             {
                 ElectricLocomotive.SignalEvent(Event.Pantograph1Up);
                 ElectricLocomotive.SignalEvent(Event.EnginePowerOn);
