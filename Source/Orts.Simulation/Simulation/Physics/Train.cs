@@ -4344,29 +4344,11 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car = Cars[i];
-                float CarISpeedMpS = Cars[i].SpeedMpS + Cars[i].CouplerForceU / Cars[i].MassKG;
-                float CarI1SpeedMpS = Cars[i + 1].SpeedMpS - Cars[i].CouplerForceU / Cars[i + 1].MassKG;
-                float MaxZ3TensionM = car.GetMaximumCouplerTensionSlack3M() * AdvancedCouplerDuplicationFactor;
-                float MaxZ3CompressionM = -car.GetMaximumCouplerCompressionSlack3M() * AdvancedCouplerDuplicationFactor;
-
-                float PossibleNewCouplerSlackM = car.CouplerSlackM + (CarISpeedMpS - CarI1SpeedMpS) * elapsedTime;
-
-
-                // For the Advanced coupler this section tests the potential amount of slack that is going to occur between the cars. If it is likely to exceed the maximum coupler slack distance, 
-                // then it is assumed that the following car will be jerked into motion, and thus will be travelling at the same rate as the car in front (ie normally closest to the locomotive)
+                // This section seems to be required to get car moving
                 if (car.IsPlayerTrain && Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler"
                 {
-                    if (PossibleNewCouplerSlackM > MaxZ3TensionM || PossibleNewCouplerSlackM < MaxZ3CompressionM)
-                    {
-                        Cars[i].SpeedMpS += Cars[i].CouplerForceU / Cars[i].MassKG;
-                        Cars[i + 1].SpeedMpS = Cars[i].SpeedMpS;
-//                        Trace.TraceInformation("Impulse -  ID {0} CouplerForce {1} Slack {2} Possible {3} CarISpeed {4} CarI+1Speed {5} PossCarISpeed {6} PossCarI+1Speed {7}", i, Cars[i].CouplerForceU, Cars[i].CouplerSlackM, PossibleNewCouplerSlackM, Cars[i].SpeedMpS, Cars[i + 1].SpeedMpS, CarISpeedMpS, CarI1SpeedMpS);
-                    }
-                    else
-                    {
                         Cars[i].SpeedMpS += Cars[i].CouplerForceU / Cars[i].MassKG;
                         Cars[i + 1].SpeedMpS -= Cars[i].CouplerForceU / Cars[i + 1].MassKG;
-                    }
                 }
                 else // Simple Coupler
                 {
