@@ -5029,6 +5029,46 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 car.RearCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
                 car.FrontCouplerSlackM = Cars[i + 1].CouplerSlackM / AdvancedCouplerDuplicationFactor;
 
+                // Check to see if coupler is opened or closed - only closed or opened couplers have been specified
+                // It is assumed that the front coupler on first car will always be opened, and so will coupler on last car. All others on the train will be coupled
+                if (i == 0)
+                {
+                    if (car.FrontCouplerOpenFitted)
+                    {
+
+                        car.FrontCouplerOpen = true;
+                    }
+                    else
+                    {
+                        car.FrontCouplerOpen = false;
+                    }
+                }
+                else
+                {
+                    car.FrontCouplerOpen = false;
+                }
+
+
+                if (i == Cars.Count - 2)
+                {
+
+                    if (Cars[i + 1].RearCouplerOpenFitted)
+                    {
+                        Cars[i + 1].RearCouplerOpen = true;
+                    }
+                    else
+                    {
+                        Cars[i + 1].RearCouplerOpen = false;
+                    }
+
+                }
+                else
+                {
+                    car.RearCouplerOpen = false;
+                }
+
+
+
                 TotalCouplerSlackM += car.CouplerSlackM; // Total coupler slack displayed in HUD only
                 
 #if DEBUG_COUPLER_FORCES
