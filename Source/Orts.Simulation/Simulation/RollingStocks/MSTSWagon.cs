@@ -1018,7 +1018,27 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
 
-               case "wagon(coupling(spring(ortscompressionstiffness":
+               case "wagon(coupling(frontcoupleropenanim":
+                    stf.MustMatch("(");
+                    FrontCouplerOpenFitted = true;
+                    FrontCouplerOpenShapeFileName = stf.ReadString();
+                    FrontCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    FrontCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+                    
+               case "wagon(coupling(rearcoupleropenanim":
+                    stf.MustMatch("(");
+                    RearCouplerOpenFitted = true;
+                    RearCouplerOpenShapeFileName = stf.ReadString();
+                    RearCouplerOpenAnimWidthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCouplerOpenAnimHeightM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    RearCouplerOpenAnimLengthM = stf.ReadFloat(STFReader.UNITS.Distance, null);
+                    stf.SkipRestOfBlock();
+                    break;
+
+                case "wagon(coupling(spring(ortscompressionstiffness":
                     stf.MustMatch("(");
                     Couplers[CouplerCountLocation].SetCompressionStiffness(stf.ReadFloat(STFReader.UNITS.Force, null), stf.ReadFloat(STFReader.UNITS.Force, null));
                     stf.SkipRestOfBlock();
@@ -1151,10 +1171,20 @@ namespace Orts.Simulation.RollingStocks
             FrontCouplerAnimWidthM = copy.FrontCouplerAnimWidthM;
             FrontCouplerAnimHeightM = copy.FrontCouplerAnimHeightM;
             FrontCouplerAnimLengthM = copy.FrontCouplerAnimLengthM;
+            FrontCouplerOpenShapeFileName = copy.FrontCouplerOpenShapeFileName;
+            FrontCouplerOpenAnimWidthM = copy.FrontCouplerOpenAnimWidthM;
+            FrontCouplerOpenAnimHeightM = copy.FrontCouplerOpenAnimHeightM;
+            FrontCouplerOpenAnimLengthM = copy.FrontCouplerOpenAnimLengthM;
+            FrontCouplerOpenFitted = copy.FrontCouplerOpenFitted;
             RearCouplerShapeFileName = copy.RearCouplerShapeFileName;
             RearCouplerAnimWidthM = copy.RearCouplerAnimWidthM;
             RearCouplerAnimHeightM = copy.RearCouplerAnimHeightM;
             RearCouplerAnimLengthM = copy.RearCouplerAnimLengthM;
+            RearCouplerOpenShapeFileName = copy.RearCouplerOpenShapeFileName;
+            RearCouplerOpenAnimWidthM = copy.RearCouplerOpenAnimWidthM;
+            RearCouplerOpenAnimHeightM = copy.RearCouplerOpenAnimHeightM;
+            RearCouplerOpenAnimLengthM = copy.RearCouplerOpenAnimLengthM;
+            RearCouplerOpenFitted = copy.RearCouplerOpenFitted;
             CarWidthM = copy.CarWidthM;
             CarHeightM = copy.CarHeightM;
             CarLengthM = copy.CarLengthM;
