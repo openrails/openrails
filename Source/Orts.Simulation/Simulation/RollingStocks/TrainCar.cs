@@ -135,10 +135,24 @@ namespace Orts.Simulation.RollingStocks
         public float FrontCouplerAnimWidthM;
         public float FrontCouplerAnimHeightM;
 
+        public string FrontCouplerOpenShapeFileName;
+        public float FrontCouplerOpenAnimLengthM;
+        public float FrontCouplerOpenAnimWidthM;
+        public float FrontCouplerOpenAnimHeightM;
+        public bool FrontCouplerOpenFitted = false;
+        public bool FrontCouplerOpen = false;
+
         public string RearCouplerShapeFileName;
         public float RearCouplerAnimLengthM;
         public float RearCouplerAnimWidthM;
         public float RearCouplerAnimHeightM;
+
+        public string RearCouplerOpenShapeFileName;
+        public float RearCouplerOpenAnimLengthM;
+        public float RearCouplerOpenAnimWidthM;
+        public float RearCouplerOpenAnimHeightM;
+        public bool RearCouplerOpenFitted = false;
+        public bool RearCouplerOpen = false;
 
         // Used to calculate Carriage Steam Heat Loss
         public float CarHeatLossWpT;      // Transmission loss for the wagon
