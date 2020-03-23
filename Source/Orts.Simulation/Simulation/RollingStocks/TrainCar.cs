@@ -429,6 +429,9 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerForceG; // temporary value used by solver
         public float CouplerForceR; // right hand side value
         public float CouplerForceU; // result
+        public SmoothedData CouplerForceUSmoothed = new SmoothedData(1.5f);
+        public float PreviousCouplerSlackM;
+        public float SmoothedCouplerForceUN;
         public bool CouplerExceedBreakLimit; //true when coupler force is higher then Break limit (set by 2nd parameter in Break statement)
         public bool CouplerOverloaded; //true when coupler force is higher then Proof limit, thus overloaded, but not necessarily broken (set by 1nd parameter in Break statement)
         public bool BrakesStuck; //true when brakes stuck
