@@ -23,13 +23,13 @@ msgstr "Alle Dateien"
 
 #: ../../Menu/ImportExportSaveForm.cs:63
 #, csharp-format
-msgid "Save Pack '{0}' imported successfully."
-msgstr "Save Pack '{0}' erfolgreich importiert."
+msgid "Save Pack '{0}' imported successfully"
+msgstr "Save Pack '{0}' erfolgreich importiert"
 
 #: ../../Menu/ImportExportSaveForm.cs:87
 #, csharp-format
-msgid "Save Pack '{0}' exported successfully."
-msgstr "Save Pack '{0}' erfolgreich exportiert."
+msgid "Save Pack '{0}' exported successfully"
+msgstr "Save Pack '{0}' erfolgreich exportiert"
 
 #: ../../Menu/ImportExportSaveForm.cs:113
 #, csharp-format
