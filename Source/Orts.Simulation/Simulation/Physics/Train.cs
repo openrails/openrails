@@ -4960,7 +4960,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
-                    // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
+                    // If is "air_piped car, and preceeding car is at stop, then set speed to zero.  These type of cars do not have brake force to hold them still
                     if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
@@ -4972,7 +4972,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
-                    // If is "air_piped car, and preceeding is at stop, then set speed to zero.
+                    // If is "air_piped car, and preceeding is at stop, then set speed to zero.  These type of cars do not have brake force to hold them still
                     if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
@@ -4992,7 +4992,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             }
             if (n == 0)
                 return;
-            float PrevMovingCarSpeedMps = 0.0f;
+
             // start cars moving forward when it is stationary, once it is moving it skips this whole section
 
             for (int i = 0; i < Cars.Count; i++)
@@ -5024,8 +5024,9 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 {
                     for (int k = i; k <= j; k++)
                     {
-                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
-                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && PrevMovingCarSpeedMps == 0.0)
+
+                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero. These type of cars do not have brake force to hold them still
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k-1].SpeedMpS == 0.0)
                         {
                             Cars[k].SpeedMpS = 0.0f;
                         }
@@ -5033,7 +5034,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         {
                             Cars[k].SpeedMpS = f / m * elapsedTime;
                         }
-                        PrevMovingCarSpeedMps = Cars[k].SpeedMpS;
+
                     }
                     n -= j - i + 1;
                 }
@@ -5071,8 +5072,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 {
                     for (int k = j; k <= i; k++)
                     {
-                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero.
-                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && PrevMovingCarSpeedMps == 0.0)
+                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero.  These type of cars do not have brake force to hold them still
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k - 1].SpeedMpS == 0.0)
                         {
                             Cars[k].SpeedMpS = 0.0f;
                         }
@@ -5080,7 +5081,6 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         {
                             Cars[k].SpeedMpS = f / m * elapsedTime;
                         }
-                        PrevMovingCarSpeedMps = Cars[k].SpeedMpS;
                     }
                 }
             }
