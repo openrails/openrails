@@ -4679,9 +4679,13 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
                 // Update coupler slack which acts as the  upper limit in slack calculations
                 // For the advanced coupler the slack limit is "dynamic", and depends upon the force applied to the coupler, and hence how far it will extend. 
-                // This gives the effect that coupler extension will decrease down the train as the force decreases.
+                // This gives the effect that coupler extension will decrease down the train as the coupler force decreases. CouplerForce has a small smoothing 
+                // effect to redcuce jerk, especially when starting.
                 // As a coupler is defined in terms of force for one car only, then force/slack calculations need to be done with half the slack (IndividualCouplerSlackM) for calculation puposes.
                 // The calculated slack will then be doubled to compensate.
+                // The location of each car in the train is referenced from the last car in the train. Hence when starting a jerking motion can be present if the last car is still stationary
+                // and the coupler slack increases and decreases along the train. This section of the code attempts to reduce this jerking motion by holding the coupler extension (slack) distance
+                // to a "fixed" value until the last car has commenced moving. This is consistent with real life as the coupler would be extended as each car starts moving.
                 if (car.IsPlayerTrain && Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
                 {
                     // For the Advanced coupler the coupler slack is claculated from the actual coupler force on the coupler. The coupler slack, and maximum slack limit are then set to these values.
@@ -4710,12 +4714,12 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                         CouplerChangeDampingFactor = 0.9f;
                     }
 
-
                     // Default initialisation of limits
                     car.AdvancedCouplerDynamicTensionSlackLimitM = MaxZ3TensionM * AdvancedCouplerDuplicationFactor;
                     car.AdvancedCouplerDynamicCompressionSlackLimitM = MaxZ3CompressionM * AdvancedCouplerDuplicationFactor;
                     bool IsRigidCoupler = car.GetCouplerRigidIndication();
 
+                    // For calculation purposes use only have the combined coupler distance between each car for calculations.
                     float IndividualCouplerSlackM = car.CouplerSlackM / AdvancedCouplerDuplicationFactor;
 
                     if (car.SmoothedCouplerForceUN < 0) // Tension
@@ -4739,7 +4743,6 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
 //                                Trace.TraceInformation("Tension Slack -ve : CarID {0} Force {1} Slack {2} PrevSlack {3} TempDiff {4}", car.CarID, car. , car.CouplerSlackM, car.PreviousCouplerSlackM, TempDiff);
                             }
-
 
                             if (IndividualCouplerSlackM > MaxZ1TensionM && IndividualCouplerSlackM <= MaxZ3TensionM)
                             {
@@ -4841,7 +4844,6 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
                                 if (Math.Abs(car.SmoothedCouplerForceUN) < car.GetCouplerCompressionStiffness1N())
                                 {
-
                                     float SlackDiff = Math.Abs(MaxZ2CompressionM - MaxZ1CompressionM);
                                     float GradStiffness = car.GetCouplerCompressionStiffness1N() / (SlackDiff); // Calculate gradient of line
                                     float ComputedZone2SlackM = (Math.Abs(car.SmoothedCouplerForceUN) / GradStiffness) + Math.Abs(MaxZ1CompressionM); // Current slack distance in this zone of coupler
@@ -4877,7 +4879,6 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                                         car.CouplerSlackM = -1.0f * ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
                                     }
-
 
                                  //   Trace.TraceInformation("Zone 3 Compression - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ2 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM, MaxZ2TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                 }
@@ -4931,10 +4932,10 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         public void UpdateCarSpeeds(float elapsedTime)
         {
             // The train speed is calculated by averaging all the car speeds. The individual car speeds are calculated from the TotalForce acting on each car. 
-            // Typically the MotiveForce or Gravitational forces (though other forces like friction have a small impact as well).
+            // Typically the TotalForce consists of the MotiveForce or Gravitational forces (though other forces like friction have a small impact as well).
             // At stop under normal circumstances the BrakeForce exceeds the TotalForces, and therefore the wagon is "held in a stationary position". 
-            // In the case of "air_piped" wagons which have no BrakeForces acting on them, the car is not held stationary, and each car shows a small speed.
-            // To overcome this any "air_piped cars are forced to zero speed if the preceeding car is stationary.
+            // In the case of "air_piped" wagons which have no BrakeForces acting on them, the car is not held stationary, and each car shows a small speed vibration in either direction.
+            // To overcome this any "air_piped and vacuum_piped" cars are forced to zero speed if the preceeding car is stationary.
             int n = 0;
             float PrevCarSpeedMps = 0.0f;
             float NextCarSpeedMps = 0.0f;
@@ -4960,7 +4961,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
-                    // If is "air_piped car, and preceeding car is at stop, then set speed to zero.  These type of cars do not have brake force to hold them still
+                    // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                     if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
@@ -4972,7 +4973,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
-                    // If is "air_piped car, and preceeding is at stop, then set speed to zero.  These type of cars do not have brake force to hold them still
+                    // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                     if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
@@ -4993,18 +4994,23 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             if (n == 0)
                 return;
 
-            // start cars moving forward when it is stationary, once it is moving it skips this whole section
-
+            //
+            // start a car moving forward when it is stationary, once it is moving this whole section is skipped
+            //
             for (int i = 0; i < Cars.Count; i++)
             {
                 TrainCar car = Cars[i];
                 if (car.SpeedMpS != 0 || car.TotalForceN <= (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN + car.DynamicBrakeForceN))
+                {
+                    // Skip this section to start car if car is already moving, or force not sufficient to start it moving
                     continue;
+                }
                 int j = i;
                 float f = 0;
                 float m = 0;
                 for (; ; )
                 {
+                    // Cycle down the train consist until the first stationary car is found that has its leading couplers starting to pull it. The next car is then started by allowing its speed to increase above 0.
                     f += car.TotalForceN - (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN + car.DynamicBrakeForceN);
                     m += car.MassKG;
                     if (car.IsPlayerTrain && Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
@@ -5018,6 +5024,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                             break;
                     }               
                     j++;
+                    // Increment count to next car.
                     car = Cars[j];
                 }
                 if (f > 0)
@@ -5025,13 +5032,15 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     for (int k = i; k <= j; k++)
                     {
 
-                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero. These type of cars do not have brake force to hold them still
+                        
                         if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k-1].SpeedMpS == 0.0)
                         {
+                            // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                             Cars[k].SpeedMpS = 0.0f;
                         }
                         else
                         {
+                            // Start this stationary car
                             Cars[k].SpeedMpS = f / m * elapsedTime;
                         }
 
@@ -5042,17 +5051,23 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             if (n == 0)
                 return;
 
+            //
             // start cars moving backward when it is stationary, once it is moving it skips this whole section
+            //
             for (int i = Cars.Count - 1; i >= 0; i--)
             {
                 TrainCar car = Cars[i];
                 if (car.SpeedMpS != 0 || car.TotalForceN > (-1.0f * (car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN + car.DynamicBrakeForceN)))
+                {
+                    // Skip this section to start car if car is already moving, or force not sufficient to start it moving
                     continue;
+                }
                 int j = i;
                 float f = 0;
                 float m = 0;
                 for (; ; )
                 {
+                    // Cycle up the train consist until the first stationary car is found that has its leading couplers starting to pull it. The next car is then started by allowing its speed to increase above 0.
                     f += car.TotalForceN + car.FrictionForceN + car.BrakeForceN + car.CurveForceN + car.WindForceN + car.TunnelForceN + car.DynamicBrakeForceN;
                     m += car.MassKG;
                     if (car.IsPlayerTrain && Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler" - operates in three extension zones
@@ -5066,19 +5081,22 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                             break;
                     }
                     j--;
+                    // Decrement the count so that next car is started
                     car = Cars[j];
                 }
                 if (f < 0)
                 {
                     for (int k = j; k <= i; k++)
                     {
-                        // If is "air_piped car, and preceeding car is at stop, then set speed to zero.  These type of cars do not have brake force to hold them still
+                        
                         if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k - 1].SpeedMpS == 0.0)
                         {
+                            // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                             Cars[k].SpeedMpS = 0.0f;
                         }
                         else
                         {
+                            // Start this stationary car
                             Cars[k].SpeedMpS = f / m * elapsedTime;
                         }
                     }
