@@ -3160,7 +3160,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (Coupler.TensionR0Y == 0)
             {
-                Coupler.TensionR0Y = Coupler.R0Y; // if no value present, default value to tension value
+                Coupler.TensionR0Y = GetCouplerTensionR0Y(); // if no value present, default value to tension value
             }
             return Coupler.Rigid ? 0.00001f : Coupler.TensionR0Y;
         }
@@ -3195,7 +3195,7 @@ namespace Orts.Simulation.RollingStocks
                 return base.GetMaximumCouplerCompressionSlack1M();
             if (Coupler.CompressionR0Y == 0)
             {
-                Coupler.CompressionR0Y = Coupler.R0Y; // if no value present, default value to tension value
+                Coupler.CompressionR0Y = GetCouplerCompressionR0Y(); // if no value present, default value to compression value
             }
             return Coupler.Rigid ? 0.00005f : Coupler.CompressionR0Y;
         }
@@ -3304,24 +3304,6 @@ namespace Orts.Simulation.RollingStocks
                 Couplers[0] = coupler;
             if (Couplers.Count > 1)
                 Couplers.RemoveAt(1);
-
-//            if (IsAdvancedCoupler)
-//            {
-//                Trace.TraceInformation("Advanced Coupler - Tension - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} MaxSlackZone3 {5} Stiffness1 {6} Stiffness2 {7} AdvancedCpl {8} CplSlackA {9} CplSlackB {10}  Rigid {11}, Break1N {12} Break2N {13}",
-//                CarID, CouplerSlackM, GetCouplerZeroLengthM(), GetMaximumCouplerTensionSlack1M(), GetMaximumCouplerTensionSlack2M(), GetMaximumCouplerTensionSlack3M(),
-//                GetCouplerTensionStiffness1N(), GetCouplerTensionStiffness2N(), IsAdvancedCoupler, GetCouplerTensionSlackAM(), GetCouplerTensionSlackBM(), GetCouplerRigidIndication(), coupler.Break1N, coupler.Break2N);
-
-//                Trace.TraceInformation("Advanced Coupler - Compression - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} MaxSlackZone3 {5} Stiffness1 {6} Stiffness2 {7} AdvancedCpl {8} CplSlackA {9} CplSlackB {10}  Rigid {11}",
-//                CarID, CouplerSlackM, GetCouplerZeroLengthM(), GetMaximumCouplerCompressionSlack1M(), GetMaximumCouplerCompressionSlack2M(), GetMaximumCouplerCompressionSlack3M(),
-//                GetCouplerCompressionStiffness1N(), GetCouplerCompressionStiffness2N(), IsAdvancedCoupler, GetCouplerCompressionSlackAM(), GetCouplerCompressionSlackBM(), GetCouplerRigidIndication());
-//            }
-//            else
-//            {
-//                Trace.TraceInformation("Simple Coupler - CarID {0} CouplerSlack {1} Zero {2} MaxSlackZone1 {3} MaxSlackZone2 {4} Stiffness {5} Break1N {6} Break2N {7} Rigid {8}",
-//                CarID, CouplerSlackM, GetCouplerZeroLengthM(), GetMaximumSimpleCouplerSlack1M(), GetMaximumSimpleCouplerSlack2M(),
-//                GetSimpleCouplerStiffnessNpM(), coupler.Break1N, coupler.Break2N, GetCouplerRigidIndication());
-//            }
-
 
         }
 
