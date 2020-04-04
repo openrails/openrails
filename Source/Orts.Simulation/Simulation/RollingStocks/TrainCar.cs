@@ -1706,12 +1706,12 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual float GetMaximumSimpleCouplerSlack1M()
         {
-            return 0.005f;
+            return 0.03f;
         }
         
         public virtual float GetMaximumSimpleCouplerSlack2M()
         {
-            return 0.12f;
+            return 0.035f;
         }
 
         public virtual float GetMaximumCouplerForceN()
@@ -1763,12 +1763,12 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual float GetMaximumCouplerTensionSlack1M()
         {
-            return 0.005f;
+            return 0.05f;
         }
          
         public virtual float GetMaximumCouplerTensionSlack2M()
         {
-            return 0.12f;
+            return 0.1f;
         }
  
         public virtual float GetMaximumCouplerTensionSlack3M()
@@ -1778,12 +1778,12 @@ namespace Orts.Simulation.RollingStocks
 
         public virtual float GetMaximumCouplerCompressionSlack1M()
         {
-            return 0.005f;
+            return 0.05f;
         }
 
         public virtual float GetMaximumCouplerCompressionSlack2M()
         {
-            return 0.012f;
+            return 0.1f;
         }
  
         public virtual float GetMaximumCouplerCompressionSlack3M()
