@@ -428,7 +428,7 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerForceG; // temporary value used by solver
         public float CouplerForceR; // right hand side value
         public float CouplerForceU; // result
-        public SmoothedData CouplerForceUSmoothed = new SmoothedData(1.5f);
+        public SmoothedData CouplerForceUSmoothed = new SmoothedData(1.0f);
         public float PreviousCouplerSlackM;
         public float SmoothedCouplerForceUN;
         public bool CouplerExceedBreakLimit; //true when coupler force is higher then Break limit (set by 2nd parameter in Break statement)
