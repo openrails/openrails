@@ -2452,6 +2452,7 @@ namespace Orts.Simulation.RollingStocks
             var isOverTrough = false;
             // start at front of train
             int thisSectionIndex = Train.PresentPosition[0].TCSectionIndex;
+            if (thisSectionIndex < 0) return isOverTrough;
             float thisSectionOffset = Train.PresentPosition[0].TCOffset;
             int thisSectionDirection = Train.PresentPosition[0].TCDirection;
 
