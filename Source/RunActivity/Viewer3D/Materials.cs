@@ -210,7 +210,6 @@ namespace Orts.Viewer3D
         public readonly LightConeShader LightConeShader;
         public readonly LightGlowShader LightGlowShader;
         public readonly ParticleEmitterShader ParticleEmitterShader;
-        public readonly PopupWindowShader PopupWindowShader;
         public readonly PrecipitationShader PrecipitationShader;
         public readonly SceneryShader SceneryShader;
         public readonly ShadowMapShader ShadowMapShader;
@@ -229,7 +228,6 @@ namespace Orts.Viewer3D
             LightConeShader = new LightConeShader(viewer.RenderProcess.GraphicsDevice);
             LightGlowShader = new LightGlowShader(viewer.RenderProcess.GraphicsDevice);
             ParticleEmitterShader = new ParticleEmitterShader(viewer.RenderProcess.GraphicsDevice);
-            PopupWindowShader = new PopupWindowShader(viewer, viewer.RenderProcess.GraphicsDevice);
             PrecipitationShader = new PrecipitationShader(viewer.RenderProcess.GraphicsDevice);
             SceneryShader = new SceneryShader(viewer.RenderProcess.GraphicsDevice);
             var microtexPath = viewer.Simulator.RoutePath + @"\TERRTEX\microtex.ace";
@@ -310,9 +308,6 @@ namespace Orts.Viewer3D
                         break;
                     case "LightGlow":
                         Materials[materialKey] = new LightGlowMaterial(Viewer);
-                        break;
-                    case "PopupWindow":
-                        Materials[materialKey] = new PopupWindowMaterial(Viewer);
                         break;
                     case "ParticleEmitter":
                         Materials[materialKey] = new ParticleEmitterMaterial(Viewer, textureName);
@@ -1109,61 +1104,6 @@ namespace Orts.Viewer3D
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-        }
-    }
-
-    public class PopupWindowMaterial : Material
-    {
-        IEnumerator<EffectPass> ShaderPassesPopupWindow;
-        IEnumerator<EffectPass> ShaderPassesPopupWindowGlass;
-        IEnumerator<EffectPass> ShaderPasses;
-
-        public PopupWindowMaterial(Viewer viewer)
-            : base(viewer, null)
-        {
-        }
-
-        public void SetState(GraphicsDevice graphicsDevice, Texture2D screen)
-        {
-            var shader = Viewer.MaterialManager.PopupWindowShader;
-            shader.CurrentTechnique = screen == null ? shader.Techniques["PopupWindow"] : shader.Techniques["PopupWindowGlass"];
-            if (ShaderPassesPopupWindow == null) ShaderPassesPopupWindow = shader.Techniques["PopupWindow"].Passes.GetEnumerator();
-            if (ShaderPassesPopupWindowGlass == null) ShaderPassesPopupWindowGlass = shader.Techniques["PopupWindowGlass"].Passes.GetEnumerator();
-            ShaderPasses = screen == null ? ShaderPassesPopupWindow : ShaderPassesPopupWindowGlass;
-            // FIXME: MonoGame cannot read backbuffer contents
-            //shader.Screen = screen;
-            shader.GlassColor = Color.Black;
-
-			graphicsDevice.BlendState = BlendState.NonPremultiplied;
-			graphicsDevice.RasterizerState = RasterizerState.CullNone;
-			graphicsDevice.DepthStencilState = DepthStencilState.None;
-        }
-
-        public void Render(GraphicsDevice graphicsDevice, RenderPrimitive renderPrimitive, ref Matrix XNAWorldMatrix, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
-        {
-            var shader = Viewer.MaterialManager.PopupWindowShader;
-
-            Matrix wvp = XNAWorldMatrix * XNAViewMatrix * XNAProjectionMatrix;
-            shader.SetMatrix(XNAWorldMatrix, ref wvp);
-
-            ShaderPasses.Reset();
-            while (ShaderPasses.MoveNext())
-            {
-                ShaderPasses.Current.Apply();
-                renderPrimitive.Draw(graphicsDevice);
-            }
-        }
-
-        public override void ResetState(GraphicsDevice graphicsDevice)
-        {
-			graphicsDevice.BlendState = BlendState.Opaque;
-			graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-			graphicsDevice.DepthStencilState = DepthStencilState.Default;
-        }
-
-        public override bool GetBlending()
-        {
-            return true;
         }
     }
 

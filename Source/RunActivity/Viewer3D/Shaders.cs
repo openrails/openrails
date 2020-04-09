@@ -593,48 +593,6 @@ namespace Orts.Viewer3D
     }
 
     [CallOnThread("Render")]
-    public class PopupWindowShader : Shader
-    {
-        readonly EffectParameter world;
-        readonly EffectParameter worldViewProjection;
-        readonly EffectParameter glassColor;
-        readonly EffectParameter screenSize;
-        readonly EffectParameter screenTexture;
-
-        public Texture2D Screen
-        {
-            set
-            {
-                screenTexture.SetValue(value);
-                if (value == null)
-                    screenSize.SetValue(new Vector2(0, 0));
-                else
-                    screenSize.SetValue(new Vector2(value.Width, value.Height));
-            }
-        }
-
-        public Color GlassColor { set { glassColor.SetValue(new Vector3(value.R / 255f, value.G / 255f, value.B / 255f)); } }
-
-        public void SetMatrix(Matrix w, ref Matrix wvp)
-        {
-            world.SetValue(w);
-            worldViewProjection.SetValue(wvp);
-        }
-
-        public PopupWindowShader(Viewer viewer, GraphicsDevice graphicsDevice)
-            : base(graphicsDevice, "PopupWindow")
-        {
-            world = Parameters["World"];
-            worldViewProjection = Parameters["WorldViewProjection"];
-            glassColor = Parameters["GlassColor"];
-            screenSize = Parameters["ScreenSize"];
-            screenTexture = Parameters["ScreenTexture"];
-            // TODO: This should happen on the loader thread.
-            Parameters["WindowTexture"].SetValue(SharedTextureManager.Get(graphicsDevice, System.IO.Path.Combine(viewer.ContentPath, "Window.png")));
-        }
-    }
-
-    [CallOnThread("Render")]
     public class CabShader : Shader
     {
         readonly EffectParameter nightColorModifier;
