@@ -63,6 +63,7 @@ namespace Orts.Simulation
       , FiringIsManual
       , FireShovelfull
       , CylinderCocks
+      , BlowdownValve
       , CylinderCompound
       , SmallEjector
       , TenderCoal
@@ -196,7 +197,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Firing Rate"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
-                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
+                , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("Blowdown Valve"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 

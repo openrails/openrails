@@ -117,6 +117,7 @@ namespace Orts.Formats.Msts
         WHISTLE,
         REGULATOR,
         CYL_COCKS,
+        ORTS_BLOWDOWN_VALVE,
         BLOWER,
         STEAM_INJ1,
         STEAM_INJ2,

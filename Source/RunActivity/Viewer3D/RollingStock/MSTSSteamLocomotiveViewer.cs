@@ -37,6 +37,7 @@ namespace Orts.Viewer3D.RollingStock
         MSTSSteamLocomotive SteamLocomotive { get { return (MSTSSteamLocomotive)Car; } }
         List<ParticleEmitterViewer> Cylinders = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Cylinders2 = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> Blowdown = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Drainpipe = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Injectors1 = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Injectors2 = new List<ParticleEmitterViewer>();
@@ -62,8 +63,10 @@ namespace Orts.Viewer3D.RollingStock
                     Cylinders2.AddRange(emitter.Value);
                     car.Cylinder2SteamEffects = true;
                 }
-//          Not used in either MSTS or OR
-                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")        // Drainpipe was not used in MSTS, and has no control
+
+                else if (emitter.Key.ToLowerInvariant() == "blowdownfx")  
+                    Blowdown.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "drainpipefx")        // Drainpipe was not used in MSTS, and has no control set up for it
                     Drainpipe.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "injectors1fx")
                     Injectors1.AddRange(emitter.Value);
@@ -149,6 +152,7 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlFiringRateDecrease, new Action[] { () => SteamLocomotive.StopFiringRateDecrease(), () => SteamLocomotive.StartFiringRateDecrease(null) });
             UserInputCommands.Add(UserCommand.ControlFireShovelFull, new Action[] { Noop, () => new FireShovelfullCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCylinderCocks, new Action[] { Noop, () => new ToggleCylinderCocksCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlBlowdownValve, new Action[] { Noop, () => new ToggleBlowdownValveCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCylinderCompound, new Action[] { Noop, () => new ToggleCylinderCompoundCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlSmallEjectorIncrease, new Action[] { () => SteamLocomotive.StopSmallEjectorIncrease(), () => SteamLocomotive.StartSmallEjectorIncrease(null) });
             UserInputCommands.Add(UserCommand.ControlSmallEjectorDecrease, new Action[] { () => SteamLocomotive.StopSmallEjectorDecrease(), () => SteamLocomotive.StartSmallEjectorDecrease(null) });
@@ -220,8 +224,11 @@ namespace Orts.Viewer3D.RollingStock
              foreach (var drawer in Cylinders2)
                 drawer.SetOutput(car.Cylinders2SteamVelocityMpS, car.Cylinders2SteamVolumeM3pS, car.Cylinder2ParticleDurationS);
 
-            // TODO: Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
-             foreach (var drawer in Drainpipe)
+            foreach (var drawer in Blowdown)
+                drawer.SetOutput(car.BlowdownSteamVelocityMpS, car.BlowdownSteamVolumeM3pS, car.BlowdownParticleDurationS);
+
+            // TODO: Drainpipe - Not used in either MSTS or OR - currently disabled by zero values set in SteamLocomotive file
+            foreach (var drawer in Drainpipe)
                 drawer.SetOutput(car.DrainpipeSteamVelocityMpS, car.DrainpipeSteamVolumeM3pS, car.DrainpipeParticleDurationS);
 
              foreach (var drawer in Injectors1)

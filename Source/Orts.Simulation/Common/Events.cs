@@ -53,6 +53,7 @@ namespace Orts.Common
         CrossingOpening,
         CylinderCocksToggle,
         CylinderCompoundToggle,
+        BlowdownValveToggle,
         DamperChange,
         Derail1, // NOTE: Currently not used in Open Rails.
         Derail2, // NOTE: Currently not used in Open Rails.
@@ -294,7 +295,8 @@ namespace Orts.Common
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
                         case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
-                        
+                        case 120: return Event.BlowdownValveToggle;
+
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;

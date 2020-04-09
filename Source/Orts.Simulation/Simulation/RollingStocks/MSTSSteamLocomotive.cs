@@ -106,6 +106,7 @@ namespace Orts.Simulation.RollingStocks
         public bool Injector1IsOn;
         public bool Injector2IsOn;
         public bool CylinderCocksAreOpen;
+        public bool BlowdownValveOpen;
         public bool CylinderCompoundOn;  // Flag to indicate whether compound locomotive is in compound or simple mode of operation - simple = true (ie bypass valve is open)
         bool FiringIsManual;
         bool BlowerIsOn = false;
@@ -533,6 +534,9 @@ namespace Orts.Simulation.RollingStocks
         float RawCalculatedCylinderSteamUsageLBpS;  // Steam usage before superheat or cylinder condensation compensation
         float CalculatedCylinderSteamUsageLBpS; // Steam usage calculated from steam indicator diagram
 
+        float BlowdownSteamUsageLBpS;
+        float BlowdownValveSizeDiaIn2;
+
         const int CylStrokesPerCycle = 2;  // each cylinder does 2 strokes for every wheel rotation, within each stroke
         float CylinderEfficiencyRate = 1.0f; // Factor to vary the output power of the cylinder without changing steam usage - used as a player customisation factor.
         public float CylCockSteamUsageLBpS = 0.0f; // Cylinder Cock Steam Usage if locomotive moving
@@ -663,6 +667,10 @@ namespace Orts.Simulation.RollingStocks
         public float Cylinders2SteamVolumeM3pS;
         public float SafetyValvesSteamVelocityMpS;
         public float SafetyValvesSteamVolumeM3pS;
+
+        public float BlowdownSteamVolumeM3pS;
+        public float BlowdownSteamVelocityMpS;
+        public float BlowdownParticleDurationS = 3.0f;
 
         public float DrainpipeSteamVolumeM3pS;
         public float DrainpipeSteamVelocityMpS;
@@ -1988,6 +1996,12 @@ namespace Orts.Simulation.RollingStocks
             Cylinder1ParticleDurationS = 1.0f;
             Cylinder2ParticleDurationS = 1.0f;
 
+            // Blowdown Steam Effects
+            BlowdownSteamVolumeM3pS = (BlowdownValveOpen && BlowdownSteamUsageLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f);
+            BlowdownSteamVelocityMpS = 350.0f;
+            BlowdownParticleDurationS = 2.0f;
+
+
             // Drainpipe Steam Effects
             DrainpipeSteamVolumeM3pS = 0.0f;  // Turn Drainpipe permanently "off"
             DrainpipeSteamVelocityMpS = 0.0f;
@@ -2683,7 +2697,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Steam Discharge Rates
             // Use Napier formula to calculate steam discharge rate through safety valve, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
-            // Set "valve area" of safety valve, based on reverse enginnered values of steam, valve area is determined by lift and the gap created 
+            // Set "valve area" of safety valve, based on reverse engineered values of steam, valve area is determined by lift and the gap created 
             const float SafetyValveDischargeFactor = 70.0f;
             if (SafetyValveSizeIn == 2.5f)
             {
@@ -2885,6 +2899,28 @@ namespace Orts.Simulation.RollingStocks
 
                 #endregion
 
+            }
+
+            // Update details for blowdown vlave
+            if (BlowdownValveOpen)
+            {
+                // Use Napier formula to calculate steam discharge rate through safety valve, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
+                // 
+                const float BlowdownValveDischargeFactor = 70.0f;
+
+                // Find area of pipe - assume 1.5" dia pressure pipe
+                BlowdownValveSizeDiaIn2 = (float)Math.PI * (1.5f / 2.0f) * (1.5f / 2.0f);
+
+                BlowdownSteamUsageLBpS = (BlowdownValveSizeDiaIn2 * (MaxBoilerPressurePSI + OneAtmospherePSI)) / BlowdownValveDischargeFactor;
+
+                BoilerMassLB -= elapsedClockSeconds * BlowdownSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by blower  
+                BoilerHeatBTU -= elapsedClockSeconds * BlowdownSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by blower
+                BoilerHeatOutBTUpS += BlowdownSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by blower
+                TotalSteamUsageLBpS += BlowdownSteamUsageLBpS;
+            }
+            else
+            {
+                BlowdownSteamUsageLBpS = 0; // Turn off Hud view
             }
 
             // Adjust blower impacts on heat and boiler mass
@@ -5655,6 +5691,10 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.CYL_COCKS:
                     data = CylinderCocksAreOpen ? 1 : 0;
                     break;
+
+                case CABViewControlTypes.ORTS_BLOWDOWN_VALVE:
+                    data = BlowdownValveOpen ? 1 : 0;
+                    break;
                 case CABViewControlTypes.ORTS_CYL_COMP:
                     data = CylinderCompoundOn ? 1 : 0;
                     break;
@@ -5827,7 +5867,7 @@ namespace Orts.Simulation.RollingStocks
             if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
             {
                 // Display air compressor information
-                status.AppendFormat("{0}\t{1}\t{2}/{19}\t{3}\t{4}/{19}\t{5}\t{6}/{19}\t{7}\t{8}/{19}\t{9}\t{10}/{19}\t{11}\t{12}/{19}\t{13}\t{14}/{19}\t{15}\t{16}/{19} ({17}x{18:N1}\")\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{21}\t{3}\t{4}/{21}\t{5}\t{6}/{21}\t{7}\t{8}/{21}\t{9}\t{10}/{21}\t{11}\t{12}/{21}\t{13}\t{14}/{21}\t{15}\t{16}/{21}\t{17}\t{18}/{21} ({19}x{20:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
@@ -5843,6 +5883,8 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Stoker"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("BlowD"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
                     NumSafetyValves,
@@ -5852,7 +5894,7 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // Display steam ejector information instead of air compressor
-                status.AppendFormat("{0}\t{1}\t{2}/{19}\t{3}\t{4}/{19}\t{5}\t{6}/{19}\t{7}\t{8}/{19}\t{9}\t{10}/{19}\t{11}\t{12}/{19}\t{13}\t{14}/{19}\t{15}\t{16}/{19} ({17}x{18:N1}\")\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{21}\t{3}\t{4}/{21}\t{5}\t{6}/{21}\t{7}\t{8}/{21}\t{9}\t{10}/{21}\t{11}\t{12}/{21}\t{13}\t{14}/{21}\t{15}\t{16}/{21}\t{17}\t{18}/{21} ({19}x{20:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
@@ -5868,6 +5910,8 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("Stoker"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("BlowD"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
                     Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
                     NumSafetyValves,
@@ -7088,6 +7132,15 @@ public void SteamStartGearBoxIncrease()
 
             if (IsPlayerTrain)
                 Simulator.Confirmer.Confirm(CabControl.CylinderCocks, CylinderCocksAreOpen ? CabSetting.On : CabSetting.Off);
+        }
+
+        public void ToggleBlowdownValve()
+        {
+            BlowdownValveOpen = !BlowdownValveOpen;
+            SignalEvent(Event.BlowdownValveToggle);
+
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.BlowdownValve, BlowdownValveOpen ? CabSetting.On : CabSetting.Off);
         }
 
         public void ToggleCylinderCompound()

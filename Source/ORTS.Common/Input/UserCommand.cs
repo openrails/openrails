@@ -177,6 +177,7 @@
         [GetString("Control Firing Rate Decrease")] ControlFiringRateDecrease,
         [GetString("Control Fire Shovel Full")] ControlFireShovelFull,
         [GetString("Control Cylinder Cocks")] ControlCylinderCocks,
+        [GetString("Control Blowdown Valve")] ControlBlowdownValve,
         [GetString("Control Small Ejector Increase")] ControlSmallEjectorIncrease,
         [GetString("Control Small Ejector Decrease")] ControlSmallEjectorDecrease,
         [GetString("Control Cylinder Compound")] ControlCylinderCompound,
