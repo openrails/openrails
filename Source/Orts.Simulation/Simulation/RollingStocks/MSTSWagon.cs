@@ -1481,7 +1481,7 @@ namespace Orts.Simulation.RollingStocks
                 // Test to see if coupler forces have exceeded the Proof (or safety limit). Exceeding this limit will provide an indication only
                 if (IsPlayerTrain)
                 {
-                    if (-CouplerForceU > GetCouplerBreak1N())  // break couplers if forces exceeded
+                    if (Math.Abs(CouplerForceU) > GetCouplerBreak1N() || Math.Abs(ImpulseCouplerForceUN) > GetCouplerBreak1N())  // break couplers if either static or impulse forces exceeded
                     {
                         CouplerOverloaded = true;
                     }
@@ -1498,9 +1498,19 @@ namespace Orts.Simulation.RollingStocks
                 // Test to see if coupler forces have been exceeded, and coupler has broken. Exceeding this limit will break the coupler
                 if (IsPlayerTrain) // Only break couplers on player trains
                 {
-                    if (-CouplerForceU > GetCouplerBreak2N() )  // break couplers if forces exceeded
+                    if (Math.Abs(CouplerForceU) > GetCouplerBreak2N() || Math.Abs(ImpulseCouplerForceUN) > GetCouplerBreak2N())  // break couplers if either static or impulse forces exceeded
                     {
                         CouplerExceedBreakLimit = true;
+
+                        if (Math.Abs(CouplerForceU) > GetCouplerBreak2N())
+                        {
+                            Trace.TraceInformation("Coupler on CarID {0} has broken due to excessive static coupler force {1}", CarID, CouplerForceU);
+
+                        }
+                        else if (Math.Abs(ImpulseCouplerForceUN) > GetCouplerBreak2N())
+                        {
+                            Trace.TraceInformation("Coupler on CarID {0} has broken due to excessive impulse coupler force {1}", CarID, ImpulseCouplerForceUN);
+                        }
                     }
                     else
                     {

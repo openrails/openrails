@@ -429,6 +429,7 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerForceG; // temporary value used by solver
         public float CouplerForceR; // right hand side value
         public float CouplerForceU; // result
+        public float ImpulseCouplerForceUN;
         public SmoothedData CouplerForceUSmoothed = new SmoothedData(1.0f);
         public float PreviousCouplerSlackM;
         public float SmoothedCouplerForceUN;

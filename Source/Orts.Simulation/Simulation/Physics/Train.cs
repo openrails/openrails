@@ -4347,6 +4347,10 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             for (int i = 0; i < Cars.Count - 1; i++)
             {
                 TrainCar car = Cars[i];
+
+                // save impulse coupler force as it will be overwritten by "static" coupler force
+                car.ImpulseCouplerForceUN = car.CouplerForceU;
+
                 // This section seems to be required to get car moving
                 if (car.IsPlayerTrain && Simulator.UseAdvancedAdhesion && car.IsAdvancedCoupler) // "Advanced coupler"
                 {
