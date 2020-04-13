@@ -105,6 +105,7 @@ namespace Orts.Common
         WaterInjector1On,
         WaterInjector2Off,
         WaterInjector2On,
+        BlowdownValveToggle,
         SteamHeatChange, 
         SteamPulse1,
         SteamPulse2,
@@ -295,7 +296,8 @@ namespace Orts.Common
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
                         case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
-                        
+
+                        case 120: return Event.BlowdownValveToggle;
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;
