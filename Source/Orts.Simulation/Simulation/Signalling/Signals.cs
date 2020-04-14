@@ -8408,6 +8408,8 @@ namespace Orts.Simulation.Signalling
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
 
+        public bool CallOnEnabled = false;
+
         public bool enabled
         {
             get
@@ -12116,6 +12118,7 @@ namespace Orts.Simulation.Signalling
 
         public bool TrainHasCallOn(bool allowOnNonePlatform, bool allowAdvancedSignal, string dumpfile)
         {
+            CallOnEnabled = true;
             // no train approaching
             if (enabledTrain == null)
             {

@@ -3534,6 +3534,12 @@ namespace Orts.MultiPlayer
                         sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
                     }
                     break;
+                case 4:
+                    if (signal.enabledTrain != null)
+                    {
+                        signal.enabledTrain.Train.AllowedCallOnSignal = signal;
+                    }
+                    break;
             }
         }
 
