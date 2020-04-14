@@ -3535,10 +3535,7 @@ namespace Orts.MultiPlayer
                     }
                     break;
                 case 4:
-                    if (signal.enabledTrain != null)
-                    {
-                        signal.enabledTrain.Train.AllowedCallOnSignal = signal;
-                    }
+                    signal.SetManualCallOn(true);
                     break;
             }
         }
