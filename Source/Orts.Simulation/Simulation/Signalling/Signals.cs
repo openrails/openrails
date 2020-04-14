@@ -8358,6 +8358,8 @@ namespace Orts.Simulation.Signalling
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
 
+        public bool CallOnEnabled = false;
+
         public bool enabled
         {
             get
