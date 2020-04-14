@@ -2485,7 +2485,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
 
-                if (AllowedCallOnSignal == signalObject)
+                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
                     AllowedCallOnSignal = null;
             }
             UpdateSectionStateManual();                                                           // update track occupation          //
@@ -2515,7 +2515,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
 
-                if (AllowedCallOnSignal == signalObject)
+                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
                     AllowedCallOnSignal = null;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
@@ -7071,7 +7071,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     signalObject.holdState = SignalObject.HoldState.None;
                 }
 
-                if (AllowedCallOnSignal == signalObject)
+                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
                     AllowedCallOnSignal = null;
 
                 signalObject.resetSignalEnabled();
@@ -7572,7 +7572,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
                     thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
 
-                if (AllowedCallOnSignal == thisSignal)
+                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
                     AllowedCallOnSignal = null;
 
                 thisSignal.resetSignalEnabled();
