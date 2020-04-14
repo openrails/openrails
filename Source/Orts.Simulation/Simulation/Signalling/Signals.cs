@@ -12672,9 +12672,14 @@ namespace Orts.Simulation.Signalling
             if (enabledTrain != null)
             {
                 if (state && CallOnEnabled)
+                {
                     enabledTrain.Train.AllowedCallOnSignal = this;
+                    clearHoldSignalDispatcher();
+                }
                 else if (enabledTrain.Train.AllowedCallOnSignal == this)
+                {
                     enabledTrain.Train.AllowedCallOnSignal = null;
+                }
             }
         }
     }  // SignalObject

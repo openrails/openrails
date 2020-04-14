@@ -2777,8 +2777,7 @@ namespace Orts.Simulation.Physics
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
 
-                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
-                    AllowedCallOnSignal = null;
+                AllowedCallOnSignal = null;
             }
             UpdateSectionStateManual();                                                           // update track occupation          //
             UpdateManualMode(SignalObjIndex);                                                     // update route clearance           //
@@ -2807,8 +2806,7 @@ namespace Orts.Simulation.Physics
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
 
-                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
-                    AllowedCallOnSignal = null;
+                AllowedCallOnSignal = null;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
@@ -7302,8 +7300,7 @@ namespace Orts.Simulation.Physics
                     signalObject.holdState = SignalObject.HoldState.None;
                 }
 
-                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
-                    AllowedCallOnSignal = null;
+                AllowedCallOnSignal = null;
 
                 signalObject.resetSignalEnabled();
             }
@@ -7803,8 +7800,7 @@ namespace Orts.Simulation.Physics
                 if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
                     thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
 
-                if (AllowedCallOnSignal != NextSignalObject[0] && AllowedCallOnSignal != NextSignalObject[1])
-                    AllowedCallOnSignal = null;
+                AllowedCallOnSignal = null;
 
                 thisSignal.resetSignalEnabled();
             }
