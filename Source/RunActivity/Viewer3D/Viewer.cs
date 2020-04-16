@@ -225,7 +225,7 @@ namespace Orts.Viewer3D
         public bool DontLoadDayTextures; // Checkbox set and time of day allows not to load textures
         public bool NightTexturesNotLoaded; // At least one night texture hasn't been loaded
         public bool DayTexturesNotLoaded; // At least one day texture hasn't been loaded
-        public long LoadMemoryThreshold; // Above this threshold loader doesn't bulk load day or night textures
+        public ulong LoadMemoryThreshold; // Above this threshold loader doesn't bulk load day or night textures
         public bool tryLoadingNightTextures = false;
         public bool tryLoadingDayTextures = false;
 
@@ -414,7 +414,7 @@ namespace Orts.Viewer3D
             CabXOffsetPixels = inf.ReadInt32();
             NightTexturesNotLoaded = inf.ReadBoolean();
             DayTexturesNotLoaded = inf.ReadBoolean();
-            LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             tryLoadingNightTextures = true;
             tryLoadingDayTextures = true;
 
@@ -514,7 +514,7 @@ namespace Orts.Viewer3D
             if (Simulator.Settings.ConditionalLoadOfDayOrNightTextures) // We need to compute sun height only in this case
             {
             MaterialManager.LoadPrep();
-            LoadMemoryThreshold = (long)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
+            LoadMemoryThreshold = (ulong)HUDWindow.GetVirtualAddressLimit() - 512 * 1024 * 1024;
             }
             Load();
 
