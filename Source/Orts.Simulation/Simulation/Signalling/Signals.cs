@@ -11688,30 +11688,46 @@ namespace Orts.Simulation.Signalling
                 return (true);
             }
 
-            // check if distance is valid
-
-            if (!enabledTrain.Train.DistanceToSignal.HasValue)
+            bool found = false;
+            float distance = 0;
+            Train.TCSubpathRoute routePath = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];
+            int actRouteIndex = routePath == null ? -1 : routePath.GetRouteIndex(enabledTrain.Train.PresentPosition[0].TCSectionIndex, 0);
+            if (actRouteIndex >= 0)
             {
-                if (!String.IsNullOrEmpty(dumpfile))
+                float offset = 0;
+                if (enabledTrain.TrainRouteDirectionIndex == 0)
+                    offset = enabledTrain.Train.PresentPosition[0].TCOffset;
+                else
+                    offset = signalRef.TrackCircuitList[enabledTrain.Train.PresentPosition[1].TCSectionIndex].Length - enabledTrain.Train.PresentPosition[1].TCOffset;
+                while (!found && distance < reqPositionM)
                 {
-                    var sob = new StringBuilder();
-                    sob.AppendFormat("APPROACH CONTROL : Train {0} has no valid distance to signal, clear not allowed \n", enabledTrain.Train.Number);
-                    File.AppendAllText(dumpfile, sob.ToString());
+                    Train.TCRouteElement thisElement = routePath[actRouteIndex];
+                    TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                    distance += thisSection.Length - offset;
+                    if (thisSection.EndSignals[thisElement.Direction] == this)
+                    {
+                        found = true;
+                    }
+                    else
+                    {
+                        offset = 0;
+                        int setSection = thisSection.ActivePins[thisElement.OutPin[0], thisElement.OutPin[1]].Link;
+                        actRouteIndex++;
+                        if (actRouteIndex >= routePath.Count || setSection < 0)
+                            break;
+                    }
                 }
-
-                ApproachControlSet = true;
-                return (false);
             }
 
             // test distance
 
-            if (Convert.ToInt32(enabledTrain.Train.DistanceToSignal.Value) < reqPositionM)
+            if (found && Convert.ToInt32(distance) < reqPositionM)
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
                     var sob = new StringBuilder();
                     sob.AppendFormat("APPROACH CONTROL : Train {0} at distance {1} (required {2}), clear allowed \n",
-                        enabledTrain.Train.Number, enabledTrain.Train.DistanceToSignal.Value, reqPositionM);
+                        enabledTrain.Train.Number, distance, reqPositionM);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
 
