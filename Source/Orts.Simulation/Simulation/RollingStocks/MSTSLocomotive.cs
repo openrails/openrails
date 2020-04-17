@@ -186,10 +186,12 @@ namespace Orts.Simulation.RollingStocks
         // Carriage Steam Heating Parameters
         public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
+        public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
         public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
         public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
         public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
+        public float CalculatedCarHeaterSteamUsageLBpS;
 
         // Adhesion Debug
         bool DebugSpeedReached;
@@ -986,6 +988,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(PowerReduction);
             outf.Write(ScoopIsBroken);
             outf.Write(IsWaterScoopDown);
+            outf.Write(CalculatedCarHeaterSteamUsageLBpS);
 
             base.Save(outf);
         }
@@ -1021,6 +1024,7 @@ namespace Orts.Simulation.RollingStocks
             PowerReduction = inf.ReadSingle();
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
+            CalculatedCarHeaterSteamUsageLBpS = inf.ReadSingle();
 
             AdhesionFilter.Reset(0.5f);
 
@@ -1115,6 +1119,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
+            SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
 
             // Check to see if water scoop elements have been configured
             if (WaterScoopFillElevationM == 0)
