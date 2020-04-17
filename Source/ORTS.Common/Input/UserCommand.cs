@@ -165,7 +165,6 @@
         [GetString("Control Injector 2 Increase")] ControlInjector2Increase,
         [GetString("Control Injector 2 Decrease")] ControlInjector2Decrease,
         [GetString("Control Injector 2")] ControlInjector2,
-        [GetString("Control Blowdown Valve")] ControlBlowdownValve,
         [GetString("Control Blower Increase")] ControlBlowerIncrease,
         [GetString("Control Blower Decrease")] ControlBlowerDecrease,
         [GetString("Control Steam Heat Increase")] ControlSteamHeatIncrease,
