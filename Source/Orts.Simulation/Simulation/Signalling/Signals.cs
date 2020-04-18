@@ -11690,9 +11690,9 @@ namespace Orts.Simulation.Signalling
 
             bool found = false;
             float distance = 0;
-            int direction = enabledTrain.TrainRouteDirectionIndex;
-            Train.TCSubpathRoute routePath = enabledTrain.Train.ValidRoute[direction];
-            int actRouteIndex = routePath == null ? -1 : routePath.GetRouteIndex(enabledTrain.Train.PresentPosition[direction].TCSectionIndex, 0);
+            int actDirection = enabledTrain.TrainRouteDirectionIndex;
+            Train.TCSubpathRoute routePath = enabledTrain.Train.ValidRoute[actDirection];
+            int actRouteIndex = routePath == null ? -1 : routePath.GetRouteIndex(enabledTrain.Train.PresentPosition[actDirection].TCSectionIndex, 0);
             if (actRouteIndex >= 0)
             {
                 float offset = 0;
