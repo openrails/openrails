@@ -169,7 +169,10 @@ namespace Orts.Common
         SecondEnginePowerOn,
 
         HotBoxBearingOn,
-        HotBoxBearingOff
+        HotBoxBearingOff,
+
+        BoilerBlowdownOn,
+        BoilerBlowdownOff
     }
 
     public static class Events
@@ -352,6 +355,9 @@ namespace Orts.Common
 
                         case 173: return Event.HotBoxBearingOn;
                         case 174: return Event.HotBoxBearingOff;
+
+                        case 175: return Event.BoilerBlowdownOn;
+                        case 176: return Event.BoilerBlowdownOff;
                         //
 
                         default: return 0;
