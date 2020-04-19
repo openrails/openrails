@@ -8358,8 +8358,6 @@ namespace Orts.Simulation.Signalling
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
 
-        public bool CallOnEnabled = false;      // set if signal script file uses CallOn functionality
-
         public bool enabled
         {
             get
@@ -12514,8 +12512,6 @@ namespace Orts.Simulation.Signalling
             bool[] returnValue = new bool[2] { false, false };
             MstsSignalAspect thisAspect = this_sig_lr(MstsSignalFunction.NORMAL);
 
-            SetManualCallOn(false);
-
             // signal not enabled - set lock, reset if cleared (auto signal can clear without enabling)
 
             if (enabledTrain == null || enabledTrain.Train == null)
@@ -12581,25 +12577,6 @@ namespace Orts.Simulation.Signalling
             holdState = HoldState.None;
         }
 
-        //================================================================================================//
-        /// <summary>
-        /// Set call on manually from dispatcher
-        /// </summary>
-        public void SetManualCallOn(bool state)
-        {
-            if (enabledTrain != null)
-            {
-                if (state && CallOnEnabled)
-                {
-                    enabledTrain.Train.AllowedCallOnSignal = this;
-                    clearHoldSignalDispatcher();
-                }
-                else if (enabledTrain.Train.AllowedCallOnSignal == this)
-                {
-                    enabledTrain.Train.AllowedCallOnSignal = null;
-                }
-            }
-        }
     }  // SignalObject
 
 
