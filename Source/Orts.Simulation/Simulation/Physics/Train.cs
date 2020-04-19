@@ -236,6 +236,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         public int IndexNextSignal = -1;                 // Index in SignalObjectItems for next signal
         public int IndexNextSpeedlimit = -1;             // Index in SignalObjectItems for next speedpost
         public SignalObject[] NextSignalObject = new SignalObject[2];  // direct reference to next signal
+        public SignalObject AllowedCallOnSignal;         // Signal for which train has call on allowed by dispatcher
 
         public float TrainMaxSpeedMpS;                   // Max speed as set by route (default value)
         public float AllowedMaxSpeedMpS;                 // Max speed as allowed
@@ -2483,6 +2484,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
+
+                AllowedCallOnSignal = null;
             }
             UpdateSectionStateManual();                                                           // update track occupation          //
             UpdateManualMode(SignalObjIndex);                                                     // update route clearance           //
@@ -2510,6 +2513,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 // system will take back control of the signal
                 if (signalObject.holdState == SignalObject.HoldState.ManualPass ||
                     signalObject.holdState == SignalObject.HoldState.ManualApproach) signalObject.holdState = SignalObject.HoldState.None;
+
+                AllowedCallOnSignal = null;
             }
             UpdateSectionStateExplorer();                                                         // update track occupation          //
             UpdateExplorerMode(SignalObjIndex);                                                   // update route clearance           //
@@ -7064,6 +7069,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                     signalObject.holdState = SignalObject.HoldState.None;
                 }
 
+                AllowedCallOnSignal = null;
+
                 signalObject.resetSignalEnabled();
             }
         }
@@ -7215,6 +7222,9 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
         public virtual bool TestCallOn(SignalObject thisSignal, bool allowOnNonePlatform, TCSubpathRoute thisRoute, string dumpfile)
         {
+            if (AllowedCallOnSignal == thisSignal)
+                return true;
+
             bool intoPlatform = false;
 
             foreach (Train.TCRouteElement routeElement in thisSignal.signalRoute)
@@ -7558,6 +7568,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
                 //the following is added by JTang, passing a hold signal, will take back control by the system
                 if (thisSignal.holdState == SignalObject.HoldState.ManualPass ||
                     thisSignal.holdState == SignalObject.HoldState.ManualApproach) thisSignal.holdState = SignalObject.HoldState.None;
+
+                AllowedCallOnSignal = null;
 
                 thisSignal.resetSignalEnabled();
             }
