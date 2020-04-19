@@ -121,6 +121,7 @@ namespace Orts.Formats.Msts
         BLOWER,
         STEAM_INJ1,
         STEAM_INJ2,
+        ORTS_BLOWDOWN_VALVE,
         DAMPERS_FRONT,
         DAMPERS_BACK,
         STEAM_HEAT,
