@@ -158,9 +158,6 @@ namespace Orts.Simulation.RollingStocks
 
         public bool HasTenderCoupled = true;
 
-        // Carriage Steam Heating Parameters
-        float CalculatedCarHeaterSteamUsageLBpS;  //
-
         float BlowdownSteamUsageLBpS;
         float BlowdownValveSizeDiaIn2;
 
@@ -285,7 +282,6 @@ namespace Orts.Simulation.RollingStocks
         float MaxInjectorFlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon maximum boiler pressure
         Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
-        Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         Interpolator WaterDensityPSItoLBpFT3;   // water density given pressure
         Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
         Interpolator WaterHeatPSItoBTUpLB;      // total heat in water given pressure
@@ -1062,7 +1058,6 @@ namespace Orts.Simulation.RollingStocks
 
             #region Initialise additional steam properties
 
-            SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
             WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
             SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
             WaterHeatPSItoBTUpLB = SteamTable.WaterHeatInterpolatorPSItoBTUpLB();
@@ -3071,14 +3066,16 @@ namespace Orts.Simulation.RollingStocks
             float TemperatureDifferentialF = 0;
             
             TemperatureDifferentialF = C.ToF(C.FromK(BoilerWaterTempK) - CarOutsideTempC);
-            
+
             // As locomotive moves, the Kc value will increase as more heat loss occurs with greater speed.
             // This section calculates the variation of Kc with speed, and is based upon the information provided here - https://www.engineeringtoolbox.com/convective-heat-transfer-d_430.html
             // In short Kc = 10.45 - v + 10 v1/2 - where v = speed in m/s. This formula flattens out above 20m/s, so this will be used as the maximum figure, and a fraction determined from it.
             // It is only valid at lower speeds, ie 2m/s (5mph) so there is no change in Kc below this value
-            
-            float KcMinSpeed = 10.45f - 2.0f + (10.0f * (float)Math.Pow(2.0f, 0.5)); // Minimum speed of 2m/s
-            float KcMaxSpeed = 10.45f - 20.0f + (10.0f * (float)Math.Pow(20.0f, 0.5)); // Maximum speed of 20m/s
+
+            float LowSpeedMpS = 2.0f;
+            float HighSpeedMpS = 20.0f;
+            float KcMinSpeed = 10.45f - LowSpeedMpS + (10.0f * (float)Math.Pow(LowSpeedMpS, 0.5)); // Minimum speed of 2m/s
+            float KcMaxSpeed = 10.45f - HighSpeedMpS + (10.0f * (float)Math.Pow(HighSpeedMpS, 0.5)); // Maximum speed of 20m/s
             float KcActualSpeed = 10.45f - absSpeedMpS + (10.0f * (float)Math.Pow(absSpeedMpS, 0.5));
             float KcMovementFraction = 0;
 
