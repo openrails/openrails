@@ -12316,8 +12316,7 @@ namespace Orts.Simulation.Signalling
         public MstsBlockState RouteClearedToSignal(int req_signalid, bool allowCallOn, string dumpfile)
         {
             MstsBlockState routeState = MstsBlockState.JN_OBSTRUCTED;
-            Train.TCSubpathRoute trainRoute = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];
-            if (enabledTrain != null && req_signalid >= 0 && req_signalid < signalRef.SignalObjects.Length && trainRoute != null)
+            if (enabledTrain != null && enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex] != null && req_signalid >= 0 && req_signalid < signalRef.SignalObjects.Length)
             {
                 SignalObject otherSignal = signalRef.SignalObjects[req_signalid];
 
@@ -12329,6 +12328,8 @@ namespace Orts.Simulation.Signalling
                     sob.AppendFormat("ROUTE_CLEARED_TO_SIGNAL : signal checked : {0} , section [ahead] found : {1} \n", req_signalid, reqSection.Index);
                     File.AppendAllText(dumpfile, sob.ToString());
                 }
+
+                Train.TCSubpathRoute trainRoute = enabledTrain.Train.ValidRoute[enabledTrain.TrainRouteDirectionIndex];
 
                 int thisRouteIndex = trainRoute.GetRouteIndex(isSignalNormal() ? TCNextTC : TCReference, 0);
                 int otherRouteIndex = trainRoute.GetRouteIndex(otherSignal.TCReference, thisRouteIndex);
