@@ -156,6 +156,10 @@ namespace Orts.Viewer3D
                 // sometimes when calculated as two values and subtracted. Presumed cause is floating point.
                 var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length();
                 var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length();
+                if (x.Material is WaterMaterial && y.Material is WaterMaterial && Math.Abs(yd - xd) < 1.0 && x.XNAMatrix.Translation.Y < XNAViewerPos.Y)
+                {
+                    return Math.Sign(x.XNAMatrix.Translation.Y - y.XNAMatrix.Translation.Y);
+                }
                 // If the absolute difference is >= 1mm use that; otherwise, they're effectively in the same
                 // place so fall back to the SortIndex.
                 if (Math.Abs(yd - xd) >= 0.001)
