@@ -172,6 +172,7 @@ namespace Orts.Formats.Msts
         ORTS_HOURDIAL,
         ORTS_MINUTEDIAL,
         ORTS_SECONDDIAL,
+		ORTS_SIGNED_TRACTION_BRAKING
 
         // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
         EXTERNALWIPERS,
