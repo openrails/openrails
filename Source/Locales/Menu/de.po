@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Menu\n"
 "POT-Creation-Date: 2020-03-31 23:05:52+0200\n"
-"PO-Revision-Date: 2020-04-01 01:40+0200\n"
+"PO-Revision-Date: 2020-04-19 00:32+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -43,17 +43,14 @@ msgid "Open Save Packs folder"
 msgstr "Spielstand-Ordner öffnen"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:49
-#, fuzzy
 msgid "Export to Save Pack"
 msgstr "Spielstand exportieren"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:59
-#, fuzzy
 msgid "Import Save Pack"
 msgstr "Spielstand Importieren"
 
 #: ../../Menu/ImportExportSaveForm.Designer.cs:93
-#, fuzzy
 msgid "Import and export saved games"
 msgstr "Gespeicherte Spielstände importieren und exportieren"
 
@@ -381,7 +378,6 @@ msgid "Season:"
 msgstr "Jahreszeit:"
 
 #: ../../Menu/MainForm.Designer.cs:736
-#, fuzzy
 msgid "Weather File:"
 msgstr "Wetter aus Datei:"
 
@@ -665,7 +661,6 @@ msgid "OK"
 msgstr "OK"
 
 #: ../../Menu/Options.Designer.cs:273
-#, fuzzy
 msgid "Brake pipe charging rate (PSI/s)"
 msgstr "Auffüllgeschwindigkeit Bremsleitung (PSI/s)"
 
@@ -682,7 +677,6 @@ msgid "Alerter in cab"
 msgstr "SIFA im Führerstand"
 
 #: ../../Menu/Options.Designer.cs:314
-#, fuzzy
 msgid "Control confirmations"
 msgstr "Bestätigungen für Steuerbefehle"
 
@@ -798,7 +792,6 @@ msgid "Viewing vertical FOV"
 msgstr "Vertikaler Blickwinkel"
 
 #: ../../Menu/Options.Designer.cs:866
-#, fuzzy
 msgid "% cab 2D stretch"
 msgstr "% 2D-Streckung für Führerstandsansicht"
 
@@ -1058,7 +1051,6 @@ msgid "MSTS environments"
 msgstr "MSTS-Umgebungen verwenden"
 
 #: ../../Menu/Options.Designer.cs:2048
-#, fuzzy
 msgid "Location-linked passing path processing"
 msgstr "Ortsgebundene Ausweichfahrstraßen verwenden"
 
@@ -1071,7 +1063,6 @@ msgid "Automatically tune settings to keep performance level"
 msgstr "Einstellungen automatisch auf Ziel-FPS abstimmen"
 
 #: ../../Menu/Options.Designer.cs:2108
-#, fuzzy
 msgid "Extend object maximum viewing distance to horizon"
 msgstr "Maximale Sichtbarkeit aller Objekte bis Horizont erweitern"
 
@@ -1153,7 +1144,6 @@ msgid "Check for incorrect key assignments."
 msgstr "Auf mehrfache Tastenbelegungen überprüfen."
 
 #: ../../Menu/Options.Designer.cs:1693 ../../Menu/Options.Designer.cs:1737
-#, fuzzy
 msgid ""
 "0: no randomization, 1: moderate, 2: significant; 3: high (may be "
 "unrealistic)"
@@ -1277,7 +1267,6 @@ msgid "Delete all invalid saves"
 msgstr "Ungültige Spielstände löschen"
 
 #: ../../Menu/ResumeForm.Designer.cs:204
-#, fuzzy
 msgid "Import/ export"
 msgstr ""
 "Importieren\n"
@@ -1328,7 +1317,6 @@ msgid "Valid"
 msgstr "Gültig"
 
 #: ../../Menu/ResumeForm.Designer.cs:433
-#, fuzzy
 msgid "Eval"
 msgstr "Auswtg"
 
