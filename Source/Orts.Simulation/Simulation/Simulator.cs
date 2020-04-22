@@ -1943,7 +1943,7 @@ namespace Orts.Simulation
                 if ((PlayerLocomotive.Train as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.SUSPENDED)
                 {
                     PlayerLocomotive.Train.Reinitialize();
-                    (PlayerLocomotive.Train as AITrain).MovementState = PlayerLocomotive.Train.SpeedMpS == 0 ?
+                    (PlayerLocomotive.Train as AITrain).MovementState = Math.Abs(PlayerLocomotive.Train.SpeedMpS) <= 0.1f ?
                         AITrain.AI_MOVEMENT_STATE.INIT : AITrain.AI_MOVEMENT_STATE.BRAKING;
                 }
                 (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();
