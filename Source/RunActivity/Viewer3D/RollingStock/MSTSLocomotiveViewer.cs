@@ -1483,13 +1483,10 @@ namespace Orts.Viewer3D.RollingStock
             base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
-            Position.X = (float)Viewer.CabWidthPixels / 640 * ((float)Control.PositionX + Origin.X * Scale) - Viewer.CabXOffsetPixels;
-            Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y * Scale) + Viewer.CabYOffsetPixels;
-            ScaleToScreen = (float)Viewer.CabWidthPixels / 640 * Scale;
-
             // Cab view position adjusted to allow for letterboxing.
-            Position.X += Viewer.CabXLetterboxPixels;
-            Position.Y += Viewer.CabYLetterboxPixels;
+            Position.X = (float)Viewer.CabWidthPixels / 640 * ((float)Control.PositionX + Origin.X * Scale) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y * Scale) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
+            ScaleToScreen = (float)Viewer.CabWidthPixels / 640 * Scale;
 
             var rangeFraction = GetRangeFraction();
             var direction = ControlDial.Direction == 0 ? 1 : -1;
@@ -1598,41 +1595,45 @@ namespace Orts.Viewer3D.RollingStock
                 ypos = (float)Gauge.Height * percent;
             }
 
+            int destX, destY, destW, destH;
             if (Gauge.ControlStyle == CABViewControlStyles.SOLID || Gauge.ControlStyle == CABViewControlStyles.LIQUID)
             {
                 if (Control.MinValue < 0)
                 {
                     if (Gauge.Orientation == 0)
                     {
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos))) - Viewer.CabXOffsetPixels;
-                        DestinationRectangle.Y = (int)(yratio * Control.PositionY) + Viewer.CabYOffsetPixels;
-                        DestinationRectangle.Width = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
-                        DestinationRectangle.Height = (int)(yratio * ypos);
+                        destX = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
+                        destY = (int)(yratio * Control.PositionY);
+                        destW = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
+                        destH = (int)(yratio * ypos);
                     }
                     else
                     {
-                        DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
+                        destX = (int)(xratio * Control.PositionX);
                         if (Gauge.Direction != 1 && !IsFire)
-                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos))) + Viewer.CabYOffsetPixels;
+                            destY = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos)));
                         else
-                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos))) + Viewer.CabYOffsetPixels;
-                        DestinationRectangle.Width = (int)(xratio * xpos);
-                        DestinationRectangle.Height = (int)(yratio * (ypos > zeropos ? ypos - zeropos : zeropos - ypos));
+                            destY = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos)));
+                        destW = (int)(xratio * xpos);
+                        destH = (int)(yratio * (ypos > zeropos ? ypos - zeropos : zeropos - ypos));
                     }
                 }
                 else
                 {
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
                     var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                     if (Gauge.Direction != 0)  // column grows from bottom or from right
                     {
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - xpos)) - Viewer.CabXOffsetPixels;
-                        if (Gauge.Orientation != 0) topY += Gauge.Height * (1 - percent);
+                        destX = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
+                        if (Gauge.Orientation != 0)
+                            topY += Gauge.Height * (1 - percent);
                     }
-                    // Cab view vertical position adjusted to allow for clip or stretch.
-                    DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
-                    DestinationRectangle.Width = (int)(xratio * xpos);
-                    DestinationRectangle.Height = (int)(yratio * ypos);
+                    else
+                    {
+                        destX = (int)(xratio * Control.PositionX);
+                    }
+                    destY = (int)(yratio * topY);
+                    destW = (int)(xratio * xpos);
+                    destH = (int)(yratio * ypos);
                 }
             }
             else // pointer gauge using texture
@@ -1640,26 +1641,26 @@ namespace Orts.Viewer3D.RollingStock
                 var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                 if (Gauge.Orientation == 0) // gauge horizontal
                 {
-                    DestinationRectangle.X = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos)) - Viewer.CabXOffsetPixels;
                     if (Gauge.Direction != 0)  // column grows from right
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos)) - Viewer.CabXOffsetPixels;
+                        destX = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos));
+                    else
+                        destX = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos));
                 }
                 else // gauge vertical
                 {
                     topY += ypos - 0.5 * Gauge.Area.Height;
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX) - Viewer.CabXOffsetPixels;
+                    destX = (int)(xratio * Control.PositionX);
                     if (Gauge.Direction != 0)  // column grows from bottom
                         topY += Gauge.Height - 2 * ypos;
                 }
-                // Cab view vertical position adjusted to allow for clip or stretch.
-                DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
-                DestinationRectangle.Width = (int)(xratio * Gauge.Area.Width);
-                DestinationRectangle.Height = (int)(yratio * Gauge.Area.Height);
+                destY = (int)(yratio * topY);
+                destW = (int)(xratio * Gauge.Area.Width);
+                destH = (int)(yratio * Gauge.Area.Height);
 
                 // Adjust coal texture height, because it mustn't show up at the bottom of door (see Scotsman)
                 // TODO: cut the texture at the bottom instead of stretching
                 if (Gauge is CVCFirebox)
-                    DestinationRectangle.Height = Math.Min(DestinationRectangle.Height, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - DestinationRectangle.Y);
+                    destH = Math.Min(destH, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - destY);
             }
             if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
             {
@@ -1677,9 +1678,18 @@ namespace Orts.Viewer3D.RollingStock
                 }
             }
 
+            // Cab view vertical position adjusted to allow for clip or stretch.
+            destX -= Viewer.CabXOffsetPixels;
+            destY += Viewer.CabYOffsetPixels;
+
             // Cab view position adjusted to allow for letterboxing.
-            DestinationRectangle.X += Viewer.CabXLetterboxPixels;
-            DestinationRectangle.Y += Viewer.CabYLetterboxPixels;
+            destX += Viewer.CabXLetterboxPixels;
+            destY += Viewer.CabYLetterboxPixels;
+
+            DestinationRectangle.X = destX;
+            DestinationRectangle.Y = destY;
+            DestinationRectangle.Width = destW;
+            DestinationRectangle.Height = destH;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -1765,14 +1775,11 @@ namespace Orts.Viewer3D.RollingStock
             // Cab view height and vertical position adjusted to allow for clip or stretch.
             var xratio = (float)Viewer.CabWidthPixels / 640;
             var yratio = (float)Viewer.CabHeightPixels / 480;
-            DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001) - Viewer.CabXOffsetPixels;
-            DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
+            // Cab view position adjusted to allow for letterboxing.
+            DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
             DestinationRectangle.Width = (int)(xratio * Math.Min(Control.Width, Texture.Width));  // Allow only downscaling of the texture, and not upscaling
             DestinationRectangle.Height = (int)(yratio * Math.Min(Control.Height, Texture.Height));  // Allow only downscaling of the texture, and not upscaling
-
-            // Cab view position adjusted to allow for letterboxing.
-            DestinationRectangle.X += Viewer.CabXLetterboxPixels;
-            DestinationRectangle.Y += Viewer.CabYLetterboxPixels;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -2146,14 +2153,11 @@ namespace Orts.Viewer3D.RollingStock
             else
                 Format = Format1;
             DrawFont = Viewer.WindowManager.TextManager.GetExact(digital.FontFamily, Viewer.CabHeightPixels * digital.FontSize / 480, digital.FontStyle == 0 ? System.Drawing.FontStyle.Regular : System.Drawing.FontStyle.Bold);
-            DrawPosition.X = (int)(Position.X * Viewer.CabWidthPixels / 640) + (Viewer.CabExceedsDisplayHorizontally > 0 ? DrawFont.Height / 4 : 0) - Viewer.CabXOffsetPixels;
-            DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels;
+            // Cab view position adjusted to allow for letterboxing.
+            DrawPosition.X = (int)(Position.X * Viewer.CabWidthPixels / 640) + (Viewer.CabExceedsDisplayHorizontally > 0 ? DrawFont.Height / 4 : 0) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
             DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
             DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);
-
-            // Cab view position adjusted to allow for letterboxing.
-            DrawPosition.X += Viewer.CabXLetterboxPixels;
-            DrawPosition.Y += Viewer.CabYLetterboxPixels;
 
             if (Control.ControlType == CABViewControlTypes.CLOCK)
             {
