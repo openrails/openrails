@@ -336,6 +336,8 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DataLogger { get; set; }
         [Default(false)]
+        public bool Letterbox2DCab { get; set; }
+        [Default(false)]
         public bool Profiling { get; set; }
         [Default(0)]
         public int ProfilingFrameCount { get; set; }
