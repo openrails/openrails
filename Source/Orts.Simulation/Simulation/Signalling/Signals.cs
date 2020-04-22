@@ -10558,7 +10558,7 @@ namespace Orts.Simulation.Signalling
             {
                 propagateRequest();
             }
-            if (thisTrain != null && thisTrain.Train is AITrain && thisTrain.Train.SpeedMpS == 0)
+            if (thisTrain != null && thisTrain.Train is AITrain && Math.Abs(thisTrain.Train.SpeedMpS) <= 0.1f)
             {
                 WorldLocation location = this.tdbtraveller.WorldLocation;
                 ((AITrain)thisTrain.Train).AuxActionsContain.CheckGenActions(this.GetType(), location, 0f, 0f, this.tdbtraveller.TrackNodeIndex);

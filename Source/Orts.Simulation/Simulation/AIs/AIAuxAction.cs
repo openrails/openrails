@@ -965,7 +965,7 @@ namespace Orts.Simulation.AIs
             AIActionItem newAction = null;
             int SpeedMps = (int)thisTrain.SpeedMpS;
             TrainCar locomotive = thisTrain.FindLeadLocomotive();
-            if (SpeedMps == 0)   //  We call the handler to generate an actionRef
+            if (Math.Abs(SpeedMps) <= 0.1f)   //  We call the handler to generate an actionRef
             {
                 newAction = Handler(0f, 0f, thisTrain.DistanceTravelledM, thisTrain.DistanceTravelledM);
 
@@ -1308,7 +1308,7 @@ namespace Orts.Simulation.AIs
             {
                 return null;
             }
-            if (SpeedMps == 0 && (int)list[0] >= Delay)   //  We call the handler to generate an actionRef
+            if (Math.Abs(SpeedMps) <= 0.1f && (int)list[0] >= Delay)   //  We call the handler to generate an actionRef
             {
                 newAction = Handler(thisTrain.SpeedMpS, (int)list[0]);
                 
@@ -1730,7 +1730,7 @@ namespace Orts.Simulation.AIs
             }
             else
             {
-                if (thisTrain.SpeedMpS == 0f && distancesM[1] <= thisTrain.DistanceTravelledM)
+                if (Math.Abs(thisTrain.SpeedMpS) <= 0.1f && distancesM[1] <= thisTrain.DistanceTravelledM)
                 {
                     return true;
                 }
@@ -1868,7 +1868,7 @@ namespace Orts.Simulation.AIs
                                 movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
                             }
                         }
-                        else if (distanceToGoM < AITrain.signalApproachDistanceM && aiTrain.SpeedMpS == 0)
+                        else if (distanceToGoM < AITrain.signalApproachDistanceM && Math.Abs(aiTrain.SpeedMpS) <= 0.1f)
                         {
                             aiTrain.AdjustControlsBrakeMore(aiTrain.MaxDecelMpSS, elapsedClockSeconds, 100);
                             movementState = AITrain.AI_MOVEMENT_STATE.INIT_ACTION;
@@ -2642,7 +2642,7 @@ namespace Orts.Simulation.AIs
                 }
             }
 
-            if (!reschedule && distancesM[1] < thisTrain.DistanceTravelledM && (thisTrain.SpeedMpS == 0f ||
+            if (!reschedule && distancesM[1] < thisTrain.DistanceTravelledM && (Math.Abs(thisTrain.SpeedMpS) <= 0.1f ||
                 (thisTrain.IsPlayerDriven && currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
             {
                 return true;
