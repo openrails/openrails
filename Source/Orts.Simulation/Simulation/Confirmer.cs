@@ -55,7 +55,6 @@ namespace Orts.Simulation
       , Regulator
       , Injector1
       , Injector2
-      , BlowdownValve
       , Blower
       , SteamHeat
       , Damper
@@ -192,8 +191,7 @@ namespace Orts.Simulation
                 , new string [] { GetParticularString("Steam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
                 , new string [] { GetString("Regulator"), null, null, null, GetString("close"), GetString("open") }    // Throttle for steam locomotives
                 , new string [] { GetString("Injector 1"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
-                , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") }
-                , new string [] { GetString("Blowdown Valve"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
                 , new string [] { GetString("Blower"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("SteamHeat"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Damper"), null, null, null, GetString("close"), GetString("open") } 

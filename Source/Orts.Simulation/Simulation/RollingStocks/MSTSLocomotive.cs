@@ -189,12 +189,10 @@ namespace Orts.Simulation.RollingStocks
         // Carriage Steam Heating Parameters
         public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
-        public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
         public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
         public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
         public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
-        public float CalculatedCarHeaterSteamUsageLBpS;
 
         // Adhesion Debug
         bool DebugSpeedReached;
@@ -1006,7 +1004,6 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write(CabLightOn);
             outf.Write(UsingRearCab);
-            outf.Write(CalculatedCarHeaterSteamUsageLBpS);
             ControllerFactory.Save(ThrottleController, outf);
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
@@ -1044,7 +1041,6 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.Reset(Simulator.GameTime, inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
             UsingRearCab = inf.ReadBoolean();
-            CalculatedCarHeaterSteamUsageLBpS = inf.ReadSingle();
             ControllerFactory.Restore(ThrottleController, inf);
             ControllerFactory.Restore(TrainBrakeController, inf);
             ControllerFactory.Restore(EngineBrakeController, inf);
@@ -1149,7 +1145,6 @@ namespace Orts.Simulation.RollingStocks
             }
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
-            SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
 
             // Check to see if water scoop elements have been configured
             if (WaterScoopFillElevationM == 0)
@@ -2838,7 +2833,7 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this)
             {
                 WaterScoopDown = !WaterScoopDown;
-                SignalEvent(Event.WaterScoopDown);
+                SignalEvent(Event.CylinderCocksToggle);
                 if (WaterScoopDown)
                 {
                     IsWaterScoopDown = true; // Set flag to potentially fill from water trough
