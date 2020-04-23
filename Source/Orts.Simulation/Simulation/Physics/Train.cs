@@ -40,9 +40,6 @@
 // #define DEBUG_TRACEINFO
 // #define DEBUG_SIGNALPASS
 
-// Debug Calculation of Carriage Heat Loss
-// #define DEBUG_CARSTEAMHEAT
-
 // Debug Calculation of Aux Tender operation
 // #define DEBUG_AUXTENDER
 
@@ -1994,9 +1991,115 @@ namespace Orts.Simulation.Physics
             if (mstsLocomotive != null)
             {
 
+                // Check to confirm that train is player driven and has passenger cars in the consist. Steam heating is OFF if steam heat valve is closed and no pressure is present
+                if (IsPlayerDriven && PassengerCarsNumber > 0 && mstsLocomotive.TrainFittedSteamHeat && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
+                {
+                    // Set default values required
+                    float SteamFlowRateLbpHr = 0;
+                    float ProgressiveHeatAlongTrainBTU = 0;
+                    float ConnectSteamHoseLengthFt = 2.0f * 2.0f; // Assume two hoses on each car * 2 ft long
+
+                    // Calculate total heat loss and car temperature along the train
+                    for (int i = 0; i < Cars.Count; i++)
+                    {
+                        var car = Cars[i];
+                        // Calculate volume in carriage - note height reduced by 1.06m to allow for bogies, etc
+                        float BogieHeightM = 1.06f;
+
+                        car.CarHeatVolumeM3 = car.CarWidthM * (car.CarLengthM) * (car.CarHeightM - BogieHeightM); // Check whether this needs to be same as compartment volume
+                        car.CarOutsideTempC = TrainOutsideTempC;  // Get Car Outside Temp from MSTSSteamLocomotive file
+
+                        // Only initialise these values the first time around the loop
+                        if (car.IsCarSteamHeatInitial)
+                        {
+                            // This section sets some arbitary default values the first time that this section is processed. Real values are set on subsequent loops, once steam heat is turned on in locomotive
+                            if (TrainInsideTempC == 0)
+                            {
+                                TrainInsideTempC = C.FromF(55.0f); // Set intial temp - will be set in Steam and Diesel Eng, but these are done after this step
+                            }
+
+                            if (TrainOutsideTempC == 0)
+                            {
+
+                                TrainOutsideTempC = 10.0f; // Set intial temp - will be set in Steam and Diesel Eng, but these are done after this step
+                            }
+
+                            if (mstsLocomotive.EngineType == TrainCar.EngineTypes.Steam && Simulator.Settings.HotStart || mstsLocomotive.EngineType == TrainCar.EngineTypes.Diesel || mstsLocomotive.EngineType == TrainCar.EngineTypes.Electric)
+                            {
+
+                                car.CarCurrentCarriageHeatTempC = C.FromF(55.0f); // Set intial temp
+                            }
+                            else
+                            {
+
+                                car.CarCurrentCarriageHeatTempC = TrainOutsideTempC;
+                            }
+
+                            // Calculate a random factor for steam heat leaks in connecting pipes
+                            car.SteamHoseLeakRateRandom = (float)Simulator.Random.Next(100) / 100.0f; // Achieves a two digit random number betwee 0 and 1
+                            car.SteamHoseLeakRateRandom = MathHelper.Clamp(car.SteamHoseLeakRateRandom, 0.5f, 1.0f); // Keep Random Factor ratio within bounds
+
+                            // Calculate Starting Heat value in Car Q = C * M * Tdiff, where C = Specific heat capacity, M = Mass ( Volume * Density), Tdiff - difference in temperature
+                            car.TotalPossibleCarHeatW = W.FromKW(SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3 * (car.CarCurrentCarriageHeatTempC - TrainOutsideTempC));
+
+                            //                            Trace.TraceInformation("Initialise TotalCarHeat - CarID {0} Possible {1} Max {2} Out {3} Vol {4} Density {5} Specific {6}", car.CarID, car.TotalPossibleCarHeatW, car.CarCurrentCarriageHeatTempC, TrainOutsideTempC, car.CarHeatVolumeM3, DensityAirKgpM3, SpecificHeatCapcityAirKJpKgC);
+
+                            // Initialise current Train Steam Heat based upon selected Current carriage Temp
+                            car.CarHeatCurrentCompartmentHeatW = car.TotalPossibleCarHeatW;
+                            car.IsCarSteamHeatInitial = false;
+                        }
+
+                                                // Heat loss due to train movement and air flow, based upon convection heat transfer information - http://www.engineeringtoolbox.com/convective-heat-transfer-d_430.html
+                                                // The formula on this page ( hc = 10.45 - v + 10v1/2), where v = m/s. This formula is used to develop a multiplication factor with train speed.
+                                                // Curve is only valid between 2.0m/s and 20.0m/s
+                        
+                        float LowSpeedMpS = 2.0f;
+                        float HighSpeedMpS = 20.0f;
+                        float ConvHeatTxfMinSpeed = 10.45f - LowSpeedMpS + (10.0f * (float)Math.Pow(LowSpeedMpS, 0.5));
+                        float ConvHeatTxfMaxSpeed = 10.45f - HighSpeedMpS + (10.0f * (float)Math.Pow(HighSpeedMpS, 0.5));
+                        float ConvHeatTxActualSpeed = 10.45f - car.AbsSpeedMpS + (10.0f * (float)Math.Pow(car.AbsSpeedMpS, 0.5));
+                        float ConvFactor = 0;
+
+                        if (car.AbsSpeedMpS > 2 && car.AbsSpeedMpS < 20.0f)
+                        {
+                            ConvFactor = ConvHeatTxActualSpeed / ConvHeatTxfMinSpeed; // Calculate fraction only between 2 and 20
+                        }
+                        else if (car.AbsSpeedMpS < 2)
+                        {
+                            ConvFactor = 1.0f; // If speed less then 2m/s then set fracftion to give stationary Kc value 
+                        }
+                        else
+                        {
+                            ConvFactor = ConvHeatTxActualSpeed / ConvHeatTxfMinSpeed; // Calculate constant fraction over 20m/s
+                        }
+                        ConvFactor = MathHelper.Clamp(ConvFactor, 1.0f, 1.6f); // Keep Conv Factor ratio within bounds - should not exceed 1.6.
+
+
+
+                    }
+
+
+
+
+
+
+
+                }
+
+
+
+
+
+
             }
 
         }
+
+
+
+
+
+    
 
         //================================================================================================//
         /// <summary>
