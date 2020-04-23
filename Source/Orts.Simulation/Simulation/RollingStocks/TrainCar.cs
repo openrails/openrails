@@ -112,7 +112,9 @@ namespace Orts.Simulation.RollingStocks
         public bool IsPartOfActiveTrain = true;
         public List<int> SoundSourceIDs = new List<int>();
 
-         // Used to calculate Carriage Steam Heat Loss - ToDo - ctn_steamer - consolidate these parameters with other steam heat ones, also check as some now may be obsolete
+        // Used to calculate Carriage Steam Heat Loss - ToDo - ctn_steamer - consolidate these parameters with other steam heat ones, also check as some now may be obsolete
+        public float TotalCarCompartmentHeatLossWpT;      // Transmission loss for the wagon
+        public float CarHeatCompartmentPipeAreaM2;  // Area of surface of car pipe
         public bool IsCarSteamHeatInitial = true; // Allow steam heat to be initialised.
         public float CarHeatSteamMainPipeHeatLossBTU;  // BTU /hr
         public float CarHeatConnectSteamHoseHeatLossBTU;
