@@ -190,6 +190,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
         public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
+        public Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
         public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
         public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
         public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
@@ -1150,6 +1151,7 @@ namespace Orts.Simulation.RollingStocks
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
             SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
+            SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
 
             // Check to see if water scoop elements have been configured
             if (WaterScoopFillElevationM == 0)

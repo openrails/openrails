@@ -280,7 +280,6 @@ namespace Orts.Simulation.RollingStocks
         Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
         Interpolator WaterDensityPSItoLBpFT3;   // water density given pressure
-        Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
         Interpolator WaterHeatPSItoBTUpLB;      // total heat in water given pressure
         Interpolator HeatToPressureBTUpLBtoPSI; // pressure given total heat in water (inverse of WaterHeat)
         Interpolator PressureToTemperaturePSItoF;
@@ -1056,7 +1055,6 @@ namespace Orts.Simulation.RollingStocks
             #region Initialise additional steam properties
 
             WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
-            SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
             WaterHeatPSItoBTUpLB = SteamTable.WaterHeatInterpolatorPSItoBTUpLB();
             CylinderSteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
             HeatToPressureBTUpLBtoPSI = SteamTable.WaterHeatToPressureInterpolatorBTUpLBtoPSI();
