@@ -871,27 +871,12 @@ namespace Orts.Simulation.RollingStocks
             if (IsSteamHeatFitted && TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
 
+           // ++++++++++++++     // ToDo - ctn_steamer - Remove Train.TrainCurrentSteamHeatPipeTempC and Train.TrainSteamPipeHeatW from following loops  ++++++++++++++
+
                 if (this.IsLeadLocomotive())
                 {
-                    if (IsSteamHeatFirstTime)
-                    {
-                        IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
-                        Train.TrainInsideTempC = 15.5f; // Assume a desired temperature of 60oF = 15.5oC
-                    }
-                    else
-                    {
-                        // After first pass continue as normal
 
-                        if (IsSteamInitial)
-                        {
-                            Train.TrainCurrentCarriageHeatTempC = 13.0f;
-                        }
-                        // Initialise current Train Steam Heat based upon selected Current carriage Temp
-                        Train.TrainCurrentTrainSteamHeatW = (Train.TrainCurrentCarriageHeatTempC - Train.TrainOutsideTempC) / (Train.TrainInsideTempC - Train.TrainOutsideTempC) * Train.TrainTotalSteamHeatW;
-                        IsSteamInitial = false;
-                    }
-
-                    // Calculate steam pressure in steam pipe
+                    // Calculate steam boiler usage values
                     if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
                     {
                         CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
