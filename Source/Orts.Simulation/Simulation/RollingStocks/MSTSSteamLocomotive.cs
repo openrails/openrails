@@ -30,9 +30,6 @@
 // Steam usage debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
 //#define DEBUG_LOCO_STEAM_USAGE
 
-// Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
-//#define DEBUG_LOCO_STEAM_HEAT_HUD
-
 // Debug for Auxiliary Tender
 //#define DEBUG_AUXTENDER
 
@@ -5628,58 +5625,15 @@ namespace Orts.Simulation.RollingStocks
                 if (this.IsLeadLocomotive())
                 {
                     Train.CarSteamHeatOn = true; // turn on steam effects on wagons
-                    Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
 
-                    if (IsSteamHeatFirstTime)
-                    {
-                        IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
-                        Train.TrainInsideTempC = 21.11f; // Assume a desired temperature of 70oF = 15.5oC
-                    }
-                    else
-                    {
-                        // After first pass continue as normal
-
-                        if (IsSteamInitial)
-                        {
-                            if (HotStart)
-                            {
-                                Train.TrainCurrentCarriageHeatTempC = 21.111f; // Set intial temp to 70oF
-                            }
-                            else
-                            {
-                                Train.TrainCurrentCarriageHeatTempC = Train.TrainOutsideTempC;
-                            }
-                            // Initialise current Train Steam Heat based upon selected Current carriage Temp
-                            Train.TrainCurrentTrainSteamHeatW = (Train.TrainCurrentCarriageHeatTempC - Train.TrainOutsideTempC) / (Train.TrainInsideTempC - Train.TrainOutsideTempC) * Train.TrainTotalSteamHeatW;
-                            IsSteamInitial = false;
-                        }
-
-                        float ConvertBtupLbtoKjpKg = 2.32599999962f;  // Conversion factor
-                                                                      // Calculate steam usage
-                                                                      // Only set up for saturated steam at this time - needs to also work for superheated steam
-                        if (Train.TrainSteamPipeHeatW == 0.0 || CurrentSteamHeatPressurePSI == 0.0)
-                        {
-                            CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Zero steam usage if Steam pipe heat is zero
-                        }
-                        else
-                        {
-                            CalculatedCarHeaterSteamUsageLBpS = Kg.ToLb(W.ToKW(Train.TrainSteamPipeHeatW) / (SteamHeatPSItoBTUpLB[CurrentSteamHeatPressurePSI] * ConvertBtupLbtoKjpKg));
-                        }
 
                         // Calculate impact of steam heat usage on locomotive
                         BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
                         BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
                         TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
                         BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
-                    }
+                    
                 }
-            }
-            else
-            {
-                CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Set to zero by default
-                Train.TrainCurrentSteamHeatPipeTempC = -17.7778f;       // Reset values to zero if steam is not turned on.
-                Train.TrainSteamPipeHeatW = 0.0f;
-                Train.CarSteamHeatOn = false; // turn off steam effects on wagons
             }
         }
 
@@ -6082,39 +6036,25 @@ namespace Orts.Simulation.RollingStocks
             {
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive, and steam heat valve is on.
                 // Display Steam Heat info
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}/{11}\t{12}\t{13:N0}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}/{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16:N0}\n",
                    Simulator.Catalog.GetString("StHeat:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                   Simulator.Catalog.GetString("TrTemp"),
-                   FormatStrings.FormatTemperature(Train.TrainCurrentCarriageHeatTempC, IsMetric, false),
                    Simulator.Catalog.GetString("StTemp"),
-                   FormatStrings.FormatTemperature(Train.TrainCurrentSteamHeatPipeTempC, IsMetric, false),
-                   Simulator.Catalog.GetString("OutTemp"),
-                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
+                   FormatStrings.FormatTemperature(C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]), IsMetric, false),
                    Simulator.Catalog.GetString("StUse"),
                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
                    FormatStrings.h,
+                   Simulator.Catalog.GetString("Last:"),
+                   Simulator.Catalog.GetString("Press"),
+                   FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                   Simulator.Catalog.GetString("Temp"),
+                   FormatStrings.FormatTemperature(Train.LastCar.CarCurrentCarriageHeatTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("OutTemp"),
+                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
                    Simulator.Catalog.GetString("NetHt"),
-                   Train.DisplayTrainNetSteamHeatLossWpTime);
+                   Train.LastCar.DisplayTrainNetSteamHeatLossWpTime);
             }
-
-#if DEBUG_LOCO_STEAM_HEAT_HUD
-            status.AppendFormat("\n{0}\t{1}\t{2:N0}\t\t\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N0}\t{9}\t{10:N0}\t\t{11}\t{12}\n",
-                Simulator.Catalog.GetString("StHtDB:"),
-                Simulator.Catalog.GetString("TotHt"),
-                Train.TrainTotalSteamHeatW,
-                Simulator.Catalog.GetString("NetHt"),
-                Train.DisplayTrainNetSteamHeatLossWpTime,
-                Simulator.Catalog.GetString("PipHt"),
-                Train.TrainSteamPipeHeatW,
-                Simulator.Catalog.GetString("CarHt"),
-                Train.TrainSteamHeatLossWpT,
-                Simulator.Catalog.GetString("CurrHt"),
-                Train.TrainCurrentTrainSteamHeatW,
-                Simulator.Catalog.GetString("Cont"),
-                SteamHeatController.CurrentValue);
-#endif
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Fireman"));
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}/{18}{17}\t\t{19}\t{20:N0}\n",
