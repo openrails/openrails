@@ -2163,14 +2163,114 @@ namespace Orts.Simulation.Physics
                         }
 
 
+                                                //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                                // Calculate heating loss in main supply pipe that runs under carriage
+
+                                                    // Set heat trans coeff
+                            float HeatTransCoeffMainPipeBTUpFt2pHrpF = 0.4f * ConvFactor; // insulated pipe - BTU / sq.ft. / hr / l in / °F.
+                        float HeatTransCoeffConnectHoseBTUpFt2pHrpF = 0.04f * ConvFactor; // rubber connecting hoses - BTU / sq.ft. / hr / l in / °F. TO BE CHECKED
+                        
+                                                // Calculate Length of carriage and heat loss in main steam pipe - assume 2" bore pipe
+                        float MainHeatPipeOuterDiaFt = 0.30208f; // Steel pipe OD = 2.375" + 1.25" insulation
+                        float CarMainSteamPipeTempF = mstsLocomotive.SteamHeatPressureToTemperaturePSItoF[car.CarSteamHeatMainPipeSteamPressurePSI];
+                        car.CarHeatSteamMainPipeHeatLossBTU = Me.ToFt(car.CarLengthM) * (MathHelper.Pi * MainHeatPipeOuterDiaFt) * HeatTransCoeffMainPipeBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
+                        
+                                                // calculate steam connecting hoses heat loss - assume 2.0" hose
+                        float ConnectSteamHoseOuterDiaFt = 0.22f; // Rubber hose OD = 2.64"                  
+                        car.CarHeatConnectSteamHoseHeatLossBTU = ConnectSteamHoseLengthFt * (MathHelper.Pi * ConnectSteamHoseOuterDiaFt) * HeatTransCoeffConnectHoseBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
+                        
+                                                // Use Napier formula to calculate steam discharge rate through steam trap valve, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
+                                                const float SteamTrapValveDischargeFactor = 70.0f;
+                        
+                                                // Find area of pipe - assume 0.1875" (3/16") dia steam trap
+                        float SteamTrapDiaIn = 0.1875f;
+                        float SteamTrapValveSizeAreaIn2 = (float)Math.PI * (SteamTrapDiaIn / 2.0f) * (SteamTrapDiaIn / 2.0f);
+                        
+                        car.CarHeatSteamTrapUsageLBpS = (SteamTrapValveSizeAreaIn2 * (car.CarSteamHeatMainPipeSteamPressurePSI + OneAtmospherePSI)) / SteamTrapValveDischargeFactor;
+                        
+                                                //                        Trace.TraceInformation("Steam Trap - CarID {0} Trapusage {1}", car.CarID, pS.TopH(car.CarHeatSteamTrapUsageLBpS));
+                        
+                                                // Use Napier formula to calculate steam discharge rate through steam leak in connecting hose, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
+                                                const float ConnectingHoseDischargeFactor = 70.0f;
+                        
+                                                // Find area of pipe - assume 0.1875" (3/16") dia steam trap
+                        float ConnectingHoseLeakDiaIn = 0.1875f;
+                        float ConnectingHoseLeakAreaIn2 = (float)Math.PI * (ConnectingHoseLeakDiaIn / 2.0f) * (ConnectingHoseLeakDiaIn / 2.0f);
+                        
+                        car.CarHeatConnectingSteamHoseLeakageLBpS = car.SteamHoseLeakRateRandom * (ConnectingHoseLeakAreaIn2 * (car.CarSteamHeatMainPipeSteamPressurePSI + OneAtmospherePSI)) / ConnectingHoseDischargeFactor;
+                        
+                                                // Trace.TraceInformation("Steam Trap - CarID {0} Trapusage {1} RandomRate {2}", car.CarID, pS.TopH(car.CarHeatConnectingSteamHoseLeakageLBpS), car.SteamHoseLeakRateRandom);
+                        
+                                                //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                        
+                                                //  Trace.TraceInformation("Heat & Temp - CarID {0} HeatLoss {1} CurrentHeat {2} CurrentTemp {3} OutsideTemp {4} Vol {5}", car.CarID, car.CarNetSteamHeatLossWpTime, car.CarHeatCurrentCompartmentHeatW, car.CarCurrentCarriageHeatTempC, TrainOutsideTempC, car.CarHeatVolumeM3);
+                        
+                        float CurrentComparmentSteamPipeHeatW = 0;
+
+                        // Calculate total steam loss along main pipe, by calculating heat into steam pipe at locomotive, deduct heat loss for each car
+                        if (car.CarSteamHeatMainPipeSteamPressurePSI >= 1 && car.CarHeatCompartmentHeaterOn && car.WagonType == TrainCar.WagonTypes.Passenger)
+                        {
+                            // If main pipe pressure is > 0 then heating will start to occur in comparment, so include compartment heat exchanger value
+                            ProgressiveHeatAlongTrainBTU += (car.CarHeatSteamMainPipeHeatLossBTU + car.CarHeatConnectSteamHoseHeatLossBTU) + pS.TopH(W.ToBTUpS(car.CarHeatCompartmentSteamPipeHeatW));
+                            CurrentComparmentSteamPipeHeatW = car.CarHeatCompartmentSteamPipeHeatW; // Car is being heated as main pipe pressure is high enough, and temperature increase is required
+                        }
+                        else
+                        {
+                            // If main pipe pressure is < 0 or temperature in compartment is above the desired temeperature,
+                            // then no heating will occur in comparment, so leave compartment heat exchanger value out
+                            ProgressiveHeatAlongTrainBTU += (car.CarHeatSteamMainPipeHeatLossBTU + car.CarHeatConnectSteamHoseHeatLossBTU);
+                            CurrentComparmentSteamPipeHeatW = 0; // Car is not being heated as main pipe pressure is not high enough, or car temp is hot enough
+                        }
+                        
+                                                // Calculate steam flow rates and steam used
+                        SteamFlowRateLbpHr = (ProgressiveHeatAlongTrainBTU / mstsLocomotive.SteamHeatPSItoBTUpLB[mstsLocomotive.CurrentSteamHeatPressurePSI]) + pS.TopH(car.CarHeatSteamTrapUsageLBpS) + pS.TopH(car.CarHeatConnectingSteamHoseLeakageLBpS);
+                        mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS = pS.FrompH(SteamFlowRateLbpHr);
+                        
+                                                // Calculate Net steam heat loss or gain for each compartment in the car
+                        car.CarNetSteamHeatLossWpTime = CurrentComparmentSteamPipeHeatW - car.TotalCarCompartmentHeatLossWpT;
+                        
+                        car.DisplayTrainNetSteamHeatLossWpTime = car.CarNetSteamHeatLossWpTime;
+
+                        // Given the net heat loss the car calculate the current heat capacity, and corresponding temperature
+                        if (car.CarNetSteamHeatLossWpTime < 0)
+                        {
+                            car.CarNetSteamHeatLossWpTime = -1.0f * car.CarNetSteamHeatLossWpTime; // If steam heat loss is negative, convert to a positive number
+                            car.CarHeatCurrentCompartmentHeatW -= car.CarNetSteamHeatLossWpTime * elapsedClockSeconds;  // Losses per elapsed time
+                        }
+                        else
+                        {
+
+                            car.CarHeatCurrentCompartmentHeatW += car.CarNetSteamHeatLossWpTime * elapsedClockSeconds;  // Gains per elapsed time         
+                        }
+                        
+                        car.CarCurrentCarriageHeatTempC = W.ToKW(car.CarHeatCurrentCompartmentHeatW) / (SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3) + TrainOutsideTempC;
 
 
+                        if (car.CarCurrentCarriageHeatTempC > C.FromF(55.0f))
+                        {
+                            car.CarHeatCompartmentHeaterOn = false;
+                        }
+                        else if (car.CarCurrentCarriageHeatTempC < C.FromF(50.0f))
+                        {
+                            car.CarHeatCompartmentHeaterOn = true;
+                        }
 
+                        if (car.CarCurrentCarriageHeatTempC < C.FromF(45.0f)) // If temp below 45of then alarm
+                        {
+                            if (!IsSteamHeatLow)
+                            {
+                                IsSteamHeatLow = true;
+                                // Provide warning message if temperature is too hot
+                                float CarTemp = car.CarCurrentCarriageHeatTempC;
+                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage " + car.CarID + " temperature is too cold, the passengers are freezing."));
+                            }
 
+                        }
+                        else if (car.CarCurrentCarriageHeatTempC > C.FromF(65.0f))
+                        {
 
-
-
-
+                            IsSteamHeatLow = false;        // Reset temperature warning
+                        }
 
                     }
 
