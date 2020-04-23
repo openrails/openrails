@@ -160,8 +160,8 @@ namespace Orts.Simulation.Physics
             }
         }
 
-// Carriage Steam Heating
-public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
+        // Carriage Steam Heating
+        public float TrainSteamPipeHeatW;               // Not required, all instances can be removed!!!!!!!!!
         public float TrainInsideTempC;                  // Desired inside temperature for carriage steam heating depending upon season
         public float TrainOutsideTempC;                 // External ambient temeprature for carriage steam heating.
         public float TrainSteamHeatLossWpT;             // Total Steam Heat loss of train
@@ -171,9 +171,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         public bool CarSteamHeatOn = false;    // Is steam heating turned on
         public float TrainNetSteamHeatLossWpTime;        // Net Steam loss - Loss in Cars vs Steam Pipe Heat
         public float TrainCurrentTrainSteamHeatW;    // Current steam heat of air in train
-        public float TrainSteamPipeHeatW;               // Heat radiated by steam pipe - total
         public float TrainTotalSteamHeatW;         // Total steam heat in train - based upon air volume
-        float SpecificHeatCapcityAirKJpKgK = 1006.0f; // Specific Heat Capacity of Air
+        float SpecificHeatCapcityAirKJpKgK = 1.006f; // Specific Heat Capacity of Air
         float DensityAirKgpM3 = 1.247f;   // Density of air - use a av value
         bool IsSteamHeatExceeded = false;   // Flag to indicate when steam heat temp is exceeded
         bool IsSteamHeatLow = false;        // Flag to indicate when steam heat temp is low
@@ -649,8 +648,6 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             TotalNumber = Math.Max(Number + 1, TotalNumber);
             Name = inf.ReadString();
             SpeedMpS = inf.ReadSingle();
-            TrainCurrentCarriageHeatTempC = inf.ReadSingle();
-            TrainCurrentTrainSteamHeatW = inf.ReadSingle();
             TrainType = (TRAINTYPE)inf.ReadInt32();
             MUDirection = (Direction)inf.ReadInt32();
             MUThrottlePercent = inf.ReadSingle();
@@ -987,8 +984,6 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
             outf.Write(Number);
             outf.Write(Name);
             outf.Write(SpeedMpS);
-            outf.Write(TrainCurrentCarriageHeatTempC);
-            outf.Write(TrainCurrentTrainSteamHeatW);
             outf.Write((int)TrainType);
             outf.Write((int)MUDirection);
             outf.Write(MUThrottlePercent);
@@ -1973,137 +1968,31 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
         //================================================================================================//
         /// <summary>
-        /// Update Steam Heating
+        /// Update Steam Heating - this model calculates the total train heat losses and gains for all the cars
         /// <\summary>
+
+        // The carriage steam heating model is based upon a description provided in a number of articles, including, "The Steam Heating of Railway Carriages" by Frank W. Marillier ( http://www.gwr.org.uk/links.html )
+        // Steam is carried the length of the train by a 2" or 1.5" steam pipe that is fitted between each of the cars. Rubber pressure hoses are used to couple the carriage steam pipes together. 
+        // Typically these pipes would have some level of insulation on them.
+        // Typically 2" bore steam pipes are then placed at strategic locations within the car. For cars with separate compartments, a steam pipe would need to be located in each compartment.
+        // The length of each of these compartment steam pipes was determined by a rule of thumb based upon the volume of the space that it was desgined to heat, so for example, a 
+        // 2nd class compartment, would have 1" of pipe length for each 3.5cu ft of compartment volume.
+        // Steam entering into the passenger area of the train is typically reduced to atmospheric pressure??? 
+        // Some articles suggest that a typical steam heating system could use approx 100lbs of steam per hour per car. (more detail)
+
+        // The model calculates the heat capacity of each car at a default temperature, and the various heat losses, such as heat loss from the cars, main steam pipe, leaks, etc are 
+        // subtracted from this value. Heat gain from the radiation heat exchange area are added to this value. If all is ok then a balance should be achieved.
+
+        // Leaks in system, loss of heat (and pressure) as steam moves along train
 
         public void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             var mstsLocomotive = Cars[0] as MSTSLocomotive;
             if (mstsLocomotive != null)
-            { 
+            {
 
-                // Check to confirm that train is player driven and has passenger cars in the consist.
-                if (IsPlayerDriven && PassengerCarsNumber > 0 && mstsLocomotive.TrainFittedSteamHeat)
-                {
-
-                    // Reset Values to zero to recalculate values
-                    TrainHeatVolumeM3 = 0.0f;
-                    TrainHeatPipeAreaM2 = 0.0f;
-                    TrainSteamHeatLossWpT = 0.0f;
-
-                    // Calculate total heat loss for whole train
-                    for (int i = 0; i < Cars.Count; i++)
-                    {
-                        TrainSteamHeatLossWpT += Cars[i].CarHeatLossWpT;
-                        TrainHeatPipeAreaM2 += Cars[i].CarHeatPipeAreaM2;
-                        TrainHeatVolumeM3 += Cars[i].CarHeatVolumeM3;
-                    }
-
-                    // Carriage temperature will be equal to heat input (from steam pipe) less heat losses through carriage walls, etc
-                    // Calculate Heat in Train
-                    TrainTotalSteamHeatW = SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * TrainHeatVolumeM3 * (TrainInsideTempC - TrainOutsideTempC);
-
-                    if (TrainNetSteamHeatLossWpTime < 0)
-                    {
-                        TrainNetSteamHeatLossWpTime = -1.0f * TrainNetSteamHeatLossWpTime; // If steam heat loss is negative, convert to a positive number
-                        TrainCurrentTrainSteamHeatW -= TrainNetSteamHeatLossWpTime * elapsedClockSeconds;  // Losses per elapsed time
-                    }
-                    else
-                    {
-                        TrainCurrentTrainSteamHeatW += TrainNetSteamHeatLossWpTime * elapsedClockSeconds;  // Gains per elapsed time         
-                    }
-
-                    float MaximumHeatTempC = 37.778f;     // Allow heat to go to 100oF (37.778oC)
-
-                    if (IsTrainSteamHeatInitial)
-                    {
-                        // First time this method is processed do this loop
-                        TrainCurrentTrainSteamHeatW = (TrainCurrentCarriageHeatTempC - TrainOutsideTempC) / (TrainInsideTempC - TrainOutsideTempC) * TrainTotalSteamHeatW;
-                        IsTrainSteamHeatInitial = false;
-                    }
-                    else
-                    {
-                        // After initialisation do this loop
-                        if (TrainCurrentCarriageHeatTempC <= MaximumHeatTempC && TrainTotalSteamHeatW > 0.0)
-                        {
-                            if (TrainCurrentCarriageHeatTempC >= TrainOutsideTempC)
-                            {
-                                TrainCurrentCarriageHeatTempC = (((TrainInsideTempC - TrainOutsideTempC) * TrainCurrentTrainSteamHeatW) / TrainTotalSteamHeatW) + TrainOutsideTempC;
-                            }
-                            else
-                            {
-                                // TO BE CHECKED
-                                TrainCurrentCarriageHeatTempC = TrainOutsideTempC - (((TrainInsideTempC - TrainOutsideTempC) * TrainCurrentTrainSteamHeatW) / TrainTotalSteamHeatW);
-                            }
-
-                        }
-
-
-                        TrainSteamPipeHeatConvW = (PipeHeatTransCoeffWpM2K * TrainHeatPipeAreaM2 * (C.ToK(TrainCurrentSteamHeatPipeTempC) - C.ToK(TrainCurrentCarriageHeatTempC)));
-                        float PipeTempAK = (float)Math.Pow(C.ToK(TrainCurrentSteamHeatPipeTempC), 4.0f);
-                        float PipeTempBK = (float)Math.Pow(C.ToK(TrainCurrentCarriageHeatTempC), 4.0f);
-                        TrainSteamHeatPipeRadW = (BoltzmanConstPipeWpM2 * (PipeTempAK - PipeTempBK));
-                        TrainSteamPipeHeatW = TrainSteamPipeHeatConvW + TrainSteamHeatPipeRadW;   // heat generated by pipe per degree
-
-                        // Calculate Net steam heat loss or gain
-                        TrainNetSteamHeatLossWpTime = TrainSteamPipeHeatW - TrainSteamHeatLossWpT;
-
-                        if (CarSteamHeatOn) // Only display warning messages if steam heating is turned on
-                        {
-
-                            DisplayTrainNetSteamHeatLossWpTime = TrainNetSteamHeatLossWpTime; // Captures raw value of heat loss for display on HUD
-
-                            // Test to see if steam heating temp has exceeded the comfortable heating value.
-                            if (TrainCurrentCarriageHeatTempC > 23.8889f) // If temp above 75of (23.889oC) then alarm
-                            //     if (TrainCurrentCarriageHeatTempC > TrainInsideTempC)
-                            {
-                                if (!IsSteamHeatExceeded)
-                                {
-                                    IsSteamHeatExceeded = true;
-                                    // Provide warning message if temperature is too hot
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too hot, the passengers are sweating."));
-                                }
-                            }
-                            else if (TrainCurrentCarriageHeatTempC < 22.0f)
-                            //           else if (TrainCurrentCarriageHeatTempC < TrainInsideTempC - 3.0f)
-                            {
-                                IsSteamHeatExceeded = false;        // Reset temperature warning
-                            }
-
-                            // Test to see if steam heating temp has dropped too low.
-
-                            if (TrainCurrentCarriageHeatTempC < 18.333f) // If temp below 65of (18.33oC) then alarm
-                            {
-                                if (!IsSteamHeatLow)
-                                {
-                                    IsSteamHeatLow = true;
-                                    // Provide warning message if temperature is too hot
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage temperature is too cold, the passengers are freezing."));
-                                }
-                            }
-                            else if (TrainCurrentCarriageHeatTempC > 21.0f)
-                            {
-
-                                IsSteamHeatLow = false;        // Reset temperature warning
-                            }
-                        }
-                        else
-                        {
-                            DisplayTrainNetSteamHeatLossWpTime = 0.0f; // Set to zero if steam heating is off
-                        }
-                    }
-
-
-#if DEBUG_CARSTEAMHEAT
-
-        Trace.TraceInformation("***************************************** DEBUG_CARHEAT (Train.cs) ***************************************************************");
-        Trace.TraceInformation("Steam Heating Fitted {0} Player Driven {1} Passenger Cars {2}", mstsLocomotive.TrainFittedSteamHeat, IsPlayerDriven, PassengerCarsNumber);      
-        Trace.TraceInformation("Inside Temp {0} Outside Temp {1}", TrainInsideTempC, TrainOutsideTempC); 
-        Trace.TraceInformation("Train heat loss {0} Train heat pipe area {1} Train heat volume {2}", TrainSteamHeatLossWpT, TrainHeatPipeAreaM2, TrainHeatVolumeM3);        
-
-#endif
-                }
             }
+
         }
 
         //================================================================================================//
