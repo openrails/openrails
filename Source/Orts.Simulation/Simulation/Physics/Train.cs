@@ -180,6 +180,8 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         public float DisplayTrainNetSteamHeatLossWpTime;  // Display Net Steam loss - Loss in Cars vs Steam Pipe Heat
         public float TrainSteamPipeHeatConvW;               // Heat radiated by steam pipe - convection
         public float TrainSteamHeatPipeRadW;                // Heat radiated by steam pipe - radiation
+        float EmissivityFactor = 0.79f; // Oxidised steel
+        float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
         float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
         float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
         bool IsTrainSteamHeatInitial = true; // Allow steam heat to be initialised.
