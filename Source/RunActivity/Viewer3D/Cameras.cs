@@ -2109,7 +2109,7 @@ namespace Orts.Viewer3D
         void PanUp(bool up, float speed)
         {
             int max = 0;
-            int min = Viewer.DisplaySize.Y - Viewer.CabHeightPixels; // -ve value
+            int min = Viewer.DisplaySize.Y - Viewer.CabHeightPixels - 2 * Viewer.CabYLetterboxPixels; // -ve value
             int cushionPixels = 40;
             int slowFactor = 4;
 
@@ -2143,7 +2143,7 @@ namespace Orts.Viewer3D
         void ScrollRight (bool right, float speed)
         {
             int min = 0;
-            int max = Viewer.CabWidthPixels - Viewer.DisplaySize.X; // -ve value
+            int max = Viewer.CabWidthPixels - Viewer.DisplaySize.X - 2 * Viewer.CabXLetterboxPixels; // -ve value
             int cushionPixels = 40;
             int slowFactor = 4;
 
