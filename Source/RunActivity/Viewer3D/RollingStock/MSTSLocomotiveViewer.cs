@@ -1015,7 +1015,6 @@ namespace Orts.Viewer3D.RollingStock
     public class CabRenderer : RenderPrimitive
     {
         private SpriteBatchMaterial _Sprite2DCabView;
-        private Rectangle _CabRect = new Rectangle();
         private Matrix _Scale = Matrix.Identity;
         private Texture2D _CabTexture;
         private CabShader _Shader;
@@ -1279,14 +1278,6 @@ namespace Orts.Viewer3D.RollingStock
             if (_CabTexture == SharedMaterialManager.MissingTexture)
                 return;
 
-            // Cab view height adjusted to allow for clip or stretch
-            _CabRect.Width = _Viewer.CabWidthPixels;
-            _CabRect.Height = _Viewer.CabHeightPixels;
-
-            // Cab view position adjusted to allow for letterboxing
-            _CabRect.X = _Viewer.CabXLetterboxPixels;
-            _CabRect.Y = _Viewer.CabYLetterboxPixels;
-
             if (_PrevScreenSize != _Viewer.DisplaySize && _Shader != null)
             {
                 _PrevScreenSize = _Viewer.DisplaySize;
@@ -1305,61 +1296,53 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            var cabScale = new Vector2((float)_Viewer.CabWidthPixels / _CabTexture.Width, (float)_Viewer.CabHeightPixels / _CabTexture.Height);
             // Cab view vertical position adjusted to allow for clip or stretch.
-            Rectangle stretchedCab;
-            if (_Viewer.Simulator.CarVibrating > 0 || _Viewer.Simulator.UseSuperElevation > 0 || _Locomotive.Train.IsTilting)
+            var cabPos = new Vector2(_Viewer.CabXOffsetPixels / cabScale.X, -_Viewer.CabYOffsetPixels / cabScale.Y);
+            var cabSize = new Vector2((_Viewer.CabWidthPixels - _Viewer.CabExceedsDisplayHorizontally) / cabScale.X, (_Viewer.CabHeightPixels - _Viewer.CabExceedsDisplay) / cabScale.Y);
+            int round(float x)
             {
-                if (_CabTexture != null)
-                    stretchedCab = new Rectangle(-50, -40, _CabTexture.Width + 100, _CabTexture.Height + 80);
-                else stretchedCab = new Rectangle(_CabRect.Left - _Viewer.CabXOffsetPixels, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
+                return (int)Math.Round(x);
             }
-            else
-                stretchedCab = new Rectangle(_CabRect.Left - _Viewer.CabXOffsetPixels, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
+            var cabRect = new Rectangle(round(cabPos.X), round(cabPos.Y), round(cabSize.X), round(cabSize.Y));
 
             if (_Shader != null)
             {
                 // TODO: Readd ability to control night time lighting.
-                if (_Viewer.Settings.UseMSTSEnv == false)
-                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.Simulator.Weather.OvercastFactor);
-                else
-                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.World.MSTSSky.mstsskyovercastFactor);
-
-                _Shader.SetTextureData(stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height);
+                float overcast = _Viewer.Settings.UseMSTSEnv ? _Viewer.World.MSTSSky.mstsskyovercastFactor : _Viewer.Simulator.Weather.OvercastFactor;
+                _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, overcast);
+                _Shader.SetTextureData(cabRect.Left, cabRect.Top, cabRect.Width, cabRect.Height);
                 _Shader.Begin();
                 _Shader.CurrentTechnique.Passes[0].Begin();
             }
 
-            if (_CabTexture != null)
-            {
-                if (this._Viewer.Simulator.UseSuperElevation > 0 || _Viewer.Simulator.CarVibrating > 0 || _Locomotive.Train.IsTilting)
-                {
-                    var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
-                    var place = new Vector2(_CabRect.Width / 2 - _Viewer.CabXOffsetPixels - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
-                    var place2 = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
-                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, 0, place2, scale, SpriteEffects.None, 0f);
-                }
-                else
-                {
-                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, stretchedCab, Color.White);
-                }
+            if (_CabTexture == null)
+                return;
 
-                // Draw letterboxing.
-                Texture2D letterboxTexture = new Texture2D(graphicsDevice, 1, 1);
-                letterboxTexture.SetData<Color>(new Color[] { Color.Black });
-                Action<int, int, int, int> drawLetterbox = (x, y, w, h) =>
-                {
-                    _SpriteShader2DCabView.SpriteBatch.Draw(letterboxTexture, new Rectangle(x, y, w, h), Color.White);
-                };
-                if (_Viewer.CabXLetterboxPixels > 0)
-                {
-                    drawLetterbox(0, 0, _Viewer.CabXLetterboxPixels, _Viewer.DisplaySize.Y);
-                    drawLetterbox(_Viewer.CabXLetterboxPixels + _Viewer.CabWidthPixels, 0, _Viewer.DisplaySize.X - _Viewer.CabWidthPixels - _Viewer.CabXLetterboxPixels, _Viewer.DisplaySize.Y);
-                }
-                if (_Viewer.CabYLetterboxPixels > 0)
-                {
-                    drawLetterbox(0, 0, _Viewer.DisplaySize.X, _Viewer.CabYLetterboxPixels);
-                    drawLetterbox(0, _Viewer.CabYLetterboxPixels + _Viewer.CabHeightPixels, _Viewer.DisplaySize.X, _Viewer.DisplaySize.Y - _Viewer.CabHeightPixels - _Viewer.CabYLetterboxPixels);
-                }
+            var drawOrigin = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
+            var drawPos = new Vector2(_Viewer.CabWidthPixels / 2, _Viewer.CabHeightPixels / 2);
+            // Cab view position adjusted to allow for letterboxing.
+            drawPos.X += _Viewer.CabXLetterboxPixels;
+            drawPos.Y += _Viewer.CabYLetterboxPixels;
+
+            _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, drawPos, cabRect, Color.White, 0f, drawOrigin, cabScale, SpriteEffects.None, 0f);
+
+            // Draw letterboxing.
+            Texture2D letterboxTexture = new Texture2D(graphicsDevice, 1, 1);
+            letterboxTexture.SetData<Color>(new Color[] { Color.Black });
+            void drawLetterbox(int x, int y, int w, int h)
+            {
+                _Sprite2DCabView.SpriteBatch.Draw(letterboxTexture, new Rectangle(x, y, w, h), Color.White);
+            }
+            if (_Viewer.CabXLetterboxPixels > 0)
+            {
+                drawLetterbox(0, 0, _Viewer.CabXLetterboxPixels, _Viewer.DisplaySize.Y);
+                drawLetterbox(_Viewer.CabXLetterboxPixels + _Viewer.CabWidthPixels, 0, _Viewer.DisplaySize.X - _Viewer.CabWidthPixels - _Viewer.CabXLetterboxPixels, _Viewer.DisplaySize.Y);
+            }
+            if (_Viewer.CabYLetterboxPixels > 0)
+            {
+                drawLetterbox(0, 0, _Viewer.DisplaySize.X, _Viewer.CabYLetterboxPixels);
+                drawLetterbox(0, _Viewer.CabYLetterboxPixels + _Viewer.CabHeightPixels, _Viewer.DisplaySize.X, _Viewer.DisplaySize.Y - _Viewer.CabHeightPixels - _Viewer.CabYLetterboxPixels);
             }
             //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
 
