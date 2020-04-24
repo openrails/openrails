@@ -675,7 +675,7 @@ namespace Orts.Simulation
 
             foreach (Train train in Trains)
             {
-                if (train.SpeedMpS != 0 &&
+                if ((train.SpeedMpS != 0 || (train.ControlMode == Train.TRAIN_CONTROL.EXPLORER && train.TrainType == Train.TRAINTYPE.REMOTE && MPManager.IsServer())) &&
                     train.GetType() != typeof(AITrain) && train.GetType() != typeof(TTTrain) &&
                     (PlayerLocomotive == null || train != PlayerLocomotive.Train))
                 {
