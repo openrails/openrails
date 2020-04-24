@@ -2216,6 +2216,7 @@ namespace Orts.Simulation.Physics
                             // If main pipe pressure is > 0 then heating will start to occur in comparment, so include compartment heat exchanger value
                             ProgressiveHeatAlongTrainBTU += (car.CarHeatSteamMainPipeHeatLossBTU + car.CarHeatConnectSteamHoseHeatLossBTU) + pS.TopH(W.ToBTUpS(car.CarHeatCompartmentSteamPipeHeatW));
                             CurrentComparmentSteamPipeHeatW = car.CarHeatCompartmentSteamPipeHeatW; // Car is being heated as main pipe pressure is high enough, and temperature increase is required
+                            car.SteamHeatingCompartmentSteamTrapOn = true; // turn on the steam traps
                         }
                         else
                         {
@@ -2223,6 +2224,7 @@ namespace Orts.Simulation.Physics
                             // then no heating will occur in comparment, so leave compartment heat exchanger value out
                             ProgressiveHeatAlongTrainBTU += (car.CarHeatSteamMainPipeHeatLossBTU + car.CarHeatConnectSteamHoseHeatLossBTU);
                             CurrentComparmentSteamPipeHeatW = 0; // Car is not being heated as main pipe pressure is not high enough, or car temp is hot enough
+                            car.SteamHeatingCompartmentSteamTrapOn = false; // turn off the steam traps
                         }
 
                         // Calculate steam flow rates and steam used
