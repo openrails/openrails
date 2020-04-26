@@ -156,6 +156,8 @@ namespace Orts.Viewer3D
                 // sometimes when calculated as two values and subtracted. Presumed cause is floating point.
                 var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length();
                 var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length();
+                // The following avoids water levels flashing, by forcing that higher water levels are nearer to the
+                // camera, which is always true except when camera is under water level, which is quite abnormal
                 if (x.Material is WaterMaterial && y.Material is WaterMaterial && Math.Abs(yd - xd) < 1.0 && x.XNAMatrix.Translation.Y < XNAViewerPos.Y)
                 {
                     return Math.Sign(x.XNAMatrix.Translation.Y - y.XNAMatrix.Translation.Y);
