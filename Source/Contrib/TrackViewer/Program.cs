@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Windows.Forms;
 
 
@@ -30,10 +29,6 @@ namespace ORTS.TrackViewer
         [STAThread]  // Needed for Windows Presentation Foundation (used for the menu)
         static void Main(string[] args)
         {
-            FileStream tvLogFile = File.Create("TrackViewerLog.txt");
-            TextWriterTraceListener TVtraceListener = new TextWriterTraceListener(tvLogFile);
-            Trace.Listeners.Add(TVtraceListener);
-            Trace.WriteLine("TrackViewer Starting");
             using (TrackViewer trackViewer = new TrackViewer(args))
             {
                 // code below is modified version from what is found in GameStateRunActivity.cs
@@ -62,8 +57,6 @@ namespace ORTS.TrackViewer
                     trackViewer.Exit();
                 }
             }
-            Trace.WriteLine("TrackViewer Ending");
-            Trace.Flush();
         }
     }
 }

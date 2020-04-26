@@ -540,6 +540,8 @@ namespace Orts.Viewer3D
         internal readonly Vector3 Position;
         internal readonly float GlowIntensityDay;
         internal readonly float GlowIntensityNight;
+
+        readonly VertexDeclaration VertexDeclaration;
         readonly VertexBuffer VertexBuffer;
 
         public SignalLightPrimitive(Viewer viewer, Vector3 position, float radius, Color color, float glowDay, float glowNight, float u0, float v0, float u1, float v1)
@@ -555,13 +557,15 @@ namespace Orts.Viewer3D
 				new VertexPositionColorTexture(new Vector3(+radius, -radius, 0), color, new Vector2(u0, v1)),
 			};
 
-            VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColorTexture), verticies.Length, BufferUsage.WriteOnly);
+            VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionColorTexture.VertexElements);
+            VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, VertexPositionColorTexture.SizeInBytes * verticies.Length, BufferUsage.WriteOnly);
             VertexBuffer.SetData(verticies);
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.SetVertexBuffer(VertexBuffer);
+            graphicsDevice.VertexDeclaration = VertexDeclaration;
+            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexPositionColorTexture.SizeInBytes);
             graphicsDevice.DrawPrimitives(PrimitiveType.TriangleStrip, 0, 2);
         }
     }
@@ -583,27 +587,37 @@ namespace Orts.Viewer3D
             SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLight"];
             SceneryShader.ImageTexture = Texture;
 
-            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
+            SceneryShader.Begin();
             foreach (var pass in SceneryShader.CurrentTechnique.Passes)
             {
+                pass.Begin();
                 foreach (var item in renderItems)
                 {
                     SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
-                    pass.Apply();
+                    SceneryShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
+                pass.End();
             }
+            SceneryShader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.BlendState = BlendState.Opaque;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
         public override void Mark()
@@ -632,7 +646,10 @@ namespace Orts.Viewer3D
             SceneryShader.CurrentTechnique = Viewer.MaterialManager.SceneryShader.Techniques["SignalLightGlow"];
             SceneryShader.ImageTexture = Texture;
 
-            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = true;
+            rs.DestinationBlend = Blend.InverseSourceAlpha;
+            rs.SourceBlend = Blend.SourceAlpha;
 
             // The following constants define the beginning and the end conditions of
             // the day-night transition. Values refer to the Y postion of LightVector.
@@ -647,22 +664,29 @@ namespace Orts.Viewer3D
         {
             var viewProj = XNAViewMatrix * XNAProjectionMatrix;
 
+            SceneryShader.Begin();
             foreach (var pass in SceneryShader.CurrentTechnique.Passes)
             {
+                pass.Begin();
                 foreach (var item in renderItems)
                 {
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
                     SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
-                    pass.Apply();
+                    SceneryShader.CommitChanges();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
+                pass.End();
             }
+            SceneryShader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.BlendState = BlendState.Opaque;
+            var rs = graphicsDevice.RenderState;
+            rs.AlphaBlendEnable = false;
+            rs.DestinationBlend = Blend.Zero;
+            rs.SourceBlend = Blend.One;
         }
 
         public override void Mark()
