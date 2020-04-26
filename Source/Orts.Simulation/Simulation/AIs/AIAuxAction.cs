@@ -965,7 +965,7 @@ namespace Orts.Simulation.AIs
             AIActionItem newAction = null;
             int SpeedMps = (int)thisTrain.SpeedMpS;
             TrainCar locomotive = thisTrain.FindLeadLocomotive();
-            if (Math.Abs(SpeedMps) <= 0.1f)   //  We call the handler to generate an actionRef
+            if (Math.Abs(SpeedMps) <= Simulator.MaxStoppedMpS)   //  We call the handler to generate an actionRef
             {
                 newAction = Handler(0f, 0f, thisTrain.DistanceTravelledM, thisTrain.DistanceTravelledM);
 
@@ -1308,7 +1308,7 @@ namespace Orts.Simulation.AIs
             {
                 return null;
             }
-            if (Math.Abs(SpeedMps) <= 0.1f && (int)list[0] >= Delay)   //  We call the handler to generate an actionRef
+            if (Math.Abs(SpeedMps) <= Simulator.MaxStoppedMpS && (int)list[0] >= Delay)   //  We call the handler to generate an actionRef
             {
                 newAction = Handler(thisTrain.SpeedMpS, (int)list[0]);
                 
