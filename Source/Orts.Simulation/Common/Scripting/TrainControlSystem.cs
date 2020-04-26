@@ -17,6 +17,7 @@
 
 using System;
 using ORTS.Common;
+using Orts.Simulation.RollingStocks;
 
 namespace ORTS.Scripting.Api
 {
@@ -28,6 +29,10 @@ namespace ORTS.Scripting.Api
         /// True if train control is switched on (the locomotive is the lead locomotive and the train is not autopiloted).
         /// </summary>
         public Func<bool> IsTrainControlEnabled;
+        /// <summary>
+        /// True if train is autopiloted
+        /// </summary>
+        public Func<bool> IsAutopiloted;
         /// <summary>
         /// True if vigilance monitor was switched on in game options.
         /// </summary>
@@ -41,9 +46,13 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> AlerterSound;
         /// <summary>
-        /// Max allowed speed for the train determined by consist.
+        /// Max allowed speed for the train in that moment.
         /// </summary>
         public Func<float> TrainSpeedLimitMpS;
+        /// <summary>
+        /// Max allowed speed for the train basing on consist and route max speed.
+        /// </summary>
+        public Func<float> TrainMaxSpeedMpS;
         /// <summary>
         /// Max allowed speed determined by current signal.
         /// </summary>
@@ -60,6 +69,38 @@ namespace ORTS.Scripting.Api
         /// Distance to next signal.
         /// </summary>
         public Func<int, float> NextSignalDistanceM;
+        /// <summary>
+        /// Aspect of the DISTANCE heads of next NORMAL signal.
+        /// </summary>
+        public Func<Aspect> NextNormalSignalDistanceHeadsAspect;
+        /// <summary>
+        /// Next normal signal has only two aspects (STOP and CLEAR_2).
+        /// </summary>
+        public Func<bool> DoesNextNormalSignalHaveTwoAspects;
+        /// <summary>
+        /// Aspect of the next DISTANCE signal.
+        /// </summary>
+        public Func<Aspect> NextDistanceSignalAspect;
+        /// <summary>
+        /// Distance to next DISTANCE signal.
+        /// </summary>
+        public Func<float> NextDistanceSignalDistanceM;
+        /// <summary>
+        /// Signal type of main head of hext generic signal.
+        /// </summary>
+        public Func<string, string> NextGenericSignalMainHeadSignalType;
+        /// <summary>
+        /// Aspect of the next generic signal.
+        /// </summary>
+        public Func<string, Aspect> NextGenericSignalAspect;
+        /// <summary>
+        /// Distance to next generic signal.
+        /// </summary>
+        public Func<string, float> NextGenericSignalDistanceM;
+        /// <summary>
+        /// Next normal signal has a repeater head
+        /// </summary>
+        public Func<bool> DoesNextNormalSignalHaveRepeaterHead;
         /// <summary>
         /// Max allowed speed determined by current speedpost.
         /// </summary>
@@ -136,6 +177,48 @@ namespace ORTS.Scripting.Api
         /// Train brake pressure value which triggers the power cut-off.
         /// </summary>
         public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
+        /// <summary>
+        /// Line speed taken from .trk file.
+        /// </summary>
+        public Func<float> LineSpeedMpS;
+        /// <summary>
+        /// True if starting from terminal station (no track behind the train).
+        /// </summary>
+        public Func<bool> DoesStartFromTerminalStation;
+        /// <summary>
+        /// True if game just started and train speed = 0.
+        /// </summary>
+        public Func<bool> IsColdStart;
+        /// <summary>
+        /// Get front traveller track node offset.
+        /// </summary>
+        public Func<float> GetTrackNodeOffset;
+        /// <summary>
+        /// Search next diverging switch distance
+        /// </summary>
+        public Func<float, float> NextDivergingSwitchDistanceM;
+        /// <summary>
+        /// Search next trailing diverging switch distance
+        /// </summary>
+        public Func<float, float> NextTrailingDivergingSwitchDistanceM;
+        /// <summary>
+        /// Get Control Mode of player train
+        /// </summary>
+        public Func<TRAIN_CONTROL> GetControlMode;
+        /// <summary>
+        /// Get name of next station if any, else empty string
+        /// </summary>
+        public Func<string> NextStationName;
+        /// <summary>
+        /// Get distance of next station if any, else max float value
+        /// </summary>
+        public Func<float> NextStationDistanceM;
+        /// <summary>
+        /// Get locomotive handle
+        /// </summary>
+        public Func<MSTSLocomotive> Locomotive;
+
+
 
         // TODO: The following will be available in .NET 4 as normal Func:
         public delegate TResult Func5<T1, T2, T3, T4, T5, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
@@ -164,6 +247,9 @@ namespace ORTS.Scripting.Api
         /// Set emergency braking on or off.
         /// </summary>
         public Action<bool> SetEmergencyBrake;
+        /// Set full dynamic braking on or off.
+        /// </summary>
+        public Action<bool> SetFullDynamicBrake;
         /// <summary>
         /// Set throttle controller to position in range [0-1].
         /// </summary>
@@ -279,6 +365,18 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<Aspect> SetNextSignalAspect;
         /// <summary>
+        /// Will be shown on ASPECT_DISPLAY cabcontrol.
+        /// </summary>
+        public Action<int, float> SetCabDisplayControl;
+        /// <summary>
+        /// Will be shown on ASPECT_DISPLAY cabcontrol.
+        /// </summary>
+        public Action<string> SetCustomizedTCSControlString;
+        /// <summary>
+        /// Requests toggle to and from Manual Mode.
+        /// </summary>
+        public Action RequestToggleManualMode;
+        /// <summary>
         /// Get bool parameter in the INI file.
         /// </summary>
         public Func<string, string, bool, bool> GetBoolParameter;
@@ -333,6 +431,20 @@ namespace ORTS.Scripting.Api
         Permission,
     }
 
+    // Represents the same enum as TRAIN_CONTROL
+
+    public enum TRAIN_CONTROL
+        {
+            AUTO_SIGNAL,
+            AUTO_NODE,
+            MANUAL,
+            EXPLORER,
+            OUT_OF_CONTROL,
+            INACTIVE,
+            TURNTABLE,
+            UNDEFINED
+        }
+
     public enum TCSEvent
     {
         /// <summary>
@@ -375,6 +487,22 @@ namespace ORTS.Scripting.Api
         /// Internal reset request by the horn handle.
         /// </summary>
         HornActivated,
+        /// <summary>
+        /// Generic TCS button pressed.
+        /// </summary>
+        GenericTCSButtonPressed,
+        /// <summary>
+        /// Generic TCS button released.
+        /// </summary>
+        GenericTCSButtonReleased,
+        /// <summary>
+        /// Circuit breaker has been closed.
+        /// </summary>
+        CircuitBreakerClosed,
+        /// <summary>
+        /// Circuit breaker has been opened.
+        /// </summary>
+        CircuitBreakerOpen,
     }
 
     /// <summary>
