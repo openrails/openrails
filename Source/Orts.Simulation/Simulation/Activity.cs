@@ -266,7 +266,7 @@ namespace Orts.Simulation
             }
             else
             {
-                if (Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) <= 0.1f)
+                if (Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) <= Simulator.MaxStoppedMpS)
                 {
                     if (prevTrainSpeed != 0)
                     {
