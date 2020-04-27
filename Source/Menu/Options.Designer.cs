@@ -118,6 +118,7 @@
             this.label17 = new System.Windows.Forms.Label();
             this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
             this.checkDataLogSteamPerformance = new System.Windows.Forms.CheckBox();
+            this.checkVerboseConfigurationMessages = new System.Windows.Forms.CheckBox();
             this.tabPageEvaluate = new System.Windows.Forms.TabPage();
             this.checkListDataLogTSContents = new System.Windows.Forms.CheckedListBox();
             this.labelDataLogTSInterval = new System.Windows.Forms.Label();
@@ -1220,6 +1221,7 @@
             this.tabPageDataLogger.Controls.Add(this.label17);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPerformance);
+            this.tabPageDataLogger.Controls.Add(this.checkVerboseConfigurationMessages);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
             this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
@@ -1330,6 +1332,16 @@
             this.checkDataLogSteamPerformance.TabIndex = 6;
             this.checkDataLogSteamPerformance.Text = "Log Steam performance data";
             this.checkDataLogSteamPerformance.UseVisualStyleBackColor = true;
+            // 
+            // checkVerboseConfigurationMessages
+            // 
+            this.checkVerboseConfigurationMessages.AutoSize = true;
+            this.checkVerboseConfigurationMessages.Location = new System.Drawing.Point(6, 236);
+            this.checkVerboseConfigurationMessages.Name = "checkVerboseConfigurationMessages";
+            this.checkVerboseConfigurationMessages.Size = new System.Drawing.Size(163, 17);
+            this.checkVerboseConfigurationMessages.TabIndex = 6;
+            this.checkVerboseConfigurationMessages.Text = "Verbose ENG/WAG configuration messages";
+            this.checkVerboseConfigurationMessages.UseVisualStyleBackColor = true;
             // 
             // tabPageEvaluate
             // 
@@ -2410,6 +2422,7 @@
         private System.Windows.Forms.CheckBox checkDataLogPhysics;
         private System.Windows.Forms.CheckBox checkDataLogPerformance;
         private System.Windows.Forms.CheckBox checkDataLogSteamPerformance;
+        private System.Windows.Forms.CheckBox checkVerboseConfigurationMessages;
         private System.Windows.Forms.CheckBox checkDataLogger;
         private System.Windows.Forms.CheckBox checkDataLogMisc;
         private System.Windows.Forms.Label label18;

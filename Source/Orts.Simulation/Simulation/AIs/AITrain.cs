@@ -2527,7 +2527,7 @@ namespace Orts.Simulation.AIs
 
                         // train is stopped - set departure time
 
-                        if (SpeedMpS == 0)
+                        if (Math.Abs(SpeedMpS) <= Simulator.MaxStoppedMpS)
                         {
                             MovementState = AI_MOVEMENT_STATE.STATION_STOP;
                             StationStop thisStation = StationStops[0];
@@ -2635,7 +2635,7 @@ namespace Orts.Simulation.AIs
                     {
                         AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 50);
                         AITrainThrottlePercent = 0;
-                        if (SpeedMpS == 0)
+                        if (Math.Abs(SpeedMpS) <= Simulator.MaxStoppedMpS)
                         {
                             MovementState = AI_MOVEMENT_STATE.STOPPED;
                         }
@@ -6333,7 +6333,7 @@ namespace Orts.Simulation.AIs
             {
                 MovementState = AI_MOVEMENT_STATE.STATION_STOP;
             }
-            else if (SpeedMpS == 0 && ((AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
+            else if (Math.Abs(SpeedMpS) <= 0.1f && ((AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
             (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION) || (nextActionInfo is AuxActionWPItem &&
                     MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
             {
