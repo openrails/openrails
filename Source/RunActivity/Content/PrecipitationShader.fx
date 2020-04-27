@@ -44,7 +44,7 @@ sampler PrecipitationSamp = sampler_state
 	MagFilter = Linear;
 	MinFilter = Linear;
 	MipFilter = Linear;
-	MipMapLodBias = 0;
+	MipLodBias = 0;
 	AddressU = Wrap;
 	AddressV = Wrap;
 };
@@ -130,7 +130,7 @@ technique Pricipitation
 {
 	pass Pass_0
 	{
-		VertexShader = compile vs_2_0 VSPrecipitation();
-		PixelShader = compile ps_2_0 PSPrecipitation();
+		VertexShader = compile vs_4_0_level_9_3 VSPrecipitation();
+		PixelShader = compile ps_4_0_level_9_3 PSPrecipitation();
 	}
 }

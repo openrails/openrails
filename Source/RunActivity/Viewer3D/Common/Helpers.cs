@@ -131,7 +131,6 @@ namespace Orts.Viewer3D.Common
             { "Wrap", SceneryMaterialOptions.TextureAddressModeWrap },
             { "Mirror", SceneryMaterialOptions.TextureAddressModeMirror },
             { "Clamp", SceneryMaterialOptions.TextureAddressModeClamp },
-            { "Border", SceneryMaterialOptions.TextureAddressModeBorder },
         };
 
         static readonly Dictionary<string, SceneryMaterialOptions> ShaderNames = new Dictionary<string, SceneryMaterialOptions> {

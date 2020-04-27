@@ -542,6 +542,8 @@ namespace Orts.Viewer3D.Popups
         public abstract int ScrollSize { get; }
 
         public abstract void SetScrollPosition(int position);
+
+        internal RasterizerState ScissorTestEnable = new RasterizerState { ScissorTestEnable = true };
     }
 
     public class ControlLayoutScrollboxHorizontal : ControlLayoutScrollbox
@@ -578,11 +580,11 @@ namespace Orts.Viewer3D.Popups
             WindowManager.Flush(spriteBatch);
             var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
             spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width, Position.Height - TextHeight);
-            spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = true;
+            spriteBatch.GraphicsDevice.RasterizerState = ScissorTestEnable;
             base.Draw(spriteBatch, offset);
             WindowManager.Flush(spriteBatch);
             spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
-            spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
+            spriteBatch.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
 
         internal override bool HandleUserInput(WindowMouseEvent e)
@@ -702,11 +704,11 @@ namespace Orts.Viewer3D.Popups
             WindowManager.Flush(spriteBatch);
             var oldScissorRectangle = spriteBatch.GraphicsDevice.ScissorRectangle;
             spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(offset.X + Position.X, offset.Y + Position.Y, Position.Width - TextHeight, Position.Height);
-            spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = true;
+            spriteBatch.GraphicsDevice.RasterizerState = ScissorTestEnable;
             base.Draw(spriteBatch, offset);
             WindowManager.Flush(spriteBatch);
             spriteBatch.GraphicsDevice.ScissorRectangle = oldScissorRectangle;
-            spriteBatch.GraphicsDevice.RenderState.ScissorTestEnable = false;
+            spriteBatch.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
 
         internal override bool HandleUserInput(WindowMouseEvent e)
