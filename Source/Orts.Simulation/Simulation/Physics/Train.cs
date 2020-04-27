@@ -20078,41 +20078,16 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         /// </summary>
         /// 
 
-        virtual public void ReenterTrackSections(int trackNodeIndex, int trVectorSectionIndex, Vector3 finalFrontTravellerXNALocation, Vector3 finalRearTravellerXNALocation, Traveller.TravellerDirection direction)
+        public void ReenterTrackSections(int trackNodeIndex, int trVectorSectionIndex, Vector3 finalFrontTravellerXNALocation, Vector3 finalRearTravellerXNALocation, Traveller.TravellerDirection direction)
         {
-            CalculateReenterTrackPosition(trackNodeIndex, trVectorSectionIndex, finalFrontTravellerXNALocation, finalRearTravellerXNALocation, direction);
-
-            if (TrainType == TRAINTYPE.STATIC)
-            {
-                ControlMode = TRAIN_CONTROL.UNDEFINED;
-                return;
-            }
-
-            if (Simulator.Activity == null && !Simulator.TimetableMode) ToggleToExplorerMode();
-            else ToggleToManualMode();
-            Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Off);
-        }
-
-        /// <summary>
-        /// Recalculate train position after turntable rotation
-        /// </summary>
-
-        public void CalculateReenterTrackPosition(int trackNodeIndex, int trVectorSectionIndex, Vector3 finalFrontTravellerXNALocation, Vector3 finalRearTravellerXNALocation, Traveller.TravellerDirection direction)
-        {
+            FrontTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
+                 Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalFrontTravellerXNALocation.X, -finalFrontTravellerXNALocation.Z, FrontTDBTraveller.Direction);
+            RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
+                Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalRearTravellerXNALocation.X, -finalRearTravellerXNALocation.Z, RearTDBTraveller.Direction);
             if (direction == Traveller.TravellerDirection.Backward)
             {
-                ReverseCars();
-                FrontTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
-                    Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalRearTravellerXNALocation.X, -finalRearTravellerXNALocation.Z, FrontTDBTraveller.Direction);
-                RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
-                                Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalFrontTravellerXNALocation.X, -finalFrontTravellerXNALocation.Z, RearTDBTraveller.Direction);
-            }
-            else
-            {
-                FrontTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
-                    Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalFrontTravellerXNALocation.X, -finalFrontTravellerXNALocation.Z, FrontTDBTraveller.Direction);
-                RearTDBTraveller = new Traveller(Simulator.TSectionDat, Simulator.TDB.TrackDB.TrackNodes, Simulator.TDB.TrackDB.TrackNodes[trackNodeIndex],
-                                Cars[0].WorldPosition.TileX, Cars[0].WorldPosition.TileZ, finalRearTravellerXNALocation.X, -finalRearTravellerXNALocation.Z, RearTDBTraveller.Direction);
+                FrontTDBTraveller.ReverseDirection();
+                RearTDBTraveller.ReverseDirection();
             }
 
             ClearValidRoutes();
@@ -20136,6 +20111,16 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
 
             PresentPosition[0].SetTCPosition(tn.TCCrossReference, offset, direction1);
             PresentPosition[0].CopyTo(ref PreviousPosition[0]);
+
+            if (TrainType == TRAINTYPE.STATIC)
+            {
+                ControlMode = TRAIN_CONTROL.UNDEFINED;
+                return;
+            }
+
+            if (Simulator.Activity == null && !Simulator.TimetableMode) ToggleToExplorerMode();
+            else ToggleToManualMode();
+            Simulator.Confirmer.Confirm(CabControl.SignalMode, CabSetting.Off);
         }
     }// class Train
 }

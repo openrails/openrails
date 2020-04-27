@@ -1265,9 +1265,8 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
             LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f;
             AdhesionFilter.Reset(0.5f);
-            LocalThrottlePercent = Train.MUThrottlePercent;
-            AverageForceN = MaxForceN * LocalThrottlePercent / 100;
-            float maxPowerW = MaxPowerW * LocalThrottlePercent * LocalThrottlePercent / 10000;
+            AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
+            float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             if (Train.IsActualPlayerTrain)
@@ -1707,7 +1706,7 @@ namespace Orts.Simulation.RollingStocks
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
+            if (this.IsLeadLocomotive())
             {
                 var throttleCurrentNotch = ThrottleController.CurrentNotch;
                 ThrottleController.Update(elapsedClockSeconds);
@@ -3856,6 +3855,52 @@ namespace Orts.Simulation.RollingStocks
                         }                   
                         if (direction == 1 && !(cvc is CVCGauge))
                             data = -data;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_SIGNED_TRACTION_BRAKING:
+                    {
+                        var direction = 0; // Forwards
+                        if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
+                            direction = ((CVCGauge)cvc).Direction;
+                        data = 0.0f;
+                        if (FilteredMotiveForceN != 0)
+                            data = Math.Abs(this.FilteredMotiveForceN);
+                        else
+                            data = Math.Abs(this.LocomotiveAxle.AxleForceN);
+                        if (DynamicBrakePercent > 0)
+                        {
+                            data = -Math.Abs(DynamicBrakeForceN);
+                        }
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.AMPS:
+                                if (MaxCurrentA == 0)
+                                    MaxCurrentA = (float)cvc.MaxValue;
+                                if (DynamicBrakeMaxCurrentA == 0)
+                                    DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
+                                if (ThrottlePercent > 0)
+                                {
+                                    data = (data / MaxForceN) * MaxCurrentA;
+                                }
+                                if (DynamicBrakePercent > 0)
+                                {
+                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                }
+                                break;
+
+                            case CABViewControlUnits.NEWTONS:
+                                break;
+
+                            case CABViewControlUnits.KILO_NEWTONS:
+                                data = data / 1000.0f;
+                                break;
+
+                            case CABViewControlUnits.KILO_LBS:
+                                data = data / 4448.22162f;
+                                break;
+                        }
+ //                       if (direction == 1 && !(cvc is CVCGauge))
+ //                           data = -data;
                         break;
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:

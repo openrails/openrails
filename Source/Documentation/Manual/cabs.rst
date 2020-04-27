@@ -171,6 +171,30 @@ Here is an example of a cab light control block within the .cvf file::
             )
 
 
+Signed Traction Braking control
+-------------------------------
+
+This cabview control shows the signed value of the force (+ve or -ve, that is 
+tractive or due to dynamic braking) as displayed 
+in many real loco cabs. The control is ORTS_SIGNED_TRACTION_BRAKING. 
+For comparison, the MSTS-compatible TRACTION_BRAKING cabview control shows the 
+absolute value of the force. 
+Here is an example of a cab light control block within the .cvf file::
+
+
+            Dial (
+                Type ( ORTS_SIGNED_TRACTION_BRAKING DIAL )
+                Position ( 319 223 3 32 )
+                Graphic ( ../../Common.Cab/CabE464/AgoDin.ace )
+                Style ( NEEDLE )
+                ScaleRange ( -761 1600 )
+                ScalePos ( 190 70 )
+                Units ( AMPS )
+                Pivot ( 36 )
+                DirIncrease ( 0 )
+                )
+
+
 Further OR cab controls
 -----------------------
 
