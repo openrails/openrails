@@ -30,9 +30,6 @@
           <p style="text-align: center;">
             <?php echo date('d F Y', filemtime("$file_path/$source_stable")) . ', ' . round(filesize("$file_path/$source_stable") / 1024 / 1024) . 'MB'; ?>
           </p>
-          <!--<p class="alert alert-info">
-            We're working hard on producing the next stable version. Please check back soon.
-          </p>-->
         </div>
         <div class="col-md-2"></div>
         <div class="col-md-4">
@@ -60,9 +57,9 @@ Open Rails's source code is organised as a Visual Studio solution - see <a href=
 <p>
 One of the ways that the <a href="../../discover/license/">Free Software License (GPL)</a> protects our rights is by requiring everyone who distributes software under the GPL to make the source available also. That way, everyone who uses the software can examine it and customize it if they wish.
 </p>
-<h2>Subversion (SVN) Software Versioning Control System</h2>
+<h2>Git Software Versioning Control System</h2>
 <p>
-The entire history of project development is archived in our Subversion repository, so visitors are able to extract not just the current version but all the previous ones too back to version 1 in December 2009.
+The entire history of project development is <a href="https://github.com/openrails/openrails">archived in our public Git repository</a>, so visitors are able to extract not just the current version but all the previous ones too back to version 1 in December 2009.
 </p><p>
 For access details, see <a href="../../contribute/developing-code/">Contribute > Code</a>.
 </p>
