@@ -294,7 +294,7 @@ namespace Orts.Viewer3D
 
                 lightStates = new SignalLightState[SignalTypeData.Lights.Count];
                 for (var i = 0; i < SignalTypeData.Lights.Count; i++)
-                    lightStates[i] = new SignalLightState();
+                    lightStates[i] = new SignalLightState(SignalTypeData.OnOffTime);
 
 #if DEBUG_SIGNAL_SHAPES
                 Console.Write("  HEAD type={0,-8} lights={1,-2} sem={2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Semaphore);
@@ -428,6 +428,7 @@ namespace Orts.Viewer3D
             public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
             public readonly float FlashTimeOn;
             public readonly float FlashTimeTotal;
+            public readonly float OnOffTime;
             public readonly bool Semaphore;
             public readonly bool DayLight = true;
             public readonly float SemaphoreAnimationTime;
@@ -498,6 +499,8 @@ namespace Orts.Viewer3D
                     SemaphoreAnimationTime = mstsSignalType.SemaphoreInfo;
                     DayLight = mstsSignalType.DayLight;
                 }
+
+                OnOffTime = mstsSignalType.OnOffTime;
             }
         }
 
@@ -552,8 +555,13 @@ namespace Orts.Viewer3D
     /// </summary>
     internal class SignalLightState
     {
-        static readonly float LightOnOffTime = 0.5f; // Transition time in seconds.
+        private readonly float onOffTime;
         private float intensity = 0;
+
+        public SignalLightState(float onOffTime)
+        {
+            this.onOffTime = onOffTime;
+        }
 
         public float GetIntensity()
         {
@@ -562,10 +570,12 @@ namespace Orts.Viewer3D
 
         public void SetIntensity(float target, ElapsedTime et)
         {
-            if (target > intensity)
-                intensity = Math.Min(intensity + et.ClockSeconds / LightOnOffTime, target);
+            if (onOffTime == 0)
+                intensity = target;
+            else if (target > intensity)
+                intensity = Math.Min(intensity + et.ClockSeconds / onOffTime, target);
             else if (target < intensity)
-                intensity = Math.Max(intensity - et.ClockSeconds / LightOnOffTime, target);
+                intensity = Math.Max(intensity - et.ClockSeconds / onOffTime, target);
         }
 
         public bool IsIlluminated()
