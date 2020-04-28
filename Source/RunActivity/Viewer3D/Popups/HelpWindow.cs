@@ -84,7 +84,7 @@ namespace Orts.Viewer3D.Popups
                 }, (keyBox, keyScanCode, keyName) =>
                 {
                     var color = Owner.Viewer.Settings.Input.GetScanCodeColor(keyScanCode);
-                    if (color == Color.TransparentBlack)
+                    if (color == Color.Transparent)
                         color = Color.Black;
 
                     InputSettings.Scale(ref keyBox, keyWidth, keyHeight);
