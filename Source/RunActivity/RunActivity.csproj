@@ -154,6 +154,7 @@
     <Compile Include="Viewer3D\Processes\SoundProcess.cs" />
     <Compile Include="Viewer3D\Processes\UpdaterProcess.cs" />
     <Compile Include="Viewer3D\Processes\WatchdogProcess.cs" />
+    <Compile Include="Viewer3D\Processes\WebServerProcess.cs" />
     <Compile Include="Viewer3D\RenderFrame.cs" />
     <Compile Include="Viewer3D\RoadCars.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSDieselLocomotiveViewer.cs" />
@@ -179,6 +180,7 @@
     <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />
+    <Compile Include="Viewer3D\WebServices\WebServer.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\World.cs" />
   </ItemGroup>
@@ -329,6 +331,19 @@
     <Content Include="Version.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Viewer3D\WebServices\Web\css\hud.css" />
+    <Content Include="Viewer3D\WebServices\Web\css\sample.css" />
+    <Content Include="Viewer3D\WebServices\Web\css\trackmonitor.css" />
+    <Content Include="Viewer3D\WebServices\Web\HUD.html" />
+    <Content Include="Viewer3D\WebServices\Web\images\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\images\waverley.jpg" />
+    <Content Include="Viewer3D\WebServices\Web\images\zig-zag.jpg" />
+    <Content Include="Viewer3D\WebServices\Web\index - ApiSample.html" />
+    <Content Include="Viewer3D\WebServices\Web\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\js\ApiSample.js" />
+    <Content Include="Viewer3D\WebServices\Web\js\ApiTrainInfo.js" />
+    <Content Include="Viewer3D\WebServices\Web\js\hud.js" />
+    <Content Include="Viewer3D\WebServices\Web\js\trackmonitor.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
