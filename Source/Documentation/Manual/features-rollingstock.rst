@@ -473,10 +473,124 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
+Train control and engine scripting
+==================================
 
+To simulate especially complex behavior, Open Rails provides a C# scripting 
+interface for a number of systems on the player locomotive. Like the Open Rails 
+program itself, these scripts are written in .cs files containing C# classes, 
+but they are compiled and linked at runtime, so they don't depend on changes 
+in the core program itself and can be distributed with rolling stock content. 
+Scripts will run if referenced by OR-specific fields in the .eng file.
 
-  
+.. list-table:: Currently scriptable locomotive systems
+   :widths: 25 25 50
+   :header-rows: 1
 
+   * - System
+     - C# class
+     - .eng block
+   * - Brakes
+     - ORTS.Scripting.Api.BrakeController
+     - ``Engine ( ORTSTrainBrakeController ( "DemoBrakes.cs" ) )``
+   * - Circuit breaker
+     - ORTS.Scripting.Api.CircuitBreaker
+     - ``Engine ( ORTSCircuitBreaker ( "DemoBreaker.cs" ) )``
+   * - Electric power supply
+     - ORTS.Scripting.Api.ElectricPowerSupply
+     - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
+   * - Train control system
+     - ORTS.Scripting.Api.TrainControlSystem
+     - ``Engine ( ORTSTrainControlSystem ( "DemoTCS.cs" ) )``
 
+Scripts reside in a ``Script`` subfolder within the engine's folder and must 
+contain a class named after the script's own filename. (For example, if the 
+script's filename is ``AmtrakTCS.cs``, OR searches for a single class named 
+``AmtrakTCS``.) The code runs on the UpdaterProcess thread. This example, which 
+would need to be placed in a file named ``DemoTCS.cs``, illustrates the minimum 
+code required for a train control system script::
 
+  using System;
+  using ORTS.Scripting.Api;
 
+  namespace ORTS.Scripting.Script
+  {
+      class DemoTCS : TrainControlSystem
+      {
+          public override void HandleEvent(TCSEvent evt, string message) {}
+          public override void Initialize()
+          {
+              Console.WriteLine("TCS activated!");
+          }
+          public override void SetEmergency(bool emergency) {}
+          public override void Update() {}
+      }
+  }
+
+Observe that the script's class *must* reside in the ``ORTS.Scripting.Script`` 
+namespace and that it subclasses the abstract class of the desired system. It 
+also references external assemblies with ``using`` directives. OR makes the 
+following .NET assemblies available to scripts:
+
+- System
+- System.Core
+- ORTS.Common
+- Orts.Simulation
+
+Scripts communicate with the simulator by invoking methods in the base class. 
+For example, this script might invoke the ``TrainLengthM()`` method of the 
+``TrainControlSystem`` class, which returns the length of the player train. More 
+methods are available in the ``ORTS.Scripting.Api.AbstractScriptClass`` class, 
+which ``TrainControlSystem`` is itself a subclass of.
+
+Finally, if a script contains a syntax or typing error, OR will log an exception 
+during the loading process and run the simulation without it.
+
+Developing scripts with Visual Studio
+-------------------------------------
+
+While it is certainly possible to develop scripts with a plain text editor, the 
+code completion and debugging aids available in an IDE like Visual Studio make 
+for a vastly better programming experience. If you have a development 
+environment set up to build Open Rails, you can use Visual Studio to edit your 
+scripts with these creature comforts. What follows is a suggested workflow:
+
+#. First, in your copy of the OR source code, make a copy of your 
+   ``Source\ORTS.sln`` file. Keep it in the ``Source\`` folder, but give it a 
+   novel name like ``ORTS_Scripts.sln``. (You could also modify the original 
+   ORTS solution, but you'd have to remember not to check it in to source 
+   control.) Add a new project to the solution and select the empty .NET 
+   project.
+
+#. In the configuration dialog, set the new project to be added to the existing 
+   solution, set its location to be the folder of the engine you're scripting, 
+   and set its name to "Script". (For now, you must use "Script", but you can 
+   rename the project after it's created.) You can leave the .NET 
+   framework version set to its default. Then, create the project.
+
+   .. image:: images/features-scripting1.png
+     :width: 600
+
+#. The new project folder becomes the very ``Script`` subfolder that OR will 
+   search for scripts. Add references to the ORTS.Common and Orts.Simulation 
+   assemblies, which will enable IntelliSense features inside your editor when 
+   you edit scripts. You may now rename the project as you like (which will not 
+   rename the folder) and delete the pregenerated App.config file.
+
+   .. image:: images/features-scripting2.png
+     :width: 300
+
+#. Finally, open the Build Configuration Manager and set the new script project 
+   not to build for both the Debug and Release configurations.
+
+   .. image:: images/features-scripting3.png
+     :width: 600
+
+With this setup, Visual Studio will type-check your scripts and make suggestions 
+when you use the Open Rails API. You can also set breakpoints within your 
+script, which will be caught by RunActivity.exe if run inside Visual Studio.
+
+.. image:: images/features-scripting4.png
+
+Note that Visual Studio uses relative paths, so if you ever move any folders, 
+you'll need to fix the references by hand.
