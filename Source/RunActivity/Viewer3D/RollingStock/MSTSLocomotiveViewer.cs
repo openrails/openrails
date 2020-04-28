@@ -177,6 +177,8 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCabRadio, new Action[] { Noop, () => new CabRadioCommand(Viewer.Log, !Locomotive.CabRadioOn) });
             UserInputCommands.Add(UserCommand.ControlDieselHelper, new Action[] { Noop, () => new ToggleHelpersEngineCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlGeneric1, new Action[] { () => new TCSCommand(Viewer.Log, false, 0), () => new TCSCommand(Viewer.Log, true, 0) });
+            UserInputCommands.Add(UserCommand.ControlGeneric2, new Action[] { () => new TCSCommand(Viewer.Log, false, 1), () => new TCSCommand(Viewer.Log, true, 1) });
             base.InitializeUserInputCommands();
         }
 

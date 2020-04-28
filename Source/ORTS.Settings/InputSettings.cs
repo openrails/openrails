@@ -379,6 +379,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlForwards] = new UserCommandKeyInput(0x11);
             Commands[(int)UserCommand.ControlGearDown] = new UserCommandKeyInput(0x12, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlGearUp] = new UserCommandKeyInput(0x12);
+            Commands[(int)UserCommand.ControlGeneric1] = new UserCommandKeyInput(0x33, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlGeneric2] = new UserCommandKeyInput(0x34, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlHandbrakeFull] = new UserCommandKeyInput(0x28, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlHandbrakeNone] = new UserCommandKeyInput(0x27, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlHeadlightDecrease] = new UserCommandKeyInput(0x23, KeyModifiers.Shift);
