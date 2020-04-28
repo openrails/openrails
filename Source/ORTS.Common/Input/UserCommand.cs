@@ -191,9 +191,12 @@
         [GetString("Control ImmediateRefill")] ControlImmediateRefill,
         [GetString("Control Turntable Clockwise")] ControlTurntableClockwise,
         [GetString("Control Turntable Counterclockwise")] ControlTurntableCounterclockwise,
+        [GetString("Control Generic 1")] ControlGeneric1,
+        [GetString("Control Generic 2")] ControlGeneric2,
         [GetString("Control Cab Radio")] ControlCabRadio,
         [GetString("Control AI Fire On")] ControlAIFireOn,
         [GetString("Control AI Fire Off")] ControlAIFireOff,
         [GetString("Control AI Fire Reset")] ControlAIFireReset,
+
     }
 }
