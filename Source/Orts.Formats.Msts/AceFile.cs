@@ -101,12 +101,12 @@ namespace Orts.Formats.Msts
             var imageCount = 1 + (int)((options & SimisAceFormatOptions.MipMaps) != 0 ? Math.Log(width) / Math.Log(2) : 0);
             Texture2D texture;
             if ((options & SimisAceFormatOptions.MipMaps) == 0)
-                texture = new Texture2D(graphicsDevice, width, height, false, textureFormat);
+                texture = new Texture2D(graphicsDevice, width, height, 1, TextureUsage.None, textureFormat);
             else
                 if (imageCount > 1)
-                    texture = new Texture2D(graphicsDevice, width, height, true, textureFormat);
+                    texture = new Texture2D(graphicsDevice, width, height, imageCount, TextureUsage.None, textureFormat);
                 else
-                    texture = new Texture2D(graphicsDevice, width, height, true, textureFormat);
+                    texture = new Texture2D(graphicsDevice, width, height, 0, TextureUsage.AutoGenerateMipMap, textureFormat);
 
             // Read in the color channels; each one defines a size (in bits) and type (reg, green, blue, mask, alpha).
             var channels = new List<SimisAceChannel>();
@@ -146,7 +146,7 @@ namespace Orts.Formats.Msts
                     // For <4 pixels the images are in RGB format. There's no point reading them though, as the
                     // API accepts the 4x4 image's data for the 2x2 and 1x1 case. They do need to be set though!
 
-                    texture.SetData(imageIndex, null, buffer, 0, buffer.Length);
+                    texture.SetData(imageIndex, null, buffer, 0, buffer.Length, SetDataOptions.None);
                 }
             }
             else
@@ -181,7 +181,7 @@ namespace Orts.Formats.Msts
                         }
                         for (var x = 0; x < imageWidth; x++)
                         {
-                            buffer[imageWidth * y + x] = channelBuffers[(int)SimisAceChannelId.Red][x] + (channelBuffers[(int)SimisAceChannelId.Green][x] << 8) + (channelBuffers[(int)SimisAceChannelId.Blue][x] << 16);
+                            buffer[imageWidth * y + x] = (channelBuffers[(int)SimisAceChannelId.Red][x] << 16) + (channelBuffers[(int)SimisAceChannelId.Green][x] << 8) + channelBuffers[(int)SimisAceChannelId.Blue][x];
                             if (channelBuffers[(int)SimisAceChannelId.Alpha] != null)
                                 buffer[imageWidth * y + x] += channelBuffers[(int)SimisAceChannelId.Alpha][x] << 24;
                             else if (channelBuffers[(int)SimisAceChannelId.Mask] != null)
@@ -190,7 +190,7 @@ namespace Orts.Formats.Msts
                                 buffer[imageWidth * y + x] += (0xFF << 24);
                         }
                     }
-                    texture.SetData(imageIndex, null, buffer, 0, imageWidth * imageHeight);
+                    texture.SetData(imageIndex, null, buffer, 0, imageWidth * imageHeight, SetDataOptions.None);
                 }
             }
 

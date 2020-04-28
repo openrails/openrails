@@ -579,7 +579,7 @@ namespace Orts.Viewer3D.Popups
                     rectangle.Height *= 2;
                 }
 
-                var texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, false, SurfaceFormat.Color); // Color = 32bppRgb
+                var texture = new Texture2D(graphicsDevice, rectangle.Width, rectangle.Height, 1, TextureUsage.None, SurfaceFormat.Color); // Color = 32bppRgb
                 texture.SetData(buffer);
                 Texture = texture;
             }

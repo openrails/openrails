@@ -48,7 +48,7 @@ sampler SkyMapSampler = sampler_state
 	MAGFILTER = LINEAR;
 	MINFILTER = LINEAR;
 	MIPFILTER = LINEAR;
-	MIPLODBIAS = 0.000000;
+	MIPMAPLODBIAS = 0.000000;
 	AddressU = Wrap;
 	AddressV = Wrap;
 };
@@ -59,7 +59,7 @@ sampler StarMapSampler = sampler_state
 	MAGFILTER = LINEAR;
 	MINFILTER = LINEAR;
 	MIPFILTER = LINEAR;
-	MIPLODBIAS = 0.000000;
+	MIPMAPLODBIAS = 0.000000;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -70,7 +70,7 @@ sampler MoonMapSampler = sampler_state
 	MAGFILTER = LINEAR;
 	MINFILTER = LINEAR;
 	MIPFILTER = LINEAR;
-	MIPLODBIAS = 0.000000;
+	MIPMAPLODBIAS = 0.000000;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -81,7 +81,7 @@ sampler MoonMaskSampler = sampler_state
 	MAGFILTER = LINEAR;
 	MINFILTER = LINEAR;
 	MIPFILTER = LINEAR;
-	MIPLODBIAS = 0.000000;
+	MIPMAPLODBIAS = 0.000000;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -92,7 +92,7 @@ sampler CloudMapSampler = sampler_state
 	MAGFILTER = LINEAR;
 	MINFILTER = LINEAR;
 	MIPFILTER = LINEAR;
-	MIPLODBIAS = 0.000000;
+	MIPMAPLODBIAS = 0.000000;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -257,21 +257,21 @@ float4 PSClouds(VERTEX_OUTPUT In) : COLOR
 
 technique Sky {
    pass Pass_0 {
-	  VertexShader = compile vs_4_0_level_9_3 VSSky();
-	  PixelShader = compile ps_4_0_level_9_3 PSSky();
+	  VertexShader = compile vs_2_0 VSSky();
+	  PixelShader = compile ps_2_0 PSSky();
    }
 }
 
 technique Moon {
    pass Pass_0 {
-	  VertexShader = compile vs_4_0_level_9_3 VSMoon();
-	  PixelShader = compile ps_4_0_level_9_3 PSMoon();
+	  VertexShader = compile vs_2_0 VSMoon();
+	  PixelShader = compile ps_2_0 PSMoon();
    }
 }
 
 technique Clouds {
    pass Pass_0 {
-	  VertexShader = compile vs_4_0_level_9_3 VSSky();
-	  PixelShader = compile ps_4_0_level_9_3 PSClouds();
+	  VertexShader = compile vs_2_0 VSSky();
+	  PixelShader = compile ps_2_0 PSClouds();
    }
 }
