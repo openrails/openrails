@@ -461,7 +461,8 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = comboWindowSize.Text;
+            Settings.WindowSize = GetValidWindowSize();
+
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
 
@@ -536,6 +537,15 @@ namespace ORTS
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
 
             Settings.Save();
+        }
+
+        private string GetValidWindowSize()
+        {
+            // "1024X780" instead of "1024x780" then "Start" resulted in an immediate return to the Menu with no OpenRailsLog.txt and a baffled user.
+            var windowSizeArray = comboWindowSize.Text.ToLower().Replace(" ", "").Split('x');
+            return (int.TryParse(windowSizeArray[0], out int width) && int.TryParse(windowSizeArray[1], out int height))
+                ? $"{width}x{height}"
+                : Settings.WindowSize; // i.e. no change or message. Just ignore non-numeric entries
         }
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
