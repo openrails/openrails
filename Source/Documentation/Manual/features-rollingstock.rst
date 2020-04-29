@@ -595,6 +595,42 @@ script, which will be caught by RunActivity.exe if run inside Visual Studio.
 Note that Visual Studio uses relative paths, so if you ever move any folders, 
 you'll need to fix the references by hand.
 
+.. _features-scripting-cb:
+
+Circuit breaker
+---------------
+
+Available for electric locomotives only. The circuit breaker script controls 
+the behavior of the locomotive's 
+:ref:`circuit breaker <physics-circuit-breaker>`.
+
+Use the following .eng parameter to load a circuit breaker script::
+
+  Engine (
+      ORTSCircuitBreaker ( "YourCB.cs" )
+  )
+
+"Automatic" and "Manual" load the generic OR circuit breaker implementation, so 
+do `not` use these names for your own script.
+
+.. _features-scripting-eps:
+
+Electric power supply
+---------------------
+
+Available for electric locomotives only. The power supply script determines 
+whether or not the locomotive :ref:`is serviceable <physics-power-supply>` given 
+the current line voltage, pantograph position, circuit breaker state, etc.
+
+Use the following .eng paramater to load an electric power supply script::
+
+  Engine (
+      ORTSPowerSupply ( "YourEPS.cs" )
+  )
+
+"Default" will load the generic OR power supply implementation, so do `not` use 
+this name for your own script.
+
 Train control system
 --------------------
 
