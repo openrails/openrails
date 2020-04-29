@@ -597,6 +597,29 @@ you'll need to fix the references by hand.
 
 .. _features-scripting-cb:
 
+Brake controller
+----------------
+
+The brake controller script customizes the behavior of the train's brakes, 
+allowing for much greater systems fidelity compared to what is possible with 
+the model inherited from MSTS. For this purpose, the script can read the state 
+of the brake controls and set the air pressures of the brake reservoirs.
+
+Use the following .eng parameter to load a brake controller script::
+
+  Engine (
+      ORTSTrainBrakeController ( "YourBrakes.cs" )
+  )
+
+or::
+
+  Engine (
+      ORTSEngineBrakeController ( "YourBrakes.cs" )
+  )
+
+"MSTS" loads the default MSTS-compatible implementation, so do `not` use this 
+name for your own script.
+
 Circuit breaker
 ---------------
 
@@ -634,8 +657,8 @@ this name for your own script.
 Train Control System
 --------------------
 
-Train Control System, or TCS, scripts are intended to model train safety and cab 
-signalling systems. They can manipulate the locomotive's controls and speed 
+The Train Control System, or TCS, script is intended to model train safety and 
+cab signalling systems. It can manipulate the locomotive's controls and speed 
 limit displays, impose penalty brake applications, read upcoming signal aspects 
 and speed limits, and play warning sounds.
 
