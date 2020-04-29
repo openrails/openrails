@@ -499,7 +499,7 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
    * - Electric power supply
      - ORTS.Scripting.Api.ElectricPowerSupply
      - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
-   * - Train control system
+   * - Train Control System
      - ORTS.Scripting.Api.TrainControlSystem
      - ``Engine ( ORTSTrainControlSystem ( "DemoTCS.cs" ) )``
 
@@ -508,7 +508,7 @@ contain a class named after the script's own filename. (For example, if the
 script's filename is ``AmtrakTCS.cs``, OR searches for a single class named 
 ``AmtrakTCS``.) The code runs on the UpdaterProcess thread. This example, which 
 would need to be placed in a file named ``DemoTCS.cs``, illustrates the minimum 
-code required for a train control system script::
+code required for a Train Control System script::
 
   using System;
   using ORTS.Scripting.Api;
@@ -631,10 +631,10 @@ Use the following .eng paramater to load an electric power supply script::
 "Default" will load the generic OR power supply implementation, so do `not` use 
 this name for your own script.
 
-Train control system
+Train Control System
 --------------------
 
-Train control system, or TCS, scripts are intended to model train safety and cab 
+Train Control System, or TCS, scripts are intended to model train safety and cab 
 signalling systems. They can manipulate the locomotive's controls and speed 
 limit displays, impose penalty brake applications, read upcoming signal aspects 
 and speed limits, and play warning sounds.
