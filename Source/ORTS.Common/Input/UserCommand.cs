@@ -197,6 +197,5 @@
         [GetString("Control AI Fire On")] ControlAIFireOn,
         [GetString("Control AI Fire Off")] ControlAIFireOff,
         [GetString("Control AI Fire Reset")] ControlAIFireReset,
-
     }
 }
