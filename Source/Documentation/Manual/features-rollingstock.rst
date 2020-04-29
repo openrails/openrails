@@ -617,8 +617,8 @@ or::
       ORTSEngineBrakeController ( "YourBrakes.cs" )
   )
 
-"MSTS" loads the default MSTS-compatible implementation, so do `not` use this 
-name for your own script.
+The .cs extension is optional. "MSTS" loads the default MSTS-compatible 
+implementation, so do `not` use this name for your own script.
 
 Circuit breaker
 ---------------
@@ -633,8 +633,8 @@ Use the following .eng parameter to load a circuit breaker script::
       ORTSCircuitBreaker ( "YourCB.cs" )
   )
 
-"Automatic" and "Manual" load the generic OR circuit breaker implementation, so 
-do `not` use these names for your own script.
+The .cs extension is optional. "Automatic" and "Manual" load the generic OR 
+circuit breaker implementation, so do `not` use these names for your own script.
 
 .. _features-scripting-eps:
 
@@ -651,8 +651,8 @@ Use the following .eng paramater to load an electric power supply script::
       ORTSPowerSupply ( "YourEPS.cs" )
   )
 
-"Default" will load the generic OR power supply implementation, so do `not` use 
-this name for your own script.
+The .cs extension is optional. "Default" will load the generic OR power supply 
+implementation, so do `not` use this name for your own script.
 
 Train Control System
 --------------------
