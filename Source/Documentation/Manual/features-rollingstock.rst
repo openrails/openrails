@@ -504,11 +504,14 @@ Scripts will run if referenced by OR-specific fields in the .eng file.
      - ``Engine ( ORTSTrainControlSystem ( "DemoTCS.cs" ) )``
 
 Scripts reside in a ``Script`` subfolder within the engine's folder and must 
-contain a class named after the script's own filename. (For example, if the 
-script's filename is ``AmtrakTCS.cs``, OR searches for a single class named 
-``AmtrakTCS``.) The code runs on the UpdaterProcess thread. This example, which 
-would need to be placed in a file named ``DemoTCS.cs``, illustrates the minimum 
-code required for a Train Control System script::
+contain a class named after the script's own filename. For example, if the 
+script's filename is ``AmtrakTCS.cs``, OR will search for a single class named 
+``AmtrakTCS``. (It is also possible to place the script in another location, 
+such as a ``Common.Script`` folder in the ``TRAINSET`` folder, by prepending the 
+appropriate amount of parent directory tokens ``..\`` relative to the engine's 
+``Script`` folder.) The script's code runs on the UpdaterProcess thread. This 
+example, which would need to be placed in a file named ``DemoTCS.cs``, 
+illustrates the minimum code required for a Train Control System script::
 
   using System;
   using ORTS.Scripting.Api;
