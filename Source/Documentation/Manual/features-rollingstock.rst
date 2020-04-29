@@ -473,8 +473,8 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
-Train control and engine scripting
-==================================
+C# engine scripting
+===================
 
 To simulate especially complex behavior, Open Rails provides a C# scripting 
 interface for a number of systems on the player locomotive. Like the Open Rails 
@@ -551,14 +551,14 @@ Developing scripts with Visual Studio
 
 While it is certainly possible to develop scripts with a plain text editor, the 
 code completion and debugging aids available in an IDE like Visual Studio make 
-for a vastly better programming experience. If you have a development 
+for a vastly more comfortable programming experience. If you have a development 
 environment set up to build Open Rails, you can use Visual Studio to edit your 
 scripts with these creature comforts. What follows is a suggested workflow:
 
 #. First, in your copy of the OR source code, make a copy of your 
    ``Source\ORTS.sln`` file. Keep it in the ``Source\`` folder, but give it a 
    novel name like ``ORTS_Scripts.sln``. (You could also modify the original 
-   ORTS solution, but you'd have to remember not to check it in to source 
+   ORTS solution, but then you'd have to remember not to check it in to source 
    control.) Add a new project to the solution and select the empty .NET 
    project.
 
@@ -594,3 +594,36 @@ script, which will be caught by RunActivity.exe if run inside Visual Studio.
 
 Note that Visual Studio uses relative paths, so if you ever move any folders, 
 you'll need to fix the references by hand.
+
+Train control system
+--------------------
+
+Train control system, or TCS, scripts are intended to model train safety and cab 
+signalling systems. They can manipulate the locomotive's controls and speed 
+limit displays, impose penalty brake applications, read upcoming signal aspects 
+and speed limits, and play warning sounds.
+
+Use the following .eng parameters to load a TCS script::
+
+  Engine (
+      ORTSTrainControlSystem ( "YourTCS.cs" )
+      ORTSTrainControlSystemParameters ( "YourTCS.ini" )
+      ORTSTrainControlSystemSound ( "YourTCSSounds.sms" )
+  )
+
+``ORTSTrainControlSystem`` refers to the TCS script in the engine's ``Script`` 
+subfolder. For this field, the .cs extension is optional.
+
+``ORTSTrainControlSystemParameters``, an optional field, refers to an .ini file, 
+also in the ``Script`` subfolder, whose parameters will be made available to the 
+TCS script through the ``GetBoolParameter()``, ``GetIntParameter()``, 
+``GetFloatParameter()``, and ``GetStringParameter()`` methods of the 
+``TrainControlSystem`` class. This .ini file provides for easy customization of 
+the behavior of the TCS script by end users.
+
+``ORTSTrainControlSystemSound``, an optional field, refers to a .sms file either 
+in the engine's ``SOUND`` folder or in the global ``SOUND`` folder. If provided, 
+OR will load this sound library alongside the locomotive's standard cab sounds. 
+The TCS script can play back sounds using any of the ``TriggerSound...`` methods 
+of the base class, which in turn activate the TCS-related 
+:ref:`discrete triggers <sound-discrete>` numbered from 109 through 118.
