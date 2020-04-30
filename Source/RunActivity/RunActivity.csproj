@@ -396,9 +396,25 @@
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
   -->
+  <Target Name="AfterBuild">
+    <ItemGroup>
+      <WebContent Include="Viewer3D\WebServices\Web\*.*" />
+    </ItemGroup>
+    <ItemGroup>
+      <WebContentCss Include="Viewer3D\WebServices\Web\css\*.*" />
+    </ItemGroup>
+    <ItemGroup>
+      <WebContentImages Include="Viewer3D\WebServices\Web\images\*.*" />
+    </ItemGroup>
+    <ItemGroup>
+      <WebContentJs Include="Viewer3D\WebServices\Web\js\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(WebContent)" DestinationFolder="$(OutputPath)\Content\Web" ContinueOnError="true" />
+    <Copy SourceFiles="@(WebContentCss)" DestinationFolder="$(OutputPath)\Content\Web\css" ContinueOnError="true" />
+    <Copy SourceFiles="@(WebContentImages)" DestinationFolder="$(OutputPath)\Content\Web\images" ContinueOnError="true" />
+    <Copy SourceFiles="@(WebContentJs)" DestinationFolder="$(OutputPath)\Content\Web\js" ContinueOnError="true" />
+  </Target>
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
