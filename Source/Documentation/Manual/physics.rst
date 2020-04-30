@@ -551,6 +551,7 @@ for Pantograph 2 (replacing 2 with 3 and 4).
 The third panto is moved with Ctrl-P, while the fourth panto is moved with Ctrl-Shift-P.
 The cabview controls must be named ORTS_PANTOGRAPH3 and ORTS_PANTOGRAPH4.
 
+.. _physics-circuit-breaker:
 
 Circuit breaker
 ---------------
@@ -570,12 +571,14 @@ Two default behaviours are available:
   of the ENG file.
 
 In order to model a different behaviour of the circuit breaker,
-a scripting interface is available. The script can be loaded with the
-parameter ``ORTSCircuitBreaker( <name of the file> )``.
+a :ref:`scripting interface <features-scripting-cb>` is available. The script
+can be loaded with the parameter ``ORTSCircuitBreaker( <name of the file> )``.
 
 In real life, the circuit breaker does not
 close instantly, so you can add a delay with the optional parameter
 ``ORTSCircuitBreakerClosingDelay( )`` (by default in seconds).
+
+.. _physics-power-supply:
 
 Power supply
 ------------
@@ -588,6 +591,9 @@ The power-on sequence time delay can be adjusted by the optional
 the Engine section of the .eng file (value in seconds). The same delay for
 auxiliary systems can be adjusted by the optional parameter
 ``ORTSAuxPowerOnDelay( )`` (by default in seconds).
+
+A :ref:`scripting interface <features-scripting-eps>` to customize the behavior
+of the power supply is also available.
 
 .. _physics-steam:
 
