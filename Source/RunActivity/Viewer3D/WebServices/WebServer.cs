@@ -459,10 +459,14 @@ namespace Orts.Viewer3D.WebServices
                             + System.Text.Encoding.UTF8.GetString(response.byteContent));
 
             // Begin sending the data to the remote device.
-            response.ClientSocket.BeginSend(byteData, 0,
-                                             byteData.Length, 0,
-                                             new AsyncCallback(SendHttpCallback),
-                                             response.ClientSocket);
+            try
+            {
+                response.ClientSocket.BeginSend(byteData, 0,
+                                                byteData.Length, 0,
+                                                new AsyncCallback(SendHttpCallback),
+                                                response.ClientSocket);
+            }
+            catch (SocketException) { }
         }
 
         // ===========================================================================================
