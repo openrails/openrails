@@ -34,6 +34,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Web;
 using Newtonsoft.Json;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
@@ -258,7 +259,7 @@ namespace Orts.Viewer3D.WebServices
                         request.Method.Trim();
                         int start = lineRead.IndexOf('/');
                         int length = lineRead.LastIndexOf(" ") - start;
-                        request.URI = lineRead.Substring(start, length);
+                        request.URI = HttpUtility.UrlDecode(lineRead.Substring(start, length));
                     }
                     catch (Exception e)
                     {
