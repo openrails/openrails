@@ -60,7 +60,7 @@ namespace Orts.Viewer3D.WebServices
         public string Method = "";
         public string URI = "";
         public string Parameters;
-        public Dictionary<string, string> headers = new Dictionary<string, string>();
+        public Dictionary<string, string> headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, string> Headers { get => headers; set => headers = value; }
     }
 
