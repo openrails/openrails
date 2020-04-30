@@ -210,6 +210,9 @@ When activated, the server can be accessed (on the local machine only) at
            | data types.
          - Orts.Viewer3D.WebServices.WebServer.ApiSampleData
 
+    There is no rate-limiting or caching, so mind your API calls' effects on the
+    simulator's performance.
+
 Audio Options
 =============
 
