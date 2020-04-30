@@ -97,7 +97,7 @@ namespace Orts.Viewer3D.WebServices
         // ===========================================================================================
         // File exstensions this server will handle - any other extensions are returns as not found
         // ===========================================================================================
-        private static Dictionary<string, string> extensions = new Dictionary<string, string>()
+        private static Dictionary<string, string> extensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "htm",  "text/html" },
             { "html", "text/html" },
@@ -488,7 +488,7 @@ namespace Orts.Viewer3D.WebServices
         // ===========================================================================================
         // 		API routing classes & functions
         // ===========================================================================================
-        public static Dictionary<string, Func<string, object>> ApiDict = new Dictionary<string, Func<string, object>>();
+        public static Dictionary<string, Func<string, object>> ApiDict = new Dictionary<string, Func<string, object>>(StringComparer.OrdinalIgnoreCase);
 
         public static string ExecuteApi(string apiName, string Parameters)
         {

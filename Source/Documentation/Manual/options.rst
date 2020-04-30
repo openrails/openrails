@@ -182,7 +182,7 @@ When activated, the server can be accessed (on the local machine only) at
     program folder; it features a simple API to obtain data from the simulator.
     Responses are OR data structures
     `serialized <https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_JsonConvert.htm>`_
-    in JSON format. API call paths are case-sensitive.
+    in JSON format.
 
     .. list-table::
        :widths: 15 15 35 35
