@@ -172,6 +172,7 @@ namespace Orts.Simulation.RollingStocks
         public float HeatingSteamBoilerDurationS;
         public float HeatingSteamBoilerVolumeM3pS;
         public Color HeatingSteamBoilerSteadyColor = Color.Aqua;
+        public bool HeatingBoilerSet = false;
 
         // Wagon Smoke
         public float WagonSmokeVolumeM3pS;
@@ -2506,6 +2507,26 @@ namespace Orts.Simulation.RollingStocks
             WagonSmokeDurationS = InitialWagonSmokeDurationS;
             WagonSmokeVolumeM3pS = InitialWagonSmokeVolumeM3pS;
 
+
+            // This section updates the steam boiler used for steam heating.
+            // The locomotive must be set up for steam heating, and only the first wagon (inc locomotive) will display the smoke effect for steam heating boiler.
+            MSTSLocomotive boilerlead = (MSTSLocomotive)Train.LeadLocomotive; // Identify lead locomotive
+            if ( boilerlead != null && boilerlead.CurrentSteamHeatPressurePSI > 0.1 && HeatingBoilerSet)
+            {
+                // Set values for visible exhaust based upon setting of steam controller position
+                HeatingSteamBoilerVolumeM3pS = 2.5f * boilerlead.SteamHeatController.CurrentValue;
+                HeatingSteamBoilerDurationS = 1.0f * boilerlead.SteamHeatController.CurrentValue;
+
+                // Calculate fuel usage for steam heat boiler
+                float FuelUsageL = boilerlead.SteamHeatController.CurrentValue * pS.FrompH(boilerlead.SteamHeatBoilerFuelUsageLpH) * elapsedClockSeconds;
+                boilerlead.CurrentSteamHeatFuelCapacityL -= FuelUsageL; // Reduce Tank capacity as fuel used.
+                MassKG -= FuelUsageL * 0.85f; // Reduce wagon weight as steam heat boiler uses fuel.
+            }
+            else
+            {
+                HeatingSteamBoilerVolumeM3pS = 0;
+                HeatingSteamBoilerDurationS = 0;
+            }
         }
 
         public override void SignalEvent(Event evt)

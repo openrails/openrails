@@ -183,6 +183,7 @@ public float TrainCurrentCarriageHeatTempC;     // Current train carriage heat
         float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
         float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
         bool IsTrainSteamHeatInitial = true; // Allow steam heat to be initialised.
+        public bool TrainHeatingBoilerInitialised = false;
 
         // Values for Wind Direction and Speed - needed for wind resistance and lateral force
         public float PhysicsWindDirectionDeg;
