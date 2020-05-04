@@ -263,6 +263,38 @@ the START/STOP key (``<Shift+Y>`` in English keyboards). The starting and
 stopping sequence is driven by a *starter* logic, which can be customized,
 or is estimated by the engine parameters.
 
+The diesel electric locomotive uses a diesel prime mover to generate electricity 
+(using generators naturally) and this electricity is then used to drive 
+traction motors to turn the wheels. The other types of diesel locomotives are 
+similar from the perspective that they have a diesel prime mover, and then some 
+form of transmission mechanism to transfer the power output of the prime 
+mover to the locomotive wheels.
+
+In configuring the locomitve correctly it is important to use the correct 
+power/force values. The key values required in the ENG file for a diesel 
+locomotive (regardless of transmission type) are as follows:
+
+``ORTSDieselEngineMaxPower`` ==> sets the maximum power output at the 
+shaft of the diesel engine (or prime mover).
+
+``MaxPower`` ==> sets the maximum power at the rail (provided to the wheels).
+
+``MaxForce`` ==> sets the force that the locomitve is able to apply to the 
+wheels when starting. 
+
+``MaxContinuousForce`` ==> is the maximum force that the locomotive can 
+continuously supply to the wheels without exceeding the design specifications. 
+Typically this is linked to a particular speed (see next parameter).
+
+``ORTSSpeedOfMaxContinuousForce`` ==> is the speed at which the maximum force 
+will be applied.
+
+``MaxVelocity`` ==> is the maximum rated design speed of the locomotive. 
+Typically beyond this speed power output of the locomotive will decrease.
+
+If using power/force Tables, then some of the above values will not be 
+required, see the sections below for details.
+
 Starting the Diesel Engine
 ''''''''''''''''''''''''''
 
