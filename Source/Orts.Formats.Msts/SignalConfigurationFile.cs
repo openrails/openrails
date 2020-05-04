@@ -475,7 +475,7 @@ namespace Orts.Formats.Msts
             LightTextureName = String.Empty;
             FlashTimeOn = 1.0f;
             FlashTimeOff = 1.0f;
-            OnOffTime = 0.5f;
+            OnOffTime = 0.2f;
         }
 
         /// <summary>
