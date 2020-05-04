@@ -940,7 +940,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             RealRPM = Math.Max(RealRPM + dRPM * elapsedClockSeconds, 0);
 
-            // Calculate the apparent throttle setting based upon the current rpm of the diesel prime mover
+            // Calculate the apparent throttle setting based upon the current rpm of the diesel prime mover. This allows the Tractive effort to increase with rpm to the throttle setting selected.
+            // This uses the reverse Tab of the Throttle vs rpm Tab.
             if ((ReverseThrottleRPMTab != null) && (EngineStatus == Status.Running))
             {
                 ApparentThrottleSetting = ReverseThrottleRPMTab[RealRPM];
@@ -948,7 +949,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
             if (DieselPowerTab != null)
             {
-
                 CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximumDieselPowerW * (1 - locomotive.PowerReduction));
                 CurrentDieselOutputPowerW = CurrentDieselOutputPowerW < 0f ? 0f : CurrentDieselOutputPowerW;
                 // Rail output power will never be the same as the diesel prime mover output power it will always have some level of loss of efficiency
