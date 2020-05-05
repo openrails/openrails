@@ -1114,6 +1114,45 @@ functions when desired.
 If theses controls are not used, then the AI fireman operates in the same
 fashion as previously.
 
+Steam Boiler Heat Radiation Loss
+''''''''''''''''''''''''''''''''
+
+A certain amount of heat is lost from the boiler of a steam locomotive. An 
+uninsulated boiler could lose a lot of heat and this impacts on the 
+performance of the locomotive, hence boilers were insulated to reduce the 
+heat losses.
+
+The amount of heat lost will be dependent upon the exposed surface area of 
+the boiler, the difference in temperature between the boiler and the ambient 
+temperature. The amount of heat lost will also increase as the speed of the 
+locomotive increases.
+
+OR models the heat loss from a boiler with some standard default settings, 
+however the model can be customised to suit the locomotive by adjusting the 
+following settings.
+
+-``ORTSBoilerSurfaceArea`` ==> Surface area of the boiler / fire box that impacts 
+heat loss. Default UoM - ft^2
+
+- ``ORTSFractionBoilerInsulated`` - Fraction of boiler surface area covered by 
+insulation (less then 1)
+
+- ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. 
+Default UoM - (BTU / ((sq. ft.) / hr.)) / (1 (in. / F)) 
+
+Steam Boiler Blowdown
+'''''''''''''''''''''
+Over time as steam is evaporated from the boiler a concentration of impurities 
+will build up in the boiler. The boiler blowdown valve was used to remove these 
+sediments from the boiler which could impact its efficiency. Depending upon the 
+quality of the feed water used in the boiler, blowdown could be needed regularly 
+when the locomotive was in operation.
+
+The blowdown valve can be operated by toggling the ``<Shft+C>`` keys onn and off. 
+Alternatively a cab control can be set up by using the ``<ORTS_BLOWDOWN_VALVE ( x, y, z )>``.
+
+A special steam effect can also be added. See the section on steam effects.
+
 Steam Locomotive Carriage Steam Heat Modelling
 ''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -1184,7 +1223,7 @@ Steam heating will only work if there are passenger cars attached to the
 locomotive.
 
 Warning messages will be displayed if the temperature inside the carriage
-goes outside of the limits of 10--15.5\ |deg|\ C.
+drops below the temperature limits.
 
 The player can control the train temperature by using the following
 controls:
@@ -1476,6 +1515,8 @@ OR supports the following special visual effects in a steam locomotive:
 - Injectors (named ``Injectors1FX`` and ``Injectors2FX``) -- represents the
   steam discharge from the steam overflow pipe of the injectors. They will
   appear whenever the respective injectors operate.
+- Boiler blowdown valves (named ``BlowdownFX``) -- represents the discharge of the
+  steam boiler blowdown valve. It will appear whenever the blowdown valve operates.
 
 OR supports the following special visual effects in a diesel locomotive:
 
@@ -1499,6 +1540,12 @@ an ENG file):
 
 - Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a
   steam pipe connection between wagons.
+
+- Haeting Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the 
+steam escaping from the steam trap in a passenger compartment.
+
+- Heating Main Pipe Steam Trap (named ``HeatingMainPipeSteamTrapFX``) -- represents the steam escaping from a
+  steam trap in the main steam pipe running under the passenger car.
 
 NB: If a steam effect is not defined in the ``SteamSpecialEffects``,  ``DieselSpecialEffects``, or the
 ``SpecialEffects`` section of an ENG/WAG file, then it will not be displayed  in the simulation.
