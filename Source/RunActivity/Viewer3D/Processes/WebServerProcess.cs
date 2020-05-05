@@ -30,6 +30,7 @@ using Orts.Viewer3D.WebServices;
 using ORTS.Common;
 using ORTS.Settings;
 using Orts.Processes;
+using CancellationTokenSource = System.Threading.CancellationTokenSource;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -40,7 +41,7 @@ namespace Orts.Viewer3D.Processes
         readonly Game Game;
         readonly Thread Thread;
         private bool ThreadActive = false;
-        WebServer webServer;
+        private readonly CancellationTokenSource stopServer = new CancellationTokenSource();
 
         public WebServerProcess(Game game)
         {
@@ -65,7 +66,7 @@ namespace Orts.Viewer3D.Processes
         {
             if (ThreadActive)
             {
-            webServer.stop();
+                stopServer.Cancel();
                 State.SignalTerminate();
                 Thread.Abort();
             }
@@ -95,8 +96,11 @@ namespace Orts.Viewer3D.Processes
 
             // 127.0.0.1 is a dummy, IPAddress.Any in WebServer.cs to accept any address
             // on the local Lan
-            webServer = new WebServer("127.0.0.1", port, 1, myWebContentPath);
-            webServer.Run();
+            var url = string.Format("http://127.0.0.1:{0}", port);
+            using (var server = WebServer.CreateWebServer(url, myWebContentPath))
+            {
+                server.RunAsync(stopServer.Token).Wait();
+            }
         }
     }
 }
