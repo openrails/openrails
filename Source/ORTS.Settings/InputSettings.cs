@@ -393,6 +393,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlInjector2] = new UserCommandKeyInput(0x18);
             Commands[(int)UserCommand.ControlInjector2Decrease] = new UserCommandKeyInput(0x26, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlInjector2Increase] = new UserCommandKeyInput(0x26);
+            Commands[(int)UserCommand.ControlBlowdownValve] = new UserCommandKeyInput(0x2E, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlLight] = new UserCommandKeyInput(0x26);
             Commands[(int)UserCommand.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlPantograph1] = new UserCommandKeyInput(0x19);

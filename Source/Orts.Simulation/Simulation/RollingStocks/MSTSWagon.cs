@@ -153,6 +153,16 @@ namespace Orts.Simulation.RollingStocks
         public float HeatingHoseSteamVelocityMpS;
         public float HeatingHoseSteamVolumeM3pS;
 
+        // Wagon heating compartment steamtrap leaks
+        public float HeatingCompartmentSteamTrapParticleDurationS;
+        public float HeatingCompartmentSteamTrapVelocityMpS;
+        public float HeatingCompartmentSteamTrapVolumeM3pS;
+
+        // Wagon heating steamtrap leaks
+        public float HeatingMainPipeSteamTrapDurationS;
+        public float HeatingMainPipeSteamTrapVelocityMpS;
+        public float HeatingMainPipeSteamTrapVolumeM3pS;
+
         // Water Scoop Spray
         public float WaterScoopParticleDurationS;
         public float WaterScoopWaterVelocityMpS;
@@ -2389,13 +2399,13 @@ namespace Orts.Simulation.RollingStocks
         {
 
 
-            // Update Steam Leaks Information
-            if (Train.CarSteamHeatOn)
+            // Update Heating hose steam leaks Information
+            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
             {
                 // Turn wagon steam leaks on 
                 HeatingHoseParticleDurationS = 0.75f;
                 HeatingHoseSteamVelocityMpS = 15.0f;
-                HeatingHoseSteamVolumeM3pS = 4.0f;
+                HeatingHoseSteamVolumeM3pS = 4.0f * SteamHoseLeakRateRandom;
             }
             else
             {
@@ -2404,6 +2414,39 @@ namespace Orts.Simulation.RollingStocks
                 HeatingHoseSteamVelocityMpS = 0.0f;
                 HeatingHoseSteamVolumeM3pS = 0.0f;
             }
+
+            // Update Heating main pipe steam trap leaks Information
+            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
+            {
+                // Turn wagon steam leaks on 
+                HeatingMainPipeSteamTrapDurationS = 0.75f;
+                HeatingMainPipeSteamTrapVelocityMpS = 15.0f;
+                HeatingMainPipeSteamTrapVolumeM3pS = 8.0f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingMainPipeSteamTrapDurationS = 0.0f;
+                HeatingMainPipeSteamTrapVelocityMpS = 0.0f;
+                HeatingMainPipeSteamTrapVolumeM3pS = 0.0f;
+            }
+
+            // Update Heating compartment steam trap leaks Information
+            if (SteamHeatingCompartmentSteamTrapOn)
+            {
+                // Turn wagon steam leaks on 
+                HeatingCompartmentSteamTrapParticleDurationS = 0.75f;
+                HeatingCompartmentSteamTrapVelocityMpS = 15.0f;
+                HeatingCompartmentSteamTrapVolumeM3pS = 4.0f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingCompartmentSteamTrapParticleDurationS = 0.0f;
+                HeatingCompartmentSteamTrapVelocityMpS = 0.0f;
+                HeatingCompartmentSteamTrapVolumeM3pS = 0.0f;
+            }
+
 
             // Update Water Scoop Spray Information when scoop is down and filling from trough
 
