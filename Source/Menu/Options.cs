@@ -148,9 +148,11 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboBoxOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-
+            checkEnableWebServer.Checked = Settings.WebServer;
+            numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
+
             checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
@@ -221,6 +223,7 @@ namespace ORTS
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
             checkDataLogMisc.Checked = Settings.DataLogMisc;
             checkDataLogSteamPerformance.Checked = Settings.DataLogSteamPerformance;
+            checkVerboseConfigurationMessages.Checked = Settings.VerboseConfigurationMessages;
 
             // Evaluation tab
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
@@ -436,6 +439,7 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
+            Settings.WebServer = checkEnableWebServer.Checked;
 
             // Audio tab
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;
@@ -457,7 +461,8 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = comboWindowSize.Text;
+            Settings.WindowSize = GetValidWindowSize();
+
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
 
@@ -487,6 +492,7 @@ namespace ORTS
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogMisc = checkDataLogMisc.Checked;
             Settings.DataLogSteamPerformance = checkDataLogSteamPerformance.Checked;
+            Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
             // Evaluation tab
             Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;
@@ -531,6 +537,15 @@ namespace ORTS
             Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
 
             Settings.Save();
+        }
+
+        private string GetValidWindowSize()
+        {
+            // "1024X780" instead of "1024x780" then "Start" resulted in an immediate return to the Menu with no OpenRailsLog.txt and a baffled user.
+            var windowSizeArray = comboWindowSize.Text.ToLower().Replace(" ", "").Split('x');
+            return (int.TryParse(windowSizeArray[0], out int width) && int.TryParse(windowSizeArray[1], out int height))
+                ? $"{width}x{height}"
+                : Settings.WindowSize; // i.e. no change or message. Just ignore non-numeric entries
         }
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
@@ -739,5 +754,6 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
+
     }
 }

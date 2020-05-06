@@ -112,6 +112,7 @@ namespace Orts.Common
         WaterInjector1On,
         WaterInjector2Off,
         WaterInjector2On,
+        BlowdownValveToggle,
         SteamHeatChange, 
         SteamPulse1,
         SteamPulse2,
@@ -176,7 +177,10 @@ namespace Orts.Common
         SecondEnginePowerOn,
 
         HotBoxBearingOn,
-        HotBoxBearingOff
+        HotBoxBearingOff,
+
+        BoilerBlowdownOn,
+        BoilerBlowdownOff
     }
 
     public static class Events
@@ -302,7 +306,8 @@ namespace Orts.Common
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
                         case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
-                        
+
+                        case 120: return Event.BlowdownValveToggle;
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;
@@ -358,6 +363,9 @@ namespace Orts.Common
 
                         case 173: return Event.HotBoxBearingOn;
                         case 174: return Event.HotBoxBearingOff;
+
+                        case 175: return Event.BoilerBlowdownOn;
+                        case 176: return Event.BoilerBlowdownOff;
 
                         case 181: return Event.GenericEvent1;
                         case 182: return Event.GenericEvent2;

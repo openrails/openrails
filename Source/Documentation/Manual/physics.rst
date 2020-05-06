@@ -263,6 +263,38 @@ the START/STOP key (``<Shift+Y>`` in English keyboards). The starting and
 stopping sequence is driven by a *starter* logic, which can be customized,
 or is estimated by the engine parameters.
 
+The diesel electric locomotive uses a diesel prime mover to generate electricity 
+(using generators naturally) and this electricity is then used to drive 
+traction motors to turn the wheels. The other types of diesel locomotives are 
+similar from the perspective that they have a diesel prime mover, and then some 
+form of transmission mechanism to transfer the power output of the prime 
+mover to the locomotive wheels.
+
+In configuring the locomitve correctly it is important to use the correct 
+power/force values. The key values required in the ENG file for a diesel 
+locomotive (regardless of transmission type) are as follows:
+
+``ORTSDieselEngineMaxPower`` ==> sets the maximum power output at the 
+shaft of the diesel engine (or prime mover).
+
+``MaxPower`` ==> sets the maximum power at the rail (provided to the wheels).
+
+``MaxForce`` ==> sets the force that the locomitve is able to apply to the 
+wheels when starting. 
+
+``MaxContinuousForce`` ==> is the maximum force that the locomotive can 
+continuously supply to the wheels without exceeding the design specifications. 
+Typically this is linked to a particular speed (see next parameter).
+
+``ORTSSpeedOfMaxContinuousForce`` ==> is the speed at which the maximum force 
+will be applied.
+
+``MaxVelocity`` ==> is the maximum rated design speed of the locomotive. 
+Typically beyond this speed power output of the locomotive will decrease.
+
+If using power/force Tables, then some of the above values will not be 
+required, see the sections below for details.
+
 Starting the Diesel Engine
 ''''''''''''''''''''''''''
 
@@ -551,6 +583,7 @@ for Pantograph 2 (replacing 2 with 3 and 4).
 The third panto is moved with Ctrl-P, while the fourth panto is moved with Ctrl-Shift-P.
 The cabview controls must be named ORTS_PANTOGRAPH3 and ORTS_PANTOGRAPH4.
 
+.. _physics-circuit-breaker:
 
 Circuit breaker
 ---------------
@@ -570,12 +603,14 @@ Two default behaviours are available:
   of the ENG file.
 
 In order to model a different behaviour of the circuit breaker,
-a scripting interface is available. The script can be loaded with the
-parameter ``ORTSCircuitBreaker( <name of the file> )``.
+a :ref:`scripting interface <features-scripting-cb>` is available. The script
+can be loaded with the parameter ``ORTSCircuitBreaker( <name of the file> )``.
 
 In real life, the circuit breaker does not
 close instantly, so you can add a delay with the optional parameter
 ``ORTSCircuitBreakerClosingDelay( )`` (by default in seconds).
+
+.. _physics-power-supply:
 
 Power supply
 ------------
@@ -588,6 +623,9 @@ The power-on sequence time delay can be adjusted by the optional
 the Engine section of the .eng file (value in seconds). The same delay for
 auxiliary systems can be adjusted by the optional parameter
 ``ORTSAuxPowerOnDelay( )`` (by default in seconds).
+
+A :ref:`scripting interface <features-scripting-eps>` to customize the behavior
+of the power supply is also available.
 
 .. _physics-steam:
 
@@ -1114,6 +1152,45 @@ functions when desired.
 If theses controls are not used, then the AI fireman operates in the same
 fashion as previously.
 
+Steam Boiler Heat Radiation Loss
+''''''''''''''''''''''''''''''''
+
+A certain amount of heat is lost from the boiler of a steam locomotive. An 
+uninsulated boiler could lose a lot of heat and this impacts on the 
+performance of the locomotive, hence boilers were insulated to reduce the 
+heat losses.
+
+The amount of heat lost will be dependent upon the exposed surface area of 
+the boiler, the difference in temperature between the boiler and the ambient 
+temperature. The amount of heat lost will also increase as the speed of the 
+locomotive increases.
+
+OR models the heat loss from a boiler with some standard default settings, 
+however the model can be customised to suit the locomotive by adjusting the 
+following settings.
+
+-``ORTSBoilerSurfaceArea`` ==> Surface area of the boiler / fire box that impacts 
+heat loss. Default UoM - ft^2
+
+- ``ORTSFractionBoilerInsulated`` - Fraction of boiler surface area covered by 
+insulation (less then 1)
+
+- ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. 
+Default UoM - (BTU / ((sq. ft.) / hr.)) / (1 (in. / F)) 
+
+Steam Boiler Blowdown
+'''''''''''''''''''''
+Over time as steam is evaporated from the boiler a concentration of impurities 
+will build up in the boiler. The boiler blowdown valve was used to remove these 
+sediments from the boiler which could impact its efficiency. Depending upon the 
+quality of the feed water used in the boiler, blowdown could be needed regularly 
+when the locomotive was in operation.
+
+The blowdown valve can be operated by toggling the ``<Shft+C>`` keys onn and off. 
+Alternatively a cab control can be set up by using the ``<ORTS_BLOWDOWN_VALVE ( x, y, z )>``.
+
+A special steam effect can also be added. See the section on steam effects.
+
 Steam Locomotive Carriage Steam Heat Modelling
 ''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -1184,7 +1261,7 @@ Steam heating will only work if there are passenger cars attached to the
 locomotive.
 
 Warning messages will be displayed if the temperature inside the carriage
-goes outside of the limits of 10--15.5\ |deg|\ C.
+drops below the temperature limits.
 
 The player can control the train temperature by using the following
 controls:
@@ -1476,6 +1553,8 @@ OR supports the following special visual effects in a steam locomotive:
 - Injectors (named ``Injectors1FX`` and ``Injectors2FX``) -- represents the
   steam discharge from the steam overflow pipe of the injectors. They will
   appear whenever the respective injectors operate.
+- Boiler blowdown valves (named ``BlowdownFX``) -- represents the discharge of the
+  steam boiler blowdown valve. It will appear whenever the blowdown valve operates.
 
 OR supports the following special visual effects in a diesel locomotive:
 
@@ -1499,6 +1578,12 @@ an ENG file):
 
 - Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a
   steam pipe connection between wagons.
+
+- Haeting Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the 
+steam escaping from the steam trap in a passenger compartment.
+
+- Heating Main Pipe Steam Trap (named ``HeatingMainPipeSteamTrapFX``) -- represents the steam escaping from a
+  steam trap in the main steam pipe running under the passenger car.
 
 NB: If a steam effect is not defined in the ``SteamSpecialEffects``,  ``DieselSpecialEffects``, or the
 ``SpecialEffects`` section of an ENG/WAG file, then it will not be displayed  in the simulation.

@@ -264,6 +264,19 @@ namespace Orts.Viewer3D.Popups
             }
         }
 
+        // ==========================================================================================================================================
+        //      Method to construct the various Heads Up Display pages for use by the WebServer 
+        //      Replaces the Prepare Frame Method
+        //      djr - 20171221
+        // ==========================================================================================================================================
+        public TableData PrepareTable(int PageNo)
+        {
+            var table = new TableData() { Cells = new string[1, 1] };
+
+            TextPages[PageNo](table);
+            return (table);
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             // Completely customise the rendering of the HUD - don't call base.Draw(spriteBatch).
@@ -307,7 +320,22 @@ namespace Orts.Viewer3D.Popups
         }
 
         #region Table handling
-        sealed class TableData
+
+
+        // ==========================================================================================================================================
+        //      Class used to construct table for display of Heads Up Display pages
+        //      Original Code has been altered making the class public for use by the WebServer
+        //      djr - 20171221
+        // ==========================================================================================================================================
+        //sealed class TableData
+        //{
+        //    public string[,] Cells;
+        //    public int CurrentRow;
+        //    public int CurrentLabelColumn;
+        //    public int CurrentValueColumn;
+        //}
+
+        public sealed class TableData
         {
             public string[,] Cells;
             public int CurrentRow;
@@ -841,7 +869,7 @@ namespace Orts.Viewer3D.Popups
                 var car = train.Cars[j];
                 TableSetCell(table, 0, "{0}", car.CarID);
                 TableSetCell(table, 1, "{0}", FormatStrings.FormatForce(car.TotalForceN, car.IsMetric));
-                TableSetCell(table, 2, "{0}", FormatStrings.FormatForce(car.MotiveForceN, car.IsMetric));
+                TableSetCell(table, 2, "{0}{1}", FormatStrings.FormatForce(car.MotiveForceN, car.IsMetric), car.WheelSlip ? "!!!" : car.WheelSlipWarning ? "???" : "");
                 TableSetCell(table, 3, "{0}", FormatStrings.FormatForce(car.BrakeForceN + car.DynamicBrakeForceN, car.IsMetric));
                 TableSetCell(table, 4, "{0}", FormatStrings.FormatForce(car.FrictionForceN, car.IsMetric));
                 TableSetCell(table, 5, "{0}", FormatStrings.FormatForce(car.GravityForceN, car.IsMetric));

@@ -112,6 +112,12 @@ namespace ORTS.Settings
         public int Multiplayer_Port { get; set; }
 
         // General settings:
+
+        [Default(false)]
+        public bool WebServer { get; set; }
+        [Default(2150)]
+        public int WebServerPort { get; set; }
+
         [Default(false)]
         public bool Alerter { get; set; }
         [Default(true)]
@@ -218,8 +224,9 @@ namespace ORTS.Settings
         public bool DataLogMisc { get; set; }
         [Default(false)]
         public bool DataLogSteamPerformance { get; set; }
-        
-        
+        [Default(false)]
+        public bool VerboseConfigurationMessages { get; set; }
+
         // Evaluation settings:
         [Default(false)]
         public bool DataLogTrainSpeed { get; set; }
@@ -335,6 +342,8 @@ namespace ORTS.Settings
         // Internal settings:
         [Default(false)]
         public bool DataLogger { get; set; }
+        [Default(false)]
+        public bool Letterbox2DCab { get; set; }
         [Default(false)]
         public bool Profiling { get; set; }
         [Default(0)]

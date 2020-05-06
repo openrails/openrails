@@ -1206,22 +1206,32 @@ depressed.
 
 The commands for each of the views are described below.
 
-- Key 1 opens the 2D driver's view from the interior of the controlling cab 
-  of the player locomotive. The entire cab view can be moved to other cabs 
-  (if available) in the player train by successive presses of Ctrl+E; the 
-  train must be stopped and the direction switch in Neutral. The view can be 
-  changed to the fixed left, front, or right view by clicking the left, up or 
-  right arrow keys. (The 2D view is constructed from three 2D images, so the 
-  actual camera position can only be modified by editing the contents of the 
-  .cvf file.) The headout views (if available) are selected by ``Home`` 
-  (right hand side, looking forward) or ``End`` (left hand side, looking 
-  back) and the headout view direction is controlled by the mouse with the 
-  right button depressed. If there are multiple locomotives, ``<Alt+PgUp>``
-  and ``<Alt+PgDn>`` move the headout views.
+- Key ``<1>`` opens the 2D driver's view from the interior of the controlling 
+  cab of the player locomotive. The 2D view can be cycled between the fixed 
+  left, front, and right views with the ``<Left>`` and ``<Right>`` arrow keys. 
+  The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
+  constructed from three 2D images, so the actual camera position can only be 
+  modified by editing the contents of the .cvf file.) If there is a mismatch 
+  between the aspect ratio of the (optionally stretched) cab and the aspect 
+  ratio of the monitor, OR will clip the cab and show only the portion that fits 
+  within the display, as described in 
+  :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
+  to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
+  and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
+  which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
+  without a clip and cover the remaining space with black bars.
 - Key ``<Alt+1>`` opens the 3D driver's view (if the locomotive has a 3D 
   cabview file) from the interior of the controlling cab of the player 
   locomotive. The camera position and view direction are fully player 
   controllable.
+- The entire cab view can be moved to other cabs (if available) in the player 
+  train by successive presses of ``<Ctrl+E>``; the train must be stopped and the 
+  direction switch in Neutral.
+- The headout views (if available) are selected by ``<Home>`` (right hand side, 
+  looking forward) or ``<End>`` (left hand side, looking back) and the headout 
+  view direction is controlled by the mouse with the right button depressed. If 
+  there are multiple locomotives, ``<Alt+PgUp>`` and ``<Alt+PgDn>`` move the 
+  headout views.
 
 Rotation of the camera view in any direction is controlled by the mouse 
 with the right-hand button depressed (or alternatively by the four arrow 
