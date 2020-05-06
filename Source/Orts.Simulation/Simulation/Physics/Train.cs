@@ -158,6 +158,8 @@ namespace Orts.Simulation.Physics
         }
 
         // Carriage Steam Heating
+        public bool HeatingBoilerCarAttached = false;
+        bool IsFirstTimeBoilerCarAttached = true;
         public float TrainSteamPipeHeatW;               // Not required, all instances can be removed!!!!!!!!!
         public float TrainInsideTempC;                  // Desired inside temperature for carriage steam heating depending upon season
         public float TrainOutsideTempC;                 // External ambient temeprature for carriage steam heating.
@@ -171,7 +173,6 @@ namespace Orts.Simulation.Physics
         public float TrainTotalSteamHeatW;         // Total steam heat in train - based upon air volume
         float SpecificHeatCapcityAirKJpKgK = 1.006f; // Specific Heat Capacity of Air
         float DensityAirKgpM3 = 1.247f;   // Density of air - use a av value
-        bool IsSteamHeatExceeded = false;   // Flag to indicate when steam heat temp is exceeded
         bool IsSteamHeatLow = false;        // Flag to indicate when steam heat temp is low
         public float DisplayTrainNetSteamHeatLossWpTime;  // Display Net Steam loss - Loss in Cars vs Steam Pipe Heat
         public float TrainSteamPipeHeatConvW;               // Heat radiated by steam pipe - convection
@@ -180,7 +181,6 @@ namespace Orts.Simulation.Physics
         float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
         float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
         float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
-        bool IsTrainSteamHeatInitial = true; // Allow steam heat to be initialised.
         public bool TrainHeatingBoilerInitialised = false;
 
         // Values for Wind Direction and Speed - needed for wind resistance and lateral force
@@ -1985,12 +1985,28 @@ namespace Orts.Simulation.Physics
 
         public void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
-            var mstsLocomotive = Cars[0] as MSTSLocomotive;
+            var mstsLocomotive = Simulator.PlayerLocomotive as MSTSLocomotive;
             if (mstsLocomotive != null)
             {
 
+                if (IsFirstTimeBoilerCarAttached)
+                {
+                    for (int i = 0; i < Cars.Count; i++)
+                    {
+                        var car = Cars[i];
+                        if (car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
+                        {
+                            HeatingBoilerCarAttached = true; // A steam heating boiler is fitted in a wagon
+                        }
+
+                    }
+                    IsFirstTimeBoilerCarAttached = false;
+                }
+
+
+
                 // Check to confirm that train is player driven and has passenger cars in the consist. Steam heating is OFF if steam heat valve is closed and no pressure is present
-                if (IsPlayerDriven && PassengerCarsNumber > 0 && mstsLocomotive.TrainFittedSteamHeat && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
+                if (IsPlayerDriven && PassengerCarsNumber > 0 && (mstsLocomotive.IsSteamHeatFitted || HeatingBoilerCarAttached) && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
                 {
                     // Set default values required
                     float SteamFlowRateLbpHr = 0;
@@ -2212,7 +2228,8 @@ namespace Orts.Simulation.Physics
 
                         float CurrentComparmentSteamPipeHeatW = 0;
 
-                        // Calculate total steam loss along main pipe, by calculating heat into steam pipe at locomotive, deduct heat loss for each car
+                        // Calculate total steam loss along main pipe, by calculating heat into steam pipe at locomotive, deduct heat loss for each car, 
+                        // note if pipe pressure drops, then compartment heating will stop
                         if (car.CarSteamHeatMainPipeSteamPressurePSI >= 1 && car.CarHeatCompartmentHeaterOn && car.WagonType == TrainCar.WagonTypes.Passenger)
                         {
                             // If main pipe pressure is > 0 then heating will start to occur in comparment, so include compartment heat exchanger value
@@ -2252,12 +2269,13 @@ namespace Orts.Simulation.Physics
 
                         car.CarCurrentCarriageHeatTempC = W.ToKW(car.CarHeatCurrentCompartmentHeatW) / (SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3) + TrainOutsideTempC;
 
+                        float DesiredCompartmentTempResetpointC = DesiredCompartmentTempSetpointC - 2.5f; // Allow 2.5Deg bandwidth for temperature
 
                         if (car.CarCurrentCarriageHeatTempC > DesiredCompartmentTempSetpointC)
                         {
                             car.CarHeatCompartmentHeaterOn = false;
                         }
-                        else if (car.CarCurrentCarriageHeatTempC < DesiredCompartmentTempSetpointC)
+                        else if (car.CarCurrentCarriageHeatTempC < DesiredCompartmentTempResetpointC)
                         {
                             car.CarHeatCompartmentHeaterOn = true;
                         }
@@ -2312,6 +2330,26 @@ namespace Orts.Simulation.Physics
                         car.CarSteamHeatMainPipeSteamPressurePSI = ProgressivePressureAlongTrainPSI;
 
                         //                            Trace.TraceInformation("Pressure Drop CarID {0} Drop {1} PipePressure {2} HosePD {3} PipePD {4}", car.CarID, CarPressureDropPSI, car.CarSteamHeatMainPipeSteamPressurePSI, HeatPipePressureDropPSI, ConnectHosePressureDropPSI);
+
+                        // For the boiler heating car adjust mass based upon fuel and water usage
+                        if (car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
+                        {
+
+                            if (mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
+                            {
+  
+                                // Calculate fuel usage for steam heat boiler
+                                float FuelUsageLpS = L.FromGUK(pS.FrompH(mstsLocomotive.TrainHeatBoilerFuelUsageGalukpH[pS.TopH(mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS)]));
+                                float FuelOilConvertLtoKg = 0.85f;
+                                car.MassKG -= FuelUsageLpS * elapsedClockSeconds * FuelOilConvertLtoKg; // Reduce locomotive weight as Steam heat boiler uses fuel.
+
+                                // Calculate water usage for steam heat boiler
+                                float WaterUsageLpS = L.FromGUK(pS.FrompH(mstsLocomotive.TrainHeatBoilerWaterUsageGalukpH[pS.TopH(mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS)]));
+                                mstsLocomotive.CurrentSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
+                                car.MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
+                            }
+
+                        }
                     }
 
                     #endregion
