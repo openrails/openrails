@@ -217,6 +217,18 @@ namespace ORTS.Scripting.Api
         /// Get locomotive handle
         /// </summary>
         public Func<MSTSLocomotive> Locomotive;
+        /// <summary>
+        /// Get restored boolean
+        /// </summary>
+        public Func<bool> ReadBoolean;
+        /// <summary>
+        /// Get restored float
+        /// </summary>
+        public Func<float> ReadSingle;
+        /// <summary>
+        /// Get restored integer
+        /// </summary>
+        public Func<int> ReadInt32;
 
 
 
@@ -377,6 +389,18 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action RequestToggleManualMode;
         /// <summary>
+        /// Saves boolean.
+        /// </summary>
+        public Action<bool> SaveBoolean;
+        /// <summary>
+        /// Saves float.
+        /// </summary>
+        public Action<float> SaveSingle;
+        /// <summary>
+        /// Saves boolean.
+        /// </summary>
+        public Action<int> SaveInt32;
+        /// <summary>
         /// Get bool parameter in the INI file.
         /// </summary>
         public Func<string, string, bool, bool> GetBoolParameter;
@@ -503,6 +527,14 @@ namespace ORTS.Scripting.Api
         /// Circuit breaker has been opened.
         /// </summary>
         CircuitBreakerOpen,
+        /// <summary>
+        /// Save request.
+        /// </summary>
+        Save,
+        /// <summary>
+        /// Restore request.
+        /// </summary>
+        Restore,
     }
 
     /// <summary>
