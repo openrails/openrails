@@ -76,6 +76,14 @@ namespace Orts.Common
         FuelTowerUp,
         GearDown,
         GearUp,
+        GenericEvent1,
+        GenericEvent2,
+        GenericEvent3,
+        GenericEvent4,
+        GenericEvent5,
+        GenericEvent6,
+        GenericEvent7,
+        GenericEvent8,
         HornOff,
         HornOn,
         LightSwitchToggle,
@@ -360,6 +368,15 @@ namespace Orts.Common
 
                         case 175: return Event.BoilerBlowdownOn;
                         case 176: return Event.BoilerBlowdownOff;
+
+                        case 181: return Event.GenericEvent1;
+                        case 182: return Event.GenericEvent2;
+                        case 183: return Event.GenericEvent3;
+                        case 184: return Event.GenericEvent4;
+                        case 185: return Event.GenericEvent5;
+                        case 186: return Event.GenericEvent6;
+                        case 187: return Event.GenericEvent7;
+                        case 188: return Event.GenericEvent8;
                         //
 
                         default: return 0;
