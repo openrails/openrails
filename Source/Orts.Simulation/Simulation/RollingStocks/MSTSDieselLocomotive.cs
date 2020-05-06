@@ -533,12 +533,15 @@ namespace Orts.Simulation.RollingStocks
             // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
             if (PowerOn)
             {
+                // Appartent throttle setting is a reverse lookup of the throttletab vs rpm, hence motive force increase will be related to increase in rpm. The minimum of the two values
+                // is checked to enable fast reduction in tractive force when decreasing the throttle. Typically it will take longer for the prime mover to decrease rpm then drop motive force.
+                float LocomotiveApparentThrottleSetting = Math.Min(t, DieselEngines.ApparentThrottleSetting / 100.0f);
 
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
 
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW * (DieselEngines.ApparentThrottleSetting / 100.0f);
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW * LocomotiveApparentThrottleSetting;
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -564,7 +567,7 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get((DieselEngines.ApparentThrottleSetting/100.0f), AbsSpeedMpS) * (1 - PowerReduction);
+                    MotiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsSpeedMpS) * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
