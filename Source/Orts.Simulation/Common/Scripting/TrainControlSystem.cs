@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 using ORTS.Common;
 using Orts.Simulation.RollingStocks;
 
@@ -217,20 +218,6 @@ namespace ORTS.Scripting.Api
         /// Get locomotive handle
         /// </summary>
         public Func<MSTSLocomotive> Locomotive;
-        /// <summary>
-        /// Get restored boolean
-        /// </summary>
-        public Func<bool> ReadBoolean;
-        /// <summary>
-        /// Get restored float
-        /// </summary>
-        public Func<float> ReadSingle;
-        /// <summary>
-        /// Get restored integer
-        /// </summary>
-        public Func<int> ReadInt32;
-
-
 
         // TODO: The following will be available in .NET 4 as normal Func:
         public delegate TResult Func5<T1, T2, T3, T4, T5, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
@@ -389,18 +376,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action RequestToggleManualMode;
         /// <summary>
-        /// Saves boolean.
-        /// </summary>
-        public Action<bool> SaveBoolean;
-        /// <summary>
-        /// Saves float.
-        /// </summary>
-        public Action<float> SaveSingle;
-        /// <summary>
-        /// Saves boolean.
-        /// </summary>
-        public Action<int> SaveInt32;
-        /// <summary>
         /// Get bool parameter in the INI file.
         /// </summary>
         public Func<string, string, bool, bool> GetBoolParameter;
@@ -435,6 +410,16 @@ namespace ORTS.Scripting.Api
         /// Called by signalling code externally to stop the train in certain circumstances.
         /// </summary>
         public abstract void SetEmergency(bool emergency);
+        /// <summary>
+        /// Called when player has requested a game save. 
+        /// Set at virtual to keep compatibility with scripts not providing this method.
+        /// </summary>
+        public virtual void Save(BinaryWriter outf) { }
+        /// <summary>
+        /// Called when player has requested a game restore. 
+        /// Set at virtual to keep compatibility with scripts not providing this method.
+        /// </summary>
+        public virtual void Restore(BinaryReader inf) { }
     }
 
     // Represents the same enum as TrackMonitorSignalAspect

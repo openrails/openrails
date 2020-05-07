@@ -114,8 +114,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         readonly MSTSLocomotive Locomotive;
         readonly Simulator Simulator;
-        BinaryReader Inf;
-        BinaryWriter Outf;
 
         List<float> SignalSpeedLimits = new List<float>();
         List<Aspect> SignalAspects = new List<Aspect>();
@@ -309,9 +307,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.NextStationName = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].PlatformItem.Name : "";
                 Script.NextStationDistanceM = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].DistanceToTrainM : float.MaxValue;
                 Script.Locomotive = () => Locomotive;
-                Script.ReadBoolean = () => this.Inf.ReadBoolean();
-                Script.ReadSingle = () => this.Inf.ReadSingle();
-                Script.ReadInt32 = () => this.Inf.ReadInt32();
 
                 // TrainControlSystem functions
                 Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
@@ -380,9 +375,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.SetCabDisplayControl = (arg1, arg2) => CabDisplayControls[arg1] = arg2;
                 Script.SetCustomizedTCSControlString = (value) => CustomizedTCSControlStrings.Add(value);
                 Script.RequestToggleManualMode = () => Locomotive.Train.RequestToggleManualMode();
-                Script.SaveBoolean = (value) => this.Outf.Write(value);
-                Script.SaveSingle = (value) => this.Outf.Write(value);
-                Script.SaveInt32 = (value) => this.Outf.Write(value);
 
                 // TrainControlSystem INI configuration file
                 Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);
@@ -766,20 +758,18 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void Save(BinaryWriter outf)
         {
-            Outf = outf;
             outf.Write(ScriptName == null ? "" : ScriptName);
             if (ScriptName != "")
-                Script.HandleEvent(TCSEvent.Save, "");
+                Script.Save(outf);
         }
 
         public void Restore(BinaryReader inf)
         {
-            Inf = inf;
             ScriptName = inf.ReadString();
             if (ScriptName != "")
             {
                 Initialize();
-                Script.HandleEvent(TCSEvent.Restore, "");
+                Script.Restore(inf);
             }
         }
 
