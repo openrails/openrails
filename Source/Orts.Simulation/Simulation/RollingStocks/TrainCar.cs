@@ -113,6 +113,10 @@ namespace Orts.Simulation.RollingStocks
         public List<int> SoundSourceIDs = new List<int>();
 
         // Used to calculate Carriage Steam Heat Loss - ToDo - ctn_steamer - consolidate these parameters with other steam heat ones, also check as some now may be obsolete
+        public float MainHeatPipeOuterDiaM = 0.073661016f; // Steel pipe OD = 1.9" + 1.0" insulation (0.5" either side of pipe) = 0.073661016m
+        public float CompartmentHeatingPipeAreaFactor = 3.0f;
+        public float DesiredCompartmentTempSetpointC = C.FromF(55.0f); // This is the desired temperature for the passenger compartment heating
+        public float WindowDeratingFactor = 0.275f;   // fraction of windows in carriage side - 27.5% of space are windows
         public bool SteamHeatingBoilerOn = false;
         public bool SteamHeatingCompartmentSteamTrapOn = false;
         public float TotalCarCompartmentHeatLossWpT;      // Transmission loss for the wagon
