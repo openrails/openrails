@@ -901,6 +901,10 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.TemperatureDifference, null); break; // Temperature conversion is incorrect - to be checked!!!
+                case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsheatingtrainpipeouterdiameter": MainHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1083,6 +1087,10 @@ namespace Orts.Simulation.RollingStocks
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
+            WindowDeratingFactor = copy.WindowDeratingFactor;
+            DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
+            CompartmentHeatingPipeAreaFactor = copy.CompartmentHeatingPipeAreaFactor;
+            MainHeatPipeOuterDiaM = copy.MainHeatPipeOuterDiaM;
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
