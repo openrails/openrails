@@ -59,6 +59,7 @@ namespace Orts.Simulation
         public static GettextResourceManager Catalog { get; private set; }
         public static Random Random { get; private set; }
         public static double Resolution = 1000000; // resolution for calculation of random value with a pseudo-gaussian distribution
+        public const float MaxStoppedMpS = 0.1f; // stopped is taken to be a speed less than this 
 
         public bool Paused = true;          // start off paused, set to true once the viewer is fully loaded and initialized
         public float GameSpeed = 1;
@@ -674,7 +675,7 @@ namespace Orts.Simulation
 
             foreach (Train train in Trains)
             {
-                if (train.SpeedMpS != 0 &&
+                if ((train.SpeedMpS != 0 || (train.ControlMode == Train.TRAIN_CONTROL.EXPLORER && train.TrainType == Train.TRAINTYPE.REMOTE && MPManager.IsServer())) &&
                     train.GetType() != typeof(AITrain) && train.GetType() != typeof(TTTrain) &&
                     (PlayerLocomotive == null || train != PlayerLocomotive.Train))
                 {
@@ -1943,7 +1944,7 @@ namespace Orts.Simulation
                 if ((PlayerLocomotive.Train as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.SUSPENDED)
                 {
                     PlayerLocomotive.Train.Reinitialize();
-                    (PlayerLocomotive.Train as AITrain).MovementState = PlayerLocomotive.Train.SpeedMpS == 0 ?
+                    (PlayerLocomotive.Train as AITrain).MovementState = Math.Abs(PlayerLocomotive.Train.SpeedMpS) <= MaxStoppedMpS ?
                         AITrain.AI_MOVEMENT_STATE.INIT : AITrain.AI_MOVEMENT_STATE.BRAKING;
                 }
                 (PlayerLocomotive.Train as AITrain).SwitchToPlayerControl();

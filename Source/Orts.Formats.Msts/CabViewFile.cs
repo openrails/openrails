@@ -120,6 +120,7 @@ namespace Orts.Formats.Msts
         BLOWER,
         STEAM_INJ1,
         STEAM_INJ2,
+        ORTS_BLOWDOWN_VALVE,
         DAMPERS_FRONT,
         DAMPERS_BACK,
         STEAM_HEAT,
@@ -172,6 +173,7 @@ namespace Orts.Formats.Msts
         ORTS_HOURDIAL,
         ORTS_MINUTEDIAL,
         ORTS_SECONDDIAL,
+		ORTS_SIGNED_TRACTION_BRAKING,
 
         // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
         EXTERNALWIPERS,

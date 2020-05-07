@@ -252,6 +252,8 @@ When this option is selected, the OR update rate cannot be higher than the
 monitor vertical sync frequency (typically 60 Hz). This reduces CPU energy
 consumption in fast PCs.
 
+.. _options-cab-stretch:
+
 % Cab 2D Stretch
 ----------------
 
@@ -278,6 +280,12 @@ picture so as to cover the complete display. Intermediate values provide a
 blend of panning and stretching.
 
 .. image:: images/options-2dstretch_2.png
+
+OR can also pillarbox or letterbox the cab by filling the missing space with 
+black bars. You can activate this mode in-game by pressing Ctrl+1. It overrides 
+any stretching.
+
+.. image:: images/options-2dstretch_3.png
 
 Viewing distance
 ----------------

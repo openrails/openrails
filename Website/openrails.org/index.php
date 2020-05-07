@@ -71,6 +71,16 @@
           <div class="heading">
             <h4>News</h4>
           </div>
+          <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
+            <p>
+              <strong>Apr 2020</strong>
+              After more than a year of work <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">the free, restored and improved Siskiyou Route</a> is once more available.
+            </p>
+          </div>
+          <p>
+            <strong>Apr 2019</strong>
+            <a href="https://www.trainsim.com/vbts/tslib.php?searchid=13577139">ENG files published</a> with accurate physics for 176 USA diesel locos.
+          </p>
           <p>
             <strong>Mar 2018</strong>
             Geoff Rowlands found a way to model 3D controls so they can be grabbed by the handle <a href="https://www.youtube.com/watch?v=UO9XrBz3iD0&feature=youtu.be">as in this video</a>.
@@ -78,15 +88,6 @@
           <p>
             <strong>Nov 2017</strong>
             Open Rails trialled <a href="http://www.monogame.net/">with Monogame instead of XNA</a> uses less RAM and give higher frame rates.
-          </p>
-          <p>
-            <strong>Nov 2017</strong>
-            Open Rails trialled <a href="http://www.monogame.net/">with Monogame instead of XNA</a> uses less RAM and give higher frame rates.
-          </p>
-          <p>
-            <strong>Feb 2017</strong>
-			        3D cabs available commercially -
-            <a href="https://www.youtube.com/watch?v=EiccxSAIEe0&feature=em-subs_digest">see video</a>.
           </p>
         </div>
         <div class="col-md-4 divider">
@@ -139,6 +140,9 @@ include "download/program/preamble.php";
         #modal2 .user-existing > .user-content {
           background-color: rgb(45, 94, 139);
         }
+        #modal2 .user-existing2 > .user-content {
+          background-color: rgb(118, 45, 139);
+        }
         #modal2 .user-content {
           padding: 1px 20px 20px;
         }
@@ -174,7 +178,7 @@ include "download/program/preamble.php";
                 <a href="http://www.zigzag.coalstonewcastle.com.au/route/downloads/" title="Tutorials in this kit will help you to learn the rudimentary controls in Open Rails, how to drive a steam locomotive, operate the air brakes to stop the train, to turn the locomotive on a turntable, to fuel locomotive with water and coal, and also how to shunt cars and wagons"><img src="landing_page_ctn.png"></a>
               </div>
             </div>
-            <div class="user-existing col-md-6">
+            <!-- <div class="user-existing col-md-6">
               <div class="user-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h1>Already using Open Rails?</h1>
@@ -182,6 +186,15 @@ include "download/program/preamble.php";
                 <p>High quality route donated by vendor TrainSimulations</p>
                 <p>This route has been updated for Open Rails to optimise physics and sound</p>
                 <a href="http://www.trainsimulations.net/ORTS_starter_pack.html"><img src="landing_page_ts.png"></a>
+              </div>
+            </div> -->
+            <div class="user-existing2 col-md-6">
+              <div class="user-content">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h1>Already using Open Rails?</h1>
+                <h1>Try the <strong><a href="http://www.siskurail.org" title="The Central Oregon and Pacific Railroad operates between Northern California and Eugene, Oregon, USA.">Siskiyou Route</a></strong></h1>
+                <p>This extensive route, created by Dale Rickert, has over 300 miles of mainline track passing through 31 cities and comes with nearly 150 locos and 350 wagons.</p>
+                <a href="http://www.siskurail.org" title="The Central Oregon and Pacific Railroad operates between Northern California and Eugene, Oregon, USA."><img src="landing_page_dr.png"></a>
               </div>
             </div>
           </div><!-- End of Modal content -->

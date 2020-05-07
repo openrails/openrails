@@ -2527,7 +2527,7 @@ namespace Orts.Simulation.AIs
 
                         // train is stopped - set departure time
 
-                        if (SpeedMpS == 0)
+                        if (Math.Abs(SpeedMpS) <= Simulator.MaxStoppedMpS)
                         {
                             MovementState = AI_MOVEMENT_STATE.STATION_STOP;
                             StationStop thisStation = StationStops[0];
@@ -2635,7 +2635,7 @@ namespace Orts.Simulation.AIs
                     {
                         AdjustControlsBrakeMore(MaxDecelMpSS, elapsedClockSeconds, 50);
                         AITrainThrottlePercent = 0;
-                        if (SpeedMpS == 0)
+                        if (Math.Abs(SpeedMpS) <= Simulator.MaxStoppedMpS)
                         {
                             MovementState = AI_MOVEMENT_STATE.STOPPED;
                         }
@@ -6323,7 +6323,7 @@ namespace Orts.Simulation.AIs
             ResetActions(true, true);
             if (SpeedMpS != 0) MovementState = AI_MOVEMENT_STATE.BRAKING;
             else if (this == Simulator.OriginalPlayerTrain && Simulator.ActivityRun != null && Simulator.ActivityRun.Current is ActivityTaskPassengerStopAt && ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).IsAtStation(this) &&
-                ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS > Simulator.ClockTime)
+                ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingS > 0)
             {
                 StationStops[0].ActualDepart = (int)((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).BoardingEndS;
                 StationStops[0].ActualArrival = -(int)(new DateTime().Add(TimeSpan.FromSeconds(0.0)) - ((ActivityTaskPassengerStopAt)Simulator.ActivityRun.Current).ActArrive).Value.TotalSeconds;
@@ -6333,7 +6333,7 @@ namespace Orts.Simulation.AIs
             {
                 MovementState = AI_MOVEMENT_STATE.STATION_STOP;
             }
-            else if (SpeedMpS == 0 && ((AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
+            else if (Math.Abs(SpeedMpS) <= 0.1f && ((AuxActionsContain.SpecAuxActions.Count > 0 && AuxActionsContain.SpecAuxActions[0] is AIActionWPRef && (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt != null &&
             (AuxActionsContain.SpecAuxActions[0] as AIActionWPRef).keepIt.currentMvmtState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION) || (nextActionInfo is AuxActionWPItem &&
                     MovementState == AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION)))
             {
