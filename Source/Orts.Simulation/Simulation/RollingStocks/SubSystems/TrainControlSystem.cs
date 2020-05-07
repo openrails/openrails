@@ -751,6 +751,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 return defaultValue;
         }
 
+
+        // Converts the generic string (e.g. ORTS_TCS5) shown when browsing with the mouse on a TCS control
+        // to a customized string defined in the script
         public string GetDisplayString(string originalString)
         {
             if (originalString.Length < 9) return originalString;
