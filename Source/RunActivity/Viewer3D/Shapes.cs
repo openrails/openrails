@@ -1267,6 +1267,49 @@ namespace Orts.Viewer3D
         }
     }
 
+    /// <summary>
+    /// A <c>ShapePrimitive</c> that permits manipulation of the vertex and index buffers to change geometry efficiently.
+    /// </summary>
+    /// <remarks>
+    /// <typeparamref name="I"/> represents the type stored in the index buffer.
+    /// </remarks>
+    public class MutableShapePrimitive<I> : ShapePrimitive where I : struct
+    {
+        /// <remarks>
+        /// Buffers cannot be expanded, so take care to properly set <paramref name="maxVertices"/> and <paramref name="maxIndices"/>,
+        /// which define the maximum sizes of the vertex and index buffers, respectively.
+        /// </remarks>
+        public MutableShapePrimitive(Material material, int maxVertices, int maxIndices, int[] hierarchy, int hierarchyIndex)
+        {
+            Material = material;
+            Hierarchy = hierarchy;
+            HierarchyIndex = hierarchyIndex;
+
+            var graphicsDevice = material.Viewer.GraphicsDevice;
+            VertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), maxVertices, BufferUsage.WriteOnly);
+            IndexBuffer = new IndexBuffer(graphicsDevice, typeof(I), maxIndices, BufferUsage.WriteOnly);
+
+            DummyVertexBuffer = new VertexBuffer(graphicsDevice, DummyVertexDeclaration, 1, BufferUsage.WriteOnly);
+            DummyVertexBuffer.SetData(DummyVertexData);
+            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(DummyVertexBuffer) };
+        }
+
+        public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
+        {
+            VertexBuffer.SetData(data);
+            MinVertexIndex = minVertexIndex;
+            NumVerticies = numVertices;
+            PrimitiveCount = primitiveCount;
+        }
+
+        public void SetIndexData(I[] data)
+        {
+            IndexBuffer.SetData(data);
+        }
+
+        public override void Draw(GraphicsDevice graphicsDevice) => base.Draw(graphicsDevice);
+    }
+
     struct ShapeInstanceData
     {
 #pragma warning disable 0649
