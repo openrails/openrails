@@ -191,9 +191,7 @@ namespace ORTS
             checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
-            checkAutopilot.Checked = Settings.Autopilot;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
-            checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
 
             // Keyboard tab
@@ -476,9 +474,7 @@ namespace ORTS
             Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
-            Settings.Autopilot = checkAutopilot.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
-            Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
 
             // Keyboard tab
