@@ -2422,13 +2422,13 @@ namespace Orts.Simulation.RollingStocks
             var LocomotiveParameters = Simulator.PlayerLocomotive as MSTSLocomotive;
 
             // if this is a heating steam boiler car then adjust steam pressure
-            if (WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05)
+            if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05)
             {
                 //   LocomotiveParameters.CurrentSteamHeatPressurePSI = LocomotiveParameters.SteamHeatController.CurrentValue * 100;
                 LocomotiveParameters.CurrentSteamHeatPressurePSI = 60.0f;
                 Train.CarSteamHeatOn = true; // turn on steam effects on wagons
             }
-            else if (WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
+            else if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
             {
                 LocomotiveParameters.CurrentSteamHeatPressurePSI = 0.0f;
                 Train.CarSteamHeatOn = false; // turn off steam effects on wagons
