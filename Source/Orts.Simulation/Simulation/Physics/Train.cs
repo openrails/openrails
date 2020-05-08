@@ -2004,8 +2004,6 @@ namespace Orts.Simulation.Physics
                     IsFirstTimeBoilerCarAttached = false;
                 }
 
-
-
                 // Check to confirm that train is player driven and has passenger cars in the consist. Steam heating is OFF if steam heat valve is closed and no pressure is present
                 if (IsPlayerDriven && PassengerCarsNumber > 0 && (mstsLocomotive.IsSteamHeatFitted || HeatingBoilerCarAttached) && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
                 {
@@ -2105,6 +2103,7 @@ namespace Orts.Simulation.Physics
                             car.TotalCarCompartmentHeatLossWpT = 0.0f;
                             car.CarHeatCompartmentPipeAreaM2 = 0.0f;
                             car.CarHeatVolumeM3 = 0.0f;
+                            float HeatLossTransmissionWpT = 0;
 
                             // Transmission heat loss = exposed area * heat transmission coeff (inside temp - outside temp)
                             // Calculate the heat loss through the roof, wagon sides, and floor separately  
@@ -2134,19 +2133,36 @@ namespace Orts.Simulation.Physics
                             // Calculate the heat loss through the floor
                             float HeatLossTransFloorWpT = (car.CarWidthM * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffFloorWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
 
-                            float HeatLossTransmissionWpT = HeatLossTransRoofWpT + HeatLossTransTotalSidesWpT + HeatLossTransFloorWpT;
+                            HeatLossTransmissionWpT = HeatLossTransRoofWpT + HeatLossTransTotalSidesWpT + HeatLossTransFloorWpT;
+
+                            // ++++++++++++++++++++++++
+                            // Ventilation Heat loss, per degree of temp change
+                            // This will occur when the train is stopped at the station and prior to being ready to depart. Typically will only apply in activity mode, and not explore mode
+                            float HeatLossVentilationWpT = 0;
+                            float HeatRecoveryEfficiency = 0.5f; // Assume a HRF of 50%
+                            float AirFlowVolumeM3pS = car.CarHeatVolumeM3 / 300.0f; // Assume that the volume of the car is emptied over a period of 5 minutes
+
+                            if (AtStation) // When train is at station.
+                            {
+                                if (MayDepart) // If the train is ready to depart, assume all doors are closed, and hence no ventilation loss
+                                {
+                                    HeatLossVentilationWpT = 0;
+                                }
+                                else //
+                                {
+                                    HeatLossVentilationWpT = W.FromKW((1.0f - HeatRecoveryEfficiency) * SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * AirFlowVolumeM3pS * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
+                                }
+                            }
 
                             // ++++++++++++++++++++++++
                             // Infiltration Heat loss, per degree of temp change
                             float NumAirShiftspSec = pS.FrompH(10.0f);      // Pepper article suggests that approx 14 air changes per hour happen for a train that is moving @ 50mph, use and av figure of 10.0.
-
+                            float HeatLossInfiltrationWpT = 0;
                             car.CarHeatVolumeM3 = car.CarWidthM * (car.CarLengthM - CarCouplingPipeM) * (car.CarHeightM - BogieHeightM);
-                            float HeatLossInfiltrationWpT = W.FromKW(SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * car.CarHeatVolumeM3 * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
+                            HeatLossInfiltrationWpT = W.FromKW(SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * car.CarHeatVolumeM3 * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
 
-                            car.TotalCarCompartmentHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT;
-
-                            //                        Trace.TraceInformation("Compartment Heat - Total Heat {0} Trans {1} Infil {2}", car.TotalCarCompartmentHeatLossWpT, HeatLossTransmissionWpT, HeatLossInfiltrationWpT);
-
+                            car.TotalCarCompartmentHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT + HeatLossVentilationWpT;
+                            
                             //++++++++++++++++++++++++++++++++++++++++
                             // Calculate heat produced by steam pipe acting as heat exchanger inside carriage - this model is based upon the heat loss from a steam pipe. 
                             // The heat loss per metre from a bare pipe equals the heat loss by convection and radiation. Temperatures in degrees Kelvin
