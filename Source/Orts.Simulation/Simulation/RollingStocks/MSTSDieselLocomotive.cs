@@ -535,7 +535,16 @@ namespace Orts.Simulation.RollingStocks
             {
                 // Appartent throttle setting is a reverse lookup of the throttletab vs rpm, hence motive force increase will be related to increase in rpm. The minimum of the two values
                 // is checked to enable fast reduction in tractive force when decreasing the throttle. Typically it will take longer for the prime mover to decrease rpm then drop motive force.
-                float LocomotiveApparentThrottleSetting = Math.Min(t, DieselEngines.ApparentThrottleSetting / 100.0f);
+                float LocomotiveApparentThrottleSetting = 0;
+
+                if (IsPlayerTrain)
+                {
+                    LocomotiveApparentThrottleSetting = Math.Min(t, DieselEngines.ApparentThrottleSetting / 100.0f);
+                }
+                else // For non AI trains, just use the throttle setting
+                {
+                    LocomotiveApparentThrottleSetting = t;
+                }
 
                 if (TractiveForceCurves == null)
                 {
