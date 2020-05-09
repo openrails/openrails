@@ -909,8 +909,8 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsheatingtrainpipeouterdiameter": MainHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(ortsheatingboilerwatertankcapacity": SteamHeatBoilerWaterTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 case "wagon(ortsheatingboilerfueltankcapacity": SteamHeatBoilerFuelTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "wagon(ortssteamheatboilersteamusage": TrainHeatBoilerWaterUsageGalukpH = new Interpolator(stf); break;
-                case "wagon(ortssteamheatboilerfuelusage": TrainHeatBoilerFuelUsageGalukpH = new Interpolator(stf); break;
+                case "wagon(ortsheatingboilerwaterusage": TrainHeatBoilerWaterUsageGalukpH = new Interpolator(stf); break;
+                case "wagon(ortsheatingboilerfuelusage": TrainHeatBoilerFuelUsageGalukpH = new Interpolator(stf); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
