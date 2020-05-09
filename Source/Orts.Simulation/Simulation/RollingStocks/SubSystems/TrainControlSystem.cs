@@ -339,7 +339,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
                 Script.SetFullDynamicBrake = (value) => FullDynamicBrakingOrder = value;
                 Script.SetThrottleController = (value) => Locomotive.ThrottleController.SetValue(value);
-                Script.SetDynamicBrakeController = (value) => Locomotive.DynamicBrakeController.SetValue(value);
+                Script.SetDynamicBrakeController = (value) =>
+                {
+                if (Locomotive.DynamicBrakeController == null) return;
+                Locomotive.DynamicBrakeChangeActiveState(value > 0);
+                Locomotive.DynamicBrakeController.SetValue(value);
+                };
                 Script.SetPantographsDown = () =>
                 {
                     if (Locomotive.Pantographs.State == PantographState.Up)
