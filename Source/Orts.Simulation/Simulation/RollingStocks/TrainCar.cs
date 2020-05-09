@@ -113,6 +113,11 @@ namespace Orts.Simulation.RollingStocks
         public List<int> SoundSourceIDs = new List<int>();
 
         // Used to calculate Carriage Steam Heat Loss - ToDo - ctn_steamer - consolidate these parameters with other steam heat ones, also check as some now may be obsolete
+        public float MainHeatPipeOuterDiaM = 0.073661016f; // Steel pipe OD = 1.9" + 1.0" insulation (0.5" either side of pipe) = 0.073661016m
+        public float CompartmentHeatingPipeAreaFactor = 3.0f;
+        public float DesiredCompartmentTempSetpointC = C.FromF(55.0f); // This is the desired temperature for the passenger compartment heating
+        public float WindowDeratingFactor = 0.275f;   // fraction of windows in carriage side - 27.5% of space are windows
+        public bool SteamHeatingBoilerOn = false;
         public bool SteamHeatingCompartmentSteamTrapOn = false;
         public float TotalCarCompartmentHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatCompartmentPipeAreaM2;  // Area of surface of car pipe
@@ -542,9 +547,15 @@ namespace Orts.Simulation.RollingStocks
         }
         public EngineTypes EngineType;
 
+        public enum WagonSpecialTypes
+        {
+            Unknown,
+            HeatingBoiler,
+            PowerVan,
+        }
+        public WagonSpecialTypes WagonSpecialType;
 
-
-        protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
+    protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
         protected float DoubleTunnelCrossSectAreaM2;

@@ -721,19 +721,19 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("\t{0} {1}\t\t{2}\n", 
                 Simulator.Catalog.GetString("Fuel"), 
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
-            
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && this.IsLeadLocomotive() && Train.PassengerCarsNumber > 0 && Train.CarSteamHeatOn)
+
+            if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive
                 // Display Steam Heat info
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15:N0}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6:N0}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15:N0}\n",
                    Simulator.Catalog.GetString("StHeat:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                    Simulator.Catalog.GetString("StTemp"),
                    FormatStrings.FormatTemperature(C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]), IsMetric, false),
-                   Simulator.Catalog.GetString("FuelLvl"),
-                   CurrentSteamHeatFuelCapacityL,
+                   Simulator.Catalog.GetString("WaterLvl"),
+                   FormatStrings.FormatFuelVolume(CurrentSteamHeatBoilerWaterCapacityL, IsMetric, IsUK),
                    Simulator.Catalog.GetString("Last:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
@@ -861,36 +861,35 @@ namespace Orts.Simulation.RollingStocks
 
             // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
+            if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating
             {
 
-           // ++++++++++++++     // ToDo - ctn_steamer - Remove Train.TrainCurrentSteamHeatPipeTempC and Train.TrainSteamPipeHeatW from following loops  ++++++++++++++
+                CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
-                if (this.IsLeadLocomotive())
+                // Calculate steam boiler usage values
+                if (CurrentSteamHeatPressurePSI > 0.1)      // Don't turn steam heat on until pressure valve has been opened
                 {
+                    // Set values for visible exhaust based upon setting of steam controller
+                    HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
+                    HeatingSteamBoilerDurationS = 1.0f * SteamHeatController.CurrentValue;
+                    Train.CarSteamHeatOn = true; // turn on steam effects on wagons
 
-                    // Calculate steam boiler usage values
-                    if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
-                    {
-                        CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
-                    }
+                    // Calculate fuel usage for steam heat boiler
+                    float FuelUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerFuelUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
+                    DieselLevelL -= FuelUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as fuel used.
+                    float FuelOilConvertLtoKg = 0.85f;
+                    MassKG -= FuelUsageLpS * elapsedClockSeconds * FuelOilConvertLtoKg; // Reduce locomotive weight as Steam heat boiler uses fuel.
 
-                    CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
-
-
-                    if (CurrentSteamHeatPressurePSI < 0.1)
-                    {
-                        Train.TrainCurrentSteamHeatPipeTempC = 0.0f;       // Reset values to zero if steam is not turned on.
-                        Train.TrainSteamPipeHeatW = 0.0f;
-                        Train.CarSteamHeatOn = false; // turn off steam effects on wagons
-                    }
-                    else
-                    {
-
-                        Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
-                        Train.CarSteamHeatOn = true; // turn on steam effects on wagons
-                    }
+                    // Calculate water usage for steam heat boiler
+                    float WaterUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerWaterUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
+                    CurrentSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
+                    MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
                 }
+                else
+                {
+                    Train.CarSteamHeatOn = false; // turn on steam effects on wagons
+                }
+                
 
             }
         }
