@@ -162,8 +162,6 @@ namespace Orts.Simulation.Physics
         }
 
         // Carriage Steam Heating
-        public bool HeatingBoilerCarAttached = false;
-        bool IsFirstTimeBoilerCarAttached = true;
         public float TrainSteamPipeHeatW;               // Not required, all instances can be removed!!!!!!!!!
         public float TrainInsideTempC;                  // Desired inside temperature for carriage steam heating depending upon season
         public float TrainOutsideTempC;                 // External ambient temeprature for carriage steam heating.
@@ -177,6 +175,7 @@ namespace Orts.Simulation.Physics
         public float TrainTotalSteamHeatW;         // Total steam heat in train - based upon air volume
         float SpecificHeatCapcityAirKJpKgK = 1.006f; // Specific Heat Capacity of Air
         float DensityAirKgpM3 = 1.247f;   // Density of air - use a av value
+        bool IsSteamHeatExceeded = false;   // Flag to indicate when steam heat temp is exceeded
         bool IsSteamHeatLow = false;        // Flag to indicate when steam heat temp is low
         public float DisplayTrainNetSteamHeatLossWpTime;  // Display Net Steam loss - Loss in Cars vs Steam Pipe Heat
         public float TrainSteamPipeHeatConvW;               // Heat radiated by steam pipe - convection
@@ -185,6 +184,7 @@ namespace Orts.Simulation.Physics
         float OneAtmospherePSI = 14.696f;      // Atmospheric Pressure
         float PipeHeatTransCoeffWpM2K = 22.0f;    // heat transmission coefficient for a steel pipe.
         float BoltzmanConstPipeWpM2 = 0.0000000567f; // Boltzman's Constant
+        bool IsTrainSteamHeatInitial = true; // Allow steam heat to be initialised.
         public bool TrainHeatingBoilerInitialised = false;
 
         // Values for Wind Direction and Speed - needed for wind resistance and lateral force
@@ -1974,8 +1974,7 @@ namespace Orts.Simulation.Physics
         /// Update Steam Heating - this model calculates the total train heat losses and gains for all the cars
         /// <\summary>
 
-        // The carriage steam heating model is based upon a description provided in a number of articles, including, "The Steam Heating of Railway Carriages" by Frank W. Marillier ( http://www.gwr.org.uk/links.html ),
-        // and "Some Considerations on the Problem of the Heating of British Railway Coaches" by F. J. Pepper. (Journal Institution of Locomotive Engineers - Paper No. 568 - pg 13 -74)
+        // The carriage steam heating model is based upon a description provided in a number of articles, including, "The Steam Heating of Railway Carriages" by Frank W. Marillier ( http://www.gwr.org.uk/links.html )
         // Steam is carried the length of the train by a 2" or 1.5" steam pipe that is fitted between each of the cars. Rubber pressure hoses are used to couple the carriage steam pipes together. 
         // Typically these pipes would have some level of insulation on them.
         // Typically 2" bore steam pipes are then placed at strategic locations within the car. For cars with separate compartments, a steam pipe would need to be located in each compartment.
@@ -1991,31 +1990,18 @@ namespace Orts.Simulation.Physics
 
         public void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
-            var mstsLocomotive = Simulator.PlayerLocomotive as MSTSLocomotive;
+            var mstsLocomotive = Cars[0] as MSTSLocomotive;
             if (mstsLocomotive != null)
             {
 
-                if (IsFirstTimeBoilerCarAttached)
-                {
-                    for (int i = 0; i < Cars.Count; i++)
-                    {
-                        var car = Cars[i];
-                        if (car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
-                        {
-                            HeatingBoilerCarAttached = true; // A steam heating boiler is fitted in a wagon
-                        }
-
-                    }
-                    IsFirstTimeBoilerCarAttached = false;
-                }
-
                 // Check to confirm that train is player driven and has passenger cars in the consist. Steam heating is OFF if steam heat valve is closed and no pressure is present
-                if (IsPlayerDriven && PassengerCarsNumber > 0 && (mstsLocomotive.IsSteamHeatFitted || HeatingBoilerCarAttached) && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
+                if (IsPlayerDriven && PassengerCarsNumber > 0 && mstsLocomotive.TrainFittedSteamHeat && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
                 {
                     // Set default values required
                     float SteamFlowRateLbpHr = 0;
                     float ProgressiveHeatAlongTrainBTU = 0;
                     float ConnectSteamHoseLengthFt = 2.0f * 2.0f; // Assume two hoses on each car * 2 ft long
+                    float DesiredCompartmentTempSetpointC = C.FromF(55.0f); // This is the desired temperature for the passenger compartment
 
                     // Calculate total heat loss and car temperature along the train
                     for (int i = 0; i < Cars.Count; i++)
@@ -2030,11 +2016,10 @@ namespace Orts.Simulation.Physics
                         // Only initialise these values the first time around the loop
                         if (car.IsCarSteamHeatInitial)
                         {
-                           
                             // This section sets some arbitary default values the first time that this section is processed. Real values are set on subsequent loops, once steam heat is turned on in locomotive
                             if (TrainInsideTempC == 0)
                             {
-                                TrainInsideTempC = car.DesiredCompartmentTempSetpointC; // Set intial temp - will be set in Steam and Diesel Eng, but these are done after this step
+                                TrainInsideTempC = DesiredCompartmentTempSetpointC; // Set intial temp - will be set in Steam and Diesel Eng, but these are done after this step
                             }
 
                             if (TrainOutsideTempC == 0)
@@ -2045,9 +2030,9 @@ namespace Orts.Simulation.Physics
 
                             if (mstsLocomotive.EngineType == TrainCar.EngineTypes.Steam && Simulator.Settings.HotStart || mstsLocomotive.EngineType == TrainCar.EngineTypes.Diesel || mstsLocomotive.EngineType == TrainCar.EngineTypes.Electric)
                             {
-                                if (TrainOutsideTempC < car.DesiredCompartmentTempSetpointC)
+                                if (TrainOutsideTempC < DesiredCompartmentTempSetpointC)
                                 {
-                                    car.CarCurrentCarriageHeatTempC = car.DesiredCompartmentTempSetpointC; // Set intial temp
+                                    car.CarCurrentCarriageHeatTempC = DesiredCompartmentTempSetpointC; // Set intial temp
                                 }
                                 else
                                 {
@@ -2108,7 +2093,6 @@ namespace Orts.Simulation.Physics
                             car.TotalCarCompartmentHeatLossWpT = 0.0f;
                             car.CarHeatCompartmentPipeAreaM2 = 0.0f;
                             car.CarHeatVolumeM3 = 0.0f;
-                            float HeatLossTransmissionWpT = 0;
 
                             // Transmission heat loss = exposed area * heat transmission coeff (inside temp - outside temp)
                             // Calculate the heat loss through the roof, wagon sides, and floor separately  
@@ -2119,6 +2103,7 @@ namespace Orts.Simulation.Physics
                             float HeatTransCoeffSidesWm2C = 1.7f * ConvFactor; // 2 inch wood - uninsulated
                             float HeatTransCoeffWindowsWm2C = 4.7f * ConvFactor; // Single glazed glass window in wooden frame
                             float HeatTransCoeffFloorWm2C = 2.5f * ConvFactor; // uninsulated floor
+                            float WindowDeratingFactor = 0.33f;   // fraction of windows in carriage side - 33% of space are windows
 
                             // Calculate volume in carriage - note height reduced by 1.06m to allow for bogies, etc
                             float CarCouplingPipeM = 1.2f;  // Allow for connection between cars (assume 2' each end) - no heat is contributed to carriages.
@@ -2128,8 +2113,8 @@ namespace Orts.Simulation.Physics
                             float HeatLossTransRoofWpT = RoofHeatLossFactor * (car.CarWidthM * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffRoofWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
 
                             // Each car will have 2 x sides + 2 x ends. Each side will be made up of solid walls, and windows. A factor has been assumed to determine the ratio of window area to wall area.
-                            float HeatLossTransWindowsWpT = (car.WindowDeratingFactor * (car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffWindowsWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
-                            float HeatLossTransSidesWpT = ((1.0f - car.WindowDeratingFactor) * (car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffSidesWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
+                            float HeatLossTransWindowsWpT = (WindowDeratingFactor * (car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffWindowsWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
+                            float HeatLossTransSidesWpT = ((1.0f - WindowDeratingFactor) * (car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffSidesWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
                             float HeatLossTransEndsWpT = ((car.CarHeightM - BogieHeightM) * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffEndsWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
 
                             // Total equals 2 x sides, ends, windows
@@ -2138,36 +2123,19 @@ namespace Orts.Simulation.Physics
                             // Calculate the heat loss through the floor
                             float HeatLossTransFloorWpT = (car.CarWidthM * (car.CarLengthM - CarCouplingPipeM)) * HeatTransCoeffFloorWm2C * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC);
 
-                            HeatLossTransmissionWpT = HeatLossTransRoofWpT + HeatLossTransTotalSidesWpT + HeatLossTransFloorWpT;
-
-                            // ++++++++++++++++++++++++
-                            // Ventilation Heat loss, per degree of temp change
-                            // This will occur when the train is stopped at the station and prior to being ready to depart. Typically will only apply in activity mode, and not explore mode
-                            float HeatLossVentilationWpT = 0;
-                            float HeatRecoveryEfficiency = 0.5f; // Assume a HRF of 50%
-                            float AirFlowVolumeM3pS = car.CarHeatVolumeM3 / 300.0f; // Assume that the volume of the car is emptied over a period of 5 minutes
-
-                            if (AtStation) // When train is at station.
-                            {
-                                if (MayDepart) // If the train is ready to depart, assume all doors are closed, and hence no ventilation loss
-                                {
-                                    HeatLossVentilationWpT = 0;
-                                }
-                                else //
-                                {
-                                    HeatLossVentilationWpT = W.FromKW((1.0f - HeatRecoveryEfficiency) * SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * AirFlowVolumeM3pS * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
-                                }
-                            }
+                            float HeatLossTransmissionWpT = HeatLossTransRoofWpT + HeatLossTransTotalSidesWpT + HeatLossTransFloorWpT;
 
                             // ++++++++++++++++++++++++
                             // Infiltration Heat loss, per degree of temp change
-                            float NumAirShiftspSec = pS.FrompH(10.0f);      // Pepper article suggests that approx 14 air changes per hour happen for a train that is moving @ 50mph, use and av figure of 10.0.
-                            float HeatLossInfiltrationWpT = 0;
-                            car.CarHeatVolumeM3 = car.CarWidthM * (car.CarLengthM - CarCouplingPipeM) * (car.CarHeightM - BogieHeightM);
-                            HeatLossInfiltrationWpT = W.FromKW(SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * car.CarHeatVolumeM3 * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
+                            float NumAirShiftspSec = pS.FrompH(0.5f);      // Rule of thumb 0.5 air shifts / hr
 
-                            car.TotalCarCompartmentHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT + HeatLossVentilationWpT;
-                            
+                            car.CarHeatVolumeM3 = car.CarWidthM * (car.CarLengthM - CarCouplingPipeM) * (car.CarHeightM - BogieHeightM);
+                            float HeatLossInfiltrationWpT = W.FromKW(SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * NumAirShiftspSec * car.CarHeatVolumeM3 * (car.CarCurrentCarriageHeatTempC - car.CarOutsideTempC));
+
+                            car.TotalCarCompartmentHeatLossWpT = HeatLossTransmissionWpT + HeatLossInfiltrationWpT;
+
+                            //                        Trace.TraceInformation("Compartment Heat - Total Heat {0} Trans {1} Infil {2}", car.TotalCarCompartmentHeatLossWpT, HeatLossTransmissionWpT, HeatLossInfiltrationWpT);
+
                             //++++++++++++++++++++++++++++++++++++++++
                             // Calculate heat produced by steam pipe acting as heat exchanger inside carriage - this model is based upon the heat loss from a steam pipe. 
                             // The heat loss per metre from a bare pipe equals the heat loss by convection and radiation. Temperatures in degrees Kelvin
@@ -2175,8 +2143,8 @@ namespace Orts.Simulation.Physics
                             // QRad = % * A * e * (Tp^4 - To^4), where % = Boltzmans constant, A = surface area of pipe, Tp^4 = pipe temperature, To^4 = temperature of air around the pipe, e = emissivity factor
 
                             // Calculate steam pipe surface area
-                            float CompartmentSteamPipeRadiusM = Me.FromIn(2.375f) / 2.0f;  // Assume the steam pipes in the compartments have internal diameter of 2" (50mm) - external = 2.375"
-                            float DoorSteamPipeRadiusM = Me.FromIn(2.0f) / 2.0f;        // Assume the steam pipes in the doors have diameter of 1.75" (50mm) - assume external = 2.0"
+                            float CompartmentSteamPipeRadiusM = Me.FromIn(2.0f) / 2.0f;  // Assume the steam pipes in the compartments have diameter of 2" (50mm)
+                            float DoorSteamPipeRadiusM = Me.FromIn(1.75f) / 2.0f;        // Assume the steam pipes in the doors have diameter of 1.75" (50mm)
 
                             // Assume door pipes are 3' 4" (ie 3.3') long, and that there are doors at both ends of the car, ie x 2
                             float CarDoorLengthM = 2.0f * Me.FromFt(3.3f);
@@ -2185,7 +2153,7 @@ namespace Orts.Simulation.Physics
                             float CarDoorPipeAreaM2 = 2.0f * MathHelper.Pi * DoorSteamPipeRadiusM * CarDoorLengthM;
 
                             // Use rule of thumb - 1" of 2" steam heat pipe for every 3.0 cu ft of volume in car compartment (third class)
-                            float CarCompartmentPipeLengthM = Me.FromIn((car.CarHeatVolumeM3 - CarDoorVolumeM3) / Me3.FromFt3(car.CompartmentHeatingPipeAreaFactor));
+                            float CarCompartmentPipeLengthM = Me.FromIn((car.CarHeatVolumeM3 - CarDoorVolumeM3) / (Me3.FromFt3(3.0f)));
                             float CarCompartmentPipeAreaM2 = 2.0f * MathHelper.Pi * CompartmentSteamPipeRadiusM * CarCompartmentPipeLengthM;
 
                             car.CarHeatCompartmentPipeAreaM2 = CarCompartmentPipeAreaM2 + CarDoorPipeAreaM2;
@@ -2201,6 +2169,8 @@ namespace Orts.Simulation.Physics
 
                             car.CarHeatCompartmentSteamPipeHeatW = car.CarCompartmentSteamHeatPipeRadW + car.CarCompartmentSteamPipeHeatConvW;
 
+                            //                        Trace.TraceInformation("Pipe Heat - CarID {0} Total Heat {1} PipeArea {2} PipeTemp {3} CarTemp {4}", car.CarID, car.CarHeatCompartmentSteamPipeHeatW, car.CarHeatCompartmentPipeAreaM2, CompartmentSteamPipeTempC, car.CarCurrentCarriageHeatTempC);
+
                         }
 
                         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2210,12 +2180,13 @@ namespace Orts.Simulation.Physics
                         float HeatTransCoeffMainPipeBTUpFt2pHrpF = 0.4f * ConvFactor; // insulated pipe - BTU / sq.ft. / hr / l in / °F.
                         float HeatTransCoeffConnectHoseBTUpFt2pHrpF = 0.04f * ConvFactor; // rubber connecting hoses - BTU / sq.ft. / hr / l in / °F. TO BE CHECKED
 
-                        // Calculate Length of carriage and heat loss in main steam pipe
+                        // Calculate Length of carriage and heat loss in main steam pipe - assume 2" bore pipe
+                        float MainHeatPipeOuterDiaFt = 0.30208f; // Steel pipe OD = 2.375" + 1.25" insulation
                         float CarMainSteamPipeTempF = mstsLocomotive.SteamHeatPressureToTemperaturePSItoF[car.CarSteamHeatMainPipeSteamPressurePSI];
-                        car.CarHeatSteamMainPipeHeatLossBTU = Me.ToFt(car.CarLengthM) * (MathHelper.Pi * Me.ToFt(car.MainHeatPipeOuterDiaM)) * HeatTransCoeffMainPipeBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
+                        car.CarHeatSteamMainPipeHeatLossBTU = Me.ToFt(car.CarLengthM) * (MathHelper.Pi * MainHeatPipeOuterDiaFt) * HeatTransCoeffMainPipeBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
 
-                        // calculate steam connecting hoses heat loss - assume 1.5" hose
-                        float ConnectSteamHoseOuterDiaFt = 0.1708f; // Rubber hose OD = 2.05"                  
+                        // calculate steam connecting hoses heat loss - assume 2.0" hose
+                        float ConnectSteamHoseOuterDiaFt = 0.22f; // Rubber hose OD = 2.64"                  
                         car.CarHeatConnectSteamHoseHeatLossBTU = ConnectSteamHoseLengthFt * (MathHelper.Pi * ConnectSteamHoseOuterDiaFt) * HeatTransCoeffConnectHoseBTUpFt2pHrpF * (CarMainSteamPipeTempF - C.ToF(car.CarOutsideTempC));
 
                         // Use Napier formula to calculate steam discharge rate through steam trap valve, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
@@ -2227,6 +2198,8 @@ namespace Orts.Simulation.Physics
 
                         car.CarHeatSteamTrapUsageLBpS = (SteamTrapValveSizeAreaIn2 * (car.CarSteamHeatMainPipeSteamPressurePSI + OneAtmospherePSI)) / SteamTrapValveDischargeFactor;
 
+                        //                        Trace.TraceInformation("Steam Trap - CarID {0} Trapusage {1}", car.CarID, pS.TopH(car.CarHeatSteamTrapUsageLBpS));
+
                         // Use Napier formula to calculate steam discharge rate through steam leak in connecting hose, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
                         const float ConnectingHoseDischargeFactor = 70.0f;
 
@@ -2235,13 +2208,16 @@ namespace Orts.Simulation.Physics
                         float ConnectingHoseLeakAreaIn2 = (float)Math.PI * (ConnectingHoseLeakDiaIn / 2.0f) * (ConnectingHoseLeakDiaIn / 2.0f);
 
                         car.CarHeatConnectingSteamHoseLeakageLBpS = car.SteamHoseLeakRateRandom * (ConnectingHoseLeakAreaIn2 * (car.CarSteamHeatMainPipeSteamPressurePSI + OneAtmospherePSI)) / ConnectingHoseDischargeFactor;
-                        
+
+                        // Trace.TraceInformation("Steam Trap - CarID {0} Trapusage {1} RandomRate {2}", car.CarID, pS.TopH(car.CarHeatConnectingSteamHoseLeakageLBpS), car.SteamHoseLeakRateRandom);
+
                         //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                        //  Trace.TraceInformation("Heat & Temp - CarID {0} HeatLoss {1} CurrentHeat {2} CurrentTemp {3} OutsideTemp {4} Vol {5}", car.CarID, car.CarNetSteamHeatLossWpTime, car.CarHeatCurrentCompartmentHeatW, car.CarCurrentCarriageHeatTempC, TrainOutsideTempC, car.CarHeatVolumeM3);
 
                         float CurrentComparmentSteamPipeHeatW = 0;
 
-                        // Calculate total steam loss along main pipe, by calculating heat into steam pipe at locomotive, deduct heat loss for each car, 
-                        // note if pipe pressure drops, then compartment heating will stop
+                        // Calculate total steam loss along main pipe, by calculating heat into steam pipe at locomotive, deduct heat loss for each car
                         if (car.CarSteamHeatMainPipeSteamPressurePSI >= 1 && car.CarHeatCompartmentHeaterOn && car.WagonType == TrainCar.WagonTypes.Passenger)
                         {
                             // If main pipe pressure is > 0 then heating will start to occur in comparment, so include compartment heat exchanger value
@@ -2281,13 +2257,12 @@ namespace Orts.Simulation.Physics
 
                         car.CarCurrentCarriageHeatTempC = W.ToKW(car.CarHeatCurrentCompartmentHeatW) / (SpecificHeatCapcityAirKJpKgK * DensityAirKgpM3 * car.CarHeatVolumeM3) + TrainOutsideTempC;
 
-                        float DesiredCompartmentTempResetpointC = car.DesiredCompartmentTempSetpointC - 2.5f; // Allow 2.5Deg bandwidth for temperature
 
-                        if (car.CarCurrentCarriageHeatTempC > car.DesiredCompartmentTempSetpointC)
+                        if (car.CarCurrentCarriageHeatTempC > DesiredCompartmentTempSetpointC)
                         {
                             car.CarHeatCompartmentHeaterOn = false;
                         }
-                        else if (car.CarCurrentCarriageHeatTempC < DesiredCompartmentTempResetpointC)
+                        else if (car.CarCurrentCarriageHeatTempC < DesiredCompartmentTempSetpointC)
                         {
                             car.CarHeatCompartmentHeaterOn = true;
                         }
@@ -2341,25 +2316,7 @@ namespace Orts.Simulation.Physics
                         }
                         car.CarSteamHeatMainPipeSteamPressurePSI = ProgressivePressureAlongTrainPSI;
 
-                        // For the boiler heating car adjust mass based upon fuel and water usage
-                        if (car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
-                        {
-
-                            if (mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
-                            {
-  
-                                // Calculate fuel usage for steam heat boiler
-                                float FuelUsageLpS = L.FromGUK(pS.FrompH(mstsLocomotive.TrainHeatBoilerFuelUsageGalukpH[pS.TopH(mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS)]));
-                                float FuelOilConvertLtoKg = 0.85f;
-                                car.MassKG -= FuelUsageLpS * elapsedClockSeconds * FuelOilConvertLtoKg; // Reduce locomotive weight as Steam heat boiler uses fuel.
-
-                                // Calculate water usage for steam heat boiler
-                                float WaterUsageLpS = L.FromGUK(pS.FrompH(mstsLocomotive.TrainHeatBoilerWaterUsageGalukpH[pS.TopH(mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS)]));
-                                mstsLocomotive.CurrentSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
-                                car.MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
-                            }
-
-                        }
+                        //                            Trace.TraceInformation("Pressure Drop CarID {0} Drop {1} PipePressure {2} HosePD {3} PipePD {4}", car.CarID, CarPressureDropPSI, car.CarSteamHeatMainPipeSteamPressurePSI, HeatPipePressureDropPSI, ConnectHosePressureDropPSI);
                     }
 
                     #endregion
