@@ -372,6 +372,9 @@ namespace Orts.Simulation.RollingStocks
                 InteriorShapeFileName = null;
             }
 
+            TrainHeatBoilerWaterUsageGalukpH = SteamHeatBoilerWaterUsageGalukpH();
+            TrainHeatBoilerFuelUsageGalukpH = SteamHeatBoilerFuelUsageGalukpH();
+
             // If trailing loco resistance constant has not been  defined in WAG/ENG file then assign default value based upon orig Davis values
             if (TrailLocoResistanceFactor == 0)
             {
@@ -388,7 +391,6 @@ namespace Orts.Simulation.RollingStocks
                     TrailLocoResistanceFactor = 1.0f;
                 }
             }
-
 
             // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
             if (DavisDragConstant == 0)
@@ -905,6 +907,10 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; // Temperature conversion is incorrect - to be checked!!!
                 case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingtrainpipeouterdiameter": MainHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingboilerwatertankcapacity": SteamHeatBoilerWaterTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortsheatingboilerfueltankcapacity": SteamHeatBoilerFuelTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortssteamheatboilersteamusage": TrainHeatBoilerWaterUsageGalukpH = new Interpolator(stf); break;
+                case "wagon(ortssteamheatboilerfuelusage": TrainHeatBoilerFuelUsageGalukpH = new Interpolator(stf); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1091,6 +1097,10 @@ namespace Orts.Simulation.RollingStocks
             DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
             CompartmentHeatingPipeAreaFactor = copy.CompartmentHeatingPipeAreaFactor;
             MainHeatPipeOuterDiaM = copy.MainHeatPipeOuterDiaM;
+            SteamHeatBoilerWaterTankCapacityL = copy.SteamHeatBoilerWaterTankCapacityL;
+            SteamHeatBoilerFuelTankCapacityL = copy.SteamHeatBoilerFuelTankCapacityL;
+            TrainHeatBoilerWaterUsageGalukpH = new Interpolator(copy.TrainHeatBoilerWaterUsageGalukpH);
+            TrainHeatBoilerFuelUsageGalukpH = new Interpolator(copy.TrainHeatBoilerFuelUsageGalukpH);
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;

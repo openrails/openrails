@@ -184,44 +184,10 @@ namespace Orts.Simulation.RollingStocks
         public string LocomotiveName; // Name of locomotive from ENG file
 
         // Carriage Steam Heating Parameters
-        public Interpolator TrainHeatBoilerWaterUsageGalukpH;
-        public Interpolator TrainHeatBoilerFuelUsageGalukpH;
-
-        // Input values to allow the water and fuel usage of steam heating boiler to be calculated based upon Spanner SwirlyFlo Mk111 Boiler
-        static float[] SteamUsageLbpH = new float[]
-        {
-           0.0f, 3000.0f
-        };
-
-        // Water Usage
-        static float[] WaterUsageGalukpH = new float[]
-        {
-           0.0f, 3000.0f
-        };
-
-        // Fuel usage
-        static float[] FuelUsageGalukpH = new float[]
-        {
-           0.0f, 31.0f
-        };
-
-        public static Interpolator SteamHeatBoilerWaterUsageGalukpH()
-        {
-            return new Interpolator(SteamUsageLbpH, WaterUsageGalukpH);
-        }
-
-        public static Interpolator SteamHeatBoilerFuelUsageGalukpH()
-        {
-            return new Interpolator(SteamUsageLbpH, FuelUsageGalukpH);
-        }
-
         public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
         public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         public Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
-        public float SteamHeatBoilerFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
-        public float SteamHeatBoilerWaterTankCapacityL = L.FromGUK(800.0f); // Capacity of the water feed tank for the steam heating boiler
-        public float CurrentSteamHeatBoilerWaterCapacityL;  // Current water level
         public bool IsSteamHeatingBoilerFitted = false;   // Flag to indicate when steam heat boiler van is fitted
         public float CalculatedCarHeaterSteamUsageLBpS;
 
@@ -1148,8 +1114,6 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Initialize()
         {
-            TrainHeatBoilerWaterUsageGalukpH = SteamHeatBoilerWaterUsageGalukpH();
-            TrainHeatBoilerFuelUsageGalukpH = SteamHeatBoilerFuelUsageGalukpH();
             
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
@@ -1162,7 +1126,6 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 IsSteamHeatFitted = true;
-                CurrentSteamHeatBoilerWaterCapacityL = SteamHeatBoilerWaterTankCapacityL;
             }
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
