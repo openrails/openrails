@@ -193,6 +193,8 @@ namespace Orts.Viewer3D
             List<AnimatedPart> SemaphoreParts = new List<AnimatedPart>();
             int DisplayState = -1;
 
+            private readonly SignalLightState[] lightStates;
+
             public SignalShapeHead(Viewer viewer, SignalShape signalShape, int index, SignalHead signalHead,
                         Orts.Formats.Msts.SignalItem mstsSignalItem, Orts.Formats.Msts.SignalShape.SignalSubObj mstsSignalSubObj)
             {
@@ -290,6 +292,10 @@ namespace Orts.Viewer3D
                     }
                 }
 
+                lightStates = new SignalLightState[SignalTypeData.Lights.Count];
+                for (var i = 0; i < SignalTypeData.Lights.Count; i++)
+                    lightStates[i] = new SignalLightState(SignalTypeData.OnOffTimeS);
+
 #if DEBUG_SIGNAL_SHAPES
                 Console.Write("  HEAD type={0,-8} lights={1,-2} sem={2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Semaphore);
 #endif
@@ -342,11 +348,12 @@ namespace Orts.Viewer3D
 
                 for (var i = 0; i < SignalTypeData.Lights.Count; i++)
                 {
-                    if (SemaphorePos != SemaphoreTarget && SignalTypeData.LightsSemaphoreChange[i])
-                        continue;
-                    if (!SignalTypeData.DrawAspects[DisplayState].DrawLights[i])
-                        continue;
-                    if (SignalTypeData.DrawAspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn))
+                    SignalLightState state = lightStates[i];
+                    bool semaphoreDark = SemaphorePos != SemaphoreTarget && SignalTypeData.LightsSemaphoreChange[i];
+                    bool constantDark = !SignalTypeData.DrawAspects[DisplayState].DrawLights[i];
+                    bool flashingDark = SignalTypeData.DrawAspects[DisplayState].FlashLights[i] && (CumulativeTime > SignalTypeData.FlashTimeOn);
+                    state.UpdateIntensity(semaphoreDark || constantDark || flashingDark ? 0 : 1, elapsedTime);
+                    if (!state.IsIlluminated())
                         continue;
 
                     bool isDay;
@@ -358,7 +365,8 @@ namespace Orts.Viewer3D
                     if (!SignalTypeData.DayLight && isDay && !isPoorVisibility)
                         continue;
 
-                    var xnaMatrix = Matrix.CreateTranslation(SignalTypeData.Lights[i].Position);
+                    var slp = SignalTypeData.Lights[i];
+                    var xnaMatrix = Matrix.CreateTranslation(slp.Position);
 
                     foreach (int MatrixIndex in MatrixIndices)
                     {
@@ -366,9 +374,13 @@ namespace Orts.Viewer3D
                     }
                     Matrix.Multiply(ref xnaMatrix, ref xnaTileTranslation, out xnaMatrix);
 
-                    frame.AddPrimitive(SignalTypeData.Material, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
+                    void renderEffect(Material material)
+                    {
+                        frame.AddPrimitive(material, slp, RenderPrimitiveGroup.Lights, ref xnaMatrix, ShapeFlags.None, state);
+                    }
+                    renderEffect(SignalTypeData.Material);
                     if (Viewer.Settings.SignalLightGlow)
-                        frame.AddPrimitive(SignalTypeData.GlowMaterial, SignalTypeData.Lights[i], RenderPrimitiveGroup.Lights, ref xnaMatrix);
+                        renderEffect(SignalTypeData.GlowMaterial);
                 }
 
                 if (SignalTypeData.Semaphore)
@@ -416,6 +428,7 @@ namespace Orts.Viewer3D
             public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
             public readonly float FlashTimeOn;
             public readonly float FlashTimeTotal;
+            public readonly float OnOffTimeS;
             public readonly bool Semaphore;
             public readonly bool DayLight = true;
             public readonly float SemaphoreAnimationTime;
@@ -486,6 +499,8 @@ namespace Orts.Viewer3D
                     SemaphoreAnimationTime = mstsSignalType.SemaphoreInfo;
                     DayLight = mstsSignalType.DayLight;
                 }
+
+                OnOffTimeS = mstsSignalType.OnOffTimeS;
             }
         }
 
@@ -532,6 +547,42 @@ namespace Orts.Viewer3D
                 }
                 SemaphorePos = drawStateData.SemaphorePos;
             }
+        }
+    }
+
+    /// <summary>
+    /// Tracks state for individual signal head lamps, with smooth lit/unlit transitions.
+    /// </summary>
+    internal class SignalLightState
+    {
+        private readonly float onOffTime;
+        private float intensity = 0;
+        private bool firstUpdate = true;
+
+        public SignalLightState(float onOffTime)
+        {
+            this.onOffTime = onOffTime;
+        }
+
+        public float GetIntensity()
+        {
+            return intensity;
+        }
+
+        public void UpdateIntensity(float target, ElapsedTime et)
+        {
+            if (firstUpdate || onOffTime == 0)
+                intensity = target;
+            else if (target > intensity)
+                intensity = Math.Min(intensity + et.ClockSeconds / onOffTime, target);
+            else if (target < intensity)
+                intensity = Math.Max(intensity - et.ClockSeconds / onOffTime, target);
+            firstUpdate = false;
+        }
+
+        public bool IsIlluminated()
+        {
+            return intensity > 0;
         }
     }
 
@@ -594,6 +645,7 @@ namespace Orts.Viewer3D
             {
                 foreach (var item in renderItems)
                 {
+                    SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
                     SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
@@ -653,6 +705,7 @@ namespace Orts.Viewer3D
                 {
                     var slp = item.RenderPrimitive as SignalLightPrimitive;
                     SceneryShader.ZBias = MathHelper.Lerp(slp.GlowIntensityDay, slp.GlowIntensityNight, NightEffect);
+                    SceneryShader.SignalLightIntensity = (item.ItemData as SignalLightState).GetIntensity();
                     SceneryShader.SetMatrix(item.XNAMatrix, ref viewProj);
                     pass.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);

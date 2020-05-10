@@ -48,6 +48,7 @@ float    ImageTextureIsNight;
 float    NightColorModifier;
 float    HalfNightColorModifier;
 float    VegetationAmbientModifier;
+float    SignalLightIntensity;
 float4   EyeVector;
 float3   SideVector;
 float    ReferenceAlpha;
@@ -570,7 +571,7 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 	// Apply signal coloring effect.
 	float3 litColor = lerp(Color.rgb, In.Color.rgb, Color.r);
 	// No specular effect, overcast effect, night-time darkening, headlights or fogging effect for signal lights.
-	return float4(litColor, Color.a);
+	return float4(litColor, Color.a * SignalLightIntensity);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
