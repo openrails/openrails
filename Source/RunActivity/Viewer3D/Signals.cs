@@ -294,7 +294,7 @@ namespace Orts.Viewer3D
 
                 lightStates = new SignalLightState[SignalTypeData.Lights.Count];
                 for (var i = 0; i < SignalTypeData.Lights.Count; i++)
-                    lightStates[i] = new SignalLightState(SignalTypeData.OnOffTime);
+                    lightStates[i] = new SignalLightState(SignalTypeData.OnOffTimeS);
 
 #if DEBUG_SIGNAL_SHAPES
                 Console.Write("  HEAD type={0,-8} lights={1,-2} sem={2}", SignalTypeData.Type, SignalTypeData.Lights.Count, SignalTypeData.Semaphore);
@@ -428,7 +428,7 @@ namespace Orts.Viewer3D
             public readonly Dictionary<int, SignalAspectData> DrawAspects = new Dictionary<int, SignalAspectData>();
             public readonly float FlashTimeOn;
             public readonly float FlashTimeTotal;
-            public readonly float OnOffTime;
+            public readonly float OnOffTimeS;
             public readonly bool Semaphore;
             public readonly bool DayLight = true;
             public readonly float SemaphoreAnimationTime;
@@ -500,7 +500,7 @@ namespace Orts.Viewer3D
                     DayLight = mstsSignalType.DayLight;
                 }
 
-                OnOffTime = mstsSignalType.OnOffTime;
+                OnOffTimeS = mstsSignalType.OnOffTimeS;
             }
         }
 

@@ -725,13 +725,13 @@ Fading signal lamps
 
 In Open Rails, signal lamps fade on and off for a visually pleasing transition 
 effect. The fade time defaults to one-fifth of a second. It can be customized in 
-the ``SignalType`` block of the ``sigcfg.dat`` file using the ``ORTSOnOffTime`` 
+the ``SignalType`` block of the ``sigcfg.dat`` file using the ``ORTSOnOffTimeS`` 
 property::
 
    SignalTypes( ...
        SignalType ( "AM14Light"
            ...
-           ORTSOnOffTime ( 0.2 )
+           ORTSOnOffTimeS ( 0.2 )
        )
    )
 
