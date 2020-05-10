@@ -144,9 +144,10 @@ namespace Orts.Simulation.RollingStocks
             return new Interpolator(SteamUsageLbpH, FuelUsageGalukpH);
         }
 
-        public float SteamHeatBoilerFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
+        public float MaximiumSteamHeatBoilerFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
         public float CurrentSteamHeatBoilerWaterCapacityL;  // Current water level
-        public float SteamHeatBoilerWaterTankCapacityL = L.FromGUK(800.0f); // Capacity of the water feed tank for the steam heating boiler
+        public float CurrentSteamHeatBoilerFuelCapacityL;  // Current fuel level - only on steam vans, diesels use main diesel tank
+        public float MaximumSteamHeatBoilerWaterTankCapacityL = L.FromGUK(800.0f); // Capacity of the water feed tank for the steam heating boiler
         public float MainHeatPipeOuterDiaM = 0.073661016f; // Steel pipe OD = 1.9" + 1.0" insulation (0.5" either side of pipe) = 0.073661016m
         public float CompartmentHeatingPipeAreaFactor = 3.0f;
         public float DesiredCompartmentTempSetpointC = C.FromF(55.0f); // This is the desired temperature for the passenger compartment heating
