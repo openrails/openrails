@@ -3030,7 +3030,7 @@ namespace Orts.MultiPlayer
                 {
                     foreach (var s in MPManager.Simulator.Signals.SignalObjects)
                     {
-                        if (s != null && s.isSignal && s.SignalHeads != null)
+                        if (s != null && (s.isSignal || s.isSpeedSignal) && s.SignalHeads != null)
                             foreach (var h in s.SignalHeads)
                             {
                                 //System.Console.WriteLine(h.TDBIndex);
@@ -3080,7 +3080,7 @@ namespace Orts.MultiPlayer
                     {
                         foreach (var s in MPManager.Simulator.Signals.SignalObjects)
                         {
-                            if (s != null && s.isSignal && s.SignalHeads != null)
+                            if (s != null && (s.isSignal || s.isSpeedSignal) && s.SignalHeads != null)
                                 foreach (var h in s.SignalHeads)
                                 {
                                     //System.Console.WriteLine(h.TDBIndex);

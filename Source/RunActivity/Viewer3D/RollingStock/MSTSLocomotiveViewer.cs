@@ -2639,6 +2639,7 @@ namespace Orts.Viewer3D.RollingStock
 
     public class ThreeDimCabDigit
     {
+        const int MaxDigits = 6;
         PoseableShape TrainCarShape;
         VertexPositionNormalTexture[] VertexList;
         int NumVertices;
@@ -2646,7 +2647,7 @@ namespace Orts.Viewer3D.RollingStock
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
         Matrix XNAMatrix;
         Viewer Viewer;
-        ShapePrimitive shapePrimitive;
+        MutableShapePrimitive<short> shapePrimitive;
         CabViewDigitalRenderer CVFR;
         Material Material;
         Material AlertMaterial;
@@ -2687,10 +2688,11 @@ namespace Orts.Viewer3D.RollingStock
 
             offset.Y = -Size;
 
-            string speed = "000000";
-            for (var j = 0; j < speed.Length; j++)
+            var speed = new string('0', MaxDigits);
+            foreach (char ch in speed)
             {
-                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                var tX = GetTextureCoordX(ch);
+                var tY = GetTextureCoordY(ch);
                 var rot = Matrix.CreateRotationY(-rotation);
 
                 //the left-bottom vertex
@@ -2731,16 +2733,16 @@ namespace Orts.Viewer3D.RollingStock
                 offset.X += Size * 0.8f; offset.Y += 0; //move to next digit
             }
 
-            var i = 0;
             //create the shape primitive
             short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+            foreach (int i in Enumerable.Range(0, NumIndices))
+                newTList[i] = TriangleListIndices[i];
             VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = new ShapePrimitive(Material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            foreach (int i in Enumerable.Range(0, NumVertices))
+                newVList[i] = VertexList[i];
+            shapePrimitive = new MutableShapePrimitive<short>(Material, NumVertices, NumIndices, new[] { -1 }, 0);
+            shapePrimitive.SetIndexData(newTList);
+            shapePrimitive.SetVertexData(newVList, 0, NumVertices, NumIndices / 3);
 
         }
 
@@ -2811,6 +2813,7 @@ namespace Orts.Viewer3D.RollingStock
             //update text string
             bool Alert;
             string speed = CVFR.Get3DDigits(out Alert);
+            Debug.Assert(speed.Length <= MaxDigits);
 
             if (Alert)//alert use alert meterial
             {
@@ -2818,9 +2821,10 @@ namespace Orts.Viewer3D.RollingStock
                 UsedMaterial = AlertMaterial;
             }
             //update vertex texture coordinate
-            for (var j = 0; j < speed.Length; j++)
+            foreach (char ch in speed)
             {
-                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                var tX = GetTextureCoordX(ch);
+                var tY = GetTextureCoordY(ch);
                 //create first triangle
                 TriangleListIndices[NumIndices++] = (short)NumVertices;
                 TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
@@ -2837,17 +2841,15 @@ namespace Orts.Viewer3D.RollingStock
                 NumVertices += 4;
             }
 
-            var i = 0;
-            //create the new shape primitive
+            //update the shape primitive
             short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+            foreach (int i in Enumerable.Range(0, NumIndices))
+                newTList[i] = TriangleListIndices[i];
             VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = null;
-            shapePrimitive = new ShapePrimitive(UsedMaterial, new SharedShape.VertexBufferSet(newVList, Viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            foreach (int i in Enumerable.Range(0, NumVertices))
+                newVList[i] = VertexList[i];
+            shapePrimitive.SetIndexData(newTList);
+            shapePrimitive.SetVertexData(newVList, 0, NumVertices, NumIndices / 3);
 
         }
 
@@ -2906,7 +2908,7 @@ namespace Orts.Viewer3D.RollingStock
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
         Matrix XNAMatrix;
         Viewer Viewer;
-        ShapePrimitive shapePrimitive;
+        MutableShapePrimitive<short> shapePrimitive;
         CabViewGaugeRenderer CVFR;
         Material PositiveMaterial;
         Material NegativeMaterial;
@@ -2964,16 +2966,16 @@ namespace Orts.Viewer3D.RollingStock
             NumVertices += 4;
 
 
-            var i = 0;
             //create the shape primitive
             short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+            foreach (int i in Enumerable.Range(0, NumIndices))
+                newTList[i] = TriangleListIndices[i];
             VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = new ShapePrimitive(FindMaterial(), new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            foreach (int i in Enumerable.Range(0, NumVertices))
+                newVList[i] = VertexList[i];
+            shapePrimitive = new MutableShapePrimitive<short>(FindMaterial(), NumVertices, NumIndices, new[] { -1 }, 0);
+            shapePrimitive.SetIndexData(newTList);
+            shapePrimitive.SetVertexData(newVList, 0, NumVertices, NumIndices / 3);
 
         }
 
@@ -3053,17 +3055,15 @@ namespace Orts.Viewer3D.RollingStock
             VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
             NumVertices += 4;
 
-            var i = 0;
-            //create the new shape primitive
+            //update the shape primitive
             short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
+            foreach (int i in Enumerable.Range(0, NumIndices))
+                newTList[i] = TriangleListIndices[i];
             VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = null;
-            shapePrimitive = new ShapePrimitive(UsedMaterial, new SharedShape.VertexBufferSet(newVList, Viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            foreach (int i in Enumerable.Range(0, NumVertices))
+                newVList[i] = VertexList[i];
+            shapePrimitive.SetIndexData(newTList);
+            shapePrimitive.SetVertexData(newVList, 0, NumVertices, NumIndices / 3);
 
         }
 
