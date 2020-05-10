@@ -484,23 +484,23 @@ in the core program itself and can be distributed with rolling stock content.
 Scripts will run if referenced by OR-specific fields in the .eng file.
 
 .. list-table:: Currently scriptable locomotive systems
-   :widths: 25 25 50
+   :widths: 25 37 38
    :header-rows: 1
 
    * - System
      - C# class
      - .eng block
    * - Brakes
-     - ORTS.Scripting.Api.BrakeController
+     - ``ORTS.Scripting.Api.BrakeController``
      - ``Engine ( ORTSTrainBrakeController ( "DemoBrakes.cs" ) )``
    * - Circuit breaker
-     - ORTS.Scripting.Api.CircuitBreaker
+     - ``ORTS.Scripting.Api.CircuitBreaker``
      - ``Engine ( ORTSCircuitBreaker ( "DemoBreaker.cs" ) )``
    * - Electric power supply
-     - ORTS.Scripting.Api.ElectricPowerSupply
+     - ``ORTS.Scripting.Api.ElectricPowerSupply``
      - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
    * - Train Control System
-     - ORTS.Scripting.Api.TrainControlSystem
+     - ``ORTS.Scripting.Api.TrainControlSystem``
      - ``Engine ( ORTSTrainControlSystem ( "DemoTCS.cs" ) )``
 
 Scripts reside in a ``Script`` subfolder within the engine's folder and must 
@@ -660,6 +660,9 @@ implementation, so do `not` use this name for your own script.
 Train Control System
 --------------------
 
+General
+'''''''
+
 The Train Control System, or TCS, script is intended to model train safety and 
 cab signalling systems. It can manipulate the locomotive's controls and speed 
 limit displays, impose penalty brake applications, read upcoming signal aspects 
@@ -676,6 +679,7 @@ Use the following .eng parameters to load a TCS script::
 ``ORTSTrainControlSystem`` refers to the TCS script in the engine's ``Script`` 
 subfolder. For this field, the .cs extension is optional.
 
+
 ``ORTSTrainControlSystemParameters``, an optional field, refers to an .ini file, 
 also in the ``Script`` subfolder, whose parameters will be made available to the 
 TCS script through the ``GetBoolParameter()``, ``GetIntParameter()``, 
@@ -683,9 +687,204 @@ TCS script through the ``GetBoolParameter()``, ``GetIntParameter()``,
 ``TrainControlSystem`` class. This .ini file provides for easy customization of 
 the behavior of the TCS script by end users.
 
+This is an excerpt from an .ini file::
+
+  [General]
+  AWSMonitor=true
+  EmergencyStopMonitor=false
+  VigilanceMonitor=true
+  OverspeedMonitor=false
+  DoesBrakeCutPower=true
+  BrakeCutsPowerAtBrakeCylinderPressureBar=
+  [AWS]
+  Inhibited=false
+  WarningTimerDelayS=3
+  BrakeImmediately=false
+  TrainStopBeforeRelease=false
+  ActivationOnSpeedLimitReduction=true
+  SpeedLimitReductionForActivationMpS=11.176
+  BeaconDistanceToPostM=1186
+  AppliesCutsPower=true
+
+As can be seen, the .ini file is divided in subgroups. As an example, parameter 
+[AWS]Inhibited would be read by following line of code in the script ::
+
+    AWSInhibited = GetBoolParameter("AWS", "Inhibited", false);
+
+where the final ``false`` is the default value, if the parameter can't be found.
+
+
 ``ORTSTrainControlSystemSound``, an optional field, refers to a .sms file either 
 in the engine's ``SOUND`` folder or in the global ``SOUND`` folder. If provided, 
 OR will load this sound library alongside the locomotive's standard cab sounds. 
 The TCS script can play back sounds using any of the ``TriggerSound...`` methods 
 of the base class, which in turn activate the TCS-related 
 :ref:`discrete triggers <sound-discrete>` numbered from 109 through 118.
+
+8 further generic discrete sound triggers are available, named GenericEvent1 to 
+GenericEvent8 and accessible to the script by lines like following one::
+
+  Locomotive().TrainControlSystem.SignalEvent(Event.GenericEvent1, this);
+
+Access to the Simulation methods and variables
+''''''''''''''''''''''''''''''''''''''''''''''
+The abstract class for the TCS scripts provides a significant amount of 
+methods to access variables of interest for the TCS: as an example::
+
+   public Func<int, Aspect> NextSignalAspect;
+
+might be called within the script as follows::
+
+  var nextSignalAspect = NextSignalAspect(1);
+
+which would return the aspect of the second normal signal in front of 
+the player train.
+
+However it is quite impossible to foresee all needs that a TCS script has 
+and to provide a method for everyone of these needs. For this reason 
+following method is available::
+
+  public Func<MSTSLocomotive> Locomotive;
+
+which returns a handle for the player locomotive instance of the MSTSLocomotive 
+class. Through such handle all public classes, methods and variables of 
+the OR Simulation environment can be accessed within the script. 
+
+
+Generic cabview controls
+''''''''''''''''''''''''
+Often Train Control Systems have a quite sophisticated DMI (driver-machine 
+interface), which can include a (touch screen) display and buttons.
+Being the display fields and icons and the buttons specific of every TCS, 
+a set of generic cabview controls are available, which can be customized 
+within the TCS script.
+More precisely 48 generic cabview controls, named from ORTS_TCS1 to ORTS_TCS48 
+are available. All 48 may be used as two state or multistate controls,  
+like e.g.::
+
+  		MultiStateDisplay (
+			Type ( ORTS_TCS13 MULTI_STATE_DISPLAY )
+			Position ( 405 282.3 36.3 20.8 )
+			Graphic ( ../../Common.Cab/Cruscotto_SCMT/Ripetizioni_estese.ace )
+			States ( 6 3 2
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 1 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 2 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 3 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 4 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 5 )
+				)
+      )
+    )
+
+Each one of the first 32 can be also used as Two-state commands/displays, like e.g.::
+
+		TwoState (
+			Type ( ORTS_TCS7 TWO_STATE )
+			Position ( 377 298 9 7.8 )
+			Graphic ( ../../Common.Cab/Cruscotto_SCMT/Button_SR.ace )
+			NumFrames ( 2 2 1 )
+			Style ( PRESSED )
+			MouseControl ( 1 )
+		)
+
+The commands are received asynchronously by the script through this method::
+
+   public override void HandleEvent(TCSEvent evt, string message)
+
+where evt may be TCSEvent.GenericTCSButtonPressed or TCSEvent.GenericTCSButtonReleased 
+and message is a string ranging from "0" to "31", which correspond to controls from 
+ORTS_TCS1 to ORTS_TCS32.
+The commands may only be triggered by the mouse, except the first two which may also be 
+triggered by key combinations ``Ctrl,``(comma) and ``Ctrl.``(period).
+Here a code excerpt from the script which manages the commands::
+
+          public override void HandleEvent(TCSEvent evt, string message)
+        {
+            if (message == String.Empty)
+            {
+                switch (evt)
+                {
+                    case ...
+						...
+                        break;
+
+                    case ...
+						...
+                        break;
+                 }
+            }
+            else
+            {
+                var commandEvent = TCSCommandEvent.None;
+                var messageIndex = 0;
+                if (Int32.TryParse(message, out messageIndex))
+                {
+                    commandEvent = (TCSCommandEvent)(messageIndex + 1);
+                    switch (evt)
+                    {
+                        case TCSEvent.GenericTCSButtonPressed:
+                            TCSButtonPressed[(int)commandEvent] = true;
+                            break;
+                        case TCSEvent.GenericTCSButtonReleased:
+                            TCSButtonPressed[(int)commandEvent] = false;
+                            TCSButtonReleased[(int)commandEvent] = true;
+                            break;
+                    }
+                }
+            }
+        }
+
+Within the Update method of the script TCSButtonPressed and 
+TCSButtonReleased may be tested, e.g.::
+
+              if (TCSButtonPressed[(int)(TCSCommandEvent.Button_Ric)] )
+
+After having tested it, TCSButtonPressed should be set to false by the 
+script code.
+
+To request a display of a cabview control, method::
+
+ public Action<int, float> SetCabDisplayControl; 
+
+has to be used, where ``int`` is the index of the cab control (from 0 to 47 
+corresponding from ORTS_TCS1 to ORTS_TCS48), and ``float`` is the value to be 
+used to select among frames.
+
+When the player moves the mouse over the cabview controls linked to commands, 
+the name of such control shortly appears on the display, like e.g. "speedometer", 
+as a reminder to the player. 
+In case of these generic commands, strings from "ORTS_TCS1" to "ORTS_TCS32" would 
+appear, which aren't mnemonic at all. Therefore following method is available::
+
+          public Action<string> SetCustomizedTCSControlString; 
+
+which may be used this way within the script::
+
+            // Initialize customized TCS command strings
+            foreach (string TCSControlString in Enum.GetNames(typeof(TCSCommandEvent)))
+            {
+                if (TCSControlString == "None") continue;
+                SetCustomizedTCSControlString(TCSControlString);
+
+so that, instead of ORTS_TCSnn the related mnemonic string is displayed.
+
+
+

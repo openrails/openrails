@@ -345,7 +345,34 @@ namespace Orts.Simulation.RollingStocks
                     LocalGearboxGearIndex = value;
             }
         }
-        public float DynamicBrakePercent { get { return Train.MUDynamicBrakePercent; } set { Train.MUDynamicBrakePercent = value; } }
+
+        public float LocalDynamicBrakePercent;
+        public float DynamicBrakePercent
+        {
+            get
+            {
+                if (AcceptMUSignals && Train != null)
+                {
+                    if (Train.LeadLocomotive != null && ((MSTSLocomotive) Train.LeadLocomotive).TrainControlSystem.FullDynamicBrakingOrder)
+                    {
+                        return 100;
+                    }
+                    else
+                    {
+                        return Train.MUDynamicBrakePercent;
+                    }
+}
+                else
+                    return LocalDynamicBrakePercent;
+            }
+            set
+            {
+                if (AcceptMUSignals && Train != null)
+                    Train.MUDynamicBrakePercent = value;
+                else
+                    LocalDynamicBrakePercent = value;
+            }
+        }
         public Direction Direction
         {
             //TODO: following code lines have been modified to flip trainset physics in order to get viewing direction coincident with loco direction when using rear cab.
