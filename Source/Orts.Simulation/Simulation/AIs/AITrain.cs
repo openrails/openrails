@@ -220,6 +220,7 @@ namespace Orts.Simulation.AIs
             : base(simulator, inf)
         {
             AI = airef;
+            ColdStart = false;
             UiD = inf.ReadInt32();
             MaxDecelMpSS = inf.ReadSingle();
             MaxAccelMpSS = inf.ReadSingle();
@@ -354,6 +355,7 @@ namespace Orts.Simulation.AIs
         public override void InitializeMoving() // TODO
         {
             {
+                ColdStart = false;
                 if (TrainType == TRAINTYPE.AI_PLAYERDRIVEN)
                 {
                     base.InitializeMoving();

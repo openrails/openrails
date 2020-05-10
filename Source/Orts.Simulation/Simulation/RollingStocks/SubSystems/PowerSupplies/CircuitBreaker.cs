@@ -163,7 +163,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 Script.ClosingDelayS = () => DelayS;
 
                 // CircuitBreaker setters
-                Script.SetCurrentState = (value) => State = value;
+                Script.SetCurrentState = (value) =>
+                {
+                    State = value;
+                    TCSEvent CircuitBreakerEvent = State == CircuitBreakerState.Closed ? TCSEvent.CircuitBreakerClosed : TCSEvent.CircuitBreakerOpen;
+                    Locomotive.TrainControlSystem.HandleEvent(CircuitBreakerEvent);
+                };
                 Script.SetDriverClosingOrder = (value) => DriverClosingOrder = value;
                 Script.SetDriverOpeningOrder = (value) => DriverOpeningOrder = value;
                 Script.SetDriverClosingAuthorization = (value) => DriverClosingAuthorization = value;
