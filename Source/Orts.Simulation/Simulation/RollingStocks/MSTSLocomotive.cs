@@ -191,9 +191,6 @@ namespace Orts.Simulation.RollingStocks
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
         public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         public Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
-        public float SteamHeatBoilerFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
-        public float SteamHeatBoilerWaterTankCapacityL = L.FromGUK(800.0f); // Capacity of the water feed tank for the steam heating boiler
-        public float CurrentSteamHeatBoilerWaterCapacityL;  // Current water level
         public bool IsSteamHeatingBoilerFitted = false;   // Flag to indicate when steam heat boiler van is fitted
         public float CalculatedCarHeaterSteamUsageLBpS;
 

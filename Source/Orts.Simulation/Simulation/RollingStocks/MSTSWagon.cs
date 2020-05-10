@@ -408,8 +408,11 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Initialise steam heat parameters
             TrainHeatBoilerWaterUsageGalukpH = SteamHeatBoilerWaterUsageGalukpH();
             TrainHeatBoilerFuelUsageGalukpH = SteamHeatBoilerFuelUsageGalukpH();
+            CurrentSteamHeatBoilerFuelCapacityL = MaximiumSteamHeatBoilerFuelTankCapacityL;
+            CurrentSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
 
             // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
             if (DavisDragConstant == 0)
@@ -927,9 +930,9 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingtrainpipeouterdiameter": MainHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
-                case "wagon(ortsheatingboilerwatertankcapacity": SteamHeatBoilerWaterTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "wagon(ortsheatingboilerfueltankcapacity": SteamHeatBoilerFuelTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
-                case "wagon(ortsheatingboilersteamusage": TrainHeatBoilerWaterUsageGalukpH = new Interpolator(stf); break;
+                case "wagon(ortsheatingboilerwatertankcapacity": MaximumSteamHeatBoilerWaterTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortsheatingboilerfueltankcapacity": MaximiumSteamHeatBoilerFuelTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortsheatingboilerwaterusage": TrainHeatBoilerWaterUsageGalukpH = new Interpolator(stf); break;
                 case "wagon(ortsheatingboilerfuelusage": TrainHeatBoilerFuelUsageGalukpH = new Interpolator(stf); break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
@@ -1241,8 +1244,8 @@ namespace Orts.Simulation.RollingStocks
             DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
             CompartmentHeatingPipeAreaFactor = copy.CompartmentHeatingPipeAreaFactor;
             MainHeatPipeOuterDiaM = copy.MainHeatPipeOuterDiaM;
-            SteamHeatBoilerWaterTankCapacityL = copy.SteamHeatBoilerWaterTankCapacityL;
-            SteamHeatBoilerFuelTankCapacityL = copy.SteamHeatBoilerFuelTankCapacityL;
+            MaximumSteamHeatBoilerWaterTankCapacityL = copy.MaximumSteamHeatBoilerWaterTankCapacityL;
+            MaximiumSteamHeatBoilerFuelTankCapacityL = copy.MaximiumSteamHeatBoilerFuelTankCapacityL;
             TrainHeatBoilerWaterUsageGalukpH = new Interpolator(copy.TrainHeatBoilerWaterUsageGalukpH);
             TrainHeatBoilerFuelUsageGalukpH = new Interpolator(copy.TrainHeatBoilerFuelUsageGalukpH);
             DavisAN = copy.DavisAN;
@@ -2583,7 +2586,8 @@ namespace Orts.Simulation.RollingStocks
             var LocomotiveParameters = Simulator.PlayerLocomotive as MSTSLocomotive;
 
             // if this is a heating steam boiler car then adjust steam pressure
-            if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05)
+            // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, steam heating shouldn't already be present on diesel or steam locomotive
+            if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05 && CurrentSteamHeatBoilerWaterCapacityL > 0 && CurrentSteamHeatBoilerFuelCapacityL > 0)
             {
                 //   LocomotiveParameters.CurrentSteamHeatPressurePSI = LocomotiveParameters.SteamHeatController.CurrentValue * 100;
                 LocomotiveParameters.CurrentSteamHeatPressurePSI = 60.0f;
