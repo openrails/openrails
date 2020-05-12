@@ -960,6 +960,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 ApparentThrottleSetting = ReverseThrottleRPMTab[RealRPM];
             }
 
+            // Make sure apparent throttle value stays in range between 0 and 100.
+            if (ApparentThrottleSetting < 0)
+            {
+                ApparentThrottleSetting = 0;
+            }
+            else if (ApparentThrottleSetting > 100)
+            {
+                ApparentThrottleSetting = 100.0f;
+            }
+
             if (DieselPowerTab != null)
             {
                 CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximumDieselPowerW * (1 - locomotive.PowerReduction));
