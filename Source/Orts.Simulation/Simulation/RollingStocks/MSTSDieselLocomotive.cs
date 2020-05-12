@@ -541,7 +541,7 @@ namespace Orts.Simulation.RollingStocks
                 {
                     LocomotiveApparentThrottleSetting = Math.Min(t, DieselEngines.ApparentThrottleSetting / 100.0f);
                 }
-                else // For non AI trains, just use the throttle setting
+                else // For AI trains, just use the throttle setting
                 {
                     LocomotiveApparentThrottleSetting = t;
                 }
