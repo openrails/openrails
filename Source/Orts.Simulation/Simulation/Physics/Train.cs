@@ -2348,6 +2348,7 @@ namespace Orts.Simulation.Physics
                                 {
                                     car.IsSteamHeatBoilerLockedOut = true; // Lock steam heat boiler out is steam usage exceeds capacity
                                     Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("The steam usage has exceeded the capcity of the steam boiler. Steam bolier locked out."));
+                                    Trace.TraceInformation("Steam heat boiler locked out as capacity exceeded");
                                 }
 
                                 // Calculate fuel usage for steam heat boiler
