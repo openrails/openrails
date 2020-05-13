@@ -856,8 +856,8 @@ namespace Orts.Simulation.RollingStocks
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
                 // Calculate steam boiler usage values
-                // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present
-                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentSteamHeatBoilerWaterCapacityL > 0 && DieselLevelL > 0)      
+                // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, and steam boiler is not locked out
+                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentSteamHeatBoilerWaterCapacityL > 0 && DieselLevelL > 0 && !IsSteamHeatBoilerLockedOut)      
                 {
                     // Set values for visible exhaust based upon setting of steam controller
                     HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
