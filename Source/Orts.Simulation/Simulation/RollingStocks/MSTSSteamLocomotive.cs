@@ -5579,6 +5579,11 @@ namespace Orts.Simulation.RollingStocks
             {
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
+                if (CurrentSteamHeatPressurePSI > BoilerPressurePSI)
+                {
+                    CurrentSteamHeatPressurePSI = BoilerPressurePSI; // If boiler pressure drops, then make sure that steam heating pressure cannot be greater then boiler pressure.
+                }
+
                 // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
                 if (CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
