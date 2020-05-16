@@ -151,7 +151,7 @@ namespace Orts.Simulation.RollingStocks
         public bool IsSteamHeatBoilerLockedOut = false;
         public float MaximumSteamHeatingBoilerSteamUsageRateLbpS;
         public float MaximiumSteamHeatBoilerFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
-        public float CurrentSteamHeatBoilerWaterCapacityL;  // Current water level
+        public float CurrentCarSteamHeatBoilerWaterCapacityL;  // Current water level
         public float CurrentSteamHeatBoilerFuelCapacityL;  // Current fuel level - only on steam vans, diesels use main diesel tank
         public float MaximumSteamHeatBoilerWaterTankCapacityL = L.FromGUK(800.0f); // Capacity of the water feed tank for the steam heating boiler
         public float CompartmentHeatingPipeAreaFactor = 3.0f;
