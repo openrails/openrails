@@ -76,6 +76,13 @@ namespace Orts.Simulation.RollingStocks
             get { return FuelController.CurrentValue * MaxDieselLevelL; }
             set { FuelController.CurrentValue = value / MaxDieselLevelL; }
         }
+
+        public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
+        {
+            get { return FuelController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
+            set { FuelController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
+        }
+
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
         public float DieselUsedPerHourAtIdleL = 1.0f;
         public float DieselFlowLps;
@@ -736,7 +743,7 @@ namespace Orts.Simulation.RollingStocks
                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
                    FormatStrings.h,
                    Simulator.Catalog.GetString("WaterLvl"),
-                   FormatStrings.FormatFuelVolume(CurrentSteamHeatBoilerWaterCapacityL, IsMetric, IsUK),
+                   FormatStrings.FormatFuelVolume(CurrentLocomotiveSteamHeatBoilerWaterCapacityL, IsMetric, IsUK),
                    Simulator.Catalog.GetString("Last:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
@@ -788,6 +795,7 @@ namespace Orts.Simulation.RollingStocks
         {
             MSTSNotchController controller = null;
             if (type == (uint)PickupType.FuelDiesel) return FuelController;
+            if (type == (uint)PickupType.FuelWater) return WaterController;
             return controller;
         }
 
@@ -799,7 +807,9 @@ namespace Orts.Simulation.RollingStocks
         public override void SetStepSize(PickupObj matchPickup)
         {
             if (MaxDieselLevelL != 0)
-                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / (MaxDieselLevelL * DieselWeightKgpL)); 
+                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / (MaxDieselLevelL * DieselWeightKgpL));
+            if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+                WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaximumSteamHeatBoilerWaterTankCapacityL);
         }
 
         /// <summary>
@@ -809,6 +819,7 @@ namespace Orts.Simulation.RollingStocks
         public override void RefillImmediately()
         {
             FuelController.CurrentValue = 1.0f;
+            WaterController.CurrentValue = 1.0f;
         }
 
         /// <summary>
@@ -821,6 +832,10 @@ namespace Orts.Simulation.RollingStocks
             if (pickupType == (uint)PickupType.FuelDiesel)
             {
                 return FuelController.CurrentValue;
+            }
+            if (pickupType == (uint)PickupType.FuelWater)
+            {
+                return WaterController.CurrentValue;
             }
             return 0f;
         }
@@ -871,7 +886,7 @@ namespace Orts.Simulation.RollingStocks
 
                 // Calculate steam boiler usage values
                 // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, and steam boiler is not locked out
-                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentSteamHeatBoilerWaterCapacityL > 0 && DieselLevelL > 0 && !IsSteamHeatBoilerLockedOut)      
+                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentLocomotiveSteamHeatBoilerWaterCapacityL > 0 && DieselLevelL > 0 && !IsSteamHeatBoilerLockedOut)      
                 {
                     // Set values for visible exhaust based upon setting of steam controller
                     HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
@@ -886,7 +901,7 @@ namespace Orts.Simulation.RollingStocks
 
                     // Calculate water usage for steam heat boiler
                     float WaterUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerWaterUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
-                    CurrentSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
                     MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
                 }
                 else
