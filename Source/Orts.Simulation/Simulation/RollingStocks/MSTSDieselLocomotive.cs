@@ -77,12 +77,6 @@ namespace Orts.Simulation.RollingStocks
             set { FuelController.CurrentValue = value / MaxDieselLevelL; }
         }
 
-        public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
-        {
-            get { return FuelController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
-            set { FuelController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
-        }
-
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
         public float DieselUsedPerHourAtIdleL = 1.0f;
         public float DieselFlowLps;
@@ -481,7 +475,7 @@ namespace Orts.Simulation.RollingStocks
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
 
-            UpdateSteamHeat(elapsedClockSeconds);
+            UpdateCarSteamHeat(elapsedClockSeconds);
         
         }
 
@@ -862,7 +856,7 @@ namespace Orts.Simulation.RollingStocks
             base.SwitchToAutopilotControl();
         }
 
-        private void UpdateSteamHeat(float elapsedClockSeconds)
+        private void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
 

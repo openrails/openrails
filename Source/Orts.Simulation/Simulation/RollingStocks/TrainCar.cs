@@ -531,6 +531,7 @@ namespace Orts.Simulation.RollingStocks
         {
             Unknown,
             HeatingBoiler,
+            Heated,
             PowerVan,
         }
         public WagonSpecialTypes WagonSpecialType;

@@ -1933,7 +1933,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateWaterGauge();
             UpdateInjectors(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
-            UpdateSteamHeat(elapsedClockSeconds);
+            UpdateCarSteamHeat(elapsedClockSeconds);
             #endregion
 
         }
@@ -5571,7 +5571,7 @@ namespace Orts.Simulation.RollingStocks
             #endregion
         }
 
-        private void UpdateSteamHeat(float elapsedClockSeconds)
+        private void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
 
