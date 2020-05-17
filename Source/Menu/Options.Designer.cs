@@ -2157,7 +2157,7 @@
             this.numericSuperElevationGauge.Location = new System.Drawing.Point(26, 94);
             this.numericSuperElevationGauge.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericSuperElevationGauge.Maximum = new decimal(new int[] {
-            1600,
+            1800,
             0,
             0,
             0});
