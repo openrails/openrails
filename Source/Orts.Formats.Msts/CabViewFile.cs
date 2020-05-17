@@ -89,7 +89,6 @@ namespace Orts.Formats.Msts
         DYNAMIC_BRAKE_DISPLAY,
         SANDERS,
         WIPERS,
-        VACUUM_EXHAUSTER,
         HORN,
         BELL,
         FRONT_HLIGHT,
@@ -170,7 +169,6 @@ namespace Orts.Formats.Msts
         ORTS_MIRRORS,
         ORTS_PANTOGRAPH3,
         ORTS_PANTOGRAPH4,
-        ORTS_LARGE_EJECTOR,
         ORTS_WATER_SCOOP,
         ORTS_HOURDIAL,
         ORTS_MINUTEDIAL,
@@ -1083,7 +1081,7 @@ namespace Orts.Formats.Msts
                     ControlType == CABViewControlTypes.ORTS_PANTOGRAPH3 || ControlType == CABViewControlTypes.ORTS_PANTOGRAPH4)
                     ControlStyle = CABViewControlStyles.ONOFF;
                 if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL 
-                    || ControlType == CABViewControlTypes.RESET || ControlType == CABViewControlTypes.VACUUM_EXHAUSTER)
+                    || ControlType == CABViewControlTypes.RESET)
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
                 if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;

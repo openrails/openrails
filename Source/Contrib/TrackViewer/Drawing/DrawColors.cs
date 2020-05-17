@@ -20,7 +20,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.TrackViewer.UserInterface;
-using Color = Microsoft.Xna.Framework.Color;
 
 namespace ORTS.TrackViewer.Drawing
 {

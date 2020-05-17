@@ -3152,7 +3152,7 @@ namespace Orts.MultiPlayer
     public class MSGLocoInfo : Message
     {
 
-        float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2, SH, SE, LE;
+        float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2, SH, SE;
         string user;
         int tnum; //train number
 
@@ -3160,11 +3160,11 @@ namespace Orts.MultiPlayer
         public MSGLocoInfo(TrainCar c, string u)
         {
             MSTSLocomotive loco = (MSTSLocomotive)c;
-            EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = SH = SE = LE = 0.0f;
+            EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = SH = SE = 0.0f;
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE, ref LE);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE);
             }
             if (loco.SteamHeatController != null)
             {
@@ -3204,8 +3204,6 @@ namespace Orts.MultiPlayer
             I1 = float.Parse(tmp[10], CultureInfo.InvariantCulture);
             I2 = float.Parse(tmp[11], CultureInfo.InvariantCulture);
             SH = float.Parse(tmp[12], CultureInfo.InvariantCulture);
-            SE = float.Parse(tmp[13], CultureInfo.InvariantCulture);
-            LE = float.Parse(tmp[14], CultureInfo.InvariantCulture);
         }
 
         //how to handle the message?
@@ -3232,7 +3230,7 @@ namespace Orts.MultiPlayer
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE, ref LE);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE);
             }
             if (loco.SteamHeatController != null)
             {

@@ -172,8 +172,6 @@ namespace ORTS.Settings
         public bool Wire { get; set; }
         [Default(false)]
         public bool VerticalSync { get; set; }
-        [Default(4)]
-        public int MultisamplingCount { get; set; }
         [Default(0)]
         public int Cab2DStretch { get; set; }
         [Default(2000)]
@@ -210,10 +208,6 @@ namespace ORTS.Settings
         public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
-        [Default(false)]
-        public bool SimpleControlPhysics { get; set; }
-        [Default(false)]
-        public bool Autopilot { get; set; }
 
         // Data logger settings:
         [Default("comma")]
@@ -298,8 +292,6 @@ namespace ORTS.Settings
         public bool NoForcedRedAtStationStops { get; set; }
         [Default(false)]
         public bool ConditionalLoadOfDayOrNightTextures { get; set; }
-        [Default(false)]
-        public bool ExtendedAIShunting { get; set; }
         [Default(100)]
         public int PrecipitationBoxHeight { get; set; }
         [Default(500)]
@@ -326,6 +318,8 @@ namespace ORTS.Settings
         public string LoggingPath { get; set; }
         [Default("")]
         public string ScreenshotPath { get; set; }
+        [Default(0)]
+        public int ShaderModel { get; set; }
         [Default(true)]
         public bool ShadowMapBlur { get; set; }
         [Default(4)]
