@@ -1448,6 +1448,10 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else outf.Write(false);
             }
+            outf.Write(CurrentSteamHeatBoilerFuelCapacityL);
+            outf.Write(CarCurrentCarriageHeatTempC);
+            outf.Write(CurrentCarSteamHeatBoilerWaterCapacityL);
+
             base.Save(outf);
         }
 
@@ -1488,6 +1492,9 @@ namespace Orts.Simulation.RollingStocks
                     WeightLoadController.Restore(inf);
                 }
             }
+            CurrentSteamHeatBoilerFuelCapacityL = inf.ReadSingle();
+            CarCurrentCarriageHeatTempC = inf.ReadSingle();
+            CurrentCarSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
 
             base.Restore(inf);
 
