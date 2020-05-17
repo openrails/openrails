@@ -196,7 +196,7 @@ The following information is displayed in the basic display:
   appears displaying the actual gear. ``N`` means no gear inserted.
 - FPS = Number of Frames rendered per second
 
-If the :ref:`Autopilot <options-autopilot>` is active, an additional line 
+When applicable, an additional line indicationg whether Autopilot is active or not 
 will be shown.
 
 An example of the basic HUD for Diesel locomotives:
@@ -702,8 +702,8 @@ route.
 .. image:: images/driving-dispatcher.png
 
 The dispatcher window shows the route layout and monitors the movement of 
-all trains. While the player train is identified by the ``PLAYER`` string 
-(or by a ``0`` if autopilot mode is enabled), AI trains are identified by 
+all trains. While the player train is identified by the ``0`` string, 
+AI trains are identified by 
 their OR number (that is also shown in the :ref:`Extended HUD for Dispatcher 
 Information <driving-hud-dispatcher>`), followed by the service name. 
 Static consists are identified as in MSTS.
@@ -800,8 +800,7 @@ original route, its path information in the dispatcher info HUD is displayed in 
 Station platform stops are re-assigned to adjacent platforms, if available. Events and 
 waiting points in the abandoned part of route will be lost.
 
-The re-routed train may be also the player train (be it autopiloted or not), provided the
-Autopilot option is checked.
+The re-routed train may be also the player train (be it autopiloted or not).
 
 Additional Train Operation Commands
 ===================================
@@ -969,14 +968,21 @@ to better understand what is possible with turntables and transfertables.
 Autopilot Mode
 ==============
 
+When in activity mode or in Explore in activity mode, through this feature 
+it is possible to stay
+in the cab of the player train, but to let Open Rails move the train,
+respecting path, signals, speeds and station stops.
+
+It is possible to switch the player train between autopilot mode and
+player driven mode at run time.
+
 Autopilot mode is not a simulation of a train running with cruise control; 
 instead, it is primarily a way to test activities more easily and quickly; 
 but it can also be used to run an activity (or part of it, as it is 
 possible to turn autopilot mode on or off at runtime) as a trainspotter or 
 a visitor within the cab.
 
-Autopilot mode is enabled with the related checkbox in the Simulation 
-Options. It is active only in activity mode (i.e. not in explorer or 
+Autopilot mode is active only in activity mode (i.e. not in explorer or 
 timetable modes).
 
 When starting the game with any activity, you are in player driving mode. 
@@ -1024,9 +1030,7 @@ General
 -------
 
 This function only works in activity mode, and allows the player to select 
-another (existing) train from a list and to start driving it. It requires 
-that the Experimental Options ``Autopilot`` and ``Extended AI Shunting`` be 
-checked. 
+another (existing) train from a list and to start driving it.
 
 This function can be called more than once. A new information window has 
 been created to support this function: the ``Train List`` window (opened 

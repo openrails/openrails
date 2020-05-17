@@ -1566,7 +1566,7 @@ namespace Orts.Simulation.Physics
             }
 
 
-            if (IsActualPlayerTrain && Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null) // defects might occur
+            if (IsActualPlayerTrain && Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null) // defects might occur
             {
                 CheckFailures(elapsedClockSeconds);
             }
@@ -10682,7 +10682,7 @@ namespace Orts.Simulation.Physics
             {
 
                 //<CSComment> InitializeSignals needs this info sometimes, so I repeat lines below here
-                if (Simulator.Settings.ExtendedAIShunting && !IsActualPlayerTrain && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
+                if (!IsActualPlayerTrain && (ControlMode == TRAIN_CONTROL.AUTO_SIGNAL || ControlMode == TRAIN_CONTROL.AUTO_NODE))
                 {
                     while (TCRoute.activeSubpath <= TCRoute.TCRouteSubpaths.Count - 1)
                     {
@@ -12392,92 +12392,6 @@ namespace Orts.Simulation.Physics
             else
                 // platform is beyond reversal point
                 return true;
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// Create waiting point list
-        /// <\summary>
-
-        public virtual void BuildWaitingPointList(float clearingDistanceM)
-        {
-
-            // loop through all waiting points - back to front as the processing affects the actual routepaths
-
-            for (int iWait = 0; iWait <= TCRoute.WaitingPoints.Count - 1; iWait++)
-            {
-                int[] waitingPoint = TCRoute.WaitingPoints[iWait];
-
-                TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
-                int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
-                if (iWait < TCRoute.WaitingPoints.Count - 1 && TCRoute.WaitingPoints[iWait + 1][1] == waitingPoint[1])
-                    continue;
-                int lastIndex = routeIndex;
-
-                // check if waiting point is in route - else give warning and skip
-                if (routeIndex < 0)
-                {
-                    Trace.TraceInformation("Waiting point for train " + Number.ToString() + " service " + Name + " is not on route - point removed");
-                    continue;
-                }
-
-                int direction = thisRoute[routeIndex].Direction;
-                bool endSectionFound = false;
-                int endSignalIndex = -1;
-
-                TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisRoute[routeIndex].TCSectionIndex];
-                TrackCircuitSection nextSection =
-                    routeIndex < thisRoute.Count - 2 ? signalRef.TrackCircuitList[thisRoute[routeIndex + 1].TCSectionIndex] : null;
-
-                if (thisSection.EndSignals[direction] != null)
-                {
-                    endSectionFound = true;
-                    if (routeIndex < thisRoute.Count - 1)
-                        endSignalIndex = thisSection.EndSignals[direction].thisRef;
-                }
-
-                // check if next section is junction
-
-                else if (nextSection == null || nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
-                {
-                    endSectionFound = true;
-                }
-
-                // try and find next section with signal; if junction is found, stop search
-
-                int nextIndex = routeIndex + 1;
-                while (nextIndex < thisRoute.Count - 1 && !endSectionFound)
-                {
-                    nextSection = signalRef.TrackCircuitList[thisRoute[nextIndex].TCSectionIndex];
-                    direction = thisRoute[nextIndex].Direction;
-
-                    if (nextSection.EndSignals[direction] != null)
-                    {
-                        endSectionFound = true;
-                        lastIndex = nextIndex;
-                        if (lastIndex < thisRoute.Count - 1)
-                            endSignalIndex = nextSection.EndSignals[direction].thisRef;
-                    }
-                    else if (nextSection.CircuitType != TrackCircuitSection.TrackCircuitType.Normal)
-                    {
-                        endSectionFound = true;
-                        lastIndex = nextIndex - 1;
-                    }
-                    nextIndex++;
-                }
-
-                if (endSignalIndex > -1)
-                {
-                    AIActSigDelegateRef action = new AIActSigDelegateRef(this, Math.Max(waitingPoint[5] - 1500, 0), 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
-                    signalRef.SignalObjects[endSignalIndex].LockForTrain(this.Number, waitingPoint[0]);
-                    action.SetEndSignalIndex(endSignalIndex);
-                    action.SetSignalObject(signalRef.SignalObjects[endSignalIndex]);
-                    //                    action.Delay = waitingPoint[2] <= 5 ? 5 : waitingPoint[2];
-                    action.Delay = waitingPoint[2];
-                    if (waitingPoint[2] >= 30000 && waitingPoint[2] < 40000) action.IsAbsolute = true;
-                    AuxActionsContain.Add(action);
-                }
-            }
         }
 
         //================================================================================================//
@@ -15185,7 +15099,6 @@ namespace Orts.Simulation.Physics
         /// 
         public virtual void TestAbsDelay(ref int delay, int correctedTime)
         {
-            if (!Simulator.Settings.ExtendedAIShunting) return;
             if (delay < 30000 || delay >= 40000) return;
             int hour = (delay / 100) % 100;
             int minute = delay % 100;
