@@ -162,6 +162,7 @@ namespace Orts.Simulation.Physics
         }
 
         // Carriage Steam Heating
+        public bool HeatedCarAttached = false;
         public bool HeatingBoilerCarAttached = false;
         bool IsFirstTimeBoilerCarAttached = true;
         public float TrainSteamPipeHeatW;               // Not required, all instances can be removed!!!!!!!!!
@@ -2004,13 +2005,17 @@ namespace Orts.Simulation.Physics
                         {
                             HeatingBoilerCarAttached = true; // A steam heating boiler is fitted in a wagon
                         }
+                        if (car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.Heated)
+                        {
+                            HeatedCarAttached = true; // A steam heating boiler is fitted in a wagon
+                        }
 
                     }
                     IsFirstTimeBoilerCarAttached = false;
                 }
 
                 // Check to confirm that train is player driven and has passenger cars in the consist. Steam heating is OFF if steam heat valve is closed and no pressure is present
-                if (IsPlayerDriven && PassengerCarsNumber > 0 && (mstsLocomotive.IsSteamHeatFitted || HeatingBoilerCarAttached) && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
+                if (IsPlayerDriven && (PassengerCarsNumber > 0 || HeatedCarAttached) && (mstsLocomotive.IsSteamHeatFitted || HeatingBoilerCarAttached) && mstsLocomotive.CurrentSteamHeatPressurePSI > 0)
                 {
                     // Set default values required
                     float SteamFlowRateLbpHr = 0;
@@ -2099,7 +2104,7 @@ namespace Orts.Simulation.Physics
                         ConvFactor = MathHelper.Clamp(ConvFactor, 1.0f, 1.6f); // Keep Conv Factor ratio within bounds - should not exceed 1.6.
 
 
-                        if (car.WagonType == TrainCar.WagonTypes.Passenger) // Only calculate compartment heat in passenger cars
+                        if (car.WagonType == TrainCar.WagonTypes.Passenger || car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.Heated) // Only calculate compartment heat in passenger or specially marked heated cars
                         {
 
                             // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2242,7 +2247,7 @@ namespace Orts.Simulation.Physics
 
                         // Calculate total steam loss along main pipe, by calculating heat into steam pipe at locomotive, deduct heat loss for each car, 
                         // note if pipe pressure drops, then compartment heating will stop
-                        if (car.CarSteamHeatMainPipeSteamPressurePSI >= 1 && car.CarHeatCompartmentHeaterOn && car.WagonType == TrainCar.WagonTypes.Passenger)
+                        if (car.CarSteamHeatMainPipeSteamPressurePSI >= 1 && car.CarHeatCompartmentHeaterOn && (car.WagonType == TrainCar.WagonTypes.Passenger || car.WagonSpecialType == MSTSWagon.WagonSpecialTypes.Heated))
                         {
                             // If main pipe pressure is > 0 then heating will start to occur in comparment, so include compartment heat exchanger value
                             ProgressiveHeatAlongTrainBTU += (car.CarHeatSteamMainPipeHeatLossBTU + car.CarHeatConnectSteamHoseHeatLossBTU) + pS.TopH(W.ToBTUpS(car.CarHeatCompartmentSteamPipeHeatW));
@@ -2300,7 +2305,14 @@ namespace Orts.Simulation.Physics
                                 IsSteamHeatLow = true;
                                 // Provide warning message if temperature is too hot
                                 float CarTemp = car.CarCurrentCarriageHeatTempC;
-                                Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage " + car.CarID + " temperature is too cold, the passengers are freezing."));
+                                if (car.WagonType == TrainCar.WagonTypes.Passenger)
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage " + car.CarID + " temperature is too cold, the passengers are freezing."));
+                                }
+                                else
+                                {
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Car " + car.CarID + " temperature is too cold for the freight."));
+                                }
                             }
 
                         }
