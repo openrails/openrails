@@ -1497,6 +1497,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(OrgConsist);
             outf.Write(PrevTiltingZRot);
             outf.Write(BrakesStuck);
+            outf.Write(IsCarSteamHeatInitial);
+            outf.Write(SteamHoseLeakRateRandom);
+            outf.Write(CarHeatCurrentCompartmentHeatW);
+            outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
         }
 
         // Game restore
@@ -1515,6 +1519,10 @@ namespace Orts.Simulation.RollingStocks
             OrgConsist = inf.ReadString();
             PrevTiltingZRot = inf.ReadSingle();
             BrakesStuck = inf.ReadBoolean();
+            IsCarSteamHeatInitial = inf.ReadBoolean();
+            SteamHoseLeakRateRandom = inf.ReadSingle();
+            CarHeatCurrentCompartmentHeatW = inf.ReadSingle();
+            CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
         }
 
         //================================================================================================//
