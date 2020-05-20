@@ -178,6 +178,7 @@ namespace ORTS
             checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
+            checkSimpleControlPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
@@ -189,7 +190,6 @@ namespace ORTS
             checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
-            checkSimpleControlPhysics.Checked = Settings.SimpleControlPhysics;
             checkAutopilot.Checked = Settings.Autopilot;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
@@ -463,6 +463,7 @@ namespace ORTS
             Settings.DoubleWire = checkDoubleWire.Checked;
 
             // Simulation tab
+            Settings.SimpleControlPhysics = checkSimpleControlPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
@@ -472,7 +473,6 @@ namespace ORTS
             Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
-            Settings.SimpleControlPhysics = checkSimpleControlPhysics.Checked;
             Settings.Autopilot = checkAutopilot.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
