@@ -1933,7 +1933,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateWaterGauge();
             UpdateInjectors(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
-            UpdateSteamHeat(elapsedClockSeconds);
+            UpdateCarSteamHeat(elapsedClockSeconds);
             #endregion
 
         }
@@ -5571,33 +5571,35 @@ namespace Orts.Simulation.RollingStocks
             #endregion
         }
 
-        private void UpdateSteamHeat(float elapsedClockSeconds)
+        private void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
 
-            // Calculate steam pressure in steam pipe
-            if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
+            if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
-            }
 
-            CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
+                if (CurrentSteamHeatPressurePSI > BoilerPressurePSI)
+                {
+                    CurrentSteamHeatPressurePSI = BoilerPressurePSI; // If boiler pressure drops, then make sure that steam heating pressure cannot be greater then boiler pressure.
+                }
 
-            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
+                // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
-            {
-                if (this.IsLeadLocomotive())
+                if (CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
                 {
                     Train.CarSteamHeatOn = true; // turn on steam effects on wagons
 
+                    // Calculate impact of steam heat usage on locomotive
+                    BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
+                    BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
+                    TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
+                    BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
 
-                        // Calculate impact of steam heat usage on locomotive
-                        BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
-                        BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
-                        TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
-                        BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
-                    
+                }
+                else
+                {
+                    Train.CarSteamHeatOn = false; // turn off steam effects on wagons
                 }
             }
         }
@@ -5995,7 +5997,7 @@ namespace Orts.Simulation.RollingStocks
                 IsSuperSet);
 #endif
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
+            if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive, and steam heat valve is on.
                 // Display Steam Heat info
