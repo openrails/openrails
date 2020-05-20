@@ -550,7 +550,17 @@ namespace Orts.Simulation.RollingStocks
                 {
                     float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
 
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW * LocomotiveApparentThrottleSetting;
+                    // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW * DieselEngines.RunningPowerPercent * LocomotiveApparentThrottleSetting;
+
+                    // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
+                    if (UnloadingSpeedMpS != 0 && AbsSpeedMpS > UnloadingSpeedMpS && AbsSpeedMpS < MaxSpeedMpS)
+                    {
+                        // use straight line curve to decay power to zero by 2 x unloading speed
+                        float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsSpeedMpS - UnloadingSpeedMpS);
+                        unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
+                        maxPowerW *= unloadingspeeddecay;
+                    }
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -562,12 +572,12 @@ namespace Orts.Simulation.RollingStocks
                             maxForceN = maxPowerW / AbsSpeedMpS;
 
                         // CTN - Not sure what impact that these following have???
-                        if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
-                        {
-                            maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
-                        }
+                        //                        if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
+                        //                        {
+                        //                            maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
+                        //                        }
 
-                        // CTN - Sets power to zero, which I don't think is correct
+                        // CTN - Sets power to zero, to simulate overspeed alarm
                         if (AbsSpeedMpS > (MaxSpeedMpS))
                             maxForceN = 0;
 
@@ -576,7 +586,8 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsSpeedMpS) * (1 - PowerReduction);
+                    // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
+                    MotiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsSpeedMpS) * DieselEngines.RunningPowerPercent * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
