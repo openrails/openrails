@@ -376,7 +376,7 @@ namespace Orts.Simulation
             {
                 ActivityRun.AddRestrictZones(TRK.Tr_RouteFile, TSectionDat, TDB.TrackDB, Activity.Tr_Activity.Tr_Activity_File.ActivityRestrictedSpeedZones);
             }
-            IsAutopilotMode = Settings.Autopilot;
+            IsAutopilotMode = true;
         }
         public void SetExplore(string path, string consist, string start, string season, string weather)
         {
@@ -409,7 +409,7 @@ namespace Orts.Simulation
             ClockTime = StartTime.TotalSeconds;
             Season = (SeasonType)int.Parse(season);
             WeatherType = (WeatherType)int.Parse(weather);
-            IsAutopilotMode = Settings.Autopilot;
+            IsAutopilotMode = true;
         }
 
         public void Start(CancellationToken cancellation)
@@ -553,8 +553,7 @@ namespace Orts.Simulation
             AI = new AI(this, cancellation, ClockTime);
             if (playerTrain != null)
             {
-                var validPosition = playerTrain.PostInit();  // place player train after pre-running of AI trains
-                if (validPosition && AI != null) AI.PreUpdate = false;
+                var validPosition = playerTrain.PostInit();
                 TrainDictionary.Add(playerTrain.Number, playerTrain);
                 NameDictionary.Add(playerTrain.Name, playerTrain);
             }
@@ -1073,13 +1072,11 @@ namespace Orts.Simulation
             }
         }
 
+        //  Used for explore mode; creates the player train within the Train class
         private Train InitializePlayerTrain()
         {
-
             Debug.Assert(Trains != null, "Cannot InitializePlayerTrain() without Simulator.Trains.");
             // set up the player locomotive
-            // first extract the player service definition from the activity file
-            // this gives the consist and path
 
             Train train = new Train(this);
             train.TrainType = Train.TRAINTYPE.PLAYER;
@@ -1088,33 +1085,17 @@ namespace Orts.Simulation
 
             string playerServiceFileName;
             ServiceFile srvFile;
-            if (Activity != null && Activity.Tr_Activity.Serial != -1)
-            {
-                playerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
-                srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + playerServiceFileName + ".SRV");
-                train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
-            }
-            else
-            {
-                playerServiceFileName = Path.GetFileNameWithoutExtension(ExploreConFile);
-                srvFile = new ServiceFile();
-                srvFile.Name = playerServiceFileName;
-                srvFile.Train_Config = playerServiceFileName;
-                srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
-            }
+            playerServiceFileName = Path.GetFileNameWithoutExtension(ExploreConFile);
+            srvFile = new ServiceFile();
+            srvFile.Name = playerServiceFileName;
+            srvFile.Train_Config = playerServiceFileName;
+            srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
             conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
-
-
             if (conFileName.Contains("tilted")) train.IsTilting = true;
 
-
-            //PATFile patFile = new PATFile(patFileName);
-            //PathName = patFile.Name;
-            // This is the position of the back end of the train in the database.
-            //PATTraveller patTraveller = new PATTraveller(patFileName);
 #if ACTIVITY_EDITOR
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
 #else
@@ -1136,7 +1117,6 @@ namespace Orts.Simulation
             // add wagons
             foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
-
                 string wagonFolder = BasePath + @"\trains\trainset\" + wagon.Folder;
                 string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
                 if (wagon.IsEngine)
@@ -1184,26 +1164,8 @@ namespace Orts.Simulation
 
             train.CheckFreight();
 
-            if (Activity != null && !MPManager.IsMultiPlayer()) // activity is defined
-            {
-                // define style of passing path and process player passing paths as required
-                if (Signals.UseLocationPassingPaths)
-                {
-                    int orgDirection = (train.RearTDBTraveller != null) ? (int)train.RearTDBTraveller.Direction : -2;
-                    Train.TCRoutePath dummyRoute = new Train.TCRoutePath(aiPath, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
-                }
-
-                // create train path
-                train.SetRoutePath(aiPath, Signals);
-                train.BuildWaitingPointList(0.0f);
-
-                train.ConvertPlayerTraffic(Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Player_Traffic_List);
-            }
-            else // explorer mode
-            {
-                train.PresetExplorerPath(aiPath, Signals);
-                train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
-            }
+            train.PresetExplorerPath(aiPath, Signals);
+            train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
 
             bool canPlace = true;
             Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
@@ -1232,16 +1194,10 @@ namespace Orts.Simulation
 
 
             train.AITrainBrakePercent = 100; //<CSComment> This seems a tricky way for the brake modules to test if it is an AI train or not
-            if (Activity != null && train.InitialSpeed > 0)
-            {
-                if ((PlayerLocomotive.BrakeSystem is AirSinglePipe) || (PlayerLocomotive.BrakeSystem is VacuumSinglePipe))
-                    train.InitializeMoving();
-            }
-
-
             return (train);
         }
 
+        // used for activity and activity in explore mode; creates the train within the AITrain class
         private AITrain InitializeAPPlayerTrain()
         {
             string playerServiceFileName;
@@ -1390,7 +1346,7 @@ namespace Orts.Simulation
                     train.CalculatePositionOfCars();
                     train.InitializeBrakes();
                     train.CheckFreight();
-                    if (Settings.Autopilot) train.ReverseFormation(false); // When using autopilot mode this is needed for correct working of train switching
+                    train.ReverseFormation(false); // When using autopilot mode this is needed for correct working of train switching
                     bool validPosition = train.PostInit();
                     if (validPosition)
                         Trains.Add(train);

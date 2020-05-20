@@ -171,6 +171,12 @@ namespace Orts.Simulation.RollingStocks
             set { WaterController.CurrentValue = value / MaxTotalCombinedWaterVolumeUKG; }
         }
 
+        public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
+        {
+            get { return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
+            set { WaterController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
+        }
+        public float RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL;
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
 
         // Vacuum Reservoir and Exhauster Settings
@@ -188,10 +194,7 @@ namespace Orts.Simulation.RollingStocks
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
         public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         public Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
-        public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
-        public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
-        public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
-        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
+        public bool IsSteamHeatingBoilerFitted = false;   // Flag to indicate when steam heat boiler van is fitted
         public float CalculatedCarHeaterSteamUsageLBpS;
 
         // Adhesion Debug
@@ -1042,7 +1045,7 @@ namespace Orts.Simulation.RollingStocks
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
-
+            
             AdhesionFilter.Reset(0.5f);
 
             base.Restore(inf);
@@ -1121,6 +1124,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Initialize()
         {
+            
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
             TrainControlSystem.Initialize();
@@ -1128,13 +1132,10 @@ namespace Orts.Simulation.RollingStocks
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
                 IsSteamHeatFitted = false;
-                TrainFittedSteamHeat = false;
             }
             else
             {
                 IsSteamHeatFitted = true;
-                TrainFittedSteamHeat = true;
-                CurrentSteamHeatFuelCapacityL = SteamHeatFuelTankCapacityL;
             }
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
@@ -2321,11 +2322,19 @@ namespace Orts.Simulation.RollingStocks
 
                 // Max sure that water level can't exceed maximum tender water level. Assume that water will be vented out of tender if maximum value exceeded. 
                 // If filling from water trough this will be done with force
-                const float NominalExtraWaterVolumeFactor = 1.0001f;
-                CombinedTenderWaterVolumeUKG += L.ToGUK(WaterScoopInputAmountL); // add the amouunt of water added by scoop
-                WaterScoopTotalWaterL += WaterScoopInputAmountL;
-
-                CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0.0f, MaxTotalCombinedWaterVolumeUKG * NominalExtraWaterVolumeFactor);
+                // The water controller can only be used by one stock item at a time.
+                if (EngineType == EngineTypes.Steam)
+                {
+                    const float NominalExtraWaterVolumeFactor = 1.0001f;
+                    CombinedTenderWaterVolumeUKG += L.ToGUK(WaterScoopInputAmountL); // add the amouunt of water added by scoop
+                    WaterScoopTotalWaterL += WaterScoopInputAmountL;
+                    CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0.0f, MaxTotalCombinedWaterVolumeUKG * NominalExtraWaterVolumeFactor);
+                }
+                else
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL += WaterScoopInputAmountL; // add water if it is a steam heat boiler
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MathHelper.Clamp(CurrentLocomotiveSteamHeatBoilerWaterCapacityL, 0.0f, MaximumSteamHeatBoilerWaterTankCapacityL);
+                }
 
                 // Calculate drag force
                 float ScoopDragCoeff = 1.05f;

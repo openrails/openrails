@@ -150,7 +150,7 @@ namespace Orts.Simulation.AIs
             TrainType = TRAINTYPE.AI_NOTSTARTED;
             StartTime = ServiceDefinition.Time;
             Efficiency = efficiency;
-            if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null) // randomize efficiency
+            if (Simulator.Settings.ActRandomizationLevel > 0 && Simulator.ActivityRun != null) // randomize efficiency
             {
                 RandomizeEfficiency(ref Efficiency);
             }
@@ -461,7 +461,7 @@ namespace Orts.Simulation.AIs
                     {
                         // <CScomment> gets efficiency from .act file to override TrainMaxSpeedMpS computed from .srv efficiency
                         var sectionEfficiency = ServiceDefinition.ServiceList[0].Efficiency;
-                        if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0) RandomizeEfficiency(ref sectionEfficiency);
+                        if (Simulator.Settings.ActRandomizationLevel > 0) RandomizeEfficiency(ref sectionEfficiency);
                         if (sectionEfficiency > 0)
                             TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, MaxVelocityA * sectionEfficiency);
                     }
@@ -2055,7 +2055,7 @@ namespace Orts.Simulation.AIs
                 if (actualServiceItemIdx >= 0 && ServiceDefinition.ServiceList.Count >= actualServiceItemIdx + 2)
                 {
                     var sectionEfficiency = ServiceDefinition.ServiceList[actualServiceItemIdx + 1].Efficiency;
-                    if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0) RandomizeEfficiency(ref sectionEfficiency);
+                    if (Simulator.Settings.ActRandomizationLevel > 0) RandomizeEfficiency(ref sectionEfficiency);
                     if (sectionEfficiency > 0)
                     {
                         TrainMaxSpeedMpS = Math.Min((float)Simulator.TRK.Tr_RouteFile.SpeedLimit, MaxVelocityA * sectionEfficiency);
@@ -3848,7 +3848,7 @@ namespace Orts.Simulation.AIs
         /// Create waiting point list
         /// </summary>
 
-        public override void BuildWaitingPointList(float clearingDistanceM)
+        public void BuildWaitingPointList(float clearingDistanceM)
         {
             bool insertSigDelegate = true;
             // loop through all waiting points - back to front as the processing affects the actual routepaths
@@ -3928,7 +3928,7 @@ namespace Orts.Simulation.AIs
                 for (int rWP = iWait; insertSigDelegate && signalIndex[iWait] != -1 && rWP >= 0; rWP--)
                 {
                     int[] currWP = TCRoute.WaitingPoints[rWP];
-                    if ((Simulator.Settings.ExtendedAIShunting && currWP[2] >= 60011 && currWP[2] <= 60020)
+                    if ((currWP[2] >= 60011 && currWP[2] <= 60020)
                         || currWP[1] != thisSection.Index || currWP[5] < (int)(thisSection.Length + distanceToEndOfWPSection - clearingDistanceM - 1)) break;
                     currWP[5] = (int)(thisSection.Length + distanceToEndOfWPSection - clearingDistanceM - 1);
                 }
@@ -3950,7 +3950,7 @@ namespace Orts.Simulation.AIs
                 TCSubpathRoute thisRoute = TCRoute.TCRouteSubpaths[waitingPoint[0]];
                 int routeIndex = thisRoute.GetRouteIndex(waitingPoint[1], 0);
                 int lastIndex = routeIndex;
-                if (!(Simulator.Settings.ExtendedAIShunting && waitingPoint[2] >= 60011 && waitingPoint[2] <= 60020))
+                if (!(waitingPoint[2] >= 60011 && waitingPoint[2] <= 60020))
                 {
                     if (iWait != TCRoute.WaitingPoints.Count - 1)
                     {
@@ -3960,7 +3960,7 @@ namespace Orts.Simulation.AIs
                             {
                                 break;
                             }
-                            else if (Simulator.Settings.ExtendedAIShunting && TCRoute.WaitingPoints[nextWP][2] >= 60011 && TCRoute.WaitingPoints[nextWP][2] <= 60020) continue;
+                            else if (TCRoute.WaitingPoints[nextWP][2] >= 60011 && TCRoute.WaitingPoints[nextWP][2] <= 60020) continue;
                             else
                             {
                                 insertSigDelegate = false;
@@ -3980,7 +3980,7 @@ namespace Orts.Simulation.AIs
                 int direction = thisRoute[routeIndex].Direction;
                 if (!IsActualPlayerTrain)
                 {
-                    if (Simulator.Settings.ExtendedAIShunting && waitingPoint[2] >= 60011 && waitingPoint[2] <= 60020)
+                    if (waitingPoint[2] >= 60011 && waitingPoint[2] <= 60020)
                     {
                         AIActionHornRef action = new AIActionHornRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                         action.SetDelay(waitingPoint[2] - 60010);
@@ -3990,13 +3990,13 @@ namespace Orts.Simulation.AIs
                     {
                         AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                         var randomizedDelay = waitingPoint[2];
-                        if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0)
+                        if (Simulator.Settings.ActRandomizationLevel > 0)
                         {
                             RandomizedWPDelay(ref randomizedDelay);
                         }
                         action.SetDelay(randomizedDelay);
                         AuxActionsContain.Add(action);
-                        if (insertSigDelegate && (waitingPoint[2] != 60002 || !Simulator.Settings.ExtendedAIShunting) && signalIndex[iWait] > -1)
+                        if (insertSigDelegate && (waitingPoint[2] != 60002) && signalIndex[iWait] > -1)
                         {
                             AIActSigDelegateRef delegateAction = new AIActSigDelegateRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction, action);
                             signalRef.SignalObjects[signalIndex[iWait]].LockForTrain(this.Number, waitingPoint[0]);
@@ -4018,7 +4018,7 @@ namespace Orts.Simulation.AIs
                 {
                     AIActionWPRef action = new AIActionWPRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction);
                     var randomizedDelay = waitingPoint[2];
-                    if (Simulator.Settings.Autopilot && Simulator.Settings.ActRandomizationLevel > 0)
+                    if (Simulator.Settings.ActRandomizationLevel > 0)
                     {
                         RandomizedWPDelay(ref randomizedDelay);
                     }
@@ -4318,26 +4318,23 @@ namespace Orts.Simulation.AIs
             SpeedMpS = 0;
             AdjustControlsThrottleOff();
             physicsUpdate(0);
-            if (Simulator.Settings.ExtendedAIShunting)
+            // check for length of remaining path
+            if (attachTrain.TrainType == Train.TRAINTYPE.STATIC && (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1 || ValidRoute[0].Count > 5))
             {
-                // check for length of remaining path
-                if (attachTrain.TrainType == Train.TRAINTYPE.STATIC && (TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1 || ValidRoute[0].Count > 5))
+                CoupleAIToStatic(attachTrain, thisTrainFront, attachTrainFront);
+                return;
+            }
+            else if (attachTrain.TrainType != Train.TRAINTYPE.STATIC && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1 && !UncondAttach)
+            {
+                if ((thisTrainFront && Cars[0] is MSTSLocomotive) || (!thisTrainFront && Cars[Cars.Count - 1] is MSTSLocomotive))
                 {
-                    CoupleAIToStatic(attachTrain, thisTrainFront, attachTrainFront);
+                    StealCarsToLivingTrain(attachTrain, thisTrainFront, attachTrainFront);
                     return;
                 }
-                else if (attachTrain.TrainType != Train.TRAINTYPE.STATIC && TCRoute.activeSubpath < TCRoute.TCRouteSubpaths.Count - 1 && !UncondAttach)
+                else
                 {
-                    if ((thisTrainFront && Cars[0] is MSTSLocomotive) || (!thisTrainFront && Cars[Cars.Count - 1] is MSTSLocomotive))
-                    {
-                        StealCarsToLivingTrain(attachTrain, thisTrainFront, attachTrainFront);
-                        return;
-                    }
-                    else
-                    {
-                        LeaveCarsToLivingTrain(attachTrain, thisTrainFront, attachTrainFront);
-                        return;
-                    }
+                    LeaveCarsToLivingTrain(attachTrain, thisTrainFront, attachTrainFront);
+                    return;
                 }
             }
 
@@ -4800,7 +4797,6 @@ namespace Orts.Simulation.AIs
         /// 
         public void TestUncouple(ref int delay)
         {
-            if (!Simulator.Settings.ExtendedAIShunting) return;
             if (delay <= 40000 || delay >= 60000) return;
             bool keepFront = true;
             int carsToKeep;
@@ -4867,7 +4863,6 @@ namespace Orts.Simulation.AIs
         /// 
         public void TestUncondAttach(ref int delay)
         {
-            if (!Simulator.Settings.ExtendedAIShunting) return;
             if (delay != 60001) return;
             else
             {
@@ -4890,7 +4885,6 @@ namespace Orts.Simulation.AIs
         /// 
         public void TestPermission(ref int delay)
         {
-            if (!Simulator.Settings.ExtendedAIShunting) return;
             if (delay != 60002) return;
             else
             {

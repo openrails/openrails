@@ -422,55 +422,6 @@ already at a value that allows running the locomotive. If the option is
 not selected, you will have to wait until the water temperature reaches a
 high enough value.
 
-.. _options-autopilot:
-
-Autopilot
----------
-
-With this option enabled and when in activity mode, it is possible to stay
-in the cab of the player train, but to let Open Rails move the train,
-respecting path, signals, speeds and station stops.
-
-It is possible to switch the player train between autopilot mode and
-player driven mode at run time. The Autopilot mode is described
-:ref:`here <driving-autopilot>`.
-
-.. _options-ai-shunting:
-
-Extended AI train shunting
---------------------------
-
-When this option is selected, further AI train shunting functions are
-available. This allows for more interesting and varied activities. If an
-activity is run which makes use of these function, this option must be
-selected. This option has no effect in :ref:`Timetable mode <timetable>`.
-
-The following additional shunting functions are available:
-
-- AI train couples to static consist and restarts with it.
-- AI train couples to player or AI train and becomes part of it; coupled AI
-  train continues on its path.
-- AI train couples to player or AI train and leaves to it its cars; coupled
-  and coupling train continue on their path.
-- AI train couples to player or AI train and *steals* its cars; coupled
-  and coupling train continue on their path.
-- AI train uncouples any number of its cars; the uncoupled part becomes a
-  static consist. With the same function it is possible to couple any number
-  of cars from a static consist.
-
-.. admonition:: For content developers
-
-    A more detailed description of this feature can be found under
-    Extended AI Train Shunting under :ref:`Open Rails Train Operation
-    <operation-ai-shunting>`.
-
-.. admonition:: For content developers
-
-    Selecting this option also enables the waiting points to declare an
-    absolute time-of-day instead of a waiting point duration. A more
-    detailed description of this feature can be found in the
-    :ref:`related paragraph <operation-absoluteWP>` in the chapter *Open Rails Train Operation*.
-
 .. _options-forced-red:
 
 Forced red at station stops
@@ -501,7 +452,28 @@ With option enabled, doors open and
 close automatically also when a player train is in :ref:`autopilot mode <driving-autopilot>`.
 The option is active only in activity mode.
 
+.. _options-location-linked-passing-path:
 
+Location-linked passing path processing
+---------------------------------------
+
+When this option is NOT selected, ORTS acts similarly to MSTS. That is, if
+two trains meet whose paths share some track section in a station, but are
+both provided with passing paths as defined with the MSTS Activity Editor,
+one of them will run through the passing path, therefore allowing the
+meet. Passing paths in this case are only available to the trains whose
+path has passing paths.
+
+When this option is selected, ORTS makes available to all trains the main
+and the passing path of the player train. Moreover, it takes into account
+the train length in selecting which path to assign to a train in case of a
+meet.
+
+.. admonition:: For content developers
+
+    A more detailed description of this feature can be
+    found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
+    in the chapter  *Open Rails Train Operation*.
 
 .. _options-keyboard:
 
@@ -627,30 +599,6 @@ When this option is selected OR attempts to maintain the selected Target
 frame rate FPS ( Frames per second). To do this it decreases or increases
 the viewing distance of the standard terrain. If the option is selected,
 also select the desired FPS in the *Target frame rate* window.
-
-.. _options-location-linked-passing-path:
-
-Location-linked passing path processing
----------------------------------------
-
-When this option is NOT selected, ORTS acts similarly to MSTS. That is, if
-two trains meet whose paths share some track section in a station, but are
-both provided with passing paths as defined with the MSTS Activity Editor,
-one of them will run through the passing path, therefore allowing the
-meet. Passing paths in this case are only available to the trains whose
-path has passing paths.
-
-When this option is selected, ORTS makes available to all trains the main
-and the passing path of the player train. Moreover, it takes into account
-the train length in selecting which path to assign to a train in case of a
-meet.
-
-.. admonition:: For content developers
-
-    A more detailed description of this feature can be
-    found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
-    in the chapter  *Open Rails Train Operation*.
-
 
 .. _options-shape-warnings:
 

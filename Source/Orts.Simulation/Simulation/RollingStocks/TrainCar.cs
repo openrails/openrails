@@ -113,6 +113,51 @@ namespace Orts.Simulation.RollingStocks
         public List<int> SoundSourceIDs = new List<int>();
 
         // Used to calculate Carriage Steam Heat Loss - ToDo - ctn_steamer - consolidate these parameters with other steam heat ones, also check as some now may be obsolete
+        public Interpolator TrainHeatBoilerWaterUsageGalukpH;
+        public Interpolator TrainHeatBoilerFuelUsageGalukpH;
+
+        // Input values to allow the water and fuel usage of steam heating boiler to be calculated based upon Spanner SwirlyFlo Mk111 Boiler
+        static float[] SteamUsageLbpH = new float[]
+        {
+           0.0f, 3000.0f
+        };
+
+        // Water Usage
+        static float[] WaterUsageGalukpH = new float[]
+        {
+           0.0f, 300.0f
+        };
+
+        // Fuel usage
+        static float[] FuelUsageGalukpH = new float[]
+        {
+           0.0f, 31.0f
+        };
+
+        public static Interpolator SteamHeatBoilerWaterUsageGalukpH()
+        {
+            return new Interpolator(SteamUsageLbpH, WaterUsageGalukpH);
+        }
+
+        public static Interpolator SteamHeatBoilerFuelUsageGalukpH()
+        {
+            return new Interpolator(SteamUsageLbpH, FuelUsageGalukpH);
+        }
+
+        public float MainSteamHeatPipeOuterDiaM = Me.FromIn(2.4f); // Steel pipe OD = 1.9" + 0.5" insulation (0.25" either side of pipe)
+        public float MainSteamHeatPipeInnerDiaM = Me.FromIn(1.50f); // Steel pipe ID = 1.5"
+        public float CarConnectSteamHoseOuterDiaM = Me.FromIn(2.05f); // Rubber hose OD = 2.05"
+        public float CarConnectSteamHoseInnerDiaM = Me.FromIn(1.50f); // Rubber hose ID = 1.5"
+        public bool IsSteamHeatBoilerLockedOut = false;
+        public float MaximumSteamHeatingBoilerSteamUsageRateLbpS;
+        public float MaximiumSteamHeatBoilerFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
+        public float CurrentCarSteamHeatBoilerWaterCapacityL;  // Current water level
+        public float CurrentSteamHeatBoilerFuelCapacityL;  // Current fuel level - only on steam vans, diesels use main diesel tank
+        public float MaximumSteamHeatBoilerWaterTankCapacityL = L.FromGUK(800.0f); // Capacity of the water feed tank for the steam heating boiler
+        public float CompartmentHeatingPipeAreaFactor = 3.0f;
+        public float DesiredCompartmentTempSetpointC = C.FromF(55.0f); // This is the desired temperature for the passenger compartment heating
+        public float WindowDeratingFactor = 0.275f;   // fraction of windows in carriage side - 27.5% of space are windows
+        public bool SteamHeatingBoilerOn = false;
         public bool SteamHeatingCompartmentSteamTrapOn = false;
         public float TotalCarCompartmentHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatCompartmentPipeAreaM2;  // Area of surface of car pipe
@@ -509,9 +554,16 @@ namespace Orts.Simulation.RollingStocks
         }
         public EngineTypes EngineType;
 
+        public enum WagonSpecialTypes
+        {
+            Unknown,
+            HeatingBoiler,
+            Heated,
+            PowerVan,
+        }
+        public WagonSpecialTypes WagonSpecialType;
 
-
-        protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
+    protected float CurveResistanceZeroSpeedFactor = 0.5f; // Based upon research (Russian experiments - 1960) the older formula might be about 2x actual value
         protected float RigidWheelBaseM;   // Vehicle rigid wheelbase, read from MSTS Wagon file
         protected float TrainCrossSectionAreaM2; // Cross sectional area of the train
         protected float DoubleTunnelCrossSectAreaM2;
@@ -1472,6 +1524,10 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(OrgConsist);
             outf.Write(PrevTiltingZRot);
             outf.Write(BrakesStuck);
+            outf.Write(IsCarSteamHeatInitial);
+            outf.Write(SteamHoseLeakRateRandom);
+            outf.Write(CarHeatCurrentCompartmentHeatW);
+            outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
         }
 
         // Game restore
@@ -1490,6 +1546,10 @@ namespace Orts.Simulation.RollingStocks
             OrgConsist = inf.ReadString();
             PrevTiltingZRot = inf.ReadSingle();
             BrakesStuck = inf.ReadBoolean();
+            IsCarSteamHeatInitial = inf.ReadBoolean();
+            SteamHoseLeakRateRandom = inf.ReadSingle();
+            CarHeatCurrentCompartmentHeatW = inf.ReadSingle();
+            CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
         }
 
         //================================================================================================//
