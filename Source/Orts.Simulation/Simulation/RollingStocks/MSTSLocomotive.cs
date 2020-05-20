@@ -126,6 +126,7 @@ namespace Orts.Simulation.RollingStocks
         public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
+        public float UnloadingSpeedMpS;
         public float MainResPressurePSI = 130;
         public bool CompressorIsOn;
         public float AverageForceN;
@@ -708,7 +709,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsspeedofmaxcontinuousforce": SpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-
+                case "engine(ortsunloadingspeed": UnloadingSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(type":
                     stf.MustMatch("(");
                     var engineType = stf.ReadString();
@@ -882,6 +883,7 @@ namespace Orts.Simulation.RollingStocks
             MaxForceN = locoCopy.MaxForceN;
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
+            UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
             EngineType = locoCopy.EngineType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
