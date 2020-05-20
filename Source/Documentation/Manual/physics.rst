@@ -1244,7 +1244,10 @@ iv.  *Steam Heating* -- to offset the above heat losses, steam was piped
 Carriage Heating Implementation in Open Rails
 .............................................
 
-Currently, carriage steam heating is only available on steam locomotives.
+Steam heating can be set up on steam locomotives, or on diesels with steam 
+heating boilers, or alternatively with special cars that had steam heating 
+boilers installed in them.
+
 To enable steam heating to work in Open Rails the following parameter must
 be included in the engine section of the steam locomotive ENG File::
 
@@ -1258,7 +1261,7 @@ appear in the extended HUD to show the temperature in the train, and the
 steam heating pipe pressure, etc.
 
 Steam heating will only work if there are passenger cars attached to the
-locomotive.
+locomotive, or cars that have been set as requiring heating.
 
 Warning messages will be displayed if the temperature inside the carriage
 drops below the temperature limits.
@@ -1273,8 +1276,54 @@ The steam heating control valve can be configured by adding an enginecontroller
 called ``ORTSSTeamHeat ( w, x, y, z)``. It should be configured as a standard
 4 value controller.
 
+The primary purpose of this model is to calculate steam usage for the heating, 
+and in the case of a steam locomotive this will reduce available steam for the 
+locomotive to use. Water and fuel usage in producing the heat will also result 
+in the mass of the locomotive or steam heating van to be reduced.
+
 It should be noted that the impact of steam heating will vary depending
 upon the season, length of train, etc.
+
+A set of standard default parameters are included in Open Rails which will allow 
+steam heating to work once the above changes have been implemented.
+
+For those who would like to customise the steam heating the following parameters 
+which can be inserted in the wagon file section can be adjusted as follows.
+
+The passenger (or other heated cars) can be adjusted with the following parameters:
+
+``ORTSHeatingWindowDeratingFactor`` - is the fraction of the car side that is occupied 
+by windows.
+``ORTSHeatingCompartmentTemperatureSet`` - is the temperature that the car thermostat 
+is set to.
+``ORTSHeatingCompartmentPipeAreaFactor`` - is a factor that adjusts the heating area of 
+the steam heater in the passenger compartment.
+``ORTSHeatingTrainPipeOuterDiameter`` - outer diameter of the main steam pipe that runs 
+the length of the train.
+``ORTSHeatingTrainPipeInnerDiameter`` - inner diameter of the main steam pipe that runs 
+the length of the train.
+``ORTSHeatingConnectingHoseOuterDiameter`` - outer diameter of the connecting hose between
+ carriages.
+``ORTSHeatingConnectingHoseInnerDiameter`` - inner diameter of the connecting hose between
+ carriages.
+
+For diesel locomotives or steam heating boiler vans the following parameters can be used 
+to set the parameters of the steam heating boiler.
+``ORTSWagonSpecialType`` - can be used to indicate whether the car is a boiler van 
+(set = HeatingBoiler), or if the car is heated (set = Heated).
+``ORTSHeatingBoilerWaterUsage`` - is the water usage for the steam heating boiler, and is 
+a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = water 
+usage (g-uk/hr).
+``ORTSHeatingBoilerFuelUsage`` - is the fuel usage for the steam heating boiler, and is 
+a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = fuel 
+usage (g-uk/hr).
+``ORTSHeatingBoilerWaterTankCapacity`` - is the feed water tank capacity for the steam boiler.
+
+``ORTSHeatingBoilerFuelTankCapacity`` - is the fuel tank capacity for the steam boiler. 
+Applies to steam heating boiler cars only. 
+
+Special effects can also be added to support the steam heating model, see the section called 
+"Special Visual Effects for Locomotives or Wagons" for more information.
 
 Steam Locomotives -- Physics Parameters for Optimal Operation
 -------------------------------------------------------------
@@ -1579,8 +1628,8 @@ an ENG file):
 - Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a
   steam pipe connection between wagons.
 
-- Haeting Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the 
-steam escaping from the steam trap in a passenger compartment.
+- Heating Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the 
+steam escaping from the steam trap under a passenger compartment.
 
 - Heating Main Pipe Steam Trap (named ``HeatingMainPipeSteamTrapFX``) -- represents the steam escaping from a
   steam trap in the main steam pipe running under the passenger car.
