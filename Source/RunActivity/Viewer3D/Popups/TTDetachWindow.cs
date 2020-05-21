@@ -110,12 +110,12 @@ namespace Orts.Viewer3D.Popups
                     if (reqDetach.CheckPlayerPowerPortion(reqTrain))
                     {
                         ThisPortionLine.Text = Viewer.Catalog.GetStringFmt("This portion will continue as train : {0}", reqTrain.Name.ToLower());
-                        OtherPortionLine.Text = Viewer.Catalog.GetStringFmt("{0} portion will form train : {1}", formedPortion, formedTrain));
+                        OtherPortionLine.Text = Viewer.Catalog.GetStringFmt("{0} portion will form train : {1}", formedPortion, formedTrain);
                     }
                     else
                     {
                         ThisPortionLine.Text = Viewer.Catalog.GetStringFmt("This portion will continue as train : {0}", formedTrain);
-                        OtherPortionLine.Text = Viewer.Catalog.GetStringFmt("{0} portion will form train : {1}", otherPortion, reqTrain.Name.ToLower()));
+                        OtherPortionLine.Text = Viewer.Catalog.GetStringFmt("{0} portion will form train : {1}", otherPortion, reqTrain.Name.ToLower());
                     }
                 }
             }
