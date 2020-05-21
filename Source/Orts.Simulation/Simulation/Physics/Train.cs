@@ -3846,6 +3846,44 @@ namespace Orts.Simulation.Physics
         /// <\summary>
         public void UnconditionalInitializeBrakes()
         {
+            if (Simulator.Settings.SimpleControlPhysics && LeadLocomotiveIndex >= 0) // If brake and control set to simple, and a locomotive present, then set all cars to same brake system as the locomotive
+            {
+                MSTSLocomotive lead = (MSTSLocomotive)Cars[LeadLocomotiveIndex];
+                if (lead.TrainBrakeController != null)
+                {
+                    foreach (MSTSWagon car in Cars)
+                    {
+                        if (lead.CarBrakeSystemType != car.CarBrakeSystemType) // Test to see if car brake system is the same as the locomotive
+                        {
+                            // If not, change so that they are compatible
+                            car.CarBrakeSystemType = lead.CarBrakeSystemType;
+                            if (lead.BrakeSystem is VacuumSinglePipe)
+                                car.MSTSBrakeSystem = new VacuumSinglePipe(car);
+                            else if (lead.BrakeSystem is AirTwinPipe)
+                                car.MSTSBrakeSystem = new AirTwinPipe(car);
+                            else if (lead.BrakeSystem is AirSinglePipe)
+                            {
+                                car.MSTSBrakeSystem = new AirSinglePipe(car);
+                                // if emergency reservoir has been set on lead locomotive then also set on trailing cars
+                                if (lead.EmergencyReservoirPresent)
+                                {
+                                    car.EmergencyReservoirPresent = lead.EmergencyReservoirPresent;
+                                }
+                            }
+                            else if (lead.BrakeSystem is EPBrakeSystem)
+                                car.MSTSBrakeSystem = new EPBrakeSystem(car);
+                            else if (lead.BrakeSystem is SingleTransferPipe)
+                                car.MSTSBrakeSystem = new SingleTransferPipe(car);
+                            else
+                                throw new Exception("Unknown brake type");
+
+                            car.MSTSBrakeSystem.InitializeFromCopy(lead.BrakeSystem);
+                            Trace.TraceInformation("Car and Locomotive Brake System Types Incompatible on Car {0} - Car brakesystem type changed to {1}", car.CarID, car.CarBrakeSystemType);
+                        }
+                    }
+                }
+            }
+
             if (Simulator.Confirmer != null && IsActualPlayerTrain) // As Confirmer may not be created until after a restore.
                 Simulator.Confirmer.Confirm(CabControl.InitializeBrakes, CabSetting.Off);
 

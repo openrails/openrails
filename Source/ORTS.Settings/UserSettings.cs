@@ -188,6 +188,9 @@ namespace ORTS.Settings
         public int DayAmbientLight { get; set; }
 
         // Simulation settings:
+
+        [Default(false)]
+        public bool SimpleControlPhysics { get; set; }
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }
         [Default(10)]

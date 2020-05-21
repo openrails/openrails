@@ -180,6 +180,8 @@ namespace ORTS
             checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
+
+            checkSimpleControlPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
@@ -465,6 +467,7 @@ namespace ORTS
             Settings.DoubleWire = checkDoubleWire.Checked;
 
             // Simulation tab
+            Settings.SimpleControlPhysics = checkSimpleControlPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;

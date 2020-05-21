@@ -486,6 +486,7 @@ namespace Orts.Viewer3D
                 ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousSmallEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
@@ -512,6 +513,7 @@ namespace Orts.Viewer3D
             if (PlayerLocomotive is MSTSDieselLocomotive)
             {
                 TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+                VacuumExhausterCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
             }
 
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
