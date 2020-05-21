@@ -196,31 +196,6 @@ namespace Orts.Simulation.RollingStocks
         public float InitialMaxHandbrakeForceN;  // Initial force when agon initialised
         public float InitialMaxBrakeForceN = 89e3f;   // Initial force when agon initialised
 
-        // Coupler Animation
-        public string FrontCouplerShapeFileName;
-        public float FrontCouplerAnimLengthM;
-        public float FrontCouplerAnimWidthM;
-        public float FrontCouplerAnimHeightM;
-
-        public string FrontCouplerOpenShapeFileName;
-        public float FrontCouplerOpenAnimLengthM;
-        public float FrontCouplerOpenAnimWidthM;
-        public float FrontCouplerOpenAnimHeightM;
-        public bool FrontCouplerOpenFitted = false;
-        public bool FrontCouplerOpen = false;
-
-        public string RearCouplerShapeFileName;
-        public float RearCouplerAnimLengthM;
-        public float RearCouplerAnimWidthM;
-        public float RearCouplerAnimHeightM;
-
-        public string RearCouplerOpenShapeFileName;
-        public float RearCouplerOpenAnimLengthM;
-        public float RearCouplerOpenAnimWidthM;
-        public float RearCouplerOpenAnimHeightM;
-        public bool RearCouplerOpenFitted = false;
-        public bool RearCouplerOpen = false;
-
         // Used to calculate Carriage Steam Heat Loss
         public float CarHeatLossWpT;      // Transmission loss for the wagon
         public float CarHeatVolumeM3;     // Volume of car for heating purposes
@@ -262,15 +237,11 @@ namespace Orts.Simulation.RollingStocks
         public float _PrevSpeedMpS;
         public float AbsSpeedMpS; // Math.Abs(SpeedMps) expression is repeated many times in the subclasses, maybe this deserves a class variable
         public float CouplerSlackM;  // extra distance between cars (calculated based on relative speeds)
+        public float CouplerDampingSpeedMpS; // Dampening applied to coupler
         public int HUDCouplerForceIndication = 0; // Flag to indicate whether coupler is 1 - pulling, 2 - pushing or 0 - neither
+        public int HUDCouplerRigidIndication = 0; // flag to indicate whether coupler is rigid of flexible. False indicates that coupler is flexible
         public float CouplerSlack2M;  // slack calculated using draft gear force
         public bool IsAdvancedCoupler = false; // Flag to indicate that coupler is to be treated as an advanced coupler
-        public float FrontCouplerSlackM; // Slack in car front coupler
-        public float RearCouplerSlackM;  // Slack in rear coupler
-
-        public float AdvancedCouplerDynamicTensionSlackLimitM;   // Varies as coupler moves
-        public float AdvancedCouplerDynamicCompressionSlackLimitM; // Varies as coupler moves
-
         public bool WheelSlip;  // true if locomotive wheels slipping
         public bool WheelSlipWarning;
         public bool WheelSkid;  // True if wagon wheels lock up.
@@ -523,10 +494,6 @@ namespace Orts.Simulation.RollingStocks
         public float CouplerForceG; // temporary value used by solver
         public float CouplerForceR; // right hand side value
         public float CouplerForceU; // result
-        public float ImpulseCouplerForceUN;
-        public SmoothedData CouplerForceUSmoothed = new SmoothedData(1.0f);
-        public float PreviousCouplerSlackM;
-        public float SmoothedCouplerForceUN;
         public bool CouplerExceedBreakLimit; //true when coupler force is higher then Break limit (set by 2nd parameter in Break statement)
         public bool CouplerOverloaded; //true when coupler force is higher then Proof limit, thus overloaded, but not necessarily broken (set by 1nd parameter in Break statement)
         public bool BrakesStuck; //true when brakes stuck
@@ -1266,11 +1233,11 @@ namespace Orts.Simulation.RollingStocks
                                 {
                                     if (Train.IsFreight)
                                     {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight car " + CarID + " may be damaged. The recommended speed for this curve is " + FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
+                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your freight car {0} may be damaged. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
                                     }
                                     else
                                     {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers in car " + CarID + " are feeling uncomfortable. The recommended speed for this curve is " + FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
+                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); ;
                                     }
 
                                     if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
@@ -1660,7 +1627,7 @@ namespace Orts.Simulation.RollingStocks
             return 0;
         }
 
-        public virtual float GetSimpleCouplerStiffnessNpM()
+        public virtual float GetCouplerStiffnessNpM()
         {
             return 2e7f;
         }
@@ -1675,6 +1642,16 @@ namespace Orts.Simulation.RollingStocks
             return 1e7f;
         }
 
+        public virtual float GetCouplerDamping1NMpS()
+        {
+            return 1e7f;
+        }
+
+        public virtual float GetCouplerDamping2NMpS()
+        {
+            return 1e7f;
+        }
+
         public virtual float GetCouplerSlackAM()
         {
             return 0;
@@ -1685,119 +1662,30 @@ namespace Orts.Simulation.RollingStocks
             return 0.1f;
         }
 
-        public virtual bool GetCouplerRigidIndication()
+        public virtual int GetCouplerRigidIndication()
         {
-            return false;
+            return 0;
         }
 
-        public virtual float GetMaximumSimpleCouplerSlack1M()
+        public virtual float GetMaximumCouplerSlack0M()
         {
-            return 0.03f;
+            return 0.005f;
+        }
+
+        public virtual float GetMaximumCouplerSlack1M()
+        {
+            return 0.012f;
         }
         
-        public virtual float GetMaximumSimpleCouplerSlack2M()
+        public virtual float GetMaximumCouplerSlack2M()
         {
-            return 0.035f;
+            return 0.12f;
         }
 
         public virtual float GetMaximumCouplerForceN()
         {
             return 1e10f;
         }
-
-        // Advanced coupler parameters
-
-        public virtual float GetCouplerTensionStiffness1N()
-        {
-            return 1e7f;
-        }
-
-        public virtual float GetCouplerTensionStiffness2N()
-        {
-            return 2e7f;
-        }
-
-        public virtual float GetCouplerCompressionStiffness1N()
-        {
-            return 1e7f;
-        }
-
-        public virtual float GetCouplerCompressionStiffness2N()
-        {
-            return 2e7f;
-        }
-
-        public virtual float GetCouplerTensionSlackAM()
-        {
-            return 0;
-        }
-
-        public virtual float GetCouplerTensionSlackBM()
-        {
-            return 0.1f;
-        }
- 
-        public virtual float GetCouplerCompressionSlackAM()
-        {
-            return 0;
-        }
- 
-        public virtual float GetCouplerCompressionSlackBM()
-        {
-            return 0.1f;
-        }
-
-        public virtual float GetMaximumCouplerTensionSlack1M()
-        {
-            return 0.05f;
-        }
-         
-        public virtual float GetMaximumCouplerTensionSlack2M()
-        {
-            return 0.1f;
-        }
- 
-        public virtual float GetMaximumCouplerTensionSlack3M()
-        {
-            return 0.13f;
-        }
-
-        public virtual float GetMaximumCouplerCompressionSlack1M()
-        {
-            return 0.05f;
-        }
-
-        public virtual float GetMaximumCouplerCompressionSlack2M()
-        {
-            return 0.1f;
-        }
- 
-        public virtual float GetMaximumCouplerCompressionSlack3M()
-        {
-            return 0.13f;
-        }
-
-        public virtual float GetCouplerBreak1N() // Sets the break force????
-        {
-            return 1e10f;
-        }
-
-        public virtual float GetCouplerBreak2N() // Sets the break force????
-        {
-            return 1e10f;
-        }
-
-        public virtual float GetCouplerTensionR0Y() // Sets the break force????
-        {
-            return 0.0001f;
-        }
-
-        public virtual float GetCouplerCompressionR0Y() // Sets the break force????
-        {
-            return 0.0001f;
-        }
-
-
 
         public virtual void CopyCoupler(TrainCar other)
         {
