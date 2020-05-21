@@ -2305,11 +2305,11 @@ namespace Orts.Simulation.Physics
                                 float CarTemp = car.CarCurrentCarriageHeatTempC;
                                 if (car.WagonType == TrainCar.WagonTypes.Passenger)
                                 {
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Carriage " + car.CarID + " temperature is too cold, the passengers are freezing."));
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Carriage {0} temperature is too cold, the passengers are freezing.", car.CarID));
                                 }
                                 else
                                 {
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Car " + car.CarID + " temperature is too cold for the freight."));
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("Car {0} temperature is too cold for the freight.", car.CarID));
                                 }
                             }
 
@@ -2359,7 +2359,7 @@ namespace Orts.Simulation.Physics
                                 if (mstsLocomotive.CalculatedCarHeaterSteamUsageLBpS > car.MaximumSteamHeatingBoilerSteamUsageRateLbpS)
                                 {
                                     car.IsSteamHeatBoilerLockedOut = true; // Lock steam heat boiler out is steam usage exceeds capacity
-                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("The steam usage has exceeded the capcity of the steam boiler. Steam bolier locked out."));
+                                    Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("The steam usage has exceeded the capacity of the steam boiler. Steam boiler locked out."));
                                     Trace.TraceInformation("Steam heat boiler locked out as capacity exceeded");
                                 }
 
