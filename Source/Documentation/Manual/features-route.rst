@@ -720,8 +720,20 @@ there either, Open Rails selects texture ``GLOBAL\TEXTURES\diselsmoke.ace``. It 
 strongly suggested to use a specific texture to display the overhead wire. A possible 
 texture to be used can be downloaded here ``Documentation\SampleFiles\Manual\overheadwire.zip``.
 
+Fading signal lamps
+===================
 
+In Open Rails, signal lamps fade on and off for a visually pleasing transition 
+effect. The fade time defaults to one-fifth of a second. It can be customized in 
+the ``SignalType`` block of the ``sigcfg.dat`` file using the ``ORTSOnOffTimeS`` 
+property::
 
+   SignalTypes( ...
+       SignalType ( "AM14Light"
+           ...
+           ORTSOnOffTimeS ( 0.2 )
+       )
+   )
 
-
-
+The value is the fade time in seconds. Use ``0`` to disable the effect 
+completely.

@@ -196,7 +196,7 @@ The following information is displayed in the basic display:
   appears displaying the actual gear. ``N`` means no gear inserted.
 - FPS = Number of Frames rendered per second
 
-If the :ref:`Autopilot <options-autopilot>` is active, an additional line 
+When applicable, an additional line indicationg whether Autopilot is active or not 
 will be shown.
 
 An example of the basic HUD for Diesel locomotives:
@@ -702,8 +702,8 @@ route.
 .. image:: images/driving-dispatcher.png
 
 The dispatcher window shows the route layout and monitors the movement of 
-all trains. While the player train is identified by the ``PLAYER`` string 
-(or by a ``0`` if autopilot mode is enabled), AI trains are identified by 
+all trains. While the player train is identified by the ``0`` string, 
+AI trains are identified by 
 their OR number (that is also shown in the :ref:`Extended HUD for Dispatcher 
 Information <driving-hud-dispatcher>`), followed by the service name. 
 Static consists are identified as in MSTS.
@@ -734,8 +734,8 @@ By left- or right-clicking on a switch, a small pop-up menu with the two
 selections ``Main route`` and ``Side route`` appears. By clicking on them 
 you can throw the switch, provided the OR AI dispatcher allows it.
 
-With respect to AI trains, as a general rule you can command their signals 
-but not their switches, because AI trains are not allowed to exit their path.
+Using the dispatcher window for AI trains is described 
+:ref:`here below<driving-dispatcher-for-ai-trains>`.
 
 The two checkboxes ``Pick Signals`` and ``Pick Switches`` are checked as 
 default. You can uncheck one of them when a signal and a switch are 
@@ -762,6 +762,45 @@ if the trains are far away, can lead to memory overflows.
 
 If after a train selection you click on ``Follow`` the dispatcher window 
 will remain centered on that train.
+
+.. _driving-dispatcher-for-ai-trains:
+
+Using dispatcher window for AI trains
+-------------------------------------
+
+What is described here is valid only for activity mode and explore in 
+activity mode.
+
+There are cases where it would be advisable to re-route an AI train to manage standoffs, 
+train passings, train priorities.
+In this case, using the dispatcher window it is possible to re-route an AI train (e.g. on a siding) 
+and then to get it back on the original route. The feature anyhow also allows to 
+re-route it without getting it back on the original route.
+
+It is suggested to look at this video which explains some practical case 
+https://youtu.be/-f0XVg7bSgU before continuing reading.
+
+To perform this correctly and in a way more similar to reality, some rules have to 
+be followed.
+The concept is that switches must be manually thrown only if they aren't reserved by a train. 
+To be sure of this it is necessary to force to stop the last signal(s) between train(s) 
+and switch, in case such signal is not already at stop. Once the switch is manually 
+thrown, the signal in front of the train that has to be re-routed must be set to the 
+"System controlled" state if it had been forced to stop before.
+At that point OR breaks down the old train's route and re-computes a new one, taking 
+into account the moved switch. 
+More switches may be forced on the route (e.g. both the switches to enter the siding 
+and the ones to re-enter the main line).
+
+Signals must never be forced to clear or approach. 
+
+If an AI train is re-routed on a route which isn't at the moment re-entering the 
+original route, its path information in the dispatcher info HUD is displayed in yellow.
+
+Station platform stops are re-assigned to adjacent platforms, if available. Events and 
+waiting points in the abandoned part of route will be lost.
+
+The re-routed train may be also the player train (be it autopiloted or not).
 
 Additional Train Operation Commands
 ===================================
@@ -929,14 +968,21 @@ to better understand what is possible with turntables and transfertables.
 Autopilot Mode
 ==============
 
+When in activity mode or in Explore in activity mode, through this feature 
+it is possible to stay
+in the cab of the player train, but to let Open Rails move the train,
+respecting path, signals, speeds and station stops.
+
+It is possible to switch the player train between autopilot mode and
+player driven mode at run time.
+
 Autopilot mode is not a simulation of a train running with cruise control; 
 instead, it is primarily a way to test activities more easily and quickly; 
 but it can also be used to run an activity (or part of it, as it is 
 possible to turn autopilot mode on or off at runtime) as a trainspotter or 
 a visitor within the cab.
 
-Autopilot mode is enabled with the related checkbox in the Simulation 
-Options. It is active only in activity mode (i.e. not in explorer or 
+Autopilot mode is active only in activity mode (i.e. not in explorer or 
 timetable modes).
 
 When starting the game with any activity, you are in player driving mode. 
@@ -984,9 +1030,7 @@ General
 -------
 
 This function only works in activity mode, and allows the player to select 
-another (existing) train from a list and to start driving it. It requires 
-that the Experimental Options ``Autopilot`` and ``Extended AI Shunting`` be 
-checked. 
+another (existing) train from a list and to start driving it.
 
 This function can be called more than once. A new information window has 
 been created to support this function: the ``Train List`` window (opened 
@@ -1166,22 +1210,32 @@ depressed.
 
 The commands for each of the views are described below.
 
-- Key 1 opens the 2D driver's view from the interior of the controlling cab 
-  of the player locomotive. The entire cab view can be moved to other cabs 
-  (if available) in the player train by successive presses of Ctrl+E; the 
-  train must be stopped and the direction switch in Neutral. The view can be 
-  changed to the fixed left, front, or right view by clicking the left, up or 
-  right arrow keys. (The 2D view is constructed from three 2D images, so the 
-  actual camera position can only be modified by editing the contents of the 
-  .cvf file.) The headout views (if available) are selected by ``Home`` 
-  (right hand side, looking forward) or ``End`` (left hand side, looking 
-  back) and the headout view direction is controlled by the mouse with the 
-  right button depressed. If there are multiple locomotives, ``<Alt+PgUp>``
-  and ``<Alt+PgDn>`` move the headout views.
+- Key ``<1>`` opens the 2D driver's view from the interior of the controlling 
+  cab of the player locomotive. The 2D view can be cycled between the fixed 
+  left, front, and right views with the ``<Left>`` and ``<Right>`` arrow keys. 
+  The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
+  constructed from three 2D images, so the actual camera position can only be 
+  modified by editing the contents of the .cvf file.) If there is a mismatch 
+  between the aspect ratio of the (optionally stretched) cab and the aspect 
+  ratio of the monitor, OR will clip the cab and show only the portion that fits 
+  within the display, as described in 
+  :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
+  to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
+  and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
+  which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
+  without a clip and cover the remaining space with black bars.
 - Key ``<Alt+1>`` opens the 3D driver's view (if the locomotive has a 3D 
   cabview file) from the interior of the controlling cab of the player 
   locomotive. The camera position and view direction are fully player 
   controllable.
+- The entire cab view can be moved to other cabs (if available) in the player 
+  train by successive presses of ``<Ctrl+E>``; the train must be stopped and the 
+  direction switch in Neutral.
+- The headout views (if available) are selected by ``<Home>`` (right hand side, 
+  looking forward) or ``<End>`` (left hand side, looking back) and the headout 
+  view direction is controlled by the mouse with the right button depressed. If 
+  there are multiple locomotives, ``<Alt+PgUp>`` and ``<Alt+PgDn>`` move the 
+  headout views.
 
 Rotation of the camera view in any direction is controlled by the mouse 
 with the right-hand button depressed (or alternatively by the four arrow 
@@ -1290,6 +1344,9 @@ behavior.
 Whenever frame rates fall to unacceptable levels players are advised to 
 adjust camera positions to cull some models from being in view and to 
 adjust the camera again to include more models when frame rates are high.
+
+Some camera views (among them 2Dcabview, 3Dcabview and passenger view) feature 
+the ``<Ctrl+8>`` command, that resets the view position to the default one.
 
 Toggling Between Windowed Mode and Full-screen
 ==============================================

@@ -49,8 +49,7 @@ Basic AI Functionality
   Activity and Timetable modes, while waiting points can only be used in Activity 
   mode.
 - AI trains throw switches not lined properly before engaging them.
-- In activity mode AI trains can perform shunting actions, provided the 
-  :ref:`Extended AI shunting <operation-ai-shunting>` option has been selected.
+- In activity mode AI trains can perform shunting actions.
 - Priorities: AI trains should start as scheduled as long as there is no other 
   AI train already on a conflict path.
 
@@ -419,8 +418,7 @@ Waiting points cannot be used in Timetable mode.
 Absolute Waiting Points
 -----------------------
 
-When the :ref:`Extended AI shunting <operation-ai-shunting>` option is selected 
-and OR is not in Timetable Mode, waiting points with a *waiting time* between 
+Waiting points with a *waiting time* between 
 30000 and 32359 are interpreted as absolute time-of-day waiting points, with a 
 format 3HHMM, where HH and MM are the hour and minute of the day in standard 
 decimal notation.
@@ -725,8 +723,10 @@ Extended AI Train Shunting
 General
 -------
 
-When this option is selected further AI train shunting functions are available. 
-Note that this option is not available in Timetable mode.
+Having AI trains performing shunting operations ensures more interesting and varied activities.
+
+Note that this feature is not available in Timetable mode, which has other ways to 
+perform AI Train shunting.
 
 The following additional shunting functions are available:
 
@@ -1671,9 +1671,10 @@ user settings, and as such are kind of an extension to the four available
 
 Function call::
 
-    state = HASHEAD(headname);
+    state = HASHEAD( n );
 
-Function returns 1 if head is set, else 0. 
+where n is the SignalSubObj-Number in question.
+Function returns 1 if head SignalSubObj is set, else 0.
 
 
 Signalling flag OR_NOSPEEDREDUCTION
@@ -1782,9 +1783,6 @@ does not work for the terminating event of the activity.
 AI Train Horn Blow
 ------------------
 
-This feature requires selection of the :ref:`Extended AI train shunting option 
-<options-ai-shunting>`.
-
 Horn blow by AI trains is achieved by inserting into the AI train path a 
 waiting point with a waiting time value between 60011 (1 second horn blow) and 
 60020 (10 seconds horn blow).
@@ -1798,6 +1796,10 @@ must be terminated before the normal waiting point is reached ( just in case).
 On the other hand, a horn blow waiting point may be positioned just after a 
 normal WP (thus achieving the effect that the train blows the horn when it 
 restarts).
+
+If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
+set to 1 in the .eng file, the bell is played for further 30 seconds after 
+the end of the horn blow.
 
 To implement this feature it is not necessary to proceed as described in the 
 first three paragraphs of this chapter. It is enough to insert the waiting 
@@ -1822,6 +1824,10 @@ the route. The AI train will not blow the horn at these crossings. Examining
 the route with TrackViewer allows identification of the true level crossings. 
 If a horn blow is also desired for a *simple* road crossing, the feature *AI 
 Train Horn Blow* described above must be used.
+
+If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
+set to 1 in the .eng file, the bell is played for further 30 seconds after 
+the end of the horn blow.
 
 .. _operation-event-triggered-by-ai-train:
 

@@ -115,13 +115,15 @@ namespace Orts.Simulation.RollingStocks
         public bool Bell = false;
         protected bool PreviousBell = false;
 
+        public bool VacuumExhausterPressed = false;
+        public bool FastVacuumExhausterFitted = false;
+
         public bool AlerterSnd;
         public bool VigilanceMonitor;
         public bool Sander;
         public bool Wiper;
         public bool BailOff;
         public bool DynamicBrake;
-        public float DynamicBrakeForceN = 0f; // Raw dynamic brake force for diesel and electric sound variable3
         public float MaxPowerW;
         public float MaxForceN;
         public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
@@ -141,6 +143,45 @@ namespace Orts.Simulation.RollingStocks
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
 
+        // Water trough filling
+        public bool HasWaterScoop = false; // indicates whether loco + tender have a water scoop or not
+        public float ScoopMaxPickupSpeedMpS = 200.0f; // Maximum scoop pickup speed - used in steam locomotive viewer
+        public bool ScoopIsBroken = false; // becomes broken if activated where there is no trough
+        public bool RefillingFromTrough = false; // refilling from through is ongoing
+        public float WaterScoopFillElevationM; // height water has to be raised to fill tender
+        public float WaterScoopDepthM; // depth that water scoop goes into trough (pan)
+        public float WaterScoopWidthM; // width of water scoop
+        public float WaterScoopVelocityMpS; // Velocity of water entering water scoop
+        public float WaterScoopDragForceN; // drag force due to scoop being in water trough
+        public float WaterScoopedQuantityLpS; // Amount of water scooped up by water scoop per second
+        public float WaterScoopInputAmountL; // Water scooped in elapsed time
+        public float WaterScoopMinSpeedMpS; // Minimum speed for water pickup
+        public bool IsWaterScoopDown = false;
+        public bool WaterScoopDown;
+        public const float GravitationalAccelerationFtpSpS = 32.26f;
+        public float TenderWaterLevelFraction;
+        public float WaterScoopTotalWaterL;
+        bool WaterScoopOverTroughFlag = false;
+        bool WaterScoopNotFittedFlag = false;
+        bool WaterScoopSlowSpeedFlag = false;
+        bool WaterScoopDirectionFlag = false;
+        public bool IsWaterScoopPlayerLocomotive = false;
+        public float MaxTotalCombinedWaterVolumeUKG;
+        public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
+        public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
+        {
+            get { return WaterController.CurrentValue* MaxTotalCombinedWaterVolumeUKG; }
+            set { WaterController.CurrentValue = value / MaxTotalCombinedWaterVolumeUKG; }
+        }
+
+        public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
+        {
+            get { return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
+            set { WaterController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
+        }
+        public float RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL;
+        public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
+
         // Vacuum Reservoir and Exhauster Settings
 
         // Steam heating Flags
@@ -154,10 +195,10 @@ namespace Orts.Simulation.RollingStocks
         // Carriage Steam Heating Parameters
         public float MaxSteamHeatPressurePSI;    // Maximum Steam heating pressure
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
-        public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
-        public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
-        public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
-        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
+        public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
+        public Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
+        public bool IsSteamHeatingBoilerFitted = false;   // Flag to indicate when steam heat boiler van is fitted
+        public float CalculatedCarHeaterSteamUsageLBpS;
 
         // Adhesion Debug
         bool DebugSpeedReached;
@@ -172,12 +213,12 @@ namespace Orts.Simulation.RollingStocks
         public float SteamDrvWheelWeightLbs;  // Weight on each drive axle
         public float PreviousThrottleSetting = 0.0f;  // Holds the value of the previous throttle setting for calculating the correct antislip speed
 
-        // parameters for Track Sander
-        public float MaxTrackSandBoxCapacityFt3 = 5.0f;  // Capacity of sandbox - assume 3.5 cu ft
-        public float TrackSandBoxCapacityFt3 = 5.0f;   // This value needs to be initialised to the value above.
-        public float TrackSanderAirComsumptionFt3pM = 17.0f;  //
-        public float TrackSanderAirPressurePSI = 80.0f;
-        public float TrackSanderSandConsumptionFt3pH = 1.01f;
+        // parameters for Track Sander based upon compressor air and abrasive table for 1/2" sand blasting nozzle @ 50psi
+        public float MaxTrackSandBoxCapacityM3 = Me3.FromFt3(40.0f);  // Capacity of sandbox - assume 40.0 cu ft
+        public float CurrentTrackSandBoxCapacityM3 = 5.0f;   // This value needs to be initialised to the value above, as it reduces as sand is used.
+        public float TrackSanderAirComsumptionM3pS = Me3.FromFt3(195.0f) / 60.0f;  // Default value - cubic feet per min (CFM) 195 ft3/m
+        public float TrackSanderAirPressurePSI = 50.0f;
+        public float TrackSanderSandConsumptionM3pS = Me3.FromFt3(11.6f) / 3600.0f; // Default value - 11.6 ft3/h
 
         // Vacuum Braking parameters
         readonly static float OneAtmospherePSI = Bar.ToPSI(1);
@@ -185,15 +226,18 @@ namespace Orts.Simulation.RollingStocks
         public bool LargeSteamEjectorIsOn = false;
         public bool VacuumPumpOperating = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
+        public float SteamEjectorLargePressurePSI = 0.0f;
         public bool VacuumPumpFitted;
         public bool SmallEjectorFitted = false;
         public float VacuumPumpResistanceN;
         public float EjectorSmallSteamConsumptionLbpS;
         public float EjectorLargeSteamConsumptionLbpS;
         public float SteamEjectorSmallSetting = 0.0f;
+        public float SteamEjectorLargeSetting = 0.0f;
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
         public float LargeEjectorFeedFraction = 1.0f;
+        public bool LargeEjectorFitted = false;
         public float VacuumPumpChargingRateInHgpS = 0.0f;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
         public float HUDNetBPLossGainPSI;
@@ -201,6 +245,7 @@ namespace Orts.Simulation.RollingStocks
         public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
         public float ExhausterHighSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
+        public bool VacuumBrakeCutoffActivated = false;
 
         public bool EngineBrakeFitted = false;
         public bool VacuumExhausterIsOn = false;
@@ -251,7 +296,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
-        public float MainResChargingRatePSIpS;
+        public float MainResChargingRatePSIpS = 0.4f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = 0.0015f;
@@ -285,6 +330,8 @@ namespace Orts.Simulation.RollingStocks
         public bool HasSmoothStruc;
 
         public float MaxContinuousForceN;
+        public float SpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs
+        public float MSTSSpeedOfMaxContinuousForceMpS;  // Speed where maximum tractive effort occurs - MSTS parameter if used
         public float ContinuousForceTimeFactor = 1800;
         public bool AntiSlip;
         public bool AdvancedAdhesionModel = false; // flag set depending upon adhesion model used.
@@ -298,6 +345,9 @@ namespace Orts.Simulation.RollingStocks
         public bool EmergencyEngagesHorn { get; private set; }
         public bool WheelslipCausesThrottleDown { get; private set; }
 
+        public float BrakeRestoresPowerAtBrakePipePressurePSI;
+        public float BrakeCutsPowerAtBrakePipePressurePSI;
+        public bool DoesVacuumBrakeCutPower { get; private set; }
         public bool DoesBrakeCutPower { get; private set; }
         public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
         public bool DoesHornTriggerBell { get; private set; }
@@ -665,6 +715,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(maxforce": MaxForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
                 case "engine(maxcurrent": MaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(maxcontinuousforce": MaxContinuousForceN = stf.ReadFloatBlock(STFReader.UNITS.Force, null); break;
+                case "engine(ortsspeedofmaxcontinuousforce": SpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
+                case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
 
                 case "engine(type":
@@ -695,7 +747,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(brake_train":
                     TrainBrakeController.Parse(lowercasetoken, stf);
                     break;
-
+                case "engine(enginecontrollers(ortsfastvacuumexhauster": FastVacuumExhausterFitted = true; break;
                 case "engine(enginebrakescontrollermaxsystempressure":
                 case "engine(enginebrakescontrollermaxreleaserate":
                 case "engine(enginebrakescontrollermaxquickreleaserate":
@@ -765,8 +817,11 @@ namespace Orts.Simulation.RollingStocks
                     HeadOutViewpoints.Add(new ViewPoint(HeadOutViewpoints[0], true));
                     break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
+                case "engine(ortsdoesvacuumbrakecutpower": DoesVacuumBrakeCutPower = stf.ReadBoolBlock(false); break;
                 case "engine(doesbrakecutpower": DoesBrakeCutPower = stf.ReadBoolBlock(false); break;
                 case "engine(brakecutspoweratbrakecylinderpressure": BrakeCutsPowerAtBrakeCylinderPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsbrakecutspoweratbrakepipepressure": BrakeCutsPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsbrakerestorespoweratbrakepipepressure": BrakeRestoresPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
@@ -810,6 +865,13 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsonlinecabradio": OnLineCabRadio = stf.ReadBoolBlock(false); break;
                 case "engine(ortsonlinecabradiourl": OnLineCabRadioURL = stf.ReadString(); break;
                 case "engine(vacuumbrakesminboilerpressuremaxvacuum": MaxVaccuumMaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(enginecontrollers(waterscoop": HasWaterScoop = true; break;
+                case "engine(ortswaterscoopfillelevation": WaterScoopFillElevationM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
+                case "engine(ortswaterscoopdepth": WaterScoopDepthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
+                case "engine(ortswaterscoopwidth": WaterScoopWidthM = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0.0f); break;
+                case "engine(ortsmaxtracksanderboxcapacity": MaxTrackSandBoxCapacityM3 = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "engine(ortsmaxtracksandersandconsumption": TrackSanderSandConsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "engine(ortsmaxtracksanderairconsumption": TrackSanderAirComsumptionM3pS = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
                 default: base.Parse(lowercasetoken, stf); break;
                     
             }
@@ -836,6 +898,8 @@ namespace Orts.Simulation.RollingStocks
             EngineType = locoCopy.EngineType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
+            SpeedOfMaxContinuousForceMpS = locoCopy.SpeedOfMaxContinuousForceMpS;
+            MSTSSpeedOfMaxContinuousForceMpS = locoCopy.MSTSSpeedOfMaxContinuousForceMpS;
             ContinuousForceTimeFactor = locoCopy.ContinuousForceTimeFactor;
             DynamicBrakeForceCurves = locoCopy.DynamicBrakeForceCurves;
             DynamicBrakeAutoBailOff = locoCopy.DynamicBrakeAutoBailOff;
@@ -847,10 +911,14 @@ namespace Orts.Simulation.RollingStocks
             LocoNumDrvWheels = locoCopy.LocoNumDrvWheels;
             AntiSlip = locoCopy.AntiSlip;
             VacuumPumpFitted = locoCopy.VacuumPumpFitted;
+            FastVacuumExhausterFitted = locoCopy.FastVacuumExhausterFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             InitialDrvWheelWeightKg = locoCopy.InitialDrvWheelWeightKg;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
             SanderSpeedOfMpS = locoCopy.SanderSpeedOfMpS;
+            MaxTrackSandBoxCapacityM3 = locoCopy.MaxTrackSandBoxCapacityM3;
+            TrackSanderSandConsumptionM3pS = locoCopy.TrackSanderSandConsumptionM3pS;
+            TrackSanderAirComsumptionM3pS = locoCopy.TrackSanderAirComsumptionM3pS;
             PowerOnDelayS = locoCopy.PowerOnDelayS;
             DoesHornTriggerBell = locoCopy.DoesHornTriggerBell;
             MaxSteamHeatPressurePSI = locoCopy.MaxSteamHeatPressurePSI;
@@ -894,7 +962,10 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveName = locoCopy.LocomotiveName;
             MaxVaccuumMaxPressurePSI = locoCopy.MaxVaccuumMaxPressurePSI;
             VacuumBrakeEQFitted = locoCopy.VacuumBrakeEQFitted;
-
+            HasWaterScoop = locoCopy.HasWaterScoop;
+            WaterScoopFillElevationM = locoCopy.WaterScoopFillElevationM;
+            WaterScoopDepthM = locoCopy.WaterScoopDepthM;
+            WaterScoopWidthM = locoCopy.WaterScoopWidthM;
             MoveParamsToAxle();
 
 
@@ -924,6 +995,7 @@ namespace Orts.Simulation.RollingStocks
             // we won't save the horn state
             outf.Write(Bell);
             outf.Write(Sander);
+            outf.Write(VacuumExhausterPressed);
             outf.Write(Wiper);
             outf.Write(OdometerResetPositionM);
             outf.Write(OdometerCountingUp);
@@ -938,6 +1010,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(LocomotiveAxle.AxleSpeedMpS);
             outf.Write(CabLightOn);
             outf.Write(UsingRearCab);
+            outf.Write(CalculatedCarHeaterSteamUsageLBpS);
             ControllerFactory.Save(ThrottleController, outf);
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
@@ -945,8 +1018,13 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(SteamHeatController, outf);
             outf.Write(AcceptMUSignals);
             outf.Write(PowerReduction);
+            outf.Write(ScoopIsBroken);
+            outf.Write(IsWaterScoopDown);
+            outf.Write(CurrentTrackSandBoxCapacityM3);
 
             base.Save(outf);
+
+            TrainControlSystem.Save(outf);
         }
 
         /// <summary>
@@ -957,6 +1035,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (inf.ReadBoolean()) SignalEvent(Event.BellOn);
             if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
+            if (inf.ReadBoolean()) SignalEvent(Event.VacuumExhausterOn);
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             OdometerResetPositionM = inf.ReadSingle();
             OdometerCountingUp = inf.ReadBoolean();
@@ -971,6 +1050,7 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.Reset(Simulator.GameTime, inf.ReadSingle());
             CabLightOn = inf.ReadBoolean();
             UsingRearCab = inf.ReadBoolean();
+            CalculatedCarHeaterSteamUsageLBpS = inf.ReadSingle();
             ControllerFactory.Restore(ThrottleController, inf);
             ControllerFactory.Restore(TrainBrakeController, inf);
             ControllerFactory.Restore(EngineBrakeController, inf);
@@ -978,9 +1058,15 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(SteamHeatController, inf);
             AcceptMUSignals = inf.ReadBoolean();
             PowerReduction = inf.ReadSingle();
+            ScoopIsBroken = inf.ReadBoolean();
+            IsWaterScoopDown = inf.ReadBoolean();
+            CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
+            
             AdhesionFilter.Reset(0.5f);
 
             base.Restore(inf);
+
+            TrainControlSystem.Restore(inf);
         }
 
         public bool IsLeadLocomotive()
@@ -1054,6 +1140,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Initialize()
         {
+            
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
             TrainControlSystem.Initialize();
@@ -1061,16 +1148,41 @@ namespace Orts.Simulation.RollingStocks
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
                 IsSteamHeatFitted = false;
-                TrainFittedSteamHeat = false;
             }
             else
             {
                 IsSteamHeatFitted = true;
-                TrainFittedSteamHeat = true;
-                CurrentSteamHeatFuelCapacityL = SteamHeatFuelTankCapacityL;
             }
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
+            SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
+            SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
+
+            // Check to see if water scoop elements have been configured
+            if (WaterScoopFillElevationM == 0)
+            {
+                WaterScoopFillElevationM = 2.7432f; // Set to default of 9 ft
+            } 
+
+            if (WaterScoopDepthM == 0)
+            {
+                WaterScoopDepthM = 0.0889f; // Set to default of 3.5 ins
+            }
+
+            if (WaterScoopWidthM == 0)
+            {
+                WaterScoopWidthM = 0.3048f; // Set to default of 1 ft
+            }
+
+            // Check if current sander has been set
+            if (CurrentTrackSandBoxCapacityM3 == 0 )
+            {
+                CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3;
+            }
+            
+            // Calculate minimum speed to pickup water
+            const float Aconst = 2;
+            WaterScoopMinSpeedMpS = Me.FromFt((float)Math.Sqrt(Aconst * GravitationalAccelerationFtpSpS * Me.ToFt(WaterScoopFillElevationM)));
 
             // Initialise Brake Pipe Charging Rate
             if (BrakePipeChargingRatePSIorInHgpS == 0) // Check to see if BrakePipeChargingRate has been set in the ENG file.
@@ -1147,10 +1259,36 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Check TrainBrakesControllerMaxSystemPressure parameter for "correct" value 
-            // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi, and if no units are entered then a InHG value can be incorrectly converted.
-            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 12.5)
+            // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi due to way parameter is read, and if units are entered then a InHG value can be incorrectly converted.
+            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 10 && TrainBrakeController.MaxPressurePSI < 15)
             {
-                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being read as {0} Inhg, - defaulted to value of 21 InHg", Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being incorrectly read as {0} Inhg, - set to value of {1} InHg", TrainBrakeController.MaxPressurePSI, Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+                TrainBrakeController.MaxPressurePSI = Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI));
+            }
+
+            // Check initialisation of brake cutoff values - set if zero values or are greater then atmospheric pressure as this will put them "out of range" in vacuum brakes class
+            if ((BrakeSystem is VacuumSinglePipe) && ( BrakeCutsPowerAtBrakePipePressurePSI == 0 || BrakeCutsPowerAtBrakePipePressurePSI > OneAtmospherePSI))
+            {
+                BrakeCutsPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(12.5f)); // Power is cut @ 12.5 InHg
+
+                // TODO - set for verbose messaging option
+                Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", BrakeCutsPowerAtBrakePipePressurePSI);
+            }
+
+            if ((BrakeSystem is VacuumSinglePipe) && ( BrakeRestoresPowerAtBrakePipePressurePSI == 0 || BrakeRestoresPowerAtBrakePipePressurePSI > OneAtmospherePSI))
+            {
+                BrakeRestoresPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(15.0f)); // Power can be resotred once brake pipe rises above 15 InHg
+                
+                // TODO - set for verbose messaging option
+                Trace.TraceInformation("BrakeRestoresPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", BrakeRestoresPowerAtBrakePipePressurePSI);
+            }
+
+            if (BrakeCutsPowerAtBrakePipePressurePSI > BrakeRestoresPowerAtBrakePipePressurePSI)
+            {
+                BrakeCutsPowerAtBrakePipePressurePSI = BrakeRestoresPowerAtBrakePipePressurePSI - 1.0f;
+                // TODO - set for verbose messaging option
+                Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure is greater then BrakeRestoresPowerAtBrakePipePressurePSI, and has been set to value of {0} InHg", BrakeCutsPowerAtBrakePipePressurePSI);
+
             }
 
             // Initialise Brake Time Factor
@@ -1201,9 +1339,8 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.AxleSpeedMpS = SpeedMpS;
             LocomotiveAxle.AdhesionConditions = (float)(Simulator.Settings.AdhesionFactor) * 0.01f;
             AdhesionFilter.Reset(0.5f);
-            LocalThrottlePercent = Train.MUThrottlePercent;
-            AverageForceN = MaxForceN * LocalThrottlePercent / 100;
-            float maxPowerW = MaxPowerW * LocalThrottlePercent * LocalThrottlePercent / 10000;
+            AverageForceN = MaxForceN * Train.MUThrottlePercent / 100;
+            float maxPowerW = MaxPowerW * Train.MUThrottlePercent * Train.MUThrottlePercent / 10000;
             if (AverageForceN * SpeedMpS > maxPowerW) AverageForceN = maxPowerW / SpeedMpS;
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             if (Train.IsActualPlayerTrain)
@@ -1220,7 +1357,7 @@ namespace Orts.Simulation.RollingStocks
         /// 
         protected void CorrectBrakingParams()
         {
-            if (Simulator.Settings.CorrectQuestionableBrakingParams)
+            if (Simulator.Settings.CorrectQuestionableBrakingParams || Simulator.Settings.SimpleControlPhysics)
             {
                 if (!(BrakeSystem is EPBrakeSystem) && !(BrakeSystem is VacuumSinglePipe) && !(BrakeSystem is AirTwinPipe))
                 {
@@ -1339,12 +1476,12 @@ namespace Orts.Simulation.RollingStocks
 
             ApplyDirectionToMotiveForce();
 
-            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null)
+            // Update dynamic brake force
+            if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
                 if (f > 0 && PowerOn)
                 {
-                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * f * (1 - PowerReduction);
                     DynamicBrakeForceN = f * (1 - PowerReduction);
                 }
                 else
@@ -1352,29 +1489,44 @@ namespace Orts.Simulation.RollingStocks
                     DynamicBrakeForceN = 0f;
                 }
             }
-//            else if (DynamicBrakePercent == -1) DynamicBrakeForceN = 0;
+            else
+                DynamicBrakeForceN = 0; // Set dynamic brake force to zero if in Notch 0 position
 
             UpdateFrictionCoefficient(elapsedClockSeconds); // Find the current coefficient of friction depending upon the weather
+
+            UpdateWaterTroughRefill(elapsedClockSeconds, AbsSpeedMpS); // Update refill from trough
 
             switch (this.Train.TrainType)
             {
                 case Train.TRAINTYPE.AI:
                 case Train.TRAINTYPE.AI_PLAYERHOSTING:
-                    if (!PowerOn && AcceptMUSignals)
+                    if (AcceptMUSignals)
                     {
-                        Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        if (!PowerOn)
+                        {
+                            Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
 
+                            if (this is MSTSDieselLocomotive)
+                            {
+                                foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
+                                {
+                                    if (de.EngineStatus != DieselEngine.Status.Running)
+                                        de.Initialize(true);
+                                }
+                            }
+                        }
                         if (this is MSTSDieselLocomotive)
                         {
                             foreach (DieselEngine de in (this as MSTSDieselLocomotive).DieselEngines)
                             {
-                                if (de.EngineStatus != DieselEngine.Status.Running)
-                                    de.Initialize(true);
-                                if (de.GearBox != null)
+                                 if (de.GearBox != null)
                                     de.GearBox.GearBoxOperation = GearBoxOperation.Automatic;
                             }
                         }
                     }
+
+
+
                     AntiSlip = true; // Always set AI trains to AntiSlip
                     SimpleAdhesion();                         //let's call the basic physics instead for now
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
@@ -1402,7 +1554,7 @@ namespace Orts.Simulation.RollingStocks
                             DynamicBrakeController.CurrentValue * 100);
                     }
 
-                    if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused)) 
+                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && !Simulator.Paused) 
                     {
                         AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
@@ -1601,12 +1753,19 @@ namespace Orts.Simulation.RollingStocks
                     {
                         DynamicBrakeController.Update(elapsedClockSeconds);
                         DynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
+                        LocalDynamicBrakePercent = (DynamicBrakeIntervention < 0 ? DynamicBrakeController.CurrentValue : DynamicBrakeIntervention) * 100f;
                     }
                     else
+                    {
                         DynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
+                        LocalDynamicBrakePercent = Math.Max(DynamicBrakeIntervention * 100f, 0f);
+                    }
 
                     if (DynamicBrakeIntervention < 0 && PreviousDynamicBrakeIntervention >= 0 && DynamicBrakePercent == 0)
+                    {
                         DynamicBrakePercent = -1;
+                        LocalDynamicBrakePercent = -1;
+                    }
                     PreviousDynamicBrakeIntervention = DynamicBrakeIntervention;
                 }
                 else if (DynamicBrakeController != null)
@@ -1628,7 +1787,7 @@ namespace Orts.Simulation.RollingStocks
 
             //Currently the ThrottlePercent is global to the entire train
             //So only the lead locomotive updates it, the others only updates the controller (actually useless)
-            if (this.IsLeadLocomotive() || (!AcceptMUSignals))
+            if (this.IsLeadLocomotive())
             {
                 var throttleCurrentNotch = ThrottleController.CurrentNotch;
                 ThrottleController.Update(elapsedClockSeconds);
@@ -1809,26 +1968,53 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// This function updates periodically the state of the steam ejector on a vacuum braked system.
+        /// This function updates periodically the state of the steam ejector or vacuum pump on a vacuum braked system.
         /// </summary>
         protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
         {
-            if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease )
+            if (Simulator.Settings.SimpleControlPhysics)
+            // Simple braking - control Ejector automatically based upon the brake control position
+            // Stop ejector operation if full vacuum pressure reached
             {
-                LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
+                {
+                    LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                }
+                else
+                {
+                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, or full vacuum reached, then turn ejector off
+                }
             }
-            else
+            else if (!LargeEjectorFitted) // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
             {
-                LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
+                {
+                    LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                }
+                else
+                {
+                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                }
+
             }
+            else  // Advanced braking - control ejector based upon using a "manual" large ejector control setting
+            {
+                if (LargeEjectorFeedFraction > 0.05)
+                {
+                    LargeSteamEjectorIsOn = true;  // turn ejector on
+                }
+                else
+                {
+                    LargeSteamEjectorIsOn = false; // turn ejector off
+                }
+            }
+
 
             // If diesel or electric locomotive, assume vacuum pump (exhauster) is continually running.
             if (!(this is MSTSSteamLocomotive))
             {
                 VacuumPumpOperating = true;
             }
-
-
         }
 
         /// <summary>
@@ -1843,8 +2029,6 @@ namespace Orts.Simulation.RollingStocks
             else if ((VacuumMainResVacuumPSIAorInHg < VacuumBrakesMainResMaxVacuumPSIAorInHg || !AuxPowerOn) && VacuumExhausterIsOn)
                 SignalEvent(Event.VacuumExhausterOff);
 
-            if (VacuumExhausterIsOn)
-                VacuumMainResVacuumPSIAorInHg -= elapsedClockSeconds * VacuumBrakesMainResChargingRatePSIAorInHgpS;
         }
 
         /// <summary>
@@ -1895,12 +2079,12 @@ namespace Orts.Simulation.RollingStocks
             if (Bell && !PreviousBell)
             {
                 SignalEvent(Event.BellOn);
-                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
+                if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
             }
             else if (!Bell && PreviousBell)
             {
                 SignalEvent(Event.BellOff);
-                if (MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
+                if (Train.TrainType != Train.TRAINTYPE.REMOTE && MPManager.IsMultiPlayer()) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
             }
 
             PreviousHorn = Horn;
@@ -2007,13 +2191,12 @@ namespace Orts.Simulation.RollingStocks
             
             if (LocoNumDrvWheels <= 0)
                 return;
-            //float max0 = MassKG * 9.8f * Adhesion3 / NumWheelsAdhesionFactor;   //Not used
 
             //Curtius-Kniffler computation
-            float uMax = 1.3f * (7.5f / (AbsSpeedMpS * 3.6f + 44.0f) + 0.161f); // Curtius - Kniffler equation
-            float adhesionUtil = 0.95f;   //Adhesion utilization
-
-            float max0 = MassKG * 9.81f * adhesionUtil * uMax;  //Ahesion limit in [N]
+            // Set to a high level of adhesion to ensure that locomotive rarely slips in dry mode
+            float uMax = 1.3f * (7.5f / (AbsSpeedMpS + 44.0f) + 0.161f); // Curtius - Kniffler equation
+ 
+            float max0 = DrvWheelWeightKg * 9.81f * uMax;  //Ahesion limit in [N]
             float max1;
 
             if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
@@ -2024,16 +2207,16 @@ namespace Orts.Simulation.RollingStocks
                     Train.SlipperySpotDistanceM = Train.SlipperySpotLengthM + 2000 * (float)Simulator.Random.NextDouble();
                 }
                 if (Train.SlipperySpotDistanceM < Train.SlipperySpotLengthM)
-                    max0 *= .8f;
+                    max0 *= 0.8f;
                 if (Simulator.WeatherType == WeatherType.Rain)
-                    max0 *= .8f;
+                    max0 *= 0.8f;
                 else
-                    max0 *= .7f;
+                    max0 *= 0.7f;
             }
             //float max1 = (Sander ? .95f : Adhesion2) * max0;  //Not used this way
             max1 = MaxForceN;
             //add sander
-            if (AbsSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0)
+            if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0)
             {
                 if (SanderSpeedEffectUpToMpS > 0.0f)
                 {
@@ -2081,7 +2264,169 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-#region Calculate Friction Coefficient
+        /// <summary>
+        /// Refills the locomotive from a water trough
+        /// </summary>
+        public virtual void UpdateWaterTroughRefill(float elapsedClockSeconds, float absSpeedMpS)
+        {
+            // Check to see whether locomotive is to be refilled over water trough
+            if (Simulator.PlayerLocomotive == this && IsWaterScoopDown)
+            {
+
+
+                var fraction = GetFilledFraction((uint)MSTSWagon.PickupType.FuelWater);
+
+                if (!HasWaterScoop)
+                {
+                    if (!WaterScoopNotFittedFlag)
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("No water scoop on this loco"));
+                        WaterScoopNotFittedFlag = true;
+                    }
+                    RefillingFromTrough = false;
+                    return;
+                }
+                else if (ScoopIsBroken)
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
+                    RefillingFromTrough = false;
+                    return;
+                }
+                else if (IsOverJunction())
+                {
+                    if (!ScoopIsBroken) // Only display message first time scoop is broken
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken by junction track"));
+                    }
+                    ScoopIsBroken = true;
+                    RefillingFromTrough = false;
+                    return;
+                }
+                else if (!IsOverTrough())
+                {
+                    if (!WaterScoopOverTroughFlag)
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Scoop is not over trough, can't refill"));
+                        WaterScoopOverTroughFlag = true;
+                        MSTSWagon.RefillProcess.OkToRefill = false;
+                        MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
+                    }
+                    RefillingFromTrough = false;
+                    return;
+                }
+                else if (IsTenderRequired == 1 && Direction == Direction.Reverse) // Locomotives with tenders cannot go in reverse
+                {
+                    if (!WaterScoopDirectionFlag)
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.None, Simulator.Catalog.GetStringFmt("Refill: Loco must be moving forward."));
+                        WaterScoopDirectionFlag = true;
+                    }
+                    RefillingFromTrough = false;
+                    return;
+                }
+                else if (absSpeedMpS < WaterScoopMinSpeedMpS)
+                {
+                    if (!WaterScoopSlowSpeedFlag)
+                    {
+                        Simulator.Confirmer.Message(ConfirmLevel.None, Simulator.Catalog.GetStringFmt("Refill: Loco speed must exceed {0} for water to enter tender.",
+                                FormatStrings.FormatSpeedLimit(WaterScoopMinSpeedMpS, MilepostUnitsMetric)));
+                        WaterScoopSlowSpeedFlag = true;
+                        MSTSWagon.RefillProcess.OkToRefill = false;
+                        MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
+                    }
+                    RefillingFromTrough = false;
+                    return;
+                }
+                else if (fraction > 1.0)
+                {
+                    Simulator.Confirmer.Message(ConfirmLevel.None, Simulator.Catalog.GetStringFmt("Refill: Water supply now replenished."));
+                    return;
+                }
+                else
+                {
+                    MSTSWagon.RefillProcess.OkToRefill = true;
+                    MSTSWagon.RefillProcess.ActivePickupObjectUID = -1;
+                    RefillingFromTrough = true;
+                    WaterScoopOverTroughFlag = false; // Reset flag so that message will come up again
+                }
+
+            }
+            else if (HasWaterScoop && MSTSWagon.RefillProcess.OkToRefill == true && IsOverTrough())// water scoop has been raised, stop water filling
+            {
+                MSTSWagon.RefillProcess.OkToRefill = false;
+                MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
+                RefillingFromTrough = false;
+                return;
+            }
+
+
+            // update water scoop
+            // Water scoop fill charateristics can be found in - 
+            // Calculate water velocity entering pipe: v = SQRT ( loco speed^2 - 2 * gravity * h)
+            // Calculate the drag of the water scoop in the water: Drag Force = 0.5 * Drag Coeff * Fluid Density * Reference Area * Velocity
+
+            if (RefillingFromTrough)
+            {
+                // Calculate water velocity
+                const float Aconst = 2;
+                const float Bconst = 2.15f;
+                float Avalue = ((float)Math.Pow(MpS.ToMpH(absSpeedMpS), 2) * Bconst);
+                float Bvalue = Aconst * GravitationalAccelerationFtpSpS * Me.ToFt(WaterScoopFillElevationM);
+
+                if (Avalue > Bvalue)
+                {
+                    WaterScoopVelocityMpS = Me.FromFt((float)Math.Sqrt(Avalue - Bvalue));
+                }
+                else
+                {
+                    WaterScoopVelocityMpS = 0;
+                }
+
+                // calculate volume of water scooped per period
+                const float CuFttoGalUK = 6.22884f; // imperial gallons of water in a cubic foot of water
+                WaterScoopedQuantityLpS = L.FromGUK(Me2.ToFt2((WaterScoopDepthM * WaterScoopWidthM)) * Me.ToFt(WaterScoopVelocityMpS) * CuFttoGalUK);
+                WaterScoopInputAmountL = WaterScoopedQuantityLpS * elapsedClockSeconds; // Calculate current input quantity
+
+                // Max sure that water level can't exceed maximum tender water level. Assume that water will be vented out of tender if maximum value exceeded. 
+                // If filling from water trough this will be done with force
+                // The water controller can only be used by one stock item at a time.
+                if (EngineType == EngineTypes.Steam)
+                {
+                    const float NominalExtraWaterVolumeFactor = 1.0001f;
+                    CombinedTenderWaterVolumeUKG += L.ToGUK(WaterScoopInputAmountL); // add the amouunt of water added by scoop
+                    WaterScoopTotalWaterL += WaterScoopInputAmountL;
+                    CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0.0f, MaxTotalCombinedWaterVolumeUKG * NominalExtraWaterVolumeFactor);
+                }
+                else
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL += WaterScoopInputAmountL; // add water if it is a steam heat boiler
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MathHelper.Clamp(CurrentLocomotiveSteamHeatBoilerWaterCapacityL, 0.0f, MaximumSteamHeatBoilerWaterTankCapacityL);
+                }
+
+                // Calculate drag force
+                float ScoopDragCoeff = 1.05f;
+                float ScoopDragAreaM = WaterScoopDepthM * WaterScoopWidthM;
+                float ScoopFluidDensityKgpM3 = 998.2f; // Fuild density of water @ 20c
+                WaterScoopDragForceN = 0.5f * ScoopDragCoeff * ScoopFluidDensityKgpM3 * ScoopDragAreaM * absSpeedMpS * absSpeedMpS;
+
+            }
+            else // Ensure water scoop values are zero if not taking water.
+            {
+                WaterScoopDragForceN = 0f;
+                WaterScoopedQuantityLpS = 0;
+                WaterScoopInputAmountL = 0;
+                WaterScoopVelocityMpS = 0;
+
+                if (!IsOverTrough()) // Only reset once train moves off the trough
+                {
+                    WaterScoopTotalWaterL = 0.0f; // Reset amount of water picked up by water sccop.
+                }
+            }
+
+
+        }
+
+        #region Calculate Friction Coefficient
         /// <summary>
         /// Calculates the current coefficient of friction based upon the current weather 
         /// The calculation of Coefficient of Friction appears to provide a wide range of 
@@ -2094,7 +2439,7 @@ namespace Orts.Simulation.RollingStocks
         /// The standard Cutius-Kniffler formula for dry rail is used as a base.
         /// Dry track = 0.33 
         /// 
-        /// The following values have been used as an "appropriate common" standard  to vary the above value by (sourced from Principles and Applications of Tribology).
+        /// The following values are indicatitive values only (sourced from Principles and Applications of Tribology).
         /// Wet track (clean) = 0.18 <=> 0.2
         /// Wet track (sand) = 0.22 <=> 0.25
         /// Dew or fog = 0.09 <=> 0.15
@@ -2108,7 +2453,7 @@ namespace Orts.Simulation.RollingStocks
         public virtual void UpdateFrictionCoefficient(float elapsedClockSeconds)
         {
             float BaseuMax = (Curtius_KnifflerA / (MpS.ToKpH(AbsSpeedMpS) + Curtius_KnifflerB) + Curtius_KnifflerC); // Base Curtius - Kniffler equation - u = 0.33, all other values are scaled off this formula
-
+            float SandingFrictionCoefficientFactor = 0.0f;
             //Set the friction coeff due to weather
             if (Simulator.WeatherType == WeatherType.Rain || Simulator.WeatherType == WeatherType.Snow)
             {
@@ -2124,24 +2469,46 @@ namespace Orts.Simulation.RollingStocks
                 if (Simulator.WeatherType == WeatherType.Rain) // Wet weather
                 {
                     if (Simulator.Settings.AdhesionProportionalToWeather && AdvancedAdhesionModel && !Simulator.Paused)  // Adjust clear weather for precipitation presence - base friction value will be approximately between 0.15 and 0.2
-                        // ie base value between 0.607 and 0.45 
-                        // note lowest friction will be for drizzle rain; friction will increase for precipitation both higher and lower than drizzle rail
+                    // ie base value between 0.8 and 1.0 (TODO) 
+                    // note lowest friction will be for drizzle rain; friction will increase for precipitation both higher and lower than drizzle rail
                     {
-                       float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
-                // precipitation will calculate a value between 0.15 (light rain) and 0.2 (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
+                        float pric = Simulator.Weather.PricipitationIntensityPPSPM2 * 1000;
+                        // precipitation will calculate a value between 0.15 (light rain) and 0.2 (heavy rain) - this will be a factor that is used to adjust the base value - assume linear value between upper and lower precipitation values
                         if (pric >= 0.5)
-                            BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.45f), 0.607f);
+                            BaseFrictionCoefficientFactor = Math.Min((pric * 0.0078f + 0.45f), 0.8f); // should give a minimum value between 0.8 and 1.0
                         else
-                            BaseFrictionCoefficientFactor = 0.4539f + 1.0922f * (0.5f - pric);
+                            BaseFrictionCoefficientFactor = Math.Min((0.4539f + 1.0922f * (0.5f - pric)), 0.8f); // should give a minimum value between 0.8 and 1.0
                     }
-                    else // if not proportional to precipitation use fixed friction value approximately equal to 0.2, thus factor will be 0.6 x friction coefficient of 0.33
+                    else // if not proportional to precipitation use fixed friction value of 0.8 x friction coefficient of 0.33
                     {
-                        BaseFrictionCoefficientFactor = 0.607f;
+                        BaseFrictionCoefficientFactor = 0.8f;
                     }
                 }
                 else     // Snow weather
                 {
-                    BaseFrictionCoefficientFactor = 0.4f;
+                    BaseFrictionCoefficientFactor = 0.6f;
+                }
+
+                //add sander - more effective in wet weather, so increases adhesion by more
+                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
+                {
+                    if (SanderSpeedEffectUpToMpS > 0.0f)
+                    {
+                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
+                        {
+                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.75f;
+                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
+                            
+                        }
+                    }
+                    else
+                    {
+                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
+                        {
+                            SandingFrictionCoefficientFactor = 1.75f;
+                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 175% adhesion (best case)
+                        }
+                    }
                 }
             }
             else // Default to Dry (Clear) weather
@@ -2156,7 +2523,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     else
                     {
-                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.45f), 1.0f); // If fog is less then 2km then it will impact friction
+                        BaseFrictionCoefficientFactor = Math.Min((fog * 2.75e-4f + 0.8f), 0.8f); // If fog is less then 2km then it will impact friction, decrease adhesion by up to 20% (same as clear to wet transition)
                     }                                        
                 }
                 else // if not proportional to fog use fixed friction value approximately equal to 0.33, thus factor will be 1.0 x friction coefficient of 0.33
@@ -2164,9 +2531,35 @@ namespace Orts.Simulation.RollingStocks
                     BaseFrictionCoefficientFactor = 1.0f;
                 }
 
+                //add sander - not as effective in dry weather
+                if (AbsSpeedMpS < SanderSpeedOfMpS && CurrentTrackSandBoxCapacityM3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
+                {
+                    if (SanderSpeedEffectUpToMpS > 0.0f)
+                    {
+                        if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
+                        {
+                            SandingFrictionCoefficientFactor = (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.25f;
+                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor;
+                        }
+                    }
+                    else
+                    {
+                        if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
+                        {
+                            SandingFrictionCoefficientFactor = 1.25f;
+                            BaseFrictionCoefficientFactor *= SandingFrictionCoefficientFactor; // Sanding track adds approx 125% adhesion (best case)
+                        }
+                    }
+                }
             }
 
-            Train.WagonCoefficientFriction = BaseuMax * BaseFrictionCoefficientFactor;  // Find friction coefficient factor for wagons
+            // For wagons use base Curtius-Kniffler adhesion factor - u = 0.33
+            float WagonCurtius_KnifflerA = 7.5f;
+            float WagonCurtius_KnifflerB = 44.0f;
+            float WagonCurtius_KnifflerC = 0.161f;
+            
+            float WagonBaseuMax = (WagonCurtius_KnifflerA / (MpS.ToKpH(AbsSpeedMpS) + WagonCurtius_KnifflerB) + WagonCurtius_KnifflerC);
+            Train.WagonCoefficientFriction = WagonBaseuMax * BaseFrictionCoefficientFactor;  // Find friction coefficient factor for wagons based upon environmental conditions
             WagonCoefficientFrictionHUD = Train.WagonCoefficientFriction; // Save value for HUD display
 
             if (EngineType == EngineTypes.Steam && SteamDrvWheelWeightLbs < 10000 && Simulator.WeatherType == WeatherType.Clear)
@@ -2175,32 +2568,13 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
-            if (WheelSlip && ThrottlePercent > 0.2f && !BrakeSkid)   // Test to see if loco wheel is slipping, then coeff of friction will be decreased below static value.
+            if (WheelSlip && ThrottlePercent > 0.2f && !BrakeSkid)   // Test to see if loco wheel is slipping, then coeff of friction will be decreased below static value. Sanding will override this somewhat
             {
-                BaseFrictionCoefficientFactor = 0.15f;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
+                BaseFrictionCoefficientFactor = 0.15f * SandingFrictionCoefficientFactor;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
             }
             else if (WheelSlip && ThrottlePercent < 0.1f && BrakeSkid) // Test to see if loco wheel is skidding due to brake application
             {
-                BaseFrictionCoefficientFactor = 0.15f;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
-            }
-
-            //add sander
-            if (AbsSpeedMpS < SanderSpeedOfMpS && TrackSandBoxCapacityFt3 > 0.0 && MainResPressurePSI > 80.0 && (AbsSpeedMpS > 0))
-            {
-                if (SanderSpeedEffectUpToMpS > 0.0f)
-                {
-                    if ((Sander) && (AbsSpeedMpS < SanderSpeedEffectUpToMpS))
-                    {
-                        BaseFrictionCoefficientFactor *= (1.0f - 0.5f / SanderSpeedEffectUpToMpS * AbsSpeedMpS) * 1.5f;
-                    }
-                }
-                else
-                {
-                    if (Sander)  // If sander is on, and train speed is greater then zero, then put sand on the track
-                    {
-                        BaseFrictionCoefficientFactor *= 1.5f; // Sanding track adds approx 150% adhesion (best case)
-                    }
-                }
+                BaseFrictionCoefficientFactor = 0.15f * SandingFrictionCoefficientFactor;  // Descrease friction to take into account dynamic (kinetic) friction U = 0.0525
             }
 
             var AdhesionMultiplier = Simulator.Settings.AdhesionFactor / 100.0f; // Convert to a factor where 100% = no change to adhesion
@@ -2240,21 +2614,21 @@ namespace Orts.Simulation.RollingStocks
 
             if (Sander)  // If sander is on adjust parameters
             {
-                if (TrackSandBoxCapacityFt3 > 0.0) // if sand still in sandbox then sanding is available
+                if (CurrentTrackSandBoxCapacityM3 > 0.0) // if sand still in sandbox then sanding is available
                 {
                     // Calculate consumption of sand, and drop in sand box level
-                    float ActualSandConsumptionFt3pS = pS.FrompH(TrackSanderSandConsumptionFt3pH) * elapsedClockSeconds;
-                    TrackSandBoxCapacityFt3 -= ActualSandConsumptionFt3pS;
-                    TrackSandBoxCapacityFt3 = MathHelper.Clamp(TrackSandBoxCapacityFt3, 0.0f, MaxTrackSandBoxCapacityFt3);
-                    if (TrackSandBoxCapacityFt3 == 0.0)
+                    float ActualSandConsumptionM3pS = pS.FrompH(TrackSanderSandConsumptionM3pS) * elapsedClockSeconds;
+                    CurrentTrackSandBoxCapacityM3 -= ActualSandConsumptionM3pS;
+                    CurrentTrackSandBoxCapacityM3 = MathHelper.Clamp(CurrentTrackSandBoxCapacityM3, 0.0f, MaxTrackSandBoxCapacityM3);
+                    if (CurrentTrackSandBoxCapacityM3 == 0.0)
                     {
                         Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("Sand supply has been exhausted"));
                     }
                 }
 
           // Calculate air consumption and change in main air reservoir pressure
-                float ActualAirConsumptionFt3pS = pS.FrompM(TrackSanderAirComsumptionFt3pM) * elapsedClockSeconds;
-                float SanderPressureDiffPSI = ActualAirConsumptionFt3pS / Me3.ToFt3(MainResVolumeM3) ;
+                float ActualAirConsumptionM3pS = pS.FrompM(TrackSanderAirComsumptionM3pS) * elapsedClockSeconds;
+                float SanderPressureDiffPSI = ActualAirConsumptionM3pS / Me3.ToFt3(MainResVolumeM3) ;
                 MainResPressurePSI -= SanderPressureDiffPSI;
                 MainResPressurePSI = MathHelper.Clamp(MainResPressurePSI, 0.001f, MaxMainResPressurePSI);
             }
@@ -2481,6 +2855,30 @@ namespace Orts.Simulation.RollingStocks
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeat, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
         }
 
+        public void ToggleWaterScoop()
+        {
+            if (Simulator.PlayerLocomotive == this)
+            {
+                WaterScoopDown = !WaterScoopDown;
+                SignalEvent(Event.WaterScoopDown);
+                if (WaterScoopDown)
+                {
+                    IsWaterScoopDown = true; // Set flag to potentially fill from water trough
+                    SignalEvent(Event.WaterScoopDown);
+                }
+                else
+                {
+                    IsWaterScoopDown = false;
+                    SignalEvent(Event.WaterScoopUp);
+                    WaterScoopOverTroughFlag = false; // Reset flags so that message will come up again
+                    WaterScoopNotFittedFlag = false;
+                    WaterScoopSlowSpeedFlag = false;
+                    WaterScoopDirectionFlag = false;
+                }
+                    Simulator.Confirmer.Confirm(CabControl.WaterScoop, WaterScoopDown? CabSetting.On : CabSetting.Off);
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -2543,6 +2941,14 @@ namespace Orts.Simulation.RollingStocks
         public void SetThrottlePercent(float percent)
         {
             ThrottleController.SetPercent(percent);
+        }
+
+        public void SetThrottlePercentWithSound(float percent)
+        {
+            var oldThrottlePercent = ThrottleController.CurrentValue * 100;
+            SetThrottlePercent(percent);
+            if (Math.Abs(oldThrottlePercent - ThrottleController.CurrentValue * 100) > 2)
+                SignalEvent(Event.ThrottleChange);
         }
 
         public void ThrottleToZero()
@@ -3027,6 +3433,16 @@ namespace Orts.Simulation.RollingStocks
             DynamicBrakeChangeActiveState(percent >= 0);
         }
 
+        public void SetDynamicBrakePercentWithSound(float percent)
+        {
+            if (!CanUseDynamicBrake())
+                return;
+            var oldDynamicBrakePercent = DynamicBrakeController.CurrentValue * 100;
+            SetDynamicBrakePercent(percent);
+            if (Math.Abs(oldDynamicBrakePercent - DynamicBrakeController.CurrentValue * 100) > 2)
+                SignalEvent(Event.DynamicBrakeChange);
+        }
+
         public void DynamicBrakeChangeActiveState(bool toState)
         {
             if (toState && !DynamicBrake && DynamicBrakePercent < 0)
@@ -3056,6 +3472,8 @@ namespace Orts.Simulation.RollingStocks
                 return null;
             if (DynamicBrakePercent < 0)
                 return string.Empty;
+            if (TrainControlSystem.FullDynamicBrakingOrder)
+                return string.Format("{0:F0}%", DynamicBrakePercent);
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
         #endregion
@@ -3355,8 +3773,10 @@ namespace Orts.Simulation.RollingStocks
 
                 case Event.CompressorOn: { CompressorIsOn = true; break; }
                 case Event.CompressorOff: { CompressorIsOn = false; break; }
-                case Event.VacuumExhausterOn: { VacuumExhausterIsOn = true; break; }
-                case Event.VacuumExhausterOff : { VacuumExhausterIsOn = false; break; }
+
+                    //Vacuum exhauster event only triggered if vacuum exhauster engine control fitted.
+                case Event.VacuumExhausterOn: { if(FastVacuumExhausterFitted) VacuumExhausterPressed = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.On); break; }
+                case Event.VacuumExhausterOff: { if (FastVacuumExhausterFitted) VacuumExhausterPressed = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.Off); break; }
 
                 case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
                 case Event.TrainBrakePressureDecrease:
@@ -3451,6 +3871,10 @@ namespace Orts.Simulation.RollingStocks
                         break;
                     }
 
+                 case CABViewControlTypes.ORTS_WATER_SCOOP:
+                    data = WaterScoopDown ? 1 : 0;
+                    break;
+
                 case CABViewControlTypes.STEAM_HEAT:
                     data = SteamHeatController.CurrentValue;
                     break;
@@ -3493,11 +3917,7 @@ namespace Orts.Simulation.RollingStocks
                                     else
                                         rangeFactor = direction == 0 ? -DynamicBrakeMaxCurrentA : (float)cvc.MaxValue;
                                 }
-                                if (FilteredMotiveForceN != 0)
-                                    data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                else
-                                    data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * rangeFactor;
-                                data = -Math.Abs(data);
+                                data = DynamicBrakeForceN / MaxDynamicBrakeForceN * rangeFactor;
                             }
                             if (direction == 1)
                                 data = -data;
@@ -3528,11 +3948,8 @@ namespace Orts.Simulation.RollingStocks
                         }
                         if (DynamicBrakePercent > 0 && MaxDynamicBrakeForceN > 0)
                         {
-                             if (FilteredMotiveForceN != 0)
-                                data = this.FilteredMotiveForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
-                            else
-                                data = this.LocomotiveAxle.AxleForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
-                            data = -Math.Abs(data);
+                            data = DynamicBrakeForceN / MaxDynamicBrakeForceN * DynamicBrakeMaxCurrentA;
+                            data = -Math.Abs(data); // Ensure that dynamic force is seen as a "-ve force", changes colour on the load meter
                         }
                         if (direction == 1)
                             data = -data;
@@ -3548,6 +3965,10 @@ namespace Orts.Simulation.RollingStocks
                             data = this.FilteredMotiveForceN;
                         else
                             data = this.LocomotiveAxle.AxleForceN;
+                        if (DynamicBrakePercent > 0)
+                        {
+                            data = DynamicBrakeForceN;
+                        }
                         data = Math.Abs(data);
                         switch (cvc.Units)
                         {
@@ -3562,7 +3983,7 @@ namespace Orts.Simulation.RollingStocks
                                  }
                                 if (DynamicBrakePercent > 0)
                                 {
-                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                    data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                                 }
                                 data = Math.Abs(data);
                                 break;
@@ -3582,16 +4003,59 @@ namespace Orts.Simulation.RollingStocks
                             data = -data;
                         break;
                     }
-                case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:
+                case CABViewControlTypes.ORTS_SIGNED_TRACTION_BRAKING:
                     {
                         var direction = 0; // Forwards
                         if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
                             direction = ((CVCGauge)cvc).Direction;
                         data = 0.0f;
                         if (FilteredMotiveForceN != 0)
-                            data = this.FilteredMotiveForceN;
+                            data = Math.Abs(this.FilteredMotiveForceN);
                         else
-                            data = this.LocomotiveAxle.AxleForceN;
+                            data = Math.Abs(this.LocomotiveAxle.AxleForceN);
+                        if (DynamicBrakePercent > 0)
+                        {
+                            data = -Math.Abs(DynamicBrakeForceN);
+                        }
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.AMPS:
+                                if (MaxCurrentA == 0)
+                                    MaxCurrentA = (float)cvc.MaxValue;
+                                if (DynamicBrakeMaxCurrentA == 0)
+                                    DynamicBrakeMaxCurrentA = (float)cvc.MinValue;
+                                if (ThrottlePercent > 0)
+                                {
+                                    data = (data / MaxForceN) * MaxCurrentA;
+                                }
+                                if (DynamicBrakePercent > 0)
+                                {
+                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                }
+                                break;
+
+                            case CABViewControlUnits.NEWTONS:
+                                break;
+
+                            case CABViewControlUnits.KILO_NEWTONS:
+                                data = data / 1000.0f;
+                                break;
+
+                            case CABViewControlUnits.KILO_LBS:
+                                data = data / 4448.22162f;
+                                break;
+                        }
+ //                       if (direction == 1 && !(cvc is CVCGauge))
+ //                           data = -data;
+                        break;
+                    }
+                case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:
+                    {
+                        var direction = 0; // Forwards
+                        if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
+                            direction = ((CVCGauge)cvc).Direction;
+                        data = 0.0f;
+                        data = DynamicBrakeForceN;
                         if (data > 0 && SpeedMpS > 0 || data < 0 && SpeedMpS < 0)
                         {
                             data = 0;
@@ -3611,7 +4075,7 @@ namespace Orts.Simulation.RollingStocks
                                 }
                                 if (DynamicBrakePercent > 0)
                                 {
-                                    data = (data / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
+                                    data = (DynamicBrakeForceN / MaxDynamicBrakeForceN) * DynamicBrakeMaxCurrentA;
                                 }
                                 data = Math.Abs(data);
                                 break;
@@ -3711,6 +4175,19 @@ namespace Orts.Simulation.RollingStocks
                         data = Wiper ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.VACUUM_EXHAUSTER:
+                    {
+                        if (FastVacuumExhausterFitted)
+                        {
+                            data = VacuumExhausterPressed ? 1 : 0;
+                        }
+                        else
+                        {
+                            data = 0;
+                        }
+                        break;
+                    }
+
                 case CABViewControlTypes.HORN:
                     {
                         data = Horn ? 1 : 0;
@@ -3964,6 +4441,77 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.ORTS_MIRRORS:
                     data = MirrorOpen ? 1 : 0;
                     break;
+                case CABViewControlTypes.ORTS_HOURDIAL:
+                    float hour = (float)(Simulator.ClockTime / 3600) % 12;
+                    if (hour < 0)
+                        hour += 12;
+                    data = hour;
+                    break;
+                case CABViewControlTypes.ORTS_MINUTEDIAL:
+                    float minute = (float)(Simulator.ClockTime / 60) % 60;
+                    if (minute < 0)
+                        minute += 60;
+                    data = minute;
+                    break;
+                case CABViewControlTypes.ORTS_SECONDDIAL:
+                    int seconds = (int)Simulator.ClockTime % 60;
+                    if (seconds < 0)
+                        seconds += 60;
+                    data = seconds;
+                    break;
+
+                // Train Control System controls
+                case CABViewControlTypes.ORTS_TCS1:
+                case CABViewControlTypes.ORTS_TCS2:
+                case CABViewControlTypes.ORTS_TCS3:
+                case CABViewControlTypes.ORTS_TCS4:
+                case CABViewControlTypes.ORTS_TCS5:
+                case CABViewControlTypes.ORTS_TCS6:
+                case CABViewControlTypes.ORTS_TCS7:
+                case CABViewControlTypes.ORTS_TCS8:
+                case CABViewControlTypes.ORTS_TCS9:
+                case CABViewControlTypes.ORTS_TCS10:
+                case CABViewControlTypes.ORTS_TCS11:
+                case CABViewControlTypes.ORTS_TCS12:
+                case CABViewControlTypes.ORTS_TCS13:
+                case CABViewControlTypes.ORTS_TCS14:
+                case CABViewControlTypes.ORTS_TCS15:
+                case CABViewControlTypes.ORTS_TCS16:
+                case CABViewControlTypes.ORTS_TCS17:
+                case CABViewControlTypes.ORTS_TCS18:
+                case CABViewControlTypes.ORTS_TCS19:
+                case CABViewControlTypes.ORTS_TCS20:
+                case CABViewControlTypes.ORTS_TCS21:
+                case CABViewControlTypes.ORTS_TCS22:
+                case CABViewControlTypes.ORTS_TCS23:
+                case CABViewControlTypes.ORTS_TCS24:
+                case CABViewControlTypes.ORTS_TCS25:
+                case CABViewControlTypes.ORTS_TCS26:
+                case CABViewControlTypes.ORTS_TCS27:
+                case CABViewControlTypes.ORTS_TCS28:
+                case CABViewControlTypes.ORTS_TCS29:
+                case CABViewControlTypes.ORTS_TCS30:
+                case CABViewControlTypes.ORTS_TCS31:
+                case CABViewControlTypes.ORTS_TCS32:
+                case CABViewControlTypes.ORTS_TCS33:
+                case CABViewControlTypes.ORTS_TCS34:
+                case CABViewControlTypes.ORTS_TCS35:
+                case CABViewControlTypes.ORTS_TCS36:
+                case CABViewControlTypes.ORTS_TCS37:
+                case CABViewControlTypes.ORTS_TCS38:
+                case CABViewControlTypes.ORTS_TCS39:
+                case CABViewControlTypes.ORTS_TCS40:
+                case CABViewControlTypes.ORTS_TCS41:
+                case CABViewControlTypes.ORTS_TCS42:
+                case CABViewControlTypes.ORTS_TCS43:
+                case CABViewControlTypes.ORTS_TCS44:
+                case CABViewControlTypes.ORTS_TCS45:
+                case CABViewControlTypes.ORTS_TCS46:
+                case CABViewControlTypes.ORTS_TCS47:
+                case CABViewControlTypes.ORTS_TCS48:
+                    data = TrainControlSystem.CabDisplayControls[(int)cvc.ControlType - (int)CABViewControlTypes.ORTS_TCS1];
+                    break;
+
                 default:
                     {
                         data = 0;

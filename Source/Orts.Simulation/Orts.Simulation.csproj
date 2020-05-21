@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Orts.Simulation</RootNamespace>
     <AssemblyName>Orts.Simulation</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -21,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -32,6 +34,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\..\Program\Orts.Simulation.xml</DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -44,11 +47,6 @@
       <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\CommandLog.cs" />
@@ -58,6 +56,7 @@
     <Compile Include="Common\Math.cs" />
     <Compile Include="Common\ORTSPaths.cs" />
     <Compile Include="Common\Scripting\BrakeController.cs" />
+    <Compile Include="Common\Scripting\Commands.cs" />
     <Compile Include="Common\Scripting\Common.cs" />
     <Compile Include="Common\Scripting\PowerSupply\AbstractPowerSupply.cs" />
     <Compile Include="Common\Scripting\PowerSupply\CircuitBreaker.cs" />
@@ -124,6 +123,8 @@
     <Compile Include="Simulation\Timetables\ProcessTimetable.cs" />
     <Compile Include="Simulation\Timetables\TTPool.cs" />
     <Compile Include="Simulation\Timetables\TTTrain.cs" />
+    <Compile Include="Simulation\Timetables\TTTurntable.cs" />
+    <Compile Include="Simulation\Timetables\TurntableInfo.cs" />
     <Compile Include="Simulation\Transfertables.cs" />
     <Compile Include="Simulation\Traveller.cs" />
     <Compile Include="Simulation\Turntables.cs" />

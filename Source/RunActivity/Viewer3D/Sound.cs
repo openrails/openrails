@@ -868,6 +868,7 @@ namespace Orts.Viewer3D
 
                             released |= trigger.Signaled &&
                                 (trigger.SoundCommand is ORTSReleaseLoopRelease || trigger.SoundCommand is ORTSReleaseLoopReleaseWithJump);
+                            if (trigger is ORTSDiscreteTrigger) trigger.Signaled = false;
                         }
 
                         if (!released && !stream.ALSoundSource.isPlaying)
@@ -1197,8 +1198,15 @@ namespace Orts.Viewer3D
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Discrete_Trigger) && soundSource.Car != null)
                     {
                         ORTSDiscreteTrigger ortsTrigger = new ORTSDiscreteTrigger(this, eventSource, (Orts.Formats.Msts.Discrete_Trigger)trigger, settings);
-                        Triggers.Add(ortsTrigger);  // list them here so we can enable and disable 
-                        SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
+                        Triggers.Add(ortsTrigger);  // list them here so we can enable and disable
+                        try
+                        {
+                            SoundSource.Car.EventHandlers.Add(ortsTrigger);  // tell the simulator to call us when the event occurs
+                        }
+                        catch (Exception error)
+                        {
+                            Trace.TraceInformation("Sound event skipped due to thread safety problem " + error.Message);
+                        }
                     }
                     else if (trigger.GetType() == typeof(Orts.Formats.Msts.Discrete_Trigger))
                     {
@@ -1586,6 +1594,7 @@ namespace Orts.Viewer3D
                 SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                 SoundCommand.Run();
                 SoundStream.LastTriggered = this;
+                Signaled = true;
 #if DEBUGSCR
                 if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
                     Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.ALSoundSource.SoundSourceID, TriggerID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);

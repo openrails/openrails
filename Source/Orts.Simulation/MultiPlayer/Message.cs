@@ -916,8 +916,17 @@ namespace Orts.MultiPlayer
             TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
-        }
 
+            // update linked signals
+            if (switchSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in switchSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
+        }
     }
 
 #endregion MGSwitch
@@ -1026,6 +1035,16 @@ namespace Orts.MultiPlayer
             TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+
+            // update linked signals
+            if (switchSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in switchSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
         }
 
         public override string ToString()
@@ -1147,6 +1166,16 @@ namespace Orts.MultiPlayer
             TrackCircuitSection switchSection = MPManager.Simulator.Signals.TrackCircuitList[switchNode.TCCrossReference[0].Index];
             MPManager.Simulator.Signals.trackDB.TrackNodes[switchSection.OriginalIndex].TrJunctionNode.SelectedRoute = switchSection.JunctionSetManual = desiredState;
             switchSection.JunctionLastRoute = switchSection.JunctionSetManual;
+
+            // update linked signals
+            if (switchSection.LinkedSignals != null)
+            {
+                foreach (int thisSignalIndex in switchSection.LinkedSignals)
+                {
+                    SignalObject thisSignal = MPManager.Simulator.Signals.SignalObjects[thisSignalIndex];
+                    thisSignal.Update();
+                }
+            }
         }
 
         static bool SwitchOccupiedByPlayerTrain(TrJunctionNode junctionNode)
@@ -2093,8 +2122,9 @@ namespace Orts.MultiPlayer
             }
             else if (EventName == "BELL")
             {
-                if (t.LeadLocomotive != null)
+                if (t.LeadLocomotive != null && t.LeadLocomotive is MSTSLocomotive)
                 {
+                    (t.LeadLocomotive as MSTSLocomotive).Bell = (EventState == 0 ? false : true);
                     t.LeadLocomotive.SignalEvent(EventState == 0 ? Event.BellOff : Event.BellOn);
                     MPManager.BroadCast(this.ToString()); //if the server, will broadcast
                 }
@@ -3000,7 +3030,7 @@ namespace Orts.MultiPlayer
                 {
                     foreach (var s in MPManager.Simulator.Signals.SignalObjects)
                     {
-                        if (s != null && s.isSignal && s.SignalHeads != null)
+                        if (s != null && (s.isSignal || s.isSpeedSignal) && s.SignalHeads != null)
                             foreach (var h in s.SignalHeads)
                             {
                                 //System.Console.WriteLine(h.TDBIndex);
@@ -3050,7 +3080,7 @@ namespace Orts.MultiPlayer
                     {
                         foreach (var s in MPManager.Simulator.Signals.SignalObjects)
                         {
-                            if (s != null && s.isSignal && s.SignalHeads != null)
+                            if (s != null && (s.isSignal || s.isSpeedSignal) && s.SignalHeads != null)
                                 foreach (var h in s.SignalHeads)
                                 {
                                     //System.Console.WriteLine(h.TDBIndex);
@@ -3122,7 +3152,7 @@ namespace Orts.MultiPlayer
     public class MSGLocoInfo : Message
     {
 
-        float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2, SH, SE;
+        float EB, DB, TT, VL, CC, BC, DC, FC, I1, I2, SH, SE, LE;
         string user;
         int tnum; //train number
 
@@ -3130,11 +3160,11 @@ namespace Orts.MultiPlayer
         public MSGLocoInfo(TrainCar c, string u)
         {
             MSTSLocomotive loco = (MSTSLocomotive)c;
-            EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = SH = SE = 0.0f;
+            EB = DB = TT = VL = CC = BC = DC = FC = I1 = I2 = SH = SE = LE = 0.0f;
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE, ref LE);
             }
             if (loco.SteamHeatController != null)
             {
@@ -3174,6 +3204,8 @@ namespace Orts.MultiPlayer
             I1 = float.Parse(tmp[10], CultureInfo.InvariantCulture);
             I2 = float.Parse(tmp[11], CultureInfo.InvariantCulture);
             SH = float.Parse(tmp[12], CultureInfo.InvariantCulture);
+            SE = float.Parse(tmp[13], CultureInfo.InvariantCulture);
+            LE = float.Parse(tmp[14], CultureInfo.InvariantCulture);
         }
 
         //how to handle the message?
@@ -3200,7 +3232,7 @@ namespace Orts.MultiPlayer
             if (loco is MSTSSteamLocomotive)
             {
                 MSTSSteamLocomotive loco1 = (MSTSSteamLocomotive)loco;
-                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE);
+                loco1.GetLocoInfo(ref CC, ref BC, ref DC, ref FC, ref I1, ref I2, ref SE, ref LE);
             }
             if (loco.SteamHeatController != null)
             {

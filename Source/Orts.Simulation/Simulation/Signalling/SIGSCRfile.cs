@@ -67,7 +67,7 @@ namespace Orts.Simulation.Signalling
         public static string dpe_fileLoc = @"C:\temp\";     /* file path for debug files */
 #endif
 
-        SignalScripts SignalScripts;
+        public SignalScripts SignalScripts;
 
         //================================================================================================//
         //
@@ -92,13 +92,11 @@ namespace Orts.Simulation.Signalling
 
         public static void SH_update(SignalHead thisHead, SIGSCRfile sigscr)
         {
-
-            SignalScripts.SCRScripts signalScript;
             if (thisHead.signalType == null)
                 return;
-            if (sigscr.SignalScripts.Scripts.TryGetValue(thisHead.signalType, out signalScript))
+            if (thisHead.usedSigScript != null)
             {
-                sigscr.SH_process_script(thisHead, signalScript, sigscr);
+                sigscr.SH_process_script(thisHead, thisHead.usedSigScript, sigscr);
             }
             else
             {
@@ -712,6 +710,31 @@ namespace Orts.Simulation.Signalling
                     return_value = (int)thisHead.dist_multi_sig_mr(parameter1_value, parameter2_value, dumpfile);
 
                     break;
+
+                // dist_multi_sig_mr_of_lr
+
+                case (SignalScripts.SCRExternalFunctions.DIST_MULTI_SIG_MR_OF_LR):
+
+                    dumpfile = String.Empty;
+
+#if DEBUG_PRINT_ENABLED
+                    if (thisHead.mainSignal.enabledTrain != null)
+                    {
+                        dumpfile = String.Concat(dpe_fileLoc, "printproc.txt");
+                    }
+#endif
+
+#if DEBUG_PRINT_PROCESS
+                    if (TDB_debug_ref.Contains(thisHead.TDBIndex) || OBJ_debug_ref.Contains(thisHead.mainSignal.thisRef))
+                    {
+                        dumpfile = String.Concat(dpr_fileLoc,"printproc.txt");
+                    }
+#endif
+
+                    return_value = (int)thisHead.dist_multi_sig_mr_of_lr(parameter1_value, parameter2_value, dumpfile);
+
+                    break;
+
                 // next_sig_id
 
                 case (SignalScripts.SCRExternalFunctions.NEXT_SIG_ID):
@@ -1318,6 +1341,12 @@ namespace Orts.Simulation.Signalling
 
                 case (SignalScripts.SCRExternalFunctions.ID_SIG_HASNORMALSUBTYPE):
                     return_value = thisHead.id_sig_hasnormalsubtype(parameter1_value, parameter2_value);
+                    break;
+
+                // switchstand
+
+                case (SignalScripts.SCRExternalFunctions.SWITCHSTAND):
+                    return_value = thisHead.switchstand(parameter1_value, parameter2_value);
                     break;
 
                 // def_draw_state
