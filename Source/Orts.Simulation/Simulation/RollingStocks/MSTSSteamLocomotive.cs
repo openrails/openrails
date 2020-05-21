@@ -30,9 +30,6 @@
 // Steam usage debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
 //#define DEBUG_LOCO_STEAM_USAGE
 
-// Steam heating debugging is off by default - uncomment the #define to turn on - provides visibility of steam usage related parameters on extended HUD. 
-//#define DEBUG_LOCO_STEAM_HEAT_HUD
-
 // Debug for Auxiliary Tender
 //#define DEBUG_AUXTENDER
 
@@ -106,6 +103,7 @@ namespace Orts.Simulation.RollingStocks
         public bool Injector1IsOn;
         public bool Injector2IsOn;
         public bool CylinderCocksAreOpen;
+        public bool BlowdownValveOpen;
         public bool CylinderCompoundOn;  // Flag to indicate whether compound locomotive is in compound or simple mode of operation - simple = true (ie bypass valve is open)
         bool FiringIsManual;
         bool BlowerIsOn = false;
@@ -156,8 +154,8 @@ namespace Orts.Simulation.RollingStocks
 
         public bool HasTenderCoupled = true;
 
-        // Carriage Steam Heating Parameters
-        float CalculatedCarHeaterSteamUsageLBpS;  //
+        float BlowdownSteamUsageLBpS;
+        float BlowdownValveSizeDiaIn2;
 
         string SteamLocoType;     // Type of steam locomotive type
 
@@ -280,9 +278,7 @@ namespace Orts.Simulation.RollingStocks
         float MaxInjectorFlowRateLBpS = 0.0f;      // Maximum possible injector flow rate - based upon maximum boiler pressure
         Interpolator BackPressureIHPtoPSI;             // back pressure in cylinders given usage
         Interpolator CylinderSteamDensityPSItoLBpFT3;   // steam density in cylinders given pressure (could be super heated)
-        Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         Interpolator WaterDensityPSItoLBpFT3;   // water density given pressure
-        Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
         Interpolator WaterHeatPSItoBTUpLB;      // total heat in water given pressure
         Interpolator HeatToPressureBTUpLBtoPSI; // pressure given total heat in water (inverse of WaterHeat)
         Interpolator PressureToTemperaturePSItoF;
@@ -318,6 +314,13 @@ namespace Orts.Simulation.RollingStocks
         Interpolator CylinderCompressiontoCutoff;  // Fraction of cylinder travel to Compression
         Interpolator CylinderAdmissiontoCutoff;  // Fraction of cylinder travel to Admission
 
+        // Heat Radiation Parameters
+        float KcInsulation;   // Insulated section of Boiler - Coefficient of thermal conductivity -  BBTU / sq.ft. / hr / l in / °F.
+        float KcUninsulation = 1.67f;   // Uninsulated section of Boiler (Steel only) - Coefficient of thermal conductivity -  BBTU / sq.ft. / hr / l in / °F.
+        float BoilerSurfaceAreaFt2;
+        float FractionBoilerAreaInsulated;
+        float BoilerHeatRadiationLossBTU; // Heat loss of boiler (hourly value)
+               
         #region Additional steam properties
         const float SpecificHeatCoalKJpKGpK = 1.26f; // specific heat of coal - kJ/kg/K
         const float SteamVaporSpecVolumeAt100DegC1BarM3pKG = 1.696f;
@@ -656,6 +659,10 @@ namespace Orts.Simulation.RollingStocks
         public float SafetyValvesSteamVelocityMpS;
         public float SafetyValvesSteamVolumeM3pS;
 
+        public float BlowdownSteamVolumeM3pS;
+        public float BlowdownSteamVelocityMpS;
+        public float BlowdownParticleDurationS = 3.0f;
+
         public float DrainpipeSteamVolumeM3pS;
         public float DrainpipeSteamVelocityMpS;
         public float Injector1SteamVolumeM3pS;
@@ -775,6 +782,9 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(superheater": SuperheaterFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(istenderrequired": IsTenderRequired = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsevaporationarea": EvaporationAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
+                case "engine(ortsboilersurfacearea": BoilerSurfaceAreaFt2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
+                case "engine(ortsfractionboilerinsulated": FractionBoilerAreaInsulated = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsheatcoefficientinsulation": KcInsulation = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssuperheatarea": SuperheatAreaM2 = stf.ReadFloatBlock(STFReader.UNITS.AreaDefaultFT2, null); break;
                 case "engine(ortsfuelcalorific": FuelCalorificKJpKG = stf.ReadFloatBlock(STFReader.UNITS.EnergyDensity, null); break;
                 case "engine(ortsboilerevaporationrate": BoilerEvapRateLbspFt2 = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -866,6 +876,9 @@ namespace Orts.Simulation.RollingStocks
             GrateAreaM2 = locoCopy.GrateAreaM2;
             SuperheaterFactor = locoCopy.SuperheaterFactor;
             EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
+            BoilerSurfaceAreaFt2 = locoCopy.BoilerSurfaceAreaFt2;
+            FractionBoilerAreaInsulated = locoCopy.FractionBoilerAreaInsulated;
+            KcInsulation = locoCopy.KcInsulation;
             SuperheatAreaM2 = locoCopy.SuperheatAreaM2;
             FuelCalorificKJpKG = locoCopy.FuelCalorificKJpKG;
             BoilerEvapRateLbspFt2 = locoCopy.BoilerEvapRateLbspFt2;
@@ -1036,9 +1049,7 @@ namespace Orts.Simulation.RollingStocks
 
             #region Initialise additional steam properties
 
-            SteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
             WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
-            SteamHeatPSItoBTUpLB = SteamTable.SteamHeatInterpolatorPSItoBTUpLB();
             WaterHeatPSItoBTUpLB = SteamTable.WaterHeatInterpolatorPSItoBTUpLB();
             CylinderSteamDensityPSItoLBpFT3 = SteamTable.SteamDensityInterpolatorPSItoLBpFT3();
             HeatToPressureBTUpLBtoPSI = SteamTable.WaterHeatToPressureInterpolatorBTUpLBtoPSI();
@@ -1153,6 +1164,24 @@ namespace Orts.Simulation.RollingStocks
             if (EjectorLargeSteamConsumptionLbpS == 0)
             {
                 EjectorLargeSteamConsumptionLbpS = pS.FrompH(650.0f); // Based upon Gresham publication - steam consumption for 20mm ejector is 650lbs/hr or 0.180555 lb/s
+            }
+
+            // Assign value for boiler surface area if not set in ENG file
+            if (BoilerSurfaceAreaFt2 == 0)
+            {
+                BoilerSurfaceAreaFt2 = Me2.ToFt2(16.0f * GrateAreaM2); // Rough approximation - based upon empirical graphing
+            }
+
+            // Assign value for boiler heat loss coefficient if not set in ENG file
+            if (KcInsulation == 0)
+            {
+                KcInsulation = 0.4f; // Rough approximation - based upon empirical graphing
+            }
+
+            // Assign value for boiler heat loss insulation fraction if not set in ENG file
+            if (FractionBoilerAreaInsulated == 0)
+            {
+                FractionBoilerAreaInsulated = 0.86f; // Rough approximation - based upon empirical graphing
             }
 
             // ******************  Test Locomotive and Gearing type *********************** 
@@ -1904,7 +1933,7 @@ namespace Orts.Simulation.RollingStocks
             UpdateWaterGauge();
             UpdateInjectors(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
-            UpdateSteamHeat(elapsedClockSeconds);
+            UpdateCarSteamHeat(elapsedClockSeconds);
             #endregion
 
         }
@@ -1954,6 +1983,11 @@ namespace Orts.Simulation.RollingStocks
             Cylinders2SteamVolumeM3pS = (CylinderCock2On && CylinderCocksAreOpen && throttle > 0.0 && CylCockSteamUsageDisplayLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f);
             Cylinder1ParticleDurationS = 1.0f;
             Cylinder2ParticleDurationS = 1.0f;
+
+            // Blowdown Steam Effects
+            BlowdownSteamVolumeM3pS = (BlowdownValveOpen && BlowdownSteamUsageLBpS > 0.0 ? (10.0f * SteamEffectsFactor) : 0.0f);
+            BlowdownSteamVelocityMpS = 350.0f;
+            BlowdownParticleDurationS = 2.0f;
 
             // Drainpipe Steam Effects
             DrainpipeSteamVolumeM3pS = 0.0f;  // Turn Drainpipe permanently "off"
@@ -2650,7 +2684,7 @@ namespace Orts.Simulation.RollingStocks
 
             // Steam Discharge Rates
             // Use Napier formula to calculate steam discharge rate through safety valve, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
-            // Set "valve area" of safety valve, based on reverse enginnered values of steam, valve area is determined by lift and the gap created 
+            // Set "valve area" of safety valve, based on reverse engineered values of steam, valve area is determined by lift and the gap created 
             const float SafetyValveDischargeFactor = 70.0f;
             if (SafetyValveSizeIn == 2.5f)
             {
@@ -2854,6 +2888,28 @@ namespace Orts.Simulation.RollingStocks
 
             }
 
+            // Update details for blowdown vlave
+            if (BlowdownValveOpen)
+            {
+                // Use Napier formula to calculate steam discharge rate through safety valve, ie Discharge (lb/s) = (Valve area * Abs Pressure) / 70
+                // 
+                const float BlowdownValveDischargeFactor = 70.0f;
+
+                // Find area of pipe - assume 1.5" dia pressure pipe
+                BlowdownValveSizeDiaIn2 = (float)Math.PI * (1.5f / 2.0f) * (1.5f / 2.0f);
+
+                BlowdownSteamUsageLBpS = (BlowdownValveSizeDiaIn2 * (MaxBoilerPressurePSI + OneAtmospherePSI)) / BlowdownValveDischargeFactor;
+
+                BoilerMassLB -= elapsedClockSeconds * BlowdownSteamUsageLBpS; // Reduce boiler mass to reflect steam usage by blower  
+                BoilerHeatBTU -= elapsedClockSeconds * BlowdownSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by blower
+                BoilerHeatOutBTUpS += BlowdownSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);  // Reduce boiler Heat to reflect steam usage by blower
+                TotalSteamUsageLBpS += BlowdownSteamUsageLBpS;
+            }
+            else
+            {
+                BlowdownSteamUsageLBpS = 0; // Turn off Hud view
+            }
+
             // Adjust blower impacts on heat and boiler mass
             if (BlowerIsOn)
             {
@@ -2983,14 +3039,56 @@ namespace Orts.Simulation.RollingStocks
             BoilerHeatInBTUpS = W.ToBTUpS(W.FromKW(FireHeatTxfKW) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateSmoothedKGpS)) / Me2.ToFt2(GrateAreaM2))]);
             BoilerHeatBTU += elapsedClockSeconds * W.ToBTUpS(W.FromKW(FireHeatTxfKW) * BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateSmoothedKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
-            // Basic steam radiation losses 
-            RadiationSteamLossLBpS = pS.FrompM((absSpeedMpS == 0.0f) ?
-                3.04f : // lb/min at rest 
-                5.29f); // lb/min moving
-            BoilerMassLB -= elapsedClockSeconds * RadiationSteamLossLBpS;
-            BoilerHeatBTU -= elapsedClockSeconds * RadiationSteamLossLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
-            TotalSteamUsageLBpS += RadiationSteamLossLBpS;
-            BoilerHeatOutBTUpS += RadiationSteamLossLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
+            // This section calculates heat radiation loss from the boiler. This section is based upon the description provided in "The Thermal Insulation of the Steam Locomotive" (Paper 501) published in the
+            // which was published in the March 1, 1951 Journal of the Institution of Locomotive Engineers.
+            // In basic terms,  Heat loss = Kc * A * dT, where Kc = heat transfer coefficient, A = heat transfer area, and dT = difference in temperature, ie (Boiler Temp - Ambient Temp)
+            
+            // Calculate the temp differential
+            float TemperatureDifferentialF = 0;
+            
+            TemperatureDifferentialF = C.ToF(C.FromK(BoilerWaterTempK) - CarOutsideTempC);
+
+            // As locomotive moves, the Kc value will increase as more heat loss occurs with greater speed.
+            // This section calculates the variation of Kc with speed, and is based upon the information provided here - https://www.engineeringtoolbox.com/convective-heat-transfer-d_430.html
+            // In short Kc = 10.45 - v + 10 v1/2 - where v = speed in m/s. This formula flattens out above 20m/s, so this will be used as the maximum figure, and a fraction determined from it.
+            // It is only valid at lower speeds, ie 2m/s (5mph) so there is no change in Kc below this value
+
+            float LowSpeedMpS = 2.0f;
+            float HighSpeedMpS = 20.0f;
+            float KcMinSpeed = 10.45f - LowSpeedMpS + (10.0f * (float)Math.Pow(LowSpeedMpS, 0.5)); // Minimum speed of 2m/s
+            float KcMaxSpeed = 10.45f - HighSpeedMpS + (10.0f * (float)Math.Pow(HighSpeedMpS, 0.5)); // Maximum speed of 20m/s
+            float KcActualSpeed = 10.45f - absSpeedMpS + (10.0f * (float)Math.Pow(absSpeedMpS, 0.5));
+            float KcMovementFraction = 0;
+
+            if (absSpeedMpS > 2 && absSpeedMpS < 20.0f)
+            {
+                KcMovementFraction = KcActualSpeed / KcMinSpeed; // Calculate fraction only between 2 and 20
+            }
+            else if (absSpeedMpS < 2)
+            {
+                KcMovementFraction = 1.0f; // If speed less then 2m/s then set fracftion to give stationary Kc value 
+            }
+            else
+            {
+                KcMovementFraction = KcMaxSpeed / KcMinSpeed; // Calculate constant fraction over 20m/s
+            }
+            
+            //            Trace.TraceInformation("Fraction - {0} Speed {1} MinSpeed {2} Actual {3}", KcMovementFraction, absSpeedMpS, KcMinSpeed, KcActualSpeed);
+            
+            // Calculate radiation loss - has two elements, insulated and uninsulated
+            float UninsulatedBoilerHeatRadiationLossBTU = BoilerSurfaceAreaFt2 * (1.0f - FractionBoilerAreaInsulated) * KcMovementFraction * KcUninsulation * TemperatureDifferentialF;
+            float InsulatedBoilerHeatRadiationLossBTU = BoilerSurfaceAreaFt2 * FractionBoilerAreaInsulated * KcMovementFraction * KcInsulation * TemperatureDifferentialF;
+            BoilerHeatRadiationLossBTU = UninsulatedBoilerHeatRadiationLossBTU + InsulatedBoilerHeatRadiationLossBTU;
+            
+            //            Trace.TraceInformation("Heat Loss - {0} Area {1} TempDiff {2} Speed {3} MoveFraction {4}", BoilerHeatRadiationLossBTU, BoilerSurfaceAreaFt2, TemperatureDifferentialF, absSpeedMpS, KcMovementFraction);
+            
+            // Temporary calculation to maintain smoke stack and minimum coal feed in AI firing - could be changed
+            RadiationSteamLossLBpS = pS.FrompH(BoilerHeatRadiationLossBTU) / (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB);
+            
+                     //   Trace.TraceInformation("RadLoss {0}", RadiationSteamLossLBpS);
+            
+            BoilerHeatBTU -= elapsedClockSeconds * pS.FrompH(BoilerHeatRadiationLossBTU);
+            BoilerHeatOutBTUpS += pS.FrompH(BoilerHeatRadiationLossBTU);
 
             // Recalculate the fraction of the boiler containing water (the rest contains saturated steam)
             // The derivation of the WaterFraction equation is not obvious, but starts from:
@@ -5473,77 +5571,36 @@ namespace Orts.Simulation.RollingStocks
             #endregion
         }
 
-        private void UpdateSteamHeat(float elapsedClockSeconds)
+        private void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
 
-            // Calculate steam pressure in steam pipe
-            if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
+            if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
-            }
 
-            CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
+                if (CurrentSteamHeatPressurePSI > BoilerPressurePSI)
+                {
+                    CurrentSteamHeatPressurePSI = BoilerPressurePSI; // If boiler pressure drops, then make sure that steam heating pressure cannot be greater then boiler pressure.
+                }
 
-            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
+                // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
-            {
-                if (this.IsLeadLocomotive())
+                if (CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
                 {
                     Train.CarSteamHeatOn = true; // turn on steam effects on wagons
-                    Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
 
-                    if (IsSteamHeatFirstTime)
-                    {
-                        IsSteamHeatFirstTime = false;  // TrainCar and Train have not executed during first pass of steam locomotive, so ignore steam heating the first time
-                        Train.TrainInsideTempC = 21.11f; // Assume a desired temperature of 70oF = 15.5oC
-                    }
-                    else
-                    {
-                        // After first pass continue as normal
+                    // Calculate impact of steam heat usage on locomotive
+                    BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
+                    BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
+                    TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
+                    BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
 
-                        if (IsSteamInitial)
-                        {
-                            if (HotStart)
-                            {
-                                Train.TrainCurrentCarriageHeatTempC = 21.111f; // Set intial temp to 70oF
-                            }
-                            else
-                            {
-                                Train.TrainCurrentCarriageHeatTempC = Train.TrainOutsideTempC;
-                            }
-                            // Initialise current Train Steam Heat based upon selected Current carriage Temp
-                            Train.TrainCurrentTrainSteamHeatW = (Train.TrainCurrentCarriageHeatTempC - Train.TrainOutsideTempC) / (Train.TrainInsideTempC - Train.TrainOutsideTempC) * Train.TrainTotalSteamHeatW;
-                            IsSteamInitial = false;
-                        }
-
-                        float ConvertBtupLbtoKjpKg = 2.32599999962f;  // Conversion factor
-                                                                      // Calculate steam usage
-                                                                      // Only set up for saturated steam at this time - needs to also work for superheated steam
-                        if (Train.TrainSteamPipeHeatW == 0.0 || CurrentSteamHeatPressurePSI == 0.0)
-                        {
-                            CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Zero steam usage if Steam pipe heat is zero
-                        }
-                        else
-                        {
-                            CalculatedCarHeaterSteamUsageLBpS = Kg.ToLb(W.ToKW(Train.TrainSteamPipeHeatW) / (SteamHeatPSItoBTUpLB[CurrentSteamHeatPressurePSI] * ConvertBtupLbtoKjpKg));
-                        }
-
-                        // Calculate impact of steam heat usage on locomotive
-                        BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
-                        BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
-                        TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
-                        BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
-                    }
                 }
-            }
-            else
-            {
-                CalculatedCarHeaterSteamUsageLBpS = 0.0f;       // Set to zero by default
-                Train.TrainCurrentSteamHeatPipeTempC = -17.7778f;       // Reset values to zero if steam is not turned on.
-                Train.TrainSteamPipeHeatW = 0.0f;
-                Train.CarSteamHeatOn = false; // turn off steam effects on wagons
+                else
+                {
+                    Train.CarSteamHeatOn = false; // turn off steam effects on wagons
+                }
             }
         }
 
@@ -5573,6 +5630,9 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.STEAMCHEST_PR:
                     data = ConvertFromPSI(cvc, SteamChestPressurePSI);
                     break;
+                case CABViewControlTypes.STEAMHEAT_PRESSURE:
+                    data = ConvertFromPSI(cvc, CurrentSteamHeatPressurePSI);
+                    break;
                 case CABViewControlTypes.CUTOFF:
                 case CABViewControlTypes.REVERSER_PLATE:
                     data = Train.MUReverserPercent / 100f;
@@ -5594,6 +5654,9 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case CABViewControlTypes.FIREHOLE:
                     data = FireboxDoorController.CurrentValue;
+                    break;
+                case CABViewControlTypes.ORTS_BLOWDOWN_VALVE:
+                    data = BlowdownValveOpen ? 1 : 0;
                     break;
                 case CABViewControlTypes.WATER_INJECTOR1:
                     data = Injector1Controller.CurrentValue;
@@ -5715,12 +5778,14 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.h,
                 BoilerEfficiencyGrateAreaLBpFT2toX[(pS.TopH(Kg.ToLb(FuelBurnRateSmoothedKGpS)) / Me2.ToFt2(GrateAreaM2))]);
 
-            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6}\t\t{7}\t{8}\t\t{9}\t{10}\t\t{11}\t{12}\n",
+            status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6}\t\t{7}\t{8}\t\t{9}\t{10}\t\t{11}\t{12}\t\t{13}\t{14}\n",
                 Simulator.Catalog.GetString("Heat:"),
                 Simulator.Catalog.GetString("In"),
                 FormatStrings.FormatPower(W.FromBTUpS(BoilerHeatInBTUpS), IsMetric, false, true),
                 Simulator.Catalog.GetString("Out"),
                 FormatStrings.FormatPower(W.FromBTUpS(PreviousBoilerHeatOutBTUpS), IsMetric, false, true),
+                Simulator.Catalog.GetString("Rad"),
+                FormatStrings.FormatPower(W.FromBTUpS(pS.FrompH(BoilerHeatRadiationLossBTU)), IsMetric, false, true),
                 Simulator.Catalog.GetString("Stored"),
                 FormatStrings.FormatEnergy(W.FromBTUpS(BoilerHeatSmoothedBTU), IsMetric),
                 Simulator.Catalog.GetString("Max"),
@@ -5750,25 +5815,25 @@ namespace Orts.Simulation.RollingStocks
             if (!(BrakeSystem is Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS.VacuumSinglePipe))
             {
                 // Display air compressor information
-                status.AppendFormat("{0}\t{1}\t{10}/{21}\t{2}\t{11}/{21}\t{3}\t{12}/{21}\t{4}\t{13}/{21}\t{5}\t{14}/{21}\t{6}\t{15}/{21}\t{7}\t{16}/{21}\t{8}\t{17}/{21}\t{9}\t{18}/{21} ({19}x{20:N1}\")\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{21}\t{3}\t{4}/{21}\t{5}\t{6}/{21}\t{7}\t{8}/{21}\t{9}\t{10}/{21}\t{11}\t{12}/{21}\t{13}\t{14}/{21}\t{15}\t{16}/{21}\t{17}\t{18}/{21} ({19}x{20:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
-                    Simulator.Catalog.GetString("Blower"),
-                    Simulator.Catalog.GetString("Radiation"),
-                    Simulator.Catalog.GetString("Comprsr"),
-                    Simulator.Catalog.GetString("SafetyV"),
-                    Simulator.Catalog.GetString("CylCock"),
-                    Simulator.Catalog.GetString("Genertr"),
-                    Simulator.Catalog.GetString("Stoker"),
-                    Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Blower"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
-                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Comprsr"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CompSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("SafetyV"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("CylCock"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Genertr"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Stoker"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("BlowD"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
                     NumSafetyValves,
                     SafetyValveSizeIn,
@@ -5777,30 +5842,29 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 // Display steam ejector information instead of air compressor
-                status.AppendFormat("{0}\t{1}\t{10}/{21}\t{2}\t{11}/{21}\t{3}\t{12}/{21}\t{4}\t{13}/{21}\t{5}\t{14}/{21}\t{6}\t{15}/{21}\t{7}\t{16}/{21}\t{8}\t{17}/{21}\t{9}\t{18}/{21} ({19}x{20:N1}\")\n",
+                status.AppendFormat("{0}\t{1}\t{2}/{21}\t{3}\t{4}/{21}\t{5}\t{6}/{21}\t{7}\t{8}/{21}\t{9}\t{10}/{21}\t{11}\t{12}/{21}\t{13}\t{14}/{21}\t{15}\t{16}/{21}\t{17}\t{18}/{21} ({19}x{20:N1}\")\n",
                     Simulator.Catalog.GetString("Usage:"),
                     Simulator.Catalog.GetString("Cyl"),
-                    Simulator.Catalog.GetString("Blower"),
-                    Simulator.Catalog.GetString("Radiation"),
-                    Simulator.Catalog.GetString("Ejector"),
-                    Simulator.Catalog.GetString("SafetyV"),
-                    Simulator.Catalog.GetString("CylCock"),
-                    Simulator.Catalog.GetString("Genertr"),
-                    Simulator.Catalog.GetString("Stoker"),
-                    Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylinderSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Blower"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowerSteamUsageLBpS)), IsMetric),
-                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(RadiationSteamLossLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Ejector"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
+                    Simulator.Catalog.GetString("SafetyV"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(SafetyValveUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("CylCock"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CylCockSteamUsageDisplayLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Genertr"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(GeneratorSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("Stoker"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(StokerSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("BlowD"),
+                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(BlowdownSteamUsageLBpS)), IsMetric),
+                    Simulator.Catalog.GetString("MaxSafe"),
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(MaxSafetyValveDischargeLbspS)), IsMetric),
                     NumSafetyValves,
                     SafetyValveSizeIn,
                     FormatStrings.h);
-
             }
 
 
@@ -5933,43 +5997,29 @@ namespace Orts.Simulation.RollingStocks
                 IsSuperSet);
 #endif
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
+            if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive, and steam heat valve is on.
                 // Display Steam Heat info
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}/{11}\t{12}\t{13:N0}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}/{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16:N0}\n",
                    Simulator.Catalog.GetString("StHeat:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
-                   Simulator.Catalog.GetString("TrTemp"),
-                   FormatStrings.FormatTemperature(Train.TrainCurrentCarriageHeatTempC, IsMetric, false),
                    Simulator.Catalog.GetString("StTemp"),
-                   FormatStrings.FormatTemperature(Train.TrainCurrentSteamHeatPipeTempC, IsMetric, false),
-                   Simulator.Catalog.GetString("OutTemp"),
-                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
+                   FormatStrings.FormatTemperature(C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]), IsMetric, false),
                    Simulator.Catalog.GetString("StUse"),
                    FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
                    FormatStrings.h,
+                   Simulator.Catalog.GetString("Last:"),
+                   Simulator.Catalog.GetString("Press"),
+                   FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                   Simulator.Catalog.GetString("Temp"),
+                   FormatStrings.FormatTemperature(Train.LastCar.CarCurrentCarriageHeatTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("OutTemp"),
+                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
                    Simulator.Catalog.GetString("NetHt"),
-                   Train.DisplayTrainNetSteamHeatLossWpTime);
+                   Train.LastCar.DisplayTrainNetSteamHeatLossWpTime);
             }
-
-#if DEBUG_LOCO_STEAM_HEAT_HUD
-            status.AppendFormat("\n{0}\t{1}\t{2:N0}\t\t\t{3}\t{4:N0}\t{5}\t{6:N0}\t{7}\t{8:N0}\t{9}\t{10:N0}\t\t{11}\t{12}\n",
-                Simulator.Catalog.GetString("StHtDB:"),
-                Simulator.Catalog.GetString("TotHt"),
-                Train.TrainTotalSteamHeatW,
-                Simulator.Catalog.GetString("NetHt"),
-                Train.DisplayTrainNetSteamHeatLossWpTime,
-                Simulator.Catalog.GetString("PipHt"),
-                Train.TrainSteamPipeHeatW,
-                Simulator.Catalog.GetString("CarHt"),
-                Train.TrainSteamHeatLossWpT,
-                Simulator.Catalog.GetString("CurrHt"),
-                Train.TrainCurrentTrainSteamHeatW,
-                Simulator.Catalog.GetString("Cont"),
-                SteamHeatController.CurrentValue);
-#endif
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Fireman"));
             status.AppendFormat("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}\t{6:N0}/{13}\t\t{7}\t{8:N0}/{13}\t\t{9}\t{10:N0}/{13}\t\t{11}\t{12}/{14}{13}\t{15}\t{16}/{18}{17}\t\t{19}\t{20:N0}\n",
@@ -6175,9 +6225,9 @@ namespace Orts.Simulation.RollingStocks
                 status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4:N2}\t{5}\t{6:N2}\n",
                 Simulator.Catalog.GetString("Sand:"),
                 Simulator.Catalog.GetString("S/Use"),
-                TrackSanderSandConsumptionFt3pH,
+                FormatStrings.FormatVolume(TrackSanderSandConsumptionM3pS, IsMetric),
                 Simulator.Catalog.GetString("S/Box"),
-                TrackSandBoxCapacityFt3,
+                FormatStrings.FormatVolume(CurrentTrackSandBoxCapacityM3, IsMetric),
                 Simulator.Catalog.GetString("M/Press"),
                 MainResPressurePSI);
             }
@@ -7064,7 +7114,20 @@ public void SteamStartGearBoxIncrease()
                 Simulator.Confirmer.Confirm(CabControl.Injector2, Injector2IsOn ? CabSetting.On : CabSetting.Off);
         }
 
-        public void ToggleManualFiring()
+        public void ToggleBlowdownValve()
+        {
+            BlowdownValveOpen = !BlowdownValveOpen;
+            SignalEvent(Event.BlowdownValveToggle);
+            if (BlowdownValveOpen)
+                SignalEvent(Event.BoilerBlowdownOn);
+            else
+                SignalEvent(Event.BoilerBlowdownOff);
+
+            if (IsPlayerTrain)
+                Simulator.Confirmer.Confirm(CabControl.BlowdownValve, BlowdownValveOpen? CabSetting.On : CabSetting.Off);
+        }
+
+    public void ToggleManualFiring()
         {
             FiringIsManual = !FiringIsManual;
         }

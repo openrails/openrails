@@ -473,10 +473,418 @@ to the oscillation from center point to an oscillation end point. The file shoul
 one cue point at its beginning and one after the time interval of a complete bell swing 
 forward and backward, and should have a final fadeoff for best result. 
 
+C# engine scripting
+===================
+
+To simulate especially complex behavior, Open Rails provides a C# scripting 
+interface for a number of systems on the player locomotive. Like the Open Rails 
+program itself, these scripts are written in .cs files containing C# classes, 
+but they are compiled and linked at runtime, so they don't depend on changes 
+in the core program itself and can be distributed with rolling stock content. 
+Scripts will run if referenced by OR-specific fields in the .eng file.
+
+.. list-table:: Currently scriptable locomotive systems
+   :widths: 25 37 38
+   :header-rows: 1
+
+   * - System
+     - C# class
+     - .eng block
+   * - Brakes
+     - ``ORTS.Scripting.Api.BrakeController``
+     - ``Engine ( ORTSTrainBrakeController ( "DemoBrakes.cs" ) )``
+   * - Circuit breaker
+     - ``ORTS.Scripting.Api.CircuitBreaker``
+     - ``Engine ( ORTSCircuitBreaker ( "DemoBreaker.cs" ) )``
+   * - Electric power supply
+     - ``ORTS.Scripting.Api.ElectricPowerSupply``
+     - ``Engine ( ORTSPowerSupply ( "DemoPower.cs" ) )``
+   * - Train Control System
+     - ``ORTS.Scripting.Api.TrainControlSystem``
+     - ``Engine ( ORTSTrainControlSystem ( "DemoTCS.cs" ) )``
+
+Scripts reside in a ``Script`` subfolder within the engine's folder and must 
+contain a class named after the script's own filename. For example, if the 
+script's filename is ``AmtrakTCS.cs``, OR will search for a single class named 
+``AmtrakTCS``. (It is also possible to place the script in another location, 
+such as a ``Common.Script`` folder in the ``TRAINSET`` folder, by prepending the 
+appropriate amount of parent directory tokens ``..\`` relative to the engine's 
+``Script`` folder.) The script's code runs on the UpdaterProcess thread. This 
+example, which would need to be placed in a file named ``DemoTCS.cs``, 
+illustrates the minimum code required for a Train Control System script::
+
+  using System;
+  using ORTS.Scripting.Api;
+
+  namespace ORTS.Scripting.Script
+  {
+      class DemoTCS : TrainControlSystem
+      {
+          public override void HandleEvent(TCSEvent evt, string message) {}
+          public override void Initialize()
+          {
+              Console.WriteLine("TCS activated!");
+          }
+          public override void SetEmergency(bool emergency) {}
+          public override void Update() {}
+      }
+  }
+
+Observe that the script's class *must* reside in the ``ORTS.Scripting.Script`` 
+namespace and that it subclasses the abstract class of the desired system. It 
+also references external assemblies with ``using`` directives. OR makes the 
+following .NET assemblies available to scripts:
+
+- System
+- System.Core
+- ORTS.Common
+- Orts.Simulation
+
+Scripts communicate with the simulator by invoking methods in the base class. 
+For example, this script might invoke the ``TrainLengthM()`` method of the 
+``TrainControlSystem`` class, which returns the length of the player train. More 
+methods are available in the ``ORTS.Scripting.Api.AbstractScriptClass`` class, 
+which ``TrainControlSystem`` is itself a subclass of.
+
+Finally, if a script contains a syntax or typing error, OR will log an exception 
+during the loading process and run the simulation without it.
+
+Developing scripts with Visual Studio
+-------------------------------------
+
+While it is certainly possible to develop scripts with a plain text editor, the 
+code completion and debugging aids available in an IDE like Visual Studio make 
+for a vastly more comfortable programming experience. If you have a development 
+environment set up to build Open Rails, you can use Visual Studio to edit your 
+scripts with these creature comforts. What follows is a suggested workflow:
+
+#. First, in your copy of the OR source code, make a copy of your 
+   ``Source\ORTS.sln`` file. Keep it in the ``Source\`` folder, but give it a 
+   novel name like ``ORTS_Scripts.sln``. (You could also modify the original 
+   ORTS solution, but then you'd have to remember not to check it in to source 
+   control.) Add a new project to the solution and select the empty .NET 
+   project.
+
+#. In the configuration dialog, set the new project to be added to the existing 
+   solution, set its location to be the folder of the engine you're scripting, 
+   and set its name to "Script". (For now, you must use "Script", but you can 
+   rename the project after it's created.) You can leave the .NET 
+   framework version set to its default. Then, create the project.
+
+   .. image:: images/features-scripting1.png
+     :width: 600
+
+#. The new project folder becomes the very ``Script`` subfolder that OR will 
+   search for scripts. Add references to the ORTS.Common and Orts.Simulation 
+   assemblies, which will enable IntelliSense features inside your editor when 
+   you edit scripts. You may now rename the project as you like (which will not 
+   rename the folder) and delete the pregenerated App.config file.
+
+   .. image:: images/features-scripting2.png
+     :width: 300
+
+#. Finally, open the Build Configuration Manager and set the new script project 
+   not to build for both the Debug and Release configurations.
+
+   .. image:: images/features-scripting3.png
+     :width: 600
+
+With this setup, Visual Studio will type-check your scripts and make suggestions 
+when you use the Open Rails API. You can also set breakpoints within your 
+script, which will be caught by RunActivity.exe if run inside Visual Studio.
+
+.. image:: images/features-scripting4.png
+
+Note that Visual Studio uses relative paths, so if you ever move any folders, 
+you'll need to fix the references by hand.
+
+.. _features-scripting-cb:
+
+Brake controller
+----------------
+
+The brake controller script customizes the behavior of the train's brakes, 
+allowing for much greater systems fidelity compared to what is possible with 
+the model inherited from MSTS. For this purpose, the script can read the state 
+of the brake controls and set the air pressures of the brake reservoirs.
+
+Use the following .eng parameter to load a brake controller script::
+
+  Engine (
+      ORTSTrainBrakeController ( "YourBrakes.cs" )
+  )
+
+or::
+
+  Engine (
+      ORTSEngineBrakeController ( "YourBrakes.cs" )
+  )
+
+The .cs extension is optional. "MSTS" loads the default MSTS-compatible 
+implementation, so do `not` use this name for your own script.
+
+Circuit breaker
+---------------
+
+Available for electric locomotives only. The circuit breaker script controls 
+the behavior of the locomotive's 
+:ref:`circuit breaker <physics-circuit-breaker>`.
+
+Use the following .eng parameter to load a circuit breaker script::
+
+  Engine (
+      ORTSCircuitBreaker ( "YourCB.cs" )
+  )
+
+The .cs extension is optional. "Automatic" and "Manual" load the generic OR 
+circuit breaker implementation, so do `not` use these names for your own script.
+
+.. _features-scripting-eps:
+
+Electric power supply
+---------------------
+
+Available for electric locomotives only. The power supply script determines 
+whether or not the locomotive :ref:`is serviceable <physics-power-supply>` given 
+the current line voltage, pantograph position, circuit breaker state, etc.
+
+Use the following .eng paramater to load an electric power supply script::
+
+  Engine (
+      ORTSPowerSupply ( "YourEPS.cs" )
+  )
+
+The .cs extension is optional. "Default" will load the generic OR power supply 
+implementation, so do `not` use this name for your own script.
+
+Train Control System
+--------------------
+
+General
+'''''''
+
+The Train Control System, or TCS, script is intended to model train safety and 
+cab signalling systems. It can manipulate the locomotive's controls and speed 
+limit displays, impose penalty brake applications, read upcoming signal aspects 
+and speed limits, and play warning sounds.
+
+Use the following .eng parameters to load a TCS script::
+
+  Engine (
+      ORTSTrainControlSystem ( "YourTCS.cs" )
+      ORTSTrainControlSystemParameters ( "YourTCS.ini" )
+      ORTSTrainControlSystemSound ( "YourTCSSounds.sms" )
+  )
+
+``ORTSTrainControlSystem`` refers to the TCS script in the engine's ``Script`` 
+subfolder. For this field, the .cs extension is optional.
 
 
-  
+``ORTSTrainControlSystemParameters``, an optional field, refers to an .ini file, 
+also in the ``Script`` subfolder, whose parameters will be made available to the 
+TCS script through the ``GetBoolParameter()``, ``GetIntParameter()``, 
+``GetFloatParameter()``, and ``GetStringParameter()`` methods of the 
+``TrainControlSystem`` class. This .ini file provides for easy customization of 
+the behavior of the TCS script by end users.
 
+This is an excerpt from an .ini file::
+
+  [General]
+  AWSMonitor=true
+  EmergencyStopMonitor=false
+  VigilanceMonitor=true
+  OverspeedMonitor=false
+  DoesBrakeCutPower=true
+  BrakeCutsPowerAtBrakeCylinderPressureBar=
+  [AWS]
+  Inhibited=false
+  WarningTimerDelayS=3
+  BrakeImmediately=false
+  TrainStopBeforeRelease=false
+  ActivationOnSpeedLimitReduction=true
+  SpeedLimitReductionForActivationMpS=11.176
+  BeaconDistanceToPostM=1186
+  AppliesCutsPower=true
+
+As can be seen, the .ini file is divided in subgroups. As an example, parameter 
+[AWS]Inhibited would be read by following line of code in the script ::
+
+    AWSInhibited = GetBoolParameter("AWS", "Inhibited", false);
+
+where the final ``false`` is the default value, if the parameter can't be found.
+
+
+``ORTSTrainControlSystemSound``, an optional field, refers to a .sms file either 
+in the engine's ``SOUND`` folder or in the global ``SOUND`` folder. If provided, 
+OR will load this sound library alongside the locomotive's standard cab sounds. 
+The TCS script can play back sounds using any of the ``TriggerSound...`` methods 
+of the base class, which in turn activate the TCS-related 
+:ref:`discrete triggers <sound-discrete>` numbered from 109 through 118.
+
+8 further generic discrete sound triggers are available, named GenericEvent1 to 
+GenericEvent8 and accessible to the script by lines like following one::
+
+  Locomotive().TrainControlSystem.SignalEvent(Event.GenericEvent1, this);
+
+Access to the Simulation methods and variables
+''''''''''''''''''''''''''''''''''''''''''''''
+The abstract class for the TCS scripts provides a significant amount of 
+methods to access variables of interest for the TCS: as an example::
+
+   public Func<int, Aspect> NextSignalAspect;
+
+might be called within the script as follows::
+
+  var nextSignalAspect = NextSignalAspect(1);
+
+which would return the aspect of the second normal signal in front of 
+the player train.
+
+However it is quite impossible to foresee all needs that a TCS script has 
+and to provide a method for everyone of these needs. For this reason 
+following method is available::
+
+  public Func<MSTSLocomotive> Locomotive;
+
+which returns a handle for the player locomotive instance of the MSTSLocomotive 
+class. Through such handle all public classes, methods and variables of 
+the OR Simulation environment can be accessed within the script. 
+
+
+Generic cabview controls
+''''''''''''''''''''''''
+Often Train Control Systems have a quite sophisticated DMI (driver-machine 
+interface), which can include a (touch screen) display and buttons.
+Being the display fields and icons and the buttons specific of every TCS, 
+a set of generic cabview controls are available, which can be customized 
+within the TCS script.
+More precisely 48 generic cabview controls, named from ORTS_TCS1 to ORTS_TCS48 
+are available. All 48 may be used as two state or multistate controls,  
+like e.g.::
+
+  		MultiStateDisplay (
+			Type ( ORTS_TCS13 MULTI_STATE_DISPLAY )
+			Position ( 405 282.3 36.3 20.8 )
+			Graphic ( ../../Common.Cab/Cruscotto_SCMT/Ripetizioni_estese.ace )
+			States ( 6 3 2
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 1 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 2 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 3 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 4 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 5 )
+				)
+      )
+    )
+
+Each one of the first 32 can be also used as Two-state commands/displays, like e.g.::
+
+		TwoState (
+			Type ( ORTS_TCS7 TWO_STATE )
+			Position ( 377 298 9 7.8 )
+			Graphic ( ../../Common.Cab/Cruscotto_SCMT/Button_SR.ace )
+			NumFrames ( 2 2 1 )
+			Style ( PRESSED )
+			MouseControl ( 1 )
+		)
+
+The commands are received asynchronously by the script through this method::
+
+   public override void HandleEvent(TCSEvent evt, string message)
+
+where evt may be TCSEvent.GenericTCSButtonPressed or TCSEvent.GenericTCSButtonReleased 
+and message is a string ranging from "0" to "31", which correspond to controls from 
+ORTS_TCS1 to ORTS_TCS32.
+The commands may only be triggered by the mouse, except the first two which may also be 
+triggered by key combinations ``Ctrl,``(comma) and ``Ctrl.``(period).
+Here a code excerpt from the script which manages the commands::
+
+          public override void HandleEvent(TCSEvent evt, string message)
+        {
+            if (message == String.Empty)
+            {
+                switch (evt)
+                {
+                    case ...
+						...
+                        break;
+
+                    case ...
+						...
+                        break;
+                 }
+            }
+            else
+            {
+                var commandEvent = TCSCommandEvent.None;
+                var messageIndex = 0;
+                if (Int32.TryParse(message, out messageIndex))
+                {
+                    commandEvent = (TCSCommandEvent)(messageIndex + 1);
+                    switch (evt)
+                    {
+                        case TCSEvent.GenericTCSButtonPressed:
+                            TCSButtonPressed[(int)commandEvent] = true;
+                            break;
+                        case TCSEvent.GenericTCSButtonReleased:
+                            TCSButtonPressed[(int)commandEvent] = false;
+                            TCSButtonReleased[(int)commandEvent] = true;
+                            break;
+                    }
+                }
+            }
+        }
+
+Within the Update method of the script TCSButtonPressed and 
+TCSButtonReleased may be tested, e.g.::
+
+              if (TCSButtonPressed[(int)(TCSCommandEvent.Button_Ric)] )
+
+After having tested it, TCSButtonPressed should be set to false by the 
+script code.
+
+To request a display of a cabview control, method::
+
+ public Action<int, float> SetCabDisplayControl; 
+
+has to be used, where ``int`` is the index of the cab control (from 0 to 47 
+corresponding from ORTS_TCS1 to ORTS_TCS48), and ``float`` is the value to be 
+used to select among frames.
+
+When the player moves the mouse over the cabview controls linked to commands, 
+the name of such control shortly appears on the display, like e.g. "speedometer", 
+as a reminder to the player. 
+In case of these generic commands, strings from "ORTS_TCS1" to "ORTS_TCS32" would 
+appear, which aren't mnemonic at all. Therefore following method is available::
+
+          public Action<string> SetCustomizedTCSControlString; 
+
+which may be used this way within the script::
+
+            // Initialize customized TCS command strings
+            foreach (string TCSControlString in Enum.GetNames(typeof(TCSCommandEvent)))
+            {
+                if (TCSControlString == "None") continue;
+                SetCustomizedTCSControlString(TCSControlString);
+
+so that, instead of ORTS_TCSnn the related mnemonic string is displayed.
 
 
 

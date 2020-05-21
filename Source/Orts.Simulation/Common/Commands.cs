@@ -1274,6 +1274,25 @@ namespace Orts.Common
         }
     }
 
+    [Serializable()]
+    public sealed class ToggleBlowdownValveCommand : Command
+    {
+        public static MSTSSteamLocomotive Receiver { get; set; }
+
+        public ToggleBlowdownValveCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver == null) return;
+            Receiver.ToggleBlowdownValve();
+            // Report();
+        }
+    }
+
     // Diesel player engine on / off command
     [Serializable()]
     public sealed class TogglePlayerEngineCommand : Command

@@ -868,6 +868,7 @@ namespace Orts.Viewer3D
 
                             released |= trigger.Signaled &&
                                 (trigger.SoundCommand is ORTSReleaseLoopRelease || trigger.SoundCommand is ORTSReleaseLoopReleaseWithJump);
+                            if (trigger is ORTSDiscreteTrigger) trigger.Signaled = false;
                         }
 
                         if (!released && !stream.ALSoundSource.isPlaying)
@@ -1593,6 +1594,7 @@ namespace Orts.Viewer3D
                 SoundStream.RepeatedTrigger = this == SoundStream.LastTriggered;
                 SoundCommand.Run();
                 SoundStream.LastTriggered = this;
+                Signaled = true;
 #if DEBUGSCR
                 if (SoundCommand is ORTSSoundPlayCommand && !string.IsNullOrEmpty((SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]))
                     Console.WriteLine("({0})DiscreteTrigger: {1}:{2}", SoundStream.ALSoundSource.SoundSourceID, TriggerID, (SoundCommand as ORTSSoundPlayCommand).Files[(SoundCommand as ORTSSoundPlayCommand).iFile]);

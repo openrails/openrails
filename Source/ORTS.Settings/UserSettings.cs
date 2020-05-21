@@ -112,6 +112,12 @@ namespace ORTS.Settings
         public int Multiplayer_Port { get; set; }
 
         // General settings:
+
+        [Default(false)]
+        public bool WebServer { get; set; }
+        [Default(2150)]
+        public int WebServerPort { get; set; }
+
         [Default(false)]
         public bool Alerter { get; set; }
         [Default(true)]
@@ -200,8 +206,6 @@ namespace ORTS.Settings
         public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
         public bool HotStart { get; set; }
-        [Default(false)]
-        public bool Autopilot { get; set; }
 
         // Data logger settings:
         [Default("comma")]
@@ -218,8 +222,9 @@ namespace ORTS.Settings
         public bool DataLogMisc { get; set; }
         [Default(false)]
         public bool DataLogSteamPerformance { get; set; }
-        
-        
+        [Default(false)]
+        public bool VerboseConfigurationMessages { get; set; }
+
         // Evaluation settings:
         [Default(false)]
         public bool DataLogTrainSpeed { get; set; }
@@ -285,8 +290,6 @@ namespace ORTS.Settings
         public bool NoForcedRedAtStationStops { get; set; }
         [Default(false)]
         public bool ConditionalLoadOfDayOrNightTextures { get; set; }
-        [Default(false)]
-        public bool ExtendedAIShunting { get; set; }
         [Default(100)]
         public int PrecipitationBoxHeight { get; set; }
         [Default(500)]
@@ -335,6 +338,8 @@ namespace ORTS.Settings
         // Internal settings:
         [Default(false)]
         public bool DataLogger { get; set; }
+        [Default(false)]
+        public bool Letterbox2DCab { get; set; }
         [Default(false)]
         public bool Profiling { get; set; }
         [Default(0)]
