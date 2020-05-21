@@ -2133,8 +2133,8 @@ wagon section of the WAG or ENG file.
 - ``wagon(ORTSBrakeShoeFriction`` -- defines the friction curve for the brake shoe
   with speed (default curve for cast iron brake shoes included in OR).
 
-Other standard brake parameters such as MaxBrakeForce, MaxReleaseRate , MaxApplicationRate,
-BrakeCylinderPressureForMaxBrakeBrakeForce can be used as well.
+Other standard brake parameters such as ``MaxBrakeForce``, ``MaxReleaseRate``, ``MaxApplicationRate``,
+``BrakeCylinderPressureForMaxBrakeBrakeForce`` can be used as well.
 
 Additionaly the following are defined in the engine section of the ENG file:
 
@@ -2167,22 +2167,37 @@ Additionaly the following are defined in the engine section of the ENG file:
 
 **Note: It is strongly recommended that UoM be used whenever units such as InHg, etc are specificed in the above parameters.**
 
-Other standard brake parameters such as VacuumBrakesHasVacuumPump, VacuumBrakesMinBoilerPressureMaxVacuum,
-VacuumBrakesSmallEjectorUsageRate, VacuumBrakesLargeEjectorUsageRate can be defined as well.
+Other standard brake parameters such as ``VacuumBrakesHasVacuumPump``, ``VacuumBrakesMinBoilerPressureMaxVacuum``,
+``VacuumBrakesSmallEjectorUsageRate``, ``VacuumBrakesLargeEjectorUsageRate`` can be defined as well.
 
 When defining the Brake Controllers for vacuum braked locomotives, only the following BrakesController
-tokens should be used - TrainBrakesControllerFullQuickReleaseStart, TrainBrakesControllerReleaseStart,
-TrainBrakesControllerRunningStart, TrainBrakesControllerApplyStart, TrainBrakesControllerHoldLappedStart,
-TrainBrakesControllerVacuumContinuousServiceStart, TrainBrakesControllerEmergencyStart,
-EngineBrakesControllerReleaseStart, EngineBrakesControllerRunningStart, EngineBrakesControllerApplyStart.
+tokens should be used - ``TrainBrakesControllerFullQuickReleaseStart``, ``TrainBrakesControllerReleaseStart``,
+``TrainBrakesControllerRunningStart``, ``TrainBrakesControllerApplyStart``, ``TrainBrakesControllerHoldLappedStart``,
+``TrainBrakesControllerVacuumContinuousServiceStart``, ``TrainBrakesControllerEmergencyStart``,
+``EngineBrakesControllerReleaseStart``, ``EngineBrakesControllerRunningStart``, ``EngineBrakesControllerApplyStart``.
 
 If ``TrainPipeLeakRate`` has been set in the ENG file, then the small ejector will be required to offset the leakage
-in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase the level of operation of the small ejector.
+in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase/decrease the level of operation of the small ejector.
 
 An engine controller can be configured to customise the operation of the small ejector. This controller is called
 ``ORTSSmallEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller.
 
-Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted to air braked locomotives.
+An engine controller can also be configured to customise the operation of the large ejector. This controller is called
+``ORTSLargeEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller. The large ejector needs to 
+be operated to release the brakes. The *Alt-J* and *Ctrl-J* keys can be used to decrease/increase the level of 
+operation of the large ejector.
+
+In diesel and electric locomotives, the Vacuum Exhauster preforms a similar function to the small and large ejector, 
+but in an "automated" fashion. The *J* key can be used to run the vacuum exhauster at high speed to facilitate a 
+quicker release of the brakes. An engine controller called ``ORTSFastVacuumExhauster ( x y z )``, and will be set 
+up as a standard 3 value controller.
+
+If it is not desired to operate the large ejector, a simplified brake operation can be used by selecting the 
+"Simple Contol and Physics" option in the options menu (Simulator TAB). This option can also be used if there is a 
+"mismatch" between the locomotive and car brakes to set a standard default set of brakes.
+
+Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted 
+to air braked locomotives.
 
 
 
