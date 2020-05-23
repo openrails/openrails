@@ -43,12 +43,17 @@ namespace Orts.Viewer3D.WebServices
     {
         public static EmbedIO.WebServer CreateWebServer(string url, string path)
         {
+            return CreateWebServer(new string[] { url }, path);
+        }
+
+        public static EmbedIO.WebServer CreateWebServer(string[] urls, string path)
+        {
             // Viewer is not yet initialized in the GameState object - wait until it is
             while (Program.Viewer == null)
                 Thread.Sleep(1000);
 
             return new EmbedIO.WebServer(o => o
-                    .WithUrlPrefix(url))
+                    .WithUrlPrefixes(urls))
                 .WithWebApi("/API", SerializationCallback, m => m
                     .WithController(() => new ORTSApiController(Program.Viewer)))
                 .WithStaticFolder("/", path, true);
