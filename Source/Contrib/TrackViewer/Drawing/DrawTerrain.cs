@@ -85,7 +85,6 @@ namespace ORTS.TrackViewer.Drawing
         //basic graphics
         private GraphicsDevice device;
         private BasicEffect basicEffect;
-        private VertexDeclaration vertexDeclaration;
 
         //Managin textures
         private TerrainTextureManager textureManager;
@@ -136,7 +135,7 @@ namespace ORTS.TrackViewer.Drawing
         public void LoadContent(GraphicsDevice graphicsDevice)
         {
             this.device = graphicsDevice;
-            basicEffect = new BasicEffect(this.device, null)
+            basicEffect = new BasicEffect(this.device)
             {
                 TextureEnabled = true,
                 World = Matrix.Identity
@@ -149,12 +148,10 @@ namespace ORTS.TrackViewer.Drawing
         /// </summary>
         public void Clear()
         {
-            vertexDeclaration?.Dispose();
             textureManager?.Dispose();
             loadedTerrainTiles.Clear();
             terrainTiles.Clear();
 
-            vertexDeclaration = new VertexDeclaration(device, VertexPositionTexture.VertexElements);
             textureManager = new TerrainTextureManager(terrtexPath, device, messageDelegate);
             SetTerrainReduction();
             DiscardVertexBuffers();
@@ -354,7 +351,7 @@ namespace ORTS.TrackViewer.Drawing
 
                 if (vertices.Count() > 0)
                 {
-                    VertexBuffer buffer = new VertexBuffer(this.device, VertexPositionTexture.SizeInBytes * vertices.Count(), BufferUsage.WriteOnly);
+                    VertexBuffer buffer = new VertexBuffer(device, typeof(VertexPositionTexture), vertices.Count(), BufferUsage.WriteOnly);
                     int vertexCount = vertices.Count();
                     buffer.SetData(vertices.ToArray(), 0, vertexCount);
                     vertexBuffers.Add(textureName, buffer);
@@ -404,22 +401,23 @@ namespace ORTS.TrackViewer.Drawing
         {
             UpdateCamera(drawArea);
 
-            device.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            device.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            device.SamplerStates[0] = new SamplerState
+            {
+                AddressU = TextureAddressMode.Wrap,
+                AddressV = TextureAddressMode.Wrap,
+                AddressW = TextureAddressMode.Wrap,
+                Filter = TextureFilter.Point
+            };
 
             foreach (string textureName in vertexBuffers.Keys)
             {
                 basicEffect.Texture = textureManager[textureName].Texture;
-                basicEffect.Begin();
                 foreach (EffectPass pass in basicEffect.CurrentTechnique.Passes)
                 {
-                    pass.Begin();
-                    device.VertexDeclaration = this.vertexDeclaration;
-                    device.Vertices[0].SetSource(vertexBuffers[textureName], 0, VertexPositionTexture.SizeInBytes);
+                    device.SetVertexBuffer(vertexBuffers[textureName]);
+                    pass.Apply();
                     device.DrawPrimitives(PrimitiveType.TriangleList, 0, vertexBufferCounts[textureName]);
-                    pass.End();
                 }
-                basicEffect.End();
             }
 
             UpdateStatusInformation(drawArea.MouseLocation);
@@ -944,13 +942,13 @@ namespace ORTS.TrackViewer.Drawing
             try
             {
                 var renderTarget = GetRenderTarget(newWidth, newHeight);
-                device.SetRenderTarget(0, renderTarget);
+                device.SetRenderTarget(renderTarget);
                 device.Clear(Color.White);
                 spriteBatch.Begin();
                 var fullTarget = new Rectangle(0, 0, newWidth, newHeight);
                 spriteBatch.Draw(Texture, fullTarget, Color.White);
                 spriteBatch.End();
-                device.SetRenderTarget(0, null);
+                device.SetRenderTarget(null);
 
                 //The rendered texture is not very stable: it is in memory of the renderTarget which depends on the video buffer
                 //Rescaling the screen or so makes it invalid. So we really copy out the data and put it in a new texture.
@@ -986,10 +984,10 @@ namespace ORTS.TrackViewer.Drawing
 
         private Texture2D GetStableTextureFromRenderTarget(RenderTarget2D renderTarget)
         {
-            var renderedTexture = renderTarget.GetTexture();
+            var renderedTexture = renderTarget;
             int width = renderedTexture.Width;
             int height = renderedTexture.Height;
-            var scaledTexture = new Texture2D(device, width, height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
+            var scaledTexture = new Texture2D(device, width, height, false, SurfaceFormat.Color);
             Color[] data = GetColorDataArray(width * height);
             renderedTexture.GetData<Color>(data);
             scaledTexture.SetData(data);
@@ -1023,9 +1021,10 @@ namespace ORTS.TrackViewer.Drawing
         private static RenderTarget2D GetNewRenderTarget(int width, int height)
         {
             //todo Handle situations where backbuffer is not large enough to support width and height
+            PresentationParameters pp = device.PresentationParameters;
             var renderTarget =
                     new RenderTarget2D(device, width, height,
-                        1, SurfaceFormat.Color, device.DepthStencilBuffer.MultiSampleType, device.DepthStencilBuffer.MultiSampleQuality);
+                        false, SurfaceFormat.Color, pp.DepthStencilFormat, pp.MultiSampleCount, RenderTargetUsage.DiscardContents);
             return renderTarget;
 
         }

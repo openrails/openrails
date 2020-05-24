@@ -129,14 +129,16 @@ namespace Orts.Viewer3D
         {
             public Vector4 StartPosition_StartTime;
             public Vector4 EndPosition_EndTime;
-            public Short4 TileXZ_Vertex;
+            public Vector4 TileXZ_Vertex;
 
             public static readonly VertexElement[] VertexElements =
             {
-                new VertexElement(0, 0, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 0),
-                new VertexElement(0, 16, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.Position, 1),
-                new VertexElement(0, 16 + 16, VertexElementFormat.Short4, VertexElementMethod.Default, VertexElementUsage.Position, 2),
+                new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
+                new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.Position, 1),
+                new VertexElement(16 + 16, VertexElementFormat.Vector4, VertexElementUsage.Position, 2),
             };
+
+            public static int SizeInBytes = sizeof(float) * (4 + 4) + sizeof(float) * 4;
         }
 
         float ParticleDuration;
@@ -161,7 +163,7 @@ namespace Orts.Viewer3D
         {
             // Snow is the slower particle, hence longer duration, hence more particles in total.
             // Setting the precipitaton box size based on GraphicsDeviceCapabilities.
-            if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
+            if (graphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
             {
                 ParticleBoxLengthM = (float)Program.Simulator.Settings.PrecipitationBoxLength;
                 ParticleBoxWidthM = (float)Program.Simulator.Settings.PrecipitationBoxWidth;
@@ -173,30 +175,29 @@ namespace Orts.Viewer3D
                 ParticleBoxWidthM = ParticleBoxWidthM_16;
                 ParticleBoxHeightM = ParticleBoxHeightM_16;
             }
-            if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
+            if (graphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
                 MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
             // Processing 16bit device
             else
                 MaxParticles = (int)(PrecipitationViewer.MaxIntensityPPSPM2_16 * ParticleBoxLengthM * ParticleBoxWidthM * ParticleBoxHeightM / SnowVelocityMpS / ParticleVelocityFactor);
             // Checking if graphics device is 16bit.
-            if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex == 0xFFFF)
+            if (graphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
                 Debug.Assert(MaxParticles * VerticiesPerParticle < ushort.MaxValue, "The maximum number of precipitation verticies must be able to fit in a ushort (16bit unsigned) index buffer.");
             Vertices = new ParticleVertex[MaxParticles * VerticiesPerParticle];
-            VertexDeclaration = new VertexDeclaration(graphicsDevice, ParticleVertex.VertexElements);
+            VertexDeclaration = new VertexDeclaration(ParticleVertex.SizeInBytes, ParticleVertex.VertexElements);
             VertexStride = Marshal.SizeOf(typeof(ParticleVertex));
-            VertexBuffer = new DynamicVertexBuffer(graphicsDevice, typeof(ParticleVertex), MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
-            VertexBuffer.ContentLost += VertexBuffer_ContentLost;
+            VertexBuffer = new DynamicVertexBuffer(graphicsDevice, VertexDeclaration, MaxParticles * VerticiesPerParticle, BufferUsage.WriteOnly);
             // Processing either 32bit or 16bit InitIndexBuffer depending on GraphicsDeviceCapabilities.
-           if (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF) // As an integer, 0xFFFF is 65535.
-               IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
-           else
-               IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndiciesPerParticle);
+            if (graphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+                IndexBuffer = InitIndexBuffer(graphicsDevice, MaxParticles * IndiciesPerParticle);
+            else
+                IndexBuffer = InitIndexBuffer16(graphicsDevice, MaxParticles * IndiciesPerParticle);
             Heights = new HeightCache(8);
             // This Trace command is used to show how much memory is used.
-            Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, (graphicsDevice.GraphicsDeviceCapabilities.MaxVertexIndex > 0xFFFF ? sizeof(uint) : sizeof(ushort)) * MaxParticles * IndiciesPerParticle));
+            Trace.TraceInformation(String.Format("Allocation for {0:N0} particles:\n\n  {1,13:N0} B RAM vertex data\n  {2,13:N0} B RAM index data (temporary)\n  {1,13:N0} B VRAM DynamicVertexBuffer\n  {2,13:N0} B VRAM IndexBuffer", MaxParticles, Marshal.SizeOf(typeof(ParticleVertex)) * MaxParticles * VerticiesPerParticle, sizeof(uint) * MaxParticles * IndiciesPerParticle));
         }
 
-        void VertexBuffer_ContentLost(object sender, EventArgs e)
+        void VertexBuffer_ContentLost()
         {
             VertexBuffer.SetData(0, Vertices, 0, Vertices.Length, VertexStride, SetDataOptions.NoOverwrite);
         }
@@ -217,7 +218,7 @@ namespace Orts.Viewer3D
 
                 index += VerticiesPerParticle;
             }
-            var indexBuffer = new IndexBuffer(graphicsDevice, sizeof(uint) * numIndicies, BufferUsage.WriteOnly, IndexElementSize.ThirtyTwoBits);
+            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(uint), numIndicies, BufferUsage.WriteOnly);
             indexBuffer.SetData(indices);
             return indexBuffer;
         }
@@ -238,7 +239,7 @@ namespace Orts.Viewer3D
 
                 index += VerticiesPerParticle;
             }
-            var indexBuffer = new IndexBuffer(graphicsDevice, sizeof(ushort) * numIndicies, BufferUsage.WriteOnly, IndexElementSize.SixteenBits);
+            var indexBuffer = new IndexBuffer(graphicsDevice, typeof(ushort), numIndicies, BufferUsage.WriteOnly);
             indexBuffer.SetData(indices);
             return indexBuffer;
         }
@@ -342,7 +343,7 @@ namespace Orts.Viewer3D
                     Vertices[vertex + j].StartPosition_StartTime = new Vector4(position.XNAMatrix.Translation - ParticleDirection * ParticleDuration, time);
                     Vertices[vertex + j].StartPosition_StartTime.Y += ParticleBoxHeightM;
                     Vertices[vertex + j].EndPosition_EndTime = new Vector4(position.XNAMatrix.Translation, time + ParticleDuration);
-                    Vertices[vertex + j].TileXZ_Vertex = new Short4(position.TileX, position.TileZ, j, 0);
+                    Vertices[vertex + j].TileXZ_Vertex = new Vector4(position.TileX, position.TileZ, j, 0);
                 }
 
                 FirstFreeParticle = particle;
@@ -381,14 +382,16 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            if (VertexBuffer.IsContentLost)
+                VertexBuffer_ContentLost();
+
             if (FirstNewParticle != FirstFreeParticle)
                 AddNewParticlesToVertexBuffer();
 
             if (HasParticlesToRender())
             {
                 graphicsDevice.Indices = IndexBuffer;
-                graphicsDevice.VertexDeclaration = VertexDeclaration;
-                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexStride);
+                graphicsDevice.SetVertexBuffer(VertexBuffer);
 
                 if (FirstActiveParticle < FirstFreeParticle)
                 {
@@ -500,7 +503,7 @@ namespace Orts.Viewer3D
             if (ShaderPasses == null) ShaderPasses = shader.Techniques["Pricipitation"].Passes.GetEnumerator();
 
             shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection);
-            shader.particleSize.SetValue(1);
+            shader.particleSize.SetValue(1f);
             if (Viewer.Simulator.Weather.PrecipitationLiquidity == 0 || Viewer.Simulator.Weather.PrecipitationLiquidity == 1)
             {
                 shader.precipitation_Tex.SetValue(Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture :
@@ -513,22 +516,17 @@ namespace Orts.Viewer3D
                 shader.precipitation_Tex.SetValue(DynamicPrecipitationTexture[precipitation_TexIndex]);
             }
 
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = true;
-            rs.DepthBufferWriteEnable = false;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
         {
             var shader = Viewer.MaterialManager.PrecipitationShader;
 
-            shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
-                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     // Note: This is quite a hack. We ideally should be able to pass this through RenderItem somehow.
@@ -536,21 +534,16 @@ namespace Orts.Viewer3D
                     shader.currentTime.SetValue(item.XNAMatrix.M11);
 
                     shader.SetMatrix(Matrix.Identity, ref XNAViewMatrix, ref XNAProjectionMatrix);
-                    shader.CommitChanges();
+                    ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPasses.Current.End();
             }
-            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DepthBufferWriteEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         public override bool GetBlending()
