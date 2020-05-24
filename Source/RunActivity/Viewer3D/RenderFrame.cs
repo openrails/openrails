@@ -129,13 +129,15 @@ namespace Orts.Viewer3D
         public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
         public ShapeFlags Flags;
+        public object ItemData;
 
-        public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags)
+        public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags, object itemData = null)
         {
             Material = material;
             RenderPrimitive = renderPrimitive;
             XNAMatrix = xnaMatrix;
             Flags = flags;
+            ItemData = itemData;
         }
 
         public class Comparer : IComparer<RenderItem>
@@ -563,7 +565,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix)
         {
-            AddPrimitive(material, primitive, group, ref xnaMatrix, ShapeFlags.None);
+            AddPrimitive(material, primitive, group, ref xnaMatrix, ShapeFlags.None, null);
         }
 
         static readonly bool[] PrimitiveBlendedScenery = new bool[] { true, false }; // Search for opaque pixels in alpha blended primitives, thus maintaining correct DepthBuffer
@@ -572,6 +574,12 @@ namespace Orts.Viewer3D
 
         [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+        {
+            AddPrimitive(material, primitive, group, ref xnaMatrix, flags, null);
+        }
+
+        [CallOnThread("Updater")]
+        public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags, object itemData)
         {
             var getBlending = material.GetBlending();
             var blending = getBlending && material is SceneryMaterial ? PrimitiveBlendedScenery : getBlending ? PrimitiveBlended : PrimitiveNotBlended;
@@ -587,7 +595,7 @@ namespace Orts.Viewer3D
                     items = new RenderItemCollection();
                     sequence.Add(sortingMaterial, items);
                 }
-                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags, itemData));
             }
             if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
                 primitive.ZBias = 1;

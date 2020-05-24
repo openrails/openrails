@@ -202,7 +202,7 @@ namespace Orts.Simulation
         /// 
         public bool CheckTrainOnMovingTable(Train train)
         {
-            var thisTableType = this is Turntable ? "turntable" : "transfertable";
+            var thisTableType = this is Turntable ? Simulator.Catalog.GetString("turntable") : Simulator.Catalog.GetString("transfertable");
             var trainIndex = TrainsOnMovingTable.FindIndex(x => x.Train.Number == train.Number);
             if (WorldLocation.Within(train.FrontTDBTraveller.WorldLocation, WorldPosition.WorldLocation, Length / 2))
             {

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-04-19 01:50:49+0200\n"
-"PO-Revision-Date: 2020-04-19 01:50:49+0200\n"
+"POT-Creation-Date: 2020-05-21 18:39:29+0200\n"
+"PO-Revision-Date: 2020-05-21 18:39:29+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,22 +11,22 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../ORTS.Settings/InputSettings.cs:506
+#: ../../ORTS.Settings/InputSettings.cs:510
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:508
+#: ../../ORTS.Settings/InputSettings.cs:512
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:510
+#: ../../ORTS.Settings/InputSettings.cs:514
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:541
+#: ../../ORTS.Settings/InputSettings.cs:545
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""

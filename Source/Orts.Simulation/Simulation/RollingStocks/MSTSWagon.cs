@@ -153,6 +153,16 @@ namespace Orts.Simulation.RollingStocks
         public float HeatingHoseSteamVelocityMpS;
         public float HeatingHoseSteamVolumeM3pS;
 
+        // Wagon heating compartment steamtrap leaks
+        public float HeatingCompartmentSteamTrapParticleDurationS;
+        public float HeatingCompartmentSteamTrapVelocityMpS;
+        public float HeatingCompartmentSteamTrapVolumeM3pS;
+
+        // Wagon heating steamtrap leaks
+        public float HeatingMainPipeSteamTrapDurationS;
+        public float HeatingMainPipeSteamTrapVelocityMpS;
+        public float HeatingMainPipeSteamTrapVolumeM3pS;
+
         // Water Scoop Spray
         public float WaterScoopParticleDurationS;
         public float WaterScoopWaterVelocityMpS;
@@ -171,7 +181,8 @@ namespace Orts.Simulation.RollingStocks
         // Heating Steam Boiler
         public float HeatingSteamBoilerDurationS;
         public float HeatingSteamBoilerVolumeM3pS;
-        public Color HeatingSteamBoilerSteadyColor = Color.Aqua;
+        public Color HeatingSteamBoilerSteadyColor = Color.LightSlateGray;
+        public bool HeatingBoilerSet = false;
 
         // Wagon Smoke
         public float WagonSmokeVolumeM3pS;
@@ -278,7 +289,11 @@ namespace Orts.Simulation.RollingStocks
             public static bool Unload { get; set; }
         }
 
-        public MSTSBrakeSystem MSTSBrakeSystem { get { return (MSTSBrakeSystem)base.BrakeSystem; } }
+        public MSTSBrakeSystem MSTSBrakeSystem
+        {
+            get { return (MSTSBrakeSystem)base.BrakeSystem; }
+            set { base.BrakeSystem = value; } // value needs to be set to allow trailing cars to have same brake system as locomotive when in simple brake mode
+        }
 
         public MSTSWagon(Simulator simulator, string wagFilePath)
             : base(simulator, wagFilePath)
@@ -378,6 +393,19 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Initialise steam heat parameters
+            if (TrainHeatBoilerWaterUsageGalukpH == null) // If no table entered in WAG file, then use the default table
+            {
+                TrainHeatBoilerWaterUsageGalukpH = SteamHeatBoilerWaterUsageGalukpH();
+            }
+
+            if (TrainHeatBoilerFuelUsageGalukpH == null) // If no table entered in WAG file, then use the default table
+            {
+                TrainHeatBoilerFuelUsageGalukpH = SteamHeatBoilerFuelUsageGalukpH();
+            }
+            MaximumSteamHeatingBoilerSteamUsageRateLbpS = TrainHeatBoilerWaterUsageGalukpH.MaxX(); // Find maximum steam capacity of the generator based upon the information in the water usage table
+            CurrentSteamHeatBoilerFuelCapacityL = MaximiumSteamHeatBoilerFuelTankCapacityL;
+            CurrentCarSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
 
             // If Drag constant not defined in WAG/ENG file then assign default value based upon orig Davis values
             if (DavisDragConstant == 0)
@@ -824,6 +852,18 @@ namespace Orts.Simulation.RollingStocks
                         STFException.TraceWarning(stf, "Skipped unknown wagon type " + wagonType);
                     }
                     break;
+                case "wagon(ortswagonspecialtype":
+                    stf.MustMatch("(");
+                    var wagonspecialType = stf.ReadString();
+                    try
+                    {
+                        WagonSpecialType = (WagonSpecialTypes)Enum.Parse(typeof(WagonSpecialTypes), wagonspecialType);
+                    }
+                    catch
+                    {
+                        STFException.TraceWarning(stf, "Assumed unknown engine type " + wagonspecialType);
+                    }
+                    break;
                 case "wagon(freightanim":
                     stf.MustMatch("(");
                     FreightShapeFileName = stf.ReadString();
@@ -878,7 +918,18 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; // Temperature conversion is incorrect - to be checked!!!
+                case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsheatingtrainpipeouterdiameter": MainSteamHeatPipeOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingtrainpipeinnerdiameter": MainSteamHeatPipeInnerDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingconnectinghoseinnerdiameter": CarConnectSteamHoseInnerDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
+                case "wagon(ortsheatingconnectinghoseouterdiameter": CarConnectSteamHoseOuterDiaM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(mass": InitialMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); if (InitialMassKG < 0.1f) InitialMassKG = 0.1f; break;
+                case "wagon(ortsheatingboilerwatertankcapacity": MaximumSteamHeatBoilerWaterTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortsheatingboilerfueltankcapacity": MaximiumSteamHeatBoilerFuelTankCapacityL = stf.ReadFloatBlock(STFReader.UNITS.Volume, null); break;
+                case "wagon(ortsheatingboilerwaterusage": TrainHeatBoilerWaterUsageGalukpH = new Interpolator(stf); break;
+                case "wagon(ortsheatingboilerfuelusage": TrainHeatBoilerFuelUsageGalukpH = new Interpolator(stf); break;
                 case "wagon(wheelradius": WheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "engine(wheelradius": DriverWheelRadiusM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); break;
                 case "wagon(sound": MainSoundFileName = stf.ReadStringBlock(null); break;
@@ -1036,6 +1087,7 @@ namespace Orts.Simulation.RollingStocks
             MainShapeFileName = copy.MainShapeFileName;
             HasPassengerCapacity = copy.HasPassengerCapacity;
             WagonType = copy.WagonType;
+            WagonSpecialType = copy.WagonSpecialType;
             FreightShapeFileName = copy.FreightShapeFileName;
             FreightAnimMaxLevelM = copy.FreightAnimMaxLevelM;
             FreightAnimMinLevelM = copy.FreightAnimMinLevelM;
@@ -1059,6 +1111,17 @@ namespace Orts.Simulation.RollingStocks
             InitialMaxHandbrakeForceN = copy.InitialMaxHandbrakeForceN;
             MaxBrakeForceN = copy.MaxBrakeForceN;
             MaxHandbrakeForceN = copy.MaxHandbrakeForceN;
+            WindowDeratingFactor = copy.WindowDeratingFactor;
+            DesiredCompartmentTempSetpointC = copy.DesiredCompartmentTempSetpointC;
+            CompartmentHeatingPipeAreaFactor = copy.CompartmentHeatingPipeAreaFactor;
+            MainSteamHeatPipeOuterDiaM = copy.MainSteamHeatPipeOuterDiaM;
+            MainSteamHeatPipeInnerDiaM = copy.MainSteamHeatPipeInnerDiaM;
+            CarConnectSteamHoseInnerDiaM = copy.CarConnectSteamHoseInnerDiaM;
+            CarConnectSteamHoseOuterDiaM = copy.CarConnectSteamHoseOuterDiaM;
+            MaximumSteamHeatBoilerWaterTankCapacityL = copy.MaximumSteamHeatBoilerWaterTankCapacityL;
+            MaximiumSteamHeatBoilerFuelTankCapacityL = copy.MaximiumSteamHeatBoilerFuelTankCapacityL;
+            TrainHeatBoilerWaterUsageGalukpH = new Interpolator(copy.TrainHeatBoilerWaterUsageGalukpH);
+            TrainHeatBoilerFuelUsageGalukpH = new Interpolator(copy.TrainHeatBoilerFuelUsageGalukpH);
             DavisAN = copy.DavisAN;
             DavisBNSpM = copy.DavisBNSpM;
             DavisCNSSpMM = copy.DavisCNSSpMM;
@@ -1245,6 +1308,10 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else outf.Write(false);
             }
+            outf.Write(CurrentSteamHeatBoilerFuelCapacityL);
+            outf.Write(CarCurrentCarriageHeatTempC);
+            outf.Write(CurrentCarSteamHeatBoilerWaterCapacityL);
+
             base.Save(outf);
         }
 
@@ -1285,6 +1352,9 @@ namespace Orts.Simulation.RollingStocks
                     WeightLoadController.Restore(inf);
                 }
             }
+            CurrentSteamHeatBoilerFuelCapacityL = inf.ReadSingle();
+            CarCurrentCarriageHeatTempC = inf.ReadSingle();
+            CurrentCarSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
 
             base.Restore(inf);
 
@@ -2387,14 +2457,44 @@ namespace Orts.Simulation.RollingStocks
         // This section updates the special effects
         {
 
+            var LocomotiveParameters = Simulator.PlayerLocomotive as MSTSLocomotive;
 
-            // Update Steam Leaks Information
-            if (Train.CarSteamHeatOn)
+            // if this is a heating steam boiler car then adjust steam pressure
+            // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, steam heating shouldn't already be present on diesel or steam locomotive
+            if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler && !LocomotiveParameters.IsSteamHeatFitted && LocomotiveParameters.SteamHeatController.CurrentValue > 0.05 && CurrentCarSteamHeatBoilerWaterCapacityL > 0 && CurrentSteamHeatBoilerFuelCapacityL > 0 && !IsSteamHeatBoilerLockedOut)
+            {
+                //   LocomotiveParameters.CurrentSteamHeatPressurePSI = LocomotiveParameters.SteamHeatController.CurrentValue * 100;
+                LocomotiveParameters.CurrentSteamHeatPressurePSI = 60.0f;
+                Train.CarSteamHeatOn = true; // turn on steam effects on wagons
+            }
+            else if (IsPlayerTrain && WagonSpecialType == MSTSWagon.WagonSpecialTypes.HeatingBoiler)
+            {
+                LocomotiveParameters.CurrentSteamHeatPressurePSI = 0.0f;
+                Train.CarSteamHeatOn = false; // turn off steam effects on wagons
+                SteamHeatingBoilerOn = false;
+            }
+
+            // Turn on Heating steam boiler
+            if (Train.CarSteamHeatOn && LocomotiveParameters.SteamHeatController.CurrentValue > 0)
+            {
+                // Turn heating boiler on 
+                HeatingSteamBoilerDurationS = 1.0f * LocomotiveParameters.SteamHeatController.CurrentValue;
+                HeatingSteamBoilerVolumeM3pS = 1.5f * LocomotiveParameters.SteamHeatController.CurrentValue;
+            }
+            else
+            {
+                // Turn heating boiler off 
+                HeatingSteamBoilerVolumeM3pS = 0.0f;
+                HeatingSteamBoilerDurationS = 0.0f;
+            }
+
+            // Update Heating hose steam leaks Information
+            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
             {
                 // Turn wagon steam leaks on 
                 HeatingHoseParticleDurationS = 0.75f;
                 HeatingHoseSteamVelocityMpS = 15.0f;
-                HeatingHoseSteamVolumeM3pS = 4.0f;
+                HeatingHoseSteamVolumeM3pS = 4.0f * SteamHoseLeakRateRandom;
             }
             else
             {
@@ -2403,6 +2503,39 @@ namespace Orts.Simulation.RollingStocks
                 HeatingHoseSteamVelocityMpS = 0.0f;
                 HeatingHoseSteamVolumeM3pS = 0.0f;
             }
+
+            // Update Heating main pipe steam trap leaks Information
+            if (Train.CarSteamHeatOn && CarSteamHeatMainPipeSteamPressurePSI > 0)
+            {
+                // Turn wagon steam leaks on 
+                HeatingMainPipeSteamTrapDurationS = 0.75f;
+                HeatingMainPipeSteamTrapVelocityMpS = 15.0f;
+                HeatingMainPipeSteamTrapVolumeM3pS = 8.0f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingMainPipeSteamTrapDurationS = 0.0f;
+                HeatingMainPipeSteamTrapVelocityMpS = 0.0f;
+                HeatingMainPipeSteamTrapVolumeM3pS = 0.0f;
+            }
+
+            // Update Heating compartment steam trap leaks Information
+            if (SteamHeatingCompartmentSteamTrapOn)
+            {
+                // Turn wagon steam leaks on 
+                HeatingCompartmentSteamTrapParticleDurationS = 0.75f;
+                HeatingCompartmentSteamTrapVelocityMpS = 15.0f;
+                HeatingCompartmentSteamTrapVolumeM3pS = 4.0f;
+            }
+            else
+            {
+                // Turn wagon steam leaks off 
+                HeatingCompartmentSteamTrapParticleDurationS = 0.0f;
+                HeatingCompartmentSteamTrapVelocityMpS = 0.0f;
+                HeatingCompartmentSteamTrapVolumeM3pS = 0.0f;
+            }
+
 
             // Update Water Scoop Spray Information when scoop is down and filling from trough
 
@@ -2505,7 +2638,6 @@ namespace Orts.Simulation.RollingStocks
 
             WagonSmokeDurationS = InitialWagonSmokeDurationS;
             WagonSmokeVolumeM3pS = InitialWagonSmokeVolumeM3pS;
-
         }
 
         public override void SignalEvent(Event evt)

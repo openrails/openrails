@@ -730,36 +730,36 @@ namespace Orts.Viewer3D.Popups
                             bool lElectric = false;
                             foreach (var item in cars)//Consist engines
                             {
-                                if (item.EngineType.ToString() == Viewer.Catalog.GetString("Diesel"))
+                                if (item.EngineType == TrainCar.EngineTypes.Diesel)
                                 {//Fuel Diesel
                                     nDieselvolume = nDieselvolume + (item as MSTSDieselLocomotive).MaxDieselLevelL;
                                     nDiesellevel = nDiesellevel + (item as MSTSDieselLocomotive).DieselLevelL;
                                     nDieselburned = nDieselvolume - nDiesellevel;
-                                    cEnginetype.Add(Viewer.Catalog.GetString("Diesel"));
+                                    cEnginetype.Add("Diesel");
                                     lDiesel = true;
                                 }
 
-                                if (item.EngineType.ToString() == Viewer.Catalog.GetString("Steam") && item.AuxWagonType.ToString() == Viewer.Catalog.GetString("Engine"))
+                                if (item.EngineType == TrainCar.EngineTypes.Steam && item.AuxWagonType == "Engine")
                                 {//Fuel Steam
                                     nCoalvolume = nCoalvolume + (item as MSTSSteamLocomotive).MaxTenderCoalMassKG;
                                     nCoallevel = nCoallevel + (item as MSTSSteamLocomotive).TenderCoalMassKG;
                                     nCoalburned = nCoalvolume - nCoallevel;
                                     nCoalBurnedPerc = 1 - ((item as MSTSSteamLocomotive).TenderCoalMassKG / (item as MSTSSteamLocomotive).MaxTenderCoalMassKG);
-                                    cEnginetype.Add(Viewer.Catalog.GetString("Steam"));
+                                    cEnginetype.Add("Steam");
 
                                     nWaterBurnedPerc = 1 - ((item as MSTSSteamLocomotive).CombinedTenderWaterVolumeUKG / (item as MSTSSteamLocomotive).MaxTotalCombinedWaterVolumeUKG);
                                     lSteam = true;
                                 }
-                                if (item.EngineType.ToString() == Viewer.Catalog.GetString("Electric"))
+                                if (item.EngineType == TrainCar.EngineTypes.Electric)
                                 {
-                                    cEnginetype.Add(Viewer.Catalog.GetString("Electric"));
+                                    cEnginetype.Add("Electric");
                                     lElectric = true;
                                 }
                             }
                             //Consist engine type  
-                            int ncountdiesel = cEnginetype.Where(s => s == Viewer.Catalog.GetString("Diesel")).Count();
-                            int ncountsteam = cEnginetype.Where(s => s == Viewer.Catalog.GetString("Steam")).Count();
-                            int ncountelectric = cEnginetype.Where(s => s == Viewer.Catalog.GetString("Electric")).Count();
+                            int ncountdiesel = cEnginetype.Where(s => s == "Diesel").Count();
+                            int ncountsteam = cEnginetype.Where(s => s == "Steam").Count();
+                            int ncountelectric = cEnginetype.Where(s => s == "Electric").Count();
                             labeltext = "  Consist engine=" + (ncountdiesel > 0 ? ncountdiesel + Viewer.Catalog.GetString(" Diesel. ") : "") + (ncountsteam > 0 ? ncountsteam + Viewer.Catalog.GetString(" Steam.") : "") + (ncountelectric > 0 ? ncountelectric + Viewer.Catalog.GetString(" Electric.") : "");
                             outmesssage(labeltext, colWidth * 3, true, 0);
 

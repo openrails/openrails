@@ -76,6 +76,14 @@ namespace Orts.Common
         FuelTowerUp,
         GearDown,
         GearUp,
+        GenericEvent1,
+        GenericEvent2,
+        GenericEvent3,
+        GenericEvent4,
+        GenericEvent5,
+        GenericEvent6,
+        GenericEvent7,
+        GenericEvent8,
         HornOff,
         HornOn,
         LightSwitchToggle,
@@ -99,11 +107,13 @@ namespace Orts.Common
         SanderOff,
         SanderOn,
         SemaphoreArm,
+        LargeEjectorChange,
         SmallEjectorChange,
         WaterInjector1Off,
         WaterInjector1On,
         WaterInjector2Off,
         WaterInjector2On,
+        BlowdownValveToggle,
         SteamHeatChange, 
         SteamPulse1,
         SteamPulse2,
@@ -168,7 +178,10 @@ namespace Orts.Common
         SecondEnginePowerOn,
 
         HotBoxBearingOn,
-        HotBoxBearingOff
+        HotBoxBearingOff,
+
+        BoilerBlowdownOn,
+        BoilerBlowdownOff
     }
 
     public static class Events
@@ -294,7 +307,8 @@ namespace Orts.Common
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
                         case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
-                        
+
+                        case 120: return Event.BlowdownValveToggle;
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;
@@ -330,6 +344,7 @@ namespace Orts.Common
                         case 157: return Event.CircuitBreakerClosingAuthorizationOn;
                         case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
+                        case 159: return Event.LargeEjectorChange;
                         case 160: return Event.SmallEjectorChange;
 
                         case 161: return Event.CabLightSwitchToggle;
@@ -350,6 +365,18 @@ namespace Orts.Common
 
                         case 173: return Event.HotBoxBearingOn;
                         case 174: return Event.HotBoxBearingOff;
+
+                        case 175: return Event.BoilerBlowdownOn;
+                        case 176: return Event.BoilerBlowdownOff;
+
+                        case 181: return Event.GenericEvent1;
+                        case 182: return Event.GenericEvent2;
+                        case 183: return Event.GenericEvent3;
+                        case 184: return Event.GenericEvent4;
+                        case 185: return Event.GenericEvent5;
+                        case 186: return Event.GenericEvent6;
+                        case 187: return Event.GenericEvent7;
+                        case 188: return Event.GenericEvent8;
                         //
 
                         default: return 0;

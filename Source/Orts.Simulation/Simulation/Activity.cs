@@ -848,7 +848,8 @@ namespace Orts.Simulation
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
             {
-                if (IsAtStation(MyPlayerTrain))
+                if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && IsAtStation(MyPlayerTrain)  ||
+                    MyPlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING && (MyPlayerTrain as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.STATION_STOP)
                 {
                     if (Simulator.TimetableMode || MyPlayerTrain.StationStops.Count == 0)
                     {

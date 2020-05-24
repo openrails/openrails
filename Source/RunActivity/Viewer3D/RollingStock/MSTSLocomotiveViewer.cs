@@ -177,6 +177,8 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCabRadio, new Action[] { Noop, () => new CabRadioCommand(Viewer.Log, !Locomotive.CabRadioOn) });
             UserInputCommands.Add(UserCommand.ControlDieselHelper, new Action[] { Noop, () => new ToggleHelpersEngineCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlGeneric1, new Action[] { () => new TCSCommand(Viewer.Log, false, 0), () => new TCSCommand(Viewer.Log, true, 0) });
+            UserInputCommands.Add(UserCommand.ControlGeneric2, new Action[] { () => new TCSCommand(Viewer.Log, false, 1), () => new TCSCommand(Viewer.Log, true, 1) });
             base.InitializeUserInputCommands();
         }
 
@@ -1796,6 +1798,8 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_WATER_SCOOP:
                 case CABViewControlTypes.WATER_INJECTOR1:
                 case CABViewControlTypes.WATER_INJECTOR2:
+                case CABViewControlTypes.SMALL_EJECTOR:
+                case CABViewControlTypes.ORTS_LARGE_EJECTOR:
                 case CABViewControlTypes.FIREHOLE:
                     index = PercentToIndex(data);
                     break;
@@ -1808,18 +1812,22 @@ namespace Orts.Viewer3D.RollingStock
                     break;
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
+                    var dynBrakePercent = Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ?
+                        Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
                     if (Locomotive.DynamicBrakeController != null)
                     {
-                        if (Locomotive.DynamicBrakePercent == -1)
+                        if (dynBrakePercent == -1)
                             break;
                         if (!Locomotive.HasSmoothStruc)
+                        {
                             index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
+                        }
                         else
-                            index = PercentToIndex(Locomotive.DynamicBrakePercent);
+                            index = PercentToIndex(dynBrakePercent);
                     }
                     else
                     {
-                        index = PercentToIndex(Locomotive.DynamicBrakePercent);
+                        index = PercentToIndex(dynBrakePercent);
                     }
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
@@ -1847,6 +1855,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.RIGHTDOOR:
                 case CABViewControlTypes.MIRRORS:
                 case CABViewControlTypes.HORN:
+                case CABViewControlTypes.VACUUM_EXHAUSTER:
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.BELL:
                 case CABViewControlTypes.SANDERS:
@@ -1878,10 +1887,10 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.EMERGENCY_BRAKE:
                 case CABViewControlTypes.DOORS_DISPLAY:
                 case CABViewControlTypes.CYL_COCKS:
+                case CABViewControlTypes.ORTS_BLOWDOWN_VALVE:
                 case CABViewControlTypes.ORTS_CYL_COMP:
                 case CABViewControlTypes.STEAM_INJ1:
                 case CABViewControlTypes.STEAM_INJ2:
-                case CABViewControlTypes.SMALL_EJECTOR:
                 case CABViewControlTypes.GEARS_DISPLAY:
                 case CABViewControlTypes.CAB_RADIO:
                 case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
@@ -1893,6 +1902,58 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_LEFTDOOR:
                 case CABViewControlTypes.ORTS_RIGHTDOOR:
                 case CABViewControlTypes.ORTS_MIRRORS:
+                    index = (int)data;
+                    break;
+
+                // Train Control System controls
+                case CABViewControlTypes.ORTS_TCS1:
+                case CABViewControlTypes.ORTS_TCS2:
+                case CABViewControlTypes.ORTS_TCS3:
+                case CABViewControlTypes.ORTS_TCS4:
+                case CABViewControlTypes.ORTS_TCS5:
+                case CABViewControlTypes.ORTS_TCS6:
+                case CABViewControlTypes.ORTS_TCS7:
+                case CABViewControlTypes.ORTS_TCS8:
+                case CABViewControlTypes.ORTS_TCS9:
+                case CABViewControlTypes.ORTS_TCS10:
+                case CABViewControlTypes.ORTS_TCS11:
+                case CABViewControlTypes.ORTS_TCS12:
+                case CABViewControlTypes.ORTS_TCS13:
+                case CABViewControlTypes.ORTS_TCS14:
+                case CABViewControlTypes.ORTS_TCS15:
+                case CABViewControlTypes.ORTS_TCS16:
+                case CABViewControlTypes.ORTS_TCS17:
+                case CABViewControlTypes.ORTS_TCS18:
+                case CABViewControlTypes.ORTS_TCS19:
+                case CABViewControlTypes.ORTS_TCS20:
+                case CABViewControlTypes.ORTS_TCS21:
+                case CABViewControlTypes.ORTS_TCS22:
+                case CABViewControlTypes.ORTS_TCS23:
+                case CABViewControlTypes.ORTS_TCS24:
+                case CABViewControlTypes.ORTS_TCS25:
+                case CABViewControlTypes.ORTS_TCS26:
+                case CABViewControlTypes.ORTS_TCS27:
+                case CABViewControlTypes.ORTS_TCS28:
+                case CABViewControlTypes.ORTS_TCS29:
+                case CABViewControlTypes.ORTS_TCS30:
+                case CABViewControlTypes.ORTS_TCS31:
+                case CABViewControlTypes.ORTS_TCS32:
+                case CABViewControlTypes.ORTS_TCS33:
+                case CABViewControlTypes.ORTS_TCS34:
+                case CABViewControlTypes.ORTS_TCS35:
+                case CABViewControlTypes.ORTS_TCS36:
+                case CABViewControlTypes.ORTS_TCS37:
+                case CABViewControlTypes.ORTS_TCS38:
+                case CABViewControlTypes.ORTS_TCS39:
+                case CABViewControlTypes.ORTS_TCS40:
+                case CABViewControlTypes.ORTS_TCS41:
+                case CABViewControlTypes.ORTS_TCS42:
+                case CABViewControlTypes.ORTS_TCS43:
+                case CABViewControlTypes.ORTS_TCS44:
+                case CABViewControlTypes.ORTS_TCS45:
+                case CABViewControlTypes.ORTS_TCS46:
+                case CABViewControlTypes.ORTS_TCS47:
+                case CABViewControlTypes.ORTS_TCS48:
                     index = (int)data;
                     break;
             }
@@ -1939,6 +2000,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.FRONT_HLIGHT: var hl = ChangedValue(0); if (hl != 0) new HeadlightCommand(Viewer.Log, hl > 0); break;
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.HORN: new HornCommand(Viewer.Log, ChangedValue(Locomotive.Horn ? 1 : 0) > 0); break;
+                case CABViewControlTypes.VACUUM_EXHAUSTER: new VacuumExhausterCommand(Viewer.Log, ChangedValue(Locomotive.VacuumExhausterPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.BELL: new BellCommand(Viewer.Log, ChangedValue(Locomotive.Bell ? 1 : 0) > 0); break;
                 case CABViewControlTypes.SANDERS:
                 case CABViewControlTypes.SANDING: new SanderCommand(Viewer.Log, ChangedValue(Locomotive.Sander ? 1 : 0) > 0); break;
@@ -1992,10 +2054,12 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.WATER_INJECTOR1: (Locomotive as MSTSSteamLocomotive).SetInjector1Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1Controller.IntermediateValue)); break;
                 case CABViewControlTypes.WATER_INJECTOR2: (Locomotive as MSTSSteamLocomotive).SetInjector2Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2Controller.IntermediateValue)); break;
                 case CABViewControlTypes.CYL_COCKS: if (((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0)) new ToggleCylinderCocksCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_BLOWDOWN_VALVE: if (((Locomotive as MSTSSteamLocomotive).BlowdownValveOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).BlowdownValveOpen ? 1 : 0)) new ToggleBlowdownValveCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_CYL_COMP: if (((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0)) new ToggleCylinderCompoundCommand(Viewer.Log); break;
                 case CABViewControlTypes.STEAM_INJ1: if (((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 1); break;
                 case CABViewControlTypes.STEAM_INJ2: if (((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 2); break;
                 case CABViewControlTypes.SMALL_EJECTOR: (Locomotive as MSTSSteamLocomotive).SetSmallEjectorValue(ChangedValue((Locomotive as MSTSSteamLocomotive).SmallEjectorController.IntermediateValue)); break;
+                case CABViewControlTypes.ORTS_LARGE_EJECTOR: (Locomotive as MSTSSteamLocomotive).SetLargeEjectorValue(ChangedValue((Locomotive as MSTSSteamLocomotive).LargeEjectorController.IntermediateValue)); break;
                 //
                 case CABViewControlTypes.CAB_RADIO: new CabRadioCommand(Viewer.Log, ChangedValue(Locomotive.CabRadioOn ? 1 : 0) > 0); break;
                 case CABViewControlTypes.WIPERS: new WipersCommand(Viewer.Log, ChangedValue(Locomotive.Wiper ? 1 : 0) > 0); break;
@@ -2045,6 +2109,45 @@ namespace Orts.Viewer3D.RollingStock
                          != ChangedValue(Locomotive.GetCabFlipped() ? (Locomotive.DoorLeftOpen ? 1 : 0) : Locomotive.DoorRightOpen ? 1 : 0)) new ToggleDoorsRightCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_MIRRORS:
                     if ((Locomotive.MirrorOpen ? 1 : 0) != ChangedValue(Locomotive.MirrorOpen ? 1 : 0)) new ToggleMirrorsCommand(Viewer.Log); break;
+
+                // Train Control System controls
+                case CABViewControlTypes.ORTS_TCS1:
+                case CABViewControlTypes.ORTS_TCS2:
+                case CABViewControlTypes.ORTS_TCS3:
+                case CABViewControlTypes.ORTS_TCS4:
+                case CABViewControlTypes.ORTS_TCS5:
+                case CABViewControlTypes.ORTS_TCS6:
+                case CABViewControlTypes.ORTS_TCS7:
+                case CABViewControlTypes.ORTS_TCS8:
+                case CABViewControlTypes.ORTS_TCS9:
+                case CABViewControlTypes.ORTS_TCS10:
+                case CABViewControlTypes.ORTS_TCS11:
+                case CABViewControlTypes.ORTS_TCS12:
+                case CABViewControlTypes.ORTS_TCS13:
+                case CABViewControlTypes.ORTS_TCS14:
+                case CABViewControlTypes.ORTS_TCS15:
+                case CABViewControlTypes.ORTS_TCS16:
+                case CABViewControlTypes.ORTS_TCS17:
+                case CABViewControlTypes.ORTS_TCS18:
+                case CABViewControlTypes.ORTS_TCS19:
+                case CABViewControlTypes.ORTS_TCS20:
+                case CABViewControlTypes.ORTS_TCS21:
+                case CABViewControlTypes.ORTS_TCS22:
+                case CABViewControlTypes.ORTS_TCS23:
+                case CABViewControlTypes.ORTS_TCS24:
+                case CABViewControlTypes.ORTS_TCS25:
+                case CABViewControlTypes.ORTS_TCS26:
+                case CABViewControlTypes.ORTS_TCS27:
+                case CABViewControlTypes.ORTS_TCS28:
+                case CABViewControlTypes.ORTS_TCS29:
+                case CABViewControlTypes.ORTS_TCS30:
+                case CABViewControlTypes.ORTS_TCS31:
+                case CABViewControlTypes.ORTS_TCS32:
+                    int commandIndex = (int)Control.ControlType - (int)CABViewControlTypes.ORTS_TCS1;
+                    if (ChangedValue(1) > 0 ^ Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex])
+                        new TCSCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex], commandIndex);
+                    break;
+
             }
 
         }

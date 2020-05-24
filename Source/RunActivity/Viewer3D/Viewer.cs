@@ -41,6 +41,7 @@ using Orts.Viewer3D.Processes;
 using Orts.Viewer3D.RollingStock;
 using ORTS.Common;
 using ORTS.Common.Input;
+using ORTS.Scripting.Api;
 using ORTS.Settings;
 using Event = Orts.Common.Event;
 
@@ -485,7 +486,9 @@ namespace Orts.Viewer3D
                 ContinuousReverserCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousSmallEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ContinuousLargeEjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ToggleInjectorCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
+                ToggleBlowdownValveCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousBlowerCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousDamperCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
                 ContinuousFiringRateCommand.Receiver = (MSTSSteamLocomotive)PlayerLocomotive;
@@ -510,6 +513,7 @@ namespace Orts.Viewer3D
             if (PlayerLocomotive is MSTSDieselLocomotive)
             {
                 TogglePlayerEngineCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
+                VacuumExhausterCommand.Receiver = (MSTSDieselLocomotive)PlayerLocomotive;
             }
 
             ImmediateRefillCommand.Receiver = (MSTSLocomotiveViewer)PlayerLocomotiveViewer;
@@ -538,6 +542,7 @@ namespace Orts.Viewer3D
             UseCameraCommand.Receiver = this;
             MoveCameraCommand.Receiver = this;
             ToggleHelpersEngineCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            TCSCommand.Receiver = ((MSTSLocomotive)PlayerLocomotive).TrainControlSystem;
         }
 
         public void ChangeToPreviousFreeRoamCamera()
@@ -1353,7 +1358,8 @@ namespace Orts.Viewer3D
                     if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
                     {
                         // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlType().ToString());
+                        Simulator.Confirmer.Message(ConfirmLevel.None,
+                            (PlayerLocomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(MousePickedControl.GetControlType().ToString()));
                     }
                     if (MousePickedControl != null) ActualCursor = Cursors.Hand;
                     else if (ActualCursor == Cursors.Hand) ActualCursor = Cursors.Default;
@@ -1476,7 +1482,8 @@ namespace Orts.Viewer3D
                     if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
                     {
                         // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlType().ToString());
+                        Simulator.Confirmer.Message(ConfirmLevel.None,
+                            (PlayerLocomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(MousePickedControl.GetControlType().ToString()));
                     }
                     if (MousePickedControl != null)
                     {
