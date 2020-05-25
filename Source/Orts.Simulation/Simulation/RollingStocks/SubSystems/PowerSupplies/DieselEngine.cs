@@ -393,7 +393,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         // This calculates the percent of running power. If the locomotive has two prime movers, and 
         // one is shut down then power will be reduced by the size of the prime mover
-        public float RunningPowerPercent
+        public float RunningPowerFraction
         {
             get
             {
