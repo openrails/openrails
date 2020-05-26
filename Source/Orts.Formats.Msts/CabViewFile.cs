@@ -737,7 +737,7 @@ namespace Orts.Formats.Msts
         protected virtual void ParseRotation(STFReader stf)
         {
             stf.MustMatch("(");
-            Rotation = -(float)stf.ReadDouble(0) * 0.01745329252f; // To radians
+            Rotation = - MathHelper.ToRadians((float)stf.ReadDouble(0));
             stf.SkipRestOfBlock();
         }
 
