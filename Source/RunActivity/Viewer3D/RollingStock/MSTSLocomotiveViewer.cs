@@ -504,7 +504,8 @@ namespace Orts.Viewer3D.RollingStock
             foreach(var car in loco.Train.Cars)
             {
                 // There is no need to check for the tender.  The MSTSSteamLocomotive is the primary key in the refueling process when using immediate refueling.
-                if (car is MSTSDieselLocomotive || car is MSTSSteamLocomotive)
+                // Electric locomotives may have steam heat boilers fitted, and they can refill these
+                if (car is MSTSDieselLocomotive || car is MSTSSteamLocomotive || (car is MSTSElectricLocomotive && loco.IsSteamHeatFitted))
                 {
                     Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
                     (car as MSTSLocomotive).RefillImmediately();
@@ -523,7 +524,7 @@ namespace Orts.Viewer3D.RollingStock
             var loco = this.Locomotive;
 
             var match = GetMatchingPickup(loco.Train);
-            if (match == null && !(loco is MSTSElectricLocomotive))
+            if (match == null && !(loco is MSTSElectricLocomotive && loco.IsSteamHeatFitted))
                 return;
             if (match == null)
             {
@@ -559,7 +560,7 @@ namespace Orts.Viewer3D.RollingStock
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MaxMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || match.Wagon is MSTSElectricLocomotive ||  (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
             {
                 // Note: The tender contains the intake information, but the steam locomotive includes the controller information that is needed for the refueling process.
 

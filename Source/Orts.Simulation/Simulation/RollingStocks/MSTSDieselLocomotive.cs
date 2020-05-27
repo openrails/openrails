@@ -491,7 +491,15 @@ namespace Orts.Simulation.RollingStocks
             FuelController.Update(elapsedClockSeconds);
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
-        
+
+            // Update water controller for steam boiler heating tank
+            if (this.IsLeadLocomotive() && IsSteamHeatFitted)
+            {
+                WaterController.Update(elapsedClockSeconds);
+                if (WaterController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
+            }
+
         }
 
 
