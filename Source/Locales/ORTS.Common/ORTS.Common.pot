@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-05-21 18:39:29+0200\n"
-"PO-Revision-Date: 2020-05-21 18:39:29+0200\n"
+"POT-Creation-Date: 2020-05-26 20:01:12+0200\n"
+"PO-Revision-Date: 2020-05-26 20:01:12+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -862,62 +862,74 @@ msgid "Control Cylinder Cocks"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:182
-msgid "Control Small Ejector Increase"
+msgid "Control Large Ejector Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:183
-msgid "Control Small Ejector Decrease"
+msgid "Control Large Ejector Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:184
-msgid "Control Cylinder Compound"
+msgid "Control Small Ejector Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:185
-msgid "Control Firing"
+msgid "Control Small Ejector Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:186
-msgid "Control Refill"
+msgid "Control Vacuum Exhauster"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:187
-msgid "Control Water Scoop"
+msgid "Control Cylinder Compound"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:188
-msgid "Control ImmediateRefill"
+msgid "Control Firing"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:189
-msgid "Control Turntable Clockwise"
+msgid "Control Refill"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:190
-msgid "Control Turntable Counterclockwise"
+msgid "Control Water Scoop"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:191
-msgid "Control Generic 1"
+msgid "Control ImmediateRefill"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:192
-msgid "Control Generic 2"
+msgid "Control Turntable Clockwise"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:193
-msgid "Control Cab Radio"
+msgid "Control Turntable Counterclockwise"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:194
-msgid "Control AI Fire On"
+msgid "Control Generic 1"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:195
-msgid "Control AI Fire Off"
+msgid "Control Generic 2"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:196
+msgid "Control Cab Radio"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:197
+msgid "Control AI Fire On"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:198
+msgid "Control AI Fire Off"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:199
 msgid "Control AI Fire Reset"
 msgstr ""
 
