@@ -184,9 +184,15 @@ namespace Orts.Simulation.RollingStocks
 
             // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            Trace.TraceInformation("SteamHeatFitted {0} WaterCap {1} FuelCap {2} BoilerLockout {3}", IsSteamHeatFitted, CurrentLocomotiveSteamHeatBoilerWaterCapacityL, CurrentSteamHeatBoilerFuelCapacityL, IsSteamHeatBoilerLockedOut); ;
+
             if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating
             {
+
+                // Update water controller for steam boiler heating tank
+                    WaterController.Update(elapsedClockSeconds);
+                    if (WaterController.UpdateValue > 0.0)
+                        Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
+
 
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
