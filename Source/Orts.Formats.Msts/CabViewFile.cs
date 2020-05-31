@@ -626,6 +626,7 @@ namespace Orts.Formats.Msts
         public float FontSize { get; set; }
         public int FontStyle { get; set; }
         public string FontFamily = "";
+        public float Rotation { get; set; }
 
         public CVCDigital()
         {
@@ -690,7 +691,8 @@ namespace Orts.Formats.Msts
                             new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
                     }
                 }),
-                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); })
+                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),
+                new STFReader.TokenProcessor("ortsangle", () => { ParseRotation(stf); }),              
             });
         }
 
@@ -731,6 +733,14 @@ namespace Orts.Formats.Msts
             if (fontFamily != null) FontFamily = fontFamily;
             stf.SkipRestOfBlock();
          }
+
+        protected virtual void ParseRotation(STFReader stf)
+        {
+            stf.MustMatch("(");
+            Rotation = - MathHelper.ToRadians((float)stf.ReadDouble(0));
+            stf.SkipRestOfBlock();
+        }
+
     }
 
     public class CVCDigitalClock : CVCDigital

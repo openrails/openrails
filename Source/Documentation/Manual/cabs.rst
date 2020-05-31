@@ -330,6 +330,23 @@ Note that you cannot use the MS Cabview editor on the .cvf file after having
 inserted these optional lines, because the editor will delete these added 
 lines when the file is saved.
 
+Rotation of Digital controls
+----------------------------
+
+One of the drawbacks of rendering a cabview in 2D is that some parts of it 
+are not shown with a frontal, horizontal, view. Displaying a horizontal digital 
+control on it generates an unrealistc effect. This is the rationale of following 
+entry, to be added within a Digital cabview control block in the .cvf file::
+
+  ORTSAngle ( 5 )
+
+The number in parenthesis is the angle in degrees with respect to the horizontal 
+(positive for counterclockwise rotation).
+
+Here an example of a red max speed indication that has been rotated by 5 degrees
+
+.. image:: images/cabs-digitals-rotation.png
+
 3D cabs
 =======
 
