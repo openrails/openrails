@@ -198,9 +198,9 @@ namespace Orts.Viewer3D
         readonly IndexBuffer PatchIndexBuffer;    // Separate index buffer for each patch (if there are tunnels)
         readonly int PatchPrimitiveCount;
         readonly Material PatchMaterial;
+        readonly VertexBufferBinding[] VertexBufferBindings;
 
         // These can be shared since they are the same for all patches
-        public static VertexDeclaration SharedPatchVertexDeclaration;
         public static IndexBuffer SharedPatchIndexBuffer;
         public static int SharedPatchVertexStride;
 
@@ -239,11 +239,15 @@ namespace Orts.Viewer3D
             else
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
 
-            if (SharedPatchVertexDeclaration == null)
+            if (SharedPatchIndexBuffer == null)
                 SetupSharedData(Viewer.GraphicsDevice);
 
             Tile = null;
             Patch = null;
+
+            DummyVertexBuffer = new VertexBuffer(viewer.GraphicsDevice, DummyVertexDeclaration, 1, BufferUsage.WriteOnly);
+            DummyVertexBuffer.SetData(DummyVertexData);
+            VertexBufferBindings = new[] { new VertexBufferBinding(PatchVertexBuffer), new VertexBufferBinding(DummyVertexBuffer) };
         }
 
         [CallOnThread("Updater")]
@@ -260,7 +264,7 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.Vertices[0].SetSource(PatchVertexBuffer, 0, SharedPatchVertexStride);
+            graphicsDevice.SetVertexBuffers(VertexBufferBindings);
             if (PatchIndexBuffer != null)
                 graphicsDevice.Indices = PatchIndexBuffer;
             graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 17 * 17, 0, PatchPrimitiveCount);
@@ -455,9 +459,6 @@ namespace Orts.Viewer3D
 
         static void SetupSharedData(GraphicsDevice graphicsDevice)
         {
-            SharedPatchVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-            SharedPatchVertexStride = VertexPositionNormalTexture.SizeInBytes;
-
             // 16 x 16 squares * 2 triangles per square * 3 indices per triangle
             var indexData = new List<short>(16 * 16 * 2 * 3);
 
@@ -518,22 +519,14 @@ namespace Orts.Viewer3D
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
             var shader = Viewer.MaterialManager.SceneryShader;
-            shader.CurrentTechnique = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"];
-            if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
+            shader.CurrentTechnique = shader.Techniques["TerrainPS"];
+            if (ShaderPasses == null) ShaderPasses = shader.Techniques["TerrainPS"].Passes.GetEnumerator();
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
             shader.OverlayScale = OverlayScale;
 
-            var samplerState = graphicsDevice.SamplerStates[0];
-            samplerState.AddressU = TextureAddressMode.Wrap;
-            samplerState.AddressV = TextureAddressMode.Wrap;
-
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = true;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
-
-            graphicsDevice.VertexDeclaration = TerrainPrimitive.SharedPatchVertexDeclaration;
+            graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -541,29 +534,22 @@ namespace Orts.Viewer3D
             var shader = Viewer.MaterialManager.SceneryShader;
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
-            shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
-                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    shader.CommitChanges();
+                    ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPasses.Current.End();
             }
-            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
         }
 
         public override void Mark()
@@ -600,17 +586,15 @@ namespace Orts.Viewer3D
             base.SetState(graphicsDevice, previousMaterial);
             graphicsDevice.Indices = TerrainPrimitive.SharedPatchIndexBuffer;
 
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false; // Override the normal terrain blending!
-            rs.CullMode = CullMode.None;
+            graphicsDevice.BlendState = BlendState.Opaque; // Override the normal terrain blending!
+            graphicsDevice.RasterizerState = RasterizerState.CullNone;
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
             base.ResetState(graphicsDevice);
 
-            var rs = graphicsDevice.RenderState;
-            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         }
     }
 }

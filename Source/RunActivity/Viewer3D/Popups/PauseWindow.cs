@@ -102,7 +102,7 @@ namespace Orts.Viewer3D.Popups
 
                 var rectangle = new Rectangle(Location.Width / 2, Location.Height / 2, 0, 0);
                 rectangle.Inflate(currentSize, currentSize);
-                spriteBatch.Draw(WindowManager.PauseTexture, rectangle, AnimationSource, new Color(Color.White, fade));
+                spriteBatch.Draw(WindowManager.PauseTexture, rectangle, AnimationSource, Color.White * fade);
             }
         }
     }

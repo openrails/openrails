@@ -18,6 +18,7 @@
 /* AI
  * 
  * Contains code to initialize and control AI trains.
+ * Various types of actions, among them waiting points, are managed here.
  * 
  */
 
