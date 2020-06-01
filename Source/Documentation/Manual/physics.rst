@@ -290,7 +290,13 @@ Typically this is linked to a particular speed (see next parameter).
 will be applied.
 
 ``MaxVelocity`` ==> is the maximum rated design speed of the locomotive. 
-Typically beyond this speed power output of the locomotive will decrease.
+Some locomotives had a speed alarm which applied the brakes, or set the throttle 
+to a lower value. This can be modelled using a the OverspeedMonitor function.
+
+``ORTSUnloadingSpeed`` ==> is the locomotive speed when the generator reaches 
+its maximum voltage, and due to the speed of the train, the engine starts 
+to 'unload'. Typically beyond this speed, power output of the locomotive 
+will decrease.
 
 If using power/force Tables, then some of the above values will not be 
 required, see the sections below for details.
