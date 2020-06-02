@@ -409,18 +409,17 @@ namespace Orts.Simulation.RollingStocks
                 InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
             }
 
-            // Check to see if this is a restored game -(assumed so if Restored >0), then set water controller values based upon saved values
-            if (RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL > 1.0)
+            // Initialise water level in steam heat boiler
+            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0)
             {
-                CurrentLocomotiveSteamHeatBoilerWaterCapacityL = RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL;
-            }
-            else if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
-            {
-                CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
-            }
-            else
-            {
-                CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
+                if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
+                }
+                else
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
+                }
             }
         }
 
@@ -434,7 +433,7 @@ namespace Orts.Simulation.RollingStocks
             // outf.Write(Pan);
             base.Save(outf);
             outf.Write(DieselLevelL);
-            outf.Write(RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL);
+            outf.Write(CurrentLocomotiveSteamHeatBoilerWaterCapacityL);
             DieselEngines.Save(outf);
             ControllerFactory.Save(GearBoxController, outf);
         }
@@ -447,7 +446,7 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
-            RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
+            CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             DieselEngines.Restore(inf);
             ControllerFactory.Restore(GearBoxController, inf);
             
@@ -934,7 +933,6 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate water usage for steam heat boiler
                     float WaterUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerWaterUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
-                    RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL = CurrentLocomotiveSteamHeatBoilerWaterCapacityL; // Save in case game needs restoring
                     MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
                 }
                 else
