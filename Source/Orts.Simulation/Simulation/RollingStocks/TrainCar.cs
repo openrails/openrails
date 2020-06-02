@@ -1501,6 +1501,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(SteamHoseLeakRateRandom);
             outf.Write(CarHeatCurrentCompartmentHeatW);
             outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
+            outf.Write(CarHeatCompartmentHeaterOn);
         }
 
         // Game restore
@@ -1523,6 +1524,7 @@ namespace Orts.Simulation.RollingStocks
             SteamHoseLeakRateRandom = inf.ReadSingle();
             CarHeatCurrentCompartmentHeatW = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
+            CarHeatCompartmentHeaterOn = inf.ReadBoolean();
         }
 
         //================================================================================================//

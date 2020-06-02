@@ -176,7 +176,6 @@ namespace Orts.Simulation.RollingStocks
             get { return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
             set { WaterController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
         }
-        public float RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL;
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
 
         // Vacuum Reservoir and Exhauster Settings
