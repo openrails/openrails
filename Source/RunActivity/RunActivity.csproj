@@ -334,19 +334,18 @@
     <Content Include="Version.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Viewer3D\WebServices\Web\css\hud.css" />
-    <Content Include="Viewer3D\WebServices\Web\css\sample.css" />
-    <Content Include="Viewer3D\WebServices\Web\css\trackmonitor.css" />
-    <Content Include="Viewer3D\WebServices\Web\HUD.html" />
-    <Content Include="Viewer3D\WebServices\Web\images\or_logo.png" />
-    <Content Include="Viewer3D\WebServices\Web\images\waverley.jpg" />
-    <Content Include="Viewer3D\WebServices\Web\images\zig-zag.jpg" />
-    <Content Include="Viewer3D\WebServices\Web\index - ApiSample.html" />
+    <Content Include="Viewer3D\WebServices\Web\APISample\index.css" />
+    <Content Include="Viewer3D\WebServices\Web\APISample\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\APISample\index.js" />
+    <Content Include="Viewer3D\WebServices\Web\APISample\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\HUD\index.css" />
+    <Content Include="Viewer3D\WebServices\Web\HUD\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\HUD\index.js" />
+    <Content Include="Viewer3D\WebServices\Web\index.css" />
     <Content Include="Viewer3D\WebServices\Web\index.html" />
-    <Content Include="Viewer3D\WebServices\Web\js\ApiSample.js" />
-    <Content Include="Viewer3D\WebServices\Web\js\ApiTrainInfo.js" />
-    <Content Include="Viewer3D\WebServices\Web\js\hud.js" />
-    <Content Include="Viewer3D\WebServices\Web\js\trackmonitor.js" />
+    <Content Include="Viewer3D\WebServices\Web\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\TrackMonitor\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\TrackMonitor\index.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
@@ -414,6 +413,10 @@
     </PreBuildEvent>
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
-time /t&gt;&gt;Revision.txt</PostBuildEvent>
+time /t&gt;&gt;Revision.txt
+CD ..\
+IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
+IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
+XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>
