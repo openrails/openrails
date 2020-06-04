@@ -192,12 +192,11 @@ When activated, the server can be accessed (on the local machine only) at
          - API call
          - Description
          - Response type
-       * - POST
-         - ``/API/HUD``
+       * - GET
+         - ``/API/HUD/<n>``
          - | Retrieves the information rendered on the ``<F5>`` HUD, row by row,
-           | page by page. POST data should be ``=<n>`` where ``<n>`` is the
-           | desired HUD page number.
-         - Orts.Viewer3D.WebServices.WebServer.HudApiArray
+           | page by page, where ``<n>`` is the desired HUD page number.
+         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.HudApiArray
        * - GET
          - | ``/API/TRAINMONITOR``
            | or ``/API/TRAININFO``
@@ -208,7 +207,7 @@ When activated, the server can be accessed (on the local machine only) at
          - ``/API/APISAMPLE``
          - | A test object that demonstrates the JSON serialization of various
            | data types.
-         - Orts.Viewer3D.WebServices.WebServer.ApiSampleData
+         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.ApiSampleData
 
 Audio Options
 =============
