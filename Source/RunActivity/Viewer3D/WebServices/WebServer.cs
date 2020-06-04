@@ -26,6 +26,8 @@ using EmbedIO.WebApi;
 using Newtonsoft.Json;
 using Orts.Simulation.Physics;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -69,12 +71,12 @@ namespace Orts.Viewer3D.WebServices
 
 
         #region /API/APISAMPLE
-        public class Embedded
+        public struct Embedded
         {
             public string Str;
             public int Numb;
         }
-        public class ApiSampleData
+        public struct ApiSampleData
         {
             public int intData;
             public string strData;
@@ -86,40 +88,37 @@ namespace Orts.Viewer3D.WebServices
         // Call from JavaScript is case-sensitive, with /API prefix, e.g:
         //   hr.open("GET", "/API/APISAMPLE", true);
         [Route(HttpVerbs.Get, "/APISAMPLE")]
-        public ApiSampleData ApiSample()
+        public ApiSampleData ApiSample() => new ApiSampleData()
         {
-            var sampleData = new ApiSampleData();
-
-            sampleData.intData = 576;
-            sampleData.strData = "Sample String";
-            sampleData.dateData = new DateTime(2018, 1, 1);
-
-            sampleData.embedded = new Embedded();
-            sampleData.embedded.Str = "Embeddded String";
-            sampleData.embedded.Numb = 123;
-
-            sampleData.strArrayData = new string[5];
-
-            sampleData.strArrayData[0] = "First member";
-            sampleData.strArrayData[1] = "Second member";
-            sampleData.strArrayData[2] = "Third Member";
-            sampleData.strArrayData[3] = "Forth member";
-            sampleData.strArrayData[4] = "Fifth member";
-
-            return sampleData;
-        }
+            intData = 576,
+            strData = "Sample String",
+            dateData = new DateTime(2018, 1, 1),
+            embedded = new Embedded()
+            {
+                Str = "Embedded String",
+                Numb = 123
+            },
+            strArrayData = new string[5]
+            {
+                "First member",
+                "Second member",
+                "Third member",
+                "Fourth member",
+                "Fifth member"
+            }
+        };
         #endregion
 
 
         #region /API/HUD
-        public class HudApiTable
+        public struct HudApiTable
         {
             public int nRows;
             public int nCols;
             public string[] values;
         }
 
-        public class HudApiArray
+        public struct HudApiArray
         {
             public int nTables;
             public HudApiTable commonTable;
@@ -134,10 +133,12 @@ namespace Orts.Viewer3D.WebServices
         // The name of this method is not significant.
         public HudApiArray ApiHUD(int pageNo)
         {
-            var hudApiArray = new HudApiArray();
-            hudApiArray.nTables = 1;
+            var hudApiArray = new HudApiArray()
+            {
+                nTables = 1,
+                commonTable = ApiHUD_ProcessTable(0)
+            };
 
-            hudApiArray.commonTable = ApiHUD_ProcessTable(0);
             if (pageNo > 0)
             {
                 hudApiArray.nTables = 2;
@@ -146,34 +147,30 @@ namespace Orts.Viewer3D.WebServices
             return hudApiArray;
         }
 
-        public HudApiTable ApiHUD_ProcessTable(int pageNo)
+        private HudApiTable ApiHUD_ProcessTable(int pageNo)
         {
             Popups.HUDWindow.TableData hudTable = Viewer.HUDWindow.PrepareTable(pageNo);
-
-            var apiTable = new HudApiTable();
-
-            apiTable.nRows = hudTable.Cells.GetLength(0);
-            var nRows = apiTable.nRows;
-            apiTable.nCols = hudTable.Cells.GetLength(1);
-            var nCols = apiTable.nCols;
-            apiTable.values = new string[nRows * nCols];
-
-            int nextCell = 0;
-            for (int i = 0; i < nRows; ++i)
-                for (int j = 0; j < nCols; ++j)
-                    apiTable.values[nextCell++] = hudTable.Cells[i, j];
-
-            return (apiTable);
+            int nRows = hudTable.Cells.GetLength(0);
+            int nCols = hudTable.Cells.GetLength(1);
+            IEnumerable<string> getValues()
+            {
+                foreach (int r in Enumerable.Range(0, nRows))
+                    foreach (int c in Enumerable.Range(0, nCols))
+                        yield return hudTable.Cells[r, c];
+            }
+            return new HudApiTable()
+            {
+                nRows = nRows,
+                nCols = nCols,
+                values = getValues().ToArray()
+            };
         }
         #endregion
 
 
         #region /API/TRACKMONITOR
         [Route(HttpVerbs.Get, "/TRACKMONITOR")]
-        public Train.TrainInfo TrackMonitor()
-        {
-            return Viewer.PlayerTrain.GetTrainInfo();
-        }
+        public Train.TrainInfo TrackMonitor() => Viewer.PlayerTrain.GetTrainInfo();
         #endregion
     }
 }
