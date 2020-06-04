@@ -94,17 +94,12 @@ namespace Orts.Viewer3D.Processes
             var myWebContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(
                 System.Windows.Forms.Application.ExecutablePath),"Content\\Web");
 
-            string url(string ip)
-            {
-                return string.Format("http://{0}:{1}", ip, port);
-            }
+            string url(string ip) => string.Format("http://{0}:{1}", ip, port);
             // 127.0.0.1 is a dummy, IPAddress.Any in WebServer.cs to accept any address
             // on the local Lan
             var urls = new string[] { url("[::1]"), url("127.0.0.1"), url("localhost") };
             using (var server = WebServer.CreateWebServer(urls, myWebContentPath))
-            {
                 server.RunAsync(stopServer.Token).Wait();
-            }
         }
     }
 }
