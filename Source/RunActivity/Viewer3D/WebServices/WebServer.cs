@@ -17,25 +17,18 @@
 //
 // ===========================================================================================
 //      Open Rails Web Server
-//      The following files have been modified to accomodate the WebServer
-//          Game.cs
-//          HUDWindow.cs
-//          WebServerProcess.cs
-//          search for "WebServer" to find all occurrences
-//
-//      djr - 20171221
+//      Based on an idea by Dan Reynolds (HighAspect) - 2017-12-21
 // ===========================================================================================
 
-using System;
-using System.Diagnostics;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
 using Newtonsoft.Json;
 using Orts.Simulation.Physics;
+using System;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Orts.Viewer3D.WebServices
 {
@@ -71,89 +64,16 @@ namespace Orts.Viewer3D.WebServices
     }
 
     internal class ORTSApiController : WebApiController
-    {
-        private readonly Viewer viewer;
+    { 
+        private readonly Viewer Viewer;
 
         public ORTSApiController(Viewer viewer)
         {
-            this.viewer = viewer;
+            Viewer = viewer;
         }
 
 
-        // =======================================================================================
-        // 		API to display the HUD Windows
-        // =======================================================================================
-        public class HudApiTable
-        {
-            public int nRows;
-            public int nCols;
-            public string[] values;
-        }
-
-        // -------------------------------------------------------------------------------------------
-        public class HudApiArray
-        {
-            public int nTables;
-            public HudApiTable commonTable;
-            public HudApiTable extraTable;
-        }
-
-
-        // -------------------------------------------------------------------------------------------
-        [Route(HttpVerbs.Post, "/HUD")]
-        public HudApiArray ApiHUD([FormField] int pageno)
-        {
-            HudApiArray hudApiArray = new HudApiArray();
-            hudApiArray.nTables = 1;
-
-            hudApiArray.commonTable = ApiHUD_ProcessTable(0);
-            if (pageno > 0)
-            {
-                hudApiArray.nTables = 2;
-                hudApiArray.extraTable = ApiHUD_ProcessTable(pageno);
-            }
-            return hudApiArray;
-        }
-
-        // -------------------------------------------------------------------------------------------
-        public HudApiTable ApiHUD_ProcessTable(int pageNo)
-        {
-            int nRows = 0;
-            int nCols = 0;
-            int nextCell = 0;
-
-            Viewer3D.Popups.HUDWindow.TableData hudTable = viewer.HUDWindow.PrepareTable(pageNo);
-
-            HudApiTable apiTable = new HudApiTable();
-
-            apiTable.nRows = hudTable.Cells.GetLength(0);
-            nRows = apiTable.nRows;
-            apiTable.nCols = hudTable.Cells.GetLength(1);
-            nCols = apiTable.nCols;
-            apiTable.values = new string[nRows * nCols];
-
-            try
-            {
-                for (int i = 0; i < nRows; ++i)
-                {
-                    for (int j = 0; j < nCols; ++j)
-                    {
-                        apiTable.values[nextCell++] = hudTable.Cells[i, j];
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Trace.WriteLine(e.Message);
-            }
-            return (apiTable);
-        }
-
-
-        // =======================================================================================
-        // 		API for Sample Data
-        // =======================================================================================
-
+        #region /API/APISAMPLE
         public class Embedded
         {
             public string Str;
@@ -168,11 +88,12 @@ namespace Orts.Viewer3D.WebServices
             public string[] strArrayData;
         }
 
-        // -------------------------------------------------------------------------------------------
-        [Route(HttpVerbs.Post, "/APISAMPLE")]
+        // Call from JavaScript is case-sensitive, with /API prefix, e.g:
+        //   hr.open("GET", "/API/APISAMPLE", true);
+        [Route(HttpVerbs.Get, "/APISAMPLE")]
         public ApiSampleData ApiSample()
         {
-            ApiSampleData sampleData = new ApiSampleData();
+            var sampleData = new ApiSampleData();
 
             sampleData.intData = 576;
             sampleData.strData = "Sample String";
@@ -190,36 +111,74 @@ namespace Orts.Viewer3D.WebServices
             sampleData.strArrayData[3] = "Forth member";
             sampleData.strArrayData[4] = "Fifth member";
 
-            return (sampleData);
+            return sampleData;
         }
+        #endregion
 
 
-        // =======================================================================================
-        // 		API for Track Monitor Data
-        // =======================================================================================
-
-        // -------------------------------------------------------------------------------------------
-        [Route(HttpVerbs.Post, "/TRACKMONITOR")]
-        public Train.TrainInfo ApiTrackMonitor()
+        #region /API/HUD
+        public class HudApiTable
         {
-            Train.TrainInfo trainInfo = viewer.PlayerTrain.GetTrainInfo();
-
-            return (trainInfo);
-
+            public int nRows;
+            public int nCols;
+            public string[] values;
         }
 
-
-        // =======================================================================================
-        // 		API for Train Info
-        // =======================================================================================
-
-        // -------------------------------------------------------------------------------------------
-        [Route(HttpVerbs.Post, "/TRAININFO")]
-        public Train.TrainInfo ApiTrainInfo()
+        public class HudApiArray
         {
-            Train.TrainInfo trainInfo = viewer.PlayerTrain.GetTrainInfo();
-
-            return (trainInfo);
+            public int nTables;
+            public HudApiTable commonTable;
+            public HudApiTable extraTable;
         }
+
+        [Route(HttpVerbs.Get, "/HUD/{pageNo}")]
+        // Example URL where pageNo = 3: 
+        //   "http://localhost:2150/API/HUD/3" returns data in JSON
+        // Call from JavaScript is case-sensitive, with /API prefix, e.g:
+        //   hr.open("GET", "/API/HUD" + pageNo, true);
+        // The name of this method is not significant.
+        public HudApiArray ApiHUD(int pageNo)
+        {
+            var hudApiArray = new HudApiArray();
+            hudApiArray.nTables = 1;
+
+            hudApiArray.commonTable = ApiHUD_ProcessTable(0);
+            if (pageNo > 0)
+            {
+                hudApiArray.nTables = 2;
+                hudApiArray.extraTable = ApiHUD_ProcessTable(pageNo);
+            }
+            return hudApiArray;
+        }
+
+        public HudApiTable ApiHUD_ProcessTable(int pageNo)
+        {
+            Popups.HUDWindow.TableData hudTable = Viewer.HUDWindow.PrepareTable(pageNo);
+
+            var apiTable = new HudApiTable();
+
+            apiTable.nRows = hudTable.Cells.GetLength(0);
+            var nRows = apiTable.nRows;
+            apiTable.nCols = hudTable.Cells.GetLength(1);
+            var nCols = apiTable.nCols;
+            apiTable.values = new string[nRows * nCols];
+
+            int nextCell = 0;
+            for (int i = 0; i < nRows; ++i)
+                for (int j = 0; j < nCols; ++j)
+                    apiTable.values[nextCell++] = hudTable.Cells[i, j];
+
+            return (apiTable);
+        }
+        #endregion
+
+
+        #region /API/TRACKMONITOR
+        [Route(HttpVerbs.Get, "/TRACKMONITOR")]
+        public Train.TrainInfo TrackMonitor()
+        {
+            return Viewer.PlayerTrain.GetTrainInfo();
+        }
+        #endregion
     }
 }
