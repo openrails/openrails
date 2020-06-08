@@ -172,10 +172,7 @@ namespace Orts.Common
         HotBoxBearingOff,
 
         BoilerBlowdownOn,
-        BoilerBlowdownOff,
-
-        AIFiremanSoundOn,
-        AIFiremanSoundOff
+        BoilerBlowdownOff
     }
 
     public static class Events
@@ -361,10 +358,6 @@ namespace Orts.Common
 
                         case 175: return Event.BoilerBlowdownOn;
                         case 176: return Event.BoilerBlowdownOff;
-
-                        case 200: return Event.AIFiremanSoundOn;
-                        case 201: return Event.AIFiremanSoundOff;
-
                         //
 
                         default: return 0;
