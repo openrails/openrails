@@ -543,6 +543,8 @@ namespace Orts.Viewer3D
             MoveCameraCommand.Receiver = this;
             ToggleHelpersEngineCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             TCSCommand.Receiver = ((MSTSLocomotive)PlayerLocomotive).TrainControlSystem;
+            ToggleBatteryCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            TogglePowerKeyCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
         }
 
         public void ChangeToPreviousFreeRoamCamera()
