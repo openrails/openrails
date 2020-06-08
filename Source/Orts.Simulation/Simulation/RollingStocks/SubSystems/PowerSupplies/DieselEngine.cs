@@ -864,7 +864,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         break;
                     case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselPowerTab; break;
                     case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselConsumptionTab; break;
-                    case "throttlerpmtab": ThrottleRPMTab = new Interpolator(stf); initLevel |= SettingsFlags.ThrottleRPMTab; break;
+                    case "throttlerpmtab":
+                        ThrottleRPMTab = new Interpolator(stf);
+                        initLevel |= SettingsFlags.ThrottleRPMTab;
+                        // This prevents rpm values being exactly the same for different throttle rates, as when this table is reversed, OR is unable to correctly determine a correct apparent throttle value.
+                        // TO DO - would be good to be able to handle rpm values the same, and -ve if possible.
+                        var size = ThrottleRPMTab.GetSize();
+                        var precY = ThrottleRPMTab.Y[0];
+                        for (int i = 1; i < size; i++)
+                        {
+                            if (ThrottleRPMTab.Y[i] <= precY) ThrottleRPMTab.Y[i] = precY + 1;
+                            precY = ThrottleRPMTab.Y[i];
+                        }
+                        break;
                     case "dieseltorquetab": DieselTorqueTab = new Interpolator(stf); initLevel |= SettingsFlags.DieselTorqueTab; break;
                     case "minoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 0); initLevel |= SettingsFlags.MinOilPressure; break;
                     case "maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 0); initLevel |= SettingsFlags.MaxOilPressure; break;
