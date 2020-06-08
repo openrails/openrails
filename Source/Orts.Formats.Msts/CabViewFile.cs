@@ -759,7 +759,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
                 new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }),
-                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); })
+                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),
+                new STFReader.TokenProcessor("ortsangle", () => { ParseRotation(stf); })
             });
         }
 
