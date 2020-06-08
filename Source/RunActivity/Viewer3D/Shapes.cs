@@ -406,7 +406,7 @@ namespace Orts.Viewer3D
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // if the shape has animations
-            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].FrameCount > 1)
+            if (SharedShape.Animations != null && SharedShape.Animations.Count > 0 && SharedShape.Animations[0].FrameCount > 0)
             {
                 AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds * FrameRateMultiplier;
                 while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
