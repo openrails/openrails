@@ -4008,7 +4008,7 @@ namespace Orts.Simulation.RollingStocks
                                 break;
                     
                             case CABViewControlUnits.KILO_LBS:
-                                data = data / 4448.22162f;
+                                data = N.ToLbf(data) * 0.001f;
                                 break;
                         }                   
                         if (direction == 1 && !(cvc is CVCGauge))
@@ -4054,7 +4054,7 @@ namespace Orts.Simulation.RollingStocks
                                 break;
 
                             case CABViewControlUnits.KILO_LBS:
-                                data = data / 4448.22162f;
+                                data = N.ToLbf(data) * 0.001f;
                                 break;
                         }
  //                       if (direction == 1 && !(cvc is CVCGauge))
@@ -4084,7 +4084,7 @@ namespace Orts.Simulation.RollingStocks
                                 break;
 
                             case CABViewControlUnits.KILO_LBS:
-                                data = data / 4448.22162f;
+                                data = N.ToLbf(data) * 0.001f;
                                 break;
                         }
                         break;
@@ -4128,7 +4128,7 @@ namespace Orts.Simulation.RollingStocks
                                 break;
 
                             case CABViewControlUnits.KILO_LBS:
-                                data = data / 4448.22162f;
+                                data = N.ToLbf(data) * 0.001f;
                                 break;
                         }
                         if (direction == 1 && !(cvc is CVCGauge))
