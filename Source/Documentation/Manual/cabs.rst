@@ -194,6 +194,13 @@ Here is an example of a cab light control block within the .cvf file::
                 DirIncrease ( 0 )
                 )
 
+Signed Traction Total Braking control
+-------------------------------------
+
+ORTS_SIGNED_TRACTION_TOTAL_BRAKING control behaves and is defined like 
+ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking 
+force does include also the train brake force in addition to the dynamic 
+brake force.
 
 Further OR cab controls
 -----------------------
