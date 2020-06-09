@@ -760,7 +760,7 @@ namespace Orts.Viewer3D.Popups
                             int ncountdiesel = cEnginetype.Where(s => s == "Diesel").Count();
                             int ncountsteam = cEnginetype.Where(s => s == "Steam").Count();
                             int ncountelectric = cEnginetype.Where(s => s == "Electric").Count();
-                            labeltext = "  Consist engine=" + (ncountdiesel > 0 ? ncountdiesel + Viewer.Catalog.GetString(" Diesel. ") : "") + (ncountsteam > 0 ? ncountsteam + Viewer.Catalog.GetString(" Steam.") : "") + (ncountelectric > 0 ? ncountelectric + Viewer.Catalog.GetString(" Electric.") : "");
+                            labeltext = "  Consist engine=" + (ncountdiesel > 0 ? ncountdiesel + " " + Viewer.Catalog.GetString("Diesel.") + " " : "") + (ncountsteam > 0 ? ncountsteam + " " + Viewer.Catalog.GetString("Steam.") + " " : "") + (ncountelectric > 0 ? ncountelectric + " " + Viewer.Catalog.GetString("Electric.") : "");
                             outmesssage(labeltext, colWidth * 3, true, 0);
 
                             if (lDiesel)//Fuel Diesel
