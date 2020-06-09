@@ -763,7 +763,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName == null ? "" : ScriptName);
+            outf.Write(ScriptName ?? "");
             if (ScriptName != "")
                 Script.Save(outf);
         }

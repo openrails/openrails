@@ -219,19 +219,16 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<MSTSLocomotive> Locomotive;
 
-        // TODO: The following will be available in .NET 4 as normal Func:
-        public delegate TResult Func5<T1, T2, T3, T4, T5, TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
-
         /// <summary>
         /// (float targetDistanceM, float targetSpeedMpS, float slope, float delayS, float decelerationMpS2)
         /// Returns a speed curve based speed limit, unit is m/s
         /// </summary>
-        public Func5<float, float, float, float, float, float> SpeedCurve;
+        public Func<float, float, float, float, float, float> SpeedCurve;
         /// <summary>
         /// (float currentSpeedMpS, float targetSpeedMpS, float slope, float delayS, float decelerationMpS2)
         /// Returns a distance curve based safe braking distance, unit is m
         /// </summary>
-        public Func5<float, float, float, float, float, float> DistanceCurve;
+        public Func<float, float, float, float, float, float> DistanceCurve;
         /// <summary>
         /// (float currentSpeedMpS, float targetSpeedMpS, float distanceM)
         /// Returns the deceleration needed to decrease the speed to the target speed at the target distance
@@ -512,14 +509,6 @@ namespace ORTS.Scripting.Api
         /// Circuit breaker has been opened.
         /// </summary>
         CircuitBreakerOpen,
-        /// <summary>
-        /// Save request.
-        /// </summary>
-        Save,
-        /// <summary>
-        /// Restore request.
-        /// </summary>
-        Restore,
     }
 
     /// <summary>
