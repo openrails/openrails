@@ -1375,7 +1375,6 @@ msgstr "LagerTemp"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:916
 #, fuzzy
-#| msgid "DISPATCHER INFORMATION"
 msgid "DISPATCHER INFORMATION : active trains : "
 msgstr "DISPONENTEN-INFORMATION : aktive Züge : "
 
@@ -1629,8 +1628,6 @@ msgstr "H"
 #. Context: Coupler
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
 #, fuzzy
-#| msgctxt "Gear"
-#| msgid "N"
 msgctxt "Coupler"
 msgid "N"
 msgstr "K"
@@ -2098,12 +2095,10 @@ msgstr[0] "{0} Meter"
 msgstr[1] "{0} Meter"
 
 #, fuzzy
-#~| msgid "Diesel Tank"
 #~ msgid "Diesel"
 #~ msgstr "Dieseltank"
 
 #, fuzzy
-#~| msgid "Steam usage"
 #~ msgid "Steam"
 #~ msgstr "Dampfnutzung:"
 
