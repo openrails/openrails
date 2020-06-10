@@ -361,13 +361,18 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<Aspect> SetNextSignalAspect;
         /// <summary>
-        /// Will be shown on ASPECT_DISPLAY cabcontrol.
+        /// Sets the value for a cabview control.
         /// </summary>
         public Action<int, float> SetCabDisplayControl;
         /// <summary>
-        /// Will be shown on ASPECT_DISPLAY cabcontrol.
+        /// Sets the name which is to be shown which putting the cursor above a cabview control.
+        /// DEPRECATED
         /// </summary>
         public Action<string> SetCustomizedTCSControlString;
+        /// <summary>
+        /// Sets the name which is to be shown which putting the cursor above a cabview control.
+        /// </summary>
+        public Action<int, string> SetCustomizedCabviewControlName;
         /// <summary>
         /// Requests toggle to and from Manual Mode.
         /// </summary>
