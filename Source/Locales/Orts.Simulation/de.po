@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Orts.Simulation\n"
-"POT-Creation-Date: 2020-05-26 20:01:12+0200\n"
-"PO-Revision-Date: 2020-05-26 21:24+0200\n"
+"POT-Creation-Date: 2020-06-10 18:27:49+0200\n"
+"PO-Revision-Date: 2020-06-10 18:53+0200\n"
 "Last-Translator: Markus Gelbmann <gelbmann.markus@gmail.com>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: de\n"
@@ -463,15 +463,13 @@ msgstr "Pantograph 2"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:182
 #, fuzzy
-#| msgid "Pantograph 1"
 msgid "Pantograph 3"
-msgstr "Pantograph 1"
+msgstr "Pantograph 3"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:183
 #, fuzzy
-#| msgid "Pantograph 1"
 msgid "Pantograph 4"
-msgstr "Pantograph 1"
+msgstr "Pantograph 4"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:184
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:185
@@ -601,7 +599,6 @@ msgstr "Zylinderverbund"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:206
 #, fuzzy
-#| msgid "Ejector"
 msgid "LargeEjector"
 msgstr "Ejektor"
 
@@ -611,13 +608,11 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:208
 #, fuzzy
-#| msgid "Exhaust"
 msgid "VacuumExhauster"
 msgstr "Abgas"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:208
 #, fuzzy
-#| msgid "Normal"
 msgid "normal"
 msgstr "Normal"
 
@@ -649,7 +644,6 @@ msgstr "Wasserstand"
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:212
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6424
 #, fuzzy
-#| msgid "Water"
 msgid "Water Scoop"
 msgstr "Wasser"
 
@@ -1247,13 +1241,11 @@ msgstr "Lokomotivtyp "
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:2292
 #, fuzzy, csharp-format
-#| msgid "Carriage temperature is too cold, the passengers are freezing."
 msgid "Carriage {0} temperature is too cold, the passengers are freezing."
 msgstr "Die Temperatur in den Waggons ist zu niedrig, die Passagiere frieren."
 
 #: ../../Orts.Simulation/Simulation/Physics/Train.cs:2296
 #, fuzzy, csharp-format
-#| msgid "Carriage temperature is too cold, the passengers are freezing."
 msgid "Car {0} temperature is too cold for the freight."
 msgstr "Die Temperatur in den Waggons ist zu niedrig, die Passagiere frieren."
 
@@ -1303,7 +1295,6 @@ msgstr "DpfNtzg"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:737
 #, fuzzy
-#| msgid "Water"
 msgid "WaterLvl"
 msgstr "Wasser"
 
@@ -1315,7 +1306,6 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:742
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6043
 #, fuzzy
-#| msgid "Temp:"
 msgid "Temp"
 msgstr "Temp:"
 
@@ -1402,19 +1392,16 @@ msgstr "Der Sandvorrat ist aufgebraucht"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2299
 #, fuzzy
-#| msgid "Refill: Loco must be stationary to refill {0}."
 msgid "Refill: Loco must be moving forward."
 msgstr "Auftanken: Lokomotive muss stillstehen, um {0} auftanken zu können."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2309
 #, fuzzy, csharp-format
-#| msgid "Refill: Loco speed must exceed {0}."
 msgid "Refill: Loco speed must exceed {0} for water to enter tender."
 msgstr "Auftanken: Geschwindigkeit muss größer als {0} sein."
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2320
 #, fuzzy
-#| msgid "Refill: {0} supply now replenished."
 msgid "Refill: Water supply now replenished."
 msgstr "Auftanken: {0} Vorrat jetzt ergänzt."
 
@@ -1502,7 +1489,6 @@ msgstr "Feuermasse"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5754
 #, fuzzy
-#| msgid "Fire mass"
 msgid "Fire Heat Loss"
 msgstr "Feuermasse"
 
@@ -1680,7 +1666,6 @@ msgstr "AutHeizr"
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5861
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5888
 #, fuzzy
-#| msgid "Blower"
 msgid "BlowD"
 msgstr "Bläser"
 
@@ -1695,13 +1680,11 @@ msgstr "Ejektor"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5901
 #, fuzzy
-#| msgid "TripleValve"
 msgid "CylValve:"
 msgstr "3wegVent"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5902
 #, fuzzy
-#| msgid "Travelled"
 msgid "Travel"
 msgstr "Gereist"
 
@@ -1739,7 +1722,6 @@ msgstr "AbgKanal"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5926
 #, fuzzy
-#| msgid "Comp"
 msgid "CylComp"
 msgstr "ZylVbd"
 
@@ -2200,7 +2182,6 @@ msgstr ""
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6391
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6404
 #, fuzzy
-#| msgid "FeedRate"
 msgid "Rate"
 msgstr "HeizRate"
 
@@ -2259,13 +2240,11 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6437
 #, fuzzy
-#| msgid "Water"
 msgid "WaterU"
 msgstr "Wasser"
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6439
 #, fuzzy
-#| msgid "Input:"
 msgid "Input"
 msgstr "Werte:"
 
@@ -2331,9 +2310,6 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1235
 #, fuzzy, csharp-format
-#| msgid ""
-#| "You are travelling too fast for this curve. Slow down, your freight may "
-#| "be damaged and your train may break a coupling or airhose."
 msgid ""
 "You are travelling too fast for this curve. Slow down, your freight car {0} "
 "may be damaged. The recommended speed for this curve is {1}"
@@ -2344,9 +2320,6 @@ msgstr ""
 
 #: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1239
 #, fuzzy, csharp-format
-#| msgid ""
-#| "You are travelling too fast for this curve. Slow down, your passengers "
-#| "are feeling uncomfortable and your train may break a coupling or airhose."
 msgid ""
 "You are travelling too fast for this curve. Slow down, your passengers in "
 "car {0} are feeling uncomfortable. The recommended speed for this curve is "
@@ -2476,11 +2449,6 @@ msgstr ""
 
 #~ msgid "Cont"
 #~ msgstr "Ventil"
-
-#, fuzzy
-#~| msgid "GrLimit"
-#~ msgid "Gr Limit"
-#~ msgstr "RostLimit"
 
 #~ msgid ""
 #~ "Your train has overturned, and this is simulated by a broken coupler."
