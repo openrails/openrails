@@ -6439,6 +6439,7 @@ public void SteamStartGearBoxIncrease()
                             SteamGearRatio = 0.0f;
                             MaxTractiveEffortLbf = 0.0f;
                             MaxIndicatedHorsePowerHP = 0.0f;
+                            SignalEvent(Event.SteamGearLeverChange);
 
                         }
                         else if (SteamGearPosition == 1.0)
@@ -6447,6 +6448,7 @@ public void SteamStartGearBoxIncrease()
                             MotiveForceGearRatio = SteamGearRatioLow;
                             MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                             SteamGearRatio = SteamGearRatioLow;
+                            SignalEvent(Event.SteamGearLeverChange);
 
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
@@ -6470,6 +6472,7 @@ public void SteamStartGearBoxIncrease()
                             MotiveForceGearRatio = SteamGearRatioHigh;
                             MaxLocoSpeedMpH = MpS.ToMpH(HighMaxGearedSpeedMpS);
                             SteamGearRatio = SteamGearRatioHigh;
+                            SignalEvent(Event.SteamGearLeverChange);
 
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
@@ -6518,6 +6521,8 @@ public void SteamStartGearBoxIncrease()
                             MotiveForceGearRatio = SteamGearRatioLow;
                             MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                             SteamGearRatio = SteamGearRatioLow;
+                            SignalEvent(Event.SteamGearLeverChange);
+
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
@@ -6542,6 +6547,7 @@ public void SteamStartGearBoxIncrease()
                             SteamGearRatio = 0.0f;
                             MaxTractiveEffortLbf = 0.0f;
                             MaxIndicatedHorsePowerHP = 0.0f;
+                            SignalEvent(Event.SteamGearLeverChange);
                         }
                     }
                 }
