@@ -391,6 +391,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
+        // This calculates the percent of running power. If the locomotive has two prime movers, and 
+        // one is shut down then power will be reduced by the size of the prime mover
+        public float RunningPowerFraction
+        {
+            get
+            {
+                float totalpossiblepower = 0;
+                float runningPower = 0;
+                float percent = 0;
+                foreach (DieselEngine eng in DEList)
+                {
+                    totalpossiblepower += eng.MaximumDieselPowerW;
+                    if (eng.EngineStatus == DieselEngine.Status.Running)
+                    {
+                        runningPower += eng.MaximumDieselPowerW;
+                    }
+                }
+                percent = runningPower / totalpossiblepower;
+                return percent;
+            }
+        }
     }
 
     public class DieselEnum : IEnumerator
@@ -969,7 +990,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 ApparentThrottleSetting = 100.0f;
             }
-
+            
             if (DieselPowerTab != null)
             {
                 CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximumDieselPowerW * (1 - locomotive.PowerReduction));

@@ -409,10 +409,17 @@ namespace Orts.Simulation.RollingStocks
                 InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
             }
 
-            // Check to see if this is a restored game -(assumed so if Restored >0), then set water controller values based upon saved values
-            if (RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL > 1.0)
+            // Initialise water level in steam heat boiler
+            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0)
             {
-                CurrentLocomotiveSteamHeatBoilerWaterCapacityL = RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL;
+                if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
+                }
+                else
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
+                }
             }
         }
 
@@ -426,7 +433,7 @@ namespace Orts.Simulation.RollingStocks
             // outf.Write(Pan);
             base.Save(outf);
             outf.Write(DieselLevelL);
-            outf.Write(RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL);
+            outf.Write(CurrentLocomotiveSteamHeatBoilerWaterCapacityL);
             DieselEngines.Save(outf);
             ControllerFactory.Save(GearBoxController, outf);
         }
@@ -439,7 +446,7 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
-            RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
+            CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             DieselEngines.Restore(inf);
             ControllerFactory.Restore(GearBoxController, inf);
             
@@ -484,8 +491,14 @@ namespace Orts.Simulation.RollingStocks
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
 
-            UpdateCarSteamHeat(elapsedClockSeconds);
-        
+            // Update water controller for steam boiler heating tank
+            if (this.IsLeadLocomotive() && IsSteamHeatFitted)
+            {
+                WaterController.Update(elapsedClockSeconds);
+                if (WaterController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
+            }
+
         }
 
 
@@ -556,11 +569,34 @@ namespace Orts.Simulation.RollingStocks
                     LocomotiveApparentThrottleSetting = t;
                 }
 
+                LocomotiveApparentThrottleSetting = MathHelper.Clamp(LocomotiveApparentThrottleSetting, 0.0f, 1.0f);  // Clamp decay within bounds
+
+                // If there is more then one diesel engine, and one or more engines is stopped, then the Fraction Power will give a fraction less then 1 depending upon power definitions of engines.
+                float DieselEngineFractionPower = 1.0f;
+
+                if (DieselEngines.Count > 1)
+                {
+                    DieselEngineFractionPower = DieselEngines.RunningPowerFraction;
+                }
+
+                DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
+
                 if (TractiveForceCurves == null)
                 {
+                    // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
                     float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
 
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW * LocomotiveApparentThrottleSetting;
+                    // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW * DieselEngineFractionPower * LocomotiveApparentThrottleSetting;
+
+                    // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
+                    if (UnloadingSpeedMpS != 0 && AbsSpeedMpS > UnloadingSpeedMpS && AbsSpeedMpS < MaxSpeedMpS)
+                    {
+                        // use straight line curve to decay power to zero by 2 x unloading speed
+                        float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsSpeedMpS - UnloadingSpeedMpS);
+                        unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
+                        maxPowerW *= unloadingspeeddecay;
+                    }
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -571,22 +607,14 @@ namespace Orts.Simulation.RollingStocks
                         if (maxForceN * AbsSpeedMpS > maxPowerW)
                             maxForceN = maxPowerW / AbsSpeedMpS;
 
-                        // CTN - Not sure what impact that these following have???
-                        if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
-                        {
-                            maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
-                        }
-
-                        // CTN - Sets power to zero, which I don't think is correct
-                        if (AbsSpeedMpS > (MaxSpeedMpS))
-                            maxForceN = 0;
-
                         MotiveForceN = maxForceN;
+                        // Motive force will be produced until power reaches zero, some locomotives had a overspeed monitor set at the maximum design speed
                     }
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsSpeedMpS) * (1 - PowerReduction);
+                    // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
+                    MotiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
@@ -876,7 +904,7 @@ namespace Orts.Simulation.RollingStocks
             base.SwitchToAutopilotControl();
         }
 
-        private void UpdateCarSteamHeat(float elapsedClockSeconds)
+        protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
 
@@ -905,7 +933,6 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate water usage for steam heat boiler
                     float WaterUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerWaterUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
                     CurrentLocomotiveSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
-                    RestoredCurrentLocomotiveSteamHeatBoilerWaterCapacityL = CurrentLocomotiveSteamHeatBoilerWaterCapacityL; // Save in case game needs restoring
                     MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
                 }
                 else
