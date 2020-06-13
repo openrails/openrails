@@ -181,10 +181,7 @@ namespace Orts.Common
         HotBoxBearingOff,
 
         BoilerBlowdownOn,
-        BoilerBlowdownOff,
-
-        AIFiremanSoundOn,
-        AIFiremanSoundOff
+        BoilerBlowdownOff
     }
 
     public static class Events
@@ -336,9 +333,6 @@ namespace Orts.Common
                         case 141: return Event.BrakePipePressureIncrease;
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
-
-                        case 148: return Event.AIFiremanSoundOn;
-                        case 149: return Event.AIFiremanSoundOff;
 
                         case 150: return Event.CircuitBreakerOpen;
                         case 151: return Event.CircuitBreakerClosing;

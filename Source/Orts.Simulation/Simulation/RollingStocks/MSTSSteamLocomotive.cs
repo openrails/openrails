@@ -7344,10 +7344,6 @@ public void ToggleCylinderCocks()
     public void ToggleManualFiring()
         {
             FiringIsManual = !FiringIsManual;
-            if (FiringIsManual)
-                SignalEvent(Event.AIFiremanSoundOff);
-            else
-                SignalEvent(Event.AIFiremanSoundOn);
         }
 
         public void AIFireOn()
