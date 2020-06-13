@@ -27,6 +27,7 @@ SET CheckToolInPath.Missing=0
 SET CheckToolInPath.Check=0
 :check-tools
 CALL :list-or-check-tool "svn.exe" "[UTS] Subversion tool"
+CALL :list-or-check-tool "nuget.exe" "[UTS] .NET package manager tool"
 CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool"
 CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
 CALL :list-or-check-tool "strip.exe" "[UTS] Lazarus tool"
@@ -97,6 +98,9 @@ IF EXIST ".git" (
 IF "%Revision%" == "000" (
 	>&2 ECHO WARNING: No Subversion or Git revision found.
 )
+
+REM Restore NuGet packages.
+nuget restore Source\ORTS.sln || GOTO :error
 
 REM Recreate Program directory for output.
 CALL :recreate "Program" || GOTO :error
