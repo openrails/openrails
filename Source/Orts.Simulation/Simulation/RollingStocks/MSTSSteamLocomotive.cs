@@ -6569,6 +6569,7 @@ public void SteamStartGearBoxIncrease()
                             DisplayMaxIndicatedHorsePowerHP = 0.0f;
                             DrawbarHorsePowerHP = 0.0f;
                             DrawBarPullLbsF = 0.0f;
+                            SignalEvent(Event.SteamGearLeverToggle);
                         }
                         else if (SteamGearPosition == 1.0)
                         {
@@ -6578,6 +6579,7 @@ public void SteamStartGearBoxIncrease()
                             MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                             DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
                             SteamGearRatio = SteamGearRatioLow;
+                            SignalEvent(Event.SteamGearLeverToggle);
 
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
@@ -6605,6 +6607,7 @@ public void SteamStartGearBoxIncrease()
                             MaxLocoSpeedMpH = MpS.ToMpH(HighMaxGearedSpeedMpS);
                             DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
                             SteamGearRatio = SteamGearRatioHigh;
+                            SignalEvent(Event.SteamGearLeverToggle);
 
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
@@ -6660,6 +6663,7 @@ public void SteamStartGearBoxIncrease()
                             SteamGearRatio = SteamGearRatioLow;
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
+                            SignalEvent(Event.SteamGearLeverToggle);
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                             MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
@@ -6688,6 +6692,7 @@ public void SteamStartGearBoxIncrease()
                             DisplayMaxIndicatedHorsePowerHP = 0.0f;
                             DrawbarHorsePowerHP = 0.0f;
                             DrawBarPullLbsF = 0.0f;
+                            SignalEvent(Event.SteamGearLeverToggle);
                         }
                     }
                 }
