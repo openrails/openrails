@@ -291,14 +291,10 @@ namespace Orts.Viewer3D.Debugging
 				  {
 					  foreach (TrPin pin in currNode.TrPins)
 					  {
-						  TrVectorSection item = null;
-						  try
-						  {
-							  if (nodes[pin.Link].TrVectorNode == null || nodes[pin.Link].TrVectorNode.TrVectorSections.Length < 1) continue;
-							  if (pin.Direction == 1) item = nodes[pin.Link].TrVectorNode.TrVectorSections.First();
-							  else item = nodes[pin.Link].TrVectorNode.TrVectorSections.Last();
-						  }
-						  catch { continue; }
+						  var vectorSections = nodes[pin.Link]?.TrVectorNode?.TrVectorSections;
+						  if (vectorSections == null || vectorSections.Length < 1)
+						      continue;
+						  TrVectorSection item = pin.Direction == 1 ? vectorSections.First() : vectorSections.Last();
 						  dVector A = new dVector(currNode.UiD.TileX, currNode.UiD.X, currNode.UiD.TileZ, + currNode.UiD.Z);
 						  dVector B = new dVector(item.TileX, + item.X, item.TileZ, + item.Z);
                           var x = dVector.DistanceSqr(A, B);
