@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>OPEN RAILS - Heads Up Display - Common Page</title>
+    <link rel="stylesheet" type="text/css" href="css/hud.css">
+	<script src="js/hud.js"></script>
+</head>
+
+<body onload="setInterval (HeadsUp, 500)" >
+
+<ul>
+  <li><a id="common">Common</a></li>
+  <li><a id="consist">Consist</a></li>
+  <li><a id="locomotive">Locomotive</a></li>
+  <li><a id="brake">Brake</a></li>
+  <li><a id="force">Force</a></li>
+  <li><a id="dispatcher">Dispatcher</a></li>
+  <li><a id="debug">Debug</a></li>
+</ul>
+<br><h2>Open Rails - Heads Up Display</h2>
+<br><div id="HUDCommon"></div>
+<br><h2 id="ExtraHeading"></h2>
+<br><div id="HUDExtra"></div>
+<br>
+<script>
+document.getElementById("common").onclick = function (){
+	PageNo = 0;
+}
+document.getElementById("consist").onclick = function (){
+	PageNo = 1;
+}
+document.getElementById("locomotive").onclick = function (){
+	PageNo = 2;
+}
+document.getElementById("brake").onclick = function (){
+	PageNo = 3;
+}
+document.getElementById("force").onclick = function (){
+	PageNo = 4;
+}
+document.getElementById("dispatcher").onclick = function (){
+	PageNo = 5;
+}
+document.getElementById("debug").onclick = function (){
+	PageNo = 6;
+}
+</script>
+</body>
+</html>
+
+
+
