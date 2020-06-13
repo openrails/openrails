@@ -354,6 +354,8 @@ Here an example of a red max speed indication that has been rotated by 5 degrees
 
 .. image:: images/cabs-digitals-rotation.png
 
+Rotation may be applied, with the same syntax, also to DigitalClock cab controls.
+
 3D cabs
 =======
 
