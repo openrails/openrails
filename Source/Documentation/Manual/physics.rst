@@ -290,7 +290,13 @@ Typically this is linked to a particular speed (see next parameter).
 will be applied.
 
 ``MaxVelocity`` ==> is the maximum rated design speed of the locomotive. 
-Typically beyond this speed power output of the locomotive will decrease.
+Some locomotives had a speed alarm which applied the brakes, or set the throttle 
+to a lower value. This can be modelled using a the OverspeedMonitor function.
+
+``ORTSUnloadingSpeed`` ==> is the locomotive speed when the generator reaches 
+its maximum voltage, and due to the speed of the train, the engine starts 
+to 'unload'. Typically beyond this speed, power output of the locomotive 
+will decrease.
 
 If using power/force Tables, then some of the above values will not be 
 required, see the sections below for details.
@@ -1244,7 +1250,10 @@ iv.  *Steam Heating* -- to offset the above heat losses, steam was piped
 Carriage Heating Implementation in Open Rails
 .............................................
 
-Currently, carriage steam heating is only available on steam locomotives.
+Steam heating can be set up on steam locomotives, or on diesels with steam 
+heating boilers, or alternatively with special cars that had steam heating 
+boilers installed in them.
+
 To enable steam heating to work in Open Rails the following parameter must
 be included in the engine section of the steam locomotive ENG File::
 
@@ -1258,7 +1267,7 @@ appear in the extended HUD to show the temperature in the train, and the
 steam heating pipe pressure, etc.
 
 Steam heating will only work if there are passenger cars attached to the
-locomotive.
+locomotive, or cars that have been set as requiring heating.
 
 Warning messages will be displayed if the temperature inside the carriage
 drops below the temperature limits.
@@ -1273,8 +1282,54 @@ The steam heating control valve can be configured by adding an enginecontroller
 called ``ORTSSTeamHeat ( w, x, y, z)``. It should be configured as a standard
 4 value controller.
 
+The primary purpose of this model is to calculate steam usage for the heating, 
+and in the case of a steam locomotive this will reduce available steam for the 
+locomotive to use. Water and fuel usage in producing the heat will also result 
+in the mass of the locomotive or steam heating van to be reduced.
+
 It should be noted that the impact of steam heating will vary depending
 upon the season, length of train, etc.
+
+A set of standard default parameters are included in Open Rails which will allow 
+steam heating to work once the above changes have been implemented.
+
+For those who would like to customise the steam heating the following parameters 
+which can be inserted in the wagon file section can be adjusted as follows.
+
+The passenger (or other heated cars) can be adjusted with the following parameters:
+
+``ORTSHeatingWindowDeratingFactor`` - is the fraction of the car side that is occupied 
+by windows.
+``ORTSHeatingCompartmentTemperatureSet`` - is the temperature that the car thermostat 
+is set to.
+``ORTSHeatingCompartmentPipeAreaFactor`` - is a factor that adjusts the heating area of 
+the steam heater in the passenger compartment.
+``ORTSHeatingTrainPipeOuterDiameter`` - outer diameter of the main steam pipe that runs 
+the length of the train.
+``ORTSHeatingTrainPipeInnerDiameter`` - inner diameter of the main steam pipe that runs 
+the length of the train.
+``ORTSHeatingConnectingHoseOuterDiameter`` - outer diameter of the connecting hose between
+ carriages.
+``ORTSHeatingConnectingHoseInnerDiameter`` - inner diameter of the connecting hose between
+ carriages.
+
+For diesel locomotives or steam heating boiler vans the following parameters can be used 
+to set the parameters of the steam heating boiler.
+``ORTSWagonSpecialType`` - can be used to indicate whether the car is a boiler van 
+(set = HeatingBoiler), or if the car is heated (set = Heated).
+``ORTSHeatingBoilerWaterUsage`` - is the water usage for the steam heating boiler, and is 
+a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = water 
+usage (g-uk/hr).
+``ORTSHeatingBoilerFuelUsage`` - is the fuel usage for the steam heating boiler, and is 
+a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = fuel 
+usage (g-uk/hr).
+``ORTSHeatingBoilerWaterTankCapacity`` - is the feed water tank capacity for the steam boiler.
+
+``ORTSHeatingBoilerFuelTankCapacity`` - is the fuel tank capacity for the steam boiler. 
+Applies to steam heating boiler cars only. 
+
+Special effects can also be added to support the steam heating model, see the section called 
+"Special Visual Effects for Locomotives or Wagons" for more information.
 
 Steam Locomotives -- Physics Parameters for Optimal Operation
 -------------------------------------------------------------
@@ -1579,8 +1634,8 @@ an ENG file):
 - Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a
   steam pipe connection between wagons.
 
-- Haeting Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the 
-steam escaping from the steam trap in a passenger compartment.
+- Heating Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the 
+steam escaping from the steam trap under a passenger compartment.
 
 - Heating Main Pipe Steam Trap (named ``HeatingMainPipeSteamTrapFX``) -- represents the steam escaping from a
   steam trap in the main steam pipe running under the passenger car.
@@ -2084,8 +2139,8 @@ wagon section of the WAG or ENG file.
 - ``wagon(ORTSBrakeShoeFriction`` -- defines the friction curve for the brake shoe
   with speed (default curve for cast iron brake shoes included in OR).
 
-Other standard brake parameters such as MaxBrakeForce, MaxReleaseRate , MaxApplicationRate,
-BrakeCylinderPressureForMaxBrakeBrakeForce can be used as well.
+Other standard brake parameters such as ``MaxBrakeForce``, ``MaxReleaseRate``, ``MaxApplicationRate``,
+``BrakeCylinderPressureForMaxBrakeBrakeForce`` can be used as well.
 
 Additionaly the following are defined in the engine section of the ENG file:
 
@@ -2118,22 +2173,37 @@ Additionaly the following are defined in the engine section of the ENG file:
 
 **Note: It is strongly recommended that UoM be used whenever units such as InHg, etc are specificed in the above parameters.**
 
-Other standard brake parameters such as VacuumBrakesHasVacuumPump, VacuumBrakesMinBoilerPressureMaxVacuum,
-VacuumBrakesSmallEjectorUsageRate, VacuumBrakesLargeEjectorUsageRate can be defined as well.
+Other standard brake parameters such as ``VacuumBrakesHasVacuumPump``, ``VacuumBrakesMinBoilerPressureMaxVacuum``,
+``VacuumBrakesSmallEjectorUsageRate``, ``VacuumBrakesLargeEjectorUsageRate`` can be defined as well.
 
 When defining the Brake Controllers for vacuum braked locomotives, only the following BrakesController
-tokens should be used - TrainBrakesControllerFullQuickReleaseStart, TrainBrakesControllerReleaseStart,
-TrainBrakesControllerRunningStart, TrainBrakesControllerApplyStart, TrainBrakesControllerHoldLappedStart,
-TrainBrakesControllerVacuumContinuousServiceStart, TrainBrakesControllerEmergencyStart,
-EngineBrakesControllerReleaseStart, EngineBrakesControllerRunningStart, EngineBrakesControllerApplyStart.
+tokens should be used - ``TrainBrakesControllerFullQuickReleaseStart``, ``TrainBrakesControllerReleaseStart``,
+``TrainBrakesControllerRunningStart``, ``TrainBrakesControllerApplyStart``, ``TrainBrakesControllerHoldLappedStart``,
+``TrainBrakesControllerVacuumContinuousServiceStart``, ``TrainBrakesControllerEmergencyStart``,
+``EngineBrakesControllerReleaseStart``, ``EngineBrakesControllerRunningStart``, ``EngineBrakesControllerApplyStart``.
 
 If ``TrainPipeLeakRate`` has been set in the ENG file, then the small ejector will be required to offset the leakage
-in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase the level of operation of the small ejector.
+in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase/decrease the level of operation of the small ejector.
 
 An engine controller can be configured to customise the operation of the small ejector. This controller is called
 ``ORTSSmallEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller.
 
-Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted to air braked locomotives.
+An engine controller can also be configured to customise the operation of the large ejector. This controller is called
+``ORTSLargeEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller. The large ejector needs to 
+be operated to release the brakes. The *Alt-J* and *Ctrl-J* keys can be used to decrease/increase the level of 
+operation of the large ejector.
+
+In diesel and electric locomotives, the Vacuum Exhauster preforms a similar function to the small and large ejector, 
+but in an "automated" fashion. The *J* key can be used to run the vacuum exhauster at high speed to facilitate a 
+quicker release of the brakes. An engine controller called ``ORTSFastVacuumExhauster ( x y z )``, and will be set 
+up as a standard 3 value controller.
+
+If it is not desired to operate the large ejector, a simplified brake operation can be used by selecting the 
+"Simple Contol and Physics" option in the options menu (Simulator TAB). This option can also be used if there is a 
+"mismatch" between the locomotive and car brakes to set a standard default set of brakes.
+
+Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted 
+to air braked locomotives.
 
 
 

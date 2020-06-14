@@ -59,6 +59,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "epapplystart": Type = ControllerState.EPApply; break;
                 case "epholdstart": Type = ControllerState.SelfLap; break;
                 case "vacuumcontinuousservicestart": Type = ControllerState.VacContServ; break;
+                case "vacuumapplycontinuousservicestart": Type = ControllerState.VacApplyContServ; break;
+                case "brakenotchstart": Type = ControllerState.BrakeNotch; break;
                 default:
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;

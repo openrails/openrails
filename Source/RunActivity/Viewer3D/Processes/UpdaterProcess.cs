@@ -126,8 +126,11 @@ namespace Orts.Viewer3D.Processes
             {
                 WatchdogToken.Ping();
                 CurrentFrame.Clear();
-                Game.State.Update(CurrentFrame, TotalRealSeconds);
-                CurrentFrame.Sort();
+                if (Game.State != null)
+                {
+                    Game.State.Update(CurrentFrame, TotalRealSeconds);
+                    CurrentFrame.Sort();
+                }
             }
             finally
             {

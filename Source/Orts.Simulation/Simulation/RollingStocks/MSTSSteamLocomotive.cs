@@ -99,6 +99,7 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController FireboxDoorController = new MSTSNotchController(0, 1, 0.1f);
         public MSTSNotchController FuelController = new MSTSNotchController(0, 1, 0.01f); // Could be coal, wood, oil or even peat !
         public MSTSNotchController SmallEjectorController = new MSTSNotchController(0, 1, 0.1f);
+        public MSTSNotchController LargeEjectorController = new MSTSNotchController(0, 1, 0.1f);
 
         public bool Injector1IsOn;
         public bool Injector2IsOn;
@@ -549,16 +550,24 @@ namespace Orts.Simulation.RollingStocks
         float DisplaySpeedFactor;  // Value displayed in HUD
 
         public float MaxTractiveEffortLbf;     // Maximum theoritical tractive effort for locomotive
-        float DisplayTractiveEffortLbsF; // Value of Tractive eefort to display in HUD
+        public float DisplayMaxTractiveEffortLbf;     // HuD display value of maximum theoritical tractive effort for locomotive
+
+        float DisplayTractiveEffortLbsF; // Value of Tractive effort to display in HUD
         float MaxCriticalSpeedTractiveEffortLbf;  // Maximum power value @ critical speed of piston
         float DisplayCriticalSpeedTractiveEffortLbf;  // Display power value @ speed of piston
         float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
         float TractiveEffortLbsF;           // Current sim calculated tractive effort
-        const float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort
+        const float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort for non-geared locomotives
+        const float GearedTractiveEffortFactor = 0.7f;  // factor for calculating Theoretical Tractive Effort for geared locomotives
+        float NeutralGearedDavisAN; // Davis A value adjusted for neutral gearing
+        const float DavisMechanicalResistanceFactor = 20.0f;
+        float GearedRetainedDavisAN; // Remembers the Davis A value
 
         float MaxLocoSpeedMpH;      // Speed of loco when max performance reached
+        float DisplayMaxLocoSpeedMpH;      // Display value of speed of loco when max performance reached
         float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
+        float DisplayMaxIndicatedHorsePowerHP; // Display value for HUD of IHP @ max performance for the geared locomotive
         float absSpeedMpS;
         float CombFrictionN;  // Temporary parameter to store combined friction values of locomotive and tender
         float CombGravityN;   // Temporary parameter to store combined Gravity values of locomotive and tender
@@ -771,6 +780,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
                 case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorFitted = true; break;
+                case "engine(enginecontrollers(ortslargeejector": LargeEjectorController.Parse(stf); LargeEjectorFitted = true; break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
                 case "engine(enginecontrollers(blower": BlowerController.Parse(stf); break;
@@ -827,7 +837,6 @@ namespace Orts.Simulation.RollingStocks
                     IsFixGeared = String.Compare(typeString2, "Fixed") == 0;
                     IsSelectGeared = String.Compare(typeString2, "Select") == 0;
                     break;
-                case "engine(enginecontrollers(waterscoop": HasWaterScoop = true; break;
 
                 default: base.Parse(lowercasetoken, stf); break;
             }
@@ -873,6 +882,7 @@ namespace Orts.Simulation.RollingStocks
             FiringRateController = (MSTSNotchController)locoCopy.FiringRateController.Clone();
             FireboxDoorController = (MSTSNotchController)locoCopy.FireboxDoorController.Clone();
             SmallEjectorController = (MSTSNotchController)locoCopy.SmallEjectorController.Clone();
+            LargeEjectorController = (MSTSNotchController)locoCopy.LargeEjectorController.Clone();
             GrateAreaM2 = locoCopy.GrateAreaM2;
             SuperheaterFactor = locoCopy.SuperheaterFactor;
             EvaporationAreaM2 = locoCopy.EvaporationAreaM2;
@@ -896,6 +906,7 @@ namespace Orts.Simulation.RollingStocks
             HasSuperheater = locoCopy.HasSuperheater;
             IsFixGeared = locoCopy.IsFixGeared;
             IsSelectGeared = locoCopy.IsSelectGeared;
+            LargeEjectorFitted = locoCopy.LargeEjectorFitted;
             CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
             CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
@@ -958,6 +969,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(FireboxDoorController, outf);
             ControllerFactory.Save(FiringRateController, outf);
             ControllerFactory.Save(SmallEjectorController, outf);
+            ControllerFactory.Save(LargeEjectorController, outf);
             outf.Write(FuelBurnRateSmoothedKGpS);
             outf.Write(BoilerHeatSmoothedBTU);
             outf.Write(FuelRateSmoothed);
@@ -1021,6 +1033,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(FireboxDoorController, inf);
             ControllerFactory.Restore(FiringRateController, inf);
             ControllerFactory.Restore(SmallEjectorController, inf);
+            ControllerFactory.Restore(LargeEjectorController, inf);
             FuelBurnRateSmoothedKGpS = inf.ReadSingle();
             BurnRateSmoothKGpS.ForceSmoothValue(FuelBurnRateSmoothedKGpS);
             BoilerHeatSmoothedBTU = inf.ReadSingle();
@@ -1197,6 +1210,7 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(DriverWheelRadiusM * 2.0f)));
+                DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 LogIsCompoundLoco = true;  // Set logging to true for compound locomotive
 
             }
@@ -1230,7 +1244,8 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
                     // Max Geared speed = ((MaxPistonSpeedFt/m / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
                     LowMaxGearedSpeedMpS = pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatio * MathHelper.Pi * DriverWheelRadiusM * 2.0f);
-                    MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
                 else if (IsSelectGeared)
                 {
@@ -1260,14 +1275,25 @@ namespace Orts.Simulation.RollingStocks
                         SteamGearRatioHigh = 2.0f;
                         Trace.TraceWarning("SteamGearRatioHigh not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                     }
+                    // Adjust resistance for neutral gearing
+                    GearedRetainedDavisAN = DavisAN; // remember davis a value for later
+                    NeutralGearedDavisAN = DavisAN; // Initialise neutral gear value
+                    float TempDavisAAmount = N.FromLbf((DavisMechanicalResistanceFactor * Kg.ToTUS(DrvWheelWeightKg))); // Based upon the Davis formula for steam locomotive resistance
+                    if (TempDavisAAmount > 0.5 * DavisAN)
+                    {
+                        TempDavisAAmount = DavisAN * 0.5f; // If calculated mechanical resistance is greater then then 50% of the DavisA amount then set to an arbitary value of 50%.
+                    }
+                    NeutralGearedDavisAN -= TempDavisAAmount; // Reduces locomotive resistance when in neutral gear, as mechanical resistance decreases
 
-                    MotiveForceGearRatio = 0.0f; // assume in neutral gear as starting position
-                    SteamGearRatio = 0.0f;   // assume in neutral gear as starting position
+                    MotiveForceGearRatio = SteamGearRatioLow; // assume in low gear as starting position (for purposes of initialising locomotive and HUD correctly
+                    SteamGearRatio = SteamGearRatioLow;   // assume in low gear as starting position
+                    SteamGearPosition = 1.0f; // assume in low gear as starting position 
                     // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
                     // Max Geared speed = ((MaxPistonSpeed / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
                     LowMaxGearedSpeedMpS = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioLow))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
                     HighMaxGearedSpeedMpS = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioHigh))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
-                    MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
                 else
                 {
@@ -1276,6 +1302,7 @@ namespace Orts.Simulation.RollingStocks
                     MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                     SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                     MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
             }
             else if (SteamEngineType == SteamEngineTypes.Simple)    // Simple locomotive
@@ -1284,6 +1311,7 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
             }
             else // Default to Simple Locomotive (Assumed Simple) shows up as "Unknown"
             {
@@ -1293,6 +1321,7 @@ namespace Orts.Simulation.RollingStocks
                 MotiveForceGearRatio = 1.0f;  // set gear ratio to default, as not a geared locomotive
                 SteamGearRatio = 1.0f;     // set gear ratio to default, as not a geared locomotive
                 MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
             }
 
             // ******************  Test Boiler Type ********************* 
@@ -1477,10 +1506,12 @@ namespace Orts.Simulation.RollingStocks
             if (SteamGearRatio == 0)
             {
                 MaxLocoSpeedMpH = 0.0f;
+                DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
             }
             else
             {
                 MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
+                DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
             }
 
             // Assign default steam table values if table not in ENG file
@@ -1685,13 +1716,16 @@ namespace Orts.Simulation.RollingStocks
 
             if (MaxIndicatedHorsePowerHP == 0) // if MaxIHP is not set in ENG file, then set a default
             {
+
                 // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                 MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
+                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
 
                 // Check to see if MaxIHP is in fact limited by the boiler
                 if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                 {
                     MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                    DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                     ISBoilerLimited = true;
                 }
                 else
@@ -1933,7 +1967,6 @@ namespace Orts.Simulation.RollingStocks
             UpdateWaterGauge();
             UpdateInjectors(elapsedClockSeconds);
             UpdateFiring(absSpeedMpS);
-            UpdateSteamHeat(elapsedClockSeconds);
             #endregion
 
         }
@@ -2130,6 +2163,15 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Increase, SmallEjectorController.CurrentValue * 100);
                 if (SmallEjectorController.UpdateValue < 0.0)
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Decrease, SmallEjectorController.CurrentValue * 100);
+            }
+
+            LargeEjectorController.Update(elapsedClockSeconds);
+            if (IsPlayerTrain)
+            {
+                if (LargeEjectorController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Increase, LargeEjectorController.CurrentValue * 100);
+                if (LargeEjectorController.UpdateValue < 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue * 100);
             }
 
             Injector1Controller.Update(elapsedClockSeconds);
@@ -4361,21 +4403,33 @@ namespace Orts.Simulation.RollingStocks
             }
             else // if simple or geared locomotive calculate tractive effort
             {
+
+                // If the steam piston is exceeding the maximum design piston rate then decrease efficiency of mep
+                if (SteamEngineType == SteamEngineTypes.Geared && PistonSpeedFtpMin > MaxSteamGearPistonRateFtpM)
+                {
+                    // use straight line curve to decay mep to zero by 2 x piston speed
+                    float pistonforcedecay = 1.0f - (1.0f / MaxSteamGearPistonRateFtpM) * (PistonSpeedFtpMin - MaxSteamGearPistonRateFtpM);
+                    pistonforcedecay = MathHelper.Clamp(pistonforcedecay, 0.0f, 1.0f);  // Clamp decay within bounds
+
+                    MeanEffectivePressurePSI *= pistonforcedecay; // Decrease mep once piston critical speed is exceeded
+                }
+
                 TractiveEffortLbsF = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * (MeanEffectivePressurePSI * CylinderEfficiencyRate) * MotiveForceGearRatio;
+
+                // Force tractive effort to zero if throttle is closed, or if a geared steam locomotive in neutral gear. MEP calculation is not allowing it to go to zero
+                if (throttle < 0.001 || (SteamEngineType == SteamEngineTypes.Geared && SteamGearPosition == 0))
+                {
+                    TractiveEffortLbsF = 0.0f; 
+                }
+                TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
+                DisplayTractiveEffortLbsF = TractiveEffortLbsF;
 
                 // Calculate IHP
                 // IHP = (MEP x CylStroke(ft) x cylArea(sq in) x No Strokes (/min)) / 33000) - this is per cylinder
 
                 IndicatedHorsePowerHP = (TractiveEffortLbsF * pS.TopH(Me.ToMi(absSpeedMpS))) / 375.0f;
+                IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
             }
-
-            IndicatedHorsePowerHP = MathHelper.Clamp(IndicatedHorsePowerHP, 0, IndicatedHorsePowerHP);
-            if (throttle < 0.001)
-            {
-                TractiveEffortLbsF = 0.0f; // Force tractive effort to zero if throttle is closed. MEP calculation is not allowing it to go to zero
-            }
-            TractiveEffortLbsF = MathHelper.Clamp(TractiveEffortLbsF, 0, TractiveEffortLbsF);
-            DisplayTractiveEffortLbsF = TractiveEffortLbsF;
 
             // Calculate the elapse time for the steam performance monitoring
             if (Simulator.Settings.DataLogSteamPerformance)
@@ -4485,8 +4539,8 @@ namespace Orts.Simulation.RollingStocks
             // Set "current" motive force based upon the throttle, cylinders, steam pressure, etc	
             MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * N.FromLbf(TractiveEffortLbsF);
 
-            // On starting allow maximum motive force to be used
-            if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f)
+            // On starting allow maximum motive force to be used, unless gear is in neutral (normally only geared locomotive will be zero).
+            if (absSpeedMpS < 1.0f && cutoff > 0.70f && throttle > 0.98f && MotiveForceGearRatio != 0)
             {
                 MotiveForceN = (Direction == Direction.Forward ? 1 : -1) * MaxForceN;
             }
@@ -5021,26 +5075,45 @@ namespace Orts.Simulation.RollingStocks
                     SmallEjectorFeedFraction = 0.0f;
                 }
 
+                SmallEjectorFeedFraction = MathHelper.Clamp(SmallEjectorFeedFraction, 0.0f, 1.0f); // Keep within bounds
+                SmallEjectorBrakePipeChargingRatePSIorInHgpS = SmallEjectorFeedFraction * BrakePipeChargingRatePSIorInHgpS; // Rate used in the vacuum brakes
+                
+                /// <summary>
+                /// Update large ejector vacuum rate and steam usage.
+                /// </summary>
+
+                // Calculate Large steam ejector steam usage
+                SteamEjectorLargeSetting = LargeEjectorController.CurrentValue;
+                SteamEjectorLargePressurePSI = BoilerPressurePSI * SteamEjectorLargeSetting;
+                // Steam consumption for large ejector is assumed to be @ 120 psi steam pressure, therefore pressure will vary up and down from this reference figure.
+                float TempLargeSteamPressure = SteamEjectorLargePressurePSI / 120.0f;
+                TempEjectorLargeSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * TempLargeSteamPressure;
+
                 // Large ejector will suffer performance efficiency impacts if boiler steam pressure falls below max vacuum point.
-                if (BoilerPressurePSI < MaxVaccuumMaxPressurePSI)
+                if (SteamEjectorLargeSetting == 0)
                 {
-                    LargeEjectorFeedFraction = ((1.6122f * (BoilerPressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
+                    LargeEjectorFeedFraction = 0;
+                }
+                else if (BoilerPressurePSI < MaxVaccuumMaxPressurePSI)
+                {
+                    LargeEjectorFeedFraction = ((1.6122f * (SteamEjectorLargePressurePSI / MaxVaccuumMaxPressurePSI) - 0.6122f)) * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
                 }
                 else
                 {
-                    //  Provided BP is greater then max vacuum pressure large ejector will operate at full efficiency
-                    LargeEjectorFeedFraction = 1.0f * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
+                    //  The fraction is dropped slightly as pressure increases to simulate decrease in vacuum evacuation as ejector pressure increases above the kneepoint of curve
+                    LargeEjectorFeedFraction = ((1.1063f - (0.1063f * (SteamEjectorLargePressurePSI / MaxVaccuumMaxPressurePSI)))) * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
                 }
 
-                if (!LargeSteamEjectorIsOn)
+                // If simple brake controls chosen, then "automatically" set the large ejector value
+                if (Simulator.Settings.SimpleControlPhysics || !LargeEjectorFitted)
                 {
-                    LargeEjectorFeedFraction = 0.0f;
+
+                    //  Provided BP is greater then max vacuum pressure large ejector will operate at full efficiency
+                    LargeEjectorFeedFraction = 1.0f * EjectorLargeSteamConsumptionLbpS / (EjectorLargeSteamConsumptionLbpS + EjectorSmallSteamConsumptionLbpS);
+
                 }
 
                 LargeEjectorFeedFraction = MathHelper.Clamp(LargeEjectorFeedFraction, 0.0f, 1.0f); // Keep within bounds
-                SmallEjectorFeedFraction = MathHelper.Clamp(SmallEjectorFeedFraction, 0.0f, 1.0f); // Keep within bounds
-                // Calculate for display purposes
-                SmallEjectorBrakePipeChargingRatePSIorInHgpS = SmallEjectorFeedFraction * BrakePipeChargingRatePSIorInHgpS;
                 LargeEjectorBrakePipeChargingRatePSIorInHgpS = LargeEjectorFeedFraction * BrakePipeChargingRatePSIorInHgpS;
 
                 // Calculate large steam ejector steam usage, and the brake turns the large ejector on
@@ -5571,33 +5644,35 @@ namespace Orts.Simulation.RollingStocks
             #endregion
         }
 
-        private void UpdateSteamHeat(float elapsedClockSeconds)
+        protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
 
-            // Calculate steam pressure in steam pipe
-            if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
+            if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
             {
                 CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
-            }
 
-            CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
+                if (CurrentSteamHeatPressurePSI > BoilerPressurePSI)
+                {
+                    CurrentSteamHeatPressurePSI = BoilerPressurePSI; // If boiler pressure drops, then make sure that steam heating pressure cannot be greater then boiler pressure.
+                }
 
-            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
+                // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
-            {
-                if (this.IsLeadLocomotive())
+                if (CurrentSteamHeatPressurePSI > 0.1)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
                 {
                     Train.CarSteamHeatOn = true; // turn on steam effects on wagons
 
+                    // Calculate impact of steam heat usage on locomotive
+                    BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
+                    BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
+                    TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
+                    BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
 
-                        // Calculate impact of steam heat usage on locomotive
-                        BoilerMassLB -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS;
-                        BoilerHeatBTU -= elapsedClockSeconds * CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to steam heat usage
-                        TotalSteamUsageLBpS += CalculatedCarHeaterSteamUsageLBpS;
-                        BoilerHeatOutBTUpS += CalculatedCarHeaterSteamUsageLBpS * (BoilerSteamHeatBTUpLB - BoilerWaterHeatBTUpLB); // Heat loss due to safety valve                
-                    
+                }
+                else
+                {
+                    Train.CarSteamHeatOn = false; // turn off steam effects on wagons
                 }
             }
         }
@@ -5671,6 +5746,11 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.SMALL_EJECTOR:
                     {
                         data = SmallEjectorController.CurrentValue;
+                        break;
+                    }
+               case CABViewControlTypes.ORTS_LARGE_EJECTOR:
+                    {
+                        data = LargeEjectorController.CurrentValue;
                         break;
                     }
                 case CABViewControlTypes.FUEL_GAUGE:
@@ -5995,7 +6075,7 @@ namespace Orts.Simulation.RollingStocks
                 IsSuperSet);
 #endif
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
+            if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive, and steam heat valve is on.
                 // Display Steam Heat info
@@ -6153,48 +6233,96 @@ namespace Orts.Simulation.RollingStocks
                 AIFireOverride ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
 
-            status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Performance"));
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
-                Simulator.Catalog.GetString("Power:"),
-                Simulator.Catalog.GetString("MaxInd"),
-                FormatStrings.FormatPower(W.FromHp(MaxIndicatedHorsePowerHP), IsMetric, false, false),
-                Simulator.Catalog.GetString("Ind"),
-                FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
-                Simulator.Catalog.GetString("Drawbar"),
-                FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false),
-                Simulator.Catalog.GetString("BlrLmt"),
-                ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+            if (SteamEngineType == SteamEngineTypes.Geared)
+            {
+                status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Performance"));
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
+                    Simulator.Catalog.GetString("Power:"),
+                    Simulator.Catalog.GetString("MaxInd"),
+                    FormatStrings.FormatPower(W.FromHp(DisplayMaxIndicatedHorsePowerHP), IsMetric, false, false),
+                    Simulator.Catalog.GetString("Ind"),
+                    FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
+                    Simulator.Catalog.GetString("Drawbar"),
+                    FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false),
+                    Simulator.Catalog.GetString("BlrLmt"),
+                    ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
-            status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
-                     Simulator.Catalog.GetString("Force:"),
-                     Simulator.Catalog.GetString("TheorTE"),
-                     FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
-                     Simulator.Catalog.GetString("StartTE"),
-                     FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
-                     Simulator.Catalog.GetString("TE"),
-                     FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
-                     Simulator.Catalog.GetString("Draw"),
-                     FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
-                     Simulator.Catalog.GetString("CritSpeed"),
-                     FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
-                     Simulator.Catalog.GetString("SpdLmt"),
-                     IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
+                         Simulator.Catalog.GetString("Force:"),
+                         Simulator.Catalog.GetString("TheorTE"),
+                         FormatStrings.FormatForce(N.FromLbf(DisplayMaxTractiveEffortLbf), IsMetric),
+                         Simulator.Catalog.GetString("StartTE"),
+                         FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                         Simulator.Catalog.GetString("TE"),
+                         FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                         Simulator.Catalog.GetString("Draw"),
+                         FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
+                         Simulator.Catalog.GetString("CritSpeed"),
+                         FormatStrings.FormatSpeedDisplay(MpS.FromMpH(DisplayMaxLocoSpeedMpH), IsMetric),
+                         Simulator.Catalog.GetString("SpdLmt"),
+                         IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
 
-            status.AppendFormat("{0}\t{1}\t{2:N0} {7}/{8}\t\t{3}\t{4:N0} {9}\t{5} {6:N2}\t\t{10}\t{11}\n",
-                Simulator.Catalog.GetString("Move:"),
-                Simulator.Catalog.GetString("Piston"),
-                IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
-                Simulator.Catalog.GetString("DrvWhl"),
-                pS.TopM(DrvWheelRevRpS),
-                Simulator.Catalog.GetString("MF-Gear"),
-                MotiveForceGearRatio,
-                IsMetric ? FormatStrings.m : FormatStrings.ft,
-                FormatStrings.min,
-                FormatStrings.rpm,
-                Simulator.Catalog.GetString("Max-SpdF"),
-                DisplaySpeedFactor
+                status.AppendFormat("{0}\t{1}\t{2:N0} {7}/{8}\t\t{3}\t{4:N0} {9}\t{5} {6:N2}\t\t{10}\t{11}\n",
+                    Simulator.Catalog.GetString("Move:"),
+                    Simulator.Catalog.GetString("Piston"),
+                    IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
+                    Simulator.Catalog.GetString("DrvWhl"),
+                    pS.TopM(DrvWheelRevRpS),
+                    Simulator.Catalog.GetString("MF-Gear"),
+                    MotiveForceGearRatio,
+                    IsMetric ? FormatStrings.m : FormatStrings.ft,
+                    FormatStrings.min,
+                    FormatStrings.rpm,
+                    Simulator.Catalog.GetString("Max-SpdF"),
+                    DisplaySpeedFactor
 
-                );
+                    );
+            }
+            else
+            {
+                status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Performance"));
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n",
+                    Simulator.Catalog.GetString("Power:"),
+                    Simulator.Catalog.GetString("MaxInd"),
+                    FormatStrings.FormatPower(W.FromHp(MaxIndicatedHorsePowerHP), IsMetric, false, false),
+                    Simulator.Catalog.GetString("Ind"),
+                    FormatStrings.FormatPower(W.FromHp(IndicatedHorsePowerHP), IsMetric, false, false),
+                    Simulator.Catalog.GetString("Drawbar"),
+                    FormatStrings.FormatPower(W.FromHp(DrawbarHorsePowerHP), IsMetric, false, false),
+                    Simulator.Catalog.GetString("BlrLmt"),
+                    ISBoilerLimited ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\n",
+                         Simulator.Catalog.GetString("Force:"),
+                         Simulator.Catalog.GetString("TheorTE"),
+                         FormatStrings.FormatForce(N.FromLbf(MaxTractiveEffortLbf), IsMetric),
+                         Simulator.Catalog.GetString("StartTE"),
+                         FormatStrings.FormatForce(absStartTractiveEffortN, IsMetric),
+                         Simulator.Catalog.GetString("TE"),
+                         FormatStrings.FormatForce(N.FromLbf(DisplayTractiveEffortLbsF), IsMetric),
+                         Simulator.Catalog.GetString("Draw"),
+                         FormatStrings.FormatForce(N.FromLbf(DrawBarPullLbsF), IsMetric),
+                         Simulator.Catalog.GetString("CritSpeed"),
+                         FormatStrings.FormatSpeedDisplay(MpS.FromMpH(MaxLocoSpeedMpH), IsMetric),
+                         Simulator.Catalog.GetString("SpdLmt"),
+                         IsCritTELimit ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No"));
+
+                status.AppendFormat("{0}\t{1}\t{2:N0} {7}/{8}\t\t{3}\t{4:N0} {9}\t{5} {6:N2}\t\t{10}\t{11}\n",
+                    Simulator.Catalog.GetString("Move:"),
+                    Simulator.Catalog.GetString("Piston"),
+                    IsMetric ? Me.FromFt(PistonSpeedFtpMin) : PistonSpeedFtpMin,
+                    Simulator.Catalog.GetString("DrvWhl"),
+                    pS.TopM(DrvWheelRevRpS),
+                    Simulator.Catalog.GetString("MF-Gear"),
+                    MotiveForceGearRatio,
+                    IsMetric ? FormatStrings.m : FormatStrings.ft,
+                    FormatStrings.min,
+                    FormatStrings.rpm,
+                    Simulator.Catalog.GetString("Max-SpdF"),
+                    DisplaySpeedFactor
+
+                    );
+            }
 
             if (Simulator.UseAdvancedAdhesion && SteamEngineType != SteamEngineTypes.Geared) // Only display slip monitor if advanced adhesion used
             {
@@ -6337,14 +6465,15 @@ namespace Orts.Simulation.RollingStocks
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(EjectorTotalSteamConsumptionLbpS)), IsMetric),
                 FormatStrings.h);
 
-                status.AppendFormat("{0}\t{1}\t{2:N2}/{3}\t{4}\t{5:N2}\t{6}\t{7}",
+                status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}/{5}\t{6}\t{7:N2}\t{8}\t{9}",
                 Simulator.Catalog.GetString("Large:"),
+                Simulator.Catalog.GetString("Press"),
+                FormatStrings.FormatPressure(SteamEjectorLargePressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                 Simulator.Catalog.GetString("StCons"),
                 FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorLargeSteamConsumptionLbpS)), IsMetric),
                 FormatStrings.h,
                 Simulator.Catalog.GetString("Rate"),
                 LargeEjectorBrakePipeChargingRatePSIorInHgpS,
-                //                FormatStrings.FormatPressure(BrakePipeChargingRatePSIorInHgpS, PressureUnit.InHg, MainPressureUnit, true),
                 Simulator.Catalog.GetString("Lg Ej"),
                 LargeSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
@@ -6359,7 +6488,6 @@ namespace Orts.Simulation.RollingStocks
                     FormatStrings.FormatMass(pS.TopH(Kg.FromLb(TempEjectorSmallSteamConsumptionLbpS)), IsMetric),
                     FormatStrings.h,
                     Simulator.Catalog.GetString("Rate"),
-                    // FormatStrings.FormatPressure(SmallEjectorBrakePipeChargingRatePSIorInHgpS, PressureUnit.InHg, MainPressureUnit, true),
                     SmallEjectorBrakePipeChargingRatePSIorInHgpS,
                     Simulator.Catalog.GetString("Sm Ej"),
                     SmallSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
@@ -6432,30 +6560,37 @@ public void SteamStartGearBoxIncrease()
                         Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, SteamGearPosition);
                         if (SteamGearPosition == 0.0)
                         {
-                            // Re -initialise the following for the new gear setting - set to zero as in neutral speed
+                            // Re-initialise the following for the new gear setting - set to zero as in neutral speed
+                            DavisAN = NeutralGearedDavisAN; // Reduces locomotive resistance when in neutral gear, as mechanical resistance decreases
                             MotiveForceGearRatio = 0.0f;
-                            MaxLocoSpeedMpH = 0.0f;
+                            DisplayMaxLocoSpeedMpH = 0.0f;
                             SteamGearRatio = 0.0f;
-                            MaxTractiveEffortLbf = 0.0f;
-                            MaxIndicatedHorsePowerHP = 0.0f;
-
+                            DisplayMaxTractiveEffortLbf = 0.0f;
+                            DisplayMaxIndicatedHorsePowerHP = 0.0f;
+                            DrawbarHorsePowerHP = 0.0f;
+                            DrawBarPullLbsF = 0.0f;
                         }
                         else if (SteamGearPosition == 1.0)
                         {
                             // Re -initialise the following for the new gear setting
+                            DavisAN = GearedRetainedDavisAN; // reset resistance to geared value
                             MotiveForceGearRatio = SteamGearRatioLow;
                             MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                            DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
                             SteamGearRatio = SteamGearRatioLow;
 
-                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
+                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
+                            DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                             MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
 
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
@@ -6468,16 +6603,20 @@ public void SteamStartGearBoxIncrease()
                             // Re -initialise the following for the new gear setting
                             MotiveForceGearRatio = SteamGearRatioHigh;
                             MaxLocoSpeedMpH = MpS.ToMpH(HighMaxGearedSpeedMpS);
+                            DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
                             SteamGearRatio = SteamGearRatioHigh;
 
-                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
+                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
+                            DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                             MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
@@ -6514,17 +6653,22 @@ public void SteamStartGearBoxIncrease()
                         {
 
                             // Re -initialise the following for the new gear setting
+                            DavisAN = GearedRetainedDavisAN; // reset resistance to geared value
                             MotiveForceGearRatio = SteamGearRatioLow;
                             MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                            DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
                             SteamGearRatio = SteamGearRatioLow;
-                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * TractiveEffortFactor * MotiveForceGearRatio;
+                            MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
+                            DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                             MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
+                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
@@ -6536,11 +6680,14 @@ public void SteamStartGearBoxIncrease()
                         else if (SteamGearPosition == 0.0)
                         {
                             // Re -initialise the following for the new gear setting - set to zero as in neutral speed
+                            DavisAN = NeutralGearedDavisAN; // Reduces locomotive resistance when in neutral gear, as mechanical resistance decreases
                             MotiveForceGearRatio = 0.0f;
-                            MaxLocoSpeedMpH = 0.0f;
+                            DisplayMaxLocoSpeedMpH = 0.0f;
                             SteamGearRatio = 0.0f;
-                            MaxTractiveEffortLbf = 0.0f;
-                            MaxIndicatedHorsePowerHP = 0.0f;
+                            DisplayMaxTractiveEffortLbf = 0.0f;
+                            DisplayMaxIndicatedHorsePowerHP = 0.0f;
+                            DrawbarHorsePowerHP = 0.0f;
+                            DrawBarPullLbsF = 0.0f;
                         }
                     }
                 }
@@ -6620,6 +6767,73 @@ public void SteamStartGearBoxIncrease()
             }
             if (oldValue != controller.IntermediateValue)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, oldValue < controller.IntermediateValue ? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue * 100);
+        }
+
+        #endregion
+
+        //Define Large Ejector Controller
+
+        #region Large Ejector controller
+
+        public void StartLargeEjectorIncrease(float? target)
+        {
+            LargeEjectorController.CommandStartTime = Simulator.ClockTime;
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.LargeEjector, CabSetting.Increase, LargeEjectorController.CurrentValue* 100);
+            LargeEjectorController.StartIncrease(target);
+            SignalEvent(Event.LargeEjectorChange);
+        }
+
+        public void StopLargeEjectorIncrease()
+        {
+            LargeEjectorController.StopIncrease();
+            new ContinuousLargeEjectorCommand(Simulator.Log, 1, true, LargeEjectorController.CurrentValue, LargeEjectorController.CommandStartTime);
+        }
+
+        public void StartLargeEjectorDecrease(float? target)
+        {
+            if (IsPlayerTrain)
+                Simulator.Confirmer.ConfirmWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue* 100);
+            LargeEjectorController.StartDecrease(target);
+            SignalEvent(Event.LargeEjectorChange);
+        }
+
+        public void StopLargeEjectorDecrease()
+        {
+            LargeEjectorController.StopDecrease();
+            if (IsPlayerTrain)
+                new ContinuousLargeEjectorCommand(Simulator.Log, 1, false, LargeEjectorController.CurrentValue, LargeEjectorController.CommandStartTime);
+        }
+
+        public void LargeEjectorChangeTo(bool increase, float? target)
+        {
+            if (increase)
+            {
+                if (target > SmallEjectorController.CurrentValue)
+                {
+                    StartLargeEjectorIncrease(target);
+                }
+            }
+            else
+            {
+                if (target<LargeEjectorController.CurrentValue)
+                {
+                    StartLargeEjectorDecrease(target);
+                }
+            }
+        }
+
+        public void SetLargeEjectorValue(float value)
+        {
+            var controller = LargeEjectorController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new ContinuousLargeEjectorCommand(Simulator.Log, 1, change > 0, controller.CurrentValue, Simulator.GameTime);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, oldValue<controller.IntermediateValue? CabSetting.Increase : CabSetting.Decrease, controller.CurrentValue* 100);
         }
 
         #endregion
@@ -7055,7 +7269,7 @@ public void SteamStartGearBoxIncrease()
             SmokeColor.Update(1, 0);
         }
 
-        public void ToggleCylinderCocks()
+public void ToggleCylinderCocks()
         {
             CylinderCocksAreOpen = !CylinderCocksAreOpen;
             SignalEvent(Event.CylinderCocksToggle);
@@ -7083,11 +7297,13 @@ public void SteamStartGearBoxIncrease()
                 {
                     // Calculate maximum tractive effort if set for compounding
                     MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderDiameterM) * Me.ToIn(LPCylinderStrokeM)) / ((CompoundCylinderRatio + 1.0f) * (Me.ToIn(DriverWheelRadiusM * 2.0f)));
+                    DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
                 else // Compound bypass valve opened - operating in simple mode
                 {
                     // Calculate maximum tractive effort if set to simple operation
                     MaxTractiveEffortLbf = CylinderEfficiencyRate * (1.6f * MaxBoilerPressurePSI * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM)) / (Me.ToIn(DriverWheelRadiusM * 2.0f));
+                    DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
             }
         }
@@ -7128,6 +7344,10 @@ public void SteamStartGearBoxIncrease()
     public void ToggleManualFiring()
         {
             FiringIsManual = !FiringIsManual;
+            if (FiringIsManual)
+                SignalEvent(Event.AIFiremanSoundOff);
+            else
+                SignalEvent(Event.AIFiremanSoundOn);
         }
 
         public void AIFireOn()
@@ -7205,7 +7425,7 @@ public void SteamStartGearBoxIncrease()
             return 0f;
         }
 
-        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2, ref float SE)
+        public void GetLocoInfo(ref float CC, ref float BC, ref float DC, ref float FC, ref float I1, ref float I2, ref float SE, ref float LE)
         {
             CC = CutoffController.CurrentValue;
             BC = BlowerController.CurrentValue;
@@ -7214,9 +7434,10 @@ public void SteamStartGearBoxIncrease()
             I1 = Injector1Controller.CurrentValue;
             I2 = Injector2Controller.CurrentValue;
             SE = SmallEjectorController.CurrentValue;
+            LE = LargeEjectorController.CurrentValue;
         }
 
-        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2, float SE)
+        public void SetLocoInfo(float CC, float BC, float DC, float FC, float I1, float I2, float SE, float LE)
         {
             CutoffController.CurrentValue = CC;
             CutoffController.UpdateValue = 0.0f;
@@ -7232,6 +7453,8 @@ public void SteamStartGearBoxIncrease()
             Injector2Controller.UpdateValue = 0.0f;
             SmallEjectorController.CurrentValue = SE;
             SmallEjectorController.UpdateValue = 0.0f;
+            LargeEjectorController.CurrentValue = LE;
+            LargeEjectorController.UpdateValue = 0.0f;
         }
 
         public override void SwitchToPlayerControl()

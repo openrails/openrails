@@ -180,6 +180,8 @@ namespace ORTS
             checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
+
+            checkSimpleControlPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
@@ -191,9 +193,7 @@ namespace ORTS
             checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
-            checkAutopilot.Checked = Settings.Autopilot;
             checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
-            checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
             checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
 
             // Keyboard tab
@@ -461,12 +461,13 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = GetValidWindowSize();
+            Settings.WindowSize = GetValidWindowSize(comboWindowSize);
 
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
 
             // Simulation tab
+            Settings.SimpleControlPhysics = checkSimpleControlPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
@@ -476,9 +477,7 @@ namespace ORTS
             Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
-            Settings.Autopilot = checkAutopilot.Checked;
             Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
-            Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
             Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
 
             // Keyboard tab
@@ -539,13 +538,18 @@ namespace ORTS
             Settings.Save();
         }
 
-        private string GetValidWindowSize()
+        /// <summary>
+        /// Returns user's [width]x[height] if expression is valid and values are sane, else returns previous value of setting.
+        /// </summary>
+        private string GetValidWindowSize(ComboBox comboWindowSize)
         {
             // "1024X780" instead of "1024x780" then "Start" resulted in an immediate return to the Menu with no OpenRailsLog.txt and a baffled user.
-            var windowSizeArray = comboWindowSize.Text.ToLower().Replace(" ", "").Split('x');
-            return (int.TryParse(windowSizeArray[0], out int width) && int.TryParse(windowSizeArray[1], out int height))
-                ? $"{width}x{height}"
-                : Settings.WindowSize; // i.e. no change or message. Just ignore non-numeric entries
+            var sizeArray = comboWindowSize.Text.ToLower().Replace(" ", "").Split('x');
+            if (sizeArray.Count() == 2)
+                if (int.TryParse(sizeArray[0], out int width) && int.TryParse(sizeArray[1], out int height))
+                    if ((100 < width && width < 10000) && (100 < height && height < 100000)) // sanity check
+                        return $"{width}x{height}";
+            return Settings.WindowSize; // i.e. no change or message. Just ignore non-numeric entries
         }
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)

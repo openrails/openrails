@@ -76,6 +76,7 @@ namespace Orts.Simulation.RollingStocks
             get { return FuelController.CurrentValue * MaxDieselLevelL; }
             set { FuelController.CurrentValue = value / MaxDieselLevelL; }
         }
+
         public float DieselUsedPerHourAtMaxPowerL = 1.0f;
         public float DieselUsedPerHourAtIdleL = 1.0f;
         public float DieselFlowLps;
@@ -407,6 +408,19 @@ namespace Orts.Simulation.RollingStocks
                 DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
                 InitialDrvWheelWeightKg = MassKG; // // set Initial Drive wheel weight as well, as it is used as a reference
             }
+
+            // Initialise water level in steam heat boiler
+            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0)
+            {
+                if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
+                }
+                else
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
+                }
+            }
         }
 
         /// <summary>
@@ -419,6 +433,7 @@ namespace Orts.Simulation.RollingStocks
             // outf.Write(Pan);
             base.Save(outf);
             outf.Write(DieselLevelL);
+            outf.Write(CurrentLocomotiveSteamHeatBoilerWaterCapacityL);
             DieselEngines.Save(outf);
             ControllerFactory.Save(GearBoxController, outf);
         }
@@ -431,8 +446,10 @@ namespace Orts.Simulation.RollingStocks
         {
             base.Restore(inf);
             DieselLevelL = inf.ReadSingle();
+            CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             DieselEngines.Restore(inf);
             ControllerFactory.Restore(GearBoxController, inf);
+            
         }
 
         //================================================================================================//
@@ -474,8 +491,14 @@ namespace Orts.Simulation.RollingStocks
             if (FuelController.UpdateValue > 0.0)
                 Simulator.Confirmer.UpdateWithPerCent(CabControl.DieselFuel, CabSetting.Increase, FuelController.CurrentValue * 100);
 
-            UpdateSteamHeat(elapsedClockSeconds);
-        
+            // Update water controller for steam boiler heating tank
+            if (this.IsLeadLocomotive() && IsSteamHeatFitted)
+            {
+                WaterController.Update(elapsedClockSeconds);
+                if (WaterController.UpdateValue > 0.0)
+                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
+            }
+
         }
 
 
@@ -533,12 +556,47 @@ namespace Orts.Simulation.RollingStocks
             // With Advanced adhesion the raw motive force is fed into the advanced (axle) adhesion model, and is corrected for wheel slip and rail adhesion
             if (PowerOn)
             {
+                // Appartent throttle setting is a reverse lookup of the throttletab vs rpm, hence motive force increase will be related to increase in rpm. The minimum of the two values
+                // is checked to enable fast reduction in tractive force when decreasing the throttle. Typically it will take longer for the prime mover to decrease rpm then drop motive force.
+                float LocomotiveApparentThrottleSetting = 0;
+
+                if (IsPlayerTrain)
+                {
+                    LocomotiveApparentThrottleSetting = Math.Min(t, DieselEngines.ApparentThrottleSetting / 100.0f);
+                }
+                else // For AI trains, just use the throttle setting
+                {
+                    LocomotiveApparentThrottleSetting = t;
+                }
+
+                LocomotiveApparentThrottleSetting = MathHelper.Clamp(LocomotiveApparentThrottleSetting, 0.0f, 1.0f);  // Clamp decay within bounds
+
+                // If there is more then one diesel engine, and one or more engines is stopped, then the Fraction Power will give a fraction less then 1 depending upon power definitions of engines.
+                float DieselEngineFractionPower = 1.0f;
+
+                if (DieselEngines.Count > 1)
+                {
+                    DieselEngineFractionPower = DieselEngines.RunningPowerFraction;
+                }
+
+                DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
 
                 if (TractiveForceCurves == null)
                 {
+                    // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
                     float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
 
-                    float maxPowerW = LocomotiveMaxRailOutputPowerW * (DieselEngines.ApparentThrottleSetting / 100.0f);
+                    // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
+                    float maxPowerW = LocomotiveMaxRailOutputPowerW * DieselEngineFractionPower * LocomotiveApparentThrottleSetting;
+
+                    // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
+                    if (UnloadingSpeedMpS != 0 && AbsSpeedMpS > UnloadingSpeedMpS && AbsSpeedMpS < MaxSpeedMpS)
+                    {
+                        // use straight line curve to decay power to zero by 2 x unloading speed
+                        float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsSpeedMpS - UnloadingSpeedMpS);
+                        unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
+                        maxPowerW *= unloadingspeeddecay;
+                    }
 
                     if (DieselEngines.HasGearBox)
                     {
@@ -549,23 +607,14 @@ namespace Orts.Simulation.RollingStocks
                         if (maxForceN * AbsSpeedMpS > maxPowerW)
                             maxForceN = maxPowerW / AbsSpeedMpS;
 
-                        // CTN - Not sure what impact that these following have???
-                        if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
-                        {
-                            maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
-                        }
-
-                        // CTN - Sets power to zero, which I don't think is correct
-                        if (AbsSpeedMpS > (MaxSpeedMpS))
-                            maxForceN = 0;
-
                         MotiveForceN = maxForceN;
+                        // Motive force will be produced until power reaches zero, some locomotives had a overspeed monitor set at the maximum design speed
                     }
                 }
                 else
                 {
-
-                    MotiveForceN = TractiveForceCurves.Get((DieselEngines.ApparentThrottleSetting/100.0f), AbsSpeedMpS) * (1 - PowerReduction);
+                    // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
+                    MotiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
                     if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         MotiveForceN = 0;
                 }
@@ -710,19 +759,22 @@ namespace Orts.Simulation.RollingStocks
             status.AppendFormat("\t{0} {1}\t\t{2}\n", 
                 Simulator.Catalog.GetString("Fuel"), 
                 FormatStrings.FormatFuelVolume(DieselLevelL, IsMetric, IsUK), DieselEngines.GetStatus());
-            
-            if (IsSteamHeatFitted && TrainFittedSteamHeat && this.IsLeadLocomotive() && Train.PassengerCarsNumber > 0 && Train.CarSteamHeatOn)
+
+            if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
                 // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive
                 // Display Steam Heat info
-                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15:N0}\n",
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}/{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18:N0}\n",
                    Simulator.Catalog.GetString("StHeat:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                    Simulator.Catalog.GetString("StTemp"),
                    FormatStrings.FormatTemperature(C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]), IsMetric, false),
-                   Simulator.Catalog.GetString("FuelLvl"),
-                   CurrentSteamHeatFuelCapacityL,
+                   Simulator.Catalog.GetString("StUse"),
+                   FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
+                   FormatStrings.h,
+                   Simulator.Catalog.GetString("WaterLvl"),
+                   FormatStrings.FormatFuelVolume(CurrentLocomotiveSteamHeatBoilerWaterCapacityL, IsMetric, IsUK),
                    Simulator.Catalog.GetString("Last:"),
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
@@ -774,6 +826,7 @@ namespace Orts.Simulation.RollingStocks
         {
             MSTSNotchController controller = null;
             if (type == (uint)PickupType.FuelDiesel) return FuelController;
+            if (type == (uint)PickupType.FuelWater) return WaterController;
             return controller;
         }
 
@@ -785,7 +838,9 @@ namespace Orts.Simulation.RollingStocks
         public override void SetStepSize(PickupObj matchPickup)
         {
             if (MaxDieselLevelL != 0)
-                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / (MaxDieselLevelL * DieselWeightKgpL)); 
+                FuelController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / (MaxDieselLevelL * DieselWeightKgpL));
+            if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+                WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaximumSteamHeatBoilerWaterTankCapacityL);
         }
 
         /// <summary>
@@ -795,6 +850,7 @@ namespace Orts.Simulation.RollingStocks
         public override void RefillImmediately()
         {
             FuelController.CurrentValue = 1.0f;
+            WaterController.CurrentValue = 1.0f;
         }
 
         /// <summary>
@@ -807,6 +863,10 @@ namespace Orts.Simulation.RollingStocks
             if (pickupType == (uint)PickupType.FuelDiesel)
             {
                 return FuelController.CurrentValue;
+            }
+            if (pickupType == (uint)PickupType.FuelWater)
+            {
+                return WaterController.CurrentValue;
             }
             return 0f;
         }
@@ -844,42 +904,42 @@ namespace Orts.Simulation.RollingStocks
             base.SwitchToAutopilotControl();
         }
 
-        private void UpdateSteamHeat(float elapsedClockSeconds)
+        protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
             // Update Steam Heating System
 
             // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
 
-            if (IsSteamHeatFitted && TrainFittedSteamHeat)  // Only Update steam heating if train and locomotive fitted with steam heating, and is a passenger train
+            if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating
             {
 
-           // ++++++++++++++     // ToDo - ctn_steamer - Remove Train.TrainCurrentSteamHeatPipeTempC and Train.TrainSteamPipeHeatW from following loops  ++++++++++++++
+                CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
 
-                if (this.IsLeadLocomotive())
+                // Calculate steam boiler usage values
+                // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, and steam boiler is not locked out
+                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentLocomotiveSteamHeatBoilerWaterCapacityL > 0 && DieselLevelL > 0 && !IsSteamHeatBoilerLockedOut)      
                 {
+                    // Set values for visible exhaust based upon setting of steam controller
+                    HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
+                    HeatingSteamBoilerDurationS = 1.0f * SteamHeatController.CurrentValue;
+                    Train.CarSteamHeatOn = true; // turn on steam effects on wagons
 
-                    // Calculate steam boiler usage values
-                    if (CurrentSteamHeatPressurePSI <= MaxSteamHeatPressurePSI)      // Don't let steam heat pressure exceed the maximum value
-                    {
-                        CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
-                    }
+                    // Calculate fuel usage for steam heat boiler
+                    float FuelUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerFuelUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
+                    DieselLevelL -= FuelUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as fuel used.
+                    float FuelOilConvertLtoKg = 0.85f;
+                    MassKG -= FuelUsageLpS * elapsedClockSeconds * FuelOilConvertLtoKg; // Reduce locomotive weight as Steam heat boiler uses fuel.
 
-                    CurrentSteamHeatPressurePSI = MathHelper.Clamp(CurrentSteamHeatPressurePSI, 0.0f, MaxSteamHeatPressurePSI);  // Clamp steam heat pressure within bounds
-
-
-                    if (CurrentSteamHeatPressurePSI < 0.1)
-                    {
-                        Train.TrainCurrentSteamHeatPipeTempC = 0.0f;       // Reset values to zero if steam is not turned on.
-                        Train.TrainSteamPipeHeatW = 0.0f;
-                        Train.CarSteamHeatOn = false; // turn off steam effects on wagons
-                    }
-                    else
-                    {
-
-                        Train.TrainCurrentSteamHeatPipeTempC = C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]);
-                        Train.CarSteamHeatOn = true; // turn on steam effects on wagons
-                    }
+                    // Calculate water usage for steam heat boiler
+                    float WaterUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerWaterUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
+                    MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
                 }
+                else
+                {
+                    Train.CarSteamHeatOn = false; // turn on steam effects on wagons
+                }
+                
 
             }
         }

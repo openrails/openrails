@@ -107,6 +107,7 @@ namespace Orts.Common
         SanderOff,
         SanderOn,
         SemaphoreArm,
+        LargeEjectorChange,
         SmallEjectorChange,
         WaterInjector1Off,
         WaterInjector1On,
@@ -180,7 +181,10 @@ namespace Orts.Common
         HotBoxBearingOff,
 
         BoilerBlowdownOn,
-        BoilerBlowdownOff
+        BoilerBlowdownOff,
+
+        AIFiremanSoundOn,
+        AIFiremanSoundOff
     }
 
     public static class Events
@@ -333,6 +337,9 @@ namespace Orts.Common
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
 
+                        case 148: return Event.AIFiremanSoundOn;
+                        case 149: return Event.AIFiremanSoundOff;
+
                         case 150: return Event.CircuitBreakerOpen;
                         case 151: return Event.CircuitBreakerClosing;
                         case 152: return Event.CircuitBreakerClosed;
@@ -343,6 +350,7 @@ namespace Orts.Common
                         case 157: return Event.CircuitBreakerClosingAuthorizationOn;
                         case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
+                        case 159: return Event.LargeEjectorChange;
                         case 160: return Event.SmallEjectorChange;
 
                         case 161: return Event.CabLightSwitchToggle;

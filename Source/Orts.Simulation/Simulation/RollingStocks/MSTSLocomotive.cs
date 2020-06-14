@@ -115,6 +115,9 @@ namespace Orts.Simulation.RollingStocks
         public bool Bell = false;
         protected bool PreviousBell = false;
 
+        public bool VacuumExhausterPressed = false;
+        public bool FastVacuumExhausterFitted = false;
+
         public bool AlerterSnd;
         public bool VigilanceMonitor;
         public bool Sander;
@@ -126,6 +129,7 @@ namespace Orts.Simulation.RollingStocks
         public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
+        public float UnloadingSpeedMpS;
         public float MainResPressurePSI = 130;
         public bool CompressorIsOn;
         public float AverageForceN;
@@ -171,6 +175,11 @@ namespace Orts.Simulation.RollingStocks
             set { WaterController.CurrentValue = value / MaxTotalCombinedWaterVolumeUKG; }
         }
 
+        public float CurrentLocomotiveSteamHeatBoilerWaterCapacityL
+        {
+            get { return WaterController.CurrentValue * MaximumSteamHeatBoilerWaterTankCapacityL; }
+            set { WaterController.CurrentValue = value / MaximumSteamHeatBoilerWaterTankCapacityL; }
+        }
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
 
         // Vacuum Reservoir and Exhauster Settings
@@ -188,10 +197,7 @@ namespace Orts.Simulation.RollingStocks
         public Interpolator SteamHeatPressureToTemperaturePSItoF;
         public Interpolator SteamDensityPSItoLBpFT3;   // saturated steam density given pressure
         public Interpolator SteamHeatPSItoBTUpLB;      // total heat in saturated steam given pressure
-        public float SteamHeatFuelTankCapacityL = 1500.0f; // Capacity of the fuel tank for the steam heating boiler
-        public float SteamHeatBoilerFuelUsageLpH = 31.0f; // Usage rate of fuel for steam heating boiler
-        public float CurrentSteamHeatFuelCapacityL;  // Current fuel level
-        public bool TrainFittedSteamHeat = false;               // Flag to determine train fitted with steam heating
+        public bool IsSteamHeatingBoilerFitted = false;   // Flag to indicate when steam heat boiler van is fitted
         public float CalculatedCarHeaterSteamUsageLBpS;
 
         // Adhesion Debug
@@ -220,15 +226,18 @@ namespace Orts.Simulation.RollingStocks
         public bool LargeSteamEjectorIsOn = false;
         public bool VacuumPumpOperating = false;
         public float SteamEjectorSmallPressurePSI = 0.0f;
+        public float SteamEjectorLargePressurePSI = 0.0f;
         public bool VacuumPumpFitted;
         public bool SmallEjectorFitted = false;
         public float VacuumPumpResistanceN;
         public float EjectorSmallSteamConsumptionLbpS;
         public float EjectorLargeSteamConsumptionLbpS;
         public float SteamEjectorSmallSetting = 0.0f;
+        public float SteamEjectorLargeSetting = 0.0f;
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
         public float LargeEjectorFeedFraction = 1.0f;
+        public bool LargeEjectorFitted = false;
         public float VacuumPumpChargingRateInHgpS = 0.0f;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
         public float HUDNetBPLossGainPSI;
@@ -236,6 +245,7 @@ namespace Orts.Simulation.RollingStocks
         public float LargeEjectorBrakePipeChargingRatePSIorInHgpS;
         public float ExhausterHighSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
+        public bool VacuumBrakeCutoffActivated = false;
 
         public bool EngineBrakeFitted = false;
         public bool VacuumExhausterIsOn = false;
@@ -286,7 +296,7 @@ namespace Orts.Simulation.RollingStocks
         public float TrainBrakePipeLeakPSIorInHgpS = 0.0f;    // Air leakage from train brake pipe - should normally be no more then 5psi/min - default off
         public float CompressorRestartPressurePSI = 110;
         public float CompressorChargingRateM3pS = 0.075f;
-        public float MainResChargingRatePSIpS;
+        public float MainResChargingRatePSIpS = 0.4f;
         public float EngineBrakeReleaseRatePSIpS = 12.5f;
         public float EngineBrakeApplyRatePSIpS = 12.5f;
         public float BrakePipeTimeFactorS = 0.0015f;
@@ -335,6 +345,9 @@ namespace Orts.Simulation.RollingStocks
         public bool EmergencyEngagesHorn { get; private set; }
         public bool WheelslipCausesThrottleDown { get; private set; }
 
+        public float BrakeRestoresPowerAtBrakePipePressurePSI;
+        public float BrakeCutsPowerAtBrakePipePressurePSI;
+        public bool DoesVacuumBrakeCutPower { get; private set; }
         public bool DoesBrakeCutPower { get; private set; }
         public float BrakeCutsPowerAtBrakeCylinderPressurePSI { get; private set; }
         public bool DoesHornTriggerBell { get; private set; }
@@ -705,7 +718,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsspeedofmaxcontinuousforce": SpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(dieselenginespeedofmaxtractiveeffort": MSTSSpeedOfMaxContinuousForceMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(maxvelocity": MaxSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
-
+                case "engine(ortsunloadingspeed": UnloadingSpeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, null); break;
                 case "engine(type":
                     stf.MustMatch("(");
                     var engineType = stf.ReadString();
@@ -734,7 +747,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(brake_train":
                     TrainBrakeController.Parse(lowercasetoken, stf);
                     break;
-
+                case "engine(enginecontrollers(ortsfastvacuumexhauster": FastVacuumExhausterFitted = true; break;
                 case "engine(enginebrakescontrollermaxsystempressure":
                 case "engine(enginebrakescontrollermaxreleaserate":
                 case "engine(enginebrakescontrollermaxquickreleaserate":
@@ -804,8 +817,11 @@ namespace Orts.Simulation.RollingStocks
                     HeadOutViewpoints.Add(new ViewPoint(HeadOutViewpoints[0], true));
                     break;
                 case "engine(sanding": SanderSpeedOfMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, 30.0f); break;
+                case "engine(ortsdoesvacuumbrakecutpower": DoesVacuumBrakeCutPower = stf.ReadBoolBlock(false); break;
                 case "engine(doesbrakecutpower": DoesBrakeCutPower = stf.ReadBoolBlock(false); break;
                 case "engine(brakecutspoweratbrakecylinderpressure": BrakeCutsPowerAtBrakeCylinderPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsbrakecutspoweratbrakepipepressure": BrakeCutsPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
+                case "engine(ortsbrakerestorespoweratbrakepipepressure": BrakeRestoresPowerAtBrakePipePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null); break;
                 case "engine(doeshorntriggerbell": DoesHornTriggerBell = stf.ReadBoolBlock(false); break;
                 case "engine(brakesenginecontrollers":
                     foreach (var brakesenginecontrollers in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
@@ -879,6 +895,7 @@ namespace Orts.Simulation.RollingStocks
             MaxForceN = locoCopy.MaxForceN;
             MaxCurrentA = locoCopy.MaxCurrentA;
             MaxSpeedMpS = locoCopy.MaxSpeedMpS;
+            UnloadingSpeedMpS = locoCopy.UnloadingSpeedMpS;
             EngineType = locoCopy.EngineType;
             TractiveForceCurves = locoCopy.TractiveForceCurves;
             MaxContinuousForceN = locoCopy.MaxContinuousForceN;
@@ -895,6 +912,7 @@ namespace Orts.Simulation.RollingStocks
             LocoNumDrvWheels = locoCopy.LocoNumDrvWheels;
             AntiSlip = locoCopy.AntiSlip;
             VacuumPumpFitted = locoCopy.VacuumPumpFitted;
+            FastVacuumExhausterFitted = locoCopy.FastVacuumExhausterFitted;
             DrvWheelWeightKg = locoCopy.DrvWheelWeightKg;
             InitialDrvWheelWeightKg = locoCopy.InitialDrvWheelWeightKg;
             SanderSpeedEffectUpToMpS = locoCopy.SanderSpeedEffectUpToMpS;
@@ -978,6 +996,7 @@ namespace Orts.Simulation.RollingStocks
             // we won't save the horn state
             outf.Write(Bell);
             outf.Write(Sander);
+            outf.Write(VacuumExhausterPressed);
             outf.Write(Wiper);
             outf.Write(OdometerResetPositionM);
             outf.Write(OdometerCountingUp);
@@ -1017,6 +1036,7 @@ namespace Orts.Simulation.RollingStocks
         {
             if (inf.ReadBoolean()) SignalEvent(Event.BellOn);
             if (inf.ReadBoolean()) SignalEvent(Event.SanderOn);
+            if (inf.ReadBoolean()) SignalEvent(Event.VacuumExhausterOn);
             if (inf.ReadBoolean()) SignalEvent(Event.WiperOn);
             OdometerResetPositionM = inf.ReadSingle();
             OdometerCountingUp = inf.ReadBoolean();
@@ -1042,7 +1062,7 @@ namespace Orts.Simulation.RollingStocks
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
-
+            
             AdhesionFilter.Reset(0.5f);
 
             base.Restore(inf);
@@ -1121,6 +1141,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Initialize()
         {
+            
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
             TrainControlSystem.Initialize();
@@ -1128,13 +1149,10 @@ namespace Orts.Simulation.RollingStocks
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
             {
                 IsSteamHeatFitted = false;
-                TrainFittedSteamHeat = false;
             }
             else
             {
                 IsSteamHeatFitted = true;
-                TrainFittedSteamHeat = true;
-                CurrentSteamHeatFuelCapacityL = SteamHeatFuelTankCapacityL;
             }
 
             SteamHeatPressureToTemperaturePSItoF = SteamTable.SteamHeatPressureToTemperatureInterpolatorPSItoF();
@@ -1242,10 +1260,36 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Check TrainBrakesControllerMaxSystemPressure parameter for "correct" value 
-            // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi, and if no units are entered then a InHG value can be incorrectly converted.
-            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 12.5)
+            // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi due to way parameter is read, and if units are entered then a InHG value can be incorrectly converted.
+            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 10 && TrainBrakeController.MaxPressurePSI < 15)
             {
-                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being read as {0} Inhg, - defaulted to value of 21 InHg", Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being incorrectly read as {0} Inhg, - set to value of {1} InHg", TrainBrakeController.MaxPressurePSI, Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+                TrainBrakeController.MaxPressurePSI = Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI));
+            }
+
+            // Check initialisation of brake cutoff values - set if zero values or are greater then atmospheric pressure as this will put them "out of range" in vacuum brakes class
+            if ((BrakeSystem is VacuumSinglePipe) && ( BrakeCutsPowerAtBrakePipePressurePSI == 0 || BrakeCutsPowerAtBrakePipePressurePSI > OneAtmospherePSI))
+            {
+                BrakeCutsPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(12.5f)); // Power is cut @ 12.5 InHg
+
+                // TODO - set for verbose messaging option
+                Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", BrakeCutsPowerAtBrakePipePressurePSI);
+            }
+
+            if ((BrakeSystem is VacuumSinglePipe) && ( BrakeRestoresPowerAtBrakePipePressurePSI == 0 || BrakeRestoresPowerAtBrakePipePressurePSI > OneAtmospherePSI))
+            {
+                BrakeRestoresPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(15.0f)); // Power can be resotred once brake pipe rises above 15 InHg
+                
+                // TODO - set for verbose messaging option
+                Trace.TraceInformation("BrakeRestoresPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", BrakeRestoresPowerAtBrakePipePressurePSI);
+            }
+
+            if (BrakeCutsPowerAtBrakePipePressurePSI > BrakeRestoresPowerAtBrakePipePressurePSI)
+            {
+                BrakeCutsPowerAtBrakePipePressurePSI = BrakeRestoresPowerAtBrakePipePressurePSI - 1.0f;
+                // TODO - set for verbose messaging option
+                Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure is greater then BrakeRestoresPowerAtBrakePipePressurePSI, and has been set to value of {0} InHg", BrakeCutsPowerAtBrakePipePressurePSI);
+
             }
 
             // Initialise Brake Time Factor
@@ -1314,7 +1358,7 @@ namespace Orts.Simulation.RollingStocks
         /// 
         protected void CorrectBrakingParams()
         {
-            if (Simulator.Settings.CorrectQuestionableBrakingParams)
+            if (Simulator.Settings.CorrectQuestionableBrakingParams || Simulator.Settings.SimpleControlPhysics)
             {
                 if (!(BrakeSystem is EPBrakeSystem) && !(BrakeSystem is VacuumSinglePipe) && !(BrakeSystem is AirTwinPipe))
                 {
@@ -1404,7 +1448,6 @@ namespace Orts.Simulation.RollingStocks
             TrainControlSystem.Update();
 
             UpdatePowerSupply(elapsedClockSeconds);
-
             UpdateControllers(elapsedClockSeconds);
 
             // Train Heading - only check the lead locomotive otherwise flipped locomotives further in consist will overwrite the train direction
@@ -1421,6 +1464,11 @@ namespace Orts.Simulation.RollingStocks
                         Train.PhysicsTrainLocoDirectionDeg -= 360;
                     }
                 }
+            }
+
+            if (IsSteamHeatFitted)
+            {
+                UpdateCarSteamHeat(elapsedClockSeconds);
             }
  
             // TODO  this is a wild simplification for electric and diesel electric
@@ -1511,7 +1559,7 @@ namespace Orts.Simulation.RollingStocks
                             DynamicBrakeController.CurrentValue * 100);
                     }
 
-                    if ((Simulator.UseAdvancedAdhesion) && (!Simulator.Paused)) 
+                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && !Simulator.Paused) 
                     {
                         AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
@@ -1645,6 +1693,13 @@ namespace Orts.Simulation.RollingStocks
         /// This function updates periodically the states and physical variables of the locomotive's power supply.
         /// </summary>
         protected virtual void UpdatePowerSupply(float elapsedClockSeconds)
+        {
+        }
+
+        /// <summary>
+        /// This function updates periodically the steam heating in wagons.
+        /// </summary>
+        protected virtual void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
         }
 
@@ -1925,26 +1980,53 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// This function updates periodically the state of the steam ejector on a vacuum braked system.
+        /// This function updates periodically the state of the steam ejector or vacuum pump on a vacuum braked system.
         /// </summary>
         protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
         {
-            if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease )
+            if (Simulator.Settings.SimpleControlPhysics)
+            // Simple braking - control Ejector automatically based upon the brake control position
+            // Stop ejector operation if full vacuum pressure reached
             {
-                LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
+                {
+                    LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                }
+                else
+                {
+                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, or full vacuum reached, then turn ejector off
+                }
             }
-            else
+            else if (!LargeEjectorFitted) // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
             {
-                LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
+                {
+                    LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                }
+                else
+                {
+                    LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                }
+
             }
+            else  // Advanced braking - control ejector based upon using a "manual" large ejector control setting
+            {
+                if (LargeEjectorFeedFraction > 0.05)
+                {
+                    LargeSteamEjectorIsOn = true;  // turn ejector on
+                }
+                else
+                {
+                    LargeSteamEjectorIsOn = false; // turn ejector off
+                }
+            }
+
 
             // If diesel or electric locomotive, assume vacuum pump (exhauster) is continually running.
             if (!(this is MSTSSteamLocomotive))
             {
                 VacuumPumpOperating = true;
             }
-
-
         }
 
         /// <summary>
@@ -1959,8 +2041,6 @@ namespace Orts.Simulation.RollingStocks
             else if ((VacuumMainResVacuumPSIAorInHg < VacuumBrakesMainResMaxVacuumPSIAorInHg || !AuxPowerOn) && VacuumExhausterIsOn)
                 SignalEvent(Event.VacuumExhausterOff);
 
-            if (VacuumExhausterIsOn)
-                VacuumMainResVacuumPSIAorInHg -= elapsedClockSeconds * VacuumBrakesMainResChargingRatePSIAorInHgpS;
         }
 
         /// <summary>
@@ -2321,11 +2401,19 @@ namespace Orts.Simulation.RollingStocks
 
                 // Max sure that water level can't exceed maximum tender water level. Assume that water will be vented out of tender if maximum value exceeded. 
                 // If filling from water trough this will be done with force
-                const float NominalExtraWaterVolumeFactor = 1.0001f;
-                CombinedTenderWaterVolumeUKG += L.ToGUK(WaterScoopInputAmountL); // add the amouunt of water added by scoop
-                WaterScoopTotalWaterL += WaterScoopInputAmountL;
-
-                CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0.0f, MaxTotalCombinedWaterVolumeUKG * NominalExtraWaterVolumeFactor);
+                // The water controller can only be used by one stock item at a time.
+                if (EngineType == EngineTypes.Steam)
+                {
+                    const float NominalExtraWaterVolumeFactor = 1.0001f;
+                    CombinedTenderWaterVolumeUKG += L.ToGUK(WaterScoopInputAmountL); // add the amount of water added by scoop
+                    WaterScoopTotalWaterL += WaterScoopInputAmountL;
+                    CombinedTenderWaterVolumeUKG = MathHelper.Clamp(CombinedTenderWaterVolumeUKG, 0.0f, MaxTotalCombinedWaterVolumeUKG * NominalExtraWaterVolumeFactor);
+                }
+                else
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL += WaterScoopInputAmountL; // add water if it is a steam heat boiler
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MathHelper.Clamp(CurrentLocomotiveSteamHeatBoilerWaterCapacityL, 0.0f, MaximumSteamHeatBoilerWaterTankCapacityL);
+                }
 
                 // Calculate drag force
                 float ScoopDragCoeff = 1.05f;
@@ -3697,8 +3785,10 @@ namespace Orts.Simulation.RollingStocks
 
                 case Event.CompressorOn: { CompressorIsOn = true; break; }
                 case Event.CompressorOff: { CompressorIsOn = false; break; }
-                case Event.VacuumExhausterOn: { VacuumExhausterIsOn = true; break; }
-                case Event.VacuumExhausterOff : { VacuumExhausterIsOn = false; break; }
+
+                    //Vacuum exhauster event only triggered if vacuum exhauster engine control fitted.
+                case Event.VacuumExhausterOn: { if(FastVacuumExhausterFitted) VacuumExhausterPressed = true; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.On); break; }
+                case Event.VacuumExhausterOff: { if (FastVacuumExhausterFitted) VacuumExhausterPressed = false; if (this.IsLeadLocomotive() && this == Simulator.PlayerLocomotive && Simulator.Confirmer != null) Simulator.Confirmer.Confirm(CabControl.VacuumExhauster, CabSetting.Off); break; }
 
                 case Event._ResetWheelSlip: { LocomotiveAxle.Reset(Simulator.GameTime, SpeedMpS); ThrottleController.SetValue(0.0f); break; }
                 case Event.TrainBrakePressureDecrease:
@@ -4097,6 +4187,19 @@ namespace Orts.Simulation.RollingStocks
                         data = Wiper ? 1 : 0;
                         break;
                     }
+                case CABViewControlTypes.VACUUM_EXHAUSTER:
+                    {
+                        if (FastVacuumExhausterFitted)
+                        {
+                            data = VacuumExhausterPressed ? 1 : 0;
+                        }
+                        else
+                        {
+                            data = 0;
+                        }
+                        break;
+                    }
+
                 case CABViewControlTypes.HORN:
                     {
                         data = Horn ? 1 : 0;
