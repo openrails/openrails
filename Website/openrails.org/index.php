@@ -178,7 +178,7 @@ include "download/program/preamble.php";
                 <a href="http://www.zigzag.coalstonewcastle.com.au/route/downloads/" title="Tutorials in this kit will help you to learn the rudimentary controls in Open Rails, how to drive a steam locomotive, operate the air brakes to stop the train, to turn the locomotive on a turntable, to fuel locomotive with water and coal, and also how to shunt cars and wagons"><img src="landing_page_ctn.png"></a>
               </div>
             </div>
-            <!-- <div class="user-existing col-md-6">
+            <div class="user-existing col-md-6">
               <div class="user-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h1>Already using Open Rails?</h1>
@@ -187,8 +187,8 @@ include "download/program/preamble.php";
                 <p>This route has been updated for Open Rails to optimise physics and sound</p>
                 <a href="http://www.trainsimulations.net/ORTS_starter_pack.html"><img src="landing_page_ts.png"></a>
               </div>
-            </div> -->
-            <div class="user-existing2 col-md-6">
+            </div>
+            <!-- <div class="user-existing2 col-md-6">
               <div class="user-content">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h1>Already using Open Rails?</h1>
@@ -196,7 +196,7 @@ include "download/program/preamble.php";
                 <p>This extensive route, created by Dale Rickert, has over 300 miles of mainline track passing through 31 cities and comes with nearly 150 locos and 350 wagons.</p>
                 <a href="http://www.siskurail.org" title="The Central Oregon and Pacific Railroad operates between Northern California and Eugene, Oregon, USA."><img src="landing_page_dr.png"></a>
               </div>
-            </div>
+            </div>-->
           </div><!-- End of Modal content -->
         </div><!-- End of Modal dialog -->
       </div><!-- End of Modal -->
