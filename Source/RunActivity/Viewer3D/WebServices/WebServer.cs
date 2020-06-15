@@ -95,7 +95,7 @@ namespace Orts.Viewer3D.WebServices
         private static ManualResetEvent allDone = new ManualResetEvent(false);
 
         // ===========================================================================================
-        // File exstensions this server will handle - any other extensions are returns as not found
+        // File extensions this server will handle - any other extensions are returned as not found
         // ===========================================================================================
         private static Dictionary<string, string> extensions = new Dictionary<string, string>()
         {
@@ -116,7 +116,7 @@ namespace Orts.Viewer3D.WebServices
         public Dictionary<string, string> Extensions { get => extensions; set => extensions = value; }
 
         // ===========================================================================================
-        //      Viewer object from Viewer3D - needed for acces to Heads Up Display Data
+        //      Viewer object from Viewer3D - needed for access to Heads Up Display data
         // ===========================================================================================
         public Viewer viewer;
 
@@ -210,7 +210,7 @@ namespace Orts.Viewer3D.WebServices
         }
 
         // ===========================================================================================
-        // 		Main processing loop - read request and call  response functions
+        // 		Main processing loop - read request and call response functions
         // ===========================================================================================
         public static void receiveCallback(IAsyncResult ar)
         {
