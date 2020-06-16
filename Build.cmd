@@ -27,6 +27,7 @@ SET CheckToolInPath.Missing=0
 SET CheckToolInPath.Check=0
 :check-tools
 CALL :list-or-check-tool "svn.exe" "[UTS] Subversion tool"
+CALL :list-or-check-tool "nuget.exe" "[UTS] .NET package manager tool"
 CALL :list-or-check-tool "MSBuild.exe" "[UTS] Microsoft Visual Studio build tool"
 CALL :list-or-check-tool "lazbuild.exe" "[UTS] Lazarus compiler"
 CALL :list-or-check-tool "strip.exe" "[UTS] Lazarus tool"
@@ -91,6 +92,9 @@ FOR /F "usebackq tokens=1* delims==" %%A IN (`CALL GetVersion.cmd %Mode%`) DO SE
 SET Version=%OpenRails_Version%
 SET Revision=%OpenRails_Revision%
 
+REM Restore NuGet packages.
+nuget restore Source\ORTS.sln || GOTO :error
+
 REM Recreate Program directory for output.
 CALL :recreate "Program" || GOTO :error
 
@@ -129,6 +133,11 @@ CALL :copy "Program\RunActivity.exe" "Program\RunActivityLAA.exe" || GOTO :error
 editbin /NOLOGO /LARGEADDRESSAWARE "Program\RunActivityLAA.exe" || GOTO :error
 copy "Program\RunActivity.exe.config" "Program\RunActivityLAA.exe.config" || GOTO :error
 ECHO Created large address aware version of RunActivity.exe.
+
+REM Copy the Web content, empty the destination folder first
+IF EXIST "Program\Content\Web" RMDIR "Program\Content\Web" /S /Q
+IF NOT EXIST "Program\Content\Web" MKDIR "Program\Content\Web"
+XCOPY "Source\RunActivity\Viewer3D\WebServices\Web" "Program\Content\Web" /S /Y || GOTO :error
 
 REM Copy version number from OpenRails.exe into all other 1st party files
 SET VersionInfoVersion=0.0.0.0
