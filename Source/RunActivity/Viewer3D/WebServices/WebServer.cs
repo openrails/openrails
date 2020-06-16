@@ -37,7 +37,6 @@ namespace Orts.Viewer3D.WebServices
     public static class WebServer
     {
         public static EmbedIO.WebServer CreateWebServer(string url, string path) => CreateWebServer(new string[] { url }, path);
-
         public static EmbedIO.WebServer CreateWebServer(string[] urls, string path)
         {
             // Viewer is not yet initialized in the GameState object - wait until it is
