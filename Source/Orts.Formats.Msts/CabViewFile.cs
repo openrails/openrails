@@ -178,6 +178,7 @@ namespace Orts.Formats.Msts
 		ORTS_SIGNED_TRACTION_BRAKING,
         ORTS_BATTERY,
         ORTS_POWERKEY,
+        ORTS_SIGNED_TRACTION_TOTAL_BRAKING,
 
         // TCS Controls
         ORTS_TCS1,
