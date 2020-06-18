@@ -61,10 +61,11 @@ number should be used instead of zero.
 
 When a car is pulled from steady state, an additional force is needed due
 to higher bearing forces. The situation is simplified by using a different
-calculation at low speed (5 mph and lower). Empirical static friction
-forces are used for different classes of mass (under 10 tons, 10 to 100
+calculation at low speed (``ORTSMergeSpeed`` and lower). Empirical static
+friction forces are used for different classes of mass (under 10 tons, 10 to 100
 tons and above 100 tons). In addition, if weather conditions are poor
-(snowing is set), the static friction is increased.
+(snowing is set), the static friction is increased. This low-speed friction
+force can be manually specified with ``ORTSStandstillFriction``.
 
 When running on a curve and if the
 :ref:`Curve dependent resistance <options-curve-resistance>` option is
