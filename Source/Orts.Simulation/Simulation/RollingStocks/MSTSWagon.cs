@@ -78,7 +78,6 @@ namespace Orts.Simulation.RollingStocks
         public bool IsFrictionBearing; //Has friction (or solid bearings)
         public bool IsStandStill = true;  // Used for MSTS type friction
         public bool IsDavisFriction = true; // Default to new Davis type friction
-        public bool IsLowSpeed = true; // set indicator for low speed operation  0 - 5mph
         public bool IsBelowMergeSpeed = true; // set indicator for low speed operation as per given speed
 
         Interpolator BrakeShoeFrictionFactor;  // Factor of friction for wagon brake shoes
@@ -1641,16 +1640,15 @@ namespace Orts.Simulation.RollingStocks
         private void UpdateTrainBaseResistance()
         {
             IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0; // test to see if OR thinks that Davis Values have been entered in WG file.
-            IsLowSpeed = AbsSpeedMpS < MpS.FromMpH(5f);
             IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
             IsStandStill = AbsSpeedMpS < 0.1f;
-            bool isStartingFriction = StandstillFrictionN != 0 && MergeSpeedMpS != 0;
+            bool isStartingFriction = StandstillFrictionN != 0;
 
             if (IsDavisFriction) // If set to use next Davis friction then do so
             {
                 if (isStartingFriction && IsBelowMergeSpeed) // Davis formulas only apply above merge speed, so different treatment required for low speed
                     UpdateTrainBaseResistance_StartingFriction();
-                else if (IsLowSpeed) // Davis formulas only apply above about 5mph, so different treatment required for low speed < 5mph.
+                else if (IsBelowMergeSpeed)
                     UpdateTrainBaseResistance_DavisLowSpeed();
                 else
                     UpdateTrainBaseResistance_DavisHighSpeed();
