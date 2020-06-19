@@ -2114,21 +2114,40 @@ namespace Orts.Viewer3D.Debugging
 		   Item = item;
 		   Signal = signal;
 		   hasDir = false;
-		   Location.X = item.TileX * 2048 + item.X; Location.Y = item.TileZ * 2048 + item.Z;
-		   try
+		   Location.X = item.TileX * 2048 + item.X;
+		   Location.Y = item.TileZ * 2048 + item.Z;
+		   var node = Program.Simulator.TDB.TrackDB.TrackNodes?[signal.trackNode];
+		   Vector2 v2;
+		   if (node?.TrVectorNode != null)
 		   {
-			   var node = Program.Simulator.TDB.TrackDB.TrackNodes[signal.trackNode];
-			   Vector2 v2;
-			   if (node.TrVectorNode != null) { var ts = node.TrVectorNode.TrVectorSections[0]; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
-			   else if (node.TrJunctionNode != null) { var ts = node.UiD; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
-			   else throw new Exception();
-			   var v1 = new Vector2(Location.X, Location.Y); var v3 = v1 - v2; v3.Normalize(); v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 12f : -12f);
-			   Dir.X = v2.X; Dir.Y = v2.Y;
-               v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 1.5f : -1.5f);//shift signal along the dir for 2m, so signals will not be overlapped
-               Location.X = v2.X; Location.Y = v2.Y;
-			   hasDir = true;
+			   var ts = node.TrVectorNode.TrVectorSections?.FirstOrDefault();
+			   if (ts == null)
+				   return;
+			   v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z);
 		   }
-		   catch {  }
+		   else if (node?.TrJunctionNode != null)
+		   {
+			   var ts = node?.UiD;
+			   if (ts == null)
+				   return;
+			   v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z);
+		   }
+		   else
+		   {
+			   return;
+		   }
+		   var v1 = new Vector2(Location.X, Location.Y);
+		   var v3 = v1 - v2;
+		   v3.Normalize();
+		   void copyTo(Vector2 input, ref PointF output)
+		   {
+			   output.X = input.X;
+			   output.Y = input.Y;
+		   }
+		   copyTo(v1 - Vector2.Multiply(v3, signal.direction == 0 ? 12f : -12f), ref Dir);
+		   //shift signal along the dir for 2m, so signals will not be overlapped
+		   copyTo(v1 - Vector2.Multiply(v3, signal.direction == 0 ? 1.5f : -1.5f), ref Location);
+		   hasDir = true;
 	   }
    }
    #endregion
