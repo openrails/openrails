@@ -593,41 +593,26 @@ namespace Orts.Viewer3D.Debugging
 			  else { rmvButton.Visible = false; chkAllowNew.Visible = false; chkAllowUserSwitch.Visible = false; chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false; }
 		  }
 		  if (firstShow || followTrain) {
-			  WorldPosition pos;
 			  //see who should I look at:
 			  //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
-			  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
-			  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
-			  bool hasSelectedTrain = false;
+			  WorldPosition pos = Program.Simulator.PlayerLocomotive == null ? Program.Simulator.Trains.First().Cars.First().WorldPosition : Program.Simulator.PlayerLocomotive.WorldPosition;
 			  if (AvatarView.SelectedIndices.Count > 0 && !AvatarView.SelectedIndices.Contains(0))
 			  {
-					  try
-					  {
-						  var i = 10000;
-						  foreach (var index in AvatarView.SelectedIndices)
-						  {
-							  if ((int)index < i) i = (int)index;
-						  }
-						  var name = AvatarView.Items[i].Text.Split(' ')[0].Trim() ;
-						  if (MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(name))
-						  {
-							  pos = MultiPlayer.MPManager.OnlineTrains.Players[name].Train.Cars[0].WorldPosition;
-						  }
-						  else if (MultiPlayer.MPManager.Instance().lostPlayer.ContainsKey(name))
-						  {
-							  pos = MultiPlayer.MPManager.Instance().lostPlayer[name].Train.Cars[0].WorldPosition;
-						  }
-						  hasSelectedTrain = true;
-					  }
-					  catch { }
+				  int i = AvatarView.SelectedIndices.Cast<int>().Min();
+				  string name = (AvatarView.Items[i].Text ?? "").Split(' ').First().Trim();
+				  if (MultiPlayer.MPManager.OnlineTrains.Players.TryGetValue(name, out MultiPlayer.OnlinePlayer player))
+					  pos = player?.Train?.Cars?.First()?.WorldPosition;
+				  else if (MultiPlayer.MPManager.Instance().lostPlayer.TryGetValue(name, out MultiPlayer.OnlinePlayer lost))
+					  pos = lost?.Train?.Cars?.First()?.WorldPosition;
 			  }
-			  if (hasSelectedTrain == false && PickedTrain != null && PickedTrain.Cars != null && PickedTrain.Cars.Count > 0)
+			  if (pos == null)
+				  pos = PickedTrain?.Cars?.First()?.WorldPosition;
+			  if (pos != null)
 			  {
-				  pos = PickedTrain.Cars[0].WorldPosition;
+				  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
+				  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
+				  firstShow = false;
 			  }
-			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
-			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
-			  firstShow = false;
 		  }
 
 		  try
