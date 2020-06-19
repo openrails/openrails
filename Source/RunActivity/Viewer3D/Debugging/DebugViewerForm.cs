@@ -196,7 +196,7 @@ namespace Orts.Viewer3D.Debugging
 
             MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
             {
-                addNewMessage(e.Time, e.Message);
+                AddNewMessage(e.Time, e.Message);
             };
         }
 
@@ -793,14 +793,11 @@ namespace Orts.Viewer3D.Debugging
 				var drawRed = 0;
 				int ValidTrain = selectedTrainList.Count();
 				//add trains quit into the end, will draw them in gray
-				try
-				{
-					foreach (var lost in MultiPlayer.MPManager.Instance().lostPlayer)
-					{
-						if (lost.Value.Train != null && !selectedTrainList.Contains(lost.Value.Train)) selectedTrainList.Add(lost.Value.Train);
-					}
-				}
-				catch { }
+				var quitTrains = MultiPlayer.MPManager.Instance().lostPlayer.Values
+					.Select((MultiPlayer.OnlinePlayer lost) => lost?.Train)
+					.Where((Train t) => t != null)
+					.Where((Train t) => !selectedTrainList.Contains(t));
+				selectedTrainList.AddRange(quitTrains);
 				foreach (Train t in selectedTrainList)
 				{
 					drawRed++;//how many red has been drawn
@@ -1646,24 +1643,13 @@ namespace Orts.Viewer3D.Debugging
 		  LastCursorPosition.Y = e.Y;
 	  }
 
-	  public bool addNewMessage(double time, string msg)
+	  public bool AddNewMessage(double _, string msg)
 	  {
-		  var count = 0;
-		  while (count < 3)
-		  {
-			  try
-			  {
-				  if (messages.Items.Count > 10)
-				  {
-					  messages.Items.RemoveAt(0);
-				  }
-				  messages.Items.Add(msg);
-				  messages.SelectedIndex = messages.Items.Count - 1;
-				  messages.SelectedIndex = -1;
-				  break;
-			  }
-			  catch { count++; }
-		  }
+		  if (messages.Items.Count > 10)
+			  messages.Items.RemoveAt(0);
+		  messages.Items.Add(msg);
+		  messages.SelectedIndex = messages.Items.Count - 1;
+		  messages.SelectedIndex = -1;
 		  return true;
 	  }
 
@@ -1727,19 +1713,19 @@ namespace Orts.Viewer3D.Debugging
 		  {
 			  if (MultiPlayer.MPManager.IsServer())
 			  {
+				  var users = MultiPlayer.MPManager.OnlineTrains.Players.Keys
+					  .Select((string u) => $"{u}\r");
+				  string user = string.Join("", users) + "0END";
+				  string msgText = new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg).ToString();
 				  try
 				  {
-					  var user = "";
-					  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
-					  {
-						  user += p.Key + "\r";
-					  }
-					  user += "0END";
-					  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-					  MSG.Text = "";
-
+					  MultiPlayer.MPManager.Notify(msgText);
 				  }
 				  catch { }
+				  finally
+				  {
+					  MSG.Text = "";
+				  }
 			  }
 			  else
 			  {
@@ -1817,18 +1803,19 @@ namespace Orts.Viewer3D.Debugging
 
 				  if (MultiPlayer.MPManager.IsServer())
 				  {
+					  var users = MultiPlayer.MPManager.OnlineTrains.Players.Keys
+						  .Select((string u) => $"{u}\r");
+					  user += string.Join("", users) + "0END";
+					  string msgText = new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg).ToString();
 					  try
 					  {
-						  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
-						  {
-							  user += p.Key + "\r";
-						  }
-						  user += "0END";
-						  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-						  MSG.Text = "";
-
+						  MultiPlayer.MPManager.Notify(msgText);
 					  }
 					  catch { }
+					  finally
+					  {
+						  MSG.Text = "";
+					  }
 				  }
 				  else
 				  {
