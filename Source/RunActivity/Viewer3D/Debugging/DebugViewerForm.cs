@@ -601,12 +601,12 @@ namespace Orts.Viewer3D.Debugging
 				  int i = AvatarView.SelectedIndices.Cast<int>().Min();
 				  string name = (AvatarView.Items[i].Text ?? "").Split(' ').First().Trim();
 				  if (MultiPlayer.MPManager.OnlineTrains.Players.TryGetValue(name, out MultiPlayer.OnlinePlayer player))
-					  pos = player?.Train?.Cars?.First()?.WorldPosition;
+					  pos = player?.Train?.Cars?.FirstOrDefault()?.WorldPosition;
 				  else if (MultiPlayer.MPManager.Instance().lostPlayer.TryGetValue(name, out MultiPlayer.OnlinePlayer lost))
-					  pos = lost?.Train?.Cars?.First()?.WorldPosition;
+					  pos = lost?.Train?.Cars?.FirstOrDefault()?.WorldPosition;
 			  }
 			  if (pos == null)
-				  pos = PickedTrain?.Cars?.First()?.WorldPosition;
+				  pos = PickedTrain?.Cars?.FirstOrDefault()?.WorldPosition;
 			  if (pos != null)
 			  {
 				  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
