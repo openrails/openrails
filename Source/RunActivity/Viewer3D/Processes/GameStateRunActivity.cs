@@ -730,12 +730,15 @@ namespace Orts.Viewer3D.Processes
         {
             if (settings.Logging && (settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
             {
-                var fileName = settings.LoggingFilename;
+                string fileName;
                 try
                 {
-                    fileName = String.Format(fileName, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
+                    fileName = string.Format(settings.LoggingFilename, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
                 }
-                catch { }
+                catch (FormatException)
+                {
+                    fileName = settings.LoggingFilename;
+                }
                 foreach (var ch in Path.GetInvalidFileNameChars())
                     fileName = fileName.Replace(ch, '.');
 
