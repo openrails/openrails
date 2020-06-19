@@ -20,7 +20,6 @@
 using Microsoft.Xna.Framework.Input;
 using Orts.MultiPlayer;
 using ORTS.Common;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Orts.Viewer3D.Popups
