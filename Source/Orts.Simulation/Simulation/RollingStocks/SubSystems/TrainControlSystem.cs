@@ -140,6 +140,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         // generic TCS commands
         public bool[] TCSCommandButtonDown = new bool[32];
+        public bool[] TCSCommandSwitchOn = new bool[32];
         // List of customized control strings;
         public string[] CustomizedCabviewControlNames = new string[48];
         // TODO : Delete this when SetCustomizedTCSControlString is deleted
@@ -720,12 +721,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public void AlerterReset()
         {
             HandleEvent(TCSEvent.AlerterReset);
-        }
-
-        public void TCSCommandPressed(bool pressed, int commandIndex)
-        {
-            TCSCommandButtonDown[commandIndex] = pressed;
-            HandleEvent(pressed ? TCSEvent.GenericTCSButtonPressed : TCSEvent.GenericTCSButtonReleased, commandIndex);
         }
 
         public void SetEmergency(bool emergency)

@@ -507,6 +507,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         GenericTCSButtonReleased,
         /// <summary>
+        /// Generic TCS switch toggled off.
+        /// </summary>
+        GenericTCSSwitchOff,
+        /// <summary>
+        /// Generic TCS switch toggled on.
+        /// </summary>
+        GenericTCSSwitchOn,
+        /// <summary>
         /// Circuit breaker has been closed.
         /// </summary>
         CircuitBreakerClosed,
