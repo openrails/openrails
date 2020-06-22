@@ -60,7 +60,7 @@ namespace Orts.Processes
             // This is so that you can identify threads from debuggers like Visual Studio.
             try
             {
-                Thread.CurrentThread.Name += " Process";
+                Thread.CurrentThread.Name = $"{Name} Process";
             }
             catch (InvalidOperationException) { }
 
