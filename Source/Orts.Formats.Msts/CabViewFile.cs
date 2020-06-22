@@ -180,7 +180,6 @@ namespace Orts.Formats.Msts
         ORTS_BATTERY,
         ORTS_POWERKEY,
 
-
         // TCS Controls
         ORTS_TCS1,
         ORTS_TCS2,
