@@ -98,6 +98,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
         }
 
+        // Constants
+        private const int TCSCabviewControlCount = 48;
+        private const int TCSCommandCount = 32;
+
+        // Properties
         public bool VigilanceAlarm { get; set; }
         public bool VigilanceEmergency { get; set; }
         public bool OverspeedWarning { get; set; }
@@ -136,13 +141,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool TractionAuthorization { get; private set; }
         public bool FullDynamicBrakingOrder { get; private set; }
 
-        public float[] CabDisplayControls = new float[48];
+        public float[] CabDisplayControls = new float[TCSCabviewControlCount];
 
         // generic TCS commands
-        public bool[] TCSCommandButtonDown = new bool[32];
-        public bool[] TCSCommandSwitchOn = new bool[32];
+        public bool[] TCSCommandButtonDown = new bool[TCSCommandCount];
+        public bool[] TCSCommandSwitchOn = new bool[TCSCommandCount];
         // List of customized control strings;
-        public string[] CustomizedCabviewControlNames = new string[48];
+        public string[] CustomizedCabviewControlNames = new string[TCSCabviewControlCount];
         // TODO : Delete this when SetCustomizedTCSControlString is deleted
         protected int NextCabviewControlNameToEdit = 0;
 
@@ -388,7 +393,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Trace.TraceWarning("SetCustomizedTCSControlString is deprecated. Please use SetCustomizedCabviewControlName.");
                     }
 
-                    if (NextCabviewControlNameToEdit < 48)
+                    if (NextCabviewControlNameToEdit < TCSCabviewControlCount)
                     {
                         CustomizedCabviewControlNames[NextCabviewControlNameToEdit] = value;
                     }
@@ -397,7 +402,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
                 Script.SetCustomizedCabviewControlName = (id, value) =>
                 {
-                    if (id >= 0 && id < 48)
+                    if (id >= 0 && id < TCSCabviewControlCount)
                     {
                         CustomizedCabviewControlNames[id] = value;
                     }
@@ -778,7 +783,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (originalString.Length < 9) return originalString;
             if (originalString.Substring(0, 8) != "ORTS_TCS") return originalString;
             var commandIndex = Convert.ToInt32(originalString.Substring(8));
-            return commandIndex > 0 && commandIndex <= 48 && CustomizedCabviewControlNames[commandIndex - 1] != ""
+            return commandIndex > 0 && commandIndex <= TCSCabviewControlCount && CustomizedCabviewControlNames[commandIndex - 1] != ""
                 ? CustomizedCabviewControlNames[commandIndex - 1]
                 : originalString;
         }
