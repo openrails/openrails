@@ -931,7 +931,42 @@ namespace Orts.Common
             // Report();
         }
     }
-    
+
+    [Serializable()]
+    public sealed class ToggleBatteryCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public ToggleBatteryCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.ToggleBattery();
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class TogglePowerKeyCommand : Command
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public TogglePowerKeyCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TogglePowerKey();
+            // Report();
+        }
+    }
     // Steam controls
     [Serializable()]
     public sealed class ContinuousSteamHeatCommand : ContinuousCommand

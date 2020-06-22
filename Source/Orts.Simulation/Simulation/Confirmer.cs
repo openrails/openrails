@@ -94,6 +94,8 @@ namespace Orts.Simulation
       , Wipers
       , ChangeCab
       , Odometer
+      , Battery
+      , PowerKey
       // Train Devices
       , DoorsLeft
       , DoorsRight
@@ -233,6 +235,8 @@ namespace Orts.Simulation
                 , new string [] { GetString("Wipers"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Cab"), null, null, GetParticularString("Cab", "change"), null, null, GetString("changing is not available"), GetString("changing disabled. Close throttle, set reverser to neutral, stop train then re-try.") } 
                 , new string [] { GetString("Odometer"), null, null, GetParticularString("Odometer", "reset"), GetParticularString("Odometer", "counting down"), GetParticularString("Odometer", "counting up") }
+                , new string [] { GetString("Battery"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("PowerKey"), GetString("off"), null, GetString("on")}
                 // Train Devices
                 , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 

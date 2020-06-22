@@ -140,11 +140,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         // generic TCS commands
         public bool[] TCSCommandButtonDown = new bool[32];
-        public bool[] TCSCommandSwitchOn = new bool[32];
         // List of customized control strings;
-        public string[] CustomizedCabviewControlNames = new string[48];
-        // TODO : Delete this when SetCustomizedTCSControlString is deleted
-        protected int NextCabviewControlNameToEdit = 0;
+        public List<string> CustomizedTCSControlStrings = new List<string>();
 
         string ScriptName;
         string SoundFileName;
@@ -381,27 +378,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.SetInterventionSpeedLimitMpS = (value) => this.InterventionSpeedLimitMpS = value;
                 Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
                 Script.SetCabDisplayControl = (arg1, arg2) => CabDisplayControls[arg1] = arg2;
-                Script.SetCustomizedTCSControlString = (value) =>
-                {
-                    if (NextCabviewControlNameToEdit == 0)
-                    {
-                        Trace.TraceWarning("SetCustomizedTCSControlString is deprecated. Please use SetCustomizedCabviewControlName.");
-                    }
-
-                    if (NextCabviewControlNameToEdit < 48)
-                    {
-                        CustomizedCabviewControlNames[NextCabviewControlNameToEdit] = value;
-                    }
-
-                    NextCabviewControlNameToEdit++;
-                };
-                Script.SetCustomizedCabviewControlName = (id, value) =>
-                {
-                    if (id >= 0 && id < 48)
-                    {
-                        CustomizedCabviewControlNames[id] = value;
-                    }
-                };
+                Script.SetCustomizedTCSControlString = (value) => CustomizedTCSControlStrings.Add(value);
                 Script.RequestToggleManualMode = () => Locomotive.Train.RequestToggleManualMode();
 
                 // TrainControlSystem INI configuration file
@@ -723,6 +700,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             HandleEvent(TCSEvent.AlerterReset);
         }
 
+        public void TCSCommandPressed(bool pressed, int commandIndex)
+        {
+            TCSCommandButtonDown[commandIndex] = pressed;
+            HandleEvent(pressed ? TCSEvent.GenericTCSButtonPressed : TCSEvent.GenericTCSButtonReleased, commandIndex);
+        }
+
         public void SetEmergency(bool emergency)
         {
             if (Script != null)
@@ -773,14 +756,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (originalString.Length < 9) return originalString;
             if (originalString.Substring(0, 8) != "ORTS_TCS") return originalString;
             var commandIndex = Convert.ToInt32(originalString.Substring(8));
-            return commandIndex > 0 && commandIndex <= 48 && CustomizedCabviewControlNames[commandIndex - 1] != ""
-                ? CustomizedCabviewControlNames[commandIndex - 1]
-                : originalString;
+            if (CustomizedTCSControlStrings.Count >= commandIndex && CustomizedTCSControlStrings[commandIndex - 1] != "")
+                return CustomizedTCSControlStrings[commandIndex - 1];
+            return originalString;
         }
 
         public void Save(BinaryWriter outf)
         {
-            outf.Write(ScriptName ?? "");
+            outf.Write(ScriptName == null ? "" : ScriptName);
             if (ScriptName != "")
                 Script.Save(outf);
         }

@@ -27,6 +27,8 @@ namespace Orts.Common
     public enum Event
     {
         None,
+        BatteryOff,
+        BatteryOn,
         BellOff,
         BellOn,
         BlowerChange,
@@ -101,6 +103,8 @@ namespace Orts.Common
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
+        PowerKeyOff,
+        PowerKeyOn,
         ReverserChange,
         ReverserToForwardBackward,
         ReverserToNeutral,
@@ -376,6 +380,12 @@ namespace Orts.Common
 
                         case 175: return Event.BoilerBlowdownOn;
                         case 176: return Event.BoilerBlowdownOff;
+
+                        case 177: return Event.BatteryOn;
+                        case 178: return Event.BatteryOff;
+
+                        case 179: return Event.PowerKeyOn;
+                        case 180: return Event.PowerKeyOff;
 
                         case 181: return Event.GenericEvent1;
                         case 182: return Event.GenericEvent2;
