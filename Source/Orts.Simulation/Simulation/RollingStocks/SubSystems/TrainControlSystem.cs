@@ -415,6 +415,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
         }
 
+        public void InitializeMoving()
+        {
+            Script?.InitializeMoving();
+        }
+
         T NextSignalItem<T>(int forsight, ref List<T> list, Train.TrainObjectItem.TRAINOBJECTTYPE type)
         {
             if (forsight < 0) forsight = 0;

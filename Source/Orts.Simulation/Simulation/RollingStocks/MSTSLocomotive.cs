@@ -1346,6 +1346,7 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             if (Train.IsActualPlayerTrain)
             {
+                TrainControlSystem.InitializeMoving();
                 TrainBrakeController.InitializeMoving();
                 BrakeSystem.LocoInitializeMoving();
             }

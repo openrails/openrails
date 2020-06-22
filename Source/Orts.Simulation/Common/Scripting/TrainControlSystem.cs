@@ -399,6 +399,11 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public abstract void Initialize();
         /// <summary>
+        /// Called once at initialization time if the train speed is greater than 0.
+        /// Set at virtual to keep compatibility with scripts not providing this method.
+        /// </summary>
+        public virtual void InitializeMoving() { }
+        /// <summary>
         /// Called regularly at every simulator update cycle.
         /// </summary>
         public abstract void Update();
