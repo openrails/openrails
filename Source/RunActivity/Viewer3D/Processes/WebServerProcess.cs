@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2020 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -18,17 +18,9 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 
-using System;
-using System.Net.Sockets;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
 using System.Threading;
-using Orts.Viewer3D;
 using Orts.Viewer3D.WebServices;
 using ORTS.Common;
-using ORTS.Settings;
 using Orts.Processes;
 using CancellationTokenSource = System.Threading.CancellationTokenSource;
 
