@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+﻿// COPYRIGHT 2020 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -18,17 +18,9 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 
-using System;
-using System.Net.Sockets;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
 using System.Threading;
-using Orts.Viewer3D;
 using Orts.Viewer3D.WebServices;
 using ORTS.Common;
-using ORTS.Settings;
 using Orts.Processes;
 using CancellationTokenSource = System.Threading.CancellationTokenSource;
 
@@ -40,49 +32,35 @@ namespace Orts.Viewer3D.Processes
         readonly ProcessState State = new ProcessState("WebServer");
         readonly Game Game;
         readonly Thread Thread;
-        private bool ThreadActive = false;
+        private readonly bool active;
         private readonly CancellationTokenSource stopServer = new CancellationTokenSource();
 
         public WebServerProcess(Game game)
         {
-                Game = game;
-
-                Thread = new Thread(WebServerThread);
-                if (game.Settings.WebServer)
-                {
-                    ThreadActive = true;
-                }
+            Game = game;
+            Thread = new Thread(WebServerThread);
+            active = game.Settings.WebServer;
         }
 
         public void Start()
         {
-            if (ThreadActive)
-            {
+            if (active)
                 Thread.Start();
-            }
         }
 
         public void Stop()
         {
-            if (ThreadActive)
+            if (active)
             {
                 stopServer.Cancel();
                 State.SignalTerminate();
                 Thread.Abort();
             }
         }
-        public bool Finished
-        {
-            get
-            {
-                return State.Finished;
-            }
-        }
 
-        public void WaitTillFinished()
-        {
-            State.WaitTillFinished();
-        }
+        public bool Finished { get => State.Finished; }
+
+        public void WaitTillFinished() => State.WaitTillFinished();
 
         [ThreadName("WebServer")]
         void WebServerThread()
@@ -94,9 +72,7 @@ namespace Orts.Viewer3D.Processes
             var myWebContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(
                 System.Windows.Forms.Application.ExecutablePath),"Content\\Web");
 
-            string url(string ip) => string.Format("http://{0}:{1}", ip, port);
-            // 127.0.0.1 is a dummy, IPAddress.Any in WebServer.cs to accept any address
-            // on the local Lan
+            string url(string ip) => $"http://{ip}:{port}";
             var urls = new string[] { url("[::1]"), url("127.0.0.1"), url("localhost") };
             using (var server = WebServer.CreateWebServer(urls, myWebContentPath))
                 server.RunAsync(stopServer.Token).Wait();
