@@ -37,6 +37,7 @@ namespace Orts.Viewer3D.WebServices
     public static class WebServer
     {
         public static EmbedIO.WebServer CreateWebServer(string url, string path) => CreateWebServer(new string[] { url }, path);
+
         public static EmbedIO.WebServer CreateWebServer(string[] urls, string path)
         {
             // Viewer is not yet initialized in the GameState object - wait until it is
@@ -60,7 +61,7 @@ namespace Orts.Viewer3D.WebServices
     }
 
     internal class ORTSApiController : WebApiController
-    { 
+    {
         private readonly Viewer Viewer;
 
         public ORTSApiController(Viewer viewer)
@@ -125,7 +126,7 @@ namespace Orts.Viewer3D.WebServices
         }
 
         [Route(HttpVerbs.Get, "/HUD/{pageNo}")]
-        // Example URL where pageNo = 3: 
+        // Example URL where pageNo = 3:
         //   "http://localhost:2150/API/HUD/3" returns data in JSON
         // Call from JavaScript is case-sensitive, with /API prefix, e.g:
         //   hr.open("GET", "/API/HUD" + pageNo, true);
