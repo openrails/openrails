@@ -648,6 +648,7 @@ namespace Orts.Simulation.Physics
             TotalNumber = Math.Max(Number + 1, TotalNumber);
             Name = inf.ReadString();
             SpeedMpS = inf.ReadSingle();
+            AccelerationMpSpS.ForceSmoothValue(0f);
             TrainType = (TRAINTYPE)inf.ReadInt32();
             if (TrainType == TRAINTYPE.STATIC) ColdStart = true;
             MUDirection = (Direction)inf.ReadInt32();
