@@ -23,7 +23,9 @@
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;
+using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Orts.Simulation.Physics;
 using System;
 using System.Collections.Generic;
@@ -56,7 +58,11 @@ namespace Orts.Viewer3D.WebServices
         private static async Task SerializationCallback(IHttpContext context, object data)
         {
             using (var text = context.OpenResponseText(new UTF8Encoding()))
-                await text.WriteAsync(JsonConvert.SerializeObject(data, Formatting.Indented));
+                await text.WriteAsync(JsonConvert.SerializeObject(data, new JsonSerializerSettings()
+                {
+                    Formatting = Formatting.Indented,
+                    ContractResolver = new XnaFriendlyResolver()
+                }));
         }
     }
 
@@ -172,5 +178,19 @@ namespace Orts.Viewer3D.WebServices
         [Route(HttpVerbs.Get, "/TRACKMONITOR")]
         public Train.TrainInfo TrackMonitor() => Viewer.PlayerTrain.GetTrainInfo();
         #endregion
+    }
+
+    /// <summary>
+    /// This contract resolver fixes JSON serialization for certain XNA classes.
+    /// Many thanks to <a href="https://stackoverflow.com/a/44238343">Elliott Darfink on Stack Overflow</a>
+    /// </summary>
+    internal class XnaFriendlyResolver : DefaultContractResolver
+    {
+        protected override JsonContract CreateContract(Type objectType)
+        {
+            if (objectType == typeof(Rectangle) || objectType == typeof(Point))
+                return CreateObjectContract(objectType);
+            return base.CreateContract(objectType);
+        }
     }
 }
