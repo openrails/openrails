@@ -194,6 +194,13 @@ Here is an example of a cab light control block within the .cvf file::
                 DirIncrease ( 0 )
                 )
 
+Signed Traction Total Braking control
+-------------------------------------
+
+ORTS_SIGNED_TRACTION_TOTAL_BRAKING control behaves and is defined like 
+ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking 
+force does include also the train brake force in addition to the dynamic 
+brake force.
 
 Further OR cab controls
 -----------------------
@@ -346,6 +353,8 @@ The number in parenthesis is the angle in degrees with respect to the horizontal
 Here an example of a red max speed indication that has been rotated by 5 degrees
 
 .. image:: images/cabs-digitals-rotation.png
+
+Rotation may be applied, with the same syntax, also to DigitalClock cab controls.
 
 3D cabs
 =======
