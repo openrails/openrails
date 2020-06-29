@@ -313,6 +313,8 @@ namespace Orts.Viewer3D.Popups
             ScaleDesign(ref endAuthorityPosition);
             ScaleDesign(ref signalPosition);
             ScaleDesign(ref arrowPosition);
+            ScaleDesign(ref leftSwitchPosition);
+            ScaleDesign(ref rightSwitchPosition);
             ScaleDesign(ref invalidReversalPosition);
         }
 
