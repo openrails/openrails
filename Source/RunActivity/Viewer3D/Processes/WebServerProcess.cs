@@ -22,6 +22,8 @@ using System.Threading;
 using Orts.Viewer3D.WebServices;
 using ORTS.Common;
 using Orts.Processes;
+using System.IO;
+using System.Windows.Forms;
 using CancellationTokenSource = System.Threading.CancellationTokenSource;
 
 namespace Orts.Viewer3D.Processes
@@ -29,53 +31,42 @@ namespace Orts.Viewer3D.Processes
     public class WebServerProcess
     {
         public readonly Profiler Profiler = new Profiler("WebServer");
-        readonly ProcessState State = new ProcessState("WebServer");
-        readonly Game Game;
-        readonly Thread Thread;
-        private readonly bool active;
-        private readonly CancellationTokenSource stopServer = new CancellationTokenSource();
+        private readonly ProcessState State = new ProcessState("WebServer");
+        private readonly Game Game;
+        private readonly Thread Thread;
+        private readonly CancellationTokenSource StopServer = new CancellationTokenSource();
 
         public WebServerProcess(Game game)
         {
             Game = game;
             Thread = new Thread(WebServerThread);
-            active = game.Settings.WebServer;
         }
 
         public void Start()
         {
-            if (active)
-                Thread.Start();
+            State.SignalStart();
+            Thread.Start();
         }
 
         public void Stop()
         {
-            if (active)
-            {
-                stopServer.Cancel();
-                State.SignalTerminate();
-                Thread.Abort();
-            }
+            StopServer.Cancel();
+            State.SignalTerminate();
         }
-
-        public bool Finished { get => State.Finished; }
-
-        public void WaitTillFinished() => State.WaitTillFinished();
 
         [ThreadName("WebServer")]
         void WebServerThread()
         {
             Profiler.SetThread();
             Game.SetThreadLanguage();
-            int port = Game.Settings.WebServerPort;
+            if (!Game.Settings.WebServer)
+                return;
 
-            var myWebContentPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(
-                System.Windows.Forms.Application.ExecutablePath),"Content\\Web");
-
-            string url(string ip) => $"http://{ip}:{port}";
-            var urls = new string[] { url("[::1]"), url("127.0.0.1"), url("localhost") };
-            using (var server = WebServer.CreateWebServer(urls, myWebContentPath))
-                server.RunAsync(stopServer.Token).Wait();
+            string myWebContentPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Content\\Web");
+            string Url(string ip) => $"http://{ip}:{Game.Settings.WebServerPort}";
+            var urls = new string[] { Url("[::1]"), Url("127.0.0.1"), Url("localhost") };
+            using (EmbedIO.WebServer server = WebServer.CreateWebServer(urls, myWebContentPath))
+                server.RunAsync(StopServer.Token).Wait();
         }
     }
 }
