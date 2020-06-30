@@ -18,13 +18,8 @@
 // This file is the responsibility of the 3D & Environment Team.
 
 using Orts.Common;
-using Orts.Simulation;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems;
-using ORTS.Common;
 using System;
-using System.Diagnostics;   // Used by Trace.Warnings
 
 namespace ORTS.Scripting.Api
 {
@@ -44,14 +39,14 @@ namespace ORTS.Scripting.Api
     /// 
     /// </summary>
 
-    // Generic TCS command
+    // Generic TCS button command
     [Serializable()]
-    public sealed class TCSCommand : BooleanCommand
+    public sealed class TCSButtonCommand : BooleanCommand
     {
         public int CommandIndex;
         public static ScriptedTrainControlSystem Receiver { get; set; }
 
-        public TCSCommand(CommandLog log, bool toState, int commandIndex)
+        public TCSButtonCommand(CommandLog log, bool toState, int commandIndex)
             : base(log, toState)
         {
             CommandIndex = commandIndex;
@@ -60,15 +55,45 @@ namespace ORTS.Scripting.Api
 
         public override void Redo()
         {
- //           if (ToState) Receiver.SignalEvent(Event.VigilanceAlarmReset); // There is no Event.VigilanceAlarmResetReleased
-            Receiver.TCSCommandPressed(ToState, CommandIndex);
-            // Report();
+            if (Receiver != null)
+            {
+                Receiver.TCSCommandButtonDown[CommandIndex] = ToState;
+                Receiver.HandleEvent(ToState ? TCSEvent.GenericTCSButtonPressed : TCSEvent.GenericTCSButtonReleased, CommandIndex);
+            }
         }
 
         public override string ToString()
         {
-            return base.ToString() + " - " + (ToState ? "ON" : "OFF");
+            return base.ToString() + " - " + (ToState ? "on" : "off");
         }
     }
 
- }
+    // Generic TCS switch command
+    [Serializable()]
+    public sealed class TCSSwitchCommand : BooleanCommand
+    {
+        public int CommandIndex;
+        public static ScriptedTrainControlSystem Receiver { get; set; }
+
+        public TCSSwitchCommand(CommandLog log, bool toState, int commandIndex)
+            : base(log, toState)
+        {
+            CommandIndex = commandIndex;
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver != null)
+            {
+                Receiver.TCSCommandSwitchOn[CommandIndex] = ToState;
+                Receiver.HandleEvent(ToState ? TCSEvent.GenericTCSSwitchOn : TCSEvent.GenericTCSSwitchOff, CommandIndex);
+            }
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "on" : "off");
+        }
+    }
+}

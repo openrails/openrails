@@ -687,7 +687,9 @@ TCS script through the ``GetBoolParameter()``, ``GetIntParameter()``,
 ``TrainControlSystem`` class. This .ini file provides for easy customization of 
 the behavior of the TCS script by end users.
 
-This is an excerpt from an .ini file::
+This is an excerpt from an .ini file:
+
+.. code-block:: ini
 
   [General]
   AWSMonitor=true
@@ -707,9 +709,11 @@ This is an excerpt from an .ini file::
   AppliesCutsPower=true
 
 As can be seen, the .ini file is divided in subgroups. As an example, parameter 
-[AWS]Inhibited would be read by following line of code in the script ::
+[AWS]Inhibited would be read by following line of code in the script :
 
-    AWSInhibited = GetBoolParameter("AWS", "Inhibited", false);
+.. code-block:: csharp
+
+  AWSInhibited = GetBoolParameter("AWS", "Inhibited", false);
 
 where the final ``false`` is the default value, if the parameter can't be found.
 
@@ -722,29 +726,37 @@ of the base class, which in turn activate the TCS-related
 :ref:`discrete triggers <sound-discrete>` numbered from 109 through 118.
 
 8 further generic discrete sound triggers are available, named GenericEvent1 to 
-GenericEvent8 and accessible to the script by lines like following one::
+GenericEvent8 and accessible to the script by lines like following one:
 
-  Locomotive().TrainControlSystem.SignalEvent(Event.GenericEvent1, this);
+.. code-block:: csharp
+
+  SignalEvent(Event.GenericEvent1);
 
 Access to the Simulation methods and variables
 ''''''''''''''''''''''''''''''''''''''''''''''
 The abstract class for the TCS scripts provides a significant amount of 
-methods to access variables of interest for the TCS: as an example::
+methods to access variables of interest for the TCS: as an example:
 
-   public Func<int, Aspect> NextSignalAspect;
+.. code-block:: csharp
 
-might be called within the script as follows::
+        public Func<int, Aspect> NextSignalAspect;
 
-  var nextSignalAspect = NextSignalAspect(1);
+might be called within the script as follows:
+
+.. code-block:: csharp
+
+        var nextSignalAspect = NextSignalAspect(1);
 
 which would return the aspect of the second normal signal in front of 
 the player train.
 
 However it is quite impossible to foresee all needs that a TCS script has 
 and to provide a method for everyone of these needs. For this reason 
-following method is available::
+following method is available:
 
-  public Func<MSTSLocomotive> Locomotive;
+.. code-block:: csharp
+
+    public Func<MSTSLocomotive> Locomotive;
 
 which returns a handle for the player locomotive instance of the MSTSLocomotive 
 class. Through such handle all public classes, methods and variables of 
@@ -762,7 +774,7 @@ More precisely 48 generic cabview controls, named from ORTS_TCS1 to ORTS_TCS48
 are available. All 48 may be used as two state or multistate controls,  
 like e.g.::
 
-  		MultiStateDisplay (
+    MultiStateDisplay (
 			Type ( ORTS_TCS13 MULTI_STATE_DISPLAY )
 			Position ( 405 282.3 36.3 20.8 )
 			Graphic ( ../../Common.Cab/Cruscotto_SCMT/Ripetizioni_estese.ace )
@@ -805,18 +817,22 @@ Each one of the first 32 can be also used as Two-state commands/displays, like e
 			MouseControl ( 1 )
 		)
 
-The commands are received asynchronously by the script through this method::
+The commands are received asynchronously by the script through this method:
 
-   public override void HandleEvent(TCSEvent evt, string message)
+.. code-block:: csharp
 
-where evt may be TCSEvent.GenericTCSButtonPressed or TCSEvent.GenericTCSButtonReleased 
+    public override void HandleEvent(TCSEvent evt, string message)
+
+Where evt may be TCSEvent.GenericTCSButtonPressed or TCSEvent.GenericTCSButtonReleased 
 and message is a string ranging from "0" to "31", which correspond to controls from 
 ORTS_TCS1 to ORTS_TCS32.
 The commands may only be triggered by the mouse, except the first two which may also be 
-triggered by key combinations ``Ctrl,``(comma) and ``Ctrl.``(period).
-Here a code excerpt from the script which manages the commands::
+triggered by key combinations ``Ctrl,`` (comma) and ``Ctrl.`` (period).
+Here's a code excerpt from the script which manages the commands:
 
-          public override void HandleEvent(TCSEvent evt, string message)
+.. code-block:: csharp
+
+        public override void HandleEvent(TCSEvent evt, string message)
         {
             if (message == String.Empty)
             {
@@ -853,16 +869,22 @@ Here a code excerpt from the script which manages the commands::
         }
 
 Within the Update method of the script TCSButtonPressed and 
-TCSButtonReleased may be tested, e.g.::
+TCSButtonReleased may be tested, e.g.:
 
-              if (TCSButtonPressed[(int)(TCSCommandEvent.Button_Ric)] )
+.. code-block:: csharp
+
+    if (TCSButtonPressed[(int)(TCSCommandEvent.Button_Ric)])
 
 After having tested it, TCSButtonPressed should be set to false by the 
 script code.
 
-To request a display of a cabview control, method::
+You can also use ``TCSEvent.GenericTCSSwitchOff`` and ``TCSEvent.GenericTCSSwitchOn`` for a cabview control representing a switch (style ONOFF instead of PRESSED in the CVF file).
 
- public Action<int, float> SetCabDisplayControl; 
+To request a display of a cabview control, method:
+
+.. code-block:: csharp
+
+    public Action<int, float> SetCabDisplayControl; 
 
 has to be used, where ``int`` is the index of the cab control (from 0 to 47 
 corresponding from ORTS_TCS1 to ORTS_TCS48), and ``float`` is the value to be 
@@ -872,19 +894,139 @@ When the player moves the mouse over the cabview controls linked to commands,
 the name of such control shortly appears on the display, like e.g. "speedometer", 
 as a reminder to the player. 
 In case of these generic commands, strings from "ORTS_TCS1" to "ORTS_TCS32" would 
-appear, which aren't mnemonic at all. Therefore following method is available::
+appear, which aren't mnemonic at all. Therefore following method is available:
 
-          public Action<string> SetCustomizedTCSControlString; 
+.. code-block:: csharp
 
-which may be used this way within the script::
+    public Action<int, string> SetCustomizedCabviewControlName; 
 
-            // Initialize customized TCS command strings
-            foreach (string TCSControlString in Enum.GetNames(typeof(TCSCommandEvent)))
-            {
-                if (TCSControlString == "None") continue;
-                SetCustomizedTCSControlString(TCSControlString);
+which may be used this way within the script:
+
+.. code-block:: csharp
+
+    // Initialize customized TCS cabview control names
+    SetCustomizedCabviewControlName(0, "AWS acknowledge"); // Sets the name "AWS acknowledge" for the cabview control ORTS_TCS1
 
 so that, instead of ORTS_TCSnn the related mnemonic string is displayed.
 
+Helper classes
+--------------
+3 helper classes are available in the ``Orts.Scripting.Api`` namespace:
+  * A timer class
+  * An odometer class
+  * A blinker class
 
+Timer
+'''''
+The timer can be used to execute some code after a time has elapsed.
+In order to use the timer, you have to create a property in your script class in order to store the object.
+
+.. code-block:: csharp
+
+    public Timer MyTimer;
+
+In the constructor of your script class, you have to instanciate the object and set the delay of the timer.
+
+.. code-block:: csharp
+
+    MyTimer = new Timer(this);
+    MyTimer.Setup(5f); // Sets the timer's delay to 5 seconds
+
+Then, when you want to start the timer, use the ``Start`` function.
+
+.. code-block:: csharp
+
+    MyTimer.Start();
+
+If you want to reset the timer, use the ``Stop`` function.
+
+.. code-block:: csharp
+
+    MyTimer.Stop();
+
+When the delay has been reached, the ``Triggered`` property of the timer will become ``true``.
+
+.. code-block:: csharp
+
+    if (MyTimer.Triggered)
+    {
+        // Do something
+    }
+
+Please note that, when the timer is stopped, the ``Triggered`` property is ``false``.
+
+Odometer
+''''''''
+The odometer can be used to execute some code after a distance has been traveled by the train.
+In order to use the odometer, you have to create a property in your script class in order to store the object.
+
+.. code-block:: csharp
+
+    public Odometer MyOdometer;
+
+In the constructor of your script class, you have to instanciate the object and set the distance at which the odometer will be triggered.
+
+.. code-block:: csharp
+
+    MyOdometer = new Odometer(this);
+    MyOdometer.Setup(200f); // Sets the odometer's trigger value at 200 meters
+
+Then, when you want to start the odometer, use the ``Start`` function.
+
+.. code-block:: csharp
+
+    MyOdometer.Start();
+
+If you want to reset the odometer, use the ``Stop`` function.
+
+.. code-block:: csharp
+
+    MyOdometer.Stop();
+
+When the distance has been reached, the ``Triggered`` property of the odometer will become ``true``.
+
+.. code-block:: csharp
+
+    if (MyOdometer.Triggered)
+    {
+        // Do something
+    }
+
+Please note that, when the odometer is stopped, the ``Triggered`` property is ``false``.
+
+Blinker
+'''''''
+The blinker can be used to make a cabview control blink.
+In order to use the blinker, you have to create a property in your script class in order to store the object.
+
+.. code-block:: csharp
+
+    public Blinker MyBlinker;
+
+In the constructor of your script class, you have to instanciate the object and set the frequency at which the cabview control will blink.
+
+.. code-block:: csharp
+
+    MyBlinker = new Blinker(this);
+    MyBlinker.Setup(6f); // Sets the blinker frequency to 6 Hz
+
+Then, when you want to start the blinker, use the ``Start`` function.
+
+.. code-block:: csharp
+
+    MyBlinker.Start();
+
+If you want to reset the blinker, use the ``Stop`` function.
+
+.. code-block:: csharp
+
+    MyBlinker.Stop();
+
+The blinker ``On`` property will alternate between ``true`` and ``false`` at the set frequency.
+
+.. code-block:: csharp
+
+    SetCabDisplayControl(0, RSOBlinker.On ? 1 : 0);
+
+Please note that, when the blinker is stopped, the ``On`` property is ``false``.
 
