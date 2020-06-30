@@ -36,11 +36,27 @@ using System.Threading.Tasks;
 
 namespace Orts.Viewer3D.WebServices
 {
+    /// <summary>
+    /// A static class that contains server creation and helper methods for the
+    /// Open Rails web server.
+    /// </summary>
     public static class WebServer
     {
+        /// <summary>
+        /// Create a web server with a single listening address.
+        /// </summary>
+        /// <param name="url">The URL prefix to listen on.</param>
+        /// <param name="path">The root directory to serve static files from.</param>
+        /// <returns>The EmbedIO web server instance.</returns>
         public static EmbedIO.WebServer CreateWebServer(string url, string path) => CreateWebServer(new string[] { url }, path);
 
-        public static EmbedIO.WebServer CreateWebServer(string[] urls, string path)
+        /// <summary>
+        /// Create a web server with multiple listening addresses.
+        /// </summary>
+        /// <param name="urls">A list of URL prefixes to listen on.</param>
+        /// <param name="path">The root directory to serve static files from.</param>
+        /// <returns>The EmbedIO web server instance.</returns>
+        public static EmbedIO.WebServer CreateWebServer(IEnumerable<string> urls, string path)
         {
             // Viewer is not yet initialized in the GameState object - wait until it is
             while (Program.Viewer == null)
@@ -53,8 +69,10 @@ namespace Orts.Viewer3D.WebServices
                 .WithStaticFolder("/", path, true);
         }
 
-        // We need to use the Newtonsoft serializer instead of the Swan one that EmbedIO defaults to -
-        // for some reason, Swan won't serialize custom classes.
+        /// <remarks>
+        /// The Swan serializer used by EmbedIO does not serialize custom classes,
+        /// so this callback replaces it with the Newtonsoft serializer.
+        /// </remarks>
         private static async Task SerializationCallback(IHttpContext context, object data)
         {
             using (var text = context.OpenResponseText(new UTF8Encoding()))
@@ -66,8 +84,14 @@ namespace Orts.Viewer3D.WebServices
         }
     }
 
+    /// <summary>
+    /// An API controller that serves Open Rails data from an attached Viewer.
+    /// </summary>
     internal class ORTSApiController : WebApiController
     {
+        /// <summary>
+        /// The Viewer to serve train data from.
+        /// </summary>
         private readonly Viewer Viewer;
 
         public ORTSApiController(Viewer viewer)
@@ -182,8 +206,10 @@ namespace Orts.Viewer3D.WebServices
 
     /// <summary>
     /// This contract resolver fixes JSON serialization for certain XNA classes.
-    /// Many thanks to <a href="https://stackoverflow.com/a/44238343">Elliott Darfink on Stack Overflow</a>
     /// </summary>
+    /// <remarks>
+    /// Many thanks to <a href="https://stackoverflow.com/a/44238343">Elliott Darfink of Stack Overflow</a>.
+    /// </remarks>
     internal class XnaFriendlyResolver : DefaultContractResolver
     {
         protected override JsonContract CreateContract(Type objectType)
