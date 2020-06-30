@@ -143,8 +143,6 @@ namespace Orts.Simulation.RollingStocks
         public bool CabRadioOn;
         public bool OnLineCabRadio;
         public string OnLineCabRadioURL;
-        public bool Battery;
-        public bool PowerKey;
 
         // Water trough filling
         public bool HasWaterScoop = false; // indicates whether loco + tender have a water scoop or not
@@ -1021,8 +1019,6 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(SteamHeatController, outf);
             outf.Write(AcceptMUSignals);
             outf.Write(PowerReduction);
-            outf.Write(Battery);
-            outf.Write(PowerKey);
             outf.Write(ScoopIsBroken);
             outf.Write(IsWaterScoopDown);
             outf.Write(CurrentTrackSandBoxCapacityM3);
@@ -1063,8 +1059,6 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(SteamHeatController, inf);
             AcceptMUSignals = inf.ReadBoolean();
             PowerReduction = inf.ReadSingle();
-            Battery = inf.ReadBoolean();
-            PowerKey = inf.ReadBoolean();
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
@@ -1352,6 +1346,7 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             if (Train.IsActualPlayerTrain)
             {
+                TrainControlSystem.InitializeMoving();
                 TrainBrakeController.InitializeMoving();
                 BrakeSystem.LocoInitializeMoving();
             }
@@ -3550,20 +3545,6 @@ namespace Orts.Simulation.RollingStocks
             Simulator.Confirmer.Confirm(CabControl.CabLight, CabLightOn ? CabSetting.On : CabSetting.Off);
         }
 
-        public void ToggleBattery()
-        {
-            Battery = !Battery;
-            if (Battery) SignalEvent(Event.BatteryOn);
-            else SignalEvent(Event.BatteryOff);
-            if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.Battery, Battery ? CabSetting.On : CabSetting.Off);
-        }
-        public void TogglePowerKey()
-        {
-            PowerKey = !PowerKey;
-            if (PowerKey) SignalEvent(Event.PowerKeyOn);
-            else SignalEvent(Event.PowerKeyOff);
-            if (Simulator.PlayerLocomotive == this) Simulator.Confirmer.Confirm(CabControl.PowerKey, PowerKey ? CabSetting.On : CabSetting.Off);
-        }
         public void ToggleCabRadio( bool newState)
         {
             CabRadioOn = newState;
@@ -4500,12 +4481,6 @@ namespace Orts.Simulation.RollingStocks
                     break;
                 case CABViewControlTypes.ORTS_MIRRORS:
                     data = MirrorOpen ? 1 : 0;
-                    break;
-                case CABViewControlTypes.ORTS_BATTERY:
-                    data = Battery ? 1 : 0;
-                    break;
-                case CABViewControlTypes.ORTS_POWERKEY:
-                    data = PowerKey ? 1 : 0;
                     break;
                 case CABViewControlTypes.ORTS_HOURDIAL:
                     float hour = (float)(Simulator.ClockTime / 3600) % 12;
