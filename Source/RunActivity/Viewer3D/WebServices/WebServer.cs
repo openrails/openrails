@@ -82,6 +82,22 @@ namespace Orts.Viewer3D.WebServices
                     ContractResolver = new XnaFriendlyResolver()
                 }));
         }
+
+        /// <summary>
+        /// This contract resolver fixes JSON serialization for certain XNA classes.
+        /// </summary>
+        /// <remarks>
+        /// Many thanks to <a href="https://stackoverflow.com/a/44238343">Elliott Darfink of Stack Overflow</a>.
+        /// </remarks>
+        private class XnaFriendlyResolver : DefaultContractResolver
+        {
+            protected override JsonContract CreateContract(Type objectType)
+            {
+                if (objectType == typeof(Rectangle) || objectType == typeof(Point))
+                    return CreateObjectContract(objectType);
+                return base.CreateContract(objectType);
+            }
+        }
     }
 
     /// <summary>
@@ -202,21 +218,5 @@ namespace Orts.Viewer3D.WebServices
         [Route(HttpVerbs.Get, "/TRACKMONITOR")]
         public Train.TrainInfo TrackMonitor() => Viewer.PlayerTrain.GetTrainInfo();
         #endregion
-    }
-
-    /// <summary>
-    /// This contract resolver fixes JSON serialization for certain XNA classes.
-    /// </summary>
-    /// <remarks>
-    /// Many thanks to <a href="https://stackoverflow.com/a/44238343">Elliott Darfink of Stack Overflow</a>.
-    /// </remarks>
-    internal class XnaFriendlyResolver : DefaultContractResolver
-    {
-        protected override JsonContract CreateContract(Type objectType)
-        {
-            if (objectType == typeof(Rectangle) || objectType == typeof(Point))
-                return CreateObjectContract(objectType);
-            return base.CreateContract(objectType);
-        }
     }
 }
