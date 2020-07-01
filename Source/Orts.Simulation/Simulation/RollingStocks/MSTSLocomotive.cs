@@ -370,6 +370,8 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController DynamicBrakeController;
         public MSTSNotchController GearBoxController;
 
+        float PreviousGearBoxNotch;
+
         public float EngineBrakeIntervention = -1;
         public float TrainBrakeIntervention = -1;
         public float ThrottleIntervention = -1;
@@ -3044,6 +3046,26 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController.StartIncrease();
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
                 AlerterReset(TCSEvent.GearBoxChanged);
+
+                // Only activate sound event if notch has actually changed
+                if (GearBoxController.CurrentNotch != PreviousGearBoxNotch)
+                {
+                    if (GearBoxController.CurrentNotch == 0)
+                    {
+                        SignalEvent(Event.GearPosition0);
+                        PreviousGearBoxNotch = 0; // Update previous value for next time around
+                    }
+                    else if (GearBoxController.CurrentNotch == 1)
+                    {
+                        SignalEvent(Event.GearPosition1);
+                        PreviousGearBoxNotch = 1; // Update previous value for next time around
+                    }
+                    else
+                    {
+                        SignalEvent(Event.GearPosition2);
+                        PreviousGearBoxNotch = 2; // Update previous value for next time around
+                    }
+                }
             }
 
             ChangeGearUp();
@@ -3068,6 +3090,27 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController.StartDecrease();
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
                 AlerterReset(TCSEvent.GearBoxChanged);
+
+                // Only activate sound event if notch has actually changed
+                if (GearBoxController.CurrentNotch != PreviousGearBoxNotch)
+                {
+                    if (GearBoxController.CurrentNotch == 0)
+                    {
+                        SignalEvent(Event.GearPosition0);
+                        PreviousGearBoxNotch = 0; // Update previous value for next time around
+                    }
+                    else if (GearBoxController.CurrentNotch == 1)
+                    {
+                        SignalEvent(Event.GearPosition1);
+                        PreviousGearBoxNotch = 1; // Update previous value for next time around
+                    }
+                    else
+                    {
+                        SignalEvent(Event.GearPosition2);
+                        PreviousGearBoxNotch = 2; // Update previous value for next time around
+                    }
+                }
+
             }
 
             ChangeGearDown();
@@ -3091,6 +3134,8 @@ namespace Orts.Simulation.RollingStocks
                 //new GarBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
                 AlerterReset(TCSEvent.GearBoxChanged);
+
+                Trace.TraceInformation("Gear Box Change - Value {0} oldvalue {1} change {2}", value, oldValue, change);
             }
             if (oldValue != controller.CurrentValue)
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
