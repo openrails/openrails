@@ -3118,8 +3118,6 @@ namespace Orts.Simulation.RollingStocks
                 //new GarBoxCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
                 SignalEvent(change > 0 ? Event.GearUp : Event.GearDown);
                 AlerterReset(TCSEvent.GearBoxChanged);
-
-                Trace.TraceInformation("Gear Box Change - Value {0} oldvalue {1} change {2}", value, oldValue, change);
             }
             if (oldValue != controller.CurrentValue)
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
