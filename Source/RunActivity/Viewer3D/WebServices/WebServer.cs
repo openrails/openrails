@@ -220,5 +220,11 @@ namespace Orts.Viewer3D.WebServices
         [Route(HttpVerbs.Get, "/TRACKMONITOR")]
         public Train.TrainInfo TrackMonitor() => Viewer.PlayerTrain.GetTrainInfo();
         #endregion
+
+
+        #region /API/TRAINDRIVINGDISPLAY
+        [Route(HttpVerbs.Get, "/TRAINDRIVINGDISPLAY")]
+        public IEnumerable<TrainDrivingDisplay.ListLabel> TrainDrivingDisplay() => Viewer.TrainDrivingDisplayList();
+        #endregion
     }
 }

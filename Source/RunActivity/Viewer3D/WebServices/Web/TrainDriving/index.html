@@ -19,21 +19,21 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <html lang="en">
 <head>
-	<meta charset="utf-8"/>
-	<meta name="viewport" content="width=device-width, initial-scale=1"><!-- adds zooming for mobiles -->
-	<title>Open Rails - Web Interface</title>
-	<link rel="shortcut icon" type="image/png" href="or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
-  <link rel="stylesheet" type="text/css" href="index.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- adds zooming for mobiles -->
+  <title>OR: Train Driving API</title>
+  <link rel="shortcut icon" type="image/png" href="/or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
+  <link rel="stylesheet" type="text/css" href="/index.css"><!-- share styles with home page -->
+	<link rel="stylesheet" type="text/css" href="index.css">
 </head>
 
-<body>
-	<img src=or_logo.png/>
-	<h1>Open Rails - Web Interface</h1>
-	<ul>
-	  <li><a href="/TrackMonitor/index.html">Track Monitor (F4)</a></li>
-	  <li><a href="/TrainDriving/index.html">Train Driving (Ctrl+F5)</a></li>
-	  <li><a href="/HUD/index.html">Head Up Display (F5)</a></li>
-	  <li><a href="/APISample/index.html">API Sample</a></li>
-	</ul>
+<body id="body" onload="setInterval (ApiTrainDriving, 500)">
+  <div id=menu><a href="/">Back to Menu</a></div>
+  <div>
+    <br/>
+    <button class="button" onclick="changePageColor()" id="buttonDN">Day</button>
+    <table class="border" id="TrainDriving"></table>
+  </div>
+  <script src="index.js"></script>
 </body>
 </html>
