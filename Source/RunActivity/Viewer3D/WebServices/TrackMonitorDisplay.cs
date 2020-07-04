@@ -152,6 +152,10 @@ namespace Orts.Viewer3D.WebServices
             public static readonly Rectangle EndAuthoritySprite = new Rectangle(0, 0, 24, 24);
             public static readonly Rectangle OppositeTrainForwardSprite = new Rectangle(24, 120, 24, 24);
             public static readonly Rectangle OppositeTrainBackwardSprite = new Rectangle(0, 120, 24, 24);
+            public static readonly Rectangle LeftArrowSprite = new Rectangle(0, 168, 24, 24);
+            public static readonly Rectangle RightArrowSprite = new Rectangle(24, 168, 24, 24);
+            public static readonly Rectangle ReversalSprite = new Rectangle(0, 24, 24, 24);
+            public static readonly Rectangle InvalidReversalSprite = new Rectangle(24, 144, 24, 24);
             public static readonly Dictionary<TrainPosition, Rectangle> TrainPositionSprite = new Dictionary<TrainPosition, Rectangle>
             {
                 { TrainPosition.AutoForwards, new Rectangle(0, 72, 24, 24) },
@@ -977,6 +981,7 @@ namespace Orts.Viewer3D.WebServices
             public override ListLabel TransformLabel(ListLabel dataCol)
             {
                 dataCol.TrackCol = Item.IsRightSwitch ? Symbols.RightArrowWS : Symbols.LeftArrowWS;
+                dataCol.TrackColItem = Item.IsRightSwitch ? Sprites.RightArrowSprite : Sprites.LeftArrowSprite;
                 return dataCol;
             }
         }
@@ -993,16 +998,20 @@ namespace Orts.Viewer3D.WebServices
             public override ListLabel TransformLabel(ListLabel dataCol)
             {
                 string symbol;
+                Rectangle sprite;
                 if (Item.Valid)
                 {
                     Color color = Item.Enabled ? Color.LightGreen : Color.White;
                     symbol = $"{Symbols.ReversalWS}{ColorCode[color]}";
+                    sprite = Sprites.ReversalSprite;
                 }
                 else
                 {
                     symbol = Symbols.InvalidReversalWS;
+                    sprite = Sprites.InvalidReversalSprite;
                 }
                 dataCol.TrackCol = symbol;
+                dataCol.TrackColItem = sprite;
                 return dataCol;
             }
         }
