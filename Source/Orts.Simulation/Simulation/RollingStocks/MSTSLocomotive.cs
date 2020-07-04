@@ -1026,6 +1026,7 @@ namespace Orts.Simulation.RollingStocks
             base.Save(outf);
 
             TrainControlSystem.Save(outf);
+            LocomotiveAxle.Save(outf);
         }
 
         /// <summary>
@@ -1068,6 +1069,7 @@ namespace Orts.Simulation.RollingStocks
             base.Restore(inf);
 
             TrainControlSystem.Restore(inf);
+            LocomotiveAxle = new Axle(inf);
         }
 
         public bool IsLeadLocomotive()
