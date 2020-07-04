@@ -31,7 +31,7 @@ let signalPng = new Array();
 const trackMonitorImages="TrackMonitorImages.png";
 let trackPng = new Array();
 
-function ApiGet(path) {
+async function ApiGet(path) {
 	return new Promise((resolve, reject) => {
 		let hr = new XMLHttpRequest();
 		hr.open("GET", `/API/${path}`, true);
@@ -187,10 +187,8 @@ async function ApiTrackMonitor() {
 
 				// third col = TrackCol data
 				if (row > 12 && data.TrackCol.indexOf("││") == -1) {
-					let imagePath = trackMonitorImages;
 					let size = 24;
-					await DisplayPng(row, imagePath, data.TrackColItem);
-					Str += `<td><img src='${trackPng[row]}' width ='${size}' height ='${size}' style='background-color:black' /></td>`;
+					Str += `<td><img src='${await DrawPng(trackMonitorImages, data.TrackColItem)}' width ='${size}' height ='${size}' style='background-color:black' /></td>`;
 					Str += "<td></td>";
 				}
 				else {
@@ -210,10 +208,8 @@ async function ApiTrackMonitor() {
 
 					// sixth col = SignalCol data
 					if (row > 12 && data.SignalCol.length > 1) {
-						let imagePath = signalAspectsImages;
 						let size = 16;
-						await DisplayPng(row, imagePath, data.SignalColItem);
-						Str += `<td><img src='${signalPng[row]}' width ='${size}' height ='${size}'/></td>`;
+						Str += `<td><img src='${await DrawPng(signalAspectsImages, data.SignalColItem)}' width ='${size}' height ='${size}'/></td>`;
 					}
 					else {
 						Str += DisplayItem('center', 1, signalColor, stringColorSignal, signalColor ? newDataSignal : data.SignalCol, false);
@@ -229,24 +225,34 @@ async function ApiTrackMonitor() {
 	TrackMonitor.innerHTML = Str;
 }
 
-async function DisplayPng(row, imagePath, rect) {
-	if (rect.Width === 0 || rect.Height === 0)
-		return;
-	let cv = document.getElementById( imagePath.indexOf("TrackMonitorImages.png") != -1? 'cvtrack' : 'cvsignal');
-	let ctx = cv.getContext('2d');
-	let img= new Image();
-	img.src = imagePath;
-	await new Promise((resolve, _) => {
-		img.onload = resolve;
-	});
-	ctx.drawImage(img, rect.X, rect.Y, rect.Width, rect.Height, 0, 0, rect.Width, rect.Height);
-	if(imagePath.indexOf("TrackMonitorImages.png") != -1){
-		trackPng[row] = cv.toDataURL("image/png");//track symbol
-	} else{
-		signalPng[row] = cv.toDataURL("image/png");//signal sumbol
-	}
-	ctx.clearRect(0, 0, cv.width, cv.height);
+let pngCanvas = null;
+async function DrawPng(imagePath, rect) {
+	if (pngCanvas === null)
+		pngCanvas = document.createElement("canvas");
+	let cv = pngCanvas;
+	cv.width = rect.Width;
+	cv.height = rect.Height;
+	let ctx = cv.getContext("2d");
+	ctx.drawImage(await DownloadImage(imagePath), rect.X, rect.Y, rect.Width, rect.Height, 0, 0, rect.Width, rect.Height);
+	return cv.toDataURL("image/png");
 };
+
+let images = {};
+async function DownloadImage(path) {
+	if (path in images) {
+		return images[path];
+	} else {
+		return new Promise((resolve, reject) => {
+			let image = new Image();
+			image.onload = () => {
+				images[path] = image;
+				resolve(image);
+			};
+			image.onerror = reject;
+			image.src = path;
+		});
+    }
+}
 
 function DisplayItem(alignment, colspanvalue, isColor, colorCode, item, small){
 	return `<td align='${alignment}' colspan='${colspanvalue}' ColorCode=${isColor? colorCode : ''}>${small? item.small() : item}</td>`;
