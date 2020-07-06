@@ -37,7 +37,7 @@ Bulletin boards provide support for Open Rails, offering forums and file downloa
 </p><p>
 These boards have forums and files dedicated to Open Rails:</p>
 <ul>
-  <li><a href="http://www.elvastower.com" target="_blank" title="(Open Rails forums are public, others require membership.)">Elvas Tower</a> - International and American</li>
+  <li><a href="http://www.elvastower.com" target="_blank" title="(Open Rails forums are public, others require membership.)">Elvas Tower</a> - International and American and <br/>also the <a href="http://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/">home of the Open Rails Project Team</a></li>
   <li><a href="http://www.trainsim.com" target="_blank">TrainSim</a> - International and American</li>
   <li><a href="http://www.railpage.com.au" target="_blank">Rail Page</a> - Australian</li>
   <li><a href="http://forums.railvictoria.net/viewforum.php?f=48" target="_blank">Rail Victoria Forums</a> - Australian</li>
