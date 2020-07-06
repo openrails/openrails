@@ -76,11 +76,13 @@ namespace Orts.Viewer3D.WebServices
         private static async Task SerializationCallback(IHttpContext context, object data)
         {
             using (var text = context.OpenResponseText(new UTF8Encoding()))
+            {
                 await text.WriteAsync(JsonConvert.SerializeObject(data, new JsonSerializerSettings()
                 {
                     Formatting = Formatting.Indented,
                     ContractResolver = new XnaFriendlyResolver()
                 }));
+            }
         }
 
         /// <summary>
