@@ -198,7 +198,7 @@ namespace Orts.Viewer3D.WebServices
             Popups.HUDWindow.TableData hudTable = Viewer.HUDWindow.PrepareTable(pageNo);
             int nRows = hudTable.Cells.GetLength(0);
             int nCols = hudTable.Cells.GetLength(1);
-            IEnumerable<string> getValues()
+            IEnumerable<string> GetValues()
             {
                 foreach (int r in Enumerable.Range(0, nRows))
                     foreach (int c in Enumerable.Range(0, nCols))
@@ -208,7 +208,7 @@ namespace Orts.Viewer3D.WebServices
             {
                 nRows = nRows,
                 nCols = nCols,
-                values = getValues().ToArray()
+                values = GetValues().ToArray()
             };
         }
         #endregion
