@@ -1233,11 +1233,11 @@ namespace Orts.Simulation.RollingStocks
                                 {
                                     if (Train.IsFreight)
                                     {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You are travelling too fast for this curve. Slow down, your freight car " + CarID + " may be damaged. The recommended speed for this curve is " + FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
+                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your freight car {0} may be damaged. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
                                     }
                                     else
                                     {
-                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetString("You are travelling too fast for this curve. Slow down, your passengers in car " + CarID + " are feeling uncomfortable. The recommended speed for this curve is " + FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric) ));
+                                        Simulator.Confirmer.Message(ConfirmLevel.Warning, Simulator.Catalog.GetStringFmt("You are travelling too fast for this curve. Slow down, your passengers in car {0} are feeling uncomfortable. The recommended speed for this curve is {1}", CarID, FormatStrings.FormatSpeedDisplay(MaxSafeCurveSpeedMps, IsMetric))); ;
                                     }
 
                                     if (dbfmaxsafecurvespeedmps != MaxSafeCurveSpeedMps)//Debrief eval
@@ -1528,6 +1528,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(SteamHoseLeakRateRandom);
             outf.Write(CarHeatCurrentCompartmentHeatW);
             outf.Write(CarSteamHeatMainPipeSteamPressurePSI);
+            outf.Write(CarHeatCompartmentHeaterOn);
         }
 
         // Game restore
@@ -1550,6 +1551,7 @@ namespace Orts.Simulation.RollingStocks
             SteamHoseLeakRateRandom = inf.ReadSingle();
             CarHeatCurrentCompartmentHeatW = inf.ReadSingle();
             CarSteamHeatMainPipeSteamPressurePSI = inf.ReadSingle();
+            CarHeatCompartmentHeaterOn = inf.ReadBoolean();
         }
 
         //================================================================================================//

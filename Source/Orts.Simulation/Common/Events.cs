@@ -107,6 +107,7 @@ namespace Orts.Common
         SanderOff,
         SanderOn,
         SemaphoreArm,
+        LargeEjectorChange,
         SmallEjectorChange,
         WaterInjector1Off,
         WaterInjector1On,
@@ -180,7 +181,15 @@ namespace Orts.Common
         HotBoxBearingOff,
 
         BoilerBlowdownOn,
-        BoilerBlowdownOff
+        BoilerBlowdownOff,
+
+        SteamGearLeverToggle,
+        AIFiremanSoundOn,
+        AIFiremanSoundOff,
+
+        GearPosition0,
+        GearPosition1,
+        GearPosition2,
     }
 
     public static class Events
@@ -333,6 +342,10 @@ namespace Orts.Common
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
 
+                        case 147: return Event.SteamGearLeverToggle;
+                        case 148: return Event.AIFiremanSoundOn;
+                        case 149: return Event.AIFiremanSoundOff;
+
                         case 150: return Event.CircuitBreakerOpen;
                         case 151: return Event.CircuitBreakerClosing;
                         case 152: return Event.CircuitBreakerClosed;
@@ -343,6 +356,7 @@ namespace Orts.Common
                         case 157: return Event.CircuitBreakerClosingAuthorizationOn;
                         case 158: return Event.CircuitBreakerClosingAuthorizationOff;
 
+                        case 159: return Event.LargeEjectorChange;
                         case 160: return Event.SmallEjectorChange;
 
                         case 161: return Event.CabLightSwitchToggle;
@@ -376,6 +390,11 @@ namespace Orts.Common
                         case 187: return Event.GenericEvent7;
                         case 188: return Event.GenericEvent8;
                         //
+
+
+                        case 200: return Event.GearPosition0;
+                        case 201: return Event.GearPosition1;
+                        case 202: return Event.GearPosition2;
 
                         default: return 0;
                     }

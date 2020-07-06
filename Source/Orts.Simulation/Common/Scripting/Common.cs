@@ -85,4 +85,22 @@ namespace ORTS.Scripting.Api
             CurrentValue = asc.DistanceM;
         }
     }
+
+    public class Blinker
+    {
+        float StartValue;
+        protected Func<float> CurrentValue;
+
+        public float FrequencyHz { get; private set; }
+        public bool Started { get; private set; }
+        public void Setup(float frequencyHz) { FrequencyHz = frequencyHz; }
+        public void Start() { StartValue = CurrentValue(); Started = true; }
+        public void Stop() { Started = false; }
+        public bool On { get { return Started && ((CurrentValue() - StartValue) % (1f / FrequencyHz)) * FrequencyHz * 2f < 1f; } }
+
+        public Blinker(AbstractScriptClass asc)
+        {
+            CurrentValue = asc.GameTime;
+        }
+    }
 }

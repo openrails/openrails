@@ -391,6 +391,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
+        // This calculates the percent of running power. If the locomotive has two prime movers, and 
+        // one is shut down then power will be reduced by the size of the prime mover
+        public float RunningPowerFraction
+        {
+            get
+            {
+                float totalpossiblepower = 0;
+                float runningPower = 0;
+                float percent = 0;
+                foreach (DieselEngine eng in DEList)
+                {
+                    totalpossiblepower += eng.MaximumDieselPowerW;
+                    if (eng.EngineStatus == DieselEngine.Status.Running)
+                    {
+                        runningPower += eng.MaximumDieselPowerW;
+                    }
+                }
+                percent = runningPower / totalpossiblepower;
+                return percent;
+            }
+        }
     }
 
     public class DieselEnum : IEnumerator
@@ -830,7 +851,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     case "exhausttransientcolor": ExhaustTransientColor.PackedValue = stf.ReadHexBlock(Color.Black.PackedValue);initLevel |= SettingsFlags.ExhaustTransientColor; break;
                     case "dieselpowertab": DieselPowerTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselPowerTab; break;
                     case "dieselconsumptiontab": DieselConsumptionTab = new Interpolator(stf);initLevel |= SettingsFlags.DieselConsumptionTab; break;
-                    case "throttlerpmtab": ThrottleRPMTab = new Interpolator(stf); initLevel |= SettingsFlags.ThrottleRPMTab; break;
+                    case "throttlerpmtab":
+                        ThrottleRPMTab = new Interpolator(stf);
+                        initLevel |= SettingsFlags.ThrottleRPMTab;
+                        // This prevents rpm values being exactly the same for different throttle rates, as when this table is reversed, OR is unable to correctly determine a correct apparent throttle value.
+                        // TO DO - would be good to be able to handle rpm values the same, and -ve if possible.
+                        var size = ThrottleRPMTab.GetSize();
+                        var precY = ThrottleRPMTab.Y[0];
+                        for (int i = 1; i < size; i++)
+                        {
+                            if (ThrottleRPMTab.Y[i] <= precY) ThrottleRPMTab.Y[i] = precY + 1;
+                            precY = ThrottleRPMTab.Y[i];
+                        }
+                        break;
                     case "dieseltorquetab": DieselTorqueTab = new Interpolator(stf); initLevel |= SettingsFlags.DieselTorqueTab; break;
                     case "minoilpressure": DieselMinOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 0); initLevel |= SettingsFlags.MinOilPressure; break;
                     case "maxoilpressure": DieselMaxOilPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, 0); initLevel |= SettingsFlags.MaxOilPressure; break;
@@ -956,7 +989,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             {
                 ApparentThrottleSetting = 100.0f;
             }
-
+            
             if (DieselPowerTab != null)
             {
                 CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximumDieselPowerW * (1 - locomotive.PowerReduction));

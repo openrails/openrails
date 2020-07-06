@@ -61,10 +61,11 @@ number should be used instead of zero.
 
 When a car is pulled from steady state, an additional force is needed due
 to higher bearing forces. The situation is simplified by using a different
-calculation at low speed (5 mph and lower). Empirical static friction
-forces are used for different classes of mass (under 10 tons, 10 to 100
+calculation at low speed (``ORTSMergeSpeed`` and lower). Empirical static
+friction forces are used for different classes of mass (under 10 tons, 10 to 100
 tons and above 100 tons). In addition, if weather conditions are poor
-(snowing is set), the static friction is increased.
+(snowing is set), the static friction is increased. This low-speed friction
+force can be manually specified with ``ORTSStandstillFriction``.
 
 When running on a curve and if the
 :ref:`Curve dependent resistance <options-curve-resistance>` option is
@@ -290,7 +291,13 @@ Typically this is linked to a particular speed (see next parameter).
 will be applied.
 
 ``MaxVelocity`` ==> is the maximum rated design speed of the locomotive. 
-Typically beyond this speed power output of the locomotive will decrease.
+Some locomotives had a speed alarm which applied the brakes, or set the throttle 
+to a lower value. This can be modelled using a the OverspeedMonitor function.
+
+``ORTSUnloadingSpeed`` ==> is the locomotive speed when the generator reaches 
+its maximum voltage, and due to the speed of the train, the engine starts 
+to 'unload'. Typically beyond this speed, power output of the locomotive 
+will decrease.
 
 If using power/force Tables, then some of the above values will not be 
 required, see the sections below for details.
@@ -2133,8 +2140,8 @@ wagon section of the WAG or ENG file.
 - ``wagon(ORTSBrakeShoeFriction`` -- defines the friction curve for the brake shoe
   with speed (default curve for cast iron brake shoes included in OR).
 
-Other standard brake parameters such as MaxBrakeForce, MaxReleaseRate , MaxApplicationRate,
-BrakeCylinderPressureForMaxBrakeBrakeForce can be used as well.
+Other standard brake parameters such as ``MaxBrakeForce``, ``MaxReleaseRate``, ``MaxApplicationRate``,
+``BrakeCylinderPressureForMaxBrakeBrakeForce`` can be used as well.
 
 Additionaly the following are defined in the engine section of the ENG file:
 
@@ -2167,22 +2174,37 @@ Additionaly the following are defined in the engine section of the ENG file:
 
 **Note: It is strongly recommended that UoM be used whenever units such as InHg, etc are specificed in the above parameters.**
 
-Other standard brake parameters such as VacuumBrakesHasVacuumPump, VacuumBrakesMinBoilerPressureMaxVacuum,
-VacuumBrakesSmallEjectorUsageRate, VacuumBrakesLargeEjectorUsageRate can be defined as well.
+Other standard brake parameters such as ``VacuumBrakesHasVacuumPump``, ``VacuumBrakesMinBoilerPressureMaxVacuum``,
+``VacuumBrakesSmallEjectorUsageRate``, ``VacuumBrakesLargeEjectorUsageRate`` can be defined as well.
 
 When defining the Brake Controllers for vacuum braked locomotives, only the following BrakesController
-tokens should be used - TrainBrakesControllerFullQuickReleaseStart, TrainBrakesControllerReleaseStart,
-TrainBrakesControllerRunningStart, TrainBrakesControllerApplyStart, TrainBrakesControllerHoldLappedStart,
-TrainBrakesControllerVacuumContinuousServiceStart, TrainBrakesControllerEmergencyStart,
-EngineBrakesControllerReleaseStart, EngineBrakesControllerRunningStart, EngineBrakesControllerApplyStart.
+tokens should be used - ``TrainBrakesControllerFullQuickReleaseStart``, ``TrainBrakesControllerReleaseStart``,
+``TrainBrakesControllerRunningStart``, ``TrainBrakesControllerApplyStart``, ``TrainBrakesControllerHoldLappedStart``,
+``TrainBrakesControllerVacuumContinuousServiceStart``, ``TrainBrakesControllerEmergencyStart``,
+``EngineBrakesControllerReleaseStart``, ``EngineBrakesControllerRunningStart``, ``EngineBrakesControllerApplyStart``.
 
 If ``TrainPipeLeakRate`` has been set in the ENG file, then the small ejector will be required to offset the leakage
-in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase the level of operation of the small ejector.
+in the Brake Pipe. The *J* and *Shft-J* keys can be used to increase/decrease the level of operation of the small ejector.
 
 An engine controller can be configured to customise the operation of the small ejector. This controller is called
 ``ORTSSmallEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller.
 
-Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted to air braked locomotives.
+An engine controller can also be configured to customise the operation of the large ejector. This controller is called
+``ORTSLargeEjector ( w, x, y, z )``, and will be set up as a standard 4 value controller. The large ejector needs to 
+be operated to release the brakes. The *Alt-J* and *Ctrl-J* keys can be used to decrease/increase the level of 
+operation of the large ejector.
+
+In diesel and electric locomotives, the Vacuum Exhauster preforms a similar function to the small and large ejector, 
+but in an "automated" fashion. The *J* key can be used to run the vacuum exhauster at high speed to facilitate a 
+quicker release of the brakes. An engine controller called ``ORTSFastVacuumExhauster ( x y z )``, and will be set 
+up as a standard 3 value controller.
+
+If it is not desired to operate the large ejector, a simplified brake operation can be used by selecting the 
+"Simple Contol and Physics" option in the options menu (Simulator TAB). This option can also be used if there is a 
+"mismatch" between the locomotive and car brakes to set a standard default set of brakes.
+
+Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted 
+to air braked locomotives.
 
 
 

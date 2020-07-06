@@ -110,6 +110,8 @@ namespace ORTS.Settings
         public string Multiplayer_Host { get; set; }
         [Default(30000)]
         public int Multiplayer_Port { get; set; }
+        [Default(true)]
+        public bool IsModeActivity { get; set; } // false indicates Timetable mode
 
         // General settings:
 
@@ -188,6 +190,9 @@ namespace ORTS.Settings
         public int DayAmbientLight { get; set; }
 
         // Simulation settings:
+
+        [Default(false)]
+        public bool SimpleControlPhysics { get; set; }
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }
         [Default(10)]
@@ -448,7 +453,10 @@ namespace ORTS.Settings
         {
             foreach (var property in GetProperties())
                 if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
+                {
+                    Console.WriteLine(property.Name, property.PropertyType);
                     Save(property.Name, property.PropertyType);
+                }
 
             Folders.Save();
             Input.Save();

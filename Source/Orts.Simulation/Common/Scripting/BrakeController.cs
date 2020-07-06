@@ -214,7 +214,9 @@ namespace ORTS.Scripting.Api
         EBPB,               // Emergency Braking Push Button
         TCSEmergency,       // TCS Emergency Braking
         TCSFullServ,        // TCS Full Service Braking
-        VacContServ         // TrainBrakesControllerVacuumContinuousServiceStart
+        VacContServ,         // TrainBrakesControllerVacuumContinuousServiceStart
+        VacApplyContServ,    // TrainBrakesControllerVacuumApplyContinuousServiceStart
+        BrakeNotch           // EngineBrakesControllerBrakeNotchStart
     };
 
     public static class ControllerStateDictionary
@@ -244,7 +246,9 @@ namespace ORTS.Scripting.Api
             {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
             {ControllerState.TCSEmergency, Catalog.GetString("TCS Emergency Braking")},
             {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")},
-            {ControllerState.VacContServ, Catalog.GetString("Vac. Cont. Service")}
+            {ControllerState.VacContServ, Catalog.GetString("Vac. Cont. Service")},
+            {ControllerState.VacApplyContServ, Catalog.GetString("Vac. Apply Cont. Service")},
+            {ControllerState.BrakeNotch, Catalog.GetString("Notch")}
         };
     }
 }
