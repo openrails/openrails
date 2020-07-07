@@ -1810,39 +1810,34 @@ namespace Orts.Viewer3D
         [CallOnThread("Render")]
         void SaveScreenshotToFile(GraphicsDevice graphicsDevice, string fileName, bool silent)
         {
-            int width, height;
-            uint[] image;
-            using (var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color))
-            {
-                graphicsDevice.ResolveBackBuffer(screenshot);
-                width = screenshot.Width;
-                height = screenshot.Height;
-                image = new uint[width * height];
-                screenshot.GetData(image);
-            }
+            var screenshot = new ResolveTexture2D(graphicsDevice, graphicsDevice.PresentationParameters.BackBufferWidth, graphicsDevice.PresentationParameters.BackBufferHeight, 1, SurfaceFormat.Color);
+            graphicsDevice.ResolveBackBuffer(screenshot);
             new Thread(() =>
             {
-                // Unfortunately, the back buffer includes an alpha channel. Although saving this might seem okay,
-                // it actually ruins the picture - nothing in the back buffer is seen on-screen according to its
-                // alpha, it's only used for blending (if at all). We'll remove the alpha here.
-                foreach (int i in Enumerable.Range(0, image.Length))
-                    image[i] |= 0xFF000000;
-                var texture = new Texture2D(graphicsDevice, width, height);
-                texture.SetData(image);
                 try
                 {
-                    texture.Save(fileName, ImageFileFormat.Png);
+                    // Unfortunately, the back buffer includes an alpha channel. Although saving this might seem okay,
+                    // it actually ruins the picture - nothing in the back buffer is seen on-screen according to its
+                    // alpha, it's only used for blending (if at all). We'll remove the alpha here.
+                    var data = new uint[screenshot.Width * screenshot.Height];
+                    screenshot.GetData(data);
+                    for (var i = 0; i < data.Length; i++)
+                        data[i] |= 0xFF000000;
+                    screenshot.SetData(data);
+
+                    // Now save the modified image.
+                    screenshot.Save(fileName, ImageFileFormat.Png);
+                    screenshot.Dispose();
+
+                    if (!silent)
+                        MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
+
+                    Visibility = VisibilityState.Visible;
+                    // Reveal MessageWindow
+                    MessagesWindow.Visible = true;
                 }
                 catch { }
-                finally
-                {
-                    Visibility = VisibilityState.Visible; // Notify the caller the screenshot has finished saving.
-                }
             }).Start();
-
-            if (!silent)
-                MessagesWindow.AddMessage($"Saving screenshot to '{fileName}'.", 10);
-            MessagesWindow.Visible = true; // Reveal MessageWindow
         }
     }
 }
