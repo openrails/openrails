@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using Microsoft.Xna.Framework.Input;
+using Orts.MultiPlayer;
 using ORTS.Common;
 using System.Linq;
 
@@ -93,46 +94,37 @@ namespace Orts.Viewer3D.Popups
             //we need to send message out
             if (EnterReceived == true)
             {
+                string user = "";
+                if (MPManager.Instance().lastSender == "") //server will broadcast the message to everyone
+                    user = MPManager.IsServer() ? string.Join("", MPManager.OnlineTrains.Players.Keys.Select((string k) => $"{k}\r")) + "0END" : "0Server\r0END";
+
+                int index = Message.Text.IndexOf(':');
+                string msg = Message.Text;
+                if (index > 0)
+                {
+                    msg = Message.Text.Remove(0, index + 1);
+                    var onlinePlayers = Message.Text.Substring(0, index)
+                        .Split(',')
+                        .Select((string n) => n.Trim())
+                        .Where((string nt) => MPManager.OnlineTrains.Players.ContainsKey(nt))
+                        .Select((string nt) => $"{nt}\r");
+                    string newUser = string.Join("", onlinePlayers);
+                    if (newUser != "")
+                        user = newUser;
+                    user += "0END";
+                }
+                string msgText = new MSGText(MPManager.GetUserName(), user, msg).ToString();
                 try
                 {
-                    var user = "";
-                    if (Orts.MultiPlayer.MPManager.Instance().lastSender == "")
-                    {
-                        //server will broadcast the message to everyone
-                        if (Orts.MultiPlayer.MPManager.IsServer())
-                        {
-                            foreach (var p in Orts.MultiPlayer.MPManager.OnlineTrains.Players)
-                            {
-                                user += p.Key + "\r";
-                            }
-                            user += "0END";
-
-                        }
-                        else user = "0Server\r0END";
-                    }
-                    var index = Message.Text.IndexOf(':');
-                    var msg = Message.Text;
-                    if (index > 0)
-                    {
-                        msg = Message.Text.Remove(0, index + 1);
-                        var str = Message.Text.Substring(0, index);
-                        var names = str.Split(',');
-                        var first = true;
-                        foreach (var n in names)
-                        {
-                            if (Orts.MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(n.Trim()))
-                            {
-                                if (first) { user = ""; first = false; }
-                                user += n.Trim() + "\r";
-                            }
-                        }
-                        user += "0END";
-                    }
-                    Orts.MultiPlayer.MPManager.Notify((new Orts.MultiPlayer.MSGText(Orts.MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-                    this.Visible = false;
-                    UserInput.ComposingMessage = false; Message.Text = "";
+                    MPManager.Notify(msgText);
                 }
                 catch { }
+                finally
+                {
+                    Visible = false;
+                    UserInput.ComposingMessage = false;
+                    Message.Text = "";
+                }
             }
         }
         protected override ControlLayout Layout(ControlLayout layout)

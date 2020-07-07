@@ -332,28 +332,35 @@ namespace Orts.Viewer3D
         public virtual void Update(ElapsedTime elapsedTime)
         {
             Time += elapsedTime.ClockSeconds;
+            var manager = MPManager.Instance();
 
-            if (MPManager.IsClient() && MPManager.Instance().weatherChanged)
+            if (MPManager.IsClient() && manager.weatherChanged)
             {
                 // Multiplayer weather has changed so we need to update our state to match weather, overcastFactor, pricipitationIntensity and fogDistance.
-                if (MPManager.Instance().weather >= 0 && MPManager.Instance().weather != (int)Viewer.Simulator.WeatherType) { Viewer.Simulator.WeatherType = (Orts.Formats.Msts.WeatherType)MPManager.Instance().weather; UpdateWeatherParameters(); }
-                if (MPManager.Instance().overcastFactor >= 0) Weather.OvercastFactor = MPManager.Instance().overcastFactor;
-                if (MPManager.Instance().pricipitationIntensity >= 0) { Weather.PricipitationIntensityPPSPM2 = MPManager.Instance().pricipitationIntensity; UpdateVolume(); }
-                if (MPManager.Instance().fogDistance >= 0) Weather.FogDistance = MPManager.Instance().fogDistance;
+                if (manager.weather >= 0 && manager.weather != (int)Viewer.Simulator.WeatherType)
+                {
+                    Viewer.Simulator.WeatherType = (Orts.Formats.Msts.WeatherType)manager.weather;
+                    UpdateWeatherParameters();
+                }
+                if (manager.overcastFactor >= 0)
+                    Weather.OvercastFactor = manager.overcastFactor;
+                if (manager.pricipitationIntensity >= 0)
+                {
+                    Weather.PricipitationIntensityPPSPM2 = manager.pricipitationIntensity;
+                    UpdateVolume();
+                }
+                if (manager.fogDistance >= 0)
+                    Weather.FogDistance = manager.fogDistance;
 
                 // Reset the message now that we've applied all the changes.
-                try
+                if ((manager.weather >= 0 && manager.weather != (int)Viewer.Simulator.WeatherType) || manager.overcastFactor >= 0 || manager.pricipitationIntensity >= 0 || manager.fogDistance >= 0)
                 {
-                    if ((MPManager.Instance().weather >= 0 && MPManager.Instance().weather != (int)Viewer.Simulator.WeatherType) || MPManager.Instance().overcastFactor >= 0 || MPManager.Instance().pricipitationIntensity >= 0 || MPManager.Instance().fogDistance >= 0)
-                    {
-                        MPManager.Instance().weatherChanged = false;
-                        MPManager.Instance().weather = -1;
-                        MPManager.Instance().overcastFactor = -1;
-                        MPManager.Instance().pricipitationIntensity = -1;
-                        MPManager.Instance().fogDistance = -1;
-                    }
+                    manager.weatherChanged = false;
+                    manager.weather = -1;
+                    manager.overcastFactor = -1;
+                    manager.pricipitationIntensity = -1;
+                    manager.fogDistance = -1;
                 }
-                catch { }
             }
 
             else if (!MPManager.IsClient())
@@ -501,7 +508,7 @@ namespace Orts.Viewer3D
                     || UserInput.IsReleased(UserCommand.DebugPrecipitationIncrease) || UserInput.IsReleased(UserCommand.DebugPrecipitationDecrease)
                     || UserInput.IsReleased(UserCommand.DebugFogIncrease) || UserInput.IsReleased(UserCommand.DebugFogDecrease))
                 {
-                    MPManager.Instance().SetEnvInfo(Weather.OvercastFactor, Weather.FogDistance);
+                    manager.SetEnvInfo(Weather.OvercastFactor, Weather.FogDistance);
                     MPManager.Notify((new MSGWeather(-1, Weather.OvercastFactor, Weather.PricipitationIntensityPPSPM2, Weather.FogDistance)).ToString());
                 }
             }
