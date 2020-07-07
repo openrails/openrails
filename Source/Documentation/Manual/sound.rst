@@ -265,6 +265,16 @@ Trigger       Function
 172           Pantograph4Down
 =========     =====================================
 
+The following triggers are used to activate the gear positions:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+200           GearPosition0
+201           GearPosition1
+202           GearPosition2
+=========     =====================================
+
 Variable Triggers
 -----------------
 
