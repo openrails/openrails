@@ -28,8 +28,6 @@ namespace Orts.Viewer3D.WebServices
 {
     public static class TrainDrivingDisplay
     {
-        public static bool NormalTextMode = true;
-
         /// <summary>
         /// A Train Driving row with data fields.
         /// </summary>
@@ -131,7 +129,7 @@ namespace Orts.Viewer3D.WebServices
         /// Sanitize the fields of a <see cref="ListLabel"/> in-place.
         /// </summary>
         /// <param name="label">A reference to the <see cref="ListLabel"/> to check.</param>
-        private static void CheckLabel(ref ListLabel label)
+        private static void CheckLabel(ref ListLabel label, bool normalMode)
         {
             void CheckString(ref string s) => s = s ?? "";
             CheckString(ref label.FirstCol);
@@ -139,7 +137,7 @@ namespace Orts.Viewer3D.WebServices
             CheckString(ref label.SymbolCol);
             CheckString(ref label.KeyPressed);
 
-            if (!NormalTextMode)
+            if (!normalMode)
             {
                 foreach (KeyValuePair<string, string> mapping in FirstColToAbbreviated)
                     label.FirstCol = label.FirstCol.Replace(mapping.Key, mapping.Value);
@@ -154,13 +152,13 @@ namespace Orts.Viewer3D.WebServices
         /// </summary>
         /// <param name="viewer">The Viewer to read train data from.</param>
         /// <returns>A list of <see cref="ListLabel"/>s, one per row of the popup.</returns>
-        public static IEnumerable<ListLabel> TrainDrivingDisplayList(this Viewer viewer)
+        public static IEnumerable<ListLabel> TrainDrivingDisplayList(this Viewer viewer, bool normalTextMode = true)
         {
             bool useMetric = viewer.MilepostUnitsMetric;
             var labels = new List<ListLabel>();
             void AddLabel(ListLabel label)
             {
-                CheckLabel(ref label);
+                CheckLabel(ref label, normalTextMode);
                 labels.Add(label);
             }
             void AddSeparator() => AddLabel(new ListLabel
@@ -168,7 +166,6 @@ namespace Orts.Viewer3D.WebServices
                 FirstCol = Viewer.Catalog.GetString("Sprtr"),
             });
 
-            NormalTextMode = true;
             TrainCar trainCar = viewer.PlayerLocomotive;
             Train train = trainCar.Train;
             string trainBrakeStatus = trainCar.GetTrainBrakeStatus();
@@ -215,7 +212,7 @@ namespace Orts.Viewer3D.WebServices
             });
 
             // Gradient info
-            if (NormalTextMode)
+            if (normalTextMode)
             {
                 float gradient = -trainInfo.currentElevationPercent;
                 const float minSlope = 0.00015f;
@@ -474,7 +471,7 @@ namespace Orts.Viewer3D.WebServices
                             SymbolCol = heatIndicator,
                         });
                     }
-                    else if (!NormalTextMode && Viewer.Catalog.GetString(parts[0]).StartsWith(Viewer.Catalog.GetString("Fuel levels")))
+                    else if (!normalTextMode && Viewer.Catalog.GetString(parts[0]).StartsWith(Viewer.Catalog.GetString("Fuel levels")))
                     {
                         AddLabel(new ListLabel
                         {
@@ -511,7 +508,7 @@ namespace Orts.Viewer3D.WebServices
 
             AddSeparator();
 
-            if (NormalTextMode)
+            if (normalTextMode)
             {
                 AddLabel(new ListLabel
                 {
