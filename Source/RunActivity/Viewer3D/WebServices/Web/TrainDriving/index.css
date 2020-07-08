@@ -4,6 +4,10 @@
 	border-spacing: 2px;
 }
 
+table td{
+	color :	white;
+}
+
 /* Apply rounded border */
 .border{
 	border-spacing: 0;

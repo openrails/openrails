@@ -28,6 +28,8 @@ namespace Orts.Viewer3D.WebServices
 {
     public static class TrainDrivingDisplay
     {
+        public static bool NormalTextMode = true;
+
         /// <summary>
         /// A Train Driving row with data fields.
         /// </summary>
@@ -137,11 +139,15 @@ namespace Orts.Viewer3D.WebServices
             CheckString(ref label.SymbolCol);
             CheckString(ref label.KeyPressed);
 
-            foreach (KeyValuePair<string, string> mapping in FirstColToAbbreviated)
-                label.FirstCol = label.FirstCol.Replace(mapping.Key, mapping.Value);
-            foreach (KeyValuePair<string, string> mapping in LastColToAbbreviated)
-                label.LastCol = label.LastCol.Replace(mapping.Key, mapping.Value);
+            if (!NormalTextMode)
+            {
+                foreach (KeyValuePair<string, string> mapping in FirstColToAbbreviated)
+                    label.FirstCol = label.FirstCol.Replace(mapping.Key, mapping.Value);
+                foreach (KeyValuePair<string, string> mapping in LastColToAbbreviated)
+                    label.LastCol = label.LastCol.Replace(mapping.Key, mapping.Value);
+            }
         }
+
 
         /// <summary>
         /// Retrieve a formatted list <see cref="ListLabel"/>s to be displayed as an in-browser Track Monitor.
@@ -162,6 +168,7 @@ namespace Orts.Viewer3D.WebServices
                 FirstCol = Viewer.Catalog.GetString("Sprtr"),
             });
 
+            NormalTextMode = true;
             TrainCar trainCar = viewer.PlayerLocomotive;
             Train train = trainCar.Train;
             string trainBrakeStatus = trainCar.GetTrainBrakeStatus();
@@ -208,21 +215,23 @@ namespace Orts.Viewer3D.WebServices
             });
 
             // Gradient info
-            float gradient = -trainInfo.currentElevationPercent;
-            const float minSlope = 0.00015f;
-            string gradientIndicator;
-            if (gradient < -minSlope)
-                gradientIndicator = $"{gradient:F1}%{Symbols.GradientDown}{ColorCode[Color.LightSkyBlue]}";
-            else if (gradient > minSlope)
-                gradientIndicator = $"{gradient:F1}%{Symbols.GradientUp}{ColorCode[Color.Yellow]}";
-            else
-                gradientIndicator = $"{gradient:F1}%";
-            AddLabel(new ListLabel
+            if (NormalTextMode)
             {
-                FirstCol = Viewer.Catalog.GetString("Gradient"),
-                LastCol = gradientIndicator,
-            });
-
+                float gradient = -trainInfo.currentElevationPercent;
+                const float minSlope = 0.00015f;
+                string gradientIndicator;
+                if (gradient < -minSlope)
+                    gradientIndicator = $"{gradient:F1}%{Symbols.GradientDown}{ColorCode[Color.LightSkyBlue]}";
+                else if (gradient > minSlope)
+                    gradientIndicator = $"{gradient:F1}%{Symbols.GradientUp}{ColorCode[Color.Yellow]}";
+                else
+                    gradientIndicator = $"{gradient:F1}%";
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("Gradient"),
+                    LastCol = gradientIndicator,
+                });
+            }
             // Separator
             AddSeparator();
 
@@ -308,13 +317,13 @@ namespace Orts.Viewer3D.WebServices
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
-                        LastCol = trainBrakeStatus,
+                        LastCol = brakeInfoValue,
                     });
                     index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimStart();
                     AddLabel(new ListLabel
                     {
-                        LastCol = trainBrakeStatus,
+                        LastCol = brakeInfoValue,
                     });
                 }
                 else
@@ -323,7 +332,7 @@ namespace Orts.Viewer3D.WebServices
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
-                        LastCol = trainBrakeStatus,
+                        LastCol = brakeInfoValue,
                     });
                 }
             }
@@ -343,14 +352,14 @@ namespace Orts.Viewer3D.WebServices
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
-                        LastCol = trainBrakeStatus,
+                        LastCol = brakeInfoValue,
                     });
 
                     index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EOT")) + indexOffset;
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
-                        LastCol = trainBrakeStatus,
+                        LastCol = brakeInfoValue,
                     });
                 }
                 else
@@ -358,7 +367,7 @@ namespace Orts.Viewer3D.WebServices
                     brakeInfoValue = trainBrakeStatus.Substring(index, trainBrakeStatus.Length - index).TrimEnd();
                     AddLabel(new ListLabel
                     {
-                        LastCol = trainBrakeStatus,
+                        LastCol = brakeInfoValue,
                     });
                 }
             }
@@ -376,7 +385,7 @@ namespace Orts.Viewer3D.WebServices
 
                 AddLabel(new ListLabel
                 {
-                    LastCol = trainBrakeStatus,
+                    LastCol = brakeInfoValue,
                 });
             }
 
@@ -465,12 +474,20 @@ namespace Orts.Viewer3D.WebServices
                             SymbolCol = heatIndicator,
                         });
                     }
+                    else if (!NormalTextMode && Viewer.Catalog.GetString(parts[0]).StartsWith(Viewer.Catalog.GetString("Fuel levels")))
+                    {
+                        AddLabel(new ListLabel
+                        {
+                            FirstCol = keyPart.EndsWith("?") || keyPart.EndsWith("!") ? Viewer.Catalog.GetString(keyPart.Substring(0, keyPart.Length - 3)) : Viewer.Catalog.GetString(keyPart),
+                            LastCol = valuePart.Length > 1 ? Viewer.Catalog.GetString(valuePart.Replace(" ", string.Empty )) : "",
+                        });
+                    }
                     else if (keyPart.StartsWith(Viewer.Catalog.GetString("Gear")) || parts.Contains(Viewer.Catalog.GetString("Pantographs")))
                     {
                         AddLabel(new ListLabel
                         {
                             FirstCol = Viewer.Catalog.GetString(keyPart),
-                            LastCol = keyPart != null ? Viewer.Catalog.GetString(keyPart) : "",
+                            LastCol = valuePart != null ? Viewer.Catalog.GetString(valuePart) : "",
                         });
                     }
                     else if (parts.Contains(Viewer.Catalog.GetString("Engine")))
@@ -478,7 +495,7 @@ namespace Orts.Viewer3D.WebServices
                         AddLabel(new ListLabel
                         {
                             FirstCol = Viewer.Catalog.GetString(keyPart),
-                            LastCol = keyPart != null ? $"{Viewer.Catalog.GetString(keyPart)}{ColorCode[Color.White]}" : "",
+                            LastCol = valuePart != null ? $"{Viewer.Catalog.GetString(valuePart)}{ColorCode[Color.White]}" : "",
                         });
                     }
                     else
@@ -486,7 +503,7 @@ namespace Orts.Viewer3D.WebServices
                         AddLabel(new ListLabel
                         {
                             FirstCol = keyPart.EndsWith("?") || keyPart.EndsWith("!") ? Viewer.Catalog.GetString(keyPart.Substring(0, keyPart.Length - 3)) : Viewer.Catalog.GetString(keyPart),
-                            LastCol = keyPart != null ? Viewer.Catalog.GetString(keyPart) : "",
+                            LastCol = valuePart != null ? Viewer.Catalog.GetString(valuePart) : "",
                         });
                     }
                 }
@@ -494,11 +511,14 @@ namespace Orts.Viewer3D.WebServices
 
             AddSeparator();
 
-            AddLabel(new ListLabel
+            if (NormalTextMode)
             {
-                FirstCol = Viewer.Catalog.GetString("FPS"),
-                LastCol = $"{Math.Floor(viewer.RenderProcess.FrameRate.SmoothedValue)}",
-            });
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString("FPS"),
+                    LastCol = $"{Math.Floor(viewer.RenderProcess.FrameRate.SmoothedValue)}",
+                });
+            }
 
             // Messages
             // Autopilot
