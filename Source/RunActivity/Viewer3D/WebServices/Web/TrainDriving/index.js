@@ -25,11 +25,12 @@
 var hr = new XMLHttpRequest;
 var httpCodeSuccess = 200;
 var xmlHttpRequestCodeDone = 4;
+var normalTextMode = true;
 
 function ApiTrainDriving() {
 	// GET to fetch data, POST to send it
 	// "/API/APISAMPLE" /API is a prefix hard-coded into the WebServer class
-	hr.open("GET", "/API/TRAINDRIVINGDISPLAY", true);
+	hr.open("GET", `/API/TRAINDRIVINGDISPLAY?normalText=${normalTextMode}`, true);
 	hr.send();
 
 	hr.onreadystatechange = function () {
@@ -48,11 +49,12 @@ function ApiTrainDriving() {
 					smallSymbolColor = "",
 					stringColorFirst = "",
 					stringColorLast = "";
+
 				// Color codes
 				var codeColor = ['???','??!','?!?','?!!','!??','!!?','!!!','%%%','$$$'];
 
 				// Table title
-				Str += "<tr> <td colspan='5' style='text-align: center'>" + 'Train Driving Info' + "</td></tr>";
+				Str += "<tr> <td colspan='5' onclick='changeNormalTextMode()' style='text-align: center'>" + 'Train Driving Info' + "</td></tr>";
 				Str += "<tr> <td colspan='5' class='separator'></td></tr>";
 
 				// Customize data
@@ -165,4 +167,8 @@ function changePageColor() {
 		bodyColor.style.background = "white";
 		bodyColor.style.color =	"black";
 	}
+};
+
+function changeNormalTextMode() {
+	normalTextMode = !normalTextMode;
 };
