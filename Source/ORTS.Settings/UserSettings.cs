@@ -99,6 +99,10 @@ namespace ORTS.Settings
         [Default(true)]
         public bool Logging { get; set; }
         [Default(false)]
+        public bool DebriefActivityEval { get; set; }
+        [Default(false)]
+        public bool DebriefTTActivityEval { get; set; }
+        [Default(false)]
         public bool FullScreen { get; set; }
         [Default("")]
         public string Multiplayer_User { get; set; }
@@ -106,12 +110,22 @@ namespace ORTS.Settings
         public string Multiplayer_Host { get; set; }
         [Default(30000)]
         public int Multiplayer_Port { get; set; }
+        [Default(true)]
+        public bool IsModeActivity { get; set; } // false indicates Timetable mode
 
         // General settings:
+
+        [Default(false)]
+        public bool WebServer { get; set; }
+        [Default(2150)]
+        public int WebServerPort { get; set; }
+
         [Default(false)]
         public bool Alerter { get; set; }
         [Default(true)]
         public bool AlerterDisableExternal { get; set; }
+        [Default(true)]
+        public bool SpeedControl { get; set; }
         [Default(false)]
         public bool ViewDispatcher { get; set; }
         [Default(false)]
@@ -140,10 +154,14 @@ namespace ORTS.Settings
         public int SoundVolumePercent { get; set; }
         [Default(5)]
         public int SoundDetailLevel { get; set; }
+        [Default(50)]
+        public int ExternalSoundPassThruPercent { get; set; } // higher = louder sound
 
         // Video settings:
         [Default(false)]
         public bool DynamicShadows { get; set; }
+        [Default(false)]
+        public bool ShadowAllShapes { get; set; }
         [Default(false)]
         public bool FastFullScreenAltTab { get; set; }
         [Default(false)]
@@ -172,6 +190,9 @@ namespace ORTS.Settings
         public int DayAmbientLight { get; set; }
 
         // Simulation settings:
+
+        [Default(false)]
+        public bool SimpleControlPhysics { get; set; }
         [Default(true)]
         public bool UseAdvancedAdhesion { get; set; }
         [Default(10)]
@@ -179,11 +200,13 @@ namespace ORTS.Settings
         [Default(false)]
         public bool BreakCouplers { get; set; }
         [Default(false)]
-        public bool CurveResistanceSpeedDependent { get; set; }
+        public bool CurveResistanceDependent { get; set; }
         [Default(false)]
         public bool CurveSpeedDependent { get; set; }
         [Default(false)]
         public bool TunnelResistanceDependent { get; set; }
+        [Default(false)]
+        public bool WindResistanceDependent { get; set; }
         [Default(false)]
         public bool OverrideNonElectrifiedRoutes { get; set; }
         [Default(true)]
@@ -202,7 +225,11 @@ namespace ORTS.Settings
         public bool DataLogPhysics { get; set; }
         [Default(false)]
         public bool DataLogMisc { get; set; }
-        
+        [Default(false)]
+        public bool DataLogSteamPerformance { get; set; }
+        [Default(false)]
+        public bool VerboseConfigurationMessages { get; set; }
+
         // Evaluation settings:
         [Default(false)]
         public bool DataLogTrainSpeed { get; set; }
@@ -213,6 +240,17 @@ namespace ORTS.Settings
         public int[] DataLogTSContents { get; set; }
         [Default(false)]
         public bool DataLogStationStops { get; set; }
+
+
+        // Timetable settings:
+        [Default(true)]
+        public bool TTUseRestartDelays { get; set; }
+        [Default(true)]
+        public bool TTCreateTrainOnPoolUnderflow { get; set; }
+        [Default(false)]
+        public bool TTOutputTimetableTrainInfo { get; set; }
+        [Default(false)]
+        public bool TTOutputTimetableFullEvaluation { get; set; }
 
         // Updater settings are saved only in "Updater.ini".
 
@@ -227,7 +265,7 @@ namespace ORTS.Settings
         public int LODBias { get; set; }
         [Default(false)]
         public bool PerformanceTuner { get; set; }
-        [Default(false)]
+        [Default(true)]
         public bool SuppressShapeWarnings { get; set; }
         [Default(60)]
         public int PerformanceTunerTarget { get; set; }
@@ -256,11 +294,7 @@ namespace ORTS.Settings
         [Default(false)]
         public bool NoForcedRedAtStationStops { get; set; }
         [Default(false)]
-        public bool ConditionalLoadOfNightTextures { get; set; }
-        [Default(false)]
-        public bool ExtendedAIShunting { get; set; }
-        [Default(false)]
-        public bool Autopilot { get; set; }
+        public bool ConditionalLoadOfDayOrNightTextures { get; set; }
         [Default(100)]
         public int PrecipitationBoxHeight { get; set; }
         [Default(500)]
@@ -269,21 +303,26 @@ namespace ORTS.Settings
         public int PrecipitationBoxLength { get; set; }
         [Default(false)]
         public bool CorrectQuestionableBrakingParams { get; set; }
-
+        [Default(false)]
+        public bool OpenDoorsInAITrains { get; set; }
+        [Default(0)]
+        public int ActRandomizationLevel { get; set; }
+        [Default(0)]
+        public int ActWeatherRandomizationLevel { get; set; }
 
         // Hidden settings:
         [Default(0)]
         public int CarVibratingLevel { get; set; }
         [Default("OpenRailsLog.txt")]
         public string LoggingFilename { get; set; }
+        [Default("OR-DebriefEval.txt")]
+        public string DebriefEvalFilename { get; set; }//
         [Default("")] // If left as "", OR will use the user's desktop folder
         public string LoggingPath { get; set; }
         [Default("")]
         public string ScreenshotPath { get; set; }
         [Default(0)]
         public int ShaderModel { get; set; }
-        [Default(false)]
-        public bool ShadowAllShapes { get; set; }
         [Default(true)]
         public bool ShadowMapBlur { get; set; }
         [Default(4)]
@@ -304,6 +343,8 @@ namespace ORTS.Settings
         // Internal settings:
         [Default(false)]
         public bool DataLogger { get; set; }
+        [Default(false)]
+        public bool Letterbox2DCab { get; set; }
         [Default(false)]
         public bool Profiling { get; set; }
         [Default(0)]
@@ -412,7 +453,10 @@ namespace ORTS.Settings
         {
             foreach (var property in GetProperties())
                 if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
+                {
+                    Console.WriteLine(property.Name, property.PropertyType);
                     Save(property.Name, property.PropertyType);
+                }
 
             Folders.Save();
             Input.Save();

@@ -34,6 +34,9 @@ namespace Orts.MultiPlayer
         {
             Players = new Dictionary<string, OnlinePlayer>();
         }
+
+        public List<OnlineLocomotive> OnlineLocomotives = new List<OnlineLocomotive>();
+
         public static void Update()
         {
 
@@ -62,7 +65,7 @@ namespace Orts.MultiPlayer
             if (move == null) move = new MSGMove();
             foreach (OnlinePlayer p in Players.Values)
             {
-                if (p.Train != null && MPManager.Simulator.PlayerLocomotive != null && p.Train != MPManager.Simulator.PlayerLocomotive.Train)
+                if (p.Train != null && MPManager.Simulator.PlayerLocomotive != null && !(p.Train == MPManager.Simulator.PlayerLocomotive.Train && p.Train.TrainType != Train.TRAINTYPE.REMOTE))
                 {
                     if (Math.Abs(p.Train.SpeedMpS) > 0.001 || Math.Abs(p.Train.LastReportedSpeed) > 0)
                     {
@@ -151,6 +154,7 @@ namespace Orts.MultiPlayer
             if (player.con.Contains("tilted")) train.IsTilting = true;
             int direction = player.dir;
             train.travelled = player.Travelled;
+            train.TrainMaxSpeedMpS = player.trainmaxspeed;
 
             if (MPManager.IsServer())
             {
@@ -185,7 +189,7 @@ namespace Orts.MultiPlayer
                 try
                 {
                     car = RollingStock.Load(MPManager.Simulator, wagonFilePath);
-                    car.CarLengthM = player.lengths[i];
+                    car.CarLengthM = player.lengths[i] / 100.0f;
                 }
                 catch (Exception error)
                 {
@@ -204,6 +208,8 @@ namespace Orts.MultiPlayer
                 {
                     w.SignalEvent((player.pantofirst == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 1);
                     w.SignalEvent((player.pantosecond == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 2);
+                    w.SignalEvent((player.pantothird == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 3);
+                    w.SignalEvent((player.pantofourth == 1 ? PowerSupplyEvent.RaisePantograph : PowerSupplyEvent.LowerPantograph), 4);
                 }
 
             }// for each rail car
@@ -233,15 +239,38 @@ namespace Orts.MultiPlayer
             train.AITrainBrakePercent = 100;
 
             //if (MPManager.Instance().AllowedManualSwitch) train.InitializeSignals(false);
-            foreach (var car in train.Cars)
+            for (int iCar = 0; iCar < train.Cars.Count; iCar++)
             {
-                if (car.CarID == p.LeadingLocomotiveID) train.LeadLocomotive = car;
+                var car = train.Cars[iCar];
+                if (car.CarID == p.LeadingLocomotiveID)
+                {
+                    train.LeadLocomotive = car;
+                    (train.LeadLocomotive as MSTSLocomotive).Headlight = player.headlight;
+                    (train.LeadLocomotive as MSTSLocomotive).UsingRearCab = player.frontorrearcab == "R" ? true : false;
+                }
+                if (car is MSTSLocomotive && MPManager.IsServer())
+                    MPManager.Instance().AddOrRemoveLocomotive(player.user, train.Number, iCar, true);
             }
             if (train.LeadLocomotive == null)
             {
                 train.LeadNextLocomotive();
                 if (train.LeadLocomotive != null) p.LeadingLocomotiveID = train.LeadLocomotive.CarID;
                 else p.LeadingLocomotiveID = "NA";
+            }
+
+            if (train.LeadLocomotive != null)
+            {
+                train.Name = train.GetTrainName(train.LeadLocomotive.CarID);
+            }
+            else if (train.Cars != null && train.Cars.Count > 0)
+            {
+                train.Name = train.GetTrainName(train.Cars[0].CarID);
+            }
+            else if (player !=null && player.user != null) train.Name = player.user;
+
+            if (MPManager.IsServer())
+            {
+                train.InitializeSignals(false);
             }
             p.Train = train;
 
@@ -276,5 +305,59 @@ namespace Orts.MultiPlayer
             p.Train = train;
             if (player.newTrainReverseFormation) p.Train.ReverseFormation(false);
         }
+
+        public string ExhaustingLocos(MSGExhaust exhaust)
+        {
+            string tmp = "";
+            if (exhaust == null) exhaust = new MSGExhaust();
+            foreach (OnlineLocomotive l in OnlineLocomotives)
+            {
+                if (l.userName != MPManager.GetUserName())
+                {
+                    Train t = MPManager.FindPlayerTrain(l.userName);
+                    if (t != null && l.trainCarPosition < t.Cars.Count && (Math.Abs(t.SpeedMpS) > 0.001 || Math.Abs(t.LastReportedSpeed) > 0))
+                    {
+                            if (t.Cars[l.trainCarPosition] is MSTSDieselLocomotive)
+                            {
+                                exhaust.AddNewItem(l.userName, t, l.trainCarPosition);
+                            }
+                    }
+                }
+            }
+            if (exhaust != null) tmp += exhaust.ToString();
+            return tmp;
+        }
+
+        // Save
+        public void Save (BinaryWriter outf)
+        {
+            outf.Write(Players.Count);
+            foreach (var onlinePlayer in Players.Values)
+            {
+                onlinePlayer.Save(outf);
+            }
+        }
+
+        // Restore
+        public void Restore (BinaryReader inf)
+        {
+            var onlinePlayersCount = inf.ReadInt32();
+            if (onlinePlayersCount > 0)
+            {
+                while (onlinePlayersCount > 0)
+                {
+                    OnlinePlayer player = new OnlinePlayer(inf);
+                    Players.Add(player.Username, player);
+                    onlinePlayersCount -= 1;
+                }
+            }
+        }
+    }
+
+    public struct OnlineLocomotive
+    {
+        public string userName;
+        public int trainNumber;
+        public int trainCarPosition;
     }
 }

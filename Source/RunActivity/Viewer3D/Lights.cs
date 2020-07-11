@@ -210,12 +210,15 @@ namespace Orts.Viewer3D
 
         bool UpdateState()
         {
-			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
+			Debug.Assert(Viewer.PlayerTrain.LeadLocomotive == Viewer.PlayerLocomotive ||Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ||
+                Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.REMOTE || Viewer.PlayerTrain.TrainType == Train.TRAINTYPE.STATIC, "PlayerTrain.LeadLocomotive must be PlayerLocomotive.");
 			var locomotive = Car.Train != null && Car.Train.IsActualPlayerTrain ? Viewer.PlayerLocomotive : null;
+            if (locomotive == null && Car.Train != null && Car.Train.TrainType == Train.TRAINTYPE.REMOTE && Car is MSTSLocomotive && (Car as MSTSLocomotive) == Car.Train.LeadLocomotive)
+                locomotive = Car.Train.LeadLocomotive;
 			var mstsLocomotive = locomotive as MSTSLocomotive;
 
             // Headlight
-			var newTrainHeadlight = locomotive != null ? locomotive.Headlight : 2;
+			var newTrainHeadlight = locomotive != null ? locomotive.Headlight : Car.Train != null && Car.Train.TrainType != Train.TRAINTYPE.STATIC ? 2 : 0;
             // Unit
 			var locomotiveFlipped = locomotive != null && locomotive.Flipped;
 			var locomotiveReverseCab = mstsLocomotive != null && mstsLocomotive.UsingRearCab;

@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -26,7 +26,6 @@ using System.Text;
 using System.Windows.Forms;
 
 using Orts.Formats.Msts;
-using ORTS.Common;
 using Orts.Simulation;
 
 namespace ORTS.TrackViewer.Editing
@@ -166,8 +165,10 @@ namespace ORTS.TrackViewer.Editing
         {
             this.trackDB = trackDB;
             this.tsectionDat = tsectionDat;
-            trainPaths = new List<TrainPathData>();
-            trainPaths.Add(new TrainPathData());
+            trainPaths = new List<TrainPathData>
+            {
+                new TrainPathData()
+            };
         }
 
         /// <summary>
@@ -198,7 +199,7 @@ namespace ORTS.TrackViewer.Editing
             PathFlags = patFile.Flags;
 
             List<TrainpathNode> Nodes = new List<TrainpathNode>();
-            createNodes(patFile, Nodes);
+            CreateNodes(patFile, Nodes);
 
             LinkNodes(patFile, Nodes);
             SetFacingPoints(Nodes);
@@ -227,7 +228,7 @@ namespace ORTS.TrackViewer.Editing
         /// </summary>
         /// <param name="patFile">Patfile object containing the various unprocessed Track Path Nodes</param>
         /// <param name="Nodes">The list that is going to be filled with as-of-yet unlinked and almost unprocessed path nodes</param>
-        private void createNodes(PathFile patFile, List<TrainpathNode> Nodes)
+        private void CreateNodes(PathFile patFile, List<TrainpathNode> Nodes)
         {
             foreach (TrPathNode tpn in patFile.TrPathNodes)
                 Nodes.Add(TrainpathNode.CreatePathNode(tpn, patFile.TrackPDPs[(int)tpn.fromPDP], trackDB, tsectionDat));
@@ -478,18 +479,17 @@ namespace ORTS.TrackViewer.Editing
 
         #region Methods giving info on path
         /// <summary>
-        /// Determine if the path is broken or not
+        /// Find all broken nodes of a path
         /// </summary>
-        /// <returns>A collection containing integers that tell how far to draw the path to go to the broken node</returns>
-        public Collection<int> DetermineIfBroken()
+        /// <returns>A collection of the broken nodes</returns>
+        public Collection<TrainpathNode> GetBrokenNodes()
         {
+            var brokenNodes = new Collection<TrainpathNode>();
+
             if (FirstNode == null)
             {
-                IsBroken = false;
-                return new Collection<int>();
+                return brokenNodes;
             }
-
-            var brokenNodes = new List<TrainpathNode>();
 
             TrainpathNode currentMainNode = FirstNode;
             while (currentMainNode.NextMainNode != null)
@@ -535,15 +535,17 @@ namespace ORTS.TrackViewer.Editing
                 brokenNodes.Add(currentMainNode);
             }
 
-            this.IsBroken = (brokenNodes.Count > 0);
-
-            Collection<int> brokenNodeIndexes = new Collection<int>();
-            foreach (TrainpathNode node in brokenNodes)
-            {
-                brokenNodeIndexes.Add(GetNodeNumber(node));
-            }
-            return brokenNodeIndexes;
+            return brokenNodes;
         }
+
+        /// <summary>
+        /// Determine if the path is broken or not and store it internally
+        /// </summary>
+        public void DetermineIfBroken()
+        {
+            this.IsBroken = (GetBrokenNodes().Count > 0);
+        }
+
 
         /// <summary>
         /// Calculate the number of this node in the total path. FirstNode is 1. 
@@ -724,8 +726,10 @@ namespace ORTS.TrackViewer.Editing
 
         static void ReverseSidingPath(TrainpathNode oldSidingStart)
         {
-            List<TrainpathNode> sidingNodes = new List<TrainpathNode>();
-            sidingNodes.Add(oldSidingStart);
+            List<TrainpathNode> sidingNodes = new List<TrainpathNode>
+            {
+                oldSidingStart
+            };
 
             // Create list of nodes, in new order
             TrainpathNode currentSidingNode = oldSidingStart;

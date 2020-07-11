@@ -9,8 +9,8 @@
                      Width="80" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-            <Button Height="23" Name="buttonCancel" Margin="20,3,20,3" VerticalAlignment="Top" Click="buttonCancel_Click">Cancel</Button>
-            <Button Height="23" Name="buttonSearch" Margin="20,3,20,3" VerticalAlignment="Top" Click="buttonSearch_Click">Search</Button>
+            <Button Height="23" Name="buttonCancel" Margin="20,3,20,3" VerticalAlignment="Top" Click="ButtonCancel_Click">Cancel</Button>
+            <Button Height="23" Name="buttonSearch" Margin="20,3,20,3" VerticalAlignment="Top" Click="ButtonSearch_Click">Search</Button>
         </StackPanel>
     </StackPanel>
 </Window>

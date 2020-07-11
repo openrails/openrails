@@ -108,21 +108,13 @@ namespace Orts.Common
             102.98f, 111.49f, 113.33f, 115.16f, 117.0f, 118.83f, 120.67f, 122.50f, 125.50f, 128.50f,
             130.14f, 131.78f, 133.41f, 135.05f, 136.69f, 138.33f, 139.97f, 141.60f, 143.24f, 144.88f
         };        
-       
-        // Temperature of water in deg Kelvin
-                static float[] TemperatureTableK = new float[]
-        {
-            372.76f, 388.11f, 398.94f, 407.45f, 414.53f, 420.62f, 426.01f, 430.84f, 435.23f, 439.27f, 443.02f,
-            446.51f, 449.79f, 452.88f, 455.80f, 458.58f, 461.23f, 463.77f, 466.20f, 468.53f, 470.78f, 
-            472.94f, 475.03f, 477.06f, 479.02f, 480.92f, 482.76f, 484.56f, 486.30f, 488.00f, 489.66f, 
-        };
 
         // Specific heat table for water - volume heat capacity?? - 
         static float[] SpecificHeatTableKJpKGpK = new float[]
         {
             4.2170f, 4.2049f, 4.2165f, 4.2223f, 4.2287f, 4.2355f, 4.2427f, 4.2505f, 4.2587f, 4.2675f, 4.2769f,
             4.2926f, 4.3035f, 4.3151f, 4.3274f, 4.3405f, 4.3543f, 4.3690f, 4.3846f, 4.4012f, 4.4187f, 
-            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f, 
+            4.4374f, 4.4573f, 4.4784f, 4.5009f, 4.5248f, 4.5503f, 4.5774f, 4.6064f, 4.6373f, 4.6703f 
         };
 
         // Water temp in deg Kelvin
@@ -130,26 +122,40 @@ namespace Orts.Common
         {
             274.00f, 281.40f, 288.80f, 296.20f, 303.60f, 311.00f, 318.40f, 325.80f, 333.20f, 340.60f, 348.00f,
             355.40f, 362.80f, 370.20f, 377.60f, 385.00f, 392.40f, 399.80f, 407.20f, 414.60f, 422.00f, 
-            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f, 
+            429.40f, 436.80f, 444.20f, 451.60f, 459.00f, 466.40f, 473.80f, 481.20f, 488.60f, 496.00f 
         };
        
         static float[] SaturationPressureTablePSI = new float[]
         {
             0.00f, 10.00f, 20.00f, 30.00f, 40.00f, 50.00f, 60.00f, 70.00f, 80.00f, 90.00f, 100.00f,
             110.00f, 120.00f, 130.00f, 140.00f, 150.00f, 160.00f, 170.00f, 180.00f, 190.00f, 200.00f, 
-            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f, 
+            210.00f, 220.00f, 230.00f, 240.00f, 250.00f, 260.00f, 270.00f, 280.00f, 290.00f, 300.00f 
         };
-                        
+
+        // Temperature of water in deg Kelvin
+        static float[] TemperatureTableK = new float[]
+        {
+            372.76f, 388.11f, 398.94f, 407.45f, 414.53f, 420.62f, 426.01f, 430.84f, 435.23f, 439.27f, 443.02f,
+            446.51f, 449.79f, 452.88f, 455.80f, 458.58f, 461.23f, 463.77f, 466.20f, 468.53f, 470.78f,
+            472.94f, 475.03f, 477.06f, 479.02f, 480.92f, 482.76f, 484.56f, 486.30f, 488.00f, 489.66f
+        };
+
         // Fire Rate - ie lbs of coal per Square Foot of Grate Area 
         static float[] CoalGrateAreaTableLbspFt2 = new float[]
         {
-            0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f,
+            0.0f, 20.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f, 180.0f, 200.0f, 220.0f
         };
         
-        // Boiler Efficiency - based upon paper from Locomotive Stoker paper - values above 120, extrapolated
-        static float[] BoilerEfficiencyTableX = new float[]
+        // Boiler Efficiency - based upon average results from test papers
+        static float[] SatBoilerEfficiencyTableX = new float[]
         {
-            0.875f, 0.85f, 0.775f, 0.70f, 0.625f, 0.55f, 0.475f, 0.40f, 0.325f,
+            0.80f, 0.749f, 0.69f, 0.63f, 0.571f, 0.512f, 0.452f, 0.393f, 0.334f, 0.274f, 0.215f, 0.156f
+        };
+
+        // Boiler Efficiency - based upon average results from test papers
+        static float[] SuperBoilerEfficiencyTableX = new float[]
+        {
+            0.903f, 0.8484f, 0.7936f, 0.7390f, 0.6843f, 0.6296f, 0.5749f, 0.5202f, 0.4655f, 0.4108f, 0.3561f, 0.3014f
         };
         
         // pressure tables for Injectors temperature and steam usage
@@ -181,19 +187,54 @@ namespace Orts.Common
         {
             0.366f, 0.395f, 0.419f, 0.454f, 0.509f
         };
-        
+ 
+// Cylinder Indicator Card Events
+
+        // cutoff fraction
+        static float[] CutOffFractionEventTableX = new float[]
+        {
+           0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f, 0.6f, 0.65f, 0.7f, 0.75f, 0.8f
+        };
+
+
+        // Indicator Event - Exhaust Open
+        static float[] CylinderExhaustTableX = new float[]
+        {
+           0.5306f, 0.6122f, 0.6646f, 0.7042f, 0.7358f, 0.7628f, 0.7866f, 0.8076f, 0.8270f, 0.8451f, 0.8626f, 0.8792f, 0.8955f, 0.9112f, 0.9269f, 0.9422f
+        };
+
+        // Indicator Event - Compression Close
+        static float[] CylinderCompressionTableX = new float[]
+        {
+           0.4580f, 0.3864f, 0.3418f, 0.3082f, 0.2811f, 0.2575f, 0.2363f, 0.2170f, 0.1988f, 0.1814f, 0.1641f, 0.1471f, 0.1299f, 0.1127f, 0.0950f, 0.0771f
+        };
+
+        // Indicator Event - Admission Open
+        static float[] CylinderAdmissionTableX = new float[]
+        {
+           0.0241f, 0.0121f, 0.0080f, 0.0058f, 0.0046f, 0.0037f, 0.0030f, 0.0026f, 0.0022f, 0.0019f, 0.0015f, 0.0013f, 0.0011f, 0.0009f, 0.0008f, 0.0006f
+        };
+
+
+// Cylinder condensation and superheat
+
         // cutoff fraction
         static float[] CutOffFractionTableX = new float[]
         {
-            0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f
-        };
-        
-        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
-        static float[] CylinderCondensationFractionTableX = new float[]
-        {
-            0.42f, 0.345f, 0.29f, 0.245f, 0.213f, 0.181f, 0.159f, 0.141f, 0.125f, 0.11f
+           0.05f, 0.1f, 0.15f, 0.2f, 0.25f, 0.3f, 0.35f, 0.4f, 0.45f, 0.5f, 0.55f
         };
 
+        // cylinder condensation fraction per cutoff fraction - saturated steam (upper and lower ends extrapolated) - Ref Elseco Superheater manual
+        static float[] CylinderCondensationFractionTableX = new float[]
+        {
+            0.526f, 0.42f, 0.345f, 0.29f, 0.245f, 0.213f, 0.181f, 0.159f, 0.142f, 0.125f, 0.11f
+        };
+
+        // Superheat required to prevent cylinder condensation fraction per cutoff fraction (upper and lower ends extrapolated) - Ref Elseco Superheater Engineering Data manual
+        static float[] SuperheatCondenstationLimitTableDegF = new float[]
+        {
+            265.0f, 245.0f, 223.0f, 190.0f, 166.0f, 145.0f, 128.0f, 110.0f, 100.0f, 75.0f, 60.0f
+        };
 
         // Steam to Cylinders - lbs per sec - from BTC Test Results for Std 8
         static float[] CylinderSteamTableLbpH = new float[]
@@ -209,50 +250,41 @@ namespace Orts.Common
             360.0f, 375.0f, 384.0f
         };
 
-        // Superheat required to prevent cylinder condensation fraction per cutoff fraction - Ref Elseco Superheater manual
-        static float[] SuperheatCondenstationLimitTableDegF = new float[]
-        {
-            250.0f, 218.0f, 190.0f, 168.0f, 145.0f, 129.0f, 113.0f, 98.0f, 84.0f, 70.0f
-        };
-
-        // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
         static float[] WheelRotationRpM = new float[]
         {
-            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f, 400.0f, 450.0f, 500.0f, 550.0f, 600.0f, 650.0f, 700.0f, 750.0f
         };
 
-        // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
-        static float[] InitialPressureDropRatio = new float[]
+        // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources - Saturated
+        static float[] SatInitialPressureDropRatio = new float[]
         {
-            0.98f, 0.95f, 0.927f, 0.90f, 0.874f, 0.85f, 0.82f, 0.81f
+            0.98f, 0.965f, 0.95f, 0.935f, 0.92f, 0.905f, 0.89f, 0.875f, 0.87f, 0.8650f, 0.8625f, 0.86f, 0.8575f, 0.855f, 0.8525f, 0.85f 
+            
         };
         
-       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        static float[] SteamChestPressureDropRatio = new float[]
+       // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - (To be confirmed) - Superheated
+        static float[] SuperInitialPressureDropRatio = new float[]
         {
-            0.99f, 0.97f, 0.95f, 0.94f, 0.93f, 0.92f, 0.91f, 0.90f
+            0.99f, 0.98f, 0.97f, 0.96f, 0.95f, 0.94f, 0.93f, 0.92f, 0.915f, 0.910f, 0.905f, 0.90f, 0.8975f, 0.8950f, 0.8925f, 0.8900f
         };
         
 // piston speed (feet per minute) - American Locomotive Company
         static float[] PistonSpeedFtpMin = new float[]
         {
-              0, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500, 525, 550, 575, 600, 625, 650, 675,
-             700, 725, 750, 775, 800, 850, 900, 950, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 2000, 2100
+              0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2100
         };
         
-        
-// Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
+// Speed factor - Saturated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - Based upon dat from American Locomotive Company
         static float[] SpeedFactorSat = new float[]
         {
-             1.0f, 1.0f, 0.976f, 0.954f, 0.932f, 0.908f, 0.886f, 0.863f, 0.840f, 0.817f, 0.795f, 0.772f, 0.750f, 0.727f, 0.704f, 0.680f, 0.660f, 0.636f, 0.614f,
-             0.590f, 0.570f, 0.550f, 0.530f, 0.517f, 0.487f, 0.460f, 0.435f, 0.412f, 0.372f, 0.337f, 0.307f, 0.283f, 0.261f, 0.241f, 0.1f, 0.05f
+             1.0f, 1.0f, 1.0f, 0.954f, 0.863f, 0.772f, 0.680f, 0.590f, 0.517f, 0.460f, 0.412f, 0.372f, 0.337f, 0.307f, 0.283f, 0.261f, 0.241f, 0.225f, 0.213f, 0.202f, 0.190f, 0.185f
         };
         
 // Speed factor - Superheated (0 and 2000, 2100 value extrapolated for Open Rails to limit TE) - American Locomotive Company
         static float[] SpeedFactorSuper = new float[]
         {
-              1.0f, 1.0f, 0.976f, 0.954f, 0.932f, 0.908f, 0.886f, 0.863f, 0.840f, 0.817f, 0.795f, 0.772f, 0.750f, 0.727f, 0.704f, 0.682f, 0.664f, 0.643f, 0.624f,
-             0.605f, 0.588f, 0.572f, 0.558f, 0.542f, 0.515f, 0.490f, 0.467f, 0.445f, 0.405f, 0.371f, 0.342f, 0.318f, 0.297f, 0.278f, 0.1f, 0.05f
+              1.0f, 1.0f, 1.0f, 0.988f, 0.965f, 0.912f, 0.859f, 0.800f, 0.753f, 0.706f, 0.659f, 0.612f, 0.571f, 0.535f, 0.500f, 0.471f, 0.447f, 0.433f, 0.424f, 0.420f, 0.410f, 0.410f
         };
 
 // Indicated HorsePower - 
@@ -275,39 +307,46 @@ namespace Orts.Common
               0.0f, 0.25f, 0.5f, 0.75f, 1.25f, 1.75f, 2.5f, 3.5f, 4.8f,
               7.2f, 11.25f, 16.0f, 20.0f, 22.0f, 24.0f, 26.0f
         };
-        
-// Burnrate - based upon test results from a Consolidation locomotive
-        static float[] CoalFiredLbspH = new float[]
-        {
-              10.0f, 1000.0f, 2000.0f, 3000.0f, 4000.0f, 5000.0f, 6000.0f, 7000.0f, 8000.0f,
-              9000.0f, 10000.0f, 11000.0f
-        };        
 
-// Burnrate - based upon test results from a Consolidation locomotive
-        static float[] SteamEvaporationLbspH = new float[]
+  // Allowance for drop in initial pressure (steam chest) as speed increases - Various sources
+        static float[] CondensationWheelRotationRpM = new float[]
         {
-              0.0f, 9000.0f, 14500.0f, 21000.0f, 26400.0f, 30800.0f, 34400.0f, 37500.0f, 40200.0f,
-              42800.0f, 45200.0f, 47800.0f
-        };      
-        
-// Cylinder Condensation - Ref Principles of Locomotive Operation
-        static float[] CylinderCondensationSimpleFactor = new float[]
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f
+        };
+
+// Steam Tables
+
+// Indicator Diagram - Cylinder Events
+
+        // Indicator Diagram Event - Exhaust Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
+        public static Interpolator CylinderEventExhausttoCutoff()
         {
-              0.335f, 0.27f, 0.21f, 0.17f, 0.15f, 0.16f, 0.19f, 0.23f
-        };          
-                  
-// Cylinder condensation Vs Speed (Wheel Revolutions) - Simple locomotive - based upon Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        public static Interpolator CylinderCondensationSimpleSpeedAdjRpMtoX()
-        {
-            return new Interpolator(WheelRotationRpM, CylinderCondensationSimpleFactor);
+            return new Interpolator(CutOffFractionEventTableX, CylinderExhaustTableX);
         }
 
-        
-// Burnrate - based upon test results from a Consolidation locomotive
-        public static Interpolator NewBurnRateSteamToCoalLbspH()
+        // Indicator Diagram Event - Compression Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
+        public static Interpolator CylinderEventCompressiontoCutoff()
         {
-            return new Interpolator(SteamEvaporationLbspH, CoalFiredLbspH);
+            return new Interpolator(CutOffFractionEventTableX, CylinderCompressionTableX);
         }
+
+        // Indicator Diagram Event - Admission Open - Perwall program - http://5at.co.uk/index.php/references-and-links/software.html
+        public static Interpolator CylinderEventAdmissiontoCutoff()
+        {
+            return new Interpolator(CutOffFractionEventTableX, CylinderAdmissionTableX);
+        }   
+          
+// cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
+        public static Interpolator CylinderCondensationFractionInterpolatorX()
+        {
+            return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
+        }
+
+// Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
+        public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
+        {
+            return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
+        }           
 
 // Saturated Backpressure - Ref Principles of Locomotive Operation
         public static Interpolator BackpressureSatIHPtoPSI()
@@ -337,33 +376,21 @@ namespace Orts.Common
         
 
        // Allowance for pressure drop in Steam chest pressure compared to Boiler Pressure - Ref LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
-        public static Interpolator SteamChestPressureDropRatioInterpolatorRpMtoX()
+        public static Interpolator SuperInitialPressureDropRatioInterpolatorRpMtoX()
         {
-            return new Interpolator(WheelRotationRpM, SteamChestPressureDropRatio);
+            return new Interpolator(WheelRotationRpM, SuperInitialPressureDropRatio);
         }       
 
         // Allowance for wire-drawing - ie drop in initial pressure (cutoff) as speed increases - Ref Principles of Locomotive Operation
-        public static Interpolator InitialPressureDropRatioInterpolatorRpMtoX()
+        public static Interpolator SatInitialPressureDropRatioInterpolatorRpMtoX()
         {
-            return new Interpolator(WheelRotationRpM, InitialPressureDropRatio);
-        }    
-
-        // Superheat temp required to prevent cylinder condensation - Ref Elseco Superheater manual
-        public static Interpolator SuperheatTempLimitInterpolatorXtoDegF()
-        {
-            return new Interpolator(CutOffFractionTableX, SuperheatCondenstationLimitTableDegF);
+            return new Interpolator(WheelRotationRpM, SatInitialPressureDropRatio);
         }    
 
         // Superheat temp per lbs of steam to cylinder - from BTC Test Results for Std 8
         public static Interpolator SuperheatTempInterpolatorLbpHtoDegF()
         {
             return new Interpolator(CylinderSteamTableLbpH, SuperheatTempTableDegF);
-        }    
-
-        // cylinder condensation fraction per cutoff fraction - saturated steam - Ref Elseco Superheater manual
-        public static Interpolator CylinderCondensationFractionInterpolatorX()
-        {
-            return new Interpolator(CutOffFractionTableX, CylinderCondensationFractionTableX);
         }    
 
         // Injector factor to determine the min capacity of the injector
@@ -390,12 +417,18 @@ namespace Orts.Common
             return new Interpolator(InjectorUsePressureTablePSI, WaterDelFedSteamTableLbs);
         }    
 
-        // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area
-        public static Interpolator BoilerEfficiencyGrateAreaInterpolatorLbstoX()
+        // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area - Saturated
+        public static Interpolator SatBoilerEfficiencyGrateAreaInterpolatorLbstoX()
         {
-            return new Interpolator(CoalGrateAreaTableLbspFt2, BoilerEfficiencyTableX);
+            return new Interpolator(CoalGrateAreaTableLbspFt2, SatBoilerEfficiencyTableX);
         }
-                   
+
+        // Boiler Efficiency based on lbs of coal per sq. ft of Grate Area - Saturated
+        public static Interpolator SuperBoilerEfficiencyGrateAreaInterpolatorLbstoX()
+        {
+            return new Interpolator(CoalGrateAreaTableLbspFt2, SuperBoilerEfficiencyTableX);
+        }
+           
         // Saturated pressure of steam (psi) @ water temperature (K)
         public static Interpolator SaturationPressureInterpolatorKtoPSI()
         {
@@ -479,14 +512,19 @@ namespace Orts.Common
             return new Interpolator(PressureTableGaugePSI, TemperatureTableF);
         }
 
-         // ++++++++++++++++++++++++++++++++
+        public static Interpolator SteamHeatPressureToTemperatureInterpolatorPSItoF()
+        {
+            return new Interpolator(PressureTableGaugePSI, TemperatureTableF);
+        }
+
+        // ++++++++++++++++++++++++++++++++
         // Interpolator2D for Cut-off pressure to Initial Pressure - Ref Plate 10 - LOCOMOTIVE OPERATION - A TECHNICAL AND PRACTICAL ANALYSIS - BY G. R. HENDERSON
         // 
 
         // revolutions - z value
         static float[] WheelRevolutionsRpM = new float[]
         {
-            0.0f, 50.0f, 100.0f //, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f  
+            0.0f, 50.0f, 100.0f, 150.0f, 200.0f, 250.0f, 300.0f, 350.0f  
         };
 
         // Cutoff - x Value

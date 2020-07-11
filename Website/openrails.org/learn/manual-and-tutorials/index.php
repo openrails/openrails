@@ -18,9 +18,9 @@
 				<p>
 				  Each download includes a copy of the Operating Manual. 
 <?php 
-$file_path = '../../files/Manual.pdf';
+$file_path = '../../files/OpenRails-Testing-Manual.pdf';
 echo "For convenience, you can also directly <a href='$file_path'>download the manual</a>";
-echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024) . ' KB).'; 
+echo ' (' . date('d F Y', filemtime($file_path)) . ', ' . round(filesize($file_path) / 1024 / 1024) . 'MB).'; 
 ?>
 				</p>
 				<h2>Test Environment for Models</h2>
@@ -46,7 +46,7 @@ It may be the model that is not configured correctly or, as Open Rails develops,
           <li>Building Routes</li>
         </ul>
         <p>
-          such as the tutorials on <a href="http://msts-roundhouse.nazuka.net" target="_blank">Eric Conrad's blog</a>.
+          such as the tutorials on <a href="http://msts-roundhouse.vnxglobal.com/" target="_blank">Eric Conrad's blog</a>.
         </p><p>
           If you are interested in helping with tutorials, please <a href='../../contact/'>contact us</a>.
         </p>

@@ -18,6 +18,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
@@ -71,12 +72,14 @@ namespace Orts.Simulation
         // station stop logging flags - these are saved to resume correct logging after save
         private string StationStopLogFile;   // logfile name
         private bool StationStopLogActive;   // logging is active
-        public Orts.Formats.Msts.Event triggeredEvent = null;        // used for exchange with Sound.cs to trigger activity sounds;
-
+        public EventWrapper triggeredEventWrapper = null;        // used for exchange with Sound.cs to trigger activity sounds;
         public bool NewMsgFromNewPlayer = false; // flag to indicate to ActivityWindow that there is a new message to be shown;
         public string MsgFromNewPlayer; // string to be displayed in ActivityWindow
 
         public List<TempSpeedPostItem> TempSpeedPostItems;
+
+        public int RandomizabilityPerCent = 0; // 0 -> hardly randomizable ; 100 -> well randomizable
+        public bool WeatherChangesPresent; // tested in case of randomized activities to state wheter weather should be randomized
 
         private Activity(BinaryReader inf, Simulator simulator, List<EventWrapper> oldEventList, List<TempSpeedPostItem> tempSpeedPostItems)
         {
@@ -99,21 +102,25 @@ namespace Orts.Simulation
 
                     foreach (var i in sd.Player_Traffic_Definition.Player_Traffic_List)
                     {
-                        Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem ?
-                            Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem :
-                            new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as SidingItem);
-
+                        if (i.PlatformStartID < Simulator.TDB.TrackDB.TrItemTable.Length && i.PlatformStartID >= 0 && 
+                            Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] is PlatformItem)
+                            Platform = Simulator.TDB.TrackDB.TrItemTable[i.PlatformStartID] as PlatformItem;
+                        else
+                        {
+                            Trace.TraceWarning("PlatformStartID {0} is not present in TDB file", i.PlatformStartID);
+                            continue;
+                        }
                         if (Platform != null)
                         {
-                            PlatformItem Platform2 = Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] is PlatformItem ?
-                            Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem :
-                            new PlatformItem(Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as SidingItem);
-
-                            Tasks.Add(task = new ActivityTaskPassengerStopAt(simulator,
-                                task,
-                                i.ArrivalTime,
-                                i.DepartTime,
-                                Platform, Platform2));
+                            if (Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] is PlatformItem)
+                            {
+                                PlatformItem Platform2 = Simulator.TDB.TrackDB.TrItemTable[Platform.LinkedPlatformItemId] as PlatformItem;
+                                Tasks.Add(task = new ActivityTaskPassengerStopAt(simulator,
+                                    task,
+                                    i.ArrivalTime,
+                                    i.DepartTime,
+                                    Platform, Platform2));
+                            }
                         }
                     }
                     Current = Tasks[0];
@@ -141,6 +148,7 @@ namespace Orts.Simulation
                 }
                 EventWrapper eventAdded = EventList.Last();
                 eventAdded.OriginalActivationLevel = i.Activation_Level;
+                if (i.ORTSWeatherChange != null || i.Outcomes.ORTSWeatherChange != null) WeatherChangesPresent = true;
             }
 
             StationStopLogActive = false;
@@ -230,28 +238,57 @@ namespace Orts.Simulation
             {
                 Current = Current.NextTask;
             }
-
-            if (Simulator.PlayerLocomotive.SpeedMpS == 0)
+            if (Simulator.OriginalPlayerTrain.TrainType == Train.TRAINTYPE.PLAYER || Simulator.OriginalPlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN)
             {
-                if (prevTrainSpeed != 0)
+                if (Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) < 0.2f)
                 {
-                    prevTrainSpeed = 0;
-                    Current.NotifyEvent(ActivityEventType.TrainStop);
-                    if (Current.IsCompleted != null)
+                    if (Math.Abs(prevTrainSpeed) >= 0.2f)
                     {
-                        Current = Current.NextTask;
+                        prevTrainSpeed = 0;
+                        Current.NotifyEvent(ActivityEventType.TrainStop);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
+                    }
+                }
+                else
+                {
+                    if (Math.Abs(prevTrainSpeed) < 0.2f && Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) >= 0.2f)
+                    {
+                        prevTrainSpeed = Simulator.OriginalPlayerTrain.SpeedMpS;
+                        Current.NotifyEvent(ActivityEventType.TrainStart);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
                     }
                 }
             }
             else
             {
-                if (prevTrainSpeed == 0)
+                if (Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) <= Simulator.MaxStoppedMpS)
                 {
-                    prevTrainSpeed = Simulator.PlayerLocomotive.SpeedMpS;
-                    Current.NotifyEvent(ActivityEventType.TrainStart);
-                    if (Current.IsCompleted != null)
+                    if (prevTrainSpeed != 0)
                     {
-                        Current = Current.NextTask;
+                        prevTrainSpeed = 0;
+                        Current.NotifyEvent(ActivityEventType.TrainStop);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
+                    }
+                }
+                else
+                {
+                    if (prevTrainSpeed == 0 && Math.Abs(Simulator.OriginalPlayerTrain.SpeedMpS) > 0.2f)
+                    {
+                        prevTrainSpeed = Simulator.OriginalPlayerTrain.SpeedMpS;
+                        Current.NotifyEvent(ActivityEventType.TrainStart);
+                        if (Current.IsCompleted != null)
+                        {
+                            Current = Current.NextTask;
+                        }
                     }
                 }
             }
@@ -629,6 +666,21 @@ namespace Orts.Simulation
             thisVectorNode.TrItemRefs = newTrItemRefs; //use the new item lists for the track node
             thisVectorNode.NoItemRefs++;
         }
+
+        public void AssociateEvents(Train train)
+        {
+            foreach (var eventWrapper in EventList)
+            {
+                if (eventWrapper is EventCategoryLocationWrapper && eventWrapper.ParsedObject.TrainService != "" &&
+                    train.Name.ToLower() == eventWrapper.ParsedObject.TrainService.ToLower())
+                {
+                    if (eventWrapper.ParsedObject.TrainStartingTime == -1 || (train as AITrain).ServiceDefinition.Time == eventWrapper.ParsedObject.TrainStartingTime)
+                    {
+                        eventWrapper.Train = train;
+                    }
+                }
+            }
+        }
     }
 
     public class ActivityTask
@@ -739,6 +791,9 @@ namespace Orts.Simulation
         public float distanceToNextSignal = -1;
         public Train MyPlayerTrain; // Shortcut to player train
 
+        public bool ldbfevaldepartbeforeboarding = false;//Debrief Eval
+        public static List<string> DbfEvalDepartBeforeBoarding = new List<string>();//Debrief Eval
+
         public ActivityTaskPassengerStopAt(Simulator simulator, ActivityTask prev, DateTime Arrive, DateTime Depart,
                  PlatformItem Platformend1, PlatformItem Platformend2)
         {
@@ -766,53 +821,12 @@ namespace Orts.Simulation
         /// Tests for either the front or the rear of the train is within the platform.
         /// </summary>
         /// <returns></returns>
-        public bool IsAtStation()
+        public bool IsAtStation(Train myTrain)
         {
-            // Front calcs
-            TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
-
-            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            // If front between the ends of the platform
-            if ((distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
-                distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))
-                return true;
-
-            // Rear calcs
-            helper =
-                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.RearTDBTraveller);
-
-            distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            // If rear between the ends of the platform
-            if ((distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid) || (
-                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind))
-                return true;
-
-            // if front is beyond and rear is still in front of platform
-            if (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Valid)
-                return true;
-
-            // Otherwise not
-            return false;
+            if (myTrain.StationStops.Count == 0) return false;
+            var thisStation = myTrain.StationStops[0];
+            if (myTrain.StationStops[0].SubrouteIndex != myTrain.TCRoute.activeSubpath) return false;
+            return myTrain.CheckStationPosition(thisStation.PlatformItem, thisStation.Direction, thisStation.TCSectionIndex);
         }
 
         public bool IsMissedStation()
@@ -820,38 +834,12 @@ namespace Orts.Simulation
             // Check if station is in present train path
 
             if (MyPlayerTrain.StationStops.Count == 0 ||
-                MyPlayerTrain.TCRoute.activeSubpath != MyPlayerTrain.StationStops[0].SubrouteIndex)
+                MyPlayerTrain.TCRoute.activeSubpath != MyPlayerTrain.StationStops[0].SubrouteIndex || !(MyPlayerTrain.ControlMode == Train.TRAIN_CONTROL.AUTO_NODE || MyPlayerTrain.ControlMode == Train.TRAIN_CONTROL.AUTO_SIGNAL))
             {
                 return (false);
             }
 
-            // Calc all distances
-            TDBTravellerDistanceCalculatorHelper helper =
-                new TDBTravellerDistanceCalculatorHelper(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend1;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend2;
-
-            distanceend1 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend2 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            helper =
-                new TDBTravellerDistanceCalculatorHelper(MyPlayerTrain.RearTDBTraveller);
-
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend3;
-            TDBTravellerDistanceCalculatorHelper.DistanceResult distanceend4;
-            distanceend3 = helper.CalculateToPoint(PlatformEnd1.TileX,
-                    PlatformEnd1.TileZ, PlatformEnd1.X, PlatformEnd1.Y, PlatformEnd1.Z);
-            distanceend4 = helper.CalculateToPoint(PlatformEnd2.TileX,
-                    PlatformEnd2.TileZ, PlatformEnd2.X, PlatformEnd2.Y, PlatformEnd2.Z);
-
-            // If all behind then missed
-            return (distanceend1 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend2 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend3 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                distanceend4 == TDBTravellerDistanceCalculatorHelper.DistanceResult.Behind &&
-                Simulator.PlayerLocomotive.Direction != Direction.N);
+            return MyPlayerTrain.IsMissedPlatform(200.0f);
         }
 
         public override void NotifyEvent(ActivityEventType EventType)
@@ -861,7 +849,8 @@ namespace Orts.Simulation
             // The train is stopped.
             if (EventType == ActivityEventType.TrainStop)
             {
-                if (IsAtStation())
+                if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING && IsAtStation(MyPlayerTrain)  ||
+                    MyPlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING && (MyPlayerTrain as AITrain).MovementState == AITrain.AI_MOVEMENT_STATE.STATION_STOP)
                 {
                     if (Simulator.TimetableMode || MyPlayerTrain.StationStops.Count == 0)
                     {
@@ -910,7 +899,7 @@ namespace Orts.Simulation
                                 ActArrive = SchArrive;
                             }
                         }
-                        BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeBoardingTime(Simulator.PlayerLocomotive.Train);
+                        BoardingS = (double)MyPlayerTrain.StationStops[0].ComputeStationBoardingTime(Simulator.PlayerLocomotive.Train);
                         if (BoardingS > 0 || ((double)(SchDepart - SchArrive).TotalSeconds > 0 &&
                             MyPlayerTrain.PassengerCarsNumber == 1 && MyPlayerTrain.Cars.Count > 10 ))
                         {
@@ -947,7 +936,7 @@ namespace Orts.Simulation
                     CompletedAt = ActDepart.Value;
                     // Completeness depends on the elapsed waiting time
                     IsCompleted = maydepart;
-                   if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
+                    if (MyPlayerTrain.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING)
                        MyPlayerTrain.ClearStation(PlatformEnd1.LinkedPlatformItemId, PlatformEnd2.LinkedPlatformItemId, true);
 
                     if (LogStationStops)
@@ -994,12 +983,21 @@ namespace Orts.Simulation
                     {
                         DisplayMessage = Simulator.Catalog.GetStringFmt("Passenger boarding completes in {0:D2}:{1:D2}",
                             remaining / 60, remaining % 60);
+
+                        //Debrief Eval
+                        if (Simulator.PlayerLocomotive.SpeedMpS > 0 && !ldbfevaldepartbeforeboarding)
+                        {
+                            var train = Simulator.PlayerLocomotive.Train;
+                            ldbfevaldepartbeforeboarding = true;
+                            DbfEvalDepartBeforeBoarding.Add(PlatformEnd1.Station);
+                            train.DbfEvalValueChanged = true;
+                        }
                     }
                     // May depart
                     else if (!maydepart)
                     {
                         // check if signal ahead is cleared - if not, do not allow depart
-                        if (distanceToNextSignal >= 0 && distanceToNextSignal< 300 &&
+                        if (distanceToNextSignal >= 0 && distanceToNextSignal< 300 && MyPlayerTrain.NextSignalObject[0] != null &&
                             MyPlayerTrain.NextSignalObject[0].this_sig_lr(MstsSignalFunction.NORMAL) == MstsSignalAspect.STOP
                             && MyPlayerTrain.NextSignalObject[0].hasPermission != SignalObject.Permission.Granted)
                         {
@@ -1011,6 +1009,8 @@ namespace Orts.Simulation
                             DisplayMessage = Simulator.Catalog.GetString("Passenger boarding completed. You may depart now.");
                             Simulator.SoundNotify = Event.PermissionToDepart;
                         }
+
+                        ldbfevaldepartbeforeboarding = false;//reset flag. Debrief Eval
 
                         // if last task, show closure window
                         // also set times in logfile
@@ -1104,6 +1104,7 @@ namespace Orts.Simulation
             outf.Write((Int32)PlatformEnd1.TrItemId);
             outf.Write((Int32)PlatformEnd2.TrItemId);
             outf.Write((double)BoardingEndS);
+            outf.Write((double)BoardingS);
             outf.Write((Int32)TimerChk);
             outf.Write(arrived);
             outf.Write(maydepart);
@@ -1125,6 +1126,7 @@ namespace Orts.Simulation
             PlatformEnd1 = Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
             PlatformEnd2 = Simulator.TDB.TrackDB.TrItemTable[inf.ReadInt32()] as PlatformItem;
             BoardingEndS = inf.ReadDouble();
+            BoardingS = inf.ReadDouble();
             TimerChk = inf.ReadInt32();
             arrived = inf.ReadBoolean();
             maydepart = inf.ReadBoolean();
@@ -1144,11 +1146,13 @@ namespace Orts.Simulation
         public int TimesTriggered;          // Needed for evaluation after activity ends
         public Boolean IsDisabled;          // Used for a reversible event to prevent it firing again until after it has been reset.
         protected Simulator Simulator;
+        public Train Train;              // Train involved in event; if null actual or original player train
 
         public EventWrapper(Orts.Formats.Msts.Event @event, Simulator simulator)
         {
             ParsedObject = @event;
             Simulator = simulator;
+            Train = null;
         }
 
         public virtual void Save(BinaryWriter outf)
@@ -1225,14 +1229,14 @@ namespace Orts.Simulation
 
             // Activity sound management
 
-            if (this.ParsedObject.ORTSActSoundFile != null)
+            if (this.ParsedObject.ORTSActSoundFile != null || (this.ParsedObject.Outcomes != null && this.ParsedObject.Outcomes.ActivitySound != null))
             {
-                if (activity.triggeredEvent == null) activity.triggeredEvent = this.ParsedObject;
+                if (activity.triggeredEventWrapper == null) activity.triggeredEventWrapper = this;
             }
 
-            if (this.ParsedObject.ORTSWeatherChange != null)
+            if (this.ParsedObject.ORTSWeatherChange != null || (this.ParsedObject.Outcomes != null && this.ParsedObject.Outcomes.ORTSWeatherChange != null))
             {
-                if (activity.triggeredEvent == null) activity.triggeredEvent = this.ParsedObject;
+                if (activity.triggeredEventWrapper == null) activity.triggeredEventWrapper = this;
             }
 
             if (this.ParsedObject.Outcomes.ActivityFail != null)
@@ -1245,10 +1249,14 @@ namespace Orts.Simulation
                 activity.IsSuccessful = true;
                 return true;
             }
+            if (this.ParsedObject.Outcomes.RestartWaitingTrain != null && this.ParsedObject.Outcomes.RestartWaitingTrain.WaitingTrainToRestart != "")
+            {
+                var restartWaitingTrain = this.ParsedObject.Outcomes.RestartWaitingTrain;
+                Simulator.RestartWaitingTrain(restartWaitingTrain);
+            }
             return false;
         }
-
-      
+     
     }
 
     public class EventCategoryActionWrapper : EventWrapper
@@ -1311,22 +1319,23 @@ namespace Orts.Simulation
                     }
                     break;
                 case EventType.AssembleTrainAtLocation:
-                    consistTrain = matchesConsist(ChangeWagonIdList);
-                    if (consistTrain != null)
+                    if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
+                        consistTrain = null;
+                        consistTrain = matchesConsist(ChangeWagonIdList);
+                        triggered = (consistTrain != null ? true : false);
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
+                    // Dropping off of wagons should only count once disconnected from player train.
                     // A better name than DropOffWagonsAtLocation would be ArriveAtSidingWithWagons.
+                    // To recognize the dropping off of the cars before the event is activated, this method is used.
                     if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        triggered = includesWagons(OriginalPlayerTrain, ChangeWagonIdList);
+                        consistTrain = null;
+                        consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
+                        triggered = (consistTrain != null ? false : true);
                     }
-                    // To recognize the dropping off of the cars before the event is activated, this method is used.
-                    consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
-                    if (consistTrain != null)
-                        triggered = atSiding(consistTrain.FrontTDBTraveller, consistTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2);
                     break;
                 case EventType.PickUpPassengers:
                     break;
@@ -1339,7 +1348,6 @@ namespace Orts.Simulation
             }
             return triggered;
         }
-
         /// <summary>
         /// Finds the train that contains exactly the wagons (and maybe loco) in the list in the correct sequence.
         /// </summary>
@@ -1353,9 +1361,18 @@ namespace Orts.Simulation
                 {
                     // Compare two lists to make sure wagons are in expected sequence.
                     bool listsMatch = true;
+                    //both lists with the same order
                     for (int i = 0; i < trainItem.Cars.Count; i++)
                     {
                         if (trainItem.Cars.ElementAt(i).CarID != wagonIdList.ElementAt(i)) { listsMatch = false; break; }
+                    }
+                    if (!listsMatch)
+                    {//different order list
+                        listsMatch = true;
+                        for (int i = trainItem.Cars.Count; i > 0; i--)
+                        {
+                            if (trainItem.Cars.ElementAt(i - 1).CarID != wagonIdList.ElementAt(trainItem.Cars.Count - i)) { listsMatch = false; break; }
+                        }
                     }
                     if (listsMatch) return trainItem;
                 }
@@ -1371,14 +1388,28 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                if (trainItem.Cars.Count == wagonIdList.Count)
+                bool lEngine = false;
+                int nCars = 0;//all cars other than WagonIdList.
+                int nWagonListCars = 0;//individual wagon drop.
+                foreach (var item in trainItem.Cars)
                 {
-                    // Compare two lists to make sure wagons are present.
-                    bool listsMatch = true;
-                    if (excludesWagons(trainItem, wagonIdList))
-                        listsMatch = false;
-                    if (listsMatch) return trainItem;
+                    if (item.AuxWagonType == "Engine") lEngine = true;
+                    if (!wagonIdList.Contains(item.CarID)) nCars++;
+                    if (wagonIdList.Contains(item.CarID)) nWagonListCars++;
                 }
+                // Compare two lists to make sure wagons are present.
+                bool listsMatch = true;
+                //support individual wagonIdList drop
+                if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
+                {
+                    if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
+
+                    //a consist require engine + wagons
+                    if (listsMatch && lEngine) return trainItem;
+                }
+                else if (lEngine)
+                    //TODO: Maybe, it would be necessary to avoid detach cars that are not included in wagonIdList.
+                    return trainItem;
             }
             return null;
         }
@@ -1395,7 +1426,8 @@ namespace Orts.Simulation
             {
                 if (train.Cars.Find(car => car.CarID == item) == null) return false;
             }
-            return true;
+            // train speed < 1
+            return (Math.Abs(train.SpeedMpS) <= 1 ? true : false);
         }
         /// <summary>
         /// Like MSTS, do not check for unlisted wagons as the wagon list may be shortened for convenience to contain
@@ -1406,11 +1438,20 @@ namespace Orts.Simulation
         /// <returns>True if all listed wagons are not part of the given train.</returns>
         static bool excludesWagons(Train train, List<string> wagonIdList)
         {
+            bool lNotFound = false;
             foreach (var item in wagonIdList)
             {
-                if (train.Cars.Find(car => car.CarID == item) == null) return true;
+                //take in count each item in wagonIdList 
+                if (train.Cars.Find(car => car.CarID == item) == null)
+                {
+                    lNotFound = true; //wagon not part of the train
+                }
+                else
+                {
+                    lNotFound = false; break;//wagon still part of the train
+                }
             }
-            return false;
+            return (lNotFound? true : false);
         }
         /// <summary>
         /// Like platforms, checking that one end of the train is within the siding.
@@ -1480,16 +1521,23 @@ namespace Orts.Simulation
         {
             var triggered = false;
             var e = this.ParsedObject as Orts.Formats.Msts.EventCategoryLocation;
+            var train = Simulator.PlayerLocomotive.Train;
+            if (ParsedObject.TrainService != "" && Train != null)
+            {
+                if (Train.FrontTDBTraveller == null) return triggered;
+                train = Train;
+            }
+            Train = train;
             if (e.TriggerOnStop)
             {
                 // Is train still moving?
-                if (Simulator.PlayerLocomotive.SpeedMpS != 0)
+                if (Math.Abs(train.SpeedMpS) > 0.032f)
                 {
                     return triggered;
                 }
             }
-
-            var trainFrontPosition = new Traveller(Simulator.PlayerLocomotive.Train.FrontTDBTraveller);
+            var trainFrontPosition = new Traveller(train.nextRouteReady && train.TCRoute.activeSubpath > 0 && train.TCRoute.ReversalInfo[train.TCRoute.activeSubpath - 1].Valid ?
+                train.RearTDBTraveller : train.FrontTDBTraveller); // just after reversal the old train front position must be considered
             var distance = trainFrontPosition.DistanceTo(e.TileX, e.TileZ, e.X, trainFrontPosition.Y, e.Z, e.RadiusM);
             if (distance == -1)
             {
@@ -1515,6 +1563,7 @@ namespace Orts.Simulation
         {
             var e = this.ParsedObject as Orts.Formats.Msts.EventCategoryTime;
             if (e == null) return false;
+            Train = Simulator.PlayerLocomotive.Train;
             var triggered = (e.Time <= (int)Simulator.ClockTime - activity.StartTimeS);
             return triggered;
         }

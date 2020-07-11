@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -24,15 +24,15 @@
 // complex feature and performance is not guaranteed.
 #define RENDER_BLEND_SORTING
 
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Orts.Viewer3D.Processes;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Orts.Viewer3D.Processes;
+using ORTS.Common;
+using ORTS.Common.Input;
 using Game = Orts.Viewer3D.Processes.Game;
 
 namespace Orts.Viewer3D
@@ -48,9 +48,10 @@ namespace Orts.Viewer3D
         Particles,
         InteriorOpaque,
         InteriorBlended,
+        Labels,
         CabBlended,
-        TextOverlayOpaque,
-        TextOverlayBlended,
+        OverlayOpaque,
+        OverlayBlended,
         // This value must be last.
         Sentinel
     }
@@ -64,6 +65,7 @@ namespace Orts.Viewer3D
         Precipitation, // TODO: May not be needed once alpha sorting works.
         Particles,
         Interior,
+        Labels,
         Overlay
     }
 
@@ -82,7 +84,8 @@ namespace Orts.Viewer3D
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
             RenderPrimitiveSequence.InteriorBlended,
-			RenderPrimitiveSequence.TextOverlayBlended,
+            RenderPrimitiveSequence.Labels,
+			RenderPrimitiveSequence.OverlayBlended,
 		};
 
         /// <summary>
@@ -98,7 +101,8 @@ namespace Orts.Viewer3D
 			RenderPrimitiveSequence.Precipitation,
             RenderPrimitiveSequence.Particles,
             RenderPrimitiveSequence.InteriorOpaque,
-			RenderPrimitiveSequence.TextOverlayOpaque,
+            RenderPrimitiveSequence.Labels,
+			RenderPrimitiveSequence.OverlayOpaque,
 		};
 
         protected static VertexBuffer DummyVertexBuffer;
@@ -132,13 +136,15 @@ namespace Orts.Viewer3D
         public RenderPrimitive RenderPrimitive;
         public Matrix XNAMatrix;
         public ShapeFlags Flags;
+        public object ItemData;
 
-        public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags)
+        public RenderItem(Material material, RenderPrimitive renderPrimitive, ref Matrix xnaMatrix, ShapeFlags flags, object itemData = null)
         {
             Material = material;
             RenderPrimitive = renderPrimitive;
             XNAMatrix = xnaMatrix;
             Flags = flags;
+            ItemData = itemData;
         }
 
         public class Comparer : IComparer<RenderItem>
@@ -159,6 +165,12 @@ namespace Orts.Viewer3D
                 // sometimes when calculated as two values and subtracted. Presumed cause is floating point.
                 var xd = (x.XNAMatrix.Translation - XNAViewerPos).Length();
                 var yd = (y.XNAMatrix.Translation - XNAViewerPos).Length();
+                // The following avoids water levels flashing, by forcing that higher water levels are nearer to the
+                // camera, which is always true except when camera is under water level, which is quite abnormal
+                if (x.Material is WaterMaterial && y.Material is WaterMaterial && Math.Abs(yd - xd) < 1.0 && x.XNAMatrix.Translation.Y < XNAViewerPos.Y)
+                {
+                    return Math.Sign(x.XNAMatrix.Translation.Y - y.XNAMatrix.Translation.Y);
+                }
                 // If the absolute difference is >= 1mm use that; otherwise, they're effectively in the same
                 // place so fall back to the SortIndex.
                 if (Math.Abs(yd - xd) >= 0.001)
@@ -483,7 +495,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public void PrepareFrame(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.DebugLockShadows))
+            if (UserInput.IsPressed(UserCommand.DebugLockShadows))
                 LockShadows = !LockShadows;
 
             if (Game.Settings.DynamicShadows && (RenderProcess.ShadowMapCount > 0) && !LockShadows)
@@ -560,7 +572,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix)
         {
-            AddPrimitive(material, primitive, group, ref xnaMatrix, ShapeFlags.None);
+            AddPrimitive(material, primitive, group, ref xnaMatrix, ShapeFlags.None, null);
         }
 
         static readonly bool[] PrimitiveBlendedScenery = new bool[] { true, false }; // Search for opaque pixels in alpha blended primitives, thus maintaining correct DepthBuffer
@@ -569,6 +581,12 @@ namespace Orts.Viewer3D
 
         [CallOnThread("Updater")]
         public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags)
+        {
+            AddPrimitive(material, primitive, group, ref xnaMatrix, flags, null);
+        }
+
+        [CallOnThread("Updater")]
+        public void AddPrimitive(Material material, RenderPrimitive primitive, RenderPrimitiveGroup group, ref Matrix xnaMatrix, ShapeFlags flags, object itemData)
         {
             var getBlending = material.GetBlending();
             var blending = getBlending && material is SceneryMaterial ? PrimitiveBlendedScenery : getBlending ? PrimitiveBlended : PrimitiveNotBlended;
@@ -584,7 +602,7 @@ namespace Orts.Viewer3D
                     items = new RenderItemCollection();
                     sequence.Add(sortingMaterial, items);
                 }
-                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags));
+                items.Add(new RenderItem(material, primitive, ref xnaMatrix, flags, itemData));
             }
             if (((flags & ShapeFlags.AutoZBias) != 0) && (primitive.ZBias == 0))
                 primitive.ZBias = 1;
@@ -664,7 +682,7 @@ namespace Orts.Viewer3D
 #if DEBUG_RENDER_STATE
 			DebugRenderState(graphicsDevice, "RenderFrame.Draw");
 #endif
-            var logging = UserInput.InputSettings != null && UserInput.IsPressed(UserCommands.DebugLogRenderFrame);
+            var logging = UserInput.IsPressed(UserCommand.DebugLogRenderFrame);
             if (logging)
             {
                 Console.WriteLine();
@@ -837,7 +855,8 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        if (Game.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial))
+                        if (Game.Settings.DistantMountains && (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial
+                            || sequenceMaterial.Key is MSTSSkyMaterial))
                             continue;
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);
@@ -866,7 +885,7 @@ namespace Orts.Viewer3D
                 {
                     if (sequenceMaterial.Value.Count == 0)
                         continue;
-                    if (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial)
+                    if (sequenceMaterial.Key is TerrainSharedDistantMountain || sequenceMaterial.Key is SkyMaterial || sequenceMaterial.Key is MSTSSkyMaterial)
                     {
                         // Opaque: single material, render in one go.
                         sequenceMaterial.Key.SetState(graphicsDevice, null);

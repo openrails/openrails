@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2015 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -25,6 +25,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
 using ORTS.Common;
+using System.Diagnostics;
 
 namespace ORTS.TrackViewer.Drawing
 {
@@ -67,7 +68,9 @@ namespace ORTS.TrackViewer.Drawing
 
             messageDelegate(TrackViewer.catalog.GetString("Loading tsection.dat ..."));
             string BasePath = Path.GetDirectoryName(Path.GetDirectoryName(routePath));
-            if (Directory.Exists(routePath + @"\GLOBAL") && File.Exists(routePath + @"\GLOBAL\TSECTION.DAT"))
+            if (Directory.Exists(routePath + @"\Openrails") && File.Exists(routePath + @"\Openrails\TSECTION.DAT"))
+                TsectionDat = new TrackSectionsFile(routePath + @"\Openrails\TSECTION.DAT");
+            else if (Directory.Exists(routePath + @"\GLOBAL") && File.Exists(routePath + @"\GLOBAL\TSECTION.DAT"))
                 TsectionDat = new TrackSectionsFile(routePath + @"\GLOBAL\TSECTION.DAT");
             else
                 TsectionDat = new TrackSectionsFile(BasePath + @"\GLOBAL\TSECTION.DAT");
@@ -111,9 +114,11 @@ namespace ORTS.TrackViewer.Drawing
             {
                 signalFileNames = new Dictionary<uint, string>();
                 var WFilePath = this.storedRoutePath + @"\WORLD\";
-                
-                var Tokens = new List<TokenID>();
-                Tokens.Add(TokenID.Signal);
+
+                var Tokens = new List<TokenID>
+                {
+                    TokenID.Signal
+                };
 
                 string[] wfiles;
                 try
@@ -134,8 +139,9 @@ namespace ORTS.TrackViewer.Drawing
                     {
                         WFile = new WorldFile(fileName, Tokens);
                     }
-                    catch
+                    catch (FileLoadException error)
                     {
+                        Trace.WriteLine(error);
                         continue;
                     }
 
@@ -464,7 +470,7 @@ namespace ORTS.TrackViewer.Drawing
                 {   // so junction or endnode
                     AddLocationToAvailableList(UidLocation(tn.UiD), availablePointNodeIndexes, tn);
                 }
-                else
+                else if (tn.TrVectorNode.TrVectorSections != null)
                 {   // vector nodes
                     for (int tvsi = 0; tvsi < tn.TrVectorNode.TrVectorSections.Length; tvsi++)
                     {
@@ -478,14 +484,14 @@ namespace ORTS.TrackViewer.Drawing
                 }
             }
 
-            if (roadTrackDB != null)
+            if (roadTrackDB != null && roadTrackDB.TrackNodes != null)
             {
                 for (uint tni = 0; tni < roadTrackDB.TrackNodes.Length; tni++)
                 {
                     TrackNode tn = roadTrackDB.TrackNodes[tni];
                     if (tn == null) continue;
 
-                    if (tn.TrVectorNode != null)
+                    if (tn.TrVectorNode != null && tn.TrVectorNode.TrVectorSections != null)
                     {
                         for (int tvsi = 0; tvsi < tn.TrVectorNode.TrVectorSections.Length; tvsi++)
                         {

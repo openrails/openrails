@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// #define DEBUG_MULTIPLAYER
+// DEBUG flag for debug prints
+
 using Orts.Simulation.Physics;
 using System;
 using System.Diagnostics;
@@ -57,8 +60,11 @@ namespace Orts.MultiPlayer
                      .First(ip => ip.AddressFamily == AddressFamily.InterNetwork);
             }
 			IPEndPoint serverEndPoint = new IPEndPoint(address, serverPort);
+#if DEBUG_MULTIPLAYER
+            Trace.TraceInformation("ClientComm data: {0} , ServerIP: {1}", s, serverIP);
+#endif
 
-			client.Connect(serverEndPoint);
+            client.Connect(serverEndPoint);
 			string[] tmp = s.Split(' ');
 			UserName = tmp[0];
 			Code = tmp[1];
@@ -166,7 +172,10 @@ namespace Orts.MultiPlayer
 				NetworkStream clientStream = client.GetStream();
 				lock (lockObj)//in case two threads want to write at the same buffer
 				{
-					byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
+#if DEBUG_MULTIPLAYER
+                    Trace.TraceInformation("MPClientSend: {0}", msg);
+#endif
+                    byte[] buffer = Encoding.Unicode.GetBytes(msg);//encoder.GetBytes(msg);
 					clientStream.Write(buffer, 0, buffer.Length);
 					clientStream.Flush();
 				}

@@ -232,8 +232,10 @@ namespace Orts.Viewer3D
 
             var terrainMaterial = tile.Size > 2 ? "TerrainSharedDistantMountain" : PatchIndexBuffer == null ? "TerrainShared" : "Terrain";
             var ts = Tile.Shaders[Patch.ShaderIndex].terrain_texslots;
+            var uv = Tile.Shaders[Patch.ShaderIndex].terrain_uvcalcs;
             if (ts.Length > 1)
-                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename));
+                PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, ts[1].Filename) +
+                    (uv[1].D != 0 && uv[1].D != 32 ? "\0" + uv[1].D.ToString(): ""));
             else
                 PatchMaterial = viewer.MaterialManager.Load(terrainMaterial, Helpers.GetTerrainTextureFile(viewer.Simulator, ts[0].Filename) + "\0" + Helpers.GetTerrainTextureFile(viewer.Simulator, "microtex.ace"));
 
@@ -500,6 +502,7 @@ namespace Orts.Viewer3D
     {
         readonly Texture2D PatchTexture;
         readonly Texture2D PatchTextureOverlay;
+        readonly float OverlayScale;
         IEnumerator<EffectPass> ShaderPasses;
 
         public TerrainMaterial(Viewer viewer, string terrainTexture, Texture2D defaultTexture)
@@ -508,6 +511,9 @@ namespace Orts.Viewer3D
             var textures = terrainTexture.Split('\0');
             PatchTexture = Viewer.TextureManager.Get(textures[0], defaultTexture);
             PatchTextureOverlay = textures.Length > 1 ? Viewer.TextureManager.Get(textures[1]) : null;
+            var converted = textures.Length > 2 && float.TryParse(textures[2], out OverlayScale);
+            OverlayScale = OverlayScale != 0 && converted ?  OverlayScale : 32; 
+
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
@@ -517,6 +523,7 @@ namespace Orts.Viewer3D
             if (ShaderPasses == null) ShaderPasses = shader.Techniques[Viewer.Settings.ShaderModel >= 3 ? "TerrainPS3" : "TerrainPS2"].Passes.GetEnumerator();
             shader.ImageTexture = PatchTexture;
             shader.OverlayTexture = PatchTextureOverlay;
+            shader.OverlayScale = OverlayScale;
 
             graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
             graphicsDevice.BlendState = BlendState.NonPremultiplied;

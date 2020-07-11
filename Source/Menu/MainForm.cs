@@ -49,6 +49,8 @@ namespace ORTS
             MultiplayerClient,
             SinglePlayerTimetableGame,
             SinglePlayerResumeTimetableGame,
+            MultiplayerServerResumeSave,
+            MultiplayerClientResumeSave
         }
 
         bool Initialized;
@@ -56,15 +58,17 @@ namespace ORTS
         List<Folder> Folders = new List<Folder>();
         public List<Route> Routes = new List<Route>();
         List<Activity> Activities = new List<Activity>();
-        List<Consist> Consists = new List<Consist>();
+        public List<Consist> Consists = new List<Consist>();
         List<Path> Paths = new List<Path>();
         List<TimetableInfo> TimetableSets = new List<TimetableInfo>();
+        List<WeatherFileInfo> TimetableWeatherFileSet = new List<WeatherFileInfo>();
         Task<List<Folder>> FolderLoader;
         Task<List<Route>> RouteLoader;
         Task<List<Activity>> ActivityLoader;
         Task<List<Consist>> ConsistLoader;
         Task<List<Path>> PathLoader;
         Task<List<TimetableInfo>> TimetableSetLoader;
+        Task<List<WeatherFileInfo>> TimetableWeatherFileLoader;
         readonly ResourceManager Resources = new ResourceManager("ORTS.Properties.Resources", typeof(MainForm).Assembly);
         readonly UpdateManager UpdateManager;
         readonly Image ElevationIcon;
@@ -80,7 +84,7 @@ namespace ORTS
                 return programNormal;
             }
         }
-
+        
         // Base items
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
@@ -96,6 +100,7 @@ namespace ORTS
         public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
         public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
+        public WeatherFileInfo SelectedWeatherFile { get { return (WeatherFileInfo)comboBoxTimetableWeatherFile.SelectedItem; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
 
@@ -272,13 +277,15 @@ namespace ORTS
                 PathLoader.Cancel();
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
+            if (TimetableWeatherFileLoader != null)
+                TimetableWeatherFileLoader.Cancel();
 
             // Remove any deleted saves
-			if (Directory.Exists(UserSettings.DeletedSaveFolder))
-				Directory.Delete(UserSettings.DeletedSaveFolder, true);   // true removes all contents as well as folder
+            if (Directory.Exists(UserSettings.DeletedSaveFolder))
+                Directory.Delete(UserSettings.DeletedSaveFolder, true);   // true removes all contents as well as folder
 
             // Tidy up after versions which used SAVE.BIN
-			var file = UserSettings.UserDataFolder + @"\SAVE.BIN";
+            var file = UserSettings.UserDataFolder + @"\SAVE.BIN";
             if (File.Exists(file))
                 File.Delete(file);
         }
@@ -320,7 +327,7 @@ namespace ORTS
             {
                 try
                 {
-                    Thread.CurrentThread.CurrentUICulture = new CultureInfo(Settings.Language);
+                    CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(Settings.Language);
                 }
                 catch { }
             }
@@ -372,6 +379,13 @@ namespace ORTS
             ShowStartAtList();
             ShowEnvironment();
             ShowDetails();
+            //Debrief Activity Eval
+            //0 = "- Explore route -"
+            //1 = "+ Explore in Activity mode +"
+            if (comboBoxActivity.SelectedIndex < 2)
+            { checkDebriefActivityEval.Checked = false; checkDebriefActivityEval.Enabled = false; }
+            else
+            { checkDebriefActivityEval.Enabled = true; }
         }
         #endregion
 
@@ -402,6 +416,7 @@ namespace ORTS
         void comboBoxHeadTo_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateExploreActivity();
+            ShowDetails();
         }
         #endregion
 
@@ -463,6 +478,11 @@ namespace ORTS
         void comboBoxTimetableWeather_SelectedIndexChanged(object sender, EventArgs e)
         {
             UpdateTimetableSet();
+        }
+
+        void comboBoxTimetableWeatherFile_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateTimetableWeatherSet();
         }
         #endregion
 
@@ -565,17 +585,33 @@ namespace ORTS
 
         void buttonResume_Click(object sender, EventArgs e)
         {
-            if (radioButtonModeActivity.Checked)
-            {
-                SelectedAction = UserAction.SingleplayerNewGame;
-            }
-            else
+            OpenResumeForm(false);
+        }
+
+        void buttonResumeMP_Click(object sender, EventArgs e)
+        {
+            OpenResumeForm(true);
+        }
+
+        void OpenResumeForm (bool multiplayer)
+        {
+            if (radioButtonModeTimetable.Checked)
             {
                 SelectedAction = UserAction.SinglePlayerTimetableGame;
             }
+            else if (!multiplayer)
+            {
+                SelectedAction = UserAction.SingleplayerNewGame;
+            }
+            else if (radioButtonMPClient.Checked)
+            {
+                SelectedAction = UserAction.MultiplayerClient;
+            }
+            else
+                SelectedAction = UserAction.MultiplayerServer;
 
             // if timetable mode but no timetable selected - no action
-            if (SelectedAction == UserAction.SinglePlayerTimetableGame && SelectedTimetableSet == null)
+            if (SelectedAction == UserAction.SinglePlayerTimetableGame && (SelectedTimetableSet == null || multiplayer))
             {
                 return;
             }
@@ -592,21 +628,14 @@ namespace ORTS
             }
         }
 
-        void buttonMPClient_Click(object sender, EventArgs e)
+        void buttonStartMP_Click(object sender, EventArgs e)
         {
             if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
-            SelectedAction = UserAction.MultiplayerClient;
+            SelectedAction = radioButtonMPClient.Checked? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
 
-        void buttonMPServer_Click(object sender, EventArgs e)
-        {
-            if (CheckUserName(textBoxMPUser.Text) == false) return;
-            SaveOptions();
-            SelectedAction = UserAction.MultiplayerServer;
-            DialogResult = DialogResult.OK;
-        }
         #endregion
 
         #region Options
@@ -614,6 +643,13 @@ namespace ORTS
         {
             checkBoxWarnings.Checked = Settings.Logging;
             checkBoxWindowed.Checked = !Settings.FullScreen;
+            //Debrief activity evaluation
+            checkDebriefActivityEval.Checked = Settings.DebriefActivityEval;
+            //TO DO: Debrief TTactivity evaluation
+            //checkDebriefTTActivityEval.Checked = Settings.DebriefTTActivityEval;
+            radioButtonModeActivity.Checked = Settings.IsModeActivity;
+            radioButtonModeTimetable.Checked = !Settings.IsModeActivity;
+
             textBoxMPUser.Text = Settings.Multiplayer_User;
             textBoxMPHost.Text = Settings.Multiplayer_Host + ":" + Settings.Multiplayer_Port;
         }
@@ -623,6 +659,12 @@ namespace ORTS
             Settings.Logging = checkBoxWarnings.Checked;
             Settings.FullScreen = !checkBoxWindowed.Checked;
             Settings.Multiplayer_User = textBoxMPUser.Text;
+            //Debrief activity evaluation
+            Settings.DebriefActivityEval = checkDebriefActivityEval.Checked;
+            //TO DO: Debrief TTactivity evaluation
+            //Settings.DebriefTTActivityEval = checkDebriefTTActivityEval.Checked;
+            Settings.IsModeActivity = radioButtonModeActivity.Checked;
+
             var mpHost = textBoxMPHost.Text.Split(':');
             Settings.Multiplayer_Host = mpHost[0];
             if (mpHost.Length > 1)
@@ -681,11 +723,12 @@ namespace ORTS
             comboBoxStartTime.DropDownStyle = SelectedActivity is ExploreActivity ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
             comboBoxTimetable.Enabled = comboBoxTimetableSet.Items.Count > 0;
             comboBoxTimetableTrain.Enabled = comboBoxTimetable.Items.Count > 0;
-            buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked ?
+            comboBoxTimetableWeatherFile.Enabled = comboBoxTimetableWeatherFile.Items.Count > 0;
+            //Avoid to Start with a non valid Activity/Locomotive/Consist.
+            buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked && !comboBoxActivity.Text.StartsWith("<") && !comboBoxLocomotive.Text.StartsWith("<") ?
                 SelectedActivity != null && (!(SelectedActivity is ExploreActivity) || (comboBoxConsist.Items.Count > 0 && comboBoxHeadTo.Items.Count > 0)) :
                 SelectedTimetableTrain != null;
-            buttonMPClient.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text) && !String.IsNullOrEmpty(textBoxMPHost.Text);
-            buttonMPServer.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text);
+            buttonResumeMP.Enabled = buttonStartMP.Enabled = buttonStart.Enabled && !String.IsNullOrEmpty(textBoxMPUser.Text) && !String.IsNullOrEmpty(textBoxMPHost.Text);
         }
         #endregion
 
@@ -941,6 +984,7 @@ namespace ORTS
                 comboBoxStartTime.Items.Clear();
                 foreach (var hour in Enumerable.Range(0, 24))
                     comboBoxStartTime.Items.Add(String.Format("{0}:00", hour));
+
                 UpdateFromMenuSelection<string>(comboBoxStartTime, UserSettings.Menu_SelectionIndex.Time, "12:00");
                 UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxStartSeason, UserSettings.Menu_SelectionIndex.Season, s => s.Key.ToString(), new KeyedComboBoxItem(1, ""));
                 UpdateFromMenuSelection<KeyedComboBoxItem>(comboBoxStartWeather, UserSettings.Menu_SelectionIndex.Weather, w => w.Key.ToString(), new KeyedComboBoxItem(0, ""));
@@ -969,16 +1013,23 @@ namespace ORTS
         {
             if (TimetableSetLoader != null)
                 TimetableSetLoader.Cancel();
+            if (TimetableWeatherFileLoader != null)
+                TimetableWeatherFileLoader.Cancel();
 
             TimetableSets.Clear();
             ShowTimetableSetList();
-
             var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
             TimetableSetLoader = new Task<List<TimetableInfo>>(this, () => TimetableInfo.GetTimetableInfo(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableSets) =>
             {
                 TimetableSets = timetableSets;
                 ShowTimetableSetList();
+            });
+
+            TimetableWeatherFileLoader = new Task<List<WeatherFileInfo>>(this, () => WeatherFileInfo.GetTimetableWeatherFiles(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (timetableWeatherFileSet) =>
+            {
+                TimetableWeatherFileSet = timetableWeatherFileSet;
+                ShowTimetableWeatherSet();
             });
         }
 
@@ -1000,6 +1051,22 @@ namespace ORTS
                 SelectedTimetableSet.Weather = SelectedStartWeather;
             }
         }
+
+        void ShowTimetableWeatherSet()
+        {
+            comboBoxTimetableWeatherFile.Items.Clear();
+            foreach (var weatherFile in TimetableWeatherFileSet)
+            {
+                comboBoxTimetableWeatherFile.Items.Add(weatherFile);
+                UpdateEnabled();
+            }
+        }
+
+        void UpdateTimetableWeatherSet()
+        {
+            SelectedTimetableSet.WeatherFile = SelectedWeatherFile.GetFullName();
+        }
+
         #endregion
 
         #region Timetable list
@@ -1059,6 +1126,13 @@ namespace ORTS
                 {
                     ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
                     ShowDetail(catalog.GetString("Activity Briefing"), SelectedActivity.Briefing.Split('\n'));
+                }
+                else if (SelectedPath != null)
+                {
+                    ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedPath.Name), new[] {
+                        catalog.GetStringFmt("Starting at: {0}", SelectedPath.Start),
+                        catalog.GetStringFmt("Heading to: {0}", SelectedPath.End)
+                    });
                 }
             }
             if (radioButtonModeTimetable.Checked)
@@ -1362,5 +1436,20 @@ namespace ORTS
         }
         #endregion
 
+        void comboBoxTimetable_EnabledChanged(object sender, EventArgs e)
+        {
+            //Debrief Eval TTActivity.
+            if (!comboBoxTimetable.Enabled)
+            {
+                //comboBoxTimetable.Enabled == false then we erase comboBoxTimetable and comboBoxTimetableTrain data.
+                if (comboBoxTimetable.Items.Count > 0)
+                {
+                    comboBoxTimetable.Items.Clear();
+                    comboBoxTimetableTrain.Items.Clear();
+                    buttonStart.Enabled = false;
+                }
+            }
+            //TO DO: Debrief Eval TTActivity
+        }
     }
 }

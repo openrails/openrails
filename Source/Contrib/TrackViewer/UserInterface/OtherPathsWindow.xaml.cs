@@ -24,7 +24,7 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>The DrawMultiplePaths that contains the multiple paths from which a user can make a selection</summary>
         private DrawMultiplePaths multiPaths;
         /// <summary>While setting IsChecked programmatically, prevent callbacks on changed to do something</summary>
-        private bool NoClickAction;       
+        private bool NoClickAction;
 
         /// <summary>
         /// Constructor
@@ -33,14 +33,16 @@ namespace ORTS.TrackViewer.UserInterface
         public OtherPathsWindow(DrawMultiplePaths drawMultiPaths)
         {
             InitializeComponent();
-            multiPaths = drawMultiPaths;
-            listOfPaths.Items.Clear();
+            this.multiPaths = drawMultiPaths;
+            this.listOfPaths.Items.Clear();
 
             string[] pathNames = multiPaths.PathNames();
             foreach (string pathName in pathNames)
             {
-                CheckBox checkBox = new CheckBox();
-                checkBox.Content = pathName;          
+                CheckBox checkBox = new CheckBox
+                {
+                    Content = pathName
+                };
                 checkBox.Click += new RoutedEventHandler(CheckBox_Click);
                 listOfPaths.Items.Add(checkBox);
             }
@@ -102,6 +104,12 @@ namespace ORTS.TrackViewer.UserInterface
             string value = (string)selectedCheckBox.Content;
             multiPaths.SetSelection(value, selectedCheckBox.IsChecked.Value);
             RecolorAll();
+        }
+
+        private void AlwaysOnTop_Click(object sender, RoutedEventArgs e)
+        {
+            CheckBox alwaysOnTop = (CheckBox)sender;
+            this.Topmost = alwaysOnTop.IsChecked.Value;
         }
     }
 }

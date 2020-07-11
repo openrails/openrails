@@ -656,7 +656,7 @@ namespace LibAE.Formats
         public TrackCircuitSignalList[]
             TrackCircuitSpeedPosts = new TrackCircuitSignalList[2];
         // List of speedposts (per direction) //
-        public List<TrackCircuitMilepost> MilePosts = new List<TrackCircuitMilepost>();
+        public List<TrackCircuitMilepost> Mileposts = new List<TrackCircuitMilepost>();
         // List of mileposts //
 
         //================================================================================================//

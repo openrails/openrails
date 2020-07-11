@@ -17,8 +17,203 @@ next paragraphs.
 OR adds support for the ETCS circular speed gauge, as described 
 :ref:`here <options-etcs>`.
 
+.. _cabs-dieselenginesonoff:
+
+Controls to switch on and off diesel engines
+--------------------------------------------
+
+The keyboard keys to switch on and off diesel engines are following ones:
+
+  - Ctrl+Y switches on and off the first diesel engine of the player locomotive 
+  - Shift+Y switches on and off the other diesel engines of the player locomotive, plus all diesel engines of the further locomotives in the train, if they are MUed, (that is under control of the player locomotive) which is the default.
+
+  
+Following cabview controls are available:
+
+ORTS_PLAYER_DIESEL_ENGINE: the first frame is displayed when the diesel engine 
+of the player locomotive is in states stopped or stopping, while the second 
+frame is displayed when it is in states running or started. The control may 
+be used with the mouse and starts/stops the (first) diesel engine of the 
+player locomotive, and is useful when a single two state lever is used to start/stop 
+the engine.
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE TWO_STATE)
+                        Position ( 150 446 27 26 )
+                        Graphic ( graphic1.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( ONOFF )
+                        MouseControl ( 1 )
+                )
+
+
+
+ORTS_HELPERS_DIESEL_ENGINES: the first frame is displayed when further diesel 
+engines of the player locomotive and/or the diesel engines of the helper 
+locomotives are in states stopped or stopping, while the second frame is 
+displayed when they are in states running or started. The control may be used 
+with the mouse and starts/stops further diesel engines of the player locomotive 
+and the diesel engines of the helper locomotives, and is useful when a two 
+state button or lever is used. Note therefore that this command can be used 
+also for player locomotives with more than one engine.
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_HELPERS_DIESEL_ENGINES TWO_STATE)
+                        Position ( 190 446 27 26 )
+                        Graphic ( graphics2.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( ONOFF )
+                        MouseControl ( 1 )
+                )
+
+
+
+ORTS_PLAYER_DIESEL_ENGINE_STATE: this control respectively selects frames 0, 
+1, 2, 3 for the player locomotive engine states Stopped, Starting, Running and 
+Stopping. It is a display-only control.
+
+Example::
+
+                MultiState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE_STATE TRI_STATE)
+                        Position ( 270 446 39 40 )
+                        Graphic ( cd_363_zberace.ace )
+                        NumFrames ( 4 4 1 )
+                        Style ( NONE )
+                        MouseControl ( 1 )
+                        Orientation ( 0 )
+                        DirIncrease ( 1 )
+                )
+
+
+
+ORTS_PLAYER_DIESEL_ENGINE_STARTER: it displays the second frame when the 
+player diesel engine is in starting status, and the first one in all other 
+cases. It may be used with the mouse and it can only start the engine, 
+therefore it is useful in conjunction with ORTS_PLAYER_DIESEL_ENGINE_STOPPER 
+when starting and stopping the engine is done with separate commands 
+(e.g. 2 buttons).
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE_STARTER TWO_STATE)
+                        Position ( 310 446 27 26 )
+                        Graphic ( graphics3.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( PRESSED )
+                        MouseControl ( 1 )
+                )
+
+
+
+ORTS_PLAYER_DIESEL_ENGINE_STOPPER: it displays the second frame when the 
+player diesel engine is in stopping status, and the second one in all other 
+cases. It may be used with the mouse and it can only stop the engine, 
+therefore it is useful when starting and stopping the engine is done with 
+separate commands (e.g. 2 buttons).
+
+Example::
+
+                TwoState (
+                        Type ( ORTS_PLAYER_DIESEL_ENGINE_STOPPER TWO_STATE)
+                        Position ( 350 446 27 26 )
+                        Graphic ( Bell.ace )
+                        NumFrames ( 2 2 1 )
+                        Style ( PRESSED )
+                        MouseControl ( 1 )
+                )
+
+
+
+.. _cabs-cabradio:
+
+Cab radio
+---------
+
+OR supports the cab radio cabview control.
+Pressing keys Alt+R switches on and off the cab radio.
+Switching on and off the cab radio enables discrete sound triggers 162 and 
+163, as explained :ref:`here <sound-discrete>`.
+Here is an example of a cab radio control block within the .cvf file::
+
+			TwoState (
+            Type ( CAB_RADIO TWO_STATE )
+			      Position ( 150 425 30 21 )
+			      Graphic ( Horn.ace )
+			      NumFrames ( 2 2 1 )
+			      Style ( ONOFF )
+			      MouseControl ( 1 )
+            )
+
+
+Cab light
+---------
+
+OR supports the cab light cabview control.
+Pressing key L switches on and off the cab light under the same conditions 
+applicable to MSTS.
+Switching on and off the cab light enables discrete sound trigger 161, as 
+explained :ref:`here <sound-discrete>`.
+Here is an example of a cab light control block within the .cvf file::
+
+			TwoState (
+            Type ( ORTS_CABLIGHT TWO_STATE )
+			      Position ( 120 425 30 21 )
+			      Graphic ( Horn.ace )
+			      NumFrames ( 2 2 1 )
+			      Style ( ONOFF )
+			      MouseControl ( 1 )
+            )
+
+
+Signed Traction Braking control
+-------------------------------
+
+This cabview control shows the signed value of the force (+ve or -ve, that is 
+tractive or due to dynamic braking) as displayed 
+in many real loco cabs. The control is ORTS_SIGNED_TRACTION_BRAKING. 
+For comparison, the MSTS-compatible TRACTION_BRAKING cabview control shows the 
+absolute value of the force. 
+Here is an example of a cab light control block within the .cvf file::
+
+
+            Dial (
+                Type ( ORTS_SIGNED_TRACTION_BRAKING DIAL )
+                Position ( 319 223 3 32 )
+                Graphic ( ../../Common.Cab/CabE464/AgoDin.ace )
+                Style ( NEEDLE )
+                ScaleRange ( -761 1600 )
+                ScalePos ( 190 70 )
+                Units ( AMPS )
+                Pivot ( 36 )
+                DirIncrease ( 0 )
+                )
+
+Signed Traction Total Braking control
+-------------------------------------
+
+ORTS_SIGNED_TRACTION_TOTAL_BRAKING control behaves and is defined like 
+ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking 
+force does include also the train brake force in addition to the dynamic 
+brake force.
+
+Further OR cab controls
+-----------------------
+
+OR supports the cabview control to open/close the left doors, the right doors 
+and the mirrors.
+
+The control blocks are like the one shown for the cab light. The Type strings 
+are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
+
+
 High-resolution Cab Backgrounds and Controls
-============================================
+--------------------------------------------
 
 In MSTS the resolution of the cab background image is limited to 1024x1024; 
 this limitation does not apply in OR as a result of OR's better handling of 
@@ -142,6 +337,25 @@ Note that you cannot use the MS Cabview editor on the .cvf file after having
 inserted these optional lines, because the editor will delete these added 
 lines when the file is saved.
 
+Rotation of Digital controls
+----------------------------
+
+One of the drawbacks of rendering a cabview in 2D is that some parts of it 
+are not shown with a frontal, horizontal, view. Displaying a horizontal digital 
+control on it generates an unrealistc effect. This is the rationale of following 
+entry, to be added within a Digital cabview control block in the .cvf file::
+
+  ORTSAngle ( 5 )
+
+The number in parenthesis is the angle in degrees with respect to the horizontal 
+(positive for counterclockwise rotation).
+
+Here an example of a red max speed indication that has been rotated by 5 degrees
+
+.. image:: images/cabs-digitals-rotation.png
+
+Rotation may be applied, with the same syntax, also to DigitalClock cab controls.
+
 3D cabs
 =======
 
@@ -152,7 +366,7 @@ Key ``<1>`` can also be used to enter to 3D-cab-only locomotives.
 Development Rules
 -----------------
 
-- The 3D cab is described by an .s file, the associated .ace or .dds files; 
+- The 3D cab is described by an .s file, the associated .ace or .dds files, 
   and a .cvf file having the same name as the .s file. All these files reside 
   in a folder named ``CABVIEW3D`` created within the main folder of the 
   locomotive.
@@ -197,6 +411,15 @@ Development Rules
   font. If no ace is specified, the default will be used.
 - Mirrors and doors can be operated from 3D cabs. The names used are 
   ``LEFTDOOR``, ``RIGHTDOOR`` and ``MIRRORS``.
+- like the 2D cabs, also 3D cabs can have a night version. Night textures, named like the 
+  corresponding day textures, must be located within a ``NIGHT`` subfolder of the 
+  ``CABVIEW3D`` folder. To enable night cabs an ``.sd`` file with the same name as the 
+  shape file of the 3D cab must be present in the ``CABVIEW3D`` folder. This ``.sd`` file 
+  has a standard format and must contain following line::
+
+    ESD_Alternative_Texture ( 256 )
+
+- How to control the view in a 3D cab is described :ref:`here <driving-changing-view>`.
 
 A demo trainset with a 3Dcab, that may be useful for developers, can be 
 downloaded from: `<http://www.tsimserver.com/Download/Df11G3DCab.zip>`_.  
@@ -206,7 +429,7 @@ A Practical Development Example For a Digital Speedometer
 
 Let's suppose you wish to create a digital speedometer using a size 14 font.
 
-To explain it in *gmax* speak, you must have an object called ``SPEEDOMETER`` 
+To explain it in *gmax* language, you must have an object called ``SPEEDOMETER`` 
 in the cab view and it must be comprised of at least one face.
 
 As the sample cab has only one digital speedometer, it can be named 
@@ -231,7 +454,7 @@ vertically. As most locomotive primary displays are normally angled you may
 have to rotate the pivot point so that it aligns with the angle of the 
 *display screen*.
 
-Export the .S file for the cab as per normal.
+Export the .S file for the cab as usually.
 
 You will then have to uncompress the .s file for the cab using Shape File 
 Manager or the .S file decompression tool of your choice.
@@ -248,3 +471,21 @@ Now just one more thing. Download the ``DF11G3DCab`` demo trainset. In the
 for your model.
 
 Now, open OR and test your speedometer.
+
+
+FUEL_GAUGE for steam locomotives
+--------------------------------
+
+The FUEL_GAUGE dial is available also for steam locomotives. It may be used 
+both to display a fuel level for oil burning steam locomotives (also in 2D cabs), 
+and to animate the coal level in a tank loco. Default unit of measure is Kg; 
+alternate unit of 
+measure may be LBS.
+Here below an example of an entry for a 3D cab::
+
+  Dial (
+  Type ( FUEL_GAUGE DIAL )
+  Style ( POINTER )
+  ScaleRange ( 0 5000 )
+  Units ( LBS )
+  ) 

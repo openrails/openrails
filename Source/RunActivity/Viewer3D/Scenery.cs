@@ -44,6 +44,7 @@
 
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.Formats.OR;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -75,9 +76,12 @@ namespace Orts.Viewer3D
         public void Load()
         {
             var cancellation = Viewer.LoaderProcess.CancellationToken;
-            Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfNightTextures &&
+            Viewer.DontLoadNightTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
             ((Viewer.MaterialManager.sunDirection.Y > 0.05f && Program.Simulator.ClockTime % 86400 < 43200) ||
             (Viewer.MaterialManager.sunDirection.Y > 0.15f && Program.Simulator.ClockTime % 86400 >= 43200))) ? true : false;
+            Viewer.DontLoadDayTextures = (Program.Simulator.Settings.ConditionalLoadOfDayOrNightTextures &&
+            ((Viewer.MaterialManager.sunDirection.Y < -0.05f && Program.Simulator.ClockTime % 86400 >= 43200) ||
+            (Viewer.MaterialManager.sunDirection.Y < -0.15f && Program.Simulator.ClockTime % 86400 < 43200))) ? true : false;
             if (TileX != VisibleTileX || TileZ != VisibleTileZ)
             {
                 TileX = VisibleTileX;
@@ -95,14 +99,18 @@ namespace Orts.Viewer3D
                         var tile = worldFiles.FirstOrDefault(t => t.TileX == TileX + x && t.TileZ == TileZ + z);
                         if (tile == null)
                             tile = LoadWorldFile(TileX + x, TileZ + z, x == 0 && z == 0);
-                        newWorldFiles.Add(tile);
-                        oldWorldFiles.Remove(tile);
+                        if (tile != null)
+                        {
+                            newWorldFiles.Add(tile);
+                            oldWorldFiles.Remove(tile);
+                        }
                     }
                 }
                 foreach (var tile in oldWorldFiles)
                     tile.Unload();
                 WorldFiles = newWorldFiles;
                 Viewer.tryLoadingNightTextures = true; // when Tiles loaded change you can try
+                Viewer.tryLoadingDayTextures = true; // when Tiles loaded change you can try
             }
             else if (Viewer.NightTexturesNotLoaded && Program.Simulator.ClockTime % 86400 >= 43200 && Viewer.tryLoadingNightTextures)
             {
@@ -123,6 +131,26 @@ namespace Orts.Viewer3D
                 }
                 else if (sunHeight <= 0.01)
                     Viewer.NightTexturesNotLoaded = false; // too late to try, we must give up and we don't load the night textures
+            }
+            else if (Viewer.DayTexturesNotLoaded && Program.Simulator.ClockTime % 86400 < 43200 && Viewer.tryLoadingDayTextures)
+            {
+                var sunHeight = Viewer.MaterialManager.sunDirection.Y;
+                if (sunHeight > -0.10f && sunHeight < -0.01)
+                {
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    if (remainingMemorySpace >= 0) // if not we'll try again
+                    {
+                        // Day is coming, it's time to load the day textures
+                        var success = Viewer.MaterialManager.LoadDayTextures();
+                        if (success)
+                        {
+                            Viewer.DayTexturesNotLoaded = false;
+                        }
+                    }
+                    Viewer.tryLoadingDayTextures = false;
+                }
+                else if (sunHeight >= -0.01)
+                    Viewer.DayTexturesNotLoaded = false; // too late to try, we must give up and we don't load the day textures. TODO: is this OK?
             }
         }
 
@@ -186,7 +214,15 @@ namespace Orts.Viewer3D
         WorldFile LoadWorldFile(int tileX, int tileZ, bool visible)
         {
             Trace.Write("W");
-            return new WorldFile(Viewer, tileX, tileZ, visible);
+            try
+            {
+                return new WorldFile(Viewer, tileX, tileZ, visible);
+            }
+            catch (FileLoadException error)
+            {
+                Trace.WriteLine(error);
+                return null;
+            }
         }
     }
 
@@ -243,6 +279,29 @@ namespace Orts.Viewer3D
 
             // read the world file 
             var WFile = new Orts.Formats.Msts.WorldFile(WFilePath);
+
+            // check for existence of world file in OpenRails subfolder
+
+            WFilePath = viewer.Simulator.RoutePath + @"\World\Openrails\" + WFileName;
+            if (File.Exists(WFilePath))
+            {
+                // We have an OR-specific addition to world file
+                WFile.InsertORSpecificData(WFilePath);
+            }
+
+
+
+            // to avoid loop checking for every object this pre-check is performed
+            bool containsMovingTable = false;
+            if (Program.Simulator.MovingTables != null)
+            {
+                foreach (var movingTable in Program.Simulator.MovingTables)
+                    if (movingTable.WFile == WFileName)
+                    {
+                        containsMovingTable = true;
+                        break;
+                    }
+            }
 
             // create all the individual scenery objects specified in the WFile
             foreach (var worldObject in WFile.Tr_Worldfile)
@@ -324,8 +383,33 @@ namespace Orts.Viewer3D
                                 //if (success == 0) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
                             }
                             //otherwise, use shapes
-                            else sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
-
+                            else if (!containsMovingTable) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                            else
+                            {
+                                var found = false;
+                                foreach (var movingTable in Program.Simulator.MovingTables)
+                                {
+                                    if (worldObject.UID == movingTable.UID && WFileName == movingTable.WFile)
+                                    {
+                                        found = true;
+                                        if (movingTable is Simulation.Turntable)
+                                        {
+                                            var turntable = movingTable as Simulation.Turntable;
+                                            turntable.ComputeCenter(worldMatrix);
+                                            var startingY = Math.Asin(-2 * (worldObject.QDirection.A * worldObject.QDirection.C - worldObject.QDirection.B * worldObject.QDirection.D));
+                                            sceneryObjects.Add(new TurntableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, turntable, startingY));
+                                        }
+                                        else
+                                        {
+                                            var transfertable = movingTable as Simulation.Transfertable;
+                                            transfertable.ComputeCenter(worldMatrix);
+                                            sceneryObjects.Add(new TransfertableShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, transfertable));
+                                        }
+                                        break;
+                                    }
+                                }
+                                if (!found) sceneryObjects.Add(new StaticTrackShape(viewer, shapeFilePath, worldMatrix));
+                            }
                         }
                         if (viewer.Simulator.Settings.Wire == true && viewer.Simulator.TRK.Tr_RouteFile.Electrified == true
                             && worldObject.StaticDetailLevel != 2   // Make it compatible with routes that use 'HideWire', a workaround for MSTS that 
@@ -375,6 +459,12 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(CarSpawnerObj))
                     {
+                        if (Program.Simulator.CarSpawnerLists != null && ((CarSpawnerObj)worldObject).ListName != null)
+                        {
+                            ((CarSpawnerObj)worldObject).CarSpawnerListIdx = Program.Simulator.CarSpawnerLists.FindIndex(x => x.ListName == ((CarSpawnerObj)worldObject).ListName);
+                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count-1) ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
+                        }
+                        else ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(SidingObj))
@@ -390,7 +480,7 @@ namespace Orts.Viewer3D
                         if (animated)
                             sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
                         else
-                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));                     
                     }
                     else if (worldObject.GetType() == typeof(PickupObj))
                     {

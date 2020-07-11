@@ -141,8 +141,8 @@ namespace ORTS.Common
             Vector3 TileLocation = XNAMatrix.Translation;
             while (TileX < tileX) { TileLocation.X -= 2048; TileX++; }
             while (TileX > tileX) { TileLocation.X += 2048; TileX--; }
-            while (TileZ < tileZ) { TileLocation.Z -= 2048; TileZ++; }
-            while (TileZ > tileZ) { TileLocation.Z += 2048; TileZ--; }
+            while (TileZ < tileZ) { TileLocation.Z += 2048; TileZ++; }
+            while (TileZ > tileZ) { TileLocation.Z -= 2048; TileZ--; }
             XNAMatrix.Translation = TileLocation;
         }
 

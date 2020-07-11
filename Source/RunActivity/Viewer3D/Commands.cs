@@ -45,24 +45,23 @@ namespace Orts.Viewer3D
     }
 
     /// <summary>
-    /// Continuous command to automatically re-fuel and re-water locomotive or tender when 2000 meters or more from pickup object.
+    /// Command to automatically re-fuel and re-water locomotive or tender.
     /// </summary>
     [Serializable()]
-    public sealed class ImmediateRefillCommand : ContinuousCommand
+    public sealed class ImmediateRefillCommand : Command
     {
         public static MSTSLocomotiveViewer Receiver { get; set; }
 
-        public ImmediateRefillCommand(CommandLog log, float? target, double startTime)
-            : base(log, true, target, startTime)
+        public ImmediateRefillCommand(CommandLog log)
+            : base(log)
         {
-            Target = target;        // Fraction from 0 to 1.0
-            this.Time = startTime;  // Continuous commands are created at end of change, so overwrite time when command was created
+            Redo();
         }
 
         public override void Redo()
         {
             if (Receiver == null) return;
-            Receiver.RefillChangeTo(Target);
+            Receiver.ImmediateRefill(); 
             // Report();
         }
     }
@@ -473,7 +472,24 @@ namespace Orts.Viewer3D
             // Report();
         }
     }
-    
+
+    [Serializable()]
+    public sealed class UseSpecialTracksideCameraCommand : UseCameraCommand
+    {
+
+        public UseSpecialTracksideCameraCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.SpecialTracksideCamera.Activate();
+            // Report();
+        }
+    }
+
     [Serializable()]
     public abstract class MoveCameraCommand : CameraCommand
     {
@@ -888,6 +904,67 @@ namespace Orts.Viewer3D
         {
             Receiver.Camera.FieldOfView = FieldOfView;
             Receiver.Camera.ScreenChanged();
+        }
+    }
+
+    [Serializable()]
+    public sealed class CameraChangePassengerViewPointCommand : UseCameraCommand
+    {
+
+        public CameraChangePassengerViewPointCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver.Camera.AttachedCar.PassengerViewpoints.Count == 1)
+                Receiver.PassengerCamera.SwitchSideCameraCar(Receiver.Camera.AttachedCar);
+            else Receiver.PassengerCamera.ChangePassengerViewPoint(Receiver.Camera.AttachedCar);
+            // Report();
+        }
+    }
+
+    [Serializable()]
+    public sealed class ToggleBrowseBackwardsCommand : UseCameraCommand
+    {
+
+        public ToggleBrowseBackwardsCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver.Camera is TrackingCamera)
+            {
+                var c = Receiver.Camera as TrackingCamera;
+                c.ToggleBrowseBackwards();
+            }
+            // Report();
+        }
+    }
+
+   [Serializable()]
+    public sealed class ToggleBrowseForwardsCommand : UseCameraCommand
+    {
+
+        public ToggleBrowseForwardsCommand(CommandLog log)
+            : base(log)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            if (Receiver.Camera is TrackingCamera)
+            {
+                var c = Receiver.Camera as TrackingCamera;
+                c.ToggleBrowseForwards();
+            }
+            // Report();
         }
     }
 }

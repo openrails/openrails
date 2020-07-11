@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Orts.Parsers.Msts;
@@ -102,15 +103,34 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("ortsdoubletunnelperimeter", ()=>{ DoubleTunnelPerimeterM = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
                 // if > 0 indicates distance from track without forest trees
 				new STFReader.TokenProcessor("ortsuserpreferenceforestcleardistance", ()=>{ ForestClearDistance = stf.ReadFloatBlock(STFReader.UNITS.Distance, 0); }),
+                // if true removes forest trees also from roads
+				new STFReader.TokenProcessor("ortsuserpreferenceremoveforesttreesfromroads", ()=>{ RemoveForestTreesFromRoads = stf.ReadBoolBlock(false); }),
                 // values for superelevation
                 new STFReader.TokenProcessor("ortstracksuperelevation", ()=>{ SuperElevationHgtpRadiusM = new Interpolator(stf); }),
-                
+                // images
+                new STFReader.TokenProcessor("graphic", ()=>{ Thumbnail = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("loadingscreen", ()=>{ LoadingScreen = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortsloadingscreenwide", ()=>{ LoadingScreenWide = stf.ReadStringBlock(null); }),
+                 // values for OHLE
+                new STFReader.TokenProcessor("ortsdoublewireenabled", ()=>{ DoubleWireEnabled = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortsdoublewireheight", ()=>{ DoubleWireHeight = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                new STFReader.TokenProcessor("ortstriphaseenabled", ()=>{ TriphaseEnabled = stf.ReadStringBlock(null); }),
+                new STFReader.TokenProcessor("ortstriphasewidth", ()=>{ TriphaseWidth = stf.ReadFloatBlock(STFReader.UNITS.Distance, null); }),
+                // default sms file for turntables and transfertables
+                new STFReader.TokenProcessor("ortsdefaultturntablesms", ()=>{ DefaultTurntableSMS = stf.ReadStringBlock(null); }),
+                // sms file number in Ttype.dat when train over switch
+                new STFReader.TokenProcessor("ortsswitchsmsnumber", ()=>{ SwitchSMSNumber = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortscurvesmsnumber", ()=>{ CurveSMSNumber = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortscurveswitchsmsnumber", ()=>{ CurveSwitchSMSNumber = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("ortsopendoorsinaitrains", ()=>{ OpenDoorsInAITrains = stf.ReadBoolBlock(false); }),
+
            });
             //TODO This should be changed to STFException.TraceError() with defaults values created
             if (RouteID == null) throw new STFException(stf, "Missing RouteID");
             if (Name == null) throw new STFException(stf, "Missing Name");
             if (Description == null) throw new STFException(stf, "Missing Description");
             if (RouteStart == null) throw new STFException(stf, "Missing RouteStart");
+            if (ForestClearDistance == 0 && RemoveForestTreesFromRoads) Trace.TraceWarning("You must define also ORTSUserPreferenceForestClearDistance to avoid trees on roads");
         }
 
         public string RouteID;  // ie JAPAN1  - used for TRK file and route folder name
@@ -139,6 +159,25 @@ namespace Orts.Formats.Msts
         public float DoubleTunnelPerimeterM; 
 
         public float ForestClearDistance = 0;
+        public bool RemoveForestTreesFromRoads = false;
+
+        // images
+        public string Thumbnail;
+        public string LoadingScreen;
+        public string LoadingScreenWide;
+
+        // Values for OHLE
+        public string DoubleWireEnabled;
+        public float DoubleWireHeight;
+        public string TriphaseEnabled;
+        public float TriphaseWidth;
+
+        public string DefaultTurntableSMS;
+        public bool ? OpenDoorsInAITrains; // true if option active
+
+        public int SwitchSMSNumber = -1; // defines the number of the switch SMS files in file ttypedat
+        public int CurveSMSNumber = -1; // defines the number of the curve SMS files in file ttype.dat
+        public int CurveSwitchSMSNumber = -1; // defines the number of the curve-switch SMS files in file ttype.dat
 
     }
 
@@ -159,23 +198,29 @@ namespace Orts.Formats.Msts
 
     public class TRKEnvironment
     {
-        string[] ENVFileNames = new string[12];
+        Dictionary<string, string> ENVFileNames = new Dictionary<string, string>();
 
         public TRKEnvironment(STFReader stf)
         {
             stf.MustMatch("(");
             for( int i = 0; i < 12; ++i )
             {
-                string s = stf.ReadString();
-                ENVFileNames[i] = stf.ReadStringBlock(null);
+                var envfilekey = stf.ReadString();
+                var envfile = stf.ReadStringBlock(null);
+                ENVFileNames.Add(envfilekey, envfile);
+//                Trace.TraceInformation("Environments array key {0} equals file name {1}", envfilekey, envfile);
             }
             stf.SkipRestOfBlock();
         }
 
-        public string ENVFileName( SeasonType seasonType, WeatherType weatherType )
+        public string ENVFileName(SeasonType seasonType, WeatherType weatherType)
         {
-            int index = (int)seasonType * 3 + (int)weatherType;
-            return ENVFileNames[index];
+            //int index = (int)seasonType * 3 + (int)weatherType;
+            //return ENVFileNames[index];
+            var envfilekey = seasonType.ToString() + weatherType.ToString();
+            var envfile = ENVFileNames[envfilekey];
+//            Trace.TraceInformation("Selected Environment file is {1}", envfilekey, envfile);
+            return envfile;
         }
     }
 

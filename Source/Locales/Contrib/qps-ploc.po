@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Contrib\n"
-"POT-Creation-Date: 2015-05-18 18:50:12+0100\n"
-"PO-Revision-Date: 2015-05-18 18:50:13+0100\n"
+"POT-Creation-Date: 2019-05-19 02:21:30+0200\n"
+"PO-Revision-Date: 2019-05-19 02:21:31+0200\n"
 "Last-Translator: \n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: qps-ploc\n"
@@ -62,6 +62,7 @@ msgstr "[ÂβôúƭÂçƭÉδïƭ !!!]"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.Designer.cs:110
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.Designer.cs:48
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.Designer.cs:42
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:13
 msgid "OK"
 msgstr "[ÓK !!!]"
 
@@ -118,9 +119,6 @@ msgid "HornProperties"
 msgstr "[HôřñÞřôƥèřƭïèƨ !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:100
-msgid "Activiti Description"
-msgstr "[ÂçƭïƲïƭï Ðèƨçřïƥƭïôñ !!!]"
-
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
@@ -202,7 +200,7 @@ msgstr "[WÂÌT ÂçƭïƲïƭ¥ Ðèƨçřïƥƭïôñ !!!]"
 msgid "WaitActivity"
 msgstr "[WáïƭÂçƭïƲïƭ¥ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:529
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:530
 msgid "NoMoreAct"
 msgstr "[NôMôřèÂçƭ !!!]"
 
@@ -212,7 +210,6 @@ msgstr "[₥èñú§ƭřïƥ1 !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:119
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:62
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
 msgid "File"
 msgstr "[Fïℓè !!!]"
 
@@ -270,7 +267,6 @@ msgid "Import"
 msgstr "[Ì₥ƥôřƭ !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
 msgid "Help"
 msgstr "[Hèℓƥ !!!]"
 
@@ -492,9 +488,9 @@ msgstr "[Âδδ > !!!]"
 msgid "Configuration for Generic Auxiliary Actions"
 msgstr "[Çôñƒïϱúřáƭïôñ ƒôř Gèñèřïç Âúжïℓïář¥ Âçƭïôñƨ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:33
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:57
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:28
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/BufferInterface.cs:34
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:58
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/TrackSegmentInterface.cs:29
 msgid "Please, give a name"
 msgstr "[Þℓèáƨè, ϱïƲè á ñá₥è !!!]"
 
@@ -515,7 +511,7 @@ msgstr "[ßúƒƒèř Ðïřèçƭïôñ :  !!!]"
 msgid "BufferInterface"
 msgstr "[ßúƒƒèřÌñƭèřƒáçè !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:48
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/ConnectorInterface.cs:49
 msgid "Not yet implemented"
 msgstr "[Nôƭ ¥èƭ ï₥ƥℓè₥èñƭèδ !!!]"
 
@@ -531,19 +527,19 @@ msgstr "[Çôññèçƭïôñ £áβèℓ :  !!!]"
 msgid "Station Route Interface"
 msgstr "[§ƭáƭïôñ Rôúƭè Ìñƭèřƒáçè !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:38
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:39
 msgid "Please Load Paths:"
 msgstr "[Þℓèáƨè £ôáδ Þáƭλƨ: !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:42
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:43
 msgid "List of Paths seems OK:"
 msgstr "[£ïƨƭ ôƒ Þáƭλƨ ƨèè₥ƨ ÓK: !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:119
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:120
 msgid "###"
 msgstr "[### !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:161
+#: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:162
 msgid "Loaded:"
 msgstr "[£ôáδèδ: !!!]"
 
@@ -601,9 +597,9 @@ msgid "Activity Name"
 msgstr "[ÂçƭïƲïƭ¥ Ná₥è !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:68
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
 #: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
-#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:68
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
 msgid "Route Path"
 msgstr "[Rôúƭè Þáƭλ !!!]"
 
@@ -612,44 +608,45 @@ msgstr "[Rôúƭè Þáƭλ !!!]"
 msgid "Activity Editor: Create new activity"
 msgstr "[ÂçƭïƲïƭ¥ Éδïƭôř: Çřèáƭè ñèω áçƭïƲïƭ¥ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:47
-#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:47
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:48
+#: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:48
 msgid "Route Configuration: Select Route"
 msgstr "[Rôúƭè Çôñƒïϱúřáƭïôñ: §èℓèçƭ Rôúƭè !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
-#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:139
 msgid "Activity Editor: Specify Train Info"
 msgstr "[ÂçƭïƲïƭ¥ Éδïƭôř: §ƥèçïƒ¥ Třáïñ Ìñƒô !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
-#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:194
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:158
 msgid "Select Train Consist"
 msgstr "[§èℓèçƭ Třáïñ Çôñƨïƨƭ !!!]"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
-#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
 msgid "Train Name (Opt.)"
 msgstr "[Třáïñ Ná₥è (Óƥƭ.) !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:191
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:191
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:192
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:192
 msgid "< &Back"
 msgstr "[< &ßáçƙ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:200
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:200
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:201
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:201
 msgid "&Next >"
 msgstr "[&Nèжƭ > !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:210
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:210
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:211
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:211
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:12
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:12
 msgid "Cancel"
 msgstr "[Çáñçèℓ !!!]"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:219
-#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:219
+#: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:220
+#: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:220
 msgid "&Finish"
 msgstr "[&Fïñïƨλ !!!]"
 
@@ -669,25 +666,63 @@ msgstr ""
 "[§á₥ƥℓè λèáδèř ƨúβƭïƭℓè ωïℓℓ λèℓƥ á úƨèř çô₥ƥℓèƭè á çèřƭáïñ ƭáƨƙ ïñ ƭλè §á₥ƥℓè "
 "ωïƺářδ β¥ çℓářïƒ¥ïñϱ ƭλè ƭáƨƙ ïñ ƨô₥è ωá¥. !!!]"
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.cs:61
+#: ../../Contrib/ContentManager/ContentManagerGUI.cs:92
 msgid "Loading..."
 msgstr "[£ôáδïñϱ... !!!]"
 
-#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:70
+#: ../../Contrib/ContentManager/ContentManagerGUI.Designer.cs:115
 msgid "Open Rails Content Manager"
 msgstr "[Óƥèñ Ráïℓƨ Çôñƭèñƭ Máñáϱèř !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:607
+#: ../../Contrib/TrackViewer/TrackViewer.cs:626
 msgid ""
 "The path you are working on has un-saved changes.\n"
 msgstr ""
 "[Tλè ƥáƭλ ¥ôú ářè ωôřƙïñϱ ôñ λáƨ úñ-ƨáƲèδ çλáñϱèƨ.\n !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:609
+#: ../../Contrib/TrackViewer/TrackViewer.cs:628
 msgid "Do you really want to Quit?"
 msgstr "[Ðô ¥ôú řèáℓℓ¥ ωáñƭ ƭô Qúïƭ? !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:651
+#: ../../Contrib/TrackViewer/TrackViewer.cs:731
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"Extension {0} is not supported"
+msgstr ""
+"[Rôúƭè çáññôƭ βè ℓôáδèδ.\n"
+"Éжƭèñƨïôñ {0} ïƨ ñôƭ ƨúƥƥôřƭèδ !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"{0} does not exist"
+msgstr ""
+"[Rôúƭè çáññôƭ βè ℓôáδèδ.\n"
+"{0} δôèƨ ñôƭ èжïƨƭ !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:744
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"While trying to open {0} the folder {1} was inferred as (MSTS or similar) "
+"install folder but does not contain expected files"
+msgstr ""
+"[Rôúƭè çáññôƭ βè ℓôáδèδ.\n"
+"Wλïℓè ƭř¥ïñϱ ƭô ôƥèñ {0} ƭλè ƒôℓδèř {1} ωáƨ ïñƒèřřèδ áƨ (M§T§ ôř ƨï₥ïℓář) "
+"ïñƨƭáℓℓ ƒôℓδèř βúƭ δôèƨ ñôƭ çôñƭáïñ èжƥèçƭèδ ƒïℓèƨ !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:769
+#, csharp-format
+msgid ""
+"Route cannot be loaded.\n"
+"{0} somehow could not be translated into a loadable route"
+msgstr ""
+"[Rôúƭè çáññôƭ βè ℓôáδèδ.\n"
+"{0} ƨô₥èλôω çôúℓδ ñôƭ βè ƭřáñƨℓáƭèδ ïñƭô á ℓôáδáβℓè řôúƭè !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:810
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -695,211 +730,318 @@ msgstr ""
 "[Ðïřèçƭôř¥ ïƨ ñôƭ á Ʋáℓïδ ïñƨƭáℓℓ δïřèçƭôř¥.\n"
 "Tλè ïñƨƭáℓℓ δïřèçƭôř¥ ñèèδƨ ƭô çôñƭáïñ RÓÛTÉ§, G£ÓßÂ£, ... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:725
+#: ../../Contrib/TrackViewer/TrackViewer.cs:884
 msgid "Loading route..."
 msgstr "[£ôáδïñϱ řôúƭè... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:747
+#: ../../Contrib/TrackViewer/TrackViewer.cs:909
 msgid "Route cannot be loaded. Sorry"
 msgstr "[Rôúƭè çáññôƭ βè ℓôáδèδ. §ôřř¥ !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:814
+#: ../../Contrib/TrackViewer/TrackViewer.cs:980
 msgid "Loading .pat file ..."
 msgstr "[£ôáδïñϱ .ƥáƭ ƒïℓè ... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:817
+#: ../../Contrib/TrackViewer/TrackViewer.cs:983
 msgid "Processing .pat file ..."
 msgstr "[Þřôçèƨƨïñϱ .ƥáƭ ƒïℓè ... !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:842
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
 msgid "Path has been modified. Loading a new path will discard changes."
 msgstr "[Þáƭλ λáƨ βèèñ ₥ôδïƒïèδ. £ôáδïñϱ á ñèω ƥáƭλ ωïℓℓ δïƨçářδ çλáñϱèƨ. !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:843
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:88
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
 msgid "Do you want to continue?"
 msgstr "[Ðô ¥ôú ωáñƭ ƭô çôñƭïñúè? !!!]"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:844
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:74
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1013
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1094
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:85
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:102
 msgid "Trackviewer Path Editor"
 msgstr "[TřáçƙƲïèωèř Þáƭλ Éδïƭôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:80
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
+msgid ""
+"This will open every single .pat file for this route, (try to) fix all broken "
+"nodes, and save the modified path. "
+msgstr ""
+"[Tλïƨ ωïℓℓ ôƥèñ èƲèř¥ ƨïñϱℓè .ƥáƭ ƒïℓè ƒôř ƭλïƨ řôúƭè, (ƭř¥ ƭô) ƒïж áℓℓ βřôƙèñ "
+"ñôδèƨ, áñδ ƨáƲè ƭλè ₥ôδïƒïèδ ƥáƭλ.  !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
+msgid "Potentially it will therefore change all .pat files on disc."
+msgstr "[Þôƭèñƭïáℓℓ¥ ïƭ ωïℓℓ ƭλèřèƒôřè çλáñϱè áℓℓ .ƥáƭ ƒïℓèƨ ôñ δïƨç. !!!]"
+
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
+msgid ""
+"This can be useful when a route has been changed and you want all paths to be "
+"corrected."
+msgstr ""
+"[Tλïƨ çáñ βè úƨèƒúℓ ωλèñ á řôúƭè λáƨ βèèñ çλáñϱèδ áñδ ¥ôú ωáñƭ áℓℓ ƥáƭλƨ ƭô βè "
+"çôřřèçƭèδ. !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:81
 msgid "Select broken path color"
 msgstr "[§èℓèçƭ βřôƙèñ ƥáƭλ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:86
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:87
 msgid "Select path color (main)"
 msgstr "[§èℓèçƭ ƥáƭλ çôℓôř (₥áïñ) !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:96
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:99
 msgid "Select path color (siding)"
 msgstr "[§èℓèçƭ ƥáƭλ çôℓôř (ƨïδïñϱ) !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:134
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:139
+msgid "Select color for multi-colored straight tracks"
+msgstr "[§èℓèçƭ çôℓôř ƒôř ₥úℓƭï-çôℓôřèδ ƨƭřáïϱλƭ ƭřáçƙƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:140
+msgid "Select color for multi-colored curved tracks"
+msgstr "[§èℓèçƭ çôℓôř ƒôř ₥úℓƭï-çôℓôřèδ çúřƲèδ ƭřáçƙƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:141
+msgid "Select color for mono-colored tracks"
+msgstr "[§èℓèçƭ çôℓôř ƒôř ₥ôñô-çôℓôřèδ ƭřáçƙƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:142
+msgid "Select color for tracks on terrain"
+msgstr "[§èℓèçƭ çôℓôř ƒôř ƭřáçƙƨ ôñ ƭèřřáïñ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:144
+msgid "Select color for multi-colored straight roads"
+msgstr "[§èℓèçƭ çôℓôř ƒôř ₥úℓƭï-çôℓôřèδ ƨƭřáïϱλƭ řôáδƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:145
+msgid "Select color for multi-colored curved roads"
+msgstr "[§èℓèçƭ çôℓôř ƒôř ₥úℓƭï-çôℓôřèδ çúřƲèδ řôáδƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:146
+msgid "Select color for mono-colored roads"
+msgstr "[§èℓèçƭ çôℓôř ƒôř ₥ôñô-çôℓôřèδ řôáδƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:147
+msgid "Select color for roads on terrain"
+msgstr "[§èℓèçƭ çôℓôř ƒôř řôáδƨ ôñ ƭèřřáïñ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:155
 msgid "Select background color"
 msgstr "[§èℓèçƭ βáçƙϱřôúñδ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:149
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:170
 msgid "Select text color"
 msgstr "[§èℓèçƭ ƭèжƭ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:154
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:182
+msgid "Select item text color"
+msgstr "[§èℓèçƭ ïƭè₥ ƭèжƭ çôℓôř !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:187
 msgid "Select junction color"
 msgstr "[§èℓèçƭ Júñçƭïôñ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:159
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:192
 msgid "Select endnode color"
 msgstr "[§èℓèçƭ èñδñôδè çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:164
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:197
 msgid "Select siding color"
 msgstr "[§èℓèçƭ ƨïδïñϱ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:169
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:202
 msgid "Select crossing color"
 msgstr "[§èℓèçƭ çřôƨƨïñϱ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:174
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:207
 msgid "Select road crossing color"
 msgstr "[§èℓèçƭ řôáδ çřôƨƨïñϱ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:179
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:212
 msgid "Select speedpost color"
 msgstr "[§èℓèçƭ ƨƥèèδƥôƨƭ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:244
+#: ../../Contrib/TrackViewer/Drawing/DrawColors.cs:291
 msgid "Select other-paths color"
 msgstr "[§èℓèçƭ ôƭλèř-ƥáƭλƨ çôℓôř !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:29
-msgid "Loading terrain data ..."
-msgstr "[£ôáδïñϱ ƭèřřáïñ δáƭá ... !!!]"
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:633
+#, csharp-format
+msgid "Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"
+msgstr "[£ôáδïñϱ ƭèřřáïñ áçè-ƒïℓèƨ {0}-{1} (ƨçáℓèδ δôωñ ωïƭλ á ƒáçƭôř {2}) !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:125
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:659
+msgid "Rescaling previously loaded ace-files"
+msgstr "[Rèƨçáℓïñϱ ƥřèƲïôúƨℓ¥ ℓôáδèδ áçè-ƒïℓèƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:61
 msgid "Loading trackfile .trk ..."
 msgstr "[£ôáδïñϱ ƭřáçƙƒïℓè .ƭřƙ ... !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:129
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:65
 msgid "Loading track database .tdb ..."
 msgstr "[£ôáδïñϱ ƭřáçƙ δáƭáβáƨè .ƭδβ ... !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:134
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:69
 msgid "Loading tsection.dat ..."
 msgstr "[£ôáδïñϱ ƭƨèçƭïôñ.δáƭ ... !!!]"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:159
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:83
+msgid "Loading road track database .rdb ..."
+msgstr "[£ôáδïñϱ řôáδ ƭřáçƙ δáƭáβáƨè .řδβ ... !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/DrawTrackDB.cs:269
 msgid "Finding the angles to draw signals, endnodes, ..."
 msgstr "[Fïñδïñϱ ƭλè áñϱℓèƨ ƭô δřáω ƨïϱñáℓƨ, èñδñôδèƨ, ... !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:171
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:266
+msgid "The .json file could not be read properly."
+msgstr "[Tλè .Jƨôñ ƒïℓè çôúℓδ ñôƭ βè řèáδ ƥřôƥèřℓ¥. !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:278
+msgid "Some labels could not be read properly."
+msgstr "[§ô₥è ℓáβèℓƨ çôúℓδ ñôƭ βè řèáδ ƥřôƥèřℓ¥. !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:285
+msgid "None of the labels could be read properly"
+msgstr "[Nôñè ôƒ ƭλè ℓáβèℓƨ çôúℓδ βè řèáδ ƥřôƥèřℓ¥ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/DrawLabels.cs:289
+msgid "There were no labels read"
+msgstr "[Tλèřè ωèřè ñô ℓáβèℓƨ řèáδ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml.cs:76
+msgid "Processing .pat file "
+msgstr "[Þřôçèƨƨïñϱ .ƥáƭ ƒïℓè  !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:180
 msgid "Place start point"
 msgstr "[Þℓáçè ƨƭářƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:203
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:215
 msgid "Remove start point"
 msgstr "[Rè₥ôƲè ƨƭářƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:230
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:242
 msgid "Clear path (keep tail)"
 msgstr "[Çℓèář ƥáƭλ (ƙèèƥ ƭáïℓ) !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:254
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:266
 msgid "Change start direction"
 msgstr "[Çλáñϱè ƨƭářƭ δïřèçƭïôñ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:282
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:295
 msgid "Place end point"
 msgstr "[Þℓáçè èñδ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:320
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:334
 msgid "Remove end point"
 msgstr "[Rè₥ôƲè èñδ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:346
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:360
 msgid "Place reversal point"
 msgstr "[Þℓáçè řèƲèřƨáℓ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:382
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:397
 msgid "Remove reversal point"
 msgstr "[Rè₥ôƲè řèƲèřƨáℓ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:436
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:451
 msgid "Place wait point"
 msgstr "[Þℓáçè ωáïƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:463
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:479
 msgid "Edit wait point"
 msgstr "[Éδïƭ ωáïƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:487
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:503
 msgid "Remove wait point"
 msgstr "[Rè₥ôƲè ωáïƭ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:690
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1260
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:706
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1276
 msgid "Take other exit"
 msgstr "[Táƙè ôƭλèř èжïƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:737
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:753
 msgid "Add passing path"
 msgstr "[Âδδ ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:777
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:793
 msgid "Start passing path"
 msgstr "[§ƭářƭ ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:842
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:858
 msgid "Remove passing path"
 msgstr "[Rè₥ôƲè ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:882
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:898
 msgid "Fix invalid point"
 msgstr "[Fïж ïñƲáℓïδ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:906
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:922
 msgid "Delete rest of path"
 msgstr "[Ðèℓèƭè řèƨƭ ôƒ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:935
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:951
 msgid "Cut path here and store its tail"
 msgstr "[Çúƭ ƥáƭλ λèřè áñδ ƨƭôřè ïƭƨ ƭáïℓ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:989
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1005
 msgid "Auto-fix broken points"
 msgstr "[Âúƭô-ƒïж βřôƙèñ ƥôïñƭƨ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1097
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1113
 msgid "Reconnect to tail"
 msgstr "[Rèçôññèçƭ ƭô ƭáïℓ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1158
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1174
 msgid "Reconnect passing path"
 msgstr "[Rèçôññèçƭ ƥáƨƨïñϱ ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1930
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1947
 msgid "Draw path until here"
 msgstr "[Ðřáω ƥáƭλ úñƭïℓ λèřè !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1961
+#: ../../Contrib/TrackViewer/Editing/EditorActions.cs:1978
 msgid "Draw path until next broken point"
 msgstr "[Ðřáω ƥáƭλ úñƭïℓ ñèжƭ βřôƙèñ ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:698
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:760
+msgid ""
+"The selected path contains no or only 1 node. The current path was not "
+"extended."
+msgstr ""
+"[Tλè ƨèℓèçƭèδ ƥáƭλ çôñƭáïñƨ ñô ôř ôñℓ¥ 1 ñôδè. Tλè çúřřèñƭ ƥáƭλ ωáƨ ñôƭ "
+"èжƭèñδèδ. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:800
+msgid "The selected path has been added as tail and then reconnected."
+msgstr "[Tλè ƨèℓèçƭèδ ƥáƭλ λáƨ βèèñ áδδèδ áƨ ƭáïℓ áñδ ƭλèñ řèçôññèçƭèδ. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:804
+msgid ""
+"The selected path has been added as tail. It was not possible to reconnect "
+"automatically."
+msgstr ""
+"[Tλè ƨèℓèçƭèδ ƥáƭλ λáƨ βèèñ áδδèδ áƨ ƭáïℓ. Ìƭ ωáƨ ñôƭ ƥôƨƨïβℓè ƭô řèçôññèçƭ "
+"áúƭô₥áƭïçáℓℓ¥. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:847
 msgid "Reversing broken paths is not supported"
 msgstr "[RèƲèřƨïñϱ βřôƙèñ ƥáƭλƨ ïƨ ñôƭ ƨúƥƥôřƭèδ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:703
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:852
 msgid "Reversing a path without start node is not supported"
 msgstr "[RèƲèřƨïñϱ á ƥáƭλ ωïƭλôúƭ ƨƭářƭ ñôδè ïƨ ñôƭ ƨúƥƥôřƭèδ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:708
+#: ../../Contrib/TrackViewer/Editing/PathEditor.cs:857
 msgid "Reversing a path without end node is not supported"
 msgstr "[RèƲèřƨïñϱ á ƥáƭλ ωïƭλôúƭ èñδ ñôδè ïƨ ñôƭ ƨúƥƥôřƭèδ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:73
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:84
 msgid ""
 "Path does not even have a start node.\n"
 "Saving is not possible."
@@ -907,47 +1049,47 @@ msgstr ""
 "[Þáƭλ δôèƨ ñôƭ èƲèñ λáƲè á ƨƭářƭ ñôδè.\n"
 "§áƲïñϱ ïƨ ñôƭ ƥôƨƨïβℓè. !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:80
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:91
 msgid "* The path does not have a well-defined end-point"
 msgstr "[* Tλè ƥáƭλ δôèƨ ñôƭ λáƲè á ωèℓℓ-δèƒïñèδ èñδ-ƥôïñƭ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:82
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:93
 msgid "* The path has a stored and not-yet reconnected tail"
 msgstr "[* Tλè ƥáƭλ λáƨ á ƨƭôřèδ áñδ ñôƭ-¥èƭ řèçôññèçƭèδ ƭáïℓ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:86
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:97
 msgid "The current path is not finished:"
 msgstr "[Tλè çúřřèñƭ ƥáƭλ ïƨ ñôƭ ƒïñïƨλèδ: !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:110
 msgid "Saving broken paths might not always work correctly."
 msgstr "[§áƲïñϱ βřôƙèñ ƥáƭλƨ ₥ïϱλƭ ñôƭ áℓωá¥ƨ ωôřƙ çôřřèçƭℓ¥. !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:100
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:111
 msgid "The MSTS format for defining broken paths is not understood very well."
 msgstr "[Tλè M§T§ ƒôř₥áƭ ƒôř δèƒïñïñϱ βřôƙèñ ƥáƭλƨ ïƨ ñôƭ úñδèřƨƭôôδ Ʋèř¥ ωèℓℓ. !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:101
+#: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:112
 msgid "Reopening it in TrackViewer, however, is likely to work."
 msgstr "[Rèôƥèñïñϱ ïƭ ïñ TřáçƙVïèωèř, λôωèƲèř, ïƨ ℓïƙèℓ¥ ƭô ωôřƙ. !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:269
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:270
 msgid "Set as invalid in .pat file"
 msgstr "[§èƭ áƨ ïñƲáℓïδ ïñ .ƥáƭ ƒïℓè !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:271
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:272
 msgid "Closest junction is too far away"
 msgstr "[Çℓôƨèƨƭ Júñçƭïôñ ïƨ ƭôô ƒář áωá¥ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:273
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:274
 msgid "Not able to place node on track"
 msgstr "[Nôƭ áβℓè ƭô ƥℓáçè ñôδè ôñ ƭřáçƙ !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:275
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:276
 msgid "Dangling siding node"
 msgstr "[Ðáñϱℓïñϱ ƨïδïñϱ ñôδè !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:277
+#: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:278
 msgid "Unknown"
 msgstr "[Ûñƙñôωñ !!!]"
 
@@ -958,160 +1100,342 @@ msgstr "[Ûñƙñôωñ !!!]"
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:56
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:57
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:134
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:143
 msgid "1"
 msgstr "[1 !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:139
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
 msgid "10"
 msgstr "[10 !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:260
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:269
 msgid "99"
 msgstr "[99 !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:75
+#: ../../Contrib/TrackViewer/UserInterface/Languages.cs:91
 msgid "Please restart TrackViewer in order to load the new language."
 msgstr "[Þℓèáƨè řèƨƭářƭ TřáçƙVïèωèř ïñ ôřδèř ƭô ℓôáδ ƭλè ñèω ℓáñϱúáϱè. !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:352
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:403
 msgid "<Select path>"
 msgstr "[<§èℓèçƭ ƥáƭλ> !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:366
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:419
 msgid "<Select station>"
 msgstr "[<§èℓèçƭ ƨƭáƭïôñ> !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:379
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:432
 msgid "<Select platform>"
 msgstr "[<§èℓèçƭ ƥℓáƭƒôř₥> !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:392
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:445
 msgid "<Select siding>"
 msgstr "[<§èℓèçƭ ƨïδïñϱ> !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:486
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:558
 msgid ""
-"left  arrow:  Shift left\n"
+"ctrl-R\tReload the route\n"
 msgstr ""
-"[ℓèƒƭ  ářřôω:  §λïƒƭ ℓèƒƭ\n !!!]"
+"[çƭřℓ-R\ƭRèℓôáδ ƭλè řôúƭè\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:487
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:559
 msgid ""
-"down  arrow:  Shift down\n"
+"Q\tQuit\n"
 msgstr ""
-"[δôωñ  ářřôω:  §λïƒƭ δôωñ\n !!!]"
+"[Q\ƭQúïƭ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:488
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:561
 msgid ""
-"right arrow:  Shift right\n"
+"=\tZoom-in (and keep zooming)\n"
 msgstr ""
-"[řïϱλƭ ářřôω:  §λïƒƭ řïϱλƭ\n !!!]"
+"[=\ƭZôô₥-ïñ (áñδ ƙèèƥ ƺôô₥ïñϱ)\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:489
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:562
 msgid ""
-"up    arrow:  Shift up\n"
+"shift-=\tZoom-in\n"
 msgstr ""
-"[úƥ    ářřôω:  §λïƒƭ úƥ\n !!!]"
+"[ƨλïƒƭ-=\ƭZôô₥-ïñ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:490
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:563
 msgid ""
-"C:  Shift to center of current path node\n"
+"-\tZoom-out (and keep zooming)\n"
 msgstr ""
-"[Ç:  §λïƒƭ ƭô çèñƭèř ôƒ çúřřèñƭ ƥáƭλ ñôδè\n !!!]"
+"[-\ƭZôô₥-ôúƭ (áñδ ƙèèƥ ƺôô₥ïñϱ)\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:491
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:564
 msgid ""
-"shift-C:  Shift to center of current mouse location\n"
+"shift--\tZoom-out\n"
 msgstr ""
-"[ƨλïƒƭ-Ç:  §λïƒƭ ƭô çèñƭèř ôƒ çúřřèñƭ ₥ôúƨè ℓôçáƭïôñ\n !!!]"
+"[ƨλïƒƭ--\ƭZôô₥-ôúƭ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:492
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:565
 msgid ""
-"PgUp:  Show more of the path\n"
+"Z\tZoom to tile\n"
 msgstr ""
-"[ÞϱÛƥ:  §λôω ₥ôřè ôƒ ƭλè ƥáƭλ\n !!!]"
+"[Z\ƭZôô₥ ƭô ƭïℓè\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:493
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:566
 msgid ""
-"PgDn:  Show less of the path\n"
+"M\tToggle zoom center\n"
 msgstr ""
-"[ÞϱÐñ:  §λôω ℓèƨƨ ôƒ ƭλè ƥáƭλ\n !!!]"
+"[M\ƭTôϱϱℓè ƺôô₥ çèñƭèř\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:494
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:567
 msgid ""
-"shift-PgUp:  Show the full path\n"
+"R\tZoom reset\n"
 msgstr ""
-"[ƨλïƒƭ-ÞϱÛƥ:  §λôω ƭλè ƒúℓℓ ƥáƭλ\n !!!]"
+"[R\ƭZôô₥ řèƨèƭ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:495
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:568
 msgid ""
-"shift-PgDn:  Show only start point of path\n"
+"L\tAdd label\n"
 msgstr ""
-"[ƨλïƒƭ-ÞϱÐñ:  §λôω ôñℓ¥ ƨƭářƭ ƥôïñƭ ôƒ ƥáƭλ\n !!!]"
+"[£\ƭÂδδ ℓáβèℓ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:496
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:570
 msgid ""
-"ctrl-Z: Undo in path editor\n"
+"shift-C\t\tShift center to current mouse location\n"
 msgstr ""
-"[çƭřℓ-Z: Ûñδô ïñ ƥáƭλ èδïƭôř\n !!!]"
+"[ƨλïƒƭ-Ç\ƭ\ƭ§λïƒƭ çèñƭèř ƭô çúřřèñƭ ₥ôúƨè ℓôçáƭïôñ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:497
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:571
 msgid ""
-"ctrl-Y: Redo in path editor\n"
+"left arrow\tShift left\n"
 msgstr ""
-"[çƭřℓ-Ý: Rèδô ïñ ƥáƭλ èδïƭôř\n !!!]"
+"[ℓèƒƭ ářřôω\ƭ§λïƒƭ ℓèƒƭ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:504
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:572
+msgid ""
+"down arrow\tShift down\n"
+msgstr ""
+"[δôωñ ářřôω\ƭ§λïƒƭ δôωñ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:573
+msgid ""
+"right arrow\tShift right\n"
+msgstr ""
+"[řïϱλƭ ářřôω\ƭ§λïƒƭ řïϱλƭ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:574
+msgid ""
+"up arrow\t\tShift up\n"
+msgstr ""
+"[úƥ ářřôω\ƭ\ƭ§λïƒƭ úƥ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:576
+msgid ""
+"F5\tShow speed-limits\n"
+msgstr ""
+"[F5\ƭ§λôω ƨƥèèδ-ℓï₥ïƭƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:577
+msgid ""
+"shift-F5\tShow mileposts\n"
+msgstr ""
+"[ƨλïƒƭ-F5\ƭ§λôω ₥ïℓèƥôƨƭƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:578
+msgid ""
+"F6\tShow terrain\n"
+msgstr ""
+"[F6\ƭ§λôω ƭèřřáïñ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:579
+msgid ""
+"ctrl-F6\tShow DM terrain\n"
+msgstr ""
+"[çƭřℓ-F6\ƭ§λôω ÐM ƭèřřáïñ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:580
+msgid ""
+"shift-F6\tShow terrain patch lines\n"
+msgstr ""
+"[ƨλïƒƭ-F6\ƭ§λôω ƭèřřáïñ ƥáƭçλ ℓïñèƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:581
+msgid ""
+"F7\tshow signals\n"
+msgstr ""
+"[F7\ƭƨλôω ƨïϱñáℓƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:582
+msgid ""
+"F8\tShow platforms\n"
+msgstr ""
+"[F8\ƭ§λôω ƥℓáƭƒôř₥ƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:583
+msgid ""
+"shift-F8\tShow platform-names\n"
+msgstr ""
+"[ƨλïƒƭ-F8\ƭ§λôω ƥℓáƭƒôř₥-ñá₥èƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:584
+msgid ""
+"F9\tShow sidings\n"
+msgstr ""
+"[F9\ƭ§λôω ƨïδïñϱƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:585
+msgid ""
+"shift-F9\tShow siding-names\n"
+msgstr ""
+"[ƨλïƒƭ-F9\ƭ§λôω ƨïδïñϱ-ñá₥èƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:586
+msgid ""
+"F10\tHighlight tracks\n"
+msgstr ""
+"[F10\ƭHïϱλℓïϱλƭ ƭřáçƙƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:587
+msgid ""
+"shift-F10\tHighlight items\n"
+msgstr ""
+"[ƨλïƒƭ-F10\ƭHïϱλℓïϱλƭ ïƭè₥ƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:588
+msgid ""
+"F11\tShow path\n"
+msgstr ""
+"[F11\ƭ§λôω ƥáƭλ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:589
+msgid ""
+"shift-F11\tShow raw path\n"
+msgstr ""
+"[ƨλïƒƭ-F11\ƭ§λôω řáω ƥáƭλ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:591
+msgid ""
+"C\t\tShift to center of current path node\n"
+msgstr ""
+"[Ç\ƭ\ƭ§λïƒƭ ƭô çèñƭèř ôƒ çúřřèñƭ ƥáƭλ ñôδè\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:592
+msgid ""
+"PgUp\t\tShow more of the path\n"
+msgstr ""
+"[ÞϱÛƥ\ƭ\ƭ§λôω ₥ôřè ôƒ ƭλè ƥáƭλ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:593
+msgid ""
+"PgDn\t\tShow less of the path\n"
+msgstr ""
+"[ÞϱÐñ\ƭ\ƭ§λôω ℓèƨƨ ôƒ ƭλè ƥáƭλ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:594
+msgid ""
+"shift-PgUp\tShow the full path\n"
+msgstr ""
+"[ƨλïƒƭ-ÞϱÛƥ\ƭ§λôω ƭλè ƒúℓℓ ƥáƭλ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:595
+msgid ""
+"shift-PgDn\tShow only start point of path\n"
+msgstr ""
+"[ƨλïƒƭ-ÞϱÐñ\ƭ§λôω ôñℓ¥ ƨƭářƭ ƥôïñƭ ôƒ ƥáƭλ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:596
+msgid ""
+"E\t\tPlace end-point\n"
+msgstr ""
+"[É\ƭ\ƭÞℓáçè èñδ-ƥôïñƭ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:597
+msgid ""
+"W\t\tPlace a wait-point\n"
+msgstr ""
+"[W\ƭ\ƭÞℓáçè á ωáïƭ-ƥôïñƭ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:598
+msgid ""
+"ctrl-Z\t\tUndo in path editor\n"
+msgstr ""
+"[çƭřℓ-Z\ƭ\ƭÛñδô ïñ ƥáƭλ èδïƭôř\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:599
+msgid ""
+"ctrl-Y\t\tRedo in path editor\n"
+msgstr ""
+"[çƭřℓ-Ý\ƭ\ƭRèδô ïñ ƥáƭλ èδïƭôř\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:601
+msgid ""
+"alt-?\t\tVarious keys to open submenus\n"
+msgstr ""
+"[áℓƭ-?\ƭ\ƭVářïôúƨ ƙè¥ƨ ƭô ôƥèñ ƨúβ₥èñúƨ\n !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:602
+msgid "Keyboard shortcuts"
+msgstr "[Kè¥βôářδ ƨλôřƭçúƭƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:608
 msgid "This is ORTS TrackViewer, version "
 msgstr "[Tλïƨ ïƨ ÓRT§ TřáçƙVïèωèř, Ʋèřƨïôñ  !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:507
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:611
 msgid ""
 "It is a 'Contribution' to ORTS, and as such\n"
 msgstr ""
 "[Ìƭ ïƨ á 'Çôñƭřïβúƭïôñ' ƭô ÓRT§, áñδ áƨ ƨúçλ\n !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:508
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:612
 msgid "not an integral part of ORTS."
 msgstr "[ñôƭ áñ ïñƭèϱřáℓ ƥářƭ ôƒ ÓRT§. !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:515
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:780
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:620
 msgid "Documentation is available"
 msgstr "[Ðôçú₥èñƭáƭïôñ ïƨ áƲáïℓáβℓè !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:516
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:781
-msgid "Right column → OR_Trackviewer"
-msgstr "[Rïϱλƭ çôℓú₥ñ → ÓR_TřáçƙƲïèωèř !!!]"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:624
+msgid "Right column → Open Rails Trackviewer"
+msgstr "[Rïϱλƭ çôℓú₥ñ → Óƥèñ Ráïℓƨ TřáçƙƲïèωèř !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:778
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:626
+msgid "Do you want to go to the website?"
+msgstr "[Ðô ¥ôú ωáñƭ ƭô ϱô ƭô ƭλè ωèβƨïƭè? !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:628
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:174
+msgid "Documentation"
+msgstr "[Ðôçú₥èñƭáƭïôñ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:4
+msgid "Label"
+msgstr "[£áβèℓ !!!]"
+
+#: ../../Contrib/TrackViewer/Drawing/Labels/EditLabel.xaml:14
+msgid "Delete label"
+msgstr "[Ðèℓèƭè ℓáβèℓ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:4
+msgid "Result of auto correcting all paths"
+msgstr "[Rèƨúℓƭ ôƒ áúƭô çôřřèçƭïñϱ áℓℓ ƥáƭλƨ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:19
 msgid ""
-"Currently all intended and planned editor features have been implemented."
+"\n"
+"            Save the above overview"
 msgstr ""
-"[Çúřřèñƭℓ¥ áℓℓ ïñƭèñδèδ áñδ ƥℓáññèδ èδïƭôř ƒèáƭúřèƨ λáƲè βèèñ ï₥ƥℓè₥èñƭèδ. !!!]"
+"[\n"
+"            §áƲè ƭλè áβôƲè ôƲèřƲïèω !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:783
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
-msgid "Known limitations"
-msgstr "[Kñôωñ ℓï₥ïƭáƭïôñƨ !!!]"
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:23
+msgid "directly"
+msgstr "[δïřèçƭℓ¥ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:785
-msgid "* The saved-paths have not been tested with MSTS or ORTS."
-msgstr "[* Tλè ƨáƲèδ-ƥáƭλƨ λáƲè ñôƭ βèèñ ƭèƨƭèδ ωïƭλ M§T§ ôř ÓRT§. !!!]"
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:24
+msgid "individually with confirmation"
+msgstr "[ïñδïƲïδúáℓℓ¥ ωïƭλ çôñƒïř₥áƭïôñ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:787
+#: ../../Contrib/TrackViewer/Editing/AutoFixAllPaths.xaml:26
 msgid ""
-"* Possibly non-standard junctions (> 1 incoming or > 2 outgoing tracks) might "
-"not work."
+"\n"
+"            Cancel"
 msgstr ""
-"[* Þôƨƨïβℓ¥ ñôñ-ƨƭáñδářδ Júñçƭïôñƨ (> 1 ïñçô₥ïñϱ ôř > 2 ôúƭϱôïñϱ ƭřáçƙƨ) ₥ïϱλƭ "
-"ñôƭ ωôřƙ. !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:789
-msgid "Feedback is appreciated."
-msgstr "[Fèèδβáçƙ ïƨ áƥƥřèçïáƭèδ. !!!]"
+"[\n"
+"            Çáñçèℓ !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:4
 msgid "Path metadata"
@@ -1139,13 +1463,13 @@ msgstr "[Þℓá¥èř ƥáƭλ !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:24
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:15
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:57
 msgid " OK "
 msgstr "[ ÓK  !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/PathMetadataDialog.xaml:25
 #: ../../Contrib/TrackViewer/Editing/UncouplePointDialog.xaml:16
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:54
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:58
 msgid " Cancel "
 msgstr "[ Çáñçèℓ  !!!]"
 
@@ -1207,7 +1531,7 @@ msgid " cars, and wait"
 msgstr "[ çářƨ, áñδ ωáïƭ !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:42
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "seconds. "
 msgstr "[ƨèçôñδƨ.  !!!]"
 
@@ -1220,28 +1544,60 @@ msgid "Join and split"
 msgstr "[Jôïñ áñδ ƨƥℓïƭ !!!]"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
+msgid "AI train request to pass red signal"
+msgstr "[ÂÌ ƭřáïñ řè9úèƨƭ ƭô ƥáƨƨ řèδ ƨïϱñáℓ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
 msgstr "[ßℓôω λôřñ ƒôř !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
 msgstr "[Wáïƭ ƭï₥è çôδè áƨ δèçï₥áℓ = !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:47
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:51
 msgid "00000"
 msgstr "[00000 !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:48
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:52
 msgid "hexadecimal ="
 msgstr "[λèжáδèçï₥áℓ = !!!]"
 
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:49
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid "0000"
 msgstr "[0000 !!!]"
 
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:6
+msgid "Charting the path"
+msgstr "[Çλářƭïñϱ ƭλè ƥáƭλ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+msgid ""
+"Save the data of the chart in json format into a .js file.The saved data can "
+"then be used to show the chart on an HTML5 canvas."
+msgstr ""
+"[§áƲè ƭλè δáƭá ôƒ ƭλè çλářƭ ïñ Jƨôñ ƒôř₥áƭ ïñƭô á .Jƨ ƒïℓè.Tλè ƨáƲèδ δáƭá çáñ "
+"ƭλèñ βè úƨèδ ƭô ƨλôω ƭλè çλářƭ ôñ áñ HTM£5 çáñƲáƨ. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
+msgid "Save json"
+msgstr "[§áƲè Jƨôñ !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:66
+msgid "Save the data of the chart in json format into a .js file."
+msgstr "[§áƲè ƭλè δáƭá ôƒ ƭλè çλářƭ ïñ Jƨôñ ƒôř₥áƭ ïñƭô á .Jƨ ƒïℓè. !!!]"
+
+#: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:67
+msgid "The saved data can then be used to show the chart on an HTML5 canvas."
+msgstr "[Tλè ƨáƲèδ δáƭá çáñ ƭλèñ βè úƨèδ ƭô ƨλôω ƭλè çλářƭ ôñ áñ HTM£5 çáñƲáƨ. !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
+msgid "_File"
+msgstr "[_Fïℓè !!!]"
+
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
-msgid "(Re)load route"
-msgstr "[(Rè)ℓôáδ řôúƭè !!!]"
+msgid "(Re)load route (ctrl-R)"
+msgstr "[(Rè)ℓôáδ řôúƭè (çƭřℓ-R) !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
 msgid "Select install folder"
@@ -1276,8 +1632,8 @@ msgid "Quit (Q)"
 msgstr "[Qúïƭ (Q) !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:22
-msgid "View"
-msgstr "[Vïèω !!!]"
+msgid "_View"
+msgstr "[_Vïèω !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:23
 msgid "Center around station"
@@ -1300,8 +1656,8 @@ msgid "Show path (F11)"
 msgstr "[§λôω ƥáƭλ (F11) !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:35
-msgid "Show raw path from .pat file (shift F11)"
-msgstr "[§λôω řáω ƥáƭλ ƒřô₥ .ƥáƭ ƒïℓè (ƨλïƒƭ F11) !!!]"
+msgid "Show raw path from .pat file (shift-F11)"
+msgstr "[§λôω řáω ƥáƭλ ƒřô₥ .ƥáƭ ƒïℓè (ƨλïƒƭ-F11) !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:37
 msgid "Track Coloring"
@@ -1339,239 +1695,347 @@ msgstr "[§λôω ƨçáℓè řúℓèř !!!]"
 msgid "Show longitude/latitude"
 msgstr "[§λôω ℓôñϱïƭúδè/ℓáƭïƭúδè !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:47
-msgid "Use miles i.s.o. meters"
-msgstr "[Ûƨè ₥ïℓèƨ ï.ƨ.ô. ₥èƭèřƨ !!!]"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:48
+msgid "Labels"
+msgstr "[£áβèℓƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
+msgid "Show labels"
+msgstr "[§λôω ℓáβèℓƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:49
+msgid "For adding a label, press L"
+msgstr "[Fôř áδδïñϱ á ℓáβèℓ, ƥřèƨƨ £ !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:50
+msgid "Load labels"
+msgstr "[£ôáδ ℓáβèℓƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
+msgid "Save labels"
+msgstr "[§áƲè ℓáβèℓƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
 msgid "Save current zoom"
 msgstr "[§áƲè çúřřèñƭ ƺôô₥ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:51
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
 msgid "Restore saved zoom"
 msgstr "[Rèƨƭôřè ƨáƲèδ ƺôô₥ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:53
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:57
 msgid "Zoom in (=)"
 msgstr "[Zôô₥ ïñ (=) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:54
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
 msgid "Zoom out (-)"
 msgstr "[Zôô₥ ôúƭ (-) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:55
-msgid "Zoom to tile (z)"
-msgstr "[Zôô₥ ƭô ƭïℓè (ƺ) !!!]"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:59
+msgid "Zoom to tile (Z)"
+msgstr "[Zôô₥ ƭô ƭïℓè (Z) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:56
-msgid "Zoom reset (r)"
-msgstr "[Zôô₥ řèƨèƭ (ř) !!!]"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
+msgid "Zoom reset (R)"
+msgstr "[Zôô₥ řèƨèƭ (R) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:58
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
 msgid "Anti aliasing (needs restart)"
 msgstr "[Âñƭï áℓïáƨïñϱ (ñèèδƨ řèƨƭářƭ) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:60
-msgid "Track items"
-msgstr "[Třáçƙ ïƭè₥ƨ !!!]"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+msgid "Track _items"
+msgstr "[Třáçƙ _ïƭè₥ƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:61
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
 msgid "Show all items"
 msgstr "[§λôω áℓℓ ïƭè₥ƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:62
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
 msgid "Show no items"
 msgstr "[§λôω ñô ïƭè₥ƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:63
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
 msgid "Highlight items (shift-F10)"
 msgstr "[Hïϱλℓïϱλƭ ïƭè₥ƨ (ƨλïƒƭ-F10) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:64
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:68
 msgid "Junctions/ends"
 msgstr "[Júñçƭïôñƨ/èñδƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:65
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
 msgid "Show junctions"
 msgstr "[§λôω Júñçƭïôñƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:66
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
 msgid "Show end nodes"
 msgstr "[§λôω èñδ ñôδèƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:67
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
 msgid "Show crossovers"
 msgstr "[§λôω çřôƨƨôƲèřƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:69
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
 msgid "Sidings"
 msgstr "[§ïδïñϱƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:70
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
 msgid "Show siding markers (F9)"
 msgstr "[§λôω ƨïδïñϱ ₥ářƙèřƨ (F9) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:71
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
 msgid "Show siding names (shift-F9)"
 msgstr "[§λôω ƨïδïñϱ ñá₥èƨ (ƨλïƒƭ-F9) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:73
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:77
 msgid "Platforms"
 msgstr "[Þℓáƭƒôř₥ƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:74
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
 msgid "Show platform markers (F8)"
 msgstr "[§λôω ƥℓáƭƒôř₥ ₥ářƙèřƨ (F8) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:75
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
 msgid "Show platform names (shift-F8)"
 msgstr "[§λôω ƥℓáƭƒôř₥ ñá₥èƨ (ƨλïƒƭ-F8) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:76
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:80
 msgid "Show station names (shift-F8)"
 msgstr "[§λôω ƨƭáƭïôñ ñá₥èƨ (ƨλïƒƭ-F8) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:78
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
 msgid "Interactives"
 msgstr "[ÌñƭèřáçƭïƲèƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:79
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
 msgid "Show signals (F7)"
 msgstr "[§λôω ƨïϱñáℓƨ (F7) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:80
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
 msgid "Show also other signals"
 msgstr "[§λôω áℓƨô ôƭλèř ƨïϱñáℓƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:81
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:85
 msgid "Show level crossings"
 msgstr "[§λôω ℓèƲèℓ çřôƨƨïñϱƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:82
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
 msgid "Show hazards"
 msgstr "[§λôω λáƺářδƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:83
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
 msgid "Show fuel/pickups"
 msgstr "[§λôω ƒúèℓ/ƥïçƙúƥƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:84
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:88
 msgid "Show sound regions"
 msgstr "[§λôω ƨôúñδ řèϱïôñƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:86
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
 msgid "Posts"
 msgstr "[Þôƨƭƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:87
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
 msgid "Show speed limits (F5)"
 msgstr "[§λôω ƨƥèèδ ℓï₥ïƭƨ (F5) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:88
-msgid "Show mileposts (shift F5)"
-msgstr "[§λôω ₥ïℓèƥôƨƭƨ (ƨλïƒƭ F5) !!!]"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
+msgid "Show mileposts (shift-F5)"
+msgstr "[§λôω ₥ïℓèƥôƨƭƨ (ƨλïƒƭ-F5) !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:90
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:94
 msgid "Roads"
 msgstr "[Rôáδƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:91
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:95
 msgid "Draw roads"
 msgstr "[Ðřáω řôáδƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:92
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
 msgid "Show car spawners"
 msgstr "[§λôω çář ƨƥáωñèřƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:93
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
 msgid "Show road crossings"
 msgstr "[§λôω řôáδ çřôƨƨïñϱƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:96
-msgid "Statusbar"
-msgstr "[§ƭáƭúƨβář !!!]"
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:100
+msgid "_Statusbar"
+msgstr "[_§ƭáƭúƨβář !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:97
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
 msgid "Show vector section info"
 msgstr "[§λôω Ʋèçƭôř ƨèçƭïôñ ïñƒô !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:99
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:103
 msgid "Show PAT file info"
 msgstr "[§λôω ÞÂT ƒïℓè ïñƒô !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:101
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
 msgid "Show Path info"
 msgstr "[§λôω Þáƭλ ïñƒô !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:104
-msgid "Preferences"
-msgstr "[Þřèƒèřèñçèƨ !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:105
-msgid "Zooming is centered on mouse (m)"
-msgstr "[Zôô₥ïñϱ ïƨ çèñƭèřèδ ôñ ₥ôúƨè (₥) !!!]"
-
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:107
+msgid "Show terrain info"
+msgstr "[§λôω ƭèřřáïñ ïñƒô !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:109
+msgid "Show signal info"
+msgstr "[§λôω ƨïϱñáℓ ïñƒô !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:111
+msgid "Show platform/station names"
+msgstr "[§λôω ƥℓáƭƒôř₥/ƨƭáƭïôñ ñá₥èƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
+msgid "_Preferences"
+msgstr "[_Þřèƒèřèñçèƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:115
+msgid "Zooming is centered on mouse (M)"
+msgstr "[Zôô₥ïñϱ ïƨ çèñƭèřèδ ôñ ₥ôúƨè (M) !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:117
+msgid "Use miles i.s.o. meters"
+msgstr "[Ûƨè ₥ïℓèƨ ï.ƨ.ô. ₥èƭèřƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
 msgid "Select language"
 msgstr "[§èℓèçƭ ℓáñϱúáϱè !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:112
-msgid "Path-Editor"
-msgstr "[Þáƭλ-Éδïƭôř !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:113
-msgid "==Supporting MSTS paths only=="
-msgstr "[==§úƥƥôřƭïñϱ M§T§ ƥáƭλƨ ôñℓ¥== !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
-msgid "Load path"
-msgstr "[£ôáδ ƥáƭλ !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
-msgid "Show other paths"
-msgstr "[§λôω ôƭλèř ƥáƭλƨ !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:120
-msgid "Save path"
-msgstr "[§áƲè ƥáƭλ !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:121
-msgid "Save visited stations"
-msgstr "[§áƲè Ʋïƨïƭèδ ƨƭáƭïôñƨ !!!]"
-
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:150
+msgid "Highlight last-drawn section"
+msgstr "[Hïϱλℓïϱλƭ ℓáƨƭ-δřáωñ ƨèçƭïôñ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:151
 msgid "Enable editing"
 msgstr "[Éñáβℓè èδïƭïñϱ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:152
+msgid "Show current mouse action"
+msgstr "[§λôω çúřřèñƭ ₥ôúƨè áçƭïôñ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:153
+msgid "Shift-PgUp also extends path"
+msgstr "[§λïƒƭ-ÞϱÛƥ áℓƨô èжƭèñδƨ ƥáƭλ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
+msgid "Path-_Editor"
+msgstr "[Þáƭλ-_Éδïƭôř !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:130
+msgid "==Supporting MSTS paths only=="
+msgstr "[==§úƥƥôřƭïñϱ M§T§ ƥáƭλƨ ôñℓ¥== !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
+msgid "Load path"
+msgstr "[£ôáδ ƥáƭλ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:135
+msgid "Show other paths"
+msgstr "[§λôω ôƭλèř ƥáƭλƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:137
+msgid "Save path"
+msgstr "[§áƲè ƥáƭλ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:138
+msgid "Save visited stations"
+msgstr "[§áƲè Ʋïƨïƭèδ ƨƭáƭïôñƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:139
+msgid "Show chart"
+msgstr "[§λôω çλářƭ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:141
 msgid "New path"
 msgstr "[Nèω ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:126
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:143
+msgid "Extend with other path"
+msgstr "[Éжƭèñδ ωïƭλ ôƭλèř ƥáƭλ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:147
 msgid "Edit path metadata"
 msgstr "[Éδïƭ ƥáƭλ ₥èƭáδáƭá !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:127
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:148
 msgid "Reverse path"
 msgstr "[RèƲèřƨè ƥáƭλ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:132
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:155
+msgid "Auto-fix all broken nodes"
+msgstr "[Âúƭô-ƒïж áℓℓ βřôƙèñ ñôδèƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:156
+msgid "Auto-fix all broken paths"
+msgstr "[Âúƭô-ƒïж áℓℓ βřôƙèñ ƥáƭλƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:158
+msgid "_Terrain"
+msgstr "[_Tèřřáïñ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:159
+msgid "Show terrain textures (F6)"
+msgstr "[§λôω ƭèřřáïñ ƭèжƭúřèƨ (F6) !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:160
+msgid "Show DM terrain textures (ctrl-F6)"
+msgstr "[§λôω ÐM ƭèřřáïñ ƭèжƭúřèƨ (çƭřℓ-F6) !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:161
+msgid "Show patch lines (shift-F6)"
+msgstr "[§λôω ƥáƭçλ ℓïñèƨ (ƨλïƒƭ-F6) !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:163
+msgid "Memory reduction options"
+msgstr "[Mè₥ôř¥ řèδúçƭïôñ ôƥƭïôñƨ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:164
+msgid "No reduction"
+msgstr "[Nô řèδúçƭïôñ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:165
+msgid "Automatic reduction"
+msgstr "[Âúƭô₥áƭïç řèδúçƭïôñ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:166
+msgid "Reduce by linear factor 2"
+msgstr "[Rèδúçè β¥ ℓïñèář ƒáçƭôř 2 !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:167
+msgid "Reduce by linear factor 4"
+msgstr "[Rèδúçè β¥ ℓïñèář ƒáçƭôř 4 !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:168
+msgid "Reduce by linear factor 8"
+msgstr "[Rèδúçè β¥ ℓïñèář ƒáçƭôř 8 !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:169
+msgid "Reduce by linear factor 16"
+msgstr "[Rèδúçè β¥ ℓïñèář ƒáçƭôř 16 !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:172
+msgid "_Help"
+msgstr "[_Hèℓƥ !!!]"
+
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:173
 msgid "Shortcuts"
 msgstr "[§λôřƭçúƭƨ !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:133
-msgid "Documentation"
-msgstr "[Ðôçú₥èñƭáƭïôñ !!!]"
-
-#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:134
+#: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:175
 msgid "About"
 msgstr "[Âβôúƭ !!!]"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:8
-msgid "Paths to draw"
-msgstr "[Þáƭλƨ ƭô δřáω !!!]"
+msgid "Select paths to draw"
+msgstr "[§èℓèçƭ ƥáƭλƨ ƭô δřáω !!!]"
 
-#: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:27
+#: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:12
 msgid "Clear all"
 msgstr "[Çℓèář áℓℓ !!!]"
 

@@ -30,6 +30,19 @@ namespace Orts.Common
         BellOff,
         BellOn,
         BlowerChange,
+        BrakesStuck,
+        CabLightSwitchToggle,
+        CabRadioOn,
+        CabRadioOff,
+        CircuitBreakerOpen,
+        CircuitBreakerClosing,
+        CircuitBreakerClosed,
+        CircuitBreakerClosingOrderOff,
+        CircuitBreakerClosingOrderOn,
+        CircuitBreakerOpeningOrderOff,
+        CircuitBreakerOpeningOrderOn,
+        CircuitBreakerClosingAuthorizationOff,
+        CircuitBreakerClosingAuthorizationOn,
         CompressorOff,
         CompressorOn,
         ControlError,
@@ -63,6 +76,14 @@ namespace Orts.Common
         FuelTowerUp,
         GearDown,
         GearUp,
+        GenericEvent1,
+        GenericEvent2,
+        GenericEvent3,
+        GenericEvent4,
+        GenericEvent5,
+        GenericEvent6,
+        GenericEvent7,
+        GenericEvent8,
         HornOff,
         HornOn,
         LightSwitchToggle,
@@ -73,6 +94,10 @@ namespace Orts.Common
         Pantograph1Up,
         Pantograph2Down,
         Pantograph2Up,
+        Pantograph3Down,
+        Pantograph3Up,
+        Pantograph4Down,
+        Pantograph4Up,
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
@@ -82,11 +107,14 @@ namespace Orts.Common
         SanderOff,
         SanderOn,
         SemaphoreArm,
-        SteamEjector1Off,
-        SteamEjector1On,
-        SteamEjector2Off,
-        SteamEjector2On,
-        SteamHeatChange, // NOTE: Currently not used in Open Rails.
+        LargeEjectorChange,
+        SmallEjectorChange,
+        WaterInjector1Off,
+        WaterInjector1On,
+        WaterInjector2Off,
+        WaterInjector2On,
+        BlowdownValveToggle,
+        SteamHeatChange, 
         SteamPulse1,
         SteamPulse2,
         SteamPulse3,
@@ -119,9 +147,14 @@ namespace Orts.Common
         TrainControlSystemPenalty2,
         TrainControlSystemWarning1,
         TrainControlSystemWarning2,
+        MovingTableMovingEmpty,
+        MovingTableMovingLoaded,
+        MovingTableStopped,
         Uncouple,
         UncoupleB, // NOTE: Currently not used in Open Rails.
         UncoupleC, // NOTE: Currently not used in Open Rails.
+        VacuumExhausterOn,
+        VacuumExhausterOff,
         VigilanceAlarmOff,
         VigilanceAlarmOn,
         VigilanceAlarmReset,
@@ -140,7 +173,23 @@ namespace Orts.Common
         BrakePipePressureDecrease,
         BrakePipePressureStoppedChanging,
         CylinderCocksOpen,
-        CylinderCocksClose
+        CylinderCocksClose,
+        SecondEnginePowerOff,
+        SecondEnginePowerOn,
+
+        HotBoxBearingOn,
+        HotBoxBearingOff,
+
+        BoilerBlowdownOn,
+        BoilerBlowdownOff,
+
+        SteamGearLeverToggle,
+        AIFiremanSoundOn,
+        AIFiremanSoundOff,
+
+        GearPosition0,
+        GearPosition1,
+        GearPosition2,
     }
 
     public static class Events
@@ -153,6 +202,7 @@ namespace Orts.Common
             MSTSFuelTower,
             MSTSInGame,
             MSTSSignal,
+            ORTSTurntable
         }
 
         // PLEASE DO NOT EDIT THESE FUNCTIONS without references and testing!
@@ -206,11 +256,11 @@ namespace Orts.Common
                         // Event 24 is unused in MSTS.
                         // Event 25 is possibly a vigilance reset in MSTS sound files but is never used.
                         // Event 26 is a sander toggle in MSTS sound files but is never used.
-                        case 27: return Event.SteamEjector2On;
-                        case 28: return Event.SteamEjector2Off;
+                        case 27: return Event.WaterInjector2On;
+                        case 28: return Event.WaterInjector2Off;
                         // Event 29 is unused in MSTS.
-                        case 30: return Event.SteamEjector1On;
-                        case 31: return Event.SteamEjector1Off;
+                        case 30: return Event.WaterInjector1On;
+                        case 31: return Event.WaterInjector1Off;
                         case 32: return Event.DamperChange;
                         case 33: return Event.BlowerChange;
                         case 34: return Event.CylinderCocksToggle;
@@ -265,7 +315,8 @@ namespace Orts.Common
                         case 117: return Event.TrainControlSystemAlert1;
                         case 118: return Event.TrainControlSystemAlert2;
                         case 119: return Event.CylinderCompoundToggle; // Locomotive switched to compound
-                        
+
+                        case 120: return Event.BlowdownValveToggle;
                         case 121: return Event.SteamPulse1;
                         case 122: return Event.SteamPulse2;
                         case 123: return Event.SteamPulse3;
@@ -291,7 +342,59 @@ namespace Orts.Common
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
 
+                        case 147: return Event.SteamGearLeverToggle;
+                        case 148: return Event.AIFiremanSoundOn;
+                        case 149: return Event.AIFiremanSoundOff;
+
+                        case 150: return Event.CircuitBreakerOpen;
+                        case 151: return Event.CircuitBreakerClosing;
+                        case 152: return Event.CircuitBreakerClosed;
+                        case 153: return Event.CircuitBreakerClosingOrderOn;
+                        case 154: return Event.CircuitBreakerClosingOrderOff;
+                        case 155: return Event.CircuitBreakerOpeningOrderOn;
+                        case 156: return Event.CircuitBreakerOpeningOrderOff;
+                        case 157: return Event.CircuitBreakerClosingAuthorizationOn;
+                        case 158: return Event.CircuitBreakerClosingAuthorizationOff;
+
+                        case 159: return Event.LargeEjectorChange;
+                        case 160: return Event.SmallEjectorChange;
+
+                        case 161: return Event.CabLightSwitchToggle;
+                        case 162: return Event.CabRadioOn;
+                        case 163: return Event.CabRadioOff;
+
+                        case 164: return Event.BrakesStuck;
+
+                        case 165: return Event.VacuumExhausterOn;
+                        case 166: return Event.VacuumExhausterOff;
+                        case 167: return Event.SecondEnginePowerOn;
+                        case 168: return Event.SecondEnginePowerOff;
+
+                        case 169: return Event.Pantograph3Up;
+                        case 170: return Event.Pantograph3Down;
+                        case 171: return Event.Pantograph4Up;
+                        case 172: return Event.Pantograph4Down;
+
+                        case 173: return Event.HotBoxBearingOn;
+                        case 174: return Event.HotBoxBearingOff;
+
+                        case 175: return Event.BoilerBlowdownOn;
+                        case 176: return Event.BoilerBlowdownOff;
+
+                        case 181: return Event.GenericEvent1;
+                        case 182: return Event.GenericEvent2;
+                        case 183: return Event.GenericEvent3;
+                        case 184: return Event.GenericEvent4;
+                        case 185: return Event.GenericEvent5;
+                        case 186: return Event.GenericEvent6;
+                        case 187: return Event.GenericEvent7;
+                        case 188: return Event.GenericEvent8;
                         //
+
+
+                        case 200: return Event.GearPosition0;
+                        case 201: return Event.GearPosition1;
+                        case 202: return Event.GearPosition2;
 
                         default: return 0;
                     }
@@ -332,6 +435,15 @@ namespace Orts.Common
                     {
                         // Calculated from inspection of existing signal.sms files.
                         case 1: return Event.SemaphoreArm;
+                        default: return 0;
+                    }
+                case Source.ORTSTurntable:
+                    switch (eventID)
+                    {
+                        // related file is turntable.sms
+                        case 1: return Event.MovingTableMovingEmpty;
+                        case 2: return Event.MovingTableMovingLoaded;
+                        case 3: return Event.MovingTableStopped;
                         default: return 0;
                     }
                 default: return 0;

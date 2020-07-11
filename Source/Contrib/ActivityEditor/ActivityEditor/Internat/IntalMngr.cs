@@ -39,7 +39,7 @@ namespace ActivityEditor.Internat
         {
             EnglishCulture = new CultureInfo("en");
             FrenchCulture = new CultureInfo("fr-FR");
-            Thread.CurrentThread.CurrentUICulture = EnglishCulture;
+            CultureInfo.DefaultThreadCurrentUICulture = EnglishCulture;
             resMan = new ResourceManager("ActivityEditor.ActEditor", Assembly.GetExecutingAssembly());
         }
 

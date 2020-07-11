@@ -39,7 +39,7 @@ namespace Orts.Viewer3D
         const float TrainRailHeightMaximum = 1;
 
         readonly Viewer Viewer;
-        readonly CarSpawnerObj CarSpawnerObj;
+        public readonly CarSpawnerObj CarSpawnerObj;
 
         // THREAD SAFETY:
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
@@ -49,7 +49,7 @@ namespace Orts.Viewer3D
         public List<Crossing> Crossings = new List<Crossing>();
 
         public readonly Traveller Traveller;
-        readonly float Length;
+        public readonly float Length;
         float LastSpawnedTime;
         float NextSpawnTime;
 
@@ -99,7 +99,7 @@ namespace Orts.Viewer3D
             if (Length > 0 && LastSpawnedTime >= NextSpawnTime && (cars.Count == 0 || cars.Last().Travelled > cars.Last().Length))
             {
                 var newCars = new List<RoadCar>(cars);
-                newCars.Add(new RoadCar(Viewer, this, CarSpawnerObj.CarAvSpeed));
+                newCars.Add(new RoadCar(Viewer, this, CarSpawnerObj.CarAvSpeed, CarSpawnerObj.CarSpawnerListIdx));
                 Cars = cars = newCars;
 
                 LastSpawnedTime = 0;
@@ -181,16 +181,18 @@ namespace Orts.Viewer3D
     // TODO: Move to simulator!
     public class RoadCar
     {
-        const float VisualHeightAdjustment = 0.1f;
+        public const float VisualHeightAdjustment = 0.1f;
         const float AccelerationFactor = 5;
         const float BrakingFactor = 5;
         const float BrakingMinFactor = 1;
 
-        readonly RoadCarSpawner Spawner;
+        public readonly RoadCarSpawner Spawner;
 
         public readonly int Type;
         public readonly float Length;
         public float Travelled;
+        public readonly bool IgnoreXRotation;
+        public bool CarriesCamera;
 
         public int TileX { get { return FrontTraveller.TileX; } }
         public int TileZ { get { return FrontTraveller.TileZ; } }
@@ -199,7 +201,7 @@ namespace Orts.Viewer3D
             get
             {
                 var wl = FrontTraveller.WorldLocation;
-                wl.Location.Y += Spawner.GetRoadHeightAdjust(Travelled - Length * 0.25f) + VisualHeightAdjustment;
+                wl.Location.Y += Math.Max(Spawner.GetRoadHeightAdjust(Travelled - Length * 0.25f), 0) + VisualHeightAdjustment;
                 return wl.Location;
             }
         }
@@ -209,22 +211,24 @@ namespace Orts.Viewer3D
             {
                 var wl = RearTraveller.WorldLocation;
                 wl.NormalizeTo(TileX, TileZ);
-                wl.Location.Y += Spawner.GetRoadHeightAdjust(Travelled + Length * 0.25f) + VisualHeightAdjustment;
+                wl.Location.Y += Math.Max(Spawner.GetRoadHeightAdjust(Travelled + Length * 0.25f), 0) + VisualHeightAdjustment;
                 return wl.Location;
             }
         }
 
-        readonly Traveller FrontTraveller;
-        readonly Traveller RearTraveller;
-        float Speed;
+        public readonly Traveller FrontTraveller;
+        public readonly Traveller RearTraveller;
+        public float Speed;
         float SpeedMax;
         int NextCrossingIndex;
+        public int CarSpawnerListIdx;
 
-        public RoadCar(Viewer viewer, RoadCarSpawner spawner, float averageSpeed)
+        public RoadCar(Viewer viewer, RoadCarSpawner spawner, float averageSpeed, int carSpawnerListIdx)
         {
             Spawner = spawner;
-            Type = Viewer.Random.Next() % viewer.Simulator.CarSpawnerFile.shapeNames.Length;
-            Length = viewer.Simulator.CarSpawnerFile.distanceFrom[Type];
+            CarSpawnerListIdx = carSpawnerListIdx;
+            Type = Viewer.Random.Next() % viewer.Simulator.CarSpawnerLists[CarSpawnerListIdx].shapeNames.Length;
+            Length = viewer.Simulator.CarSpawnerLists[CarSpawnerListIdx].distanceFrom[Type];
             // Front and rear travellers approximate wheel positions at 25% and 75% along vehicle.
             FrontTraveller = new Traveller(spawner.Traveller);
             FrontTraveller.Move(Length * 0.15f);
@@ -233,6 +237,7 @@ namespace Orts.Viewer3D
             // Travelled is the center of the vehicle.
             Travelled = Length * 0.50f;
             Speed = SpeedMax = averageSpeed * (0.75f + (float)Viewer.Random.NextDouble() / 2);
+            IgnoreXRotation = viewer.Simulator.CarSpawnerLists[CarSpawnerListIdx].IgnoreXRotation;
         }
 
         [CallOnThread("Updater")]
@@ -264,7 +269,12 @@ namespace Orts.Viewer3D
             var cars = Spawner.Cars;
             var spawnerIndex = cars.IndexOf(this);
             if (spawnerIndex > 0)
-                stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length / 2);
+            {
+                if (!cars[spawnerIndex - 1].CarriesCamera)
+                    stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length / 2);
+                else
+                    stopDistances.Add(cars[spawnerIndex - 1].Travelled - cars[spawnerIndex - 1].Length * 0.65f - 4 - cars[spawnerIndex - 1].Speed * 0.5f);
+                }
 
             // Calculate whether we're too close to the minimum stopping distance (and need to slow down) or going too slowly (and need to speed up).
             var stopDistance = stopDistances.Count > 0 ? stopDistances.Min() - Travelled - Length / 2 : float.MaxValue;
@@ -273,11 +283,25 @@ namespace Orts.Viewer3D
                 Speed = SpeedMax * (float)Math.Sin((Math.PI / 2) * (stopDistance / slowingDistance));
             else if (Speed < SpeedMax)
                 Speed = Math.Min(Speed + AccelerationFactor / Length * elapsedTime.ClockSeconds, SpeedMax);
+            else if (Speed > SpeedMax)
+                Speed = Math.Max(Speed - AccelerationFactor / Length * elapsedTime.ClockSeconds * 2, SpeedMax);
 
             var distance = elapsedTime.ClockSeconds * Speed;
             Travelled += distance;
             FrontTraveller.Move(distance);
             RearTraveller.Move(distance);
+        }
+
+        public void ChangeSpeed (float speed)
+        {
+            if (speed > 0)
+            {
+                if (SpeedMax < Spawner.CarSpawnerObj.CarAvSpeed * 1.25f) SpeedMax = Math.Min(SpeedMax + speed * 2, Spawner.CarSpawnerObj.CarAvSpeed * 1.25f);
+            }
+            else if (speed < 0)
+            {
+                if (SpeedMax > Spawner.CarSpawnerObj.CarAvSpeed * 0.25f) SpeedMax = Math.Max(SpeedMax + speed * 2, Spawner.CarSpawnerObj.CarAvSpeed * 0.25f);
+            }
         }
     }
 
@@ -289,7 +313,7 @@ namespace Orts.Viewer3D
         //   All accesses must be done in local variables. No modifications to the objects are allowed except by
         //   assignment of a new instance (possibly cloned and then modified).
         Dictionary<RoadCar, RoadCarPrimitive> Cars = new Dictionary<RoadCar, RoadCarPrimitive>();
-        List<RoadCar> VisibleCars = new List<RoadCar>();
+        public List<RoadCar> VisibleCars = new List<RoadCar>();
 
         public RoadCarViewer(Viewer viewer)
         {
@@ -360,7 +384,7 @@ namespace Orts.Viewer3D
         public RoadCarPrimitive(Viewer viewer, RoadCar car)
         {
             Car = car;
-            CarShape = new RoadCarShape(viewer, viewer.Simulator.CarSpawnerFile.shapeNames[car.Type]);
+            CarShape = new RoadCarShape(viewer, viewer.Simulator.CarSpawnerLists[Car.CarSpawnerListIdx].shapeNames[car.Type]);
         }
 
         [CallOnThread("Updater")]
@@ -371,7 +395,19 @@ namespace Orts.Viewer3D
             // TODO: Add 0.1f to Y to put wheels above road. Matching MSTS?
             var front = Car.FrontLocation;
             var rear = Car.RearLocation;
-            CarShape.Location.XNAMatrix = Simulator.XNAMatrixFromMSTSCoordinates(front.X, front.Y, front.Z, rear.X, rear.Y, rear.Z);
+            var frontY = front.Y;
+            var rearY = rear.Y;
+            if (Car.IgnoreXRotation)
+            {
+                frontY = frontY - RoadCar.VisualHeightAdjustment;
+                rearY = rearY - RoadCar.VisualHeightAdjustment;
+                if (Math.Abs(frontY - rearY) > 0.01f)
+                {
+                    if (frontY > rearY) rearY = frontY;
+                    else frontY = rearY;
+                }
+            }
+            CarShape.Location.XNAMatrix = Simulator.XNAMatrixFromMSTSCoordinates(front.X, frontY, front.Z, rear.X, rearY, rear.Z);
             CarShape.PrepareFrame(frame, elapsedTime);
         }
 

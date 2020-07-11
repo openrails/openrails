@@ -15,8 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+// #define DEBUG_MULTIPLAYER
+// DEBUG flag for debug prints
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Orts.MultiPlayer
 {
@@ -64,7 +68,10 @@ namespace Orts.MultiPlayer
 		
 		public void BroadCast(string msg)
 		{
-			if (ServerComm == null) Connection.Send(msg);
+#if DEBUG_MULTIPLAYER
+                    Trace.TraceInformation("MPServerBroadcast: {0}", msg);
+#endif
+            if (ServerComm == null) Connection.Send(msg);
 			else
 			{
 				try

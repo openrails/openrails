@@ -21,11 +21,13 @@
 using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
+using Orts.Simulation.Signalling;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
@@ -36,20 +38,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             public float MonitorTimeS = 66; // Time from alerter reset to applying emergency brake
             public float AlarmTimeS = 60; // Time from alerter reset to audible and visible alarm
             public float PenaltyTimeS;
-            public bool EmergencyCutsPower;
-            public bool EmergencyShutsDownEngine;
-            public bool ResetOnZeroSpeed = true;
             public float CriticalLevelMpS;
             public float ResetLevelMpS;
             public bool AppliesFullBrake = true;
             public bool AppliesEmergencyBrake;
-
-            // Following are for OverspeedMonitor only
-            public bool ResetOnResetButton;
-            public float TriggerOnOverspeedMpS;
-            public bool TriggerOnTrackOverspeed;
-            public float TriggerOnTrackOverspeedMarginMpS = 4;
-            public float AlarmTimeBeforeOverspeedS = 5;
+            public bool EmergencyCutsPower;
+            public bool EmergencyShutsDownEngine;
+            public float AlarmTimeBeforeOverspeedS = 5;         // OverspeedMonitor only
+            public float TriggerOnOverspeedMpS;                 // OverspeedMonitor only
+            public bool TriggerOnTrackOverspeed;                // OverspeedMonitor only
+            public float TriggerOnTrackOverspeedMarginMpS = 4;  // OverspeedMonitor only
+            public bool ResetOnDirectionNeutral = false;
+            public bool ResetOnZeroSpeed = true;
+            public bool ResetOnResetButton;                     // OverspeedMonitor only
 
             public MonitoringDevice(STFReader stf)
             {
@@ -58,18 +59,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     new STFReader.TokenProcessor("monitoringdevicemonitortimelimit", () => { MonitorTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, MonitorTimeS); }),
                     new STFReader.TokenProcessor("monitoringdevicealarmtimelimit", () => { AlarmTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, AlarmTimeS); }),
                     new STFReader.TokenProcessor("monitoringdevicepenaltytimelimit", () => { PenaltyTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, PenaltyTimeS); }),
+                    new STFReader.TokenProcessor("monitoringdevicecriticallevel", () => { CriticalLevelMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, CriticalLevelMpS); }),
+                    new STFReader.TokenProcessor("monitoringdeviceresetlevel", () => { ResetLevelMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, ResetLevelMpS); }),
+                    new STFReader.TokenProcessor("monitoringdeviceappliesfullbrake", () => { AppliesFullBrake = stf.ReadBoolBlock(AppliesFullBrake); }),
+                    new STFReader.TokenProcessor("monitoringdeviceappliesemergencybrake", () => { AppliesEmergencyBrake = stf.ReadBoolBlock(AppliesEmergencyBrake); }),
                     new STFReader.TokenProcessor("monitoringdeviceappliescutspower", () => { EmergencyCutsPower = stf.ReadBoolBlock(EmergencyCutsPower); }),
                     new STFReader.TokenProcessor("monitoringdeviceappliesshutsdownengine", () => { EmergencyShutsDownEngine = stf.ReadBoolBlock(EmergencyShutsDownEngine); }),
-                    new STFReader.TokenProcessor("monitoringdeviceresetonzerospeed", () => { ResetOnZeroSpeed = stf.ReadBoolBlock(ResetOnZeroSpeed); }),
-                    new STFReader.TokenProcessor("monitoringdeviceresetonresetbutton", () => { ResetOnResetButton = stf.ReadBoolBlock(ResetOnResetButton); }),
+                    new STFReader.TokenProcessor("monitoringdevicealarmtimebeforeoverspeed", () => { AlarmTimeBeforeOverspeedS = stf.ReadFloatBlock(STFReader.UNITS.Time, AlarmTimeBeforeOverspeedS); }),
                     new STFReader.TokenProcessor("monitoringdevicetriggeronoverspeed", () => { TriggerOnOverspeedMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, TriggerOnOverspeedMpS); }),
                     new STFReader.TokenProcessor("monitoringdevicetriggerontrackoverspeed", () => { TriggerOnTrackOverspeed = stf.ReadBoolBlock(TriggerOnTrackOverspeed); }),
                     new STFReader.TokenProcessor("monitoringdevicetriggerontrackoverspeedmargin", () => { TriggerOnTrackOverspeedMarginMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, TriggerOnTrackOverspeedMarginMpS); }),
-                    new STFReader.TokenProcessor("monitoringdevicecriticallevel", () => { CriticalLevelMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, CriticalLevelMpS); }),
-                    new STFReader.TokenProcessor("monitoringdeviceresetlevel", () => { ResetLevelMpS = stf.ReadFloatBlock(STFReader.UNITS.Speed, ResetLevelMpS); }),
-                    new STFReader.TokenProcessor("monitoringdevicealarmtimebeforeoverspeed", () => { AlarmTimeBeforeOverspeedS = stf.ReadFloatBlock(STFReader.UNITS.Time, AlarmTimeBeforeOverspeedS); }),
-                    new STFReader.TokenProcessor("monitoringdeviceappliesfullbrake", () => { AppliesFullBrake = stf.ReadBoolBlock(AppliesFullBrake); }),
-                    new STFReader.TokenProcessor("monitoringdeviceappliesemergencybrake", () => { AppliesEmergencyBrake = stf.ReadBoolBlock(AppliesEmergencyBrake); }),
+                    new STFReader.TokenProcessor("monitoringdeviceresetondirectionneutral", () => { ResetOnDirectionNeutral = stf.ReadBoolBlock(ResetOnDirectionNeutral); }),
+                    new STFReader.TokenProcessor("monitoringdeviceresetonresetbutton", () => { ResetOnResetButton = stf.ReadBoolBlock(ResetOnResetButton); }),
+                    new STFReader.TokenProcessor("monitoringdeviceresetonzerospeed", () => { ResetOnZeroSpeed = stf.ReadBoolBlock(ResetOnZeroSpeed); }),
                 });
             }
 
@@ -80,21 +82,27 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 MonitorTimeS = other.MonitorTimeS;
                 AlarmTimeS = other.AlarmTimeS;
                 PenaltyTimeS = other.PenaltyTimeS;
-                EmergencyCutsPower = other.EmergencyCutsPower;
-                EmergencyShutsDownEngine = other.EmergencyShutsDownEngine;
-                ResetOnZeroSpeed = other.ResetOnZeroSpeed;
                 CriticalLevelMpS = other.CriticalLevelMpS;
                 ResetLevelMpS = other.ResetLevelMpS;
                 AppliesFullBrake = other.AppliesFullBrake;
                 AppliesEmergencyBrake = other.AppliesEmergencyBrake;
-                ResetOnResetButton = other.ResetOnResetButton;
+                EmergencyCutsPower = other.EmergencyCutsPower;
+                EmergencyShutsDownEngine = other.EmergencyShutsDownEngine;
+                AlarmTimeBeforeOverspeedS = other.AlarmTimeBeforeOverspeedS;
                 TriggerOnOverspeedMpS = other.TriggerOnOverspeedMpS;
                 TriggerOnTrackOverspeed = other.TriggerOnTrackOverspeed;
                 TriggerOnTrackOverspeedMarginMpS = other.TriggerOnTrackOverspeedMarginMpS;
-                AlarmTimeBeforeOverspeedS = other.AlarmTimeBeforeOverspeedS;
+                ResetOnDirectionNeutral = other.ResetOnDirectionNeutral;
+                ResetOnZeroSpeed = other.ResetOnZeroSpeed;
+                ResetOnResetButton = other.ResetOnResetButton;
             }
         }
 
+        // Constants
+        private const int TCSCabviewControlCount = 48;
+        private const int TCSCommandCount = 32;
+
+        // Properties
         public bool VigilanceAlarm { get; set; }
         public bool VigilanceEmergency { get; set; }
         public bool OverspeedWarning { get; set; }
@@ -104,6 +112,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public float InterventionSpeedLimitMpS { get; set; }
         public TrackMonitorSignalAspect CabSignalAspect { get; set; }
         public MonitoringStatus MonitoringStatus { get; set; }
+
+        public bool Activated = false;
 
         Train.TrainInfo TrainInfo = new Train.TrainInfo();
 
@@ -115,6 +125,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         List<float> SignalDistances = new List<float>();
         List<float> PostSpeedLimits = new List<float>();
         List<float> PostDistances = new List<float>();
+        Aspect SignalAspect;
+        float SignalDistance;
+        string MainHeadSignalTypeName;
 
         MonitoringDevice VigilanceMonitor;
         MonitoringDevice OverspeedMonitor;
@@ -123,6 +136,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         public bool AlerterButtonPressed { get; private set; }
         public bool PowerAuthorization { get; private set; }
+        public bool CircuitBreakerClosingOrder { get; private set;  }
+        public bool CircuitBreakerOpeningOrder { get; private set; }
+        public bool TractionAuthorization { get; private set; }
+        public bool FullDynamicBrakingOrder { get; private set; }
+
+        public float[] CabDisplayControls = new float[TCSCabviewControlCount];
+
+        // generic TCS commands
+        public bool[] TCSCommandButtonDown = new bool[TCSCommandCount];
+        public bool[] TCSCommandSwitchOn = new bool[TCSCommandCount];
+        // List of customized control strings;
+        public string[] CustomizedCabviewControlNames = new string[TCSCabviewControlCount];
+        // TODO : Delete this when SetCustomizedTCSControlString is deleted
+        protected int NextCabviewControlNameToEdit = 0;
 
         string ScriptName;
         string SoundFileName;
@@ -141,6 +168,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             Simulator = Locomotive.Simulator;
 
             PowerAuthorization = true;
+            CircuitBreakerClosingOrder = false;
+            CircuitBreakerOpeningOrder = false;
+            TractionAuthorization = true;
+            FullDynamicBrakingOrder = false;
         }
 
         public void Parse(string lowercasetoken, STFReader stf)
@@ -168,131 +199,237 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (other.AWSMonitor != null) AWSMonitor = new MonitoringDevice(other.AWSMonitor);
         }
 
+        //Debrief Eval
+        public static int DbfevalFullBrakeAbove16kmh = 0;
+        public bool ldbfevalfullbrakeabove16kmh = false;
+
         public void Initialize()
         {
-            if (!Simulator.Settings.DisableTCSScripts && ScriptName != null && ScriptName != "MSTS")
+            if (!Activated)
             {
-                var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
-                Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as TrainControlSystem;
-            }
+                if (!Simulator.Settings.DisableTCSScripts && ScriptName != null && ScriptName != "MSTS" && ScriptName != "")
+                {
+                    var pathArray = new string[] { Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script") };
+                    Script = Simulator.ScriptManager.Load(pathArray, ScriptName) as TrainControlSystem;
+                }
 
-            if (ParametersFileName != null)
-            {
-                ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
-            }
+                if (ParametersFileName != null)
+                {
+                    ParametersFileName = Path.Combine(Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "Script"), ParametersFileName);
+                }
 
-            if (Script == null)
-            {
-                Script = new MSTSTrainControlSystem();
-                ((MSTSTrainControlSystem)Script).VigilanceMonitor = VigilanceMonitor;
-                ((MSTSTrainControlSystem)Script).OverspeedMonitor = OverspeedMonitor;
-                ((MSTSTrainControlSystem)Script).EmergencyStopMonitor = EmergencyStopMonitor;
-                ((MSTSTrainControlSystem)Script).AWSMonitor = AWSMonitor;
-                ((MSTSTrainControlSystem)Script).EmergencyCausesThrottleDown = Locomotive.EmergencyCausesThrottleDown;
-                ((MSTSTrainControlSystem)Script).EmergencyEngagesHorn = Locomotive.EmergencyEngagesHorn;
-            }
+                if (Script == null)
+                {
+                    Script = new MSTSTrainControlSystem();
+                    ((MSTSTrainControlSystem)Script).VigilanceMonitor = VigilanceMonitor;
+                    ((MSTSTrainControlSystem)Script).OverspeedMonitor = OverspeedMonitor;
+                    ((MSTSTrainControlSystem)Script).EmergencyStopMonitor = EmergencyStopMonitor;
+                    ((MSTSTrainControlSystem)Script).AWSMonitor = AWSMonitor;
+                    ((MSTSTrainControlSystem)Script).EmergencyCausesThrottleDown = Locomotive.EmergencyCausesThrottleDown;
+                    ((MSTSTrainControlSystem)Script).EmergencyEngagesHorn = Locomotive.EmergencyEngagesHorn;
+                }
 
-            if (SoundFileName != null)
-            {
-                var soundPathArray = new[] {
+                if (SoundFileName != null)
+                {
+                    var soundPathArray = new[] {
                     Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "SOUND"),
                     Path.Combine(Simulator.BasePath, "SOUND"),
                 };
-                var soundPath = ORTSPaths.GetFileFromFolders(soundPathArray, SoundFileName);
-                if (File.Exists(soundPath))
-                    Sounds.Add(Script, soundPath);
-            }
-
-            // AbstractScriptClass
-            Script.ClockTime = () => (float)Simulator.ClockTime;
-            Script.GameTime = () => (float)Simulator.GameTime;
-            Script.DistanceM = () => Locomotive.DistanceM;
-
-            // TrainControlSystem
-            Script.IsTrainControlEnabled = () => Locomotive == Locomotive.Train.LeadLocomotive && Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING;
-            Script.IsDirectionReverse = () => Locomotive.Direction == Direction.Reverse;
-            Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
-            Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
-            Script.PowerAuthorization = () => PowerAuthorization;
-            Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
-            Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
-            Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
-            Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
-            Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
-            Script.IsAlerterEnabled = () =>
-            {
-                return Simulator.Settings.Alerter
-                    & !(Simulator.Settings.AlerterDisableExternal
-                        & !Simulator.PlayerIsInCab
-                    );
-            };
-            Script.AlerterSound = () => Locomotive.AlerterSnd;
-            Script.SetHorn = (value) => Locomotive.SignalEvent(value ? Event.HornOn : Event.HornOff);
-            Script.SetFullBrake = (value) =>
-            {
-                if (Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
-                    Locomotive.TrainBrakeController.TCSFullServiceBraking = value; 
-            };
-            Script.SetEmergencyBrake = (value) =>
-            {
-                if (Locomotive.TrainBrakeController.TCSEmergencyBraking != value)
-                    Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
-            };
-            Script.SetThrottleController = (value) => Locomotive.ThrottleController.SetValue(value);
-            Script.SetDynamicBrakeController = (value) => Locomotive.DynamicBrakeController.SetValue(value);
-            Script.SetVigilanceAlarmDisplay = (value) => this.VigilanceAlarm = value;
-            Script.SetVigilanceEmergencyDisplay = (value) => this.VigilanceEmergency = value;
-            Script.SetOverspeedWarningDisplay = (value) => this.OverspeedWarning = value;
-            Script.SetPenaltyApplicationDisplay = (value) => this.PenaltyApplication = value;
-            Script.SetMonitoringStatus = (value) => this.MonitoringStatus = value;
-            Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
-            Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
-            Script.SetInterventionSpeedLimitMpS = (value) => this.InterventionSpeedLimitMpS = value;
-            Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
-            Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
-            Script.TriggerSoundAlert1 = () => this.HandleEvent(Event.TrainControlSystemAlert1, Script);
-            Script.TriggerSoundAlert2 = () => this.HandleEvent(Event.TrainControlSystemAlert2, Script);
-            Script.TriggerSoundInfo1 = () => this.HandleEvent(Event.TrainControlSystemInfo1, Script);
-            Script.TriggerSoundInfo2 = () => this.HandleEvent(Event.TrainControlSystemInfo2, Script);
-            Script.TriggerSoundPenalty1 = () => this.HandleEvent(Event.TrainControlSystemPenalty1, Script);
-            Script.TriggerSoundPenalty2 = () => this.HandleEvent(Event.TrainControlSystemPenalty2, Script);
-            Script.TriggerSoundWarning1 = () => this.HandleEvent(Event.TrainControlSystemWarning1, Script);
-            Script.TriggerSoundWarning2 = () => this.HandleEvent(Event.TrainControlSystemWarning2, Script);
-            Script.TriggerSoundSystemActivate = () => this.HandleEvent(Event.TrainControlSystemActivate, Script);
-            Script.TriggerSoundSystemDeactivate = () => this.HandleEvent(Event.TrainControlSystemDeactivate, Script);
-            Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
-            Script.NextSignalSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref SignalSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
-            Script.NextSignalAspect = (value) => NextSignalItem<Aspect>(value, ref SignalAspects, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
-            Script.NextSignalDistanceM = (value) => NextSignalItem<float>(value, ref SignalDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
-            Script.NextPostSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref PostSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
-            Script.NextPostDistanceM = (value) => NextSignalItem<float>(value, ref PostDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
-            Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
-            Script.DistanceCurve = (arg1, arg2, arg3, arg4, arg5) => DistanceCurve(arg1, arg2, arg3, arg4, arg5);
-            Script.Deceleration = (arg1, arg2, arg3) => Deceleration(arg1, arg2, arg3);
-            Script.SetPantographsDown = () => 
-            {
-                if (Locomotive.Pantographs.State == PantographState.Up)
-                {
-                    Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
+                    var soundPath = ORTSPaths.GetFileFromFolders(soundPathArray, SoundFileName);
+                    if (File.Exists(soundPath))
+                        Sounds.Add(Script, soundPath);
                 }
-            };
-            Script.SetPowerAuthorization = (value) =>
-            {
-                if (PowerAuthorization != value)
-                    PowerAuthorization = value;
-            };
-            Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);
-            Script.GetIntParameter = (arg1, arg2, arg3) => LoadParameter<int>(arg1, arg2, arg3);
-            Script.GetFloatParameter = (arg1, arg2, arg3) => LoadParameter<float>(arg1, arg2, arg3);
-            Script.GetStringParameter = (arg1, arg2, arg3) => LoadParameter<string>(arg1, arg2, arg3);
 
-            Script.Initialize();
+                // AbstractScriptClass
+                Script.ClockTime = () => (float)Simulator.ClockTime;
+                Script.GameTime = () => (float)Simulator.GameTime;
+                Script.DistanceM = () => Locomotive.DistanceM;
+                Script.Confirm = Locomotive.Simulator.Confirmer.Confirm;
+                Script.Message = Locomotive.Simulator.Confirmer.Message;
+                Script.SignalEvent = Locomotive.SignalEvent;
+                Script.SignalEventToTrain = (evt) =>
+                {
+                    if (Locomotive.Train != null)
+                    {
+                        Locomotive.Train.SignalEvent(evt);
+                    }
+                };
+
+                // TrainControlSystem getters
+                Script.IsTrainControlEnabled = () => Locomotive == Locomotive.Train.LeadLocomotive && Locomotive.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING;
+                Script.IsAutopiloted = () => Locomotive == Simulator.PlayerLocomotive && Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING;
+                Script.IsAlerterEnabled = () =>
+                {
+                    return Simulator.Settings.Alerter
+                        && !(Simulator.Settings.AlerterDisableExternal
+                            && !Simulator.PlayerIsInCab
+                        );
+                };
+                Script.IsSpeedControlEnabled = () => Simulator.Settings.SpeedControl;
+                Script.AlerterSound = () => Locomotive.AlerterSnd;
+                Script.TrainSpeedLimitMpS = () => TrainInfo.allowedSpeedMpS;
+                Script.TrainMaxSpeedMpS = () => Locomotive.Train.TrainMaxSpeedMpS;
+                Script.CurrentSignalSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedSignalMpS;
+                Script.NextSignalSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref SignalSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
+                Script.NextSignalAspect = (value) => NextSignalItem<Aspect>(value, ref SignalAspects, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
+                Script.NextSignalDistanceM = (value) => NextSignalItem<float>(value, ref SignalDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL);
+                Script.NextNormalSignalDistanceHeadsAspect = () => NextNormalSignalDistanceHeadsAspect();
+                Script.DoesNextNormalSignalHaveTwoAspects = () => DoesNextNormalSignalHaveTwoAspects();
+                Script.NextDistanceSignalAspect = () =>
+                    NextGenericSignalItem<Aspect>(ref SignalAspect, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, "DISTANCE");
+                Script.NextDistanceSignalDistanceM = () =>
+                    NextGenericSignalItem<float>(ref SignalDistance, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, "DISTANCE");
+                Script.NextGenericSignalMainHeadSignalType = (string type) =>
+                    NextGenericSignalItem<string>(ref MainHeadSignalTypeName, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, type);
+                Script.NextGenericSignalAspect = (string type) =>
+                    NextGenericSignalItem<Aspect>(ref SignalAspect, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, type);
+                Script.NextGenericSignalDistanceM = (string type) =>
+                    NextGenericSignalItem<float>(ref SignalDistance, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, type);
+                Script.DoesNextNormalSignalHaveRepeaterHead = () => DoesNextNormalSignalHaveRepeaterHead();
+                Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
+                Script.NextPostSpeedLimitMpS = (value) => NextSignalItem<float>(value, ref PostSpeedLimits, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
+                Script.NextPostDistanceM = (value) => NextSignalItem<float>(value, ref PostDistances, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
+                Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
+                Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
+                Script.CurrentDirection = () => Locomotive.Direction;
+                Script.IsDirectionForward = () => Locomotive.Direction == Direction.Forward;
+                Script.IsDirectionNeutral = () => Locomotive.Direction == Direction.N;
+                Script.IsDirectionReverse = () => Locomotive.Direction == Direction.Reverse;
+                Script.IsBrakeEmergency = () => Locomotive.TrainBrakeController.EmergencyBraking;
+                Script.IsBrakeFullService = () => Locomotive.TrainBrakeController.TCSFullServiceBraking;
+                Script.PowerAuthorization = () => PowerAuthorization;
+                Script.CircuitBreakerClosingOrder = () => CircuitBreakerClosingOrder;
+                Script.CircuitBreakerOpeningOrder = () => CircuitBreakerOpeningOrder;
+                Script.TractionAuthorization = () => TractionAuthorization;
+                Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
+                Script.LocomotiveBrakeCylinderPressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.GetCylPressurePSI()) : float.MaxValue;
+                Script.DoesBrakeCutPower = () => Locomotive.DoesBrakeCutPower;
+                Script.BrakeCutsPowerAtBrakeCylinderPressureBar = () => Bar.FromPSI(Locomotive.BrakeCutsPowerAtBrakeCylinderPressurePSI);
+                Script.LineSpeedMpS = () => (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
+                Script.DoesStartFromTerminalStation = () => DoesStartFromTerminalStation();
+                Script.IsColdStart = () => Locomotive.Train.ColdStart;
+                Script.GetTrackNodeOffset = () => Locomotive.Train.FrontTDBTraveller.TrackNodeLength - Locomotive.Train.FrontTDBTraveller.TrackNodeOffset;
+                Script.NextDivergingSwitchDistanceM = (value) => NextDivergingSwitchItem<float>(value, ref SignalDistance, Train.TrainObjectItem.TRAINOBJECTTYPE.FACING_SWITCH);
+                Script.NextTrailingDivergingSwitchDistanceM = (value) => Locomotive.Train.NextTrailingDivergingSwitchDistanceM(value);
+                Script.GetControlMode = () => (TRAIN_CONTROL)(int)Locomotive.Train.ControlMode;
+                Script.NextStationName = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].PlatformItem.Name : "";
+                Script.NextStationDistanceM = () => Locomotive.Train.StationStops != null && Locomotive.Train.StationStops.Count > 0 ? Locomotive.Train.StationStops[0].DistanceToTrainM : float.MaxValue;
+                Script.Locomotive = () => Locomotive;
+
+                // TrainControlSystem functions
+                Script.SpeedCurve = (arg1, arg2, arg3, arg4, arg5) => SpeedCurve(arg1, arg2, arg3, arg4, arg5);
+                Script.DistanceCurve = (arg1, arg2, arg3, arg4, arg5) => DistanceCurve(arg1, arg2, arg3, arg4, arg5);
+                Script.Deceleration = (arg1, arg2, arg3) => Deceleration(arg1, arg2, arg3);
+
+                // TrainControlSystem setters
+                Script.SetFullBrake = (value) =>
+                {
+                    if (Locomotive.TrainBrakeController.TCSFullServiceBraking != value)
+                    {
+                        Locomotive.TrainBrakeController.TCSFullServiceBraking = value;
+
+                    //Debrief Eval
+                    if (value && Locomotive.IsPlayerTrain && !ldbfevalfullbrakeabove16kmh && Math.Abs(Locomotive.SpeedMpS) > 4.44444)
+                        {
+                            var train = Simulator.PlayerLocomotive.Train;//Debrief Eval
+                        DbfevalFullBrakeAbove16kmh++;
+                            ldbfevalfullbrakeabove16kmh = true;
+                            train.DbfEvalValueChanged = true;//Debrief eval
+                    }
+                        if (!value)
+                            ldbfevalfullbrakeabove16kmh = false;
+                    }
+                };
+                Script.SetEmergencyBrake = (value) =>
+                {
+                    if (Locomotive.TrainBrakeController.TCSEmergencyBraking != value)
+                        Locomotive.TrainBrakeController.TCSEmergencyBraking = value;
+                };
+                Script.SetFullDynamicBrake = (value) => FullDynamicBrakingOrder = value;
+                Script.SetThrottleController = (value) => Locomotive.ThrottleController.SetValue(value);
+                Script.SetDynamicBrakeController = (value) =>
+                {
+                if (Locomotive.DynamicBrakeController == null) return;
+                Locomotive.DynamicBrakeChangeActiveState(value > 0);
+                Locomotive.DynamicBrakeController.SetValue(value);
+                };
+                Script.SetPantographsDown = () =>
+                {
+                    if (Locomotive.Pantographs.State == PantographState.Up)
+                    {
+                        Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
+                    }
+                };
+                Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
+                Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
+                Script.SetCircuitBreakerOpeningOrder = (value) => CircuitBreakerOpeningOrder = value;
+                Script.SetTractionAuthorization = (value) => TractionAuthorization = value;
+                Script.SetVigilanceAlarm = (value) => Locomotive.SignalEvent(value ? Event.VigilanceAlarmOn : Event.VigilanceAlarmOff);
+                Script.SetHorn = (value) => Locomotive.TCSHorn = value;
+                Script.TriggerSoundAlert1 = () => this.SignalEvent(Event.TrainControlSystemAlert1, Script);
+                Script.TriggerSoundAlert2 = () => this.SignalEvent(Event.TrainControlSystemAlert2, Script);
+                Script.TriggerSoundInfo1 = () => this.SignalEvent(Event.TrainControlSystemInfo1, Script);
+                Script.TriggerSoundInfo2 = () => this.SignalEvent(Event.TrainControlSystemInfo2, Script);
+                Script.TriggerSoundPenalty1 = () => this.SignalEvent(Event.TrainControlSystemPenalty1, Script);
+                Script.TriggerSoundPenalty2 = () => this.SignalEvent(Event.TrainControlSystemPenalty2, Script);
+                Script.TriggerSoundWarning1 = () => this.SignalEvent(Event.TrainControlSystemWarning1, Script);
+                Script.TriggerSoundWarning2 = () => this.SignalEvent(Event.TrainControlSystemWarning2, Script);
+                Script.TriggerSoundSystemActivate = () => this.SignalEvent(Event.TrainControlSystemActivate, Script);
+                Script.TriggerSoundSystemDeactivate = () => this.SignalEvent(Event.TrainControlSystemDeactivate, Script);
+                Script.SetVigilanceAlarmDisplay = (value) => this.VigilanceAlarm = value;
+                Script.SetVigilanceEmergencyDisplay = (value) => this.VigilanceEmergency = value;
+                Script.SetOverspeedWarningDisplay = (value) => this.OverspeedWarning = value;
+                Script.SetPenaltyApplicationDisplay = (value) => this.PenaltyApplication = value;
+                Script.SetMonitoringStatus = (value) => this.MonitoringStatus = value;
+                Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
+                Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
+                Script.SetInterventionSpeedLimitMpS = (value) => this.InterventionSpeedLimitMpS = value;
+                Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
+                Script.SetCabDisplayControl = (arg1, arg2) => CabDisplayControls[arg1] = arg2;
+                Script.SetCustomizedTCSControlString = (value) =>
+                {
+                    if (NextCabviewControlNameToEdit == 0)
+                    {
+                        Trace.TraceWarning("SetCustomizedTCSControlString is deprecated. Please use SetCustomizedCabviewControlName.");
+                    }
+
+                    if (NextCabviewControlNameToEdit < TCSCabviewControlCount)
+                    {
+                        CustomizedCabviewControlNames[NextCabviewControlNameToEdit] = value;
+                    }
+
+                    NextCabviewControlNameToEdit++;
+                };
+                Script.SetCustomizedCabviewControlName = (id, value) =>
+                {
+                    if (id >= 0 && id < TCSCabviewControlCount)
+                    {
+                        CustomizedCabviewControlNames[id] = value;
+                    }
+                };
+                Script.RequestToggleManualMode = () => Locomotive.Train.RequestToggleManualMode();
+
+                // TrainControlSystem INI configuration file
+                Script.GetBoolParameter = (arg1, arg2, arg3) => LoadParameter<bool>(arg1, arg2, arg3);
+                Script.GetIntParameter = (arg1, arg2, arg3) => LoadParameter<int>(arg1, arg2, arg3);
+                Script.GetFloatParameter = (arg1, arg2, arg3) => LoadParameter<float>(arg1, arg2, arg3);
+                Script.GetStringParameter = (arg1, arg2, arg3) => LoadParameter<string>(arg1, arg2, arg3);
+
+                Script.Initialize();
+                Activated = true;
+            }
+        }
+
+        public void InitializeMoving()
+        {
+            Script?.InitializeMoving();
         }
 
         T NextSignalItem<T>(int forsight, ref List<T> list, Train.TrainObjectItem.TRAINOBJECTTYPE type)
         {
             if (forsight < 0) forsight = 0;
             if (forsight >= list.Count) SearchTrainInfo(forsight, type);
+            // <CSComment> Doesn't : list.Count - 1 lead to wrong returns if forsight > 0? </CSComment>
             return list[forsight < list.Count ? forsight : list.Count - 1];
         }
 
@@ -358,10 +495,151 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
         }
 
-        private void HandleEvent(Event evt, TrainControlSystem script)
+        private Aspect NextNormalSignalDistanceHeadsAspect()
         {
-            foreach (var eventHandler in Locomotive.EventHandlers)
-                eventHandler.HandleEvent(evt, script);
+            var signal = Locomotive.Train.NextSignalObject[Locomotive.Train.MUDirection == Direction.Reverse ? 1 : 0];
+            Aspect distanceSignalAspect = Aspect.None;
+            if (signal != null)
+            {
+                foreach (var signalHead in signal.SignalHeads)
+                {
+                    if (signalHead.signalType.FnType == Formats.Msts.MstsSignalFunction.DISTANCE)
+                    {
+                        return distanceSignalAspect = (Aspect)Locomotive.Train.signalRef.TranslateToTCSAspect(signal.this_sig_lr(Orts.Formats.Msts.MstsSignalFunction.DISTANCE));
+                    }
+                }
+            }
+            return distanceSignalAspect;
+        }
+
+        private bool DoesNextNormalSignalHaveTwoAspects()
+            // ...and the two aspects of each head are STOP and ( CLEAR_2 or CLEAR_1 or RESTRICTING)
+        {
+            var signal = Locomotive.Train.NextSignalObject[Locomotive.Train.MUDirection == Direction.Reverse ? 1 : 0];
+            if (signal != null)
+            {
+                if (signal.SignalHeads[0].signalType.Aspects.Count > 2) return false;
+                else
+                {
+                    foreach (var signalHead in signal.SignalHeads)
+                    {
+                        if (signalHead.signalType.FnType != Formats.Msts.MstsSignalFunction.DISTANCE &&
+                            signalHead.signalType.Aspects.Count == 2 &&
+                            (int)(signalHead.signalType.Aspects[0].Aspect) == 0 &&
+                                ((int)(signalHead.signalType.Aspects[1].Aspect) == 7 ||
+                                (int)(signalHead.signalType.Aspects[1].Aspect) == 6 ||
+                                (int)(signalHead.signalType.Aspects[1].Aspect) == 2)) continue;
+                        else return false;
+                    }
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        T NextGenericSignalItem<T>(ref T retval, Train.TrainObjectItem.TRAINOBJECTTYPE type, string signalTypeName)
+        {
+            SignalAspect = Aspect.None;
+            SignalDistance = float.MaxValue;
+            MainHeadSignalTypeName = "";
+
+            int fn_type = Locomotive.Train.signalRef.ORTSSignalTypes.IndexOf(signalTypeName);
+            if (fn_type <= 0) // Invalid value or NORMAL signal
+                return retval;
+
+            int dir = Locomotive.Train.MUDirection == Direction.Reverse ? 1 : 0;
+
+            if (Locomotive.Train.ValidRoute[dir] == null || dir == 1 && Locomotive.Train.PresentPosition[dir].TCSectionIndex < 0)
+                return retval;
+
+            int index = dir == 0 ? Locomotive.Train.PresentPosition[dir].RouteListIndex : 
+                Locomotive.Train.ValidRoute[dir].GetRouteIndex(Locomotive.Train.PresentPosition[dir].TCSectionIndex, 0);
+            if (index < 0)
+                return retval;
+
+            float lengthOffset = (dir == 1) ? (-Locomotive.Train.PresentPosition[1].TCOffset +
+                     Locomotive.Train.signalRef.TrackCircuitList[Locomotive.Train.PresentPosition[1].TCSectionIndex].Length) : Locomotive.Train.PresentPosition[0].TCOffset;
+            float totalLength = 0;
+            var routePath = Locomotive.Train.ValidRoute[dir];
+            while (index < routePath.Count && totalLength < 400) // Check only first 400m
+            {
+                var thisElement = routePath[index];
+                TrackCircuitSection thisSection = Locomotive.Train.signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                TrackCircuitSignalList thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[thisElement.Direction][fn_type];
+                foreach (TrackCircuitSignalItem thisSignal in thisSignalList.TrackCircuitItem)
+                {
+                    if (thisSignal.SignalLocation > lengthOffset)
+                    {
+                        SignalAspect = (Aspect)Locomotive.Train.signalRef.TranslateToTCSAspect(thisSignal.SignalRef.this_sig_lr(fn_type));
+                        SignalDistance = thisSignal.SignalLocation - lengthOffset + totalLength;
+                        MainHeadSignalTypeName = thisSignal.SignalRef.SignalHeads[0].SignalTypeName;
+                        return retval;
+                    }
+                }
+                totalLength += (thisSection.Length - lengthOffset);
+                lengthOffset = 0;
+
+                int setSection = thisSection.ActivePins[thisElement.OutPin[0], thisElement.OutPin[1]].Link;
+                index++;
+                if (setSection < 0)
+                    return retval;
+            }
+
+            return retval;
+        }
+
+        private bool DoesNextNormalSignalHaveRepeaterHead()
+        {
+            var signal = Locomotive.Train.NextSignalObject[Locomotive.Train.MUDirection == Direction.Reverse ? 1 : 0];
+            if (signal != null)
+            {
+                foreach (var signalHead in signal.SignalHeads)
+                {
+                    if (signalHead.signalType.FnType == Formats.Msts.MstsSignalFunction.REPEATER) return true;
+                }
+                return false;
+            }
+            return false;
+        }
+
+        private bool DoesStartFromTerminalStation()
+        {
+            var tempTraveller = new Traveller(Locomotive.Train.RearTDBTraveller);
+            tempTraveller.ReverseDirection();
+            return tempTraveller.NextTrackNode() && tempTraveller.IsEnd;
+        }
+
+
+        public void SignalEvent(Event evt, TrainControlSystem script)
+        {
+            try
+            { 
+                foreach (var eventHandler in Locomotive.EventHandlers)
+                    eventHandler.HandleEvent(evt, script);
+            }
+            catch (Exception error)
+            {
+                Trace.TraceInformation("Sound event skipped due to thread safety problem " + error.Message);
+            }
+        }
+
+        T NextDivergingSwitchItem<T>(float maxDistanceM, ref T retval, Train.TrainObjectItem.TRAINOBJECTTYPE type)
+        {
+            var LocalTrainInfo = Locomotive.Train.GetTrainInfo();
+            SignalDistance = float.MaxValue;
+            foreach (var foundItem in Locomotive.Train.MUDirection == Direction.Reverse ? TrainInfo.ObjectInfoBackward : TrainInfo.ObjectInfoForward)
+            {
+                if (foundItem.DistanceToTrainM > maxDistanceM)
+                {
+                    return retval;
+                }
+                else if (foundItem.ItemType == type)
+                {
+                    SignalDistance = foundItem.DistanceToTrainM;
+                    return retval;
+                }
+            }
+            return retval;
         }
 
         private static float SpeedCurve(float targetDistanceM, float targetSpeedMpS, float slope, float delayS, float decelerationMpS2)
@@ -447,12 +725,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public void AlerterPressed(bool pressed)
         {
             AlerterButtonPressed = pressed;
-            SendEvent(pressed ? TCSEvent.AlerterPressed : TCSEvent.AlerterReleased);
+            HandleEvent(pressed ? TCSEvent.AlerterPressed : TCSEvent.AlerterReleased);
         }
 
         public void AlerterReset()
         {
-            SendEvent(TCSEvent.AlerterReset);
+            HandleEvent(TCSEvent.AlerterReset);
         }
 
         public void SetEmergency(bool emergency)
@@ -463,15 +741,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Locomotive.TrainBrakeController.TCSEmergencyBraking = emergency;
         }
 
-        public void SendEvent(TCSEvent evt)
+        public void HandleEvent(TCSEvent evt)
         {
-            SendEvent(evt, String.Empty);
+            HandleEvent(evt, String.Empty);
         }
 
-        public void SendEvent(TCSEvent evt, string message)
+        public void HandleEvent(TCSEvent evt, string message)
         {
             if (Script != null)
                 Script.HandleEvent(evt, message);
+        }
+
+        public void HandleEvent(TCSEvent evt, int eventIndex)
+        {
+            if (Script != null)
+            {
+                var message = eventIndex.ToString();
+                Script.HandleEvent(evt, message);
+            }
         }
 
         private T LoadParameter<T>(string sectionName, string keyName, T defaultValue)
@@ -487,21 +774,180 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             else
                 return defaultValue;
         }
+
+
+        // Converts the generic string (e.g. ORTS_TCS5) shown when browsing with the mouse on a TCS control
+        // to a customized string defined in the script
+        public string GetDisplayString(string originalString)
+        {
+            if (originalString.Length < 9) return originalString;
+            if (originalString.Substring(0, 8) != "ORTS_TCS") return originalString;
+            var commandIndex = Convert.ToInt32(originalString.Substring(8));
+            return commandIndex > 0 && commandIndex <= TCSCabviewControlCount && CustomizedCabviewControlNames[commandIndex - 1] != ""
+                ? CustomizedCabviewControlNames[commandIndex - 1]
+                : originalString;
+        }
+
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(ScriptName ?? "");
+            if (ScriptName != "")
+                Script.Save(outf);
+        }
+
+        public void Restore(BinaryReader inf)
+        {
+            ScriptName = inf.ReadString();
+            if (ScriptName != "")
+            {
+                Initialize();
+                Script.Restore(inf);
+            }
+        }
+
     }
 
     public class MSTSTrainControlSystem : TrainControlSystem
     {
+        public enum MonitorState
+        {
+            Disabled,
+            StandBy,
+            Alarm,
+            Emergency
+        };
+
+        public bool ResetButtonPressed { get; private set; }
+
+        public bool VigilanceSystemEnabled
+        {
+            get
+            {
+                bool enabled = true;
+
+                enabled &= IsAlerterEnabled();
+
+                if (VigilanceMonitor != null)
+                {
+                    if (VigilanceMonitor.ResetOnDirectionNeutral)
+                    {
+                        enabled &= CurrentDirection() != Direction.N;
+                    }
+
+                    if (VigilanceMonitor.ResetOnZeroSpeed)
+                    {
+                        enabled &= SpeedMpS() >= 0.1f;
+                    }
+                }
+
+                return enabled;
+            }
+        }
+
+        public bool VigilanceReset
+        {
+            get
+            {
+                bool vigilanceReset = true;
+
+                if (VigilanceMonitor != null)
+                {
+                    if (VigilanceMonitor.ResetOnDirectionNeutral)
+                    {
+                        vigilanceReset &= CurrentDirection() == Direction.N;
+                    }
+
+                    if (VigilanceMonitor.ResetOnZeroSpeed)
+                    {
+                        vigilanceReset &= SpeedMpS() < 0.1f;
+                    }
+
+                    if (VigilanceMonitor.ResetOnResetButton)
+                    {
+                        vigilanceReset &= ResetButtonPressed;
+                    }
+                }
+
+                return vigilanceReset;
+            }
+        }
+
+        public bool SpeedControlSystemEnabled
+        {
+            get
+            {
+                bool enabled = true;
+
+                enabled &= IsSpeedControlEnabled();
+
+                return enabled;
+            }
+        }
+
+        public bool Overspeed
+        {
+            get
+            {
+                bool overspeed = false;
+
+                if (OverspeedMonitor != null)
+                {
+                    if (OverspeedMonitor.TriggerOnOverspeedMpS > 0)
+                    {
+                        overspeed |= SpeedMpS() > OverspeedMonitor.TriggerOnOverspeedMpS;
+                    }
+
+                    if (OverspeedMonitor.CriticalLevelMpS > 0)
+                    {
+                        overspeed |= SpeedMpS() > OverspeedMonitor.CriticalLevelMpS;
+                    }
+
+                    if (OverspeedMonitor.TriggerOnTrackOverspeed)
+                    {
+                        overspeed |= SpeedMpS() > CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
+                    }
+                }
+
+                return overspeed;
+            }
+        }
+
+        public bool OverspeedReset
+        {
+            get
+            {
+                bool overspeedReset = true;
+
+                if (OverspeedMonitor != null)
+                {
+                    if (OverspeedMonitor.ResetOnDirectionNeutral)
+                    {
+                        overspeedReset &= CurrentDirection() == Direction.N;
+                    }
+
+                    if (OverspeedMonitor.ResetOnZeroSpeed)
+                    {
+                        overspeedReset &= SpeedMpS() < 0.1f;
+                    }
+
+                    if (OverspeedMonitor.ResetOnResetButton)
+                    {
+                        overspeedReset &= ResetButtonPressed;
+                    }
+                }
+
+                return overspeedReset;
+            }
+        }
+
         Timer VigilanceAlarmTimer;
         Timer VigilanceEmergencyTimer;
         Timer VigilancePenaltyTimer;
-        Timer OverspeedAlarmTimer;
+        Timer OverspeedEmergencyTimer;
         Timer OverspeedPenaltyTimer;
 
-        bool OverspeedWarning;
-        bool OverspeedAlarm;
-        bool OverspeedEmergency;
-        bool VigilanceAlarm;
-        bool VigilanceEmergency;
+        MonitorState VigilanceMonitorState;
+        MonitorState OverspeedMonitorState;
         bool ExternalEmergency;
 
         float VigilanceAlarmTimeoutS;
@@ -524,7 +970,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             VigilanceAlarmTimer = new Timer(this);
             VigilanceEmergencyTimer = new Timer(this);
             VigilancePenaltyTimer = new Timer(this);
-            OverspeedAlarmTimer = new Timer(this);
+            OverspeedEmergencyTimer = new Timer(this);
             OverspeedPenaltyTimer = new Timer(this);
 
             if (VigilanceMonitor != null)
@@ -538,9 +984,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             if (OverspeedMonitor != null)
             {
-                OverspeedAlarmTimer.Setup(Math.Max(OverspeedMonitor.AlarmTimeS, OverspeedMonitor.AlarmTimeBeforeOverspeedS));
+                OverspeedEmergencyTimer.Setup(Math.Max(OverspeedMonitor.AlarmTimeS, OverspeedMonitor.AlarmTimeBeforeOverspeedS));
                 OverspeedPenaltyTimer.Setup(OverspeedMonitor.PenaltyTimeS);
             }
+
             Activated = true;
         }
 
@@ -562,23 +1009,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 if (VigilanceMonitor != null)
                 {
                     if (VigilanceMonitor.AppliesEmergencyBrake)
-                        EmergencyBrake |= VigilanceEmergency;
+                        EmergencyBrake |= (VigilanceMonitorState == MonitorState.Emergency);
                     else if (VigilanceMonitor.AppliesFullBrake)
-                        FullBrake |= VigilanceEmergency;
+                        FullBrake |= (VigilanceMonitorState == MonitorState.Emergency);
 
                     if (VigilanceMonitor.EmergencyCutsPower)
-                        PowerCut |= VigilanceEmergency;
+                        PowerCut |= (VigilanceMonitorState == MonitorState.Emergency);
                 }
 
                 if (OverspeedMonitor != null)
                 {
                     if (OverspeedMonitor.AppliesEmergencyBrake)
-                        EmergencyBrake |= OverspeedEmergency;
+                        EmergencyBrake |= (OverspeedMonitorState == MonitorState.Emergency);
                     else if (OverspeedMonitor.AppliesFullBrake)
-                        FullBrake |= OverspeedEmergency;
+                        FullBrake |= (OverspeedMonitorState == MonitorState.Emergency);
 
                     if (OverspeedMonitor.EmergencyCutsPower)
-                        PowerCut |= OverspeedEmergency;
+                        PowerCut |= (OverspeedMonitorState == MonitorState.Emergency);
                 }
 
                 if (EmergencyStopMonitor != null)
@@ -592,17 +1039,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         PowerCut |= ExternalEmergency;
                 }
 
+                SetTractionAuthorization(!DoesBrakeCutPower() || LocomotiveBrakeCylinderPressureBar() < BrakeCutsPowerAtBrakeCylinderPressureBar());
+
                 SetEmergencyBrake(EmergencyBrake);
                 SetFullBrake(FullBrake);
                 SetPowerAuthorization(!PowerCut);
 
-                if (EmergencyCausesThrottleDown && (EmergencyBrake || FullBrake))
+                if (EmergencyCausesThrottleDown && (IsBrakeEmergency() || IsBrakeFullService()))
                     SetThrottleController(0f);
 
                 if (EmergencyEngagesHorn)
-                    SetHorn(EmergencyBrake || FullBrake);
+                    SetHorn(IsBrakeEmergency() || IsBrakeFullService());
 
-                SetPenaltyApplicationDisplay(IsBrakeEmergency() && IsBrakeFullService());
+                SetPenaltyApplicationDisplay(IsBrakeEmergency() || IsBrakeFullService());
 
                 // Update monitoring status
                 if (SpeedMpS() > CurrentSpeedLimitMpS)
@@ -633,7 +1082,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             if (CurrentSpeedLimitMpS < 0 || CurrentSpeedLimitMpS > TrainSpeedLimitMpS())
                 CurrentSpeedLimitMpS = TrainSpeedLimitMpS();
 
-            NextSpeedLimitMpS = NextSignalSpeedLimitMpS(0) >= 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS();
+            // TODO: NextSignalSpeedLimitMpS(0) should return 0 if the signal is at stop; cause seems to be updateSpeedInfo() within Train.cs
+            NextSpeedLimitMpS = NextSignalAspect(0) != Aspect.Stop ? (NextSignalSpeedLimitMpS(0) > 0 && NextSignalSpeedLimitMpS(0) < TrainSpeedLimitMpS() ? NextSignalSpeedLimitMpS(0) : TrainSpeedLimitMpS() ) : 0;
 
             SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
             SetNextSpeedLimitMpS(NextSpeedLimitMpS);
@@ -646,23 +1096,35 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 case TCSEvent.AlerterPressed:
                 case TCSEvent.AlerterReleased:
                 case TCSEvent.AlerterReset:
-                    if (!Activated || VigilanceEmergency)
-                        return;
-
-                    if (VigilanceMonitor != null)
+                    if (Activated)
                     {
-                        VigilanceAlarmTimer.Start();
-                        VigilanceAlarm = VigilanceAlarmTimer.Triggered;
-                        if (AlerterSound())
-                            SetVigilanceAlarm(false);
+                        switch (VigilanceMonitorState)
+                        {
+                            // case VigilanceState.Disabled: do nothing
+
+                            case MonitorState.StandBy:
+                                VigilanceAlarmTimer.Stop();
+                                break;
+
+                            case MonitorState.Alarm:
+                                VigilanceEmergencyTimer.Stop();
+                                VigilanceMonitorState = MonitorState.StandBy;
+                                break;
+
+                            // case VigilanceState.Emergency: do nothing
+                        }
                     }
+                    break;
+            }
 
-                    if (OverspeedMonitor != null)
-                        if (OverspeedWarning && OverspeedMonitor.ResetOnResetButton)
-                            OverspeedAlarmTimer.Start();
+            switch (evt)
+            {
+                case TCSEvent.AlerterPressed:
+                    ResetButtonPressed = true;
+                    break;
 
-                    if (ExternalEmergency && SpeedMpS() < 0.1f)
-                        ExternalEmergency = false;
+                case TCSEvent.AlerterReleased:
+                    ResetButtonPressed = false;
                     break;
             }
         }
@@ -674,99 +1136,164 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         void UpdateVigilance()
         {
-            if (AlerterSound() && !IsAlerterEnabled())
-                HandleEvent(TCSEvent.AlerterPressed, String.Empty);
-
-            VigilanceAlarm = VigilanceAlarmTimer.Triggered;
-            VigilanceEmergency = VigilanceEmergencyTimer.Triggered;
-            SetVigilanceAlarmDisplay(VigilanceAlarm);
-            SetVigilanceEmergencyDisplay(VigilanceEmergency);
-
-            if (VigilanceEmergency)
+            switch (VigilanceMonitorState)
             {
-                if (!VigilancePenaltyTimer.Started)
-                    VigilancePenaltyTimer.Start();
-                if (SpeedMpS() < 0.1f && VigilancePenaltyTimer.Triggered)
-                {
-                    VigilanceEmergencyTimer.Stop();
-                    VigilancePenaltyTimer.Stop();
-                }
-                if (AlerterSound())
-                    SetVigilanceAlarm(false);
-                return;
+                case MonitorState.Disabled:
+                    if (VigilanceSystemEnabled)
+                    {
+                        VigilanceMonitorState = MonitorState.StandBy;
+                    }
+                    break;
+
+                case MonitorState.StandBy:
+                    if (!VigilanceSystemEnabled)
+                    {
+                        VigilanceAlarmTimer.Stop();
+                        VigilanceMonitorState = MonitorState.Disabled;
+                    }
+                    else
+                    {
+                        if (!VigilanceAlarmTimer.Started)
+                        {
+                            VigilanceAlarmTimer.Start();
+                        }
+
+                        if (VigilanceAlarmTimer.Triggered)
+                        {
+                            VigilanceAlarmTimer.Stop();
+                            VigilanceMonitorState = MonitorState.Alarm;
+                        }
+                    }
+                    break;
+
+                case MonitorState.Alarm:
+                    if (!VigilanceSystemEnabled)
+                    {
+                        VigilanceEmergencyTimer.Stop();
+                        VigilanceMonitorState = MonitorState.Disabled;
+                    }
+                    else
+                    {
+                        if (!VigilanceEmergencyTimer.Started)
+                        {
+                            VigilanceEmergencyTimer.Start();
+                        }
+
+                        if (VigilanceEmergencyTimer.Triggered)
+                        {
+                            VigilanceEmergencyTimer.Stop();
+                            VigilanceMonitorState = MonitorState.Emergency;
+                        }
+                    }
+                    break;
+
+                case MonitorState.Emergency:
+                    if (!VigilancePenaltyTimer.Started)
+                    {
+                        VigilancePenaltyTimer.Start();
+                    }
+
+                    if (VigilancePenaltyTimer.Triggered && VigilanceReset)
+                    {
+                        VigilanceEmergencyTimer.Stop();
+                        VigilanceMonitorState = (VigilanceSystemEnabled ? MonitorState.StandBy : MonitorState.Disabled);
+                    }
+                    break;
             }
 
-            if (VigilanceAlarm)
+            if (VigilanceMonitorState >= MonitorState.Alarm)
             {
-                if (VigilanceMonitor.ResetOnZeroSpeed && SpeedMpS() < 0.1f
-                    || SpeedMpS() <= VigilanceMonitor.ResetLevelMpS)
+                if (!AlerterSound())
                 {
-                    HandleEvent(TCSEvent.AlerterPressed, String.Empty);
-                    return;
-                }
-                if (IsAlerterEnabled())
-                {
-                    if (!VigilanceEmergencyTimer.Started)
-                        VigilanceEmergencyTimer.Start();
-                    if (!AlerterSound())
-                        SetVigilanceAlarm(true);
+                    SetVigilanceAlarm(true);
                 }
             }
             else
             {
-                VigilanceEmergencyTimer.Stop();
-                if (VigilancePenaltyTimer.Triggered)
-                    VigilancePenaltyTimer.Stop();
+                if (AlerterSound())
+                {
+                    SetVigilanceAlarm(false);
+                }
             }
+
+            SetVigilanceAlarmDisplay(VigilanceMonitorState == MonitorState.Alarm);
+            SetVigilanceEmergencyDisplay(VigilanceMonitorState == MonitorState.Emergency);
         }
 
         void UpdateSpeedControl()
         {
-            var overspeedWarning = false;
-            var interventionSpeedMpS = 0f;
+            var interventionSpeedMpS = CurrentSpeedLimitMpS + MpS.FromKpH(5.0f); // Default margin : 5 km/h
             
-            // Not sure about the difference of the following two. Seems both of them are used.
-            if (OverspeedMonitor.TriggerOnOverspeedMpS > 0)
-                overspeedWarning |= SpeedMpS() > OverspeedMonitor.TriggerOnOverspeedMpS;
-            if (OverspeedMonitor.CriticalLevelMpS > 0)
-                overspeedWarning |= SpeedMpS() > OverspeedMonitor.CriticalLevelMpS;
             if (OverspeedMonitor.TriggerOnTrackOverspeed)
             {
-                overspeedWarning |= SpeedMpS() > CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
                 interventionSpeedMpS = CurrentSpeedLimitMpS + OverspeedMonitor.TriggerOnTrackOverspeedMarginMpS;
             }
             
-            OverspeedWarning = overspeedWarning;
-            SetOverspeedWarningDisplay(overspeedWarning);
             SetInterventionSpeedLimitMpS(interventionSpeedMpS);
 
-            OverspeedAlarm = OverspeedAlarmTimer.Triggered;
+            switch (OverspeedMonitorState)
+            {
+                case MonitorState.Disabled:
+                    if (SpeedControlSystemEnabled)
+                    {
+                        OverspeedMonitorState = MonitorState.StandBy;
+                    }
+                    break;
 
-            if (OverspeedAlarm && !OverspeedEmergency && IsAlerterEnabled())
-            {
-                SetPenaltyApplicationDisplay(true);
-                OverspeedEmergency = true;
+                case MonitorState.StandBy:
+                    if (!SpeedControlSystemEnabled)
+                    {
+                        OverspeedMonitorState = MonitorState.Disabled;
+                    }
+                    else
+                    {
+                        if (Overspeed)
+                        {
+                            OverspeedMonitorState = MonitorState.Alarm;
+                        }
+                    }
+                    break;
 
-                if (!OverspeedPenaltyTimer.Started)
-                    OverspeedPenaltyTimer.Start();
+                case MonitorState.Alarm:
+                    if (!SpeedControlSystemEnabled)
+                    {
+                        OverspeedMonitorState = MonitorState.Disabled;
+                    }
+                    else
+                    {
+                        if (!OverspeedEmergencyTimer.Started)
+                        {
+                            OverspeedEmergencyTimer.Start();
+                        }
+
+                        if (!Overspeed)
+                        {
+                            OverspeedEmergencyTimer.Stop();
+                            OverspeedMonitorState = MonitorState.StandBy;
+                        }
+                        else if (OverspeedEmergencyTimer.Triggered)
+                        {
+                            OverspeedEmergencyTimer.Stop();
+                            OverspeedMonitorState = MonitorState.Emergency;
+                        }
+                    }
+                    break;
+
+                case MonitorState.Emergency:
+                    if (!OverspeedPenaltyTimer.Started)
+                    {
+                        OverspeedPenaltyTimer.Start();
+                    }
+
+                    if (OverspeedPenaltyTimer.Triggered && OverspeedReset)
+                    {
+                        OverspeedPenaltyTimer.Stop();
+                        OverspeedMonitorState = MonitorState.StandBy;
+                    }
+                    break;
             }
-            
-            if (OverspeedEmergency && SpeedMpS() < 0.1f && OverspeedPenaltyTimer.Triggered)
-            {
-                OverspeedAlarmTimer.Stop();
-                OverspeedPenaltyTimer.Stop();
-                OverspeedEmergency = false;
-            }
-            
-            if (OverspeedWarning)
-            {
-                if (!OverspeedAlarmTimer.Started)
-                    OverspeedAlarmTimer.Start();
-            }
-            else
-            {
-                OverspeedAlarmTimer.Stop();
-            }
+
+            SetOverspeedWarningDisplay(OverspeedMonitorState >= MonitorState.Alarm);
         }
     }
 }

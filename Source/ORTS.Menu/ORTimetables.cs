@@ -34,6 +34,7 @@ namespace ORTS.Menu
         public int Day;
         public int Season;
         public int Weather;
+        public String WeatherFile;
 
         // note : file is read preliminary only, extracting description and train information
         // all other information is read only when activity is started
@@ -88,6 +89,7 @@ namespace ORTS.Menu
             return Description;
         }
 
+        // get timetable information
         public static List<TimetableInfo> GetTimetableInfo(Folder folder, Route route)
         {
             var ORTTInfo = new List<TimetableInfo>();
@@ -107,7 +109,25 @@ namespace ORTS.Menu
                         catch { }
                     }
 
+                    foreach (var ORTimetableFile in Directory.GetFiles(directory, "*.timetable-or"))
+                    {
+                        try
+                        {
+                            ORTTInfo.Add(new TimetableInfo(ORTimetableFile));
+                        }
+                        catch { }
+                    }
+
                     foreach (var ORMultitimetableFile in Directory.GetFiles(directory, "*.timetablelist_or"))
+                    {
+                        try
+                        {
+                            ORTTInfo.Add(new TimetableInfo(ORMultitimetableFile, directory));
+                        }
+                        catch { }
+                    }
+
+                    foreach (var ORMultitimetableFile in Directory.GetFiles(directory, "*.timetablelist-or"))
                     {
                         try
                         {
@@ -120,5 +140,44 @@ namespace ORTS.Menu
             return ORTTInfo;
         }
     }
-}
 
+    public class WeatherFileInfo
+    {
+        public FileInfo filedetails;
+
+        public WeatherFileInfo(string filename)
+        {
+            filedetails = new FileInfo(filename);
+        }
+
+        public override string ToString()
+        {
+            return (filedetails.Name);
+        }
+
+        public string GetFullName()
+        {
+            return (filedetails.FullName);
+        }
+
+        // get weatherfiles
+        public static List<WeatherFileInfo> GetTimetableWeatherFiles(Folder folder, Route route)
+        {
+            var weatherInfo = new List<WeatherFileInfo>();
+            if (route != null)
+            {
+                var directory = System.IO.Path.Combine(route.Path, "WeatherFiles");
+
+                if (Directory.Exists(directory))
+                {
+                    foreach (var weatherFile in Directory.GetFiles(directory, "*.weather-or"))
+                    {
+                        weatherInfo.Add(new WeatherFileInfo(weatherFile));
+                    }
+
+                }
+            }
+            return weatherInfo;
+        }
+    }
+}

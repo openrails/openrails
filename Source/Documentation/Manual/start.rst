@@ -11,13 +11,15 @@ the desktop, or on the OpenRails.exe file.
 The OpenRails main window will appear. This displays your available MSTS 
 installation profiles.
 
+.. _start-picture:
+
 .. image:: images/start-activity.png
 
 Installation Profiles
 =====================
 
 In the simplest case, where you have only a basic MSTS installation (see 
-paragraph *Does Open Rails need MSTS to run?* for a precise definition of 
+paragraph :ref:`Does Open Rails need MSTS to run? <intro-MSTSneeded>` for a precise definition of 
 a MSTS installation) OR should already correctly point to that 
 installation. To check this, you should initially see under ``Installation 
 Profile`` the string ``- Default -``. Under ``Route`` you should see the 
@@ -26,7 +28,7 @@ name of one of the MSTS routes in your MSTS installation.
 You can easily add, remove or move other MSTS installations and select 
 among them (e.g. if you have any so-called ``mini-routes`` installed.). 
 Click on the ``Options`` button and select the ``Content`` tab. See the 
-``Content Options`` discussed below for more instructions.
+:ref:`Content Options <options-Content>` discussed below for more instructions.
 
 .. _updating-or:
 
@@ -43,7 +45,7 @@ You may choose the desired level in the ``Options-Update`` window, described
 When you click on the update link OR will download and install the new 
 release. In this way your version of Open Rails is always up to date. 
 Note, however, that previously saved games may not be compatible with 
-newer versions, as described here.
+newer versions, as described :ref:`here <driving-saveresume>`.
 
 Clicking the link ``What's new?`` in the upper centre part of the main menu 
 window will connect to a website that summarizes the most recent changes 
@@ -81,7 +83,7 @@ If the ``Windowed`` checkbox is checked, Open Rails will run in a window
 instead of full screen.
 
 If you wish to fine-tune Open Rails for your system, click on the 
-``Options`` button. See the Chapter: ``Open Rails Options`` which describes 
+``Options`` button. See the Chapter: :ref:`Open Rails Options <options>` which describes 
 the extensive set of OR options. It is recommended that you read this 
 chapter.
 
@@ -91,17 +93,25 @@ Gaming Modes
 One of the plus points of Open Rails is the variety of gaming modes you 
 can select.
 
-Traditional Activity and Explore modes
---------------------------------------
+Activity, Explore and Explore with activity modes
+-------------------------------------------------
 
 As a default you will find the radio button ``Activity`` selected in the 
-start window, as above.
+start window, as :ref:`above <start-picture>`.
 
-This will allow you to run an activity or run in explore mode.
+This will allow you to run an activity or run on of two types of explore mode.
 
-If you select ``-Explore Route-`` (first entry under ``Activity:``), you will 
+If you select ``- Explore Route -`` (first entry under ``Activity:``), you will 
 also have to select the consist, the path, the starting time, the season 
 and the weather with the relevant buttons.
+
+If you select ``+ Explore in activity mode +`` (second entry under 
+``Activity:``, you will have to select same items as with Explore route, but 
+in this case the game will automatically generate an activity (with the 
+player train only) and will execute it. By exploring the route in this mode 
+you will able to switch to autopilot mode if you like ( see :ref:`here 
+<options-autopilot>` ) and you will have access to some other activity features 
+like :ref:`randomized weather <options-actweather-randomization>` if selected.
 
 To select the consist you have two possibilities: either you click under 
 ``Consist:``, and the whole list of available consists will appear, or you 
@@ -112,9 +122,18 @@ by that locomotive will appear.
 If you instead select a specific activity, you won't have to perform any 
 further selections.
 
+If you have selected an activity, the "Debrief evaluation" checkbox becomes 
+checkable. If it is checked, during the activity run 
+data about the activity run are stored and may be displayed in real time, and at 
+the end of the activity a report file provides a complete compendium of information about 
+the player skills as a train driver.
+Debrief evaluation is described :ref:`here <debriefeval>`.
+
 If you have selected the related Experimental Option, at runtime you can 
-switch Autopilot mode on or off, which allows you to watch OR driving your 
+switch :ref:`Autopilot mode <driving-autopilot>` on or off, which allows you
+to watch OR driving your 
 train, as if you were a trainspotter or a visitor in the cab. 
+Autopilot mode is not operating in Explore mode.
 
 .. _start-timetable:
 
@@ -133,11 +152,15 @@ done at the end of the train run, and some train synchronization rules.
 
 Timetable mode significantly reduces development time with respect to 
 activities in cases where no specific shunting or train operation is 
-foreseen. The complete description of the timetable mode can be found here.
+foreseen. The complete description of the timetable mode can be found 
+:ref:`here. <timetable>`
 
 The spreadsheet has a .csv format, but it must be saved in Unicode format 
 with the extension ``.timetable_or`` in a subdirectory named ``Openrails`` 
 that must be created in the route's ``ACTIVITIES`` directory. 
+
+A specific tool (Timetable editor) is available under the "Tools" button to ease
+generation of timetables.
 
 For the game player, one of the most interesting features of timetable 
 mode is that any one of the trains defined in the timetable can be 
@@ -150,12 +173,12 @@ Now you can select in the drop-down window ``Train:`` from all of the trains
 of the timetable the train you desire to run as the Player train. Season 
 and weather can also be selected.
 
-Run!
-----
+Run
+---
 
 Now, click on ``Start``, and OR will start loading the data needed for your 
 game. When loading completes you will be within the cab of your 
-locomotive! You can read further in the chapter ``Driving a Train``.
+locomotive! You can read further in the chapter :ref:`Driving a Train <driving>`.
 
 Multiplayer Mode
 ----------------
@@ -165,7 +188,7 @@ one on a different computer in a local network or through the Internet,
 can play together, each driving a train and seeing the trains of the other 
 players, even interacting with them by exchanging wagons, under the 
 supervision of a player that acts as dispatcher. The multiplayer mode is 
-described in detail here.
+described in detail :ref:`here. <multiplayer>`
 
 Replay
 ------
@@ -174,5 +197,9 @@ This is not a real gaming mode, but it is nevertheless another way to
 experience OR. After having run a game you can save it and replay it: OR 
 will save all the commands that you gave, and will automatically execute 
 the  commands during replay: it's like you are seeing a video on how you 
-played the game. Replay is described later together with the save and 
+played the game. Replay is described :ref:`later <driving-save-and-replay>`
+together with the save and 
 resume functions.
+
+
+

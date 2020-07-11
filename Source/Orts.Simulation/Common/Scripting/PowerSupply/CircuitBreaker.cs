@@ -38,13 +38,33 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<PowerSupplyState> CurrentPowerSupplyState;
         /// <summary>
-        /// TCS authorization
+        /// Driver's circuit breaker closing order
         /// </summary>
-        public Func<bool> TCSCloseAuthorization;
+        public Func<bool> DriverClosingOrder;
         /// <summary>
-        /// Driver authorization
+        /// Driver's circuit breaker closing authorization
         /// </summary>
-        public Func<bool> DriverCloseAuthorization;
+        public Func<bool> DriverClosingAuthorization;
+        /// <summary>
+        /// Driver's circuit breaker opening order
+        /// </summary>
+        public Func<bool> DriverOpeningOrder;
+        /// <summary>
+        /// TCS' circuit breaker closing order
+        /// </summary>
+        public Func<bool> TCSClosingOrder;
+        /// <summary>
+        /// TCS' circuit breaker closing authorization
+        /// </summary>
+        public Func<bool> TCSClosingAuthorization;
+        /// <summary>
+        /// TCS' circuit breaker opening order
+        /// </summary>
+        public Func<bool> TCSOpeningOrder;
+        /// <summary>
+        /// Circuit breaker closing authorization
+        /// </summary>
+        public Func<bool> ClosingAuthorization;
         /// <summary>
         /// Delay before circuit breaker closing
         /// </summary>
@@ -55,9 +75,21 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action<CircuitBreakerState> SetCurrentState;
         /// <summary>
-        /// Sets the driver authorization
+        /// Sets the driver's circuit breaker closing order
         /// </summary>
-        public Action<bool> SetDriverCloseAuthorization;
+        public Action<bool> SetDriverClosingOrder;
+        /// <summary>
+        /// Sets the driver's circuit breaker closing authorization
+        /// </summary>
+        public Action<bool> SetDriverClosingAuthorization;
+        /// <summary>
+        /// Sets the driver's circuit breaker opening order
+        /// </summary>
+        public Action<bool> SetDriverOpeningOrder;
+        /// <summary>
+        /// Sets the circuit breaker closing authorization
+        /// </summary>
+        public Action<bool> SetClosingAuthorization;
 
         /// <summary>
         /// Called once at initialization time.
@@ -76,8 +108,8 @@ namespace ORTS.Scripting.Api
 
     public enum CircuitBreakerState
     {
-        [GetParticularString("CircuitBraker", "Open")] Open,
-        [GetParticularString("CircuitBraker", "Closing")] Closing,
-        [GetParticularString("CircuitBraker", "Closed")] Closed
+        [GetParticularString("CircuitBreaker", "Open")] Open,
+        [GetParticularString("CircuitBreaker", "Closing")] Closing,
+        [GetParticularString("CircuitBreaker", "Closed")] Closed
     }
 }

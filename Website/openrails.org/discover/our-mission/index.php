@@ -29,13 +29,13 @@ For this reason we are working towards an open, extensible architecture that acc
       <div class="col-md-6">
 <h2>Better Than Microsoft Train Simulator</h2>
 <p>
-One major technical objective has been to achieve backward compatibility with existing Microsoft Train Simulator (MSTS) content, extending the life of community and commercial content developed over the last decade and more. This has been a fascinating challenge; experimenting to discover how the authors of MSTS solved  design issues and working around some poor decisions and incomplete features. We have been largely successful and MSTS content mostly runs without problems on the Open Rails platform. We try to provide this compatibility without limiting OR and restricting what can be included in the future. 
+One major technical objective has been to achieve backward compatibility with existing Microsoft Train Simulator content, extending the life of community and commercial content developed over the last decade and more. This has been a fascinating challenge; experimenting to discover how the authors of Microsoft Train Simulator solved  design issues and working around some poor decisions and incomplete features. We have been largely successful and Microsoft Train Simulator content mostly runs without problems on the Open Rails platform. We try to provide this compatibility without limiting Open Rails and restricting what can be included in the future. 
 </p><p>
-For example, we do not feel bound by the limitations of the MSTS file formats. We are extending those formats to support new and better features and we are creating new file formats to make better use of current computers and graphics technology.
+For example, we do not feel bound by the limitations of the Microsoft Train Simulator file formats. We are extending those formats to support new and better features and we are creating new file formats to make better use of current computers and graphics technology.
 </p>
 <h2>For The Future</h2>
 <p>
-Looking into the future, we expect both amateur and professional content creators to develop their existing MSTS content and to build new content specifically for Open Rails. This content will exploit the new features and capabilities offered by the Open Rails platform.
+Looking into the future, we expect both amateur and professional content creators to develop their existing Microsoft Train Simulator content and to build new content specifically for Open Rails. This content will exploit the new features and capabilities offered by the Open Rails platform.
 </p><p>
 We encourage the commercial enterprises in our community to develop for Open Rails. We look forward to our platform supporting a mix of commercial and free content, add-ons and tools.
 </p><p>

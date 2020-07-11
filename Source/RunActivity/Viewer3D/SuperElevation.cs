@@ -400,7 +400,7 @@ namespace Orts.Viewer3D
                 float length = 0, radius = -1;
 
                 length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0) continue; // Consider zero-length subsections vacuous
+                if (length == 0.0 || dTrackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
 
                 // Create new DT object copy; has only one meaningful subsection
                 DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);
@@ -429,7 +429,7 @@ namespace Orts.Viewer3D
                     // nextRoot is found by moving from Point-of-Curve (PC) to
                     // center (O)to Point-of-Tangent (PT).
                     radius = subsection.trackSections[0].param2; // meters
-                    Vector3 left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
+                    Vector3 left = radius * Vector3.Cross(Vector3.Up, heading) * Math.Sign(-subsection.trackSections[0].param1); // Vector from PC to O
                     Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
                     // Shared method returns displacement from present world position and, by reference,
                     // local position in x-z plane of end of this section
@@ -462,7 +462,7 @@ namespace Orts.Viewer3D
                 float length = 0;
 
                 length = dTrackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0) continue; // Consider zero-length subsections vacuous
+                if (length == 0.0 || dTrackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
 
                 // Create new DT object copy; has only one meaningful subsection
                 DyntrackObj subsection = new DyntrackObj(dTrackObj, iTkSection);

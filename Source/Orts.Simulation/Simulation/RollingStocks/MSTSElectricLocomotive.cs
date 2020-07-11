@@ -27,8 +27,10 @@
  * 
  */
 
+using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
+using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
@@ -103,7 +105,7 @@ namespace Orts.Simulation.RollingStocks
         public override void Save(BinaryWriter outf)
         {
             PowerSupply.Save(outf);
-
+            outf.Write(CurrentLocomotiveSteamHeatBoilerWaterCapacityL);
             base.Save(outf);
         }
 
@@ -114,7 +116,7 @@ namespace Orts.Simulation.RollingStocks
         public override void Restore(BinaryReader inf)
         {
             PowerSupply.Restore(inf);
-
+            CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             base.Restore(inf);
         }
 
@@ -126,6 +128,26 @@ namespace Orts.Simulation.RollingStocks
             PowerSupply.Initialize();
 
             base.Initialize();
+
+            // If DrvWheelWeight is not in ENG file, then calculate drivewheel weight freom FoA
+
+            if (DrvWheelWeightKg == 0) // if DrvWheelWeightKg not in ENG file.
+            {
+                DrvWheelWeightKg = MassKG; // set Drive wheel weight to total wagon mass if not in ENG file
+            }
+
+            // Initialise water level in steam heat boiler
+            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0)
+            {
+                if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = MaximumSteamHeatBoilerWaterTankCapacityL;
+                }
+                else
+                {
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL = L.FromGUK(800.0f);
+                }
+            }
         }
 
         //================================================================================================//
@@ -151,6 +173,57 @@ namespace Orts.Simulation.RollingStocks
         {
             PowerSupply.Update(elapsedClockSeconds);
         }
+
+        /// <summary>
+        /// This function updates periodically the wagon heating.
+        /// </summary>
+        protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
+        {
+            // Update Steam Heating System
+
+            // TO DO - Add test to see if cars are coupled, if Light Engine, disable steam heating.
+
+
+            if (IsSteamHeatFitted && this.IsLeadLocomotive())  // Only Update steam heating if train and locomotive fitted with steam heating
+            {
+
+                // Update water controller for steam boiler heating tank
+                    WaterController.Update(elapsedClockSeconds);
+                    if (WaterController.UpdateValue > 0.0)
+                        Simulator.Confirmer.UpdateWithPerCent(CabControl.SteamHeatBoilerWater, CabSetting.Increase, WaterController.CurrentValue * 100);
+
+
+                CurrentSteamHeatPressurePSI = SteamHeatController.CurrentValue * MaxSteamHeatPressurePSI;
+
+                // Calculate steam boiler usage values
+                // Don't turn steam heat on until pressure valve has been opened, water and fuel capacity also needs to be present, and steam boiler is not locked out
+                if (CurrentSteamHeatPressurePSI > 0.1 && CurrentLocomotiveSteamHeatBoilerWaterCapacityL > 0 && CurrentSteamHeatBoilerFuelCapacityL > 0 && !IsSteamHeatBoilerLockedOut)
+                {
+                    // Set values for visible exhaust based upon setting of steam controller
+                    HeatingSteamBoilerVolumeM3pS = 1.5f * SteamHeatController.CurrentValue;
+                    HeatingSteamBoilerDurationS = 1.0f * SteamHeatController.CurrentValue;
+                    Train.CarSteamHeatOn = true; // turn on steam effects on wagons
+
+                    // Calculate fuel usage for steam heat boiler
+                    float FuelUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerFuelUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
+                    CurrentSteamHeatBoilerFuelCapacityL -= FuelUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as fuel used.
+                    float FuelOilConvertLtoKg = 0.85f;
+                    MassKG -= FuelUsageLpS * elapsedClockSeconds * FuelOilConvertLtoKg; // Reduce locomotive weight as Steam heat boiler uses fuel.
+
+                    // Calculate water usage for steam heat boiler
+                    float WaterUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerWaterUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
+                    MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
+                }
+                else
+                {
+                    Train.CarSteamHeatOn = false; // turn on steam effects on wagons
+                }
+
+
+            }
+        }
+
 
         /// <summary>
         /// This function updates periodically the locomotive's sound variables.
@@ -191,11 +264,15 @@ namespace Orts.Simulation.RollingStocks
                     case PowerSupplyEvent.RaisePantograph:
                         Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
                         Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.On);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.On);
                         break;
 
                     case PowerSupplyEvent.LowerPantograph:
                         Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
                         Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.Off);
+                        Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.Off);
                         break;
                 }
             }
@@ -204,8 +281,12 @@ namespace Orts.Simulation.RollingStocks
             {
                 case PowerSupplyEvent.CloseCircuitBreaker:
                 case PowerSupplyEvent.OpenCircuitBreaker:
-                case PowerSupplyEvent.GiveCircuitBreakerClosingAuthority:
-                case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthority:
+                case PowerSupplyEvent.CloseCircuitBreakerButtonPressed:
+                case PowerSupplyEvent.CloseCircuitBreakerButtonReleased:
+                case PowerSupplyEvent.OpenCircuitBreakerButtonPressed:
+                case PowerSupplyEvent.OpenCircuitBreakerButtonReleased:
+                case PowerSupplyEvent.GiveCircuitBreakerClosingAuthorization:
+                case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthorization:
                     PowerSupply.HandleEvent(evt);
                     break;
             }
@@ -222,6 +303,8 @@ namespace Orts.Simulation.RollingStocks
                     case PowerSupplyEvent.RaisePantograph:
                         if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
                         if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
+                        if (id == 3) Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.On);
+                        if (id == 4) Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.On);
 
                         if (!Simulator.TRK.Tr_RouteFile.Electrified)
                             Simulator.Confirmer.Warning(Simulator.Catalog.GetString("No power line!"));
@@ -232,6 +315,8 @@ namespace Orts.Simulation.RollingStocks
                     case PowerSupplyEvent.LowerPantograph:
                         if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
                         if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
+                        if (id == 3) Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.Off);
+                        if (id == 4) Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.Off);
                         break;
                 }
             }
@@ -254,67 +339,132 @@ namespace Orts.Simulation.RollingStocks
 
         public override float GetDataOf(CabViewControl cvc)
         {
-            float data;
+            float data = 0;
 
             switch (cvc.ControlType)
             {
                 case CABViewControlTypes.LINE_VOLTAGE:
-                    {
-                        if (Pantographs.State == PantographState.Up)
-                        {
-                            //data = (float)Program.Simulator.TRK.Tr_RouteFile.MaxLineVoltage;
-                            data = PowerSupply.FilterVoltageV;
-                            if (cvc.Units == CABViewControlUnits.KILOVOLTS)
-                                data /= 1000;
-                        }
-                        else
-                            data = 0;
-                        break;
-                    }
-                case CABViewControlTypes.PANTOGRAPH:
+                    data = PowerSupply.PantographVoltageV;
+                    if (cvc.Units == CABViewControlUnits.KILOVOLTS)
+                        data /= 1000;
+                    break;
+
                 case CABViewControlTypes.PANTO_DISPLAY:
-                    {
-                        data = Pantographs[1].State == PantographState.Up ? 1 : 0;
-                        break;
-                    }
+                    data = Pantographs.State == PantographState.Up ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.PANTOGRAPH:
+                    data = Pantographs[1].CommandUp ? 1 : 0;
+                    break;
+
                 case CABViewControlTypes.PANTOGRAPH2:
-                    {
-                        data = Pantographs[2].State == PantographState.Up ? 1 : 0;
-                        break;
-                    }
+                    data = Pantographs[2].CommandUp ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_PANTOGRAPH3:
+                    data = Pantographs.List.Count > 2 && Pantographs[3].CommandUp ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_PANTOGRAPH4:
+                    data = Pantographs.List.Count > 3 && Pantographs[4].CommandUp ? 1 : 0;
+                    break;
+
                 case CABViewControlTypes.PANTOGRAPHS_4:
                 case CABViewControlTypes.PANTOGRAPHS_4C:
-                    {
-                        if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
-                            data = 2;
-                        else if (Pantographs[1].State == PantographState.Up)
-                            data = 1;
-                        else if (Pantographs[2].State == PantographState.Up)
-                            data = 3;
-                        else
-                            data = 0;
-                        break;
-                    }
+                    if (Pantographs[1].CommandUp && Pantographs[2].CommandUp)
+                        data = 2;
+                    else if (Pantographs[1].CommandUp)
+                        data = 1;
+                    else if (Pantographs[2].CommandUp)
+                        data = 3;
+                    else
+                        data = 0;
+                    break;
+
                 case CABViewControlTypes.PANTOGRAPHS_5:
+                    if (Pantographs[1].CommandUp && Pantographs[2].CommandUp)
+                        data = 0; // TODO: Should be 0 if the previous state was Pan2Up, and 4 if that was Pan1Up
+                    else if (Pantographs[2].CommandUp)
+                        data = 1;
+                    else if (Pantographs[1].CommandUp)
+                        data = 3;
+                    else
+                        data = 2;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                    data = PowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                    data = PowerSupply.CircuitBreaker.DriverOpeningOrder ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                    data = PowerSupply.CircuitBreaker.DriverClosingAuthorization ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_STATE:
+                    switch (PowerSupply.CircuitBreaker.State)
                     {
-                        if (Pantographs[1].State == PantographState.Up && Pantographs[2].State == PantographState.Up)
-                            data = 0; // TODO: Should be 0 if the previous state was Pan2Up, and 4 if that was Pan1Up
-                        else if (Pantographs[2].State == PantographState.Up)
+                        case CircuitBreakerState.Open:
+                            data = 0;
+                            break;
+                        case CircuitBreakerState.Closing:
                             data = 1;
-                        else if (Pantographs[1].State == PantographState.Up)
-                            data = 3;
-                        else
+                            break;
+                        case CircuitBreakerState.Closed:
                             data = 2;
-                        break;
+                            break;
                     }
-                default:
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_CLOSED:
+                    switch (PowerSupply.CircuitBreaker.State)
                     {
-                        data = base.GetDataOf(cvc);
-                        break;
+                        case CircuitBreakerState.Open:
+                        case CircuitBreakerState.Closing:
+                            data = 0;
+                            break;
+                        case CircuitBreakerState.Closed:
+                            data = 1;
+                            break;
                     }
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN:
+                    switch (PowerSupply.CircuitBreaker.State)
+                    {
+                        case CircuitBreakerState.Open:
+                        case CircuitBreakerState.Closing:
+                            data = 1;
+                            break;
+                        case CircuitBreakerState.Closed:
+                            data = 0;
+                            break;
+                    }
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_AUTHORIZED:
+                    data = PowerSupply.CircuitBreaker.ClosingAuthorization ? 1 : 0;
+                    break;
+
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED:
+                    data = (PowerSupply.CircuitBreaker.State < CircuitBreakerState.Closed && PowerSupply.CircuitBreaker.ClosingAuthorization) ? 1 : 0;
+                    break;
+
+                default:
+                    data = base.GetDataOf(cvc);
+                    break;
             }
 
             return data;
+        }
+
+        public override void SwitchToAutopilotControl()
+        {
+            SetDirection(Direction.Forward);
+            base.SwitchToAutopilotControl();
         }
 
         public override string GetStatus()
@@ -324,23 +474,98 @@ namespace Orts.Simulation.RollingStocks
             foreach (var pantograph in Pantographs.List)
                 status.AppendFormat("{0} ", Simulator.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
             status.AppendLine();
-            status.AppendFormat("{0}{2} = {1}{2}\n",
+            status.AppendFormat("{0} = {1}",
+                Simulator.Catalog.GetString("Circuit breaker"),
+                Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+            status.AppendLine();
+            status.AppendFormat("{0} = {1}",
                 Simulator.Catalog.GetParticularString("PowerSupply", "Power"),
-                Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)),
-                PowerSupply.State == PowerSupplyState.PowerOff ? "!!!" : "");
+                Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)));
             return status.ToString();
         }
 
         public override string GetDebugStatus()
         {
             var status = new StringBuilder(base.GetDebugStatus());
-            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Circuit breaker"), Simulator.Catalog.GetParticularString("CircuitBraker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
-            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("TCS"), TrainControlSystem.PowerAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverCloseAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
+            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Circuit breaker"), Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("TCS"), PowerSupply.CircuitBreaker.TCSClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t\t{1}\n", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
+
+            if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
+            {
+                // Only show steam heating HUD if fitted to locomotive and the train, has passenger cars attached, and is the lead locomotive
+                // Display Steam Heat info
+                status.AppendFormat("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}/{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18:N0}\n",
+                   Simulator.Catalog.GetString("StHeat:"),
+                   Simulator.Catalog.GetString("Press"),
+                   FormatStrings.FormatPressure(CurrentSteamHeatPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                   Simulator.Catalog.GetString("StTemp"),
+                   FormatStrings.FormatTemperature(C.FromF(SteamHeatPressureToTemperaturePSItoF[CurrentSteamHeatPressurePSI]), IsMetric, false),
+                   Simulator.Catalog.GetString("StUse"),
+                   FormatStrings.FormatMass(pS.TopH(Kg.FromLb(CalculatedCarHeaterSteamUsageLBpS)), IsMetric),
+                   FormatStrings.h,
+                   Simulator.Catalog.GetString("WaterLvl"),
+                   FormatStrings.FormatFuelVolume(CurrentLocomotiveSteamHeatBoilerWaterCapacityL, IsMetric, IsUK),
+                   Simulator.Catalog.GetString("Last:"),
+                   Simulator.Catalog.GetString("Press"),
+                   FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
+                   Simulator.Catalog.GetString("Temp"),
+                   FormatStrings.FormatTemperature(Train.LastCar.CarCurrentCarriageHeatTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("OutTemp"),
+                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
+                   Simulator.Catalog.GetString("NetHt"),
+                   Train.LastCar.DisplayTrainNetSteamHeatLossWpTime);
+            }
+
             return status.ToString();
         }
 
+        /// <summary>
+        /// Returns the controller which refills from the matching pickup point.
+        /// </summary>
+        /// <param name="type">Pickup type</param>
+        /// <returns>Matching controller or null</returns>
+        public override MSTSNotchController GetRefillController(uint type)
+        {
+            MSTSNotchController controller = null;
+            if (type == (uint)PickupType.FuelWater) return WaterController;
+            return controller;
+        }
+
+        /// <summary>
+        /// Sets step size for the fuel controller basing on pickup feed rate and engine fuel capacity
+        /// </summary>
+        /// <param name="type">Pickup</param>
+
+        public override void SetStepSize(PickupObj matchPickup)
+        {
+            if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
+                WaterController.SetStepSize(matchPickup.PickupCapacity.FeedRateKGpS / MSTSNotchController.StandardBoost / MaximumSteamHeatBoilerWaterTankCapacityL);
+        }
+
+        /// <summary>
+        /// Sets coal and water supplies to full immediately.
+        /// Provided in case route lacks pickup points for diesel oil.
+        /// </summary>
+        public override void RefillImmediately()
+        {
+            WaterController.CurrentValue = 1.0f;
+        }
+
+        /// <summary>
+        /// Returns the fraction of diesel oil already in tank.
+        /// </summary>
+        /// <param name="pickupType">Pickup type</param>
+        /// <returns>0.0 to 1.0. If type is unknown, returns 0.0</returns>
+        public override float GetFilledFraction(uint pickupType)
+        {
+            if (pickupType == (uint)PickupType.FuelWater)
+            {
+                return WaterController.CurrentValue;
+            }
+            return 0f;
+        }
 
     } // class ElectricLocomotive
 }

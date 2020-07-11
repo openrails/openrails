@@ -1,14 +1,14 @@
 ﻿<?php include "../../shared/head.php" ?>
     <link rel="stylesheet" href="../../shared/iframe/iframe.css" type="text/css" />
   </head>
-  
+
   <body>
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
 <?php include "../../shared/banners/choose_banner.php" ?>
 <?php include "../../shared/banners/show_banner.php" ?>
 <?php include "../../shared/menu.php" ?>
 <?php
-  $download_stable = 'OpenRails-1.0-Setup.exe';
+  $download_stable = 'OpenRails-1.3.1-Setup.exe';
   $download_testing = 'OpenRails-Testing.zip';
   $file_path = "../../files";
 ?>
@@ -20,7 +20,7 @@
       <div class="row">
         <div class="col-md-1"></div>
         <div class="col-md-4">
-          <h1>Stable Version 1.0 <small>(recommended)</small></h1>
+          <h1>Stable Version 1.3.1 <small>(recommended)</small></h1>
           <br>
           <!-- Button to trigger modal -->
           <a href="#modal1" role="button" class='btn download_button btn-lg btn-block' data-toggle="modal">
@@ -83,7 +83,7 @@ To support development, the <a href='http://james-ross.co.uk/projects/or?utm_cam
       </div>
 <?php include "../../shared/tail.php" ?>
 <?php include "../../shared/banners/preload_next_banner.php" ?>
-<?php 
+<?php
 $modal = 'modal1';
 $title = 'Download Open Rails (stable version)';
 $download_file = $download_stable;

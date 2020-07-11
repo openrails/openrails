@@ -289,9 +289,9 @@ namespace Orts.Formats.OR
                 {
                     WFile = new WorldFile(fileName, Tokens);
                 }
-                catch (Exception error)
+                catch (FileLoadException error)
                 {
-                    Trace.WriteLine(new FileLoadException(fileName, error));
+                    Trace.WriteLine(error);
                     continue;
                 }
 
@@ -1707,7 +1707,7 @@ namespace Orts.Formats.OR
             TDBIndex = TDBRef;
             draw_state = 1;
             state = MstsSignalAspect.CLEAR_2;
-            signalType = new SignalType(SignalType.FnTypes.Speed, MstsSignalAspect.CLEAR_2);
+            signalType = new SignalType(MstsSignalFunction.SPEED, MstsSignalAspect.CLEAR_2);
 
             var sigasp_values = Enum.GetValues(typeof(MstsSignalAspect));
             //speed_info = new ObjectSpeedInfo[sigasp_values.Length];

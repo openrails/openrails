@@ -23,6 +23,7 @@ using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace ORTS.Common
 {
@@ -34,6 +35,7 @@ namespace ORTS.Common
             WriteEnvironment(output);
             WriteAvailableRuntimes(output);
             output.WriteLine("Runtime    = {0} ({1}bit)", Environment.Version, IntPtr.Size * 8);
+            WriteGraphicsAdapter(output);
         }
 
         static void WriteEnvironment(TextWriter output)
@@ -194,6 +196,19 @@ namespace ORTS.Common
                 output.Write(" {0} ", versionKeyName.Substring(1), fullVersion);
             }
             return fullVersion;
+        }
+
+        static void WriteGraphicsAdapter(TextWriter output)
+        {
+            var adapters = GraphicsAdapter.Adapters;
+            for (var i = 0; i < adapters.Count; i++)
+            {
+                try
+                {
+                    output.WriteLine("Adapter    = {0} ({1} x {2}{3})", i, adapters[i].CurrentDisplayMode.Width, adapters[i].CurrentDisplayMode.Height, adapters[i] == GraphicsAdapter.DefaultAdapter ? ", default" : "");
+                }
+                catch (Exception error) { }
+            }
         }
 
         static T SafeReadKey<T>(RegistryKey key, string name, T defaultValue)

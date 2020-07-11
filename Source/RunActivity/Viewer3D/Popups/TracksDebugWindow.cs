@@ -90,7 +90,7 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
                 }
-                if (rdb != null)
+                if (rdb != null && rdb.RoadTrackDB.TrackNodes != null)
                 {
                     foreach (var trackNode in rdb.RoadTrackDB.TrackNodes.Where(tn => tn != null && tn.TrVectorNode != null && Math.Abs(tn.TrVectorNode.TrVectorSections[0].TileX - camera.TileX) <= 1 && Math.Abs(tn.TrVectorNode.TrVectorSections[0].TileZ - camera.TileZ) <= 1))
                     {

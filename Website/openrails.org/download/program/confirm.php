@@ -15,13 +15,13 @@
 		<div class="row">
 			<div class="col-md-3"></div>
 			<div class="col-md-6">
-			  <h1>Confirm Download</h1>
+			  <h1>Download Started</h1>
 <?php 
 $file = $_REQUEST['file'];
-echo("<p>Your download of $file has started.</p>");
+echo("<p>Your download of $file will start in a few seconds.</p>");
 // Invisible <iframe> to start download as a background task
 echo("<iframe src='download.php?file=$file&id=" . $_SESSION['id'] . "' seamless height=1 width=1 style='border:none;'></iframe>");
-echo("<p>If you have problems, please try <a href='../../files/$file'>this alternative link</a>.</p>");
+echo("<p>If your download doesn't start in a few seconds, please try <a href='../../files/$file?direct=1'>this direct link</a>.</p>");
 ?>
 			</div>
 		</div>

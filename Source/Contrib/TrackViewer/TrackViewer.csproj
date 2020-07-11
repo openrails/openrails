@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ORTS.TrackViewer</RootNamespace>
     <AssemblyName>Contrib.TrackViewer</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationIcon>..\..\ORTS.ico</ApplicationIcon>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +34,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationManifest>..\..\Launcher\app.manifest</ApplicationManifest>
@@ -44,7 +49,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="mscorlib" />
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
@@ -54,13 +58,10 @@
     </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
     <Reference Include="WindowsFormsIntegration" />
   </ItemGroup>
@@ -71,16 +72,26 @@
     <Compile Include="Drawing\DrawableTrackItem.cs" />
     <Compile Include="Drawing\DrawArea.cs" />
     <Compile Include="Drawing\DrawColors.cs" />
+    <Compile Include="Drawing\DrawLongitudeLatitude.cs" />
     <Compile Include="Drawing\DrawMultiplePaths.cs" />
     <Compile Include="Drawing\DrawScaleRuler.cs" />
     <Compile Include="Drawing\DrawTerrain.cs" />
     <Compile Include="Drawing\DrawTrackDB.cs" />
     <Compile Include="Drawing\DrawWorldTiles.cs" />
+    <Compile Include="Drawing\Labels\DrawLabels.cs" />
+    <Compile Include="Drawing\Labels\EditLabel.xaml.cs">
+      <DependentUpon>EditLabel.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Drawing\Labels\StorableLabels.cs" />
     <Compile Include="Drawing\ShadowDrawArea.cs" />
     <Compile Include="Editing\AutoConnectTools.cs" />
+    <Compile Include="Editing\AutoFixAllPaths.xaml.cs">
+      <DependentUpon>AutoFixAllPaths.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Editing\Charts\PathChartWindow.xaml.cs">
       <DependentUpon>PathChartWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Editing\DrawEditorAction.cs" />
     <Compile Include="Editing\DrawPATfile.cs" />
     <Compile Include="Editing\DrawPath.cs" />
     <Compile Include="Editing\Charts\DrawPathChart.cs" />
@@ -129,6 +140,14 @@
     <Compile Include="UserInterface\TVUserInput.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Editing\AutoFixAllPaths.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Drawing\Labels\EditLabel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Editing\Charts\PathChartWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -257,7 +276,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

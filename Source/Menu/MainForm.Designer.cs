@@ -46,10 +46,12 @@ namespace ORTS
             this.textBoxMPHost = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
-            this.buttonMPClient = new System.Windows.Forms.Button();
-            this.buttonMPServer = new System.Windows.Forms.Button();
             this.textBoxMPUser = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.radioButtonMPServer = new System.Windows.Forms.RadioButton();
+            this.radioButtonMPClient = new System.Windows.Forms.RadioButton();
+            this.buttonStartMP = new System.Windows.Forms.Button();
+            this.buttonResumeMP = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panelDetails = new System.Windows.Forms.Panel();
@@ -60,6 +62,7 @@ namespace ORTS
             this.radioButtonModeActivity = new System.Windows.Forms.RadioButton();
             this.radioButtonModeTimetable = new System.Windows.Forms.RadioButton();
             this.panelModeActivity = new System.Windows.Forms.Panel();
+            this.checkDebriefActivityEval = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.comboBoxActivity = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -81,6 +84,8 @@ namespace ORTS
             this.comboBoxDifficulty = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.panelModeTimetable = new System.Windows.Forms.Panel();
+            this.labelTimetableWeatherFile = new System.Windows.Forms.Label();
+            this.comboBoxTimetableWeatherFile = new System.Windows.Forms.ComboBox();
             this.label24 = new System.Windows.Forms.Label();
             this.comboBoxTimetableTrain = new System.Windows.Forms.ComboBox();
             this.label23 = new System.Windows.Forms.Label();
@@ -112,7 +117,7 @@ namespace ORTS
             this.checkBoxWindowed.AutoSize = true;
             this.checkBoxWindowed.Checked = true;
             this.checkBoxWindowed.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWindowed.Location = new System.Drawing.Point(106, 71);
+            this.checkBoxWindowed.Location = new System.Drawing.Point(109, 71);
             this.checkBoxWindowed.Name = "checkBoxWindowed";
             this.checkBoxWindowed.Size = new System.Drawing.Size(77, 17);
             this.checkBoxWindowed.TabIndex = 2;
@@ -124,7 +129,7 @@ namespace ORTS
             this.buttonStart.Enabled = false;
             this.buttonStart.Location = new System.Drawing.Point(6, 19);
             this.buttonStart.Name = "buttonStart";
-            this.buttonStart.Size = new System.Drawing.Size(75, 34);
+            this.buttonStart.Size = new System.Drawing.Size(75, 46);
             this.buttonStart.TabIndex = 0;
             this.buttonStart.Text = "Start";
             this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
@@ -152,7 +157,7 @@ namespace ORTS
             this.checkBoxWarnings.AutoSize = true;
             this.checkBoxWarnings.Checked = true;
             this.checkBoxWarnings.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxWarnings.Location = new System.Drawing.Point(108, 48);
+            this.checkBoxWarnings.Location = new System.Drawing.Point(109, 48);
             this.checkBoxWarnings.Name = "checkBoxWarnings";
             this.checkBoxWarnings.Size = new System.Drawing.Size(64, 17);
             this.checkBoxWarnings.TabIndex = 1;
@@ -161,7 +166,7 @@ namespace ORTS
             // 
             // buttonOptions
             // 
-            this.buttonOptions.Location = new System.Drawing.Point(108, 19);
+            this.buttonOptions.Location = new System.Drawing.Point(109, 19);
             this.buttonOptions.Name = "buttonOptions";
             this.buttonOptions.Size = new System.Drawing.Size(75, 23);
             this.buttonOptions.TabIndex = 0;
@@ -171,7 +176,7 @@ namespace ORTS
             // buttonResume
             // 
             this.buttonResume.Enabled = false;
-            this.buttonResume.Location = new System.Drawing.Point(6, 59);
+            this.buttonResume.Location = new System.Drawing.Point(7, 79);
             this.buttonResume.Name = "buttonResume";
             this.buttonResume.Size = new System.Drawing.Size(75, 35);
             this.buttonResume.TabIndex = 1;
@@ -182,7 +187,7 @@ namespace ORTS
             // 
             this.buttonTools.Location = new System.Drawing.Point(3, 19);
             this.buttonTools.Name = "buttonTools";
-            this.buttonTools.Size = new System.Drawing.Size(75, 23);
+            this.buttonTools.Size = new System.Drawing.Size(100, 23);
             this.buttonTools.TabIndex = 19;
             this.buttonTools.Text = "Tools ▼";
             this.buttonTools.Click += new System.EventHandler(this.buttonTools_Click);
@@ -252,26 +257,6 @@ namespace ORTS
             this.label13.Text = "User name:";
             this.label13.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // buttonMPClient
-            // 
-            this.buttonMPClient.Enabled = false;
-            this.buttonMPClient.Location = new System.Drawing.Point(164, 71);
-            this.buttonMPClient.Name = "buttonMPClient";
-            this.buttonMPClient.Size = new System.Drawing.Size(75, 23);
-            this.buttonMPClient.TabIndex = 5;
-            this.buttonMPClient.Text = "Client";
-            this.buttonMPClient.Click += new System.EventHandler(this.buttonMPClient_Click);
-            // 
-            // buttonMPServer
-            // 
-            this.buttonMPServer.Enabled = false;
-            this.buttonMPServer.Location = new System.Drawing.Point(83, 71);
-            this.buttonMPServer.Name = "buttonMPServer";
-            this.buttonMPServer.Size = new System.Drawing.Size(75, 23);
-            this.buttonMPServer.TabIndex = 4;
-            this.buttonMPServer.Text = "Server";
-            this.buttonMPServer.Click += new System.EventHandler(this.buttonMPServer_Click);
-            // 
             // textBoxMPUser
             // 
             this.textBoxMPUser.Location = new System.Drawing.Point(83, 19);
@@ -283,27 +268,71 @@ namespace ORTS
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.radioButtonMPServer);
+            this.groupBox1.Controls.Add(this.radioButtonMPClient);
+            this.groupBox1.Controls.Add(this.buttonStartMP);
+            this.groupBox1.Controls.Add(this.buttonResumeMP);
             this.groupBox1.Controls.Add(this.label13);
             this.groupBox1.Controls.Add(this.textBoxMPHost);
             this.groupBox1.Controls.Add(this.textBoxMPUser);
-            this.groupBox1.Controls.Add(this.buttonMPClient);
             this.groupBox1.Controls.Add(this.label14);
-            this.groupBox1.Controls.Add(this.buttonMPServer);
-            this.groupBox1.Location = new System.Drawing.Point(597, 436);
+            this.groupBox1.Location = new System.Drawing.Point(597, 416);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(245, 100);
+            this.groupBox1.Size = new System.Drawing.Size(245, 120);
             this.groupBox1.TabIndex = 15;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Multiplayer";
+            // 
+            // radioButtonMPServer
+            // 
+            this.radioButtonMPServer.Location = new System.Drawing.Point(9, 91);
+            this.radioButtonMPServer.Name = "radioButtonMPServer";
+            this.radioButtonMPServer.Size = new System.Drawing.Size(58, 20);
+            this.radioButtonMPServer.TabIndex = 9;
+            this.radioButtonMPServer.Text = "Server";
+            this.radioButtonMPServer.UseVisualStyleBackColor = true;
+            this.radioButtonMPServer.CheckedChanged += new System.EventHandler(this.radioButtonMode_CheckedChanged);
+            // 
+            // radioButtonMPClient
+            // 
+            this.radioButtonMPClient.Checked = true;
+            this.radioButtonMPClient.Location = new System.Drawing.Point(9, 67);
+            this.radioButtonMPClient.Name = "radioButtonMPClient";
+            this.radioButtonMPClient.Size = new System.Drawing.Size(75, 20);
+            this.radioButtonMPClient.TabIndex = 8;
+            this.radioButtonMPClient.TabStop = true;
+            this.radioButtonMPClient.Text = "Client";
+            this.radioButtonMPClient.UseVisualStyleBackColor = true;
+            this.radioButtonMPClient.CheckedChanged += new System.EventHandler(this.radioButtonMode_CheckedChanged);
+            // 
+            // buttonStartMP
+            // 
+            this.buttonStartMP.Enabled = false;
+            this.buttonStartMP.Location = new System.Drawing.Point(83, 88);
+            this.buttonStartMP.Name = "buttonStartMP";
+            this.buttonStartMP.Size = new System.Drawing.Size(75, 23);
+            this.buttonStartMP.TabIndex = 7;
+            this.buttonStartMP.Text = "Start MP";
+            this.buttonStartMP.Click += new System.EventHandler(this.buttonStartMP_Click);
+            // 
+            // buttonResumeMP
+            // 
+            this.buttonResumeMP.Enabled = false;
+            this.buttonResumeMP.Location = new System.Drawing.Point(164, 88);
+            this.buttonResumeMP.Name = "buttonResumeMP";
+            this.buttonResumeMP.Size = new System.Drawing.Size(75, 23);
+            this.buttonResumeMP.TabIndex = 6;
+            this.buttonResumeMP.Text = "Resume MP";
+            this.buttonResumeMP.Click += new System.EventHandler(this.buttonResumeMP_Click);
             // 
             // groupBox3
             // 
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox3.Controls.Add(this.buttonResume);
             this.groupBox3.Controls.Add(this.buttonStart);
-            this.groupBox3.Location = new System.Drawing.Point(504, 436);
+            this.groupBox3.Location = new System.Drawing.Point(504, 416);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(87, 100);
+            this.groupBox3.Size = new System.Drawing.Size(87, 120);
             this.groupBox3.TabIndex = 14;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Singleplayer";
@@ -330,7 +359,7 @@ namespace ORTS
             this.panelDetails.ForeColor = System.Drawing.SystemColors.WindowText;
             this.panelDetails.Location = new System.Drawing.Point(299, 31);
             this.panelDetails.Name = "panelDetails";
-            this.panelDetails.Size = new System.Drawing.Size(543, 399);
+            this.panelDetails.Size = new System.Drawing.Size(543, 379);
             this.panelDetails.TabIndex = 20;
             // 
             // pictureBoxLogo
@@ -352,16 +381,16 @@ namespace ORTS
             this.panel1.Controls.Add(this.checkBoxWarnings);
             this.panel1.Controls.Add(this.checkBoxWindowed);
             this.panel1.Controls.Add(this.buttonTools);
-            this.panel1.Location = new System.Drawing.Point(312, 436);
+            this.panel1.Location = new System.Drawing.Point(311, 416);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(186, 100);
+            this.panel1.Size = new System.Drawing.Size(187, 120);
             this.panel1.TabIndex = 13;
             // 
             // buttonDocuments
             // 
             this.buttonDocuments.Location = new System.Drawing.Point(3, 48);
             this.buttonDocuments.Name = "buttonDocuments";
-            this.buttonDocuments.Size = new System.Drawing.Size(85, 23);
+            this.buttonDocuments.Size = new System.Drawing.Size(100, 23);
             this.buttonDocuments.TabIndex = 22;
             this.buttonDocuments.Text = "Documents ▼";
             this.buttonDocuments.UseVisualStyleBackColor = true;
@@ -402,6 +431,7 @@ namespace ORTS
             // 
             // panelModeActivity
             // 
+            this.panelModeActivity.Controls.Add(this.checkDebriefActivityEval);
             this.panelModeActivity.Controls.Add(this.label3);
             this.panelModeActivity.Controls.Add(this.comboBoxActivity);
             this.panelModeActivity.Controls.Add(this.label4);
@@ -427,6 +457,18 @@ namespace ORTS
             this.panelModeActivity.Name = "panelModeActivity";
             this.panelModeActivity.Size = new System.Drawing.Size(287, 311);
             this.panelModeActivity.TabIndex = 9;
+            // 
+            // checkDebriefActivityEval
+            // 
+            this.checkDebriefActivityEval.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkDebriefActivityEval.Location = new System.Drawing.Point(134, 3);
+            this.checkDebriefActivityEval.Margin = new System.Windows.Forms.Padding(2);
+            this.checkDebriefActivityEval.Name = "checkDebriefActivityEval";
+            this.checkDebriefActivityEval.Size = new System.Drawing.Size(149, 17);
+            this.checkDebriefActivityEval.TabIndex = 20;
+            this.checkDebriefActivityEval.Text = "Debrief evaluation:";
+            this.checkDebriefActivityEval.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.checkDebriefActivityEval.UseVisualStyleBackColor = true;
             // 
             // label3
             // 
@@ -549,22 +591,20 @@ namespace ORTS
             // 
             // label11
             // 
-            this.label11.AutoSize = true;
             this.label11.Location = new System.Drawing.Point(143, 234);
-            this.label11.Margin = new System.Windows.Forms.Padding(3);
+            this.label11.Margin = new System.Windows.Forms.Padding(2);
             this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(50, 13);
+            this.label11.Size = new System.Drawing.Size(67, 14);
             this.label11.TabIndex = 16;
             this.label11.Text = "Duration:";
             this.label11.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label9
             // 
-            this.label9.AutoSize = true;
             this.label9.Location = new System.Drawing.Point(4, 234);
-            this.label9.Margin = new System.Windows.Forms.Padding(3);
+            this.label9.Margin = new System.Windows.Forms.Padding(2);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(33, 13);
+            this.label9.Size = new System.Drawing.Size(56, 14);
             this.label9.TabIndex = 10;
             this.label9.Text = "Time:";
             this.label9.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -609,11 +649,10 @@ namespace ORTS
             // 
             // label12
             // 
-            this.label12.AutoSize = true;
             this.label12.Location = new System.Drawing.Point(4, 289);
-            this.label12.Margin = new System.Windows.Forms.Padding(3);
+            this.label12.Margin = new System.Windows.Forms.Padding(2);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(51, 13);
+            this.label12.Size = new System.Drawing.Size(56, 14);
             this.label12.TabIndex = 14;
             this.label12.Text = "Weather:";
             this.label12.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -633,11 +672,10 @@ namespace ORTS
             // 
             // label10
             // 
-            this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(143, 262);
-            this.label10.Margin = new System.Windows.Forms.Padding(3);
+            this.label10.Margin = new System.Windows.Forms.Padding(2);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(50, 13);
+            this.label10.Size = new System.Drawing.Size(67, 14);
             this.label10.TabIndex = 18;
             this.label10.Text = "Difficulty:";
             this.label10.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -656,17 +694,18 @@ namespace ORTS
             // 
             // label8
             // 
-            this.label8.AutoSize = true;
             this.label8.Location = new System.Drawing.Point(4, 262);
-            this.label8.Margin = new System.Windows.Forms.Padding(3);
+            this.label8.Margin = new System.Windows.Forms.Padding(2);
             this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(46, 13);
+            this.label8.Size = new System.Drawing.Size(56, 14);
             this.label8.TabIndex = 12;
             this.label8.Text = "Season:";
             this.label8.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // panelModeTimetable
             // 
+            this.panelModeTimetable.Controls.Add(this.labelTimetableWeatherFile);
+            this.panelModeTimetable.Controls.Add(this.comboBoxTimetableWeatherFile);
             this.panelModeTimetable.Controls.Add(this.label24);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableTrain);
             this.panelModeTimetable.Controls.Add(this.label23);
@@ -682,9 +721,30 @@ namespace ORTS
             this.panelModeTimetable.Location = new System.Drawing.Point(299, 119);
             this.panelModeTimetable.Margin = new System.Windows.Forms.Padding(0);
             this.panelModeTimetable.Name = "panelModeTimetable";
-            this.panelModeTimetable.Size = new System.Drawing.Size(287, 311);
+            this.panelModeTimetable.Size = new System.Drawing.Size(287, 291);
             this.panelModeTimetable.TabIndex = 10;
             this.panelModeTimetable.Visible = false;
+            // 
+            // labelTimetableWeatherFile
+            // 
+            this.labelTimetableWeatherFile.AutoSize = true;
+            this.labelTimetableWeatherFile.Location = new System.Drawing.Point(5, 212);
+            this.labelTimetableWeatherFile.Margin = new System.Windows.Forms.Padding(3);
+            this.labelTimetableWeatherFile.Name = "labelTimetableWeatherFile";
+            this.labelTimetableWeatherFile.Size = new System.Drawing.Size(70, 13);
+            this.labelTimetableWeatherFile.TabIndex = 14;
+            this.labelTimetableWeatherFile.Text = "Weather File:";
+            this.labelTimetableWeatherFile.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // comboBoxTimetableWeatherFile
+            // 
+            this.comboBoxTimetableWeatherFile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTimetableWeatherFile.FormattingEnabled = true;
+            this.comboBoxTimetableWeatherFile.Location = new System.Drawing.Point(91, 209);
+            this.comboBoxTimetableWeatherFile.Name = "comboBoxTimetableWeatherFile";
+            this.comboBoxTimetableWeatherFile.Size = new System.Drawing.Size(193, 21);
+            this.comboBoxTimetableWeatherFile.TabIndex = 13;
+            this.comboBoxTimetableWeatherFile.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableWeatherFile_SelectedIndexChanged);
             // 
             // label24
             // 
@@ -797,6 +857,7 @@ namespace ORTS
             this.comboBoxTimetable.Size = new System.Drawing.Size(193, 21);
             this.comboBoxTimetable.TabIndex = 3;
             this.comboBoxTimetable.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetable_selectedIndexChanged);
+            this.comboBoxTimetable.EnabledChanged += new System.EventHandler(this.comboBoxTimetable_EnabledChanged);
             // 
             // comboBoxTimetableSet
             // 
@@ -835,16 +896,17 @@ namespace ORTS
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
-            this.testingToolStripMenuItem.Size = new System.Drawing.Size(113, 22);
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
             this.testingToolStripMenuItem.Text = "Testing";
             this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
             // 
             // contextMenuStripTools
             // 
+            this.contextMenuStripTools.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testingToolStripMenuItem});
             this.contextMenuStripTools.Name = "contextMenuStrip1";
-            this.contextMenuStripTools.Size = new System.Drawing.Size(114, 26);
+            this.contextMenuStripTools.Size = new System.Drawing.Size(110, 26);
             // 
             // linkLabelChangeLog
             // 
@@ -860,6 +922,7 @@ namespace ORTS
             // 
             // contextMenuStripDocuments
             // 
+            this.contextMenuStripDocuments.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.contextMenuStripDocuments.Name = "contextMenuStripDocuments";
             this.contextMenuStripDocuments.Size = new System.Drawing.Size(61, 4);
             // 
@@ -923,8 +986,6 @@ namespace ORTS
         private System.Windows.Forms.ComboBox comboBoxFolder;
         private System.Windows.Forms.ComboBox comboBoxRoute;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button buttonMPClient;
-        private System.Windows.Forms.Button buttonMPServer;
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.TextBox textBoxMPHost;
@@ -977,5 +1038,12 @@ namespace ORTS
         private System.Windows.Forms.LinkLabel linkLabelChangeLog;
         private System.Windows.Forms.Button buttonDocuments;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripDocuments;
+        private System.Windows.Forms.Button buttonResumeMP;
+        private System.Windows.Forms.RadioButton radioButtonMPServer;
+        private System.Windows.Forms.RadioButton radioButtonMPClient;
+        private System.Windows.Forms.Button buttonStartMP;
+        private System.Windows.Forms.CheckBox checkDebriefActivityEval;
+        private System.Windows.Forms.Label labelTimetableWeatherFile;
+        private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
     }
 }

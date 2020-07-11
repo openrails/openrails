@@ -16,7 +16,9 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
 using System;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -42,6 +44,36 @@ namespace Orts.MultiPlayer
 		public enum Status {Valid, Quit, Removed};
 		public Status status = Status.Valid;//is this player removed by the dispatcher
         public bool protect = false; //when in true, will not force this player out, to protect the one that others uses the same name
+
+        // Used to restore
+        public OnlinePlayer(BinaryReader inf)
+        {
+            Username = inf.ReadString();
+            LeadingLocomotiveID = inf.ReadString();
+            var trainNo = inf.ReadInt32();
+            Train = MPManager.Simulator.Trains.GetTrainByNumber(trainNo);
+            con = inf.ReadString();
+            path = inf.ReadString();
+            CreatedTime = inf.ReadDouble();
+            url = inf.ReadString();
+            quitTime = inf.ReadDouble();
+            status = (Status)inf.ReadInt32();
+            protect = inf.ReadBoolean();
+            status = Status.Quit;
+            Train.SpeedMpS = 0;
+            quitTime = MPManager.Simulator.GameTime; // allow a total of 10 minutes to reenter game.
+            for (int iCar = 0; iCar < Train.Cars.Count; iCar++)
+            {
+                var car = Train.Cars[iCar];
+                if (car is MSTSLocomotive && MPManager.IsServer())
+                    MPManager.Instance().AddOrRemoveLocomotive(Username, Train.Number, iCar, true);
+            }
+            if (!MPManager.Instance().lostPlayer.ContainsKey(this.Username))
+            {
+                MPManager.Instance().lostPlayer.Add(Username, this);
+                MPManager.Instance().AddRemovedPlayer(this);//add this player to be removed
+            }
+        }
 
 		public void Send(string msg)
 		{
@@ -155,5 +187,28 @@ namespace Orts.MultiPlayer
 			thread.Abort();
 		}
 
+        public void Save(BinaryWriter outf)
+        {
+            outf.Write(Username);
+            outf.Write(LeadingLocomotiveID);
+            outf.Write(Train.Number);
+            outf.Write(con);
+            outf.Write(path);
+            outf.Write(CreatedTime);
+            outf.Write(url);
+            outf.Write(quitTime);
+            outf.Write((int)status);
+            outf.Write(protect);
+
+
+
+/*
+        public TcpClient Client;
+        public Server Server;
+
+        public Thread thread;
+        private object lockObj = new object();
+        public bool protect = false; //when in true, will not force this player out, to protect the one that others uses the same name*/
+        }
 	}
 }

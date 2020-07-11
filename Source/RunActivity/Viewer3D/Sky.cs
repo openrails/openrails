@@ -88,13 +88,8 @@ namespace Orts.Viewer3D
             Primitive = new SkyPrimitive(Viewer.RenderProcess);
             skyVectors = new SunMoonPos();
 
-            // Set default values
-            seasonType = (int)Viewer.Simulator.Season;
-            date.ordinalDate = 82 + seasonType * 91;
-            // TODO: Set the following three externally from ORTS route files (future)
-            date.month = 1 + date.ordinalDate / 30;
-            date.day = 21;
-            date.year = 2010;
+            // Set starting values
+            seasonType = -1;
             // Default wind speed and direction
             windSpeed = 5.0f; // m/s (approx 11 mph)
             windDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
@@ -102,15 +97,6 @@ namespace Orts.Viewer3D
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            if (seasonType != (int)Viewer.Simulator.Season)
-            {
-                seasonType = (int)Viewer.Simulator.Season;
-                date.ordinalDate = 82 + seasonType * 91;
-                // TODO: Set the following three externally from ORTS route files (future)
-                date.month = 1 + date.ordinalDate / 30;
-                date.day = 21;
-                date.year = 2010;
-            }
             // Adjust dome position so the bottom edge is not visible
             Vector3 ViewerXNAPosition = new Vector3(Viewer.Camera.Location.X, Viewer.Camera.Location.Y - 100, -Viewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
@@ -126,6 +112,15 @@ namespace Orts.Viewer3D
 
                 // Get the current latitude and longitude coordinates
                 worldLoc.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
+                if (seasonType != (int)Viewer.Simulator.Season)
+                {
+                    seasonType = (int)Viewer.Simulator.Season;
+                    date.ordinalDate = latitude >= 0 ? 82 + seasonType * 91 : (82 + (seasonType + 2) * 91) % 365;
+                    // TODO: Set the following three externally from ORTS route files (future)
+                    date.month = 1 + date.ordinalDate / 30;
+                    date.day = 21;
+                    date.year = 2017;
+                }
                 // Fill in the sun- and moon-position lookup tables
                 for (int i = 0; i < maxSteps; i++)
                 {
@@ -137,6 +132,7 @@ namespace Orts.Viewer3D
                 if (moonPhase == 6 && date.ordinalDate > 45 && date.ordinalDate < 330)
                     moonPhase = 3; // Moon dog only occurs in winter
             }
+
 
             // Current solar and lunar position are calculated by interpolation in the lookup arrays.
             // Using the Lerp() function, so need to calculate the in-between differential
@@ -184,17 +180,14 @@ namespace Orts.Viewer3D
 
         public void LoadPrep()
         {
-            if (seasonType != (int)Viewer.Simulator.Season)
-            {
-                seasonType = (int)Viewer.Simulator.Season;
-                date.ordinalDate = 82 + seasonType * 91;
-                date.month = 1 + date.ordinalDate / 30;
-                date.day = 21;
-                date.year = 2010;
-            }
             worldLoc = new WorldLatLon();
             // Get the current latitude and longitude coordinates
             worldLoc.ConvertWTC(Viewer.Camera.TileX, Viewer.Camera.TileZ, Viewer.Camera.Location, ref latitude, ref longitude);
+            seasonType = (int)Viewer.Simulator.Season;
+            date.ordinalDate = latitude >= 0 ? 82 + seasonType * 91 : (82 + (seasonType + 2) * 91) % 365;
+            date.month = 1 + date.ordinalDate / 30;
+            date.day = 21;
+            date.year = 2017;
             float fractClockTime = (float)Viewer.Simulator.ClockTime / 86400;
             solarDirection = SunMoonPos.SolarAngle(latitude, longitude, fractClockTime, date);
             worldLoc = null;

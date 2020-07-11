@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ComCtrls,
-  StdCtrls, ExtCtrls, Buttons, timetabledata, charencstreams, tteobjects;
+  StdCtrls, ExtCtrls, Buttons, LazUTF8, timetabledata, charencstreams, tteobjects;
 
 type
 
@@ -48,6 +48,7 @@ type
     procedure BitBtn2Click(Sender: TObject);
     procedure BitBtn3Click(Sender: TObject);
     procedure Edit4Change(Sender: TObject);
+    procedure Edit5Change(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: boolean);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
@@ -120,7 +121,7 @@ begin
   fces.HaveType:=true;
   fces.UniStreamType:=ufUtf16le;
   fces.UTF8Text:=path.text;
-  fces.SaveToFile(utf8tosys(getroutepath+'paths\'+filename+'.pat'));
+  fces.SaveToFile(UTF8ToSys(getroutepath+'paths\'+filename+'.pat'));
   fces.Free;
 end;
 
@@ -263,7 +264,7 @@ begin
     tmp:=tstringlist.Create;
     FCES:=TCHarEncStream.Create;
     FCES.reset;
-    fCES.LoadFromFile(utf8tosys(getroutepath+fi.name));
+    fCES.LoadFromFile(UTF8ToSys(getroutepath+fi.name));
     tmp.text:=fces.utf8text;
     anz:=extractsidings(tmp);
     slist:=getSidings;
@@ -301,7 +302,7 @@ begin
     tmp2:=tstringlist.Create;
     fces:=TCharEncStream.create;
     FCES.reset;
-    fCES.LoadFromFile(utf8tosys(getroutepath+'Activities\Openrails\sidings.siding'));
+    fCES.LoadFromFile(UTF8ToSys(getroutepath+'Activities\Openrails\sidings.siding'));
     tmp.text:=fces.utf8text;
     fces.Free;
     listview1.Items.Clear;
@@ -360,13 +361,14 @@ begin
   fces.HaveType:=true;
   fces.UniStreamType:=ufUtf16le;
   fces.UTF8Text:=csv.text;
-  fces.SaveToFile(utf8tosys(getroutepath+'Activities\Openrails\sidings.siding'));
+  fces.SaveToFile(UTF8ToSys(getroutepath+'Activities\Openrails\sidings.siding'));
   fces.Free;
 end;
 
 procedure TForm4.SpeedButton4Click(Sender: TObject);
 begin
   edit5.text:=edit4.text;
+  bitbtn3.enabled:=true;
 end;
 
 procedure TForm4.FormShow(Sender: TObject);
@@ -429,6 +431,11 @@ end;
 procedure TForm4.Edit4Change(Sender: TObject);
 begin
   if edit4.text <> '' then bitbtn3.enabled:=true;
+end;
+
+procedure TForm4.Edit5Change(Sender: TObject);
+begin
+  if edit5.text <> '' then bitbtn3.enabled:=true;
 end;
 
 procedure TForm4.FormCloseQuery(Sender: TObject; var CanClose: boolean);

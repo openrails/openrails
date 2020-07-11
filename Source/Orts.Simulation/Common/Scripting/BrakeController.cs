@@ -189,27 +189,34 @@ namespace ORTS.Scripting.Api
     public enum ControllerState
     {
         // MSTS values (DO NOT CHANGE THE ORDER !)
-        Dummy,
+        Dummy,              // Dummy
         Release,            // TrainBrakesControllerReleaseStart 
         FullQuickRelease,   // TrainBrakesControllerFullQuickReleaseStart
         Running,            // TrainBrakesControllerRunningStart 
         Neutral,            // TrainBrakesControllerNeutralhandleOffStart
         SelfLap,            // TrainBrakesControllerSelfLapStart 
-        Lap,
+        Lap,                // TrainBrakesControllerHoldLapStart 
         Apply,              // TrainBrakesControllerApplyStart 
         EPApply,            // TrainBrakesControllerEPApplyStart 
-        GSelfLap,
-        GSelfLapH,
+        GSelfLap,           // TrainBrakesControllerGraduatedSelfLapLimitedStart
+        GSelfLapH,          // TrainBrakesControllerGraduatedSelfLapLimitedHoldStart
         Suppression,        // TrainBrakesControllerSuppressionStart 
         ContServ,           // TrainBrakesControllerContinuousServiceStart 
         FullServ,           // TrainBrakesControllerFullServiceStart 
         Emergency,          // TrainBrakesControllerEmergencyStart
 
+        // Extra MSTS values
+        MinimalReduction,  // TrainBrakesControllerMinimalReductionStart,
+        Hold,                   // TrainBrakesControllerHoldStart
+
         // OR values
         Overcharge,         // Overcharge
         EBPB,               // Emergency Braking Push Button
         TCSEmergency,       // TCS Emergency Braking
-        TCSFullServ         // TCS Full Service Braking
+        TCSFullServ,        // TCS Full Service Braking
+        VacContServ,         // TrainBrakesControllerVacuumContinuousServiceStart
+        VacApplyContServ,    // TrainBrakesControllerVacuumApplyContinuousServiceStart
+        BrakeNotch           // EngineBrakesControllerBrakeNotchStart
     };
 
     public static class ControllerStateDictionary
@@ -226,17 +233,22 @@ namespace ORTS.Scripting.Api
             {ControllerState.Apply, Catalog.GetString("Apply")},
             {ControllerState.EPApply, Catalog.GetString("EPApply")},
             {ControllerState.Emergency, Catalog.GetString("Emergency")},
-            {ControllerState.SelfLap, Catalog.GetString("Lap")},
+            {ControllerState.SelfLap, Catalog.GetString("Self Lap")},
             {ControllerState.GSelfLap, Catalog.GetString("Service")},
             {ControllerState.GSelfLapH, Catalog.GetString("Service")},
             {ControllerState.Lap, Catalog.GetString("Lap")},
             {ControllerState.Suppression, Catalog.GetString("Suppression")},
             {ControllerState.ContServ, Catalog.GetString("Cont. Service")},
             {ControllerState.FullServ, Catalog.GetString("Full Service")},
+            {ControllerState.MinimalReduction, Catalog.GetString("Minimum Reduction")},
+            {ControllerState.Hold, Catalog.GetString("Hold")},
             {ControllerState.Overcharge, Catalog.GetString("Overcharge")},
             {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
             {ControllerState.TCSEmergency, Catalog.GetString("TCS Emergency Braking")},
-            {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")}
+            {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")},
+            {ControllerState.VacContServ, Catalog.GetString("Vac. Cont. Service")},
+            {ControllerState.VacApplyContServ, Catalog.GetString("Vac. Apply Cont. Service")},
+            {ControllerState.BrakeNotch, Catalog.GetString("Notch")}
         };
     }
 }

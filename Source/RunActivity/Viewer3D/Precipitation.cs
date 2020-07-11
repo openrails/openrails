@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+// COPYRIGHT 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -36,7 +36,7 @@ namespace Orts.Viewer3D
         // 16 bit version.
         public const float MaxIntensityPPSPM2_16 = 0.010f;
         // Default 32 bit version.
-        public const float MaxIntensityPPSPM2 = 0.020f;
+        public const float MaxIntensityPPSPM2 = 0.035f;
                 
         readonly Viewer Viewer;
         readonly WeatherControl WeatherControl;
@@ -297,7 +297,7 @@ namespace Orts.Viewer3D
 
         public void DynamicUpdate(WeatherControl weatherControl, Weather weather, Viewer viewer, ref Vector3 wind)
         {
-            if (!weatherControl.weatherChangeOn || weatherControl.dynamicWeather.precipitationLiquidityTimer <= 0) return;
+            if (weather.PrecipitationLiquidity == 0 || weather.PrecipitationLiquidity == 1) return;
             ParticleDuration = ParticleBoxHeightM / ((RainVelocityMpS-SnowVelocityMpS) *  weather.PrecipitationLiquidity + SnowVelocityMpS)/ ParticleVelocityFactor;
             wind.X = 18 * weather.PrecipitationLiquidity + 2;
             ParticleDirection = wind;
@@ -308,7 +308,8 @@ namespace Orts.Viewer3D
             var tiles = viewer.Tiles;
             var scenery = viewer.World.Scenery;
             var worldLocation = viewer.Camera.CameraWorldLocation;
-                        
+            //var worldLocation = Program.Viewer.PlayerLocomotive.WorldPosition.WorldLocation;  // This is used to test overall precipitation position.
+
             if (TimeParticlesLastEmitted == 0)
             {
                 TimeParticlesLastEmitted = currentTime - ParticleDuration;
@@ -329,7 +330,7 @@ namespace Orts.Viewer3D
 
             for (var i = 0; i < numToEmit; i++)
             {
-                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxLengthM), 0, worldLocation.Location.Z + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxWidthM));
+                var temp = new WorldLocation(worldLocation.TileX, worldLocation.TileZ, worldLocation.Location.X + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxWidthM), 0, worldLocation.Location.Z + (float)((Viewer.Random.NextDouble() - 0.5) * ParticleBoxLengthM));
                 temp.Location.Y = Heights.GetHeight(temp, tiles, scenery);
                 var position = new WorldPosition(temp);
 
@@ -503,8 +504,12 @@ namespace Orts.Viewer3D
 
             shader.LightVector.SetValue(Viewer.Settings.UseMSTSEnv ? Viewer.World.MSTSSky.mstsskysolarDirection : Viewer.World.Sky.solarDirection);
             shader.particleSize.SetValue(1f);
-            if (!Viewer.World.WeatherControl.weatherChangeOn)
-            shader.precipitation_Tex.SetValue(Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture : RainTexture);
+            if (Viewer.Simulator.Weather.PrecipitationLiquidity == 0 || Viewer.Simulator.Weather.PrecipitationLiquidity == 1)
+            {
+                shader.precipitation_Tex.SetValue(Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Snow ? SnowTexture :
+                    Viewer.Simulator.WeatherType == Orts.Formats.Msts.WeatherType.Rain ? RainTexture :
+                    Viewer.Simulator.Weather.PrecipitationLiquidity == 0 ? SnowTexture : RainTexture);
+            }
             else
             {
                 var precipitation_TexIndex = (int)(Viewer.Simulator.Weather.PrecipitationLiquidity * 11);

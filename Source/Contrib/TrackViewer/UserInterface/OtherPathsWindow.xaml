@@ -5,26 +5,18 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="250" d:DesignWidth="150"
-    Height="300" Width="200" Title="Paths to draw">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition Height="Auto"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
-            <Label>Select Paths to draw</Label>
+    Height="300" Width="Auto" Title="Select paths to draw" SizeToContent="Width">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Width="Auto">
+            <DockPanel>
+            <Button DockPanel.Dock="Left" Name="ClearOtherPathsButton" Margin="1,3,30,3" Click="ClearOtherPathsButton_Click">Clear all</Button>
+            <CheckBox DockPanel.Dock="Right" Name="AlwaysOnTop" Margin="30,6,0,6" Click="AlwaysOnTop_Click">Window always on top</CheckBox>
+            </DockPanel>
         </StackPanel>
-        <ScrollViewer Grid.Row="1" Grid.Column="0" VerticalAlignment="Stretch">
-            <ListBox Name="listOfPaths" VerticalAlignment="Stretch" >
+        <ScrollViewer DockPanel.Dock="Top" VerticalAlignment="Stretch">
+            <ListBox Name="listOfPaths" VerticalAlignment="Stretch" Width="Auto">
                 <!-- will be filled programmatically -->
             </ListBox>
         </ScrollViewer>
-        <StackPanel Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center">
-            <Button Name="ClearOtherPathsButton" Click="ClearOtherPathsButton_Click">Clear all</Button>
-        </StackPanel>
-    </Grid>
+    </DockPanel>
 </Window>

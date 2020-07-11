@@ -15,11 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using GNU.Gettext;
-using GNU.Gettext.WinForms;
-using MSTS;
-using ORTS.Settings;
-using ORTS.Updater;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -27,6 +22,12 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using GNU.Gettext;
+using GNU.Gettext.WinForms;
+using MSTS;
+using ORTS.Common.Input;
+using ORTS.Settings;
+using ORTS.Updater;
 
 namespace ORTS
 {
@@ -136,6 +137,7 @@ namespace ORTS
             checkAlerter.Checked = Settings.Alerter;
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
+            checkSpeedControl.Checked = Settings.SpeedControl;
             checkConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewDispatcher.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
@@ -146,15 +148,19 @@ namespace ORTS
             comboPressureUnit.Text = Settings.PressureUnit;
             comboBoxOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
-
+            checkEnableWebServer.Checked = Settings.WebServer;
+            numericWebServerPort.Value = Settings.WebServerPort;
 
             // Audio tab
+
             checkMSTSBINSound.Checked = Settings.MSTSBINSound;
             numericSoundVolumePercent.Value = Settings.SoundVolumePercent;
             numericSoundDetailLevel.Value = Settings.SoundDetailLevel;
+            numericExternalSoundPassThruPercent.Value = Settings.ExternalSoundPassThruPercent;
 
             // Video tab
             checkDynamicShadows.Checked = Settings.DynamicShadows;
+            checkShadowAllShapes.Checked = Settings.ShadowAllShapes;
             checkFastFullScreenAltTab.Checked = Settings.FastFullScreenAltTab;
             checkWindowGlass.Checked = Settings.WindowGlass;
             checkModelInstancing.Checked = Settings.ModelInstancing;
@@ -171,18 +177,24 @@ namespace ORTS
             comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
             trackDayAmbientLight_ValueChanged(null, null);
+            checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
+
+            checkSimpleControlPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
             numericAdhesionMovingAverageFilterSize.Value = Settings.AdhesionMovingAverageFilterSize;
             checkBreakCouplers.Checked = Settings.BreakCouplers;
-            checkCurveResistanceSpeedDependent.Checked = Settings.CurveResistanceSpeedDependent;
+            checkCurveResistanceDependent.Checked = Settings.CurveResistanceDependent;
             checkCurveSpeedDependent.Checked = Settings.CurveSpeedDependent;
             checkTunnelResistanceDependent.Checked = Settings.TunnelResistanceDependent;
+            checkWindResistanceDependent.Checked = Settings.WindResistanceDependent;
             checkOverrideNonElectrifiedRoutes.Checked = Settings.OverrideNonElectrifiedRoutes;
             checkHotStart.Checked = Settings.HotStart;
+            checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
+            checkDoorsAITrains.Checked = Settings.OpenDoorsInAITrains;
 
             // Keyboard tab
             InitializeKeyboardSettings();
@@ -210,6 +222,8 @@ namespace ORTS
             checkDataLogPerformance.Checked = Settings.DataLogPerformance;
             checkDataLogPhysics.Checked = Settings.DataLogPhysics;
             checkDataLogMisc.Checked = Settings.DataLogMisc;
+            checkDataLogSteamPerformance.Checked = Settings.DataLogSteamPerformance;
+            checkVerboseConfigurationMessages.Checked = Settings.VerboseConfigurationMessages;
 
             // Evaluation tab
             checkDataLogTrainSpeed.Checked = Settings.DataLogTrainSpeed;
@@ -242,6 +256,7 @@ namespace ORTS
             if (initialContentSetup)
             {
                 tabOptions.SelectedTab = tabPageContent;
+                buttonContentBrowse.Enabled = false; // Initial state because browsing a null path leads to an exception
                 try
                 {
                     bindingSourceContent.Add(new ContentFolder() { Name = "Train Simulator", Path = MSTSPath.Base() });
@@ -300,14 +315,10 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             numericPerformanceTunerTarget.Value = Settings.PerformanceTunerTarget;
-            checkDoubleWire.Checked = Settings.DoubleWire;
-            checkForcedRedAtStationStops.Checked = !Settings.NoForcedRedAtStationStops;
             trackLODBias.Value = Settings.LODBias;
             trackLODBias_ValueChanged(null, null);
-            checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfNightTextures;
+            checkConditionalLoadOfNightTextures.Checked = Settings.ConditionalLoadOfDayOrNightTextures;
             checkSignalLightGlow.Checked = Settings.SignalLightGlow;
-            checkExtendedAIShunting.Checked = Settings.ExtendedAIShunting;
-            checkAutopilot.Checked = Settings.Autopilot;
             checkCircularSpeedGauge.Checked = Settings.CircularSpeedGauge;
             checkLODViewingExtention.Checked = Settings.LODViewingExtention;
             checkPreferDDSTexture.Checked = Settings.PreferDDSTexture;
@@ -322,6 +333,8 @@ namespace ORTS
             precipitationBoxWidth.Value = Settings.PrecipitationBoxWidth;
             precipitationBoxLength.Value = Settings.PrecipitationBoxLength;
             checkCorrectQuestionableBrakingParams.Checked = Settings.CorrectQuestionableBrakingParams;
+            numericActRandomizationLevel.Value = Settings.ActRandomizationLevel;
+            numericActWeatherRandomizationLevel.Value = Settings.ActWeatherRandomizationLevel;
         }
 
         static string ParseCategoryFrom(string name)
@@ -349,14 +362,14 @@ namespace ORTS
             var columnWidth = (panelKeys.ClientSize.Width - 20) / 2;
 
             var tempLabel = new Label();
-            var tempKIC = new KeyInputControl(Settings.Input.Commands[(int)UserCommands.GameQuit], InputSettings.DefaultCommands[(int)UserCommands.GameQuit]);
+            var tempKIC = new KeyInputControl(Settings.Input.Commands[(int)UserCommand.GameQuit], InputSettings.DefaultCommands[(int)UserCommand.GameQuit]);
             var rowTop = Math.Max(tempLabel.Margin.Top, tempKIC.Margin.Top);
             var rowHeight = tempKIC.Height;
             var rowSpacing = rowHeight + tempKIC.Margin.Vertical;
 
             var lastCategory = "";
             var i = 0;
-            foreach (UserCommands command in Enum.GetValues(typeof(UserCommands)))
+            foreach (UserCommand command in Enum.GetValues(typeof(UserCommand)))
             {
                 var name = InputSettings.GetPrettyLocalizedName(command);
                 var category = ParseCategoryFrom(name);
@@ -415,6 +428,7 @@ namespace ORTS
             // General tab
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
+            Settings.SpeedControl = checkSpeedControl.Checked;
             Settings.SuppressConfirmations = !checkConfirmations.Checked;
             Settings.ViewDispatcher = checkViewDispatcher.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
@@ -425,14 +439,17 @@ namespace ORTS
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
             Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
+            Settings.WebServer = checkEnableWebServer.Checked;
 
             // Audio tab
             Settings.MSTSBINSound = checkMSTSBINSound.Checked;
             Settings.SoundVolumePercent = (int)numericSoundVolumePercent.Value;
             Settings.SoundDetailLevel = (int)numericSoundDetailLevel.Value;
+            Settings.ExternalSoundPassThruPercent = (int)numericExternalSoundPassThruPercent.Value;
 
             // Video tab
             Settings.DynamicShadows = checkDynamicShadows.Checked;
+            Settings.ShadowAllShapes = checkShadowAllShapes.Checked;
             Settings.FastFullScreenAltTab = checkFastFullScreenAltTab.Checked;
             Settings.WindowGlass = checkWindowGlass.Checked;
             Settings.ModelInstancing = checkModelInstancing.Checked;
@@ -444,18 +461,24 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = comboWindowSize.Text;
+            Settings.WindowSize = GetValidWindowSize(comboWindowSize);
+
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
+            Settings.DoubleWire = checkDoubleWire.Checked;
 
             // Simulation tab
+            Settings.SimpleControlPhysics = checkSimpleControlPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
-            Settings.CurveResistanceSpeedDependent = checkCurveResistanceSpeedDependent.Checked;
+            Settings.CurveResistanceDependent = checkCurveResistanceDependent.Checked;
             Settings.CurveSpeedDependent = checkCurveSpeedDependent.Checked;
             Settings.TunnelResistanceDependent = checkTunnelResistanceDependent.Checked;
+            Settings.WindResistanceDependent = checkWindResistanceDependent.Checked;
             Settings.OverrideNonElectrifiedRoutes = checkOverrideNonElectrifiedRoutes.Checked;
             Settings.HotStart = checkHotStart.Checked;
+            Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
+            Settings.OpenDoorsInAITrains = checkDoorsAITrains.Checked;
 
             // Keyboard tab
             // These are edited live.
@@ -467,6 +490,8 @@ namespace ORTS
             Settings.DataLogPerformance = checkDataLogPerformance.Checked;
             Settings.DataLogPhysics = checkDataLogPhysics.Checked;
             Settings.DataLogMisc = checkDataLogMisc.Checked;
+            Settings.DataLogSteamPerformance = checkDataLogSteamPerformance.Checked;
+            Settings.VerboseConfigurationMessages = checkVerboseConfigurationMessages.Checked;
 
             // Evaluation tab
             Settings.DataLogTrainSpeed = checkDataLogTrainSpeed.Checked;
@@ -491,13 +516,9 @@ namespace ORTS
             Settings.SuperElevationGauge = (int)numericSuperElevationGauge.Value;
             Settings.PerformanceTuner = checkPerformanceTuner.Checked;
             Settings.PerformanceTunerTarget = (int)numericPerformanceTunerTarget.Value;
-            Settings.DoubleWire = checkDoubleWire.Checked;
-            Settings.NoForcedRedAtStationStops = !checkForcedRedAtStationStops.Checked;
             Settings.LODBias = trackLODBias.Value;
-            Settings.ConditionalLoadOfNightTextures = checkConditionalLoadOfNightTextures.Checked;
+            Settings.ConditionalLoadOfDayOrNightTextures = checkConditionalLoadOfNightTextures.Checked;
             Settings.SignalLightGlow = checkSignalLightGlow.Checked;
-            Settings.ExtendedAIShunting = checkExtendedAIShunting.Checked;
-            Settings.Autopilot = checkAutopilot.Checked;
             Settings.CircularSpeedGauge = checkCircularSpeedGauge.Checked;
             Settings.LODViewingExtention = checkLODViewingExtention.Checked;
             Settings.PreferDDSTexture = checkPreferDDSTexture.Checked;
@@ -511,8 +532,24 @@ namespace ORTS
             Settings.PrecipitationBoxWidth = (int)precipitationBoxWidth.Value;
             Settings.PrecipitationBoxLength = (int)precipitationBoxLength.Value;
             Settings.CorrectQuestionableBrakingParams = checkCorrectQuestionableBrakingParams.Checked;
+            Settings.ActRandomizationLevel = (int)numericActRandomizationLevel.Value;
+            Settings.ActWeatherRandomizationLevel = (int)numericActWeatherRandomizationLevel.Value;
 
             Settings.Save();
+        }
+
+        /// <summary>
+        /// Returns user's [width]x[height] if expression is valid and values are sane, else returns previous value of setting.
+        /// </summary>
+        private string GetValidWindowSize(ComboBox comboWindowSize)
+        {
+            // "1024X780" instead of "1024x780" then "Start" resulted in an immediate return to the Menu with no OpenRailsLog.txt and a baffled user.
+            var sizeArray = comboWindowSize.Text.ToLower().Replace(" ", "").Split('x');
+            if (sizeArray.Count() == 2)
+                if (int.TryParse(sizeArray[0], out int width) && int.TryParse(sizeArray[1], out int height))
+                    if ((100 < width && width < 10000) && (100 < height && height < 100000)) // sanity check
+                        return $"{width}x{height}";
+            return Settings.WindowSize; // i.e. no change or message. Just ignore non-numeric entries
         }
 
         void buttonDefaultKeys_Click(object sender, EventArgs e)
@@ -538,16 +575,6 @@ namespace ORTS
                 MessageBox.Show(errors, Application.ProductName);
             else
                 MessageBox.Show(catalog.GetString("No errors found."), Application.ProductName);
-        }
-
-        private void comboBoxWindowSize_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var windowSizeParts = comboWindowSize.Text.Split(new[] { 'x' }, 2);
-            double width = Convert.ToDouble(windowSizeParts[0]);
-            double height = Convert.ToDouble(windowSizeParts[1]);
-            double aspectRatio = width / height;
-            bool wideScreen = aspectRatio > (4.0 / 3.0);
-            numericCab2DStretch.Enabled = wideScreen;
         }
 
         private void numericUpDownFOV_ValueChanged(object sender, EventArgs e)
@@ -651,20 +678,44 @@ namespace ORTS
                 if (folderBrowser.ShowDialog(this) == DialogResult.OK)
                 {
                     var current = bindingSourceContent.Current as ContentFolder;
+                    System.Diagnostics.Debug.Assert(current != null, "List should not be empty");
                     textBoxContentPath.Text = current.Path = folderBrowser.SelectedPath;
                     if (String.IsNullOrEmpty(current.Name))
-                        textBoxContentName.Text = current.Name = Path.GetFileName(textBoxContentPath.Text);
+                        // Don't need to set current.Name here as next statement triggers event textBoxContentName_TextChanged()
+                        // which does that and also checks for duplicate names 
+                        textBoxContentName.Text = Path.GetFileName(textBoxContentPath.Text);
                     bindingSourceContent.ResetCurrentItem();
                 }
             }
         }
 
+        /// <summary>
+        /// Edits to the input field are copied back to the list of content.
+        /// They are also checked for duplicate names which would lead to an exception when saving.
+        /// if duplicate, then " copy" is silently appended to the entry in list of content.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void textBoxContentName_TextChanged(object sender, EventArgs e)
         {
             var current = bindingSourceContent.Current as ContentFolder;
             if (current != null && current.Name != textBoxContentName.Text)
             {
-                current.Name = textBoxContentName.Text;
+                // Duplicate names lead to an exception, so append " copy" if not unique
+                var suffix = "";
+                var isNameUnique = true;
+                while (isNameUnique)
+                {
+                    isNameUnique = false; // to exit after a single pass
+                    foreach (var item in bindingSourceContent)
+                        if (((ContentFolder)item).Name == textBoxContentName.Text + suffix)
+                        {
+                            suffix += " copy"; // To ensure uniqueness
+                            isNameUnique = true; // to force another pass
+                            break;
+                        }
+                }
+                current.Name = textBoxContentName.Text + suffix;
                 bindingSourceContent.ResetCurrentItem();
             }
         }
@@ -707,5 +758,6 @@ namespace ORTS
             numericPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
+
     }
 }

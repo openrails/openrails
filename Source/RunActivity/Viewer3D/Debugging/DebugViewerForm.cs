@@ -21,6 +21,14 @@
 //    Richard Plokhaar / Signalsoft Rail Consultancy Ltd.
 // 
 
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Forms;
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
@@ -30,14 +38,6 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Windows.Forms;
 using Control = System.Windows.Forms.Control;
 using Image = System.Drawing.Image;
 using Color = System.Drawing.Color;
@@ -291,14 +291,10 @@ namespace Orts.Viewer3D.Debugging
 				  {
 					  foreach (TrPin pin in currNode.TrPins)
 					  {
-						  TrVectorSection item = null;
-						  try
-						  {
-							  if (nodes[pin.Link].TrVectorNode == null || nodes[pin.Link].TrVectorNode.TrVectorSections.Length < 1) continue;
-							  if (pin.Direction == 1) item = nodes[pin.Link].TrVectorNode.TrVectorSections.First();
-							  else item = nodes[pin.Link].TrVectorNode.TrVectorSections.Last();
-						  }
-						  catch { continue; }
+						  var vectorSections = nodes[pin.Link]?.TrVectorNode?.TrVectorSections;
+						  if (vectorSections == null || vectorSections.Length < 1)
+						      continue;
+						  TrVectorSection item = pin.Direction == 1 ? vectorSections.First() : vectorSections.Last();
 						  dVector A = new dVector(currNode.UiD.TileX, currNode.UiD.X, currNode.UiD.TileZ, + currNode.UiD.Z);
 						  dVector B = new dVector(item.TileX, + item.X, item.TileZ, + item.Z);
                           var x = dVector.DistanceSqr(A, B);
@@ -831,13 +827,13 @@ namespace Orts.Viewer3D.Debugging
 					if (t.LeadLocomotive != null)
 					{
 						worldPos = t.LeadLocomotive.WorldPosition;
-						name = GetTrainName(t.LeadLocomotive.CarID);
+						name = t.GetTrainName(t.LeadLocomotive.CarID);
 						firstCar = t.LeadLocomotive;
 					}
 					else if (t.Cars != null && t.Cars.Count > 0)
 					{
 						worldPos = t.Cars[0].WorldPosition;
-						name = GetTrainName(t.Cars[0].CarID);
+						name = t.GetTrainName(t.Cars[0].CarID);
 						if (t.TrainType == Train.TRAINTYPE.AI)
 							name = t.Number.ToString() + ":" +t.Name;
 						firstCar = t.Cars[0];
@@ -920,11 +916,11 @@ namespace Orts.Viewer3D.Debugging
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
 						switchPickedLocation.Y -= 22;
-						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
 						switchPickedLocation.Y += 8;
 					}
 					switchPickedLocation.Y -= 30;
-					g.DrawString(InputSettings.Commands[(int)UserCommands.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
+					g.DrawString(InputSettings.Commands[(int)UserCommand.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
 				}
 				if (signalPickedItem != null /*&& signalPickedItemChanged == true*/ && !signalPickedItemHandled && simulator.GameTime - signalPickedTime < 5)
 				{
@@ -937,7 +933,7 @@ namespace Orts.Viewer3D.Debugging
 					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
 					{
 						signalPickedLocation.Y -= 24;
-						g.DrawString(InputSettings.Commands[(int)UserCommands.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
 					}
 				}
 #endif
@@ -1013,13 +1009,6 @@ namespace Orts.Viewer3D.Debugging
 		  return position * spacing;
 	  }
 	  
-	  static string GetTrainName(string ID)
-	  {
-		  int location = ID.LastIndexOf('-');
-		  if (location < 0) return ID;
-		  return ID.Substring(0, location - 1);
-	  }
-
 	    const float SignalErrorDistance = 100;
         const float SignalWarningDistance = 500;
         const float DisplayDistance = 1000;

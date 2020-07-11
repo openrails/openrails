@@ -184,9 +184,7 @@ namespace Orts.Viewer3D.Processes
 
                                     if (!sources.Value[i].Update())
                                     {
-                                        Trace.TraceInformation("Sound Update return False");
-                                        // This doesn't seem to be needed - cleanup when a train is removed seems to do it anyway.
-                                        //removals.Add(new KeyValuePair<object, SoundSourceBase>(sources.Key, sources.Value[i]));
+                                        removals.Add(new KeyValuePair<object, SoundSourceBase>(sources.Key, sources.Value[i]));
                                     }
                                 }
                             }

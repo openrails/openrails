@@ -1,0 +1,935 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2020-06-06 23:14:21+0300\n"
+"PO-Revision-Date: 2020-06-09 02:32+0300\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.3.1\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"Language: ru\n"
+
+#: ../../ORTS.Common/Conversions.cs:524
+msgid "m"
+msgstr "м"
+
+#: ../../ORTS.Common/Conversions.cs:525
+msgid "km"
+msgstr "км"
+
+#: ../../ORTS.Common/Conversions.cs:526
+msgid "mm"
+msgstr "мм"
+
+#: ../../ORTS.Common/Conversions.cs:527
+msgid "mi"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:528
+msgid "ft"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:529
+msgid "yd"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:530
+msgid "m²"
+msgstr "м²"
+
+#: ../../ORTS.Common/Conversions.cs:531
+msgid "ft²"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:532
+msgid "m³"
+msgstr "м³"
+
+#: ../../ORTS.Common/Conversions.cs:533
+msgid "ft³"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:534
+msgid "km/h"
+msgstr "км/ч"
+
+#: ../../ORTS.Common/Conversions.cs:535
+msgid "mph"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:536
+msgid "kPa"
+msgstr "кПа"
+
+#: ../../ORTS.Common/Conversions.cs:537
+msgid "bar"
+msgstr "атм"
+
+#: ../../ORTS.Common/Conversions.cs:538
+msgid "psi"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:539
+msgid "inHg"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:540
+msgid "kgf/cm²"
+msgstr "кгс/см²"
+
+#: ../../ORTS.Common/Conversions.cs:541
+msgid "kg"
+msgstr "кг"
+
+#: ../../ORTS.Common/Conversions.cs:542
+msgid "t"
+msgstr "т"
+
+#: ../../ORTS.Common/Conversions.cs:543
+msgid "t-uk"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:544
+msgid "t-us"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:545
+msgid "lb"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:546
+msgid "s"
+msgstr "с"
+
+#: ../../ORTS.Common/Conversions.cs:547
+msgid "min"
+msgstr "мин"
+
+#: ../../ORTS.Common/Conversions.cs:548
+msgid "h"
+msgstr "ч"
+
+#: ../../ORTS.Common/Conversions.cs:549
+msgid "L"
+msgstr "л"
+
+#: ../../ORTS.Common/Conversions.cs:550
+msgid "g-uk"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:551
+msgid "g-us"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:552
+msgid "rpm"
+msgstr "об/мин"
+
+#: ../../ORTS.Common/Conversions.cs:553
+msgid "kW"
+msgstr "кВт"
+
+#: ../../ORTS.Common/Conversions.cs:554
+msgid "hp"
+msgstr "л.с."
+
+#: ../../ORTS.Common/Conversions.cs:555
+msgid "bhp"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:556
+msgid "kJ"
+msgstr "кДж"
+
+#: ../../ORTS.Common/Conversions.cs:557
+msgid "MJ"
+msgstr "МДж"
+
+#: ../../ORTS.Common/Conversions.cs:558
+msgid "BTU"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:559
+msgid "°C"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:560
+msgid "°F"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:561
+msgid "N"
+msgstr "Н"
+
+#: ../../ORTS.Common/Conversions.cs:562
+msgid "kN"
+msgstr "кН"
+
+#: ../../ORTS.Common/Conversions.cs:563
+msgid "lbf"
+msgstr ""
+
+#: ../../ORTS.Common/Conversions.cs:564
+msgid "klbf"
+msgstr ""
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:27
+msgctxt "Reverser"
+msgid "Forward"
+msgstr "Вперёд"
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:28
+msgctxt "Reverser"
+msgid "Reverse"
+msgstr "Назад"
+
+#. Context: Reverser
+#: ../../ORTS.Common/enums.cs:29
+msgctxt "Reverser"
+msgid "N"
+msgstr "Нейтраль"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:11
+msgid "Game Pause Menu"
+msgstr "Меню паузы"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:12
+msgid "Game Save"
+msgstr "Создать сохранение"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:13
+msgid "Game Quit"
+msgstr "Выйти из игры"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:14
+msgid "Game Pause"
+msgstr "Приостановить игру"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:15
+msgid "Game Screenshot"
+msgstr "Снимок экрана"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:16
+msgid "Game Fullscreen"
+msgstr "На весь экран"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:17
+msgid "Game Switch Ahead"
+msgstr "Перевести стрелку впереди"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:18
+msgid "Game Switch Behind"
+msgstr "Перевести стрелку сзади"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:19
+msgid "Game Switch Picked"
+msgstr "Показ выбранной стрелки/сигнала"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:20
+msgid "Game Signal Picked"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:21
+msgid "Game Switch With Mouse"
+msgstr "Перевод стрелки мышью"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:22
+msgid "Game Uncouple With Mouse"
+msgstr "Расцепка мышью"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:23
+msgid "Game Change Cab"
+msgstr "Смена поста управления"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:24
+msgid "Game Request Control"
+msgstr "Взять управление на себя"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:25
+msgid "Game Multi Player Dispatcher"
+msgstr "Создать окно диспетчера"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:26
+msgid "Game Multi Player Texting"
+msgstr "Текстовое сообщение в мультиплеере"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:27
+msgid "Game Switch Manual Mode"
+msgstr "Маневровый/Автоматический режим АЛС"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:28
+msgid "Game Clear Signal Forward"
+msgstr "Запрос открытия сигнала впереди"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:29
+msgid "Game Clear Signal Backward"
+msgstr "Запрос открытия сигнала сзади"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:30
+msgid "Game Reset Signal Forward"
+msgstr "Сброс сигнала впереди"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:31
+msgid "Game Reset Signal Backward"
+msgstr "Сброс сигнала сзади"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:32
+msgid "Game Autopilot Mode"
+msgstr "Включить автопилот"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:33
+msgid "Game Suspend Old Player"
+msgstr "Приостановить предыдущий поезд"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:35
+msgid "Display Next Window Tab"
+msgstr "Помощь. Листать вкладки/варианты"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:36
+msgid "Display Help Window"
+msgstr "Помощь. Открыть справочник"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:37
+msgid "Display Track Monitor Window"
+msgstr "Помощь. Монитор путевой обстановки"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:38
+msgid "Display HUD"
+msgstr "Помощь. Индикация параметров"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:39
+msgid "Display Car Labels"
+msgstr "Помощь. Номера поездов/вагогов"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:40
+msgid "Display Station Labels"
+msgstr "Помощь. Названия платформ/путей"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:41
+msgid "Display Switch Window"
+msgstr "Помощь. Положение стрелок"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:42
+msgid "Display Train Operations Window"
+msgstr "Помощь. Действия с поездом (составитель)"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:43
+msgid "Display Next Station Window"
+msgstr "Помощь. Время проследования станций"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:44
+msgid "Display Compass Window"
+msgstr "Помощь. Компас и координаты"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:45
+msgid "Display Basic HUD Toggle"
+msgstr "Помощь. Расширеная/базовая индикация"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:46
+msgid "Display Train List Window"
+msgstr "Помощь. Список поездов на полигоне"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:48
+msgid "Debug Speed Up"
+msgstr "Отладка. Скорость симуляции +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:49
+msgid "Debug Speed Down"
+msgstr "Отладка. Скорость симуляции -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:50
+msgid "Debug Speed Reset"
+msgstr "Отладка. Скорость симуляции в норму"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:51
+msgid "Debug Overcast Increase"
+msgstr "Отладка. Облачность +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:52
+msgid "Debug Overcast Decrease"
+msgstr "Отладка. Облачность -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:53
+msgid "Debug Fog Increase"
+msgstr "Отладка. Туман +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:54
+msgid "Debug Fog Decrease"
+msgstr "Отладка. Туман -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:55
+msgid "Debug Precipitation Increase"
+msgstr "Отладка. Осадки +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:56
+msgid "Debug Precipitation Decrease"
+msgstr "Отладка. Осадки -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:57
+msgid "Debug Precipitation Liquidity Increase"
+msgstr "Отладка. Влажность осадков +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:58
+msgid "Debug Precipitation Liquidity Decrease"
+msgstr "Отладка. Влажность осадков -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:59
+msgid "Debug Weather Change"
+msgstr "Отладка. Смена погоды"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:60
+msgid "Debug Clock Forwards"
+msgstr "Отладка. Игровые часы вперёд"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:61
+msgid "Debug Clock Backwards"
+msgstr "Отладка. Игровые часы назад"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:62
+msgid "Debug Logger"
+msgstr "Отладка. Запись параметров"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:63
+msgid "Debug Lock Shadows"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:64
+msgid "Debug Dump Keyboard Map"
+msgstr "Сохранить таблицу назначения клавиш"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:65
+msgid "Debug Log Render Frame"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:66
+msgid "Debug Tracks"
+msgstr "Отладка. Показ резервирования пути"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:67
+msgid "Debug Signalling"
+msgstr "Отладка. Показ секций пути"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:68
+msgid "Debug Reset Wheel Slip"
+msgstr "Отладка. Прекратить боксование"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:69
+msgid "Debug Toggle Advanced Adhesion"
+msgstr "Отладка. Сложная модель сцепления"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:70
+msgid "Debug Sound Form"
+msgstr "Отладка. Окно диагностики звука"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:71
+msgid "Debug Physics Form"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:72
+msgid "Debug Toggle Confirmations"
+msgstr "Подтверждения управляющих воздействий"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:74
+msgid "Camera Cab"
+msgstr "Вид из кабины"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:75
+msgid "Camera Change Passenger Viewpoint"
+msgstr "Выбор внутренней камеры (пассажир)"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:76
+msgid "Camera 3D Cab"
+msgstr "Виртуальная кабина"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:77
+msgid "Camera Toggle Show Cab"
+msgstr "Показать/скрыть кабину"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:78
+msgid "Camera Toggle Letterbox Cab"
+msgstr "Показать кабину целиком"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:79
+msgid "Camera Head Out Forward"
+msgstr "Вид из окна вправо"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:80
+msgid "Camera Head Out Backward"
+msgstr "Вид из окна влево"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:81
+msgid "Camera Outside Front"
+msgstr "Вид Голова поезда"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:82
+msgid "Camera Outside Rear"
+msgstr "Вид Хвост поезда"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:83
+msgid "Camera Trackside"
+msgstr "Вид с обочины"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:84
+msgid "Camera SpecialTracksidePoint"
+msgstr "Вид со стороны, особый"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:85
+msgid "Camera Passenger"
+msgstr "Вид Пассажир"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:86
+msgid "Camera Brakeman"
+msgstr "Вид Составитель"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:87
+msgid "Camera Free"
+msgstr "Вид Свободная камера"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:88
+msgid "Camera Previous Free"
+msgstr "Предыдущая свободная камера"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:89
+msgid "Camera Reset"
+msgstr "Восстановить настройки текущей камеры"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:90
+msgid "Camera Move Fast"
+msgstr "Ускоренное перемещение камеры"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:91
+msgid "Camera Move Slow"
+msgstr "Замедленное перемещение камеры"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:92
+msgid "Camera Pan (Rotate) Left"
+msgstr "Камера сдвиг(поворот) влево"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:93
+msgid "Camera Pan (Rotate) Right"
+msgstr "Камера сдвиг(поворот) вправо"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:94
+msgid "Camera Pan (Rotate) Up"
+msgstr "Камера сдвиг(поворот) вверх"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:95
+msgid "Camera Pan (Rotate) Down"
+msgstr "Камера сдвиг(поворот) вниз"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:96
+msgid "Camera Zoom In (Move Z)"
+msgstr "Камера наезд(сдвиг вперёд)"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:97
+msgid "Camera Zoom Out (Move Z)"
+msgstr "Камера отъезд(сдвиг назад)"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:98
+msgid "Camera Rotate (Pan) Left"
+msgstr "Поворот/сдвиг камеры влево"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:99
+msgid "Camera Rotate (Pan) Right"
+msgstr "Поворот/сдвиг камеры вправо"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:100
+msgid "Camera Rotate (Pan) Up"
+msgstr "Поворот/сдвиг камеры вверх"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:101
+msgid "Camera Rotate (Pan) Down"
+msgstr "Поворот/сдвиг камеры вниз"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:102
+msgid "Camera Car Next"
+msgstr "Вид на следующий вагон"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:103
+msgid "Camera Car Previous"
+msgstr "Вид на предыдущий вагон"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:104
+msgid "Camera Car First"
+msgstr "Вид на первый вагон"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:105
+msgid "Camera Car Last"
+msgstr "Вид на последний вагон"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:106
+msgid "Camera Jumping Trains"
+msgstr "Вид на другие поезда"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:107
+msgid "Camera Jump Back Player"
+msgstr "Вид на поезд игрока"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:108
+msgid "Camera Jump See Switch"
+msgstr "Вид Показать стрелку"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:109
+msgid "Camera Vibrate"
+msgstr "Вид Качка"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:110
+msgid "Camera Scroll Right"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:111
+msgid "Camera Scroll Left"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:112
+msgid "Camera Browse Backwards"
+msgstr "Камера перелетает к голове поезда"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:113
+msgid "Camera Browse Forwards"
+msgstr "Камера перелетает к хвосту поезда"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:115
+msgid "Control Forwards"
+msgstr "Упр. Реверсор Вперёд"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:116
+msgid "Control Backwards"
+msgstr "Упр. Реверсор Назад"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:117
+msgid "Control Throttle Increase"
+msgstr "Упр. Контроллер +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:118
+msgid "Control Throttle Decrease"
+msgstr "Упр. Контроллер -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:119
+msgid "Control Throttle Zero"
+msgstr "Упр. Контроллер Выключить"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:120
+msgid "Control Gear Up"
+msgstr "Упр. Передача +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:121
+msgid "Control Gear Down"
+msgstr "Упр. Передача -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:122
+msgid "Control Train Brake Increase"
+msgstr "Упр. Тормоза поезда +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:123
+msgid "Control Train Brake Decrease"
+msgstr "Упр. Тормоза поезда -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:124
+msgid "Control Train Brake Zero"
+msgstr "Упр. Тормоза поезда на нейтраль"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:125
+msgid "Control Engine Brake Increase"
+msgstr "Упр. Локомотивный тормоз +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:126
+msgid "Control Engine Brake Decrease"
+msgstr "Упр. Локомотивный тормоз -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:127
+msgid "Control Dynamic Brake Increase"
+msgstr "Упр. Электродинамический тормоз +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:128
+msgid "Control Dynamic Brake Decrease"
+msgstr "Упр. Электродинамический тормоз -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:129
+msgid "Control Bail Off"
+msgstr "Упр. Отпустить независимый тормоз"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:130
+msgid "Control Initialize Brakes"
+msgstr "Упр. Восстановить тормоза"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:131
+msgid "Control Handbrake Full"
+msgstr "Упр. Ручной тормоз затянуть"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:132
+msgid "Control Handbrake None"
+msgstr "Упр. Ручной тормоз отпустить"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:133
+msgid "Control Odometer Show/Hide"
+msgstr "Одометр показать/скрыть"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:134
+msgid "Control Odometer Reset"
+msgstr "Одометр сбросить на ноль"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:135
+msgid "Control Odometer Direction"
+msgstr "Одометр отсчёт вперёд/назад"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:136
+msgid "Control Retainers On"
+msgstr "Упр. Ретейнеры Вкл"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:137
+msgid "Control Retainers Off"
+msgstr "Упр. Ретейнеры Откл"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:138
+msgid "Control Brake Hose Connect"
+msgstr "Упр. Соединить тормозные рукава поезда"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:139
+msgid "Control Brake Hose Disconnect"
+msgstr "Упр. Разъединить тормозные рукава"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:140
+msgid "Control Alerter"
+msgstr "Упр. Кнопка бдительности"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:141
+msgid "Control Emergency Push Button"
+msgstr "Упр. Кнопка аварийного останова"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:142
+msgid "Control Sander"
+msgstr "Упр. Пескоподача"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:143
+msgid "Control Sander Toggle"
+msgstr "Упр. Пескоподача постоянно"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:144
+msgid "Control Wiper"
+msgstr "Упр. Стеклоочистители"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:145
+msgid "Control Horn"
+msgstr "Упр. Тифон"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:146
+msgid "Control Bell"
+msgstr "Упр. Сигнал малой громкости"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:147
+msgid "Control Bell Toggle"
+msgstr "Упр. Сигнал малой громкости Постоянно"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:148
+msgid "Control Door Left"
+msgstr "Упр. Двери Левые"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:149
+msgid "Control Door Right"
+msgstr "Упр. Двери Правые"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:150
+msgid "Control Mirror"
+msgstr "Упр. Зеркала"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:151
+msgid "Control Light"
+msgstr "Упр. Освещение кабины"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:152
+msgid "Control Pantograph 1"
+msgstr "Упр. Токоприёмник 1"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:153
+msgid "Control Pantograph 2"
+msgstr "Упр. Токоприёмник 2"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:154
+msgid "Control Pantograph 3"
+msgstr "Упр. Токоприёмник 3"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:155
+msgid "Control Pantograph 4"
+msgstr "Упр. Токоприёмник 4"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:156
+msgid "Control Circuit Breaker Closing Order"
+msgstr "Упр. Главный Выключатель Вкл"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:157
+msgid "Control Circuit Breaker Opening Order"
+msgstr "Упр. Главный Выключатель Откл"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:158
+msgid "Control Circuit Breaker Closing Authorization"
+msgstr "Упр. Главный Выключатель Возврат"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:159
+msgid "Control Diesel Player"
+msgstr "Упр. ДВС первый запуск/останов"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:160
+msgid "Control Diesel Helper"
+msgstr "Упр. ДВС остальные запуск/останов"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:161
+msgid "Control Headlight Increase"
+msgstr "Упр. Огни  +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:162
+msgid "Control Headlight Decrease"
+msgstr "Упр. Огни  -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:163
+msgid "Control Injector 1 Increase"
+msgstr "Упр. Инжектор 1, вода +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:164
+msgid "Control Injector 1 Decrease"
+msgstr "Упр. Инжектор 1, вода -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:165
+msgid "Control Injector 1"
+msgstr "Упр. Инжектор 1, пар"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:166
+msgid "Control Injector 2 Increase"
+msgstr "Упр. Инжектор 2, вода +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:167
+msgid "Control Injector 2 Decrease"
+msgstr "Упр. Инжектор 2, вода -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:168
+msgid "Control Injector 2"
+msgstr "Упр. Инжектор 2, пар"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:169
+msgid "Control Blowdown Valve"
+msgstr "Упр. Вентиль продувки котла"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:170
+msgid "Control Blower Increase"
+msgstr "Упр. Сифон +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:171
+msgid "Control Blower Decrease"
+msgstr "Упр. Сифон -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:172
+msgid "Control Steam Heat Increase"
+msgstr "Упр. Пар на отопление +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:173
+msgid "Control Steam Heat Decrease"
+msgstr "Упр. Пар на отопление -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:174
+msgid "Control Damper Increase"
+msgstr "Упр. Поддувало +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:175
+msgid "Control Damper Decrease"
+msgstr "Упр. Поддувало -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:176
+msgid "Control Firebox Open"
+msgstr "Упр. Открыть топку"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:177
+msgid "Control Firebox Close"
+msgstr "Упр. Закрыть топку"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:178
+msgid "Control Firing Rate Increase"
+msgstr "Упр. Подача топлива +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:179
+msgid "Control Firing Rate Decrease"
+msgstr "Упр. Подача топлива -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:180
+msgid "Control Fire Shovel Full"
+msgstr "Упр. Подача топлива максимум"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:181
+msgid "Control Cylinder Cocks"
+msgstr "Упр. Продувка цилиндров"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:182
+msgid "Control Large Ejector Increase"
+msgstr "Упр. Бол. эжектор +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:183
+msgid "Control Large Ejector Decrease"
+msgstr "Упр. Бол. эжектор -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:184
+msgid "Control Small Ejector Increase"
+msgstr "Упр. Мал. эжектор +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:185
+msgid "Control Small Ejector Decrease"
+msgstr "Упр. Мал. эжектор -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:186
+msgid "Control Vacuum Exhauster"
+msgstr "Упр. Эксгаустер"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:187
+msgid "Control Cylinder Compound"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:188
+msgid "Control Firing"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:189
+msgid "Control Refill"
+msgstr "Упр. Экипировка"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:190
+msgid "Control Water Scoop"
+msgstr "Упр. Черпак"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:191
+msgid "Control ImmediateRefill"
+msgstr "Упр. Мгновенная экипировка"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:192
+msgid "Control Turntable Clockwise"
+msgstr "Упр. Поворотный круг по часовой"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:193
+msgid "Control Turntable Counterclockwise"
+msgstr "Упр. Повор. круг против часовой"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:194
+msgid "Control Generic 1"
+msgstr "Упр. Общ.1"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:195
+msgid "Control Generic 2"
+msgstr "Упр. Общ.2"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:196
+msgid "Control Cab Radio"
+msgstr "Упр. Радиостанция"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:197
+msgid "Control AI Fire On"
+msgstr "Упр. Автокочегар Вкл"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:198
+msgid "Control AI Fire Off"
+msgstr "Упр. Автокочегар Откл"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:199
+msgid "Control AI Fire Reset"
+msgstr "Упр. Автокочегар Сброс"

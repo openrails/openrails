@@ -61,12 +61,12 @@ namespace ORTS.TrackViewer.UserInterface
             StatusbarHeight = (int) tvStatusbar.Height;
 
             //ElementHost object helps us to connect a WPF User Control.
-            elementHost = new ElementHost();
-            elementHost.Location = new System.Drawing.Point(0, 0);
-            //elementHost.Name = "elementHost";
-            elementHost.TabIndex = 1;
-            //elementHost.Text = "elementHost";
-            elementHost.Child = this;
+            elementHost = new ElementHost
+            {
+                Location = new System.Drawing.Point(0, 0),
+                TabIndex = 1,
+                Child = this
+            };
             System.Windows.Forms.Control.FromHandle(trackViewer.Window.Handle).Controls.Add(elementHost);
 
         }
@@ -164,6 +164,7 @@ namespace ORTS.TrackViewer.UserInterface
                 statusTrItemLocationZ.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture,
                     "{0,3:F3} ", closestPoint.Z);
                 AddSignalStatus(trackViewer, closestPoint.Description, closestPoint.Index);
+                AddNamesStatus(trackViewer, closestPoint.Description, closestPoint.Index);
             }
         }
 
@@ -320,18 +321,33 @@ namespace ORTS.TrackViewer.UserInterface
         /// <summary>
         /// Add information from signal
         /// </summary>
-        /// <param name="trackViewer"></param>
+        /// <param name="trackViewer">The trackviewer we need to find the trackDB</param>
+        /// <param name="description">The description of the item we might want to show, needed to make sure it is a proper item</param>
+        /// <param name="index">The index of the item to show</param>
         private void AddSignalStatus(TrackViewer trackViewer, string description, uint index)
         {
-            if (Properties.Settings.Default.statusShowSignal)
-            {
-                if (String.Equals(description, "signal"))
-                {
-                    statusAdditional.Text += "signal shape = ";
-                    statusAdditional.Text += trackViewer.RouteData.GetSignalFilename(index);
-                }
+            if (!Properties.Settings.Default.statusShowSignal) return;
+            if (!String.Equals(description, "signal")) return;
+            statusAdditional.Text += "signal shape = ";
+            statusAdditional.Text += trackViewer.RouteData.GetSignalFilename(index);
+        }
 
-            }
+        /// <summary>
+        /// Add information from platform and station name
+        /// </summary>
+        /// <param name="trackViewer">The trackviewer we need to find the trackDB</param>
+        /// <param name="description">The description of the item we might want to show, needed to make sure it is a proper item</param>
+        /// <param name="index">The index of the item to show</param>
+        private void AddNamesStatus(TrackViewer trackViewer, string description, uint index)
+        {
+            if (!Properties.Settings.Default.statusShowNames) return;
+            if (!String.Equals(description, "platform")) return;
+
+            TrItem item = trackViewer.RouteData.TrackDB.TrItemTable[index];
+            PlatformItem platform = item as PlatformItem;
+            if (platform == null) return;
+            statusAdditional.Text += string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                "{0} ({1})", platform.Station, platform.ItemName);
         }
 
         #region IDisposable

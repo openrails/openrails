@@ -1,4 +1,0 @@
-This is
-an end
-of line
-test file.

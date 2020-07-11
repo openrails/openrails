@@ -31,7 +31,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             Value = v;
             Smooth = s == 0 ? false : true;
-            Type = ControllerState.Dummy;
+            Type = ControllerState.Dummy;  // Default to a dummy controller state if no valid alternative state used
             string lower = type.ToLower();
             if (lower.StartsWith("trainbrakescontroller"))
                 lower = lower.Substring(21);
@@ -45,7 +45,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "fullquickreleasestart": Type = ControllerState.FullQuickRelease; break;
                 case "runningstart": Type = ControllerState.Running; break;
                 case "selflapstart": Type = ControllerState.SelfLap; break;
-                case "holdstart": Type = ControllerState.Lap; break;
+                case "holdstart": Type = ControllerState.Hold; break;
                 case "holdlappedstart": Type = ControllerState.Lap; break;
                 case "neutralhandleoffstart": Type = ControllerState.Neutral; break;
                 case "graduatedselflaplimitedstart": Type = ControllerState.GSelfLap; break;
@@ -55,9 +55,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "suppressionstart": Type = ControllerState.Suppression; break;
                 case "fullservicestart": Type = ControllerState.FullServ; break;
                 case "emergencystart": Type = ControllerState.Emergency; break;
+                case "minimalreductionstart": Type = ControllerState.MinimalReduction; break;
                 case "epapplystart": Type = ControllerState.EPApply; break;
-                case "epholdstart": Type = ControllerState.Lap; break;
-                case "minimalreductionstart": Type = ControllerState.Lap; break;
+                case "epholdstart": Type = ControllerState.SelfLap; break;
+                case "vacuumcontinuousservicestart": Type = ControllerState.VacContServ; break;
+                case "vacuumapplycontinuousservicestart": Type = ControllerState.VacApplyContServ; break;
+                case "brakenotchstart": Type = ControllerState.BrakeNotch; break;
                 default:
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;
@@ -115,6 +118,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float IntermediateValue;
         public float MinimumValue;
         public float MaximumValue = 1;
+        public const float StandardBoost = 5.0f; // standard step size multiplier
+        public const float FastBoost = 20.0f;
         public float StepSize;
         private List<MSTSNotch> Notches = new List<MSTSNotch>();
         public int CurrentNotch { get; set; }
@@ -216,10 +221,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             return Notches.Count;
         }
 
-        private float GetNotchBoost()
+        private float GetNotchBoost(float boost)
         {
             return (ToZero && ((CurrentNotch >= 0 && Notches[CurrentNotch].Smooth) || Notches.Count == 0 || 
-                IntermediateValue - CurrentValue > StepSize) ? 20 : 5);
+                IntermediateValue - CurrentValue > StepSize) ? FastBoost : boost);
         }
 
         /// <summary>
@@ -350,7 +355,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             if (UpdateValue == 1 || UpdateValue == -1)
             {
                 CheckControllerTargetAchieved();
-                UpdateValues(elapsedSeconds, UpdateValue);
+                UpdateValues(elapsedSeconds, UpdateValue, StandardBoost);
+            }
+            return CurrentValue;
+        }
+
+        public float UpdateAndSetBoost(float elapsedSeconds, float boost)
+        {
+            if (UpdateValue == 1 || UpdateValue == -1)
+            {
+                CheckControllerTargetAchieved();
+                UpdateValues(elapsedSeconds, UpdateValue, boost);
             }
             return CurrentValue;
         }
@@ -380,10 +395,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             }
         }
 
-        private float UpdateValues(float elapsedSeconds, float direction)
+        private float UpdateValues(float elapsedSeconds, float direction, float boost)
         {
             //We increment the intermediate value first
-            IntermediateValue += StepSize * elapsedSeconds * GetNotchBoost() * direction;
+            IntermediateValue += StepSize * elapsedSeconds * GetNotchBoost(boost) * direction;
             IntermediateValue = MathHelper.Clamp(IntermediateValue, MinimumValue, MaximumValue);
 
             //Do we have notches
@@ -392,11 +407,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 //Increasing, check if the notch has changed
                 if ((direction > 0) && (CurrentNotch < Notches.Count - 1) && (IntermediateValue >= Notches[CurrentNotch + 1].Value))
                 {
+                    // steamer_ctn - The following code was added in relation to reported bug  #1200226. However it seems to prevent the brake controller from ever being moved to EMERGENCY position.
+                    // Bug conditions indicated in the bug report have not been able to be duplicated, ie there doesn't appear to be a "safety stop" when brake key(s) held down continuously
+                    // Code has been reverted pending further investigation or reports of other issues
                     // Prevent TrainBrake to continuously switch to emergency
-                    if (Notches[CurrentNotch + 1].Type == ControllerState.Emergency)
-                        IntermediateValue = Notches[CurrentNotch + 1].Value - StepSize;
-                    else
-                        CurrentNotch++;
+                    //      if (Notches[CurrentNotch + 1].Type == ControllerState.Emergency)
+                    //         IntermediateValue = Notches[CurrentNotch + 1].Value - StepSize;
+                    //      else
+                    CurrentNotch++;
                 }
                 //decreasing, again check if the current notch has changed
                 else if((direction < 0) && (CurrentNotch > 0) && (IntermediateValue < Notches[CurrentNotch].Value))
@@ -534,6 +552,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     break;
                 }
             }
+        }
+
+        public void SetStepSize ( float stepSize)
+        {
+            StepSize = stepSize;
+        }
+
+        public void Normalize (float ratio)
+        {
+            for (int i = 0; i < Notches.Count; i++)
+                Notches[i].Value /= ratio;
         }
 
     }

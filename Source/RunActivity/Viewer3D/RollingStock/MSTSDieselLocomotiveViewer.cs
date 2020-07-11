@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,17 +17,15 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
-using Microsoft.Xna.Framework;
-using Orts.Common;
-using Orts.Simulation;
-using Orts.Simulation.Physics;
-using Orts.Simulation.RollingStocks;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
-using ORTS.Common;
-using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Xna.Framework;
+using Orts.Common;
+using Orts.Simulation.Physics;
+using Orts.Simulation.RollingStocks;
+using ORTS.Common;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -44,6 +42,8 @@ namespace Orts.Viewer3D.RollingStock
 
             string dieselTexture = viewer.Simulator.BasePath + @"\GLOBAL\TEXTURES\dieselsmoke.ace";
 
+
+            // Diesel Exhaust
             foreach (var drawers in from drawer in ParticleDrawers
                                     where drawer.Key.ToLowerInvariant().StartsWith("exhaust")
                                     select drawer.Value)
@@ -52,6 +52,14 @@ namespace Orts.Viewer3D.RollingStock
             }
             foreach (var drawer in Exhaust)
                 drawer.Initialize(dieselTexture);
+
+            if (car.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
+                ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
+                (car.Train.MUDirection != Direction.N && (car as MSTSDieselLocomotive).DieselEngines[0].EngineStatus == Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running))))
+            {
+                (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserToForwardBackward);
+                (car as MSTSDieselLocomotive).SignalEvent(Event.ReverserChange);
+            }
         }
 
 
@@ -66,99 +74,11 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
-            UserInputCommands.Add(UserCommands.ControlDieselPlayer, new Action[] { Noop, () => StartStopPlayerEngine() });
-            UserInputCommands.Add(UserCommands.ControlDieselHelper, new Action[] { Noop, () => StartStopHelpersEngine() });
+            UserInputCommands.Add(UserCommand.ControlVacuumExhausterPressed, new Action[] { () => new VacuumExhausterCommand(Viewer.Log, false), () => new VacuumExhausterCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlDieselPlayer, new Action[] { Noop, () => new TogglePlayerEngineCommand(Viewer.Log) });
             base.InitializeUserInputCommands();
         }
 
-        public void StartStopPlayerEngine()
-        {
-            if (DieselLocomotive.ThrottlePercent < 1)
-            {
-                //                    DieselLocomotive.PowerOn = !DieselLocomotive.PowerOn;
-                if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped)
-                {
-                    DieselLocomotive.DieselEngines[0].Start();
-                    DieselLocomotive.SignalEvent(Event.EnginePowerOn); // power on sound hook
-                }
-                if (DieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Running)
-                {
-                    DieselLocomotive.DieselEngines[0].Stop();
-                    DieselLocomotive.SignalEvent(Event.EnginePowerOff); // power off sound hook
-                }
-                Viewer.Simulator.Confirmer.Confirm(CabControl.PlayerDiesel, DieselLocomotive.DieselEngines.PowerOn ? CabSetting.On : CabSetting.Off);
-            }
-            else
-            {
-                Viewer.Simulator.Confirmer.Warning(CabControl.PlayerDiesel, CabSetting.Warn1);
-            }
-        }
-
-        public void StartStopHelpersEngine()
-        {
-            var powerOn = false;
-            var helperLocos = 0;
-
-            foreach (var car in DieselLocomotive.Train.Cars)
-            {
-                var mstsDieselLocomotive = car as MSTSDieselLocomotive;
-                if (mstsDieselLocomotive != null && mstsDieselLocomotive.AcceptMUSignals)
-                {
-                    if (mstsDieselLocomotive.DieselEngines.Count > 0)
-                    {
-                        if ((car == Program.Simulator.PlayerLocomotive))
-                        {
-                            if ((mstsDieselLocomotive.DieselEngines.Count > 1))
-                            {
-                                for (int i = 1; i < mstsDieselLocomotive.DieselEngines.Count; i++)
-                                {
-                                    if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Stopped)
-                                    {
-                                        mstsDieselLocomotive.DieselEngines[i].Start();
-                                    }
-                                    if (mstsDieselLocomotive.DieselEngines[i].EngineStatus == DieselEngine.Status.Running)
-                                    {
-                                        mstsDieselLocomotive.DieselEngines[i].Stop();
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            foreach (DieselEngine de in mstsDieselLocomotive.DieselEngines)
-                            {
-                                if (de.EngineStatus == DieselEngine.Status.Stopped)
-                                {
-                                    de.Start();
-                                }
-                                if (de.EngineStatus == DieselEngine.Status.Running)
-                                {
-                                    de.Stop();
-                                }
-                            }
-                        }
-                    }
-                    //mstsDieselLocomotive.StartStopDiesel();
-                    powerOn = mstsDieselLocomotive.DieselEngines.PowerOn;
-                    if ((car != Program.Simulator.PlayerLocomotive) && (mstsDieselLocomotive.AcceptMUSignals))
-                    {
-                        if ((mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopped) ||
-                            (mstsDieselLocomotive.DieselEngines[0].EngineStatus == DieselEngine.Status.Stopping))
-                            mstsDieselLocomotive.SignalEvent(Event.EnginePowerOff);
-                        else
-                            mstsDieselLocomotive.SignalEvent(Event.EnginePowerOn);
-                    }
-                    helperLocos++;
-                }
-            }
-            // One confirmation however many helper locomotives
-            // <CJComment> Couldn't make one confirmation per loco work correctly :-( </CJComment>
-            if (helperLocos > 0)
-            {
-                Viewer.Simulator.Confirmer.Confirm(CabControl.HelperDiesel, powerOn ? CabSetting.On : CabSetting.Off);
-            }
-
-        }
 
         /// <summary>
         /// We are about to display a video frame.  Calculate positions for 
@@ -167,11 +87,17 @@ namespace Orts.Viewer3D.RollingStock
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             var car = this.Car as MSTSDieselLocomotive;
+            
+            // Diesel exhaust
             var exhaustParticles = car.Train != null && car.Train.TrainType == Train.TRAINTYPE.STATIC ? 0 : car.ExhaustParticles.SmoothedValue;
             foreach (var drawer in Exhaust)
             {
+                var colorR = car.ExhaustColorR.SmoothedValue / 255f;
+                var colorG = car.ExhaustColorG.SmoothedValue / 255f;
+                var colorB = car.ExhaustColorB.SmoothedValue / 255f;
                 drawer.SetOutput(exhaustParticles, car.ExhaustMagnitude.SmoothedValue, new Color((byte)car.ExhaustColorR.SmoothedValue, (byte)car.ExhaustColorG.SmoothedValue, (byte)car.ExhaustColorB.SmoothedValue));
             }
+            
             base.PrepareFrame(frame, elapsedTime);
         }
     }

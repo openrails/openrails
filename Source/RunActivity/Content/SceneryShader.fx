@@ -48,11 +48,13 @@ float    ImageTextureIsNight;
 float    NightColorModifier;
 float    HalfNightColorModifier;
 float    VegetationAmbientModifier;
+float    SignalLightIntensity;
 float4   EyeVector;
 float3   SideVector;
 float    ReferenceAlpha;
 texture  ImageTexture;
 texture  OverlayTexture;
+float	 OverlayScale;
 
 sampler Image = sampler_state
 {
@@ -451,14 +453,21 @@ void _PSSceneryFade(inout float4 Color, in VERTEX_OUTPUT In)
 	Color.a *= saturate((LightVector_ZFar.w - length(In.RelPosition.xyz)) / 50);
 }
 
-float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
+float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX_OUTPUT In) : COLOR0
 {
 	const float FullBrightness = 1.0;
 	const float ShadowBrightness = 0.5;
 
 	float4 Color = tex2D(Image, In.TexCoords.xy);
-    // Alpha testing:
-    clip(Color.a - ReferenceAlpha);
+	if (ShaderModel3 && ClampTexCoords) {
+		// We need to clamp the rendering to within the [0..1] range only.
+		if (saturate(In.TexCoords.x) != In.TexCoords.x || saturate(In.TexCoords.y) != In.TexCoords.y) {
+			Color.a = 0;
+		}
+	}
+
+	// Alpha testing:
+	clip(Color.a - ReferenceAlpha);
 	// Ambient and shadow effects apply first; night-time textures cancel out all normal lighting.
 	float3 litColor = Color.rgb * lerp(ShadowBrightness, FullBrightness, saturate(_PSGetAmbientEffect(In) * _PSGetShadowEffect(ShaderModel3, true, In) + ImageTextureIsNight));
 	// Specular effect next.
@@ -478,12 +487,17 @@ float4 PSImage(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 
 float4 PSImage3(in VERTEX_OUTPUT In) : COLOR0
 {
-    return PSImage(true, In);
+    return PSImage(true, false, In);
+}
+
+float4 PSImage3C(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSImage(true, true, In);
 }
 
 float4 PSImage2(in VERTEX_OUTPUT In) : COLOR0
 {
-    return PSImage(false, In);
+    return PSImage(false, false, In);
 }
 
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
@@ -520,7 +534,7 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Overlay image for terrain.
-	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * 32) * 2;
+	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * OverlayScale) * 2;
 	// Headlights effect use original Color.
 	_PSApplyHeadlights(litColor, Color, In);
 	// And fogging is last.
@@ -611,7 +625,7 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 	// Apply signal coloring effect.
 	float3 litColor = lerp(Color.rgb, In.Color.rgb, Color.r);
 	// No specular effect, overcast effect, night-time darkening, headlights or fogging effect for signal lights.
-	return float4(litColor, Color.a);
+	return float4(litColor, Color.a * SignalLightIntensity);
 }
 
 ////////////////////    T E C H N I Q U E S    /////////////////////////////////
@@ -646,7 +660,7 @@ technique TransferPS2 {
 technique TransferPS3 {
 	pass Pass_0 {
 		VertexShader = compile vs_4_0_level_9_3 VSTransfer3();
-		PixelShader = compile ps_4_0_level_9_3 PSImage3();
+		PixelShader = compile ps_4_0_level_9_3 PSImage3C();
 	}
 }
 

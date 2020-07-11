@@ -147,6 +147,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Loader")]
         internal void Mark()
         {
+            if (Material != null) // stops error messages if a special effect entry is not a defined OR parameter
             Material.Mark();
         }
     }
@@ -436,7 +437,9 @@ namespace Orts.Viewer3D
                 if (FirstActiveParticle < FirstFreeParticle)
                 {
                     var numParticles = FirstFreeParticle - FirstActiveParticle;
-                    graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, FirstActiveParticle * VerticiesPerParticle, numParticles * VerticiesPerParticle, FirstActiveParticle * IndiciesPerParticle, numParticles * PrimitivesPerParticle);
+                    // thread safe clause
+                    if (numParticles > 0)
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, FirstActiveParticle * VerticiesPerParticle, numParticles * VerticiesPerParticle, FirstActiveParticle * IndiciesPerParticle, numParticles * PrimitivesPerParticle);
                 }
                 else
                 {
@@ -461,7 +464,7 @@ namespace Orts.Viewer3D
         public ParticleEmitterMaterial(Viewer viewer, string textureName)
             : base(viewer, null)
         {
-            Texture = viewer.TextureManager.Get(textureName);
+            Texture = viewer.TextureManager.Get(textureName, true);
             ShaderPasses = Viewer.MaterialManager.ParticleEmitterShader.Techniques["ParticleEmitterTechnique"].Passes.GetEnumerator();
         }
 

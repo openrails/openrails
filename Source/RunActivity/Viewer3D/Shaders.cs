@@ -127,11 +127,13 @@ namespace Orts.Viewer3D
         readonly EffectParameter nightColorModifier;
         readonly EffectParameter halfNightColorModifier;
         readonly EffectParameter vegetationAmbientModifier;
+        readonly EffectParameter signalLightIntensity;
         readonly EffectParameter eyeVector;
         readonly EffectParameter sideVector;
         readonly EffectParameter imageTexture;
         readonly EffectParameter overlayTexture;
         readonly EffectParameter referenceAlpha;
+        readonly EffectParameter overlayScale;
 
         Vector3 _eyeVector;
         Vector4 _zBias_Lighting;
@@ -235,6 +237,8 @@ namespace Orts.Viewer3D
             headlightPosition.SetValue(Vector4.Zero);
         }
 
+        public float SignalLightIntensity { set { signalLightIntensity.SetValue(value); } }
+
         public float Overcast { set { overcast.SetValue(new Vector2(value, value / 2)); } }
 
         public Vector3 ViewerPos { set { viewerPos.SetValue(value); } }
@@ -246,6 +250,8 @@ namespace Orts.Viewer3D
         public Texture2D OverlayTexture { set { overlayTexture.SetValue(value); } }
 
         public int ReferenceAlpha { set { referenceAlpha.SetValue(value / 255f); } }
+
+        public float OverlayScale { set { overlayScale.SetValue(value); } }
 
         public SceneryShader(GraphicsDevice graphicsDevice)
             : base(graphicsDevice, "SceneryShader")
@@ -273,11 +279,13 @@ namespace Orts.Viewer3D
             nightColorModifier = Parameters["NightColorModifier"];
             halfNightColorModifier = Parameters["HalfNightColorModifier"];
             vegetationAmbientModifier = Parameters["VegetationAmbientModifier"];
+            signalLightIntensity = Parameters["SignalLightIntensity"];
             eyeVector = Parameters["EyeVector"];
             sideVector = Parameters["SideVector"];
             imageTexture = Parameters["ImageTexture"];
             overlayTexture = Parameters["OverlayTexture"];
             referenceAlpha = Parameters["ReferenceAlpha"];
+            overlayScale = Parameters["OverlayScale"];
         }
     }
 

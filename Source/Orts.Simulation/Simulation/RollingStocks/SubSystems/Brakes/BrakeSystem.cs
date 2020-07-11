@@ -38,7 +38,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public float BrakeLine2PressurePSI;         // main reservoir equalization pipe pressure
         public float BrakeLine3PressurePSI;         // engine brake cylinder equalization pipe pressure
         public float BrakePipeVolumeM3 = 1.4e-2f;      // volume of a single brake line
-
+        public bool ControllerRunningLock = false;  // Stops Running controller from becoming active until BP = EQ Res, used in EQ vacuum brakes
+        public float BrakeCylFraction;
 
         /// <summary>
         /// Front brake hoses connection status
@@ -69,6 +70,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract float GetCylPressurePSI();
         public abstract float GetCylVolumeM3();
         public abstract float GetVacResPressurePSI();
+        public abstract float GetVacResVolume();
+        public abstract float GetVacBrakeCylNumber();
+        public bool CarBPIntact;
 
         public abstract void Save(BinaryWriter outf);
 
@@ -89,6 +93,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes
         public abstract void SetRetainer(RetainerSetting setting);
         public abstract void InitializeMoving(); // starting conditions when starting speed > 0
         public abstract void LocoInitializeMoving(); // starting conditions when starting speed > 0
+        public abstract bool IsBraking(); // return true if the wagon is braking above a certain threshold
+        public abstract void CorrectMaxCylPressurePSI(MSTSLocomotive loco); // corrects max cyl pressure when too high
     }
 
     public enum RetainerSetting

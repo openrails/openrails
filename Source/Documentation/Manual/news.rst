@@ -1,58 +1,61 @@
 .. _news:
 
-*******************
-New in This Release
-*******************
+*********************
+New in Open Rails 1.3
+*********************
 
-Here are the features which have been added or substantially changed since
-v1.0 was released:
+A summary of the new and improved features can be found below. In addition, over 140 bugs have been fixed in this release. Please keep `reporting bugs and suggesting new features <http://openrails.org/contribute/reporting-bugs/>`_ so Open Rails can continue to imporve.
 
-- Further enhanced compatibility with MSTS content
-- Extended engine brake to tenders (A6ET brake)
-- Keyboard commands for fast throttle and brake zeroing
-- Support for domain names in multiplayer
-- Further improvements towards realistic train physics, among this steam 
-  heating for steam locomotives 
-- Multiple freight animations on single wagon or engine; wagon freight 
-  load/unload
-- Water refueling from trough
-- New sound triggers related to brakes 
-- New sound triggers related to curve force (e.g. for flange squeal)
-- Support for auxiliary tenders
-- Blended braking
-- Switching to manual mode also at speed
-- Direct access to OR documentation from main menu
+Headlines
+---------
 
-The features which have been added or substantially changed since
-v0.9 was released:
+- Timetables can join and split trains to form new trains
+- Mouse control for 3D cabs
+- Working transfer tables
+- Activity evaluation
+- Separate files for extensions to activity files
 
-- Train operation accordingly to timetables in .csv format, entered with
-  a specific editor
-- Support for languages other than English
-- Support of 3D cabs
-- Train physics far more realistic than in MSTS
-- A *Timetable* mode
+What's been added
+-----------------
 
-Some experimental features have been added which you can turn on; some of
-them may affect performance. They include (v1.0):
+- Steam locomotive vacuum brake ejector and general improvements to vacuum brake operation
+- Route-wide sounds when trains pass over switches
+- Route-wide sounds when trains pass over low radius curves
+- Save and resume in multiplayer
+- Signal script functions can be reused by multiple signal types
+- Car spawner option to support walking people
+- Cab radio sound triggers
+- Command-line tool to load all supported file formats
+- Activity randomization, including dynamic weather and mechanical problems
+- Persistent variables in signal scripts
+- Pooling of available trains in sidings for timetables
+- Explicit train speed setting in timetable editor
+- Visual steam and smoke effects for locomotives and wagons
+- Fuel gauge cab control for steam locomotives
 
-- Conditional permission for AI trains to pass a signal at stop 
-- Further improvements to AI train shunting
-- Optional runtime correction for braking parameters (improves driveability)
+What's been improved
+--------------------
 
-v0.9:
-
-- Compatibility with MSTS environment files
-- Extended AI train shunting
-- Adhesion linked to weather
-- Support for DDS textures
-- Extended viewing distance
-- The ability to change the driven train during an activity
-- Weather controlled within an activity (dynamic weather)
-- Water fill from water troughs is now implemented.
-- The Start/Stop keys for Diesel locomotives have changed.
-
-The overall code architecture has been cleaned up, providing better separation 
-between simulation and viewing.
-
-... and again, many many bugs were removed.
+- Content-creator option to keep trees off roads and tracks
+- Station and siding labels fade in as you approach
+- Multiple passenger viewpoints inside train cars
+- AI trains open and close doors at stations
+- Steam locomotive simulation and content-creator options
+- Content-creator per-model and per-instance level crossing sounds
+- Various new signal script functions
+- Explore route in activity mode
+- Better commands for manually changing weather
+- Load animation can be used on wagons and locomotives to vary physics properties
+- Option to load only day/night textures as needed, not both
+- Can define custom signal function types
+- Content-creator options for controlling signal light glow
+- Additional animations and mouse control for cab controls
+- Improved AI waiting point control in activities
+- User and content-creator options for sound attenuation in cab and passenger views
+- Content-creator timetable commands for stop positioning
+- Content-creator timetable options for random delays on various actions
+- Expose to users internal option to force all objects to cast shadows
+- Content-creator option for timetables to override default stopping time at stations
+- Better checks for when trains stop at stations
+- Simulation of wind resistance forces
+- Option to automatically discard abnormal values in locomotives

@@ -79,10 +79,10 @@ namespace Orts.Viewer3D
                 localV = Vector3.Zero; // Local position (in x-z plane)
 
 
-                Vector3 trackLoc = new Vector3((float)id.X, (float)id.Y, (float)id.Z);// +new Vector3(3, 0, 0);
-                Matrix trackRot = Matrix.CreateRotationY(-(float)id.A * 3.14f / 180);
+                Vector3 trackLoc = new Vector3((float)id.X, (float)id.Y, -(float)id.Z);// +new Vector3(3, 0, 0);
+                Matrix trackRot = Matrix.CreateRotationY(-(float)id.A * 3.1416f / 180);
 
-                //heading = Vector3.Transform(heading, trackRot); // Heading change
+                heading = Vector3.Transform(heading, trackRot); // Heading change
                 nextRoot.XNAMatrix = trackRot * nextRoot.XNAMatrix;
                 uint[] sections = id.TrackSections;
 
@@ -104,19 +104,19 @@ namespace Orts.Viewer3D
                     }
                     else
                     {
-                        length = section.SectionCurve.Angle * 3.14f / 180;
+                        length = section.SectionCurve.Angle * 3.1416f / 180;
                         radius = section.SectionCurve.Radius; // meters
 
                         Vector3 left;
                         if (section.SectionCurve.Angle > 0) left = radius * Vector3.Cross(Vector3.Down, heading); // Vector from PC to O
                         else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
-                        Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
+                        Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.1416f / 180); // Heading change (rotation about O)
 
                         displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                                 worldMatrix.XNAMatrix, out localProjectedV);
 
                         heading = Vector3.Transform(heading, rot); // Heading change
-                        nextRoot.XNAMatrix = trackRot * rot * nextRoot.XNAMatrix; // Store heading change
+                        nextRoot.XNAMatrix = rot * nextRoot.XNAMatrix; // Store heading change
 
                     }
                     nextRoot.XNAMatrix.Translation = sectionOrigin + displacement;
@@ -195,13 +195,13 @@ namespace Orts.Viewer3D
                 }
                 else
                 {
-                    length = section.SectionCurve.Angle * 3.14f / 180;
+                    length = section.SectionCurve.Angle * 3.1416f / 180;
                     radius = section.SectionCurve.Radius; // meters
 
                     Vector3 left;
                     if (section.SectionCurve.Angle > 0) left = radius * Vector3.Cross(Vector3.Down, heading); // Vector from PC to O
                     else left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
-                    Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.14f / 180); // Heading change (rotation about O)
+                    Matrix rot = Matrix.CreateRotationY(-section.SectionCurve.Angle * 3.1416f / 180); // Heading change (rotation about O)
 
                     displacement = Traveller.MSTSInterpolateAlongCurve(localV, left, rot,
                                             worldMatrix.XNAMatrix, out localProjectedV);
@@ -258,7 +258,7 @@ namespace Orts.Viewer3D
                 float length = 0, radius = -1;
 
                 length = trackObj.trackSections[iTkSection].param1; // meters if straight; radians if curved
-                if (length == 0.0) continue; // Consider zero-length subsections vacuous
+                if (length == 0.0 || trackObj.trackSections[iTkSection].UiD == UInt32.MaxValue) continue; // Consider zero-length subsections vacuous
 
                 // Create new DT object copy; has only one meaningful subsection
                 DyntrackObj subsection = new DyntrackObj(trackObj, iTkSection);
@@ -287,7 +287,7 @@ namespace Orts.Viewer3D
                     // nextRoot is found by moving from Point-of-Curve (PC) to
                     // center (O)to Point-of-Tangent (PT).
                     radius = subsection.trackSections[0].param2; // meters
-                    Vector3 left = radius * Vector3.Cross(Vector3.Up, heading); // Vector from PC to O
+                    Vector3 left = radius * Vector3.Cross(Vector3.Up, heading) * Math.Sign(-subsection.trackSections[0].param1); // Vector from PC to O
                     Matrix rot = Matrix.CreateRotationY(-length); // Heading change (rotation about O)
                     // Shared method returns displacement from present world position and, by reference,
                     // local position in x-z plane of end of this section
@@ -357,6 +357,9 @@ namespace Orts.Viewer3D
     {
         public float expectedSegmentLength;
 
+        float u1 = 0.25f, v1 = 0.25f;
+        float normalvalue = 0.707f;
+
         /// <summary>
         /// WireProfile constructor (default - builds from self-contained data)
         /// </summary>
@@ -373,10 +376,13 @@ namespace Orts.Viewer3D
 
             lod = new LODWire(800.0f); // Create LOD for railsides with specified CutoffRadius
             lodItem = new LODItemWire("Wire");
-            var normalvalue = 0.707f;
             if (File.Exists(viewer.Simulator.RoutePath + "\\Textures\\overheadwire.ace"))
             {
                 lodItem.TexName = "overheadwire.ace";
+            }
+            else if (File.Exists(viewer.Simulator.BasePath + "\\global\\textures\\overheadwire.ace"))
+            {
+                lodItem.TexName = "..\\..\\..\\global\\textures\\overheadwire.ace";
             }
             else
             {
@@ -384,63 +390,116 @@ namespace Orts.Viewer3D
                 lodItem.TexName = "..\\..\\..\\global\\textures\\dieselsmoke.ace";
             }
             lodItem.ShaderName = "TexDiff";
-            lodItem.LightModelName = "OptSpecular0";
+            lodItem.LightModelName = "DarkShade";
             lodItem.AlphaTestMode = 0;
             lodItem.TexAddrModeName = "Wrap";
             lodItem.ESD_Alternative_Texture = 0;
             lodItem.MipMapLevelOfDetailBias = 0;
             LODItem.LoadMaterial(viewer, lodItem);
 
+            bool drawTriphaseWire = (viewer.Simulator.TRK.Tr_RouteFile.TriphaseEnabled == "Off" ? false :
+    viewer.Simulator.TRK.Tr_RouteFile.TriphaseEnabled == "On");
+            bool drawDoubleWire = (viewer.Simulator.TRK.Tr_RouteFile.DoubleWireEnabled == "Off" ? false :
+                viewer.Simulator.TRK.Tr_RouteFile.DoubleWireEnabled == "On" || viewer.Settings.DoubleWire);
             float topHeight = (float)viewer.Simulator.TRK.Tr_RouteFile.OverheadWireHeight;
+            float topWireOffset = (viewer.Simulator.TRK.Tr_RouteFile.DoubleWireHeight > 0 ?
+                viewer.Simulator.TRK.Tr_RouteFile.DoubleWireHeight : 1.0f);
+            float dist = (viewer.Simulator.TRK.Tr_RouteFile.TriphaseWidth > 0 ?
+                viewer.Simulator.TRK.Tr_RouteFile.TriphaseWidth : 1.0f);
 
-            float u1 = 0.25f, v1 = 0.25f;
-            pl = new Polyline(this, "TopWire", 5);
-            pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
-
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, normalvalue, normalvalue, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, normalvalue, -normalvalue, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, -normalvalue, -normalvalue, 0f, u1, v1));
-            pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
-            lodItem.Polylines.Add(pl);
-            lodItem.Accum(pl.Vertices.Count);
-
-            if (viewer.Settings.DoubleWire)
+            if (drawTriphaseWire)
             {
-                pl = new Polyline(this, "TopWire1", 5);
-                pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
-                topHeight += 1.0f;
-
-                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(0.01f, topHeight + 0.02f, 0.0f, normalvalue, normalvalue, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(0.01f, topHeight, 0.0f, normalvalue, -normalvalue, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(-0.01f, topHeight, 0.0f, -normalvalue, -normalvalue, 0f, u1, v1));
-                pl.Vertices.Add(new Vertex(-0.01f, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
+                pl = SingleWireProfile("TopWireLeft", topHeight, -dist / 2);
                 lodItem.Polylines.Add(pl);
                 lodItem.Accum(pl.Vertices.Count);
 
-                vertical = new Polyline(this, "TopWireVertical", 5);
-                vertical.DeltaTexCoord = new Vector2(0.00f, 0.00f);
-
-                vertical.Vertices.Add(new Vertex(-0.008f, topHeight, 0.008f, -normalvalue, 0f, normalvalue, u1, v1));
-                vertical.Vertices.Add(new Vertex(-.008f, topHeight, -.008f, normalvalue, 0f, normalvalue, u1, v1));
-                vertical.Vertices.Add(new Vertex(.008f, topHeight, -.008f, normalvalue, 0f, -normalvalue, u1, v1));
-                vertical.Vertices.Add(new Vertex(.008f, topHeight, .008f, -normalvalue, 0f, -normalvalue, u1, v1));
-                vertical.Vertices.Add(new Vertex(-.008f, topHeight, .008f, -normalvalue, 0f, normalvalue, u1, v1));
-                lodItem.VerticalPolylines = new ArrayList();
-                lodItem.VerticalPolylines.Add(vertical);
-                lodItem.VerticalAccumulate(vertical.Vertices.Count);
+                pl = SingleWireProfile("TopWireRight", topHeight, dist / 2);
+                lodItem.Polylines.Add(pl);
+                lodItem.Accum(pl.Vertices.Count);
+            }
+            else
+            {
+                pl = SingleWireProfile("TopWire", topHeight);
+                lodItem.Polylines.Add(pl);
+                lodItem.Accum(pl.Vertices.Count);
             }
 
+            if (drawDoubleWire)
+            {
+                topHeight += topWireOffset;
+
+                if (drawTriphaseWire)
+                {
+                    pl = SingleWireProfile("TopWire1Left", topHeight, -dist / 2);
+                    lodItem.Polylines.Add(pl);
+                    lodItem.Accum(pl.Vertices.Count);
+                    pl = SingleWireProfile("TopWire1Right", topHeight, dist / 2);
+                    lodItem.Polylines.Add(pl);
+                    lodItem.Accum(pl.Vertices.Count);
+
+                    vertical = VerticalWireProfile("TopWireVerticalLeft", topHeight, -dist / 2);
+                    lodItem.VerticalPolylines = new ArrayList();
+                    lodItem.VerticalPolylines.Add(vertical);
+                    lodItem.VerticalAccumulate(vertical.Vertices.Count);
+                    vertical = VerticalWireProfile("TopWireVerticalRight", topHeight, dist / 2);
+                    lodItem.VerticalPolylines.Add(vertical);
+                    lodItem.VerticalAccumulate(vertical.Vertices.Count);
+
+                }
+                else
+                {
+                    pl = SingleWireProfile("TopWire1", topHeight);
+                    lodItem.Polylines.Add(pl);
+                    lodItem.Accum(pl.Vertices.Count);
+
+                    vertical = VerticalWireProfile("TopWireVertical", topHeight);
+                    lodItem.VerticalPolylines = new ArrayList();
+                    lodItem.VerticalPolylines.Add(vertical);
+                    lodItem.VerticalAccumulate(vertical.Vertices.Count);
+                }
+            }
 
             lod.LODItems.Add(lodItem); // Append to LODItems array 
             base.LODs.Add(lod); // Append this lod to LODs array
         }
+
+        private Polyline SingleWireProfile(String name, float topHeight, float xOffset = 0)
+        {
+            Polyline pl;
+            pl = new Polyline(this, name, 5);
+            pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
+
+            pl.Vertices.Add(new Vertex(-0.01f + xOffset, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(0.01f + xOffset, topHeight + 0.02f, 0.0f, normalvalue, normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(0.01f + xOffset, topHeight, 0.0f, normalvalue, -normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(-0.01f + xOffset, topHeight, 0.0f, -normalvalue, -normalvalue, 0f, u1, v1));
+            pl.Vertices.Add(new Vertex(-0.01f + xOffset, topHeight + 0.02f, 0.0f, -normalvalue, normalvalue, 0f, u1, v1));
+
+            return pl;
+        }
+
+        private Polyline VerticalWireProfile(String name, float topHeight, float xOffset = 0)
+        {
+            Polyline pl;
+            pl = new Polyline(this, name, 5);
+            pl.DeltaTexCoord = new Vector2(0.00f, 0.00f);
+
+            pl.Vertices.Add(new Vertex(-0.008f + xOffset, topHeight, 0.008f, -normalvalue, 0f, normalvalue, u1, v1));
+            pl.Vertices.Add(new Vertex(-.008f + xOffset, topHeight, -.008f, normalvalue, 0f, normalvalue, u1, v1));
+            pl.Vertices.Add(new Vertex(.008f + xOffset, topHeight, -.008f, normalvalue, 0f, -normalvalue, u1, v1));
+            pl.Vertices.Add(new Vertex(.008f + xOffset, topHeight, .008f, -normalvalue, 0f, -normalvalue, u1, v1));
+            pl.Vertices.Add(new Vertex(-.008f + xOffset, topHeight, .008f, -normalvalue, 0f, normalvalue, u1, v1));
+
+            return pl;
+        }
+
     }
 
     public class WirePrimitive : DynamicTrackPrimitive
     {
         static WireProfile WireProfile;
+        float topWireOffset;
+
         public WirePrimitive(Viewer viewer, WorldPosition worldPosition,
         WorldPosition endPosition, float radius, float angle)
             : base()
@@ -476,6 +535,9 @@ namespace Orts.Viewer3D
                 WireProfile = new WireProfile(viewer);
             }
             TrProfile = WireProfile;
+
+            topWireOffset = (viewer.Simulator.TRK.Tr_RouteFile.DoubleWireHeight > 0 ?
+                viewer.Simulator.TRK.Tr_RouteFile.DoubleWireHeight : 1.0f);
 
             XNAEnd = endPosition.XNAMatrix.Translation;
 
@@ -738,7 +800,7 @@ namespace Orts.Viewer3D
         /// <param name="pl"></param>
         void LinearVerticalGen(uint stride, Polyline pl)
         {
-            Vector3 displacement = new Vector3(0, -1.0f, 0) + DDY;
+            Vector3 displacement = new Vector3(0, -topWireOffset, 0) + DDY;
             float wrapLength = displacement.Length();
             Vector2 uvDisplacement = pl.DeltaTexCoord * wrapLength;
 

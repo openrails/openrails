@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
+// COPYRIGHT 2012, 2013, 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -155,11 +155,10 @@ namespace Orts.Viewer3D
         public TransferMaterial(Viewer viewer, string textureName)
             : base(viewer, textureName)
         {
-            Texture = Viewer.TextureManager.Get(textureName);
+            Texture = Viewer.TextureManager.Get(textureName, true);
             TransferSamplerState = new SamplerState {
-                AddressU = TextureAddressMode.Border,
-                AddressV = TextureAddressMode.Border,
-                BorderColor = Color.Transparent,
+                AddressU = TextureAddressMode.Clamp,
+                AddressV = TextureAddressMode.Clamp,
                 Filter = TextureFilter.Anisotropic,
                 MaxAnisotropy = 16,
             };

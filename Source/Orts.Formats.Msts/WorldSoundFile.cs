@@ -26,20 +26,20 @@ namespace Orts.Formats.Msts
     {
         public TR_WorldSoundFile TR_WorldSoundFile;
 
-        public WorldSoundFile(string wsfilename)
+        public WorldSoundFile(string wsfilename, TrItem[] trItems)
         {
-            Read(wsfilename);
+            Read(wsfilename, trItems);
         }
 
-        public void Read(string wsfilename)
+        public void Read(string wsfilename, TrItem[] trItems)
         {
             if (File.Exists(wsfilename))
             {
-				Trace.Write("$");
+                Trace.Write("$");
                 using (STFReader stf = new STFReader(wsfilename, false))
                 {
                     stf.ParseFile(new STFReader.TokenProcessor[] {
-                        new STFReader.TokenProcessor("tr_worldsoundfile", ()=>{ TR_WorldSoundFile = new TR_WorldSoundFile(stf); }),
+                        new STFReader.TokenProcessor("tr_worldsoundfile", ()=>{ TR_WorldSoundFile = new TR_WorldSoundFile(stf, trItems); }),
                     });
                     if (TR_WorldSoundFile == null)
                         STFException.TraceWarning(stf, "Missing TR_WorldSoundFile statement");
@@ -53,12 +53,12 @@ namespace Orts.Formats.Msts
         public List<WorldSoundSource> SoundSources = new List<WorldSoundSource>();
         public List<WorldSoundRegion> SoundRegions = new List<WorldSoundRegion>();
 
-        public TR_WorldSoundFile(STFReader stf)
+        public TR_WorldSoundFile(STFReader stf, TrItem[] trItems)
         {
             stf.MustMatch("(");
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                 new STFReader.TokenProcessor("soundsource", ()=>{ SoundSources.Add(new WorldSoundSource(stf)); }),
-                new STFReader.TokenProcessor("soundregion", ()=>{ SoundRegions.Add(new WorldSoundRegion(stf)); }),
+                new STFReader.TokenProcessor("soundregion", ()=>{ SoundRegions.Add(new WorldSoundRegion(stf, trItems)); }),
             });
         }
     }
@@ -92,7 +92,7 @@ namespace Orts.Formats.Msts
         public float ROTy;
         public List<int> TrackNodes;
 
-        public WorldSoundRegion(STFReader stf)
+        public WorldSoundRegion(STFReader stf, TrItem[] trItems)
         {
             TrackNodes = new List<int>();
             stf.MustMatch("(");
@@ -101,10 +101,15 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("soundregionroty", ()=>{ ROTy = stf.ReadFloatBlock(STFReader.UNITS.None, float.MaxValue); }),
                 new STFReader.TokenProcessor("tritemid", ()=>{
                     stf.MustMatch("(");
-                    int dummy = stf.ReadInt(0);
-                    dummy = stf.ReadInt(-1);
-                    if (dummy != -1)
-                        TrackNodes.Add(dummy);
+                    var dummy = stf.ReadInt(0);
+                    var trItemId = stf.ReadInt(-1);
+                    if (trItemId != -1) {
+                        if (trItemId >= trItems.Length) {
+                            STFException.TraceWarning(stf, string.Format("Ignored invalid TrItemId {0}", trItemId));
+                        } else {
+                            TrackNodes.Add(trItemId);
+                        }
+                    }
                     stf.SkipRestOfBlock();
                 }),
             });

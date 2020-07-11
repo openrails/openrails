@@ -103,7 +103,6 @@ namespace Orts.Viewer3D.Popups
                         Camera = Owner.Viewer.Camera.Name;
                         // Changing camera should not notify FOV change.
                         FieldOfView = Owner.Viewer.Camera.FieldOfView;
-                        SetNotice(Viewer.Catalog.GetStringFmt("Camera: {0}", Camera));
                     }
                     else if (FieldOfView != Owner.Viewer.Camera.FieldOfView)
                     {

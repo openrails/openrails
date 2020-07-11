@@ -1699,7 +1699,13 @@ namespace Orts.Parsers.Msts
         Pickup,  
 
         Wagon,
-        Engine
+        Engine,
+
+        // ORTS specific
+        ORTSListName, // ORTS specific for multi-carspawnerlists
+        ORTSSoundFileName, // ORTS specific for individual level crossing sounds
+        ORTSPantographToggle3,
+        ORTSPantographToggle4
     }
 
 }

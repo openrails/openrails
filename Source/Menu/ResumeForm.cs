@@ -42,7 +42,7 @@ here to reject Saves which are definitely incompatible and warn of Saves that ma
 is marked as "may be incompatible" may not be resumed successfully by the RunActivity which will
 stop and issue an error message.
 
-Some problems remain (see <CJ comment> in the source code):
+Some problems remain (see comments in the code):
 1. A screen-capture image is saved along with the Save. The intention is that this image should be a thumbnail
    but I can't find how to code this successfully. In the meantime, the screen-capture image that is saved is full-size 
    but displayed as a thumbnail.
@@ -87,6 +87,8 @@ namespace ORTS
             public string Distance { get; private set; }
             public bool? Valid { get; private set; } // 3 possibilities: invalid, unknown validity, valid
             public string VersionOrBuild { get; private set; }
+            public bool IsMultiplayer { get; private set; }
+            public bool DbfEval { get; private set; } //Debrief Eval
 
             public Save(string fileName, string currentBuild, int youngestFailedToResume)
             {
@@ -100,9 +102,21 @@ namespace ORTS
                         var build = inf.ReadString().Replace("\0", ""); // e.g. 0.0.5223.24629 (2014-04-20 13:40:58Z)
                         var versionOrBuild = version.Length > 0 ? version : build;
                         var valid = VersionInfo.GetValidity(version, build, youngestFailedToResume);
+                        // Read in multiplayer flag/ route/activity/path/player data.
+                        // Done so even if not elegant to be compatible with existing save files
+                        var routeNameOrMultipl = inf.ReadString();
+                        var routeName = "";
+                        var isMultiplayer = false;
+                        if (routeNameOrMultipl == "$Multipl$")
+                        {
+                            isMultiplayer = true;
+                            routeName = inf.ReadString(); // Route name
+                        }
+                        else
+                        {
+                            routeName = routeNameOrMultipl; // Route name 
+                        }
 
-                        // Read in route/activity/path/player data.
-                        var routeName = inf.ReadString(); // Route name
                         var pathName = inf.ReadString(); // Path name
                         var gameTime = new DateTime().AddSeconds(inf.ReadInt32()).TimeOfDay; // Game time
                         var realTime = DateTime.FromBinary(inf.ReadInt64()); // Real time
@@ -119,12 +133,16 @@ namespace ORTS
 
                         PathName = pathName;
                         RouteName = routeName.Trim();
+                        IsMultiplayer = isMultiplayer;
                         GameTime = gameTime;
                         RealTime = realTime;
                         CurrentTile = currentTile;
                         Distance = distance;
                         Valid = valid;
                         VersionOrBuild = versionOrBuild;
+
+                        //Debrief Eval
+                        DbfEval = System.IO.File.Exists(fileName.Substring(0, fileName.Length - 5) + ".dbfeval");
                     }
                     catch { }
                 }
@@ -133,6 +151,7 @@ namespace ORTS
 
         public string SelectedSaveFile { get; set; }
         public MainForm.UserAction SelectedAction { get; set; }
+        private bool Multiplayer { get; set; }
 
         GettextResourceManager catalog = new GettextResourceManager("Menu");
 
@@ -141,6 +160,7 @@ namespace ORTS
         {
             MainForm = parentForm;
             SelectedAction = mainFormAction;
+            Multiplayer = SelectedAction == MainForm.UserAction.MultiplayerClient || SelectedAction == MainForm.UserAction.MultiplayerServer;
             InitializeComponent();  // Needed so that setting StartPosition = CenterParent is respected.
 
             Localizer.Localize(this, catalog);
@@ -167,9 +187,12 @@ namespace ORTS
             }
             else
             {
-                Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name : catalog.GetString("Explore Route"));
+                Text = String.Format("{0} - {1} - {2}", Text, route.Name, activity.FilePath != null ? activity.Name :
+                    activity.Name == "+ " + catalog.GetString("Explore in Activity Mode") + " +" ? catalog.GetString("Explore in Activity Mode") : catalog.GetString("Explore Route"));
                 pathNameDataGridViewTextBoxColumn.Visible = activity.FilePath == null;
             }
+
+            if (Multiplayer) Text += " - Multiplayer ";
 
             LoadSaves();
         }
@@ -197,10 +220,20 @@ namespace ORTS
                 {
                     prefix = Path.GetFileName(Route.Path) + " " + Path.GetFileNameWithoutExtension(Timetable.fileName);
                 }
+                else if (Activity.FilePath != null)
+                {
+                    prefix = Path.GetFileNameWithoutExtension(Activity.FilePath);
+                }
+                else if (Activity.Name == "- " + catalog.GetString("Explore Route") + " -")
+                {
+                    prefix = Path.GetFileName(Route.Path);
+                }
+                // Explore in activity mode
                 else
                 {
-                    prefix = Activity.FilePath == null ? Path.GetFileName(Route.Path) : Path.GetFileNameWithoutExtension(Activity.FilePath);
+                    prefix = "ea$" + Path.GetFileName(Route.Path) + "$";
                 }
+
 
                 if (Directory.Exists(directory))
                 {
@@ -214,6 +247,7 @@ namespace ORTS
                             var save = new Save(saveFile, build, Settings.YoungestFailedToRestore);
                             if (save.RouteName == Route.Name)
                             {
+                                if (!save.IsMultiplayer ^ Multiplayer)
                                 saves.Add(save);
                             }
                             else    // In case you receive a SavePack where the activity is recognised but the route has been renamed.
@@ -222,7 +256,8 @@ namespace ORTS
                             {
                                 if (!MainForm.Routes.Any(el => el.Name == save.RouteName))
                                 {
-                                    saves.Add(save);
+                                    if (!save.IsMultiplayer ^ Multiplayer)
+                                        saves.Add(save);
                                     // Save a warning to show later.
                                     warning += catalog.GetStringFmt("Warning: Save {0} found from a route with an unexpected name:\n{1}.\n\n", save.RealTime, save.RouteName);
                                 }
@@ -254,10 +289,26 @@ namespace ORTS
                 Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             return reply == DialogResult.Yes;
         }
+        bool AcceptOfNonvalidDbfSetup(Save save)
+        {
+            var reply = MessageBox.Show(catalog.GetStringFmt(
+                   "The selected file contains Debrief Eval data.\nBut Debrief Evaluation checkbox (Main menu) is unchecked.\nYou cannot continue with the Evaluation on course.\n\nContinue?"),
+                   Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+
+            return reply == DialogResult.Yes;
+        }
 
         void ResumeSave()
         {
             var save = saveBindingSource.Current as Save;
+
+            //Debrief Eval
+            if (save.DbfEval && !Settings.DebriefActivityEval)
+            {
+                if (!AcceptOfNonvalidDbfSetup(save))
+                    return;
+            }
+
             if (save.Valid != false) // I.e. true or null. Check is for safety as buttons should be disabled if Save is invalid.
             {
                 if( Found(save) )
@@ -267,8 +318,23 @@ namespace ORTS
                             return;
 
                     SelectedSaveFile = save.File;
-                    SelectedAction = SelectedAction == MainForm.UserAction.SinglePlayerTimetableGame ?
-                        MainForm.UserAction.SinglePlayerResumeTimetableGame : MainForm.UserAction.SingleplayerResumeSave;
+                    var selectedAction = SelectedAction;
+                    switch (SelectedAction)
+                    {
+                        case MainForm.UserAction.SinglePlayerTimetableGame:
+                            selectedAction = MainForm.UserAction.SinglePlayerResumeTimetableGame;
+                            break;
+                        case MainForm.UserAction.SingleplayerNewGame:
+                            selectedAction = MainForm.UserAction.SingleplayerResumeSave;
+                            break;
+                        case MainForm.UserAction.MultiplayerClient:
+                            selectedAction = MainForm.UserAction.MultiplayerClientResumeSave;
+                            break;
+                        case MainForm.UserAction.MultiplayerServer:
+                            selectedAction = MainForm.UserAction.MultiplayerServerResumeSave;
+                            break;
+                    }
+                    SelectedAction = selectedAction;
                     DialogResult = DialogResult.OK;
                 }
             }
@@ -296,8 +362,8 @@ namespace ORTS
                     buttonDelete.Enabled = true;
                     buttonResume.Enabled = (save.Valid != false); // I.e. either true or null
                     var replayFileName = Path.ChangeExtension(save.File, "replay");
-                    buttonReplayFromPreviousSave.Enabled = ((save.Valid != false) && File.Exists(replayFileName));
-                    buttonReplayFromStart.Enabled = File.Exists(replayFileName); // can Replay From Start even if Save is invalid.
+                    buttonReplayFromPreviousSave.Enabled = (save.Valid != false) && File.Exists(replayFileName) && !Multiplayer;
+                    buttonReplayFromStart.Enabled = File.Exists(replayFileName) && !Multiplayer; // can Replay From Start even if Save is invalid.
                 }
                 else
                 {

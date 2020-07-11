@@ -35,13 +35,12 @@ Windows Vista, Windows 7, Windows 8, and Xbox 360. Since XNA games are
 written for the runtime, they can run on any platform that supports the XNA 
 Framework with minimal or no modification of the Game engine.
 
+.. warning:: A license fee is payable to Microsoft to use XNA Game Studio for Xbox 360 games. At this time, the Open Rails team has not investigated whether the Open Rails software is suitable for Xbox.
+
 Frames per Second (FPS) Performance
 ===================================
 
-For the current release, the Open Rails development team has untethered the 
-FPS rate from the sync rate of the monitor. This allows the development team 
-to more easily document performance improvements. The Open Rails team at a 
-later date may decide to limit FPS to the sync rate of the monitor.
+FPS rate is as default not linked to the sync rate of the monitor. However, with :ref:`this option <options-vsync>` FPS rate may be set at the value of the monitor refresh rate.
 
 Game Clock and Internal Clock
 =============================

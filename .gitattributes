@@ -51,5 +51,10 @@
 
 
 # (No source)
+# Fix for batch script processing
+*.cmd text eol=crlf
+
+
+# (No source)
 # Custom for Delphi
 *.pas diff=pascal

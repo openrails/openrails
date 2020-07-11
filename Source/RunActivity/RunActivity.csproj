@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Orts</RootNamespace>
     <AssemblyName>RunActivity</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationIcon>..\ORTS.ico</ApplicationIcon>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -22,6 +23,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <DebugType>pdbonly</DebugType>
@@ -33,6 +36,8 @@
     <DocumentationFile>..\..\Program\RunActivity.xml</DocumentationFile>
     <PlatformTarget>x86</PlatformTarget>
     <NoWarn>1591</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Orts.Program</StartupObject>
@@ -64,16 +69,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\PIEHidDotNet.dll</HintPath>
     </Reference>
-    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Processes\ProcessState.cs" />
@@ -137,6 +138,7 @@
     <Compile Include="Viewer3D\Popups\TracksDebugWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainListWindow.cs" />
     <Compile Include="Viewer3D\Popups\TrainOperationsWindow.cs" />
+    <Compile Include="Viewer3D\Popups\TTDetachWindow.cs" />
     <Compile Include="Viewer3D\Popups\Window.cs" />
     <Compile Include="Viewer3D\Popups\WindowControls.cs" />
     <Compile Include="Viewer3D\Popups\WindowManager.cs" />
@@ -151,6 +153,7 @@
     <Compile Include="Viewer3D\Processes\SoundProcess.cs" />
     <Compile Include="Viewer3D\Processes\UpdaterProcess.cs" />
     <Compile Include="Viewer3D\Processes\WatchdogProcess.cs" />
+    <Compile Include="Viewer3D\Processes\WebServerProcess.cs" />
     <Compile Include="Viewer3D\RenderFrame.cs" />
     <Compile Include="Viewer3D\RoadCars.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSDieselLocomotiveViewer.cs" />
@@ -176,12 +179,17 @@
     <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />
+    <Compile Include="Viewer3D\WebServices\WebServer.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\World.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\3rdPartyLibs\OpenAL32.dll">
-      <Link>OpenAL32.dll</Link>
+    <Content Include="..\3rdPartyLibs\openal-soft\Win32\OpenAL32.dll">
+      <Link>Native\X86\OpenAL32.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\3rdPartyLibs\openal-soft\Win64\OpenAL32.dll">
+      <Link>Native\X64\OpenAL32.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\blank.bmp">
@@ -322,6 +330,19 @@
     <Content Include="Version.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Viewer3D\WebServices\Web\css\hud.css" />
+    <Content Include="Viewer3D\WebServices\Web\css\sample.css" />
+    <Content Include="Viewer3D\WebServices\Web\css\trackmonitor.css" />
+    <Content Include="Viewer3D\WebServices\Web\HUD.html" />
+    <Content Include="Viewer3D\WebServices\Web\images\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\images\waverley.jpg" />
+    <Content Include="Viewer3D\WebServices\Web\images\zig-zag.jpg" />
+    <Content Include="Viewer3D\WebServices\Web\index - ApiSample.html" />
+    <Content Include="Viewer3D\WebServices\Web\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\js\ApiSample.js" />
+    <Content Include="Viewer3D\WebServices\Web\js\ApiTrainInfo.js" />
+    <Content Include="Viewer3D\WebServices\Web\js\hud.js" />
+    <Content Include="Viewer3D\WebServices\Web\js\trackmonitor.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
@@ -371,8 +392,12 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>

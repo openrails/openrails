@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -17,6 +17,11 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
@@ -28,13 +33,8 @@ using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
+using ORTS.Common.Input;
 using ORTS.Scripting.Api;
-using ORTS.Settings;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Event = Orts.Common.Event;
 
 namespace Orts.Viewer3D.RollingStock
@@ -43,26 +43,22 @@ namespace Orts.Viewer3D.RollingStock
     {
         MSTSLocomotive Locomotive;
 
-        protected Dictionary<string, List<ParticleEmitterViewer>> ParticleDrawers = new Dictionary<string, List<ParticleEmitterViewer>>();
-
         protected MSTSLocomotive MSTSLocomotive { get { return (MSTSLocomotive)Car; } }
 
         public bool _hasCabRenderer;
         public bool _has3DCabRenderer;
         public CabRenderer _CabRenderer;
-        private ThreeDimentionCabViewer ThreeDimentionCabViewer = null;
+        public ThreeDimentionCabViewer ThreeDimentionCabViewer = null;
         public CabRenderer ThreeDimentionCabRenderer = null; //allow user to have different setting of .cvf file under CABVIEW3D
+
+        public static int DbfEvalEBPBstopped = 0;//Debrief eval
+        public static int DbfEvalEBPBmoving = 0;//Debrief eval
+        public bool lemergencybuttonpressed = false;
 
         public MSTSLocomotiveViewer(Viewer viewer, MSTSLocomotive car)
             : base(viewer, car)
         {
             Locomotive = car;
-            ParticleDrawers = (from effect in Locomotive.EffectData
-                               select new KeyValuePair<string, List<ParticleEmitterViewer>>(effect.Key, new List<ParticleEmitterViewer>(from data in effect.Value
-                                                                                                                                        select new ParticleEmitterViewer(viewer, data, car.WorldPosition)))).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-            //if (car.CVFFile != null && car.CVFFile.TwoDViews.Count > 0)
-            //    _CabRenderer = new CabRenderer(viewer, Locomotive);
 
             string wagonFolderSlash = Path.GetDirectoryName(Locomotive.WagFilePath) + "\\";
             if (Locomotive.CabSoundFileName != null) LoadCarSound(wagonFolderSlash, Locomotive.CabSoundFileName);
@@ -71,8 +67,17 @@ namespace Orts.Viewer3D.RollingStock
 
             if (Locomotive.TrainControlSystem != null && Locomotive.TrainControlSystem.Sounds.Count > 0)
                 foreach (var script in Locomotive.TrainControlSystem.Sounds.Keys)
-                    Viewer.SoundProcess.AddSoundSources(script, new List<SoundSourceBase>() {
-                        new SoundSource(Viewer, Locomotive, Locomotive.TrainControlSystem.Sounds[script])});
+                {
+                    try
+                    {
+                        Viewer.SoundProcess.AddSoundSources(script, new List<SoundSourceBase>() {
+                            new SoundSource(Viewer, Locomotive, Locomotive.TrainControlSystem.Sounds[script])});
+                    }
+                    catch (Exception error)
+                    {
+                        Trace.TraceInformation("File " + Locomotive.TrainControlSystem.Sounds[script] + " in script of locomotive of train " + Locomotive.Train.Name + " : " + error.Message);
+                    }
+                }
         }
 
         protected virtual void StartGearBoxIncrease()
@@ -126,47 +131,66 @@ namespace Orts.Viewer3D.RollingStock
         public override void InitializeUserInputCommands()
         {
             // Steam locomotives handle these differently, and might have set them already
-            if (!UserInputCommands.ContainsKey(UserCommands.ControlForwards))
-                UserInputCommands.Add(UserCommands.ControlForwards, new Action[] { Noop, () => ReverserControlForwards() });
-            if (!UserInputCommands.ContainsKey(UserCommands.ControlBackwards))
-                UserInputCommands.Add(UserCommands.ControlBackwards, new Action[] { Noop, () => ReverserControlBackwards() });
+            if (!UserInputCommands.ContainsKey(UserCommand.ControlForwards))
+                UserInputCommands.Add(UserCommand.ControlForwards, new Action[] { Noop, () => ReverserControlForwards() });
+            if (!UserInputCommands.ContainsKey(UserCommand.ControlBackwards))
+                UserInputCommands.Add(UserCommand.ControlBackwards, new Action[] { Noop, () => ReverserControlBackwards() });
 
-            UserInputCommands.Add(UserCommands.ControlThrottleIncrease, new Action[] { () => Locomotive.StopThrottleIncrease(), () => Locomotive.StartThrottleIncrease() });
-            UserInputCommands.Add(UserCommands.ControlThrottleDecrease, new Action[] { () => Locomotive.StopThrottleDecrease(), () => Locomotive.StartThrottleDecrease() });
-            UserInputCommands.Add(UserCommands.ControlThrottleZero, new Action[] { Noop, () => Locomotive.ThrottleToZero() });
-            UserInputCommands.Add(UserCommands.ControlGearUp, new Action[] { () => StopGearBoxIncrease(), () => StartGearBoxIncrease() });
-            UserInputCommands.Add(UserCommands.ControlGearDown, new Action[] { () => StopGearBoxDecrease(), () => StartGearBoxDecrease() });
-            UserInputCommands.Add(UserCommands.ControlTrainBrakeIncrease, new Action[] { () => Locomotive.StopTrainBrakeIncrease(), () => Locomotive.StartTrainBrakeIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlTrainBrakeDecrease, new Action[] { () => Locomotive.StopTrainBrakeDecrease(), () => Locomotive.StartTrainBrakeDecrease(null) });
-            UserInputCommands.Add(UserCommands.ControlTrainBrakeZero, new Action[] { Noop, () => Locomotive.StartTrainBrakeDecrease(0, true) });
-            UserInputCommands.Add(UserCommands.ControlEngineBrakeIncrease, new Action[] { () => Locomotive.StopEngineBrakeIncrease(), () => Locomotive.StartEngineBrakeIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlEngineBrakeDecrease, new Action[] { () => Locomotive.StopEngineBrakeDecrease(), () => Locomotive.StartEngineBrakeDecrease(null) });
-            UserInputCommands.Add(UserCommands.ControlDynamicBrakeIncrease, new Action[] { () => Locomotive.StopDynamicBrakeIncrease(), () => Locomotive.StartDynamicBrakeIncrease(null) });
-            UserInputCommands.Add(UserCommands.ControlDynamicBrakeDecrease, new Action[] { () => Locomotive.StopDynamicBrakeDecrease(), () => Locomotive.StartDynamicBrakeDecrease(null) });
-            UserInputCommands.Add(UserCommands.ControlBailOff, new Action[] { () => new BailOffCommand(Viewer.Log, false), () => new BailOffCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlInitializeBrakes, new Action[] { Noop, () => new InitializeBrakesCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlHandbrakeNone, new Action[] { Noop, () => new HandbrakeCommand(Viewer.Log, false) });
-            UserInputCommands.Add(UserCommands.ControlHandbrakeFull, new Action[] { Noop, () => new HandbrakeCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlRetainersOff, new Action[] { Noop, () => new RetainersCommand(Viewer.Log, false) });
-            UserInputCommands.Add(UserCommands.ControlRetainersOn, new Action[] { Noop, () => new RetainersCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlBrakeHoseConnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlBrakeHoseDisconnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, false) });
-            UserInputCommands.Add(UserCommands.ControlEmergencyPushButton, new Action[] { Noop, () => new EmergencyPushButtonCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlSander, new Action[] { () => new SanderCommand(Viewer.Log, false), () => new SanderCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlSanderToggle, new Action[] { Noop, () => new SanderCommand(Viewer.Log, !Locomotive.Sander) });
-            UserInputCommands.Add(UserCommands.ControlWiper, new Action[] { Noop, () => new ToggleWipersCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlHorn, new Action[] { () => new HornCommand(Viewer.Log, false), () => new HornCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlBell, new Action[] { () => new BellCommand(Viewer.Log, false), () => new BellCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlBellToggle, new Action[] { Noop, () => new BellCommand(Viewer.Log, !Locomotive.Bell) });
-            UserInputCommands.Add(UserCommands.ControlAlerter, new Action[] { () => new AlerterCommand(Viewer.Log, false), () => new AlerterCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlHeadlightIncrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, true) });
-            UserInputCommands.Add(UserCommands.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
-            UserInputCommands.Add(UserCommands.ControlLight, new Action[] { Noop, () => new ToggleCabLightCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => AttemptToRefillOrUnload() });
-            UserInputCommands.Add(UserCommands.ControlImmediateRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => ImmediateRefill() });
-            UserInputCommands.Add(UserCommands.ControlOdoMeterShowHide, new Action[] { Noop, () => new ToggleOdometerCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlOdoMeterReset, new Action[] { Noop, () => new ResetOdometerCommand(Viewer.Log) });
-            UserInputCommands.Add(UserCommands.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlThrottleIncrease, new Action[] { () => Locomotive.StopThrottleIncrease(), () => Locomotive.StartThrottleIncrease() });
+            UserInputCommands.Add(UserCommand.ControlThrottleDecrease, new Action[] { () => Locomotive.StopThrottleDecrease(), () => Locomotive.StartThrottleDecrease() });
+            UserInputCommands.Add(UserCommand.ControlThrottleZero, new Action[] { Noop, () => Locomotive.ThrottleToZero() });
+            UserInputCommands.Add(UserCommand.ControlGearUp, new Action[] { () => StopGearBoxIncrease(), () => StartGearBoxIncrease() });
+            UserInputCommands.Add(UserCommand.ControlGearDown, new Action[] { () => StopGearBoxDecrease(), () => StartGearBoxDecrease() });
+            UserInputCommands.Add(UserCommand.ControlTrainBrakeIncrease, new Action[] { () => Locomotive.StopTrainBrakeIncrease(), () => Locomotive.StartTrainBrakeIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlTrainBrakeDecrease, new Action[] { () => Locomotive.StopTrainBrakeDecrease(), () => Locomotive.StartTrainBrakeDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlTrainBrakeZero, new Action[] { Noop, () => Locomotive.StartTrainBrakeDecrease(0, true) });
+            UserInputCommands.Add(UserCommand.ControlEngineBrakeIncrease, new Action[] { () => Locomotive.StopEngineBrakeIncrease(), () => Locomotive.StartEngineBrakeIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlEngineBrakeDecrease, new Action[] { () => Locomotive.StopEngineBrakeDecrease(), () => Locomotive.StartEngineBrakeDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlDynamicBrakeIncrease, new Action[] { () => Locomotive.StopDynamicBrakeIncrease(), () => Locomotive.StartDynamicBrakeIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlDynamicBrakeDecrease, new Action[] { () => Locomotive.StopDynamicBrakeDecrease(), () => Locomotive.StartDynamicBrakeDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlSteamHeatIncrease, new Action[] { () => Locomotive.StopSteamHeatIncrease(), () => Locomotive.StartSteamHeatIncrease(null) });
+            UserInputCommands.Add(UserCommand.ControlSteamHeatDecrease, new Action[] { () => Locomotive.StopSteamHeatDecrease(), () => Locomotive.StartSteamHeatDecrease(null) });
+            UserInputCommands.Add(UserCommand.ControlBailOff, new Action[] { () => new BailOffCommand(Viewer.Log, false), () => new BailOffCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlInitializeBrakes, new Action[] { Noop, () => new InitializeBrakesCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlHandbrakeNone, new Action[] { Noop, () => new HandbrakeCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommand.ControlHandbrakeFull, new Action[] { Noop, () => new HandbrakeCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlRetainersOff, new Action[] { Noop, () => new RetainersCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommand.ControlRetainersOn, new Action[] { Noop, () => new RetainersCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlBrakeHoseConnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlBrakeHoseDisconnect, new Action[] { Noop, () => new BrakeHoseConnectCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommand.ControlEmergencyPushButton, new Action[] { Noop, () => new EmergencyPushButtonCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlSander, new Action[] { () => new SanderCommand(Viewer.Log, false), () => new SanderCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlSanderToggle, new Action[] { Noop, () => new SanderCommand(Viewer.Log, !Locomotive.Sander) });
+            UserInputCommands.Add(UserCommand.ControlWiper, new Action[] { Noop, () => new WipersCommand(Viewer.Log, !Locomotive.Wiper) });
+            UserInputCommands.Add(UserCommand.ControlHorn, new Action[] { () => new HornCommand(Viewer.Log, false), () => new HornCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlBell, new Action[] { () => new BellCommand(Viewer.Log, false), () => new BellCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlBellToggle, new Action[] { Noop, () => new BellCommand(Viewer.Log, !Locomotive.Bell) });
+            UserInputCommands.Add(UserCommand.ControlAlerter, new Action[] { () => new AlerterCommand(Viewer.Log, false), () => new AlerterCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlHeadlightIncrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlHeadlightDecrease, new Action[] { Noop, () => new HeadlightCommand(Viewer.Log, false) });
+            UserInputCommands.Add(UserCommand.ControlLight, new Action[] { Noop, () => new ToggleCabLightCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlRefill, new Action[] { () => StopRefillingOrUnloading(Viewer.Log), () => AttemptToRefillOrUnload() });
+            UserInputCommands.Add(UserCommand.ControlImmediateRefill, new Action[] { () => StopImmediateRefilling(Viewer.Log), () => ImmediateRefill() });
+            UserInputCommands.Add(UserCommand.ControlWaterScoop, new Action[] { Noop, () => new ToggleWaterScoopCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlOdoMeterShowHide, new Action[] { Noop, () => new ToggleOdometerCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlOdoMeterReset, new Action[] { Noop, () => new ResetOdometerCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlCabRadio, new Action[] { Noop, () => new CabRadioCommand(Viewer.Log, !Locomotive.CabRadioOn) });
+            UserInputCommands.Add(UserCommand.ControlDieselHelper, new Action[] { Noop, () => new ToggleHelpersEngineCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlGeneric1, new Action[] {
+                () => new TCSButtonCommand(Viewer.Log, false, 0),
+                () => {
+                    new TCSButtonCommand(Viewer.Log, true, 0);
+                    new TCSSwitchCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandSwitchOn[0], 0);
+                }
+            });
+            UserInputCommands.Add(UserCommand.ControlGeneric2, new Action[] {
+                () => new TCSButtonCommand(Viewer.Log, false, 1),
+                () => {
+                    new TCSButtonCommand(Viewer.Log, true, 1);
+                    new TCSSwitchCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandSwitchOn[1], 1);
+                }
+            });
             base.InitializeUserInputCommands();
         }
 
@@ -176,12 +200,12 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
-            if (UserInput.IsPressed(UserCommands.CameraToggleShowCab))
+            if (UserInput.IsPressed(UserCommand.CameraToggleShowCab))
                 Locomotive.ShowCab = !Locomotive.ShowCab;
 
             // By Matej Pacha
-            if (UserInput.IsPressed(UserCommands.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }
-            if (UserInput.IsPressed(UserCommands.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
+            if (UserInput.IsPressed(UserCommand.DebugResetWheelSlip)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); }
+            if (UserInput.IsPressed(UserCommand.DebugToggleAdvancedAdhesion)) { Locomotive.Train.SignalEvent(Event._ResetWheelSlip); Locomotive.Simulator.UseAdvancedAdhesion = !Locomotive.Simulator.UseAdvancedAdhesion; }
 
             if (UserInput.RDState != null)
             {
@@ -193,11 +217,11 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     Locomotive.AlerterReset();
 
-                    Locomotive.SetThrottlePercent(UserInput.RDState.ThrottlePercent);
+                    Locomotive.SetThrottlePercentWithSound(UserInput.RDState.ThrottlePercent);
                     Locomotive.SetTrainBrakePercent(UserInput.RDState.TrainBrakePercent);
                     Locomotive.SetEngineBrakePercent(UserInput.RDState.EngineBrakePercent);
                     if (Locomotive.CombinedControlType != MSTSLocomotive.CombinedControl.ThrottleAir)
-                        Locomotive.SetDynamicBrakePercent(UserInput.RDState.DynamicBrakePercent);
+                        Locomotive.SetDynamicBrakePercentWithSound(UserInput.RDState.DynamicBrakePercent);
                     if (UserInput.RDState.DirectionPercent > 50)
                         Locomotive.SetDirection(Direction.Forward);
                     else if (UserInput.RDState.DirectionPercent < -50)
@@ -214,9 +238,15 @@ namespace Orts.Viewer3D.RollingStock
                         Locomotive.SignalEvent(Event.WiperOn);
                     // changing Headlight more than one step at a time doesn't work for some reason
                     if (Locomotive.Headlight < UserInput.RDState.Lights - 1)
+                    {
                         Locomotive.Headlight++;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                     if (Locomotive.Headlight > UserInput.RDState.Lights - 1)
+                    {
                         Locomotive.Headlight--;
+                        Locomotive.SignalEvent(Event.LightSwitchToggle);
+                    }
                 }
             }
 
@@ -225,10 +255,21 @@ namespace Orts.Viewer3D.RollingStock
                 if (UserInput.IsPressed(command))
                 {
                     UserInputCommands[command][1]();
+                    //Debrief eval
+                    if (!lemergencybuttonpressed && Locomotive.EmergencyButtonPressed && Locomotive.IsPlayerTrain)
+                    {
+                        var train = Program.Viewer.PlayerLocomotive.Train;
+                        if (Math.Abs(Locomotive.SpeedMpS) == 0) DbfEvalEBPBstopped++;
+                        if (Math.Abs(Locomotive.SpeedMpS) > 0) DbfEvalEBPBmoving++;
+                        lemergencybuttonpressed = true;
+                        train.DbfEvalValueChanged = true;//Debrief eval
+                    }
                 }
                 else if (UserInput.IsReleased(command))
                 {
                     UserInputCommands[command][0]();
+                    //Debrief eval
+                    if (lemergencybuttonpressed && !Locomotive.EmergencyButtonPressed) lemergencybuttonpressed = false;
                 }
             }
         }
@@ -243,21 +284,16 @@ namespace Orts.Viewer3D.RollingStock
             {
                 if (ThreeDimentionCabViewer != null)
                     ThreeDimentionCabViewer.PrepareFrame(frame, elapsedTime);
-                return;
             }
 
-            foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)
-                foreach (ParticleEmitterViewer drawer in drawers)
-                    drawer.PrepareFrame(frame, elapsedTime);
-
-            // Wiper animation
+            // Wipers and bell animation
             Wipers.UpdateLoop(Locomotive.Wiper, elapsedTime);
+            Bell.UpdateLoop(Locomotive.Bell, elapsedTime, TrainCarShape.SharedShape.BellAnimationFPS);
 
             // Draw 2D CAB View - by GeorgeS
             if (Viewer.Camera.AttachedCar == this.MSTSWagon &&
                 Viewer.Camera.Style == Camera.Styles.Cab)
             {
-
                 if (_CabRenderer != null)
                     _CabRenderer.PrepareFrame(frame, elapsedTime);
             }
@@ -306,6 +342,19 @@ namespace Orts.Viewer3D.RollingStock
         }
 
         /// <summary>
+        /// Release sounds of TCS if any, but not for player locomotive
+        /// </summary>
+        public override void Unload()
+        {
+            if (Locomotive.TrainControlSystem != null && Locomotive.TrainControlSystem.Sounds.Count > 0)
+                foreach (var script in Locomotive.TrainControlSystem.Sounds.Keys)
+                {
+                         Viewer.SoundProcess.RemoveSoundSources(script);
+                }
+            base.Unload();
+        }
+
+        /// <summary>
         /// Finds the pickup point which is closest to the loco or tender that uses coal, water or diesel oil.
         /// Uses that pickup to refill the loco or tender.
         /// Not implemented yet:
@@ -337,7 +386,13 @@ namespace Orts.Viewer3D.RollingStock
             {(uint)MSTSWagon.PickupType.FuelWater, Viewer.Catalog.GetString("water")},
             {(uint)MSTSWagon.PickupType.FuelCoal, Viewer.Catalog.GetString("coal")},
             {(uint)MSTSWagon.PickupType.FuelDiesel, Viewer.Catalog.GetString("diesel oil")},
-            {(uint)MSTSWagon.PickupType.FuelWood, Viewer.Catalog.GetString("wood")}
+            {(uint)MSTSWagon.PickupType.FuelWood, Viewer.Catalog.GetString("wood")},
+            {(uint)MSTSWagon.PickupType.FuelSand, Viewer.Catalog.GetString("sand")},
+            {(uint)MSTSWagon.PickupType.FreightGeneral, Viewer.Catalog.GetString("freight-general")},
+            {(uint)MSTSWagon.PickupType.FreightLivestock, Viewer.Catalog.GetString("freight-livestock")},
+            {(uint)MSTSWagon.PickupType.FreightFuel, Viewer.Catalog.GetString("freight-fuel")},
+            {(uint)MSTSWagon.PickupType.FreightMilk, Viewer.Catalog.GetString("freight-milk")},
+            {(uint)MSTSWagon.PickupType.SpecialMail, Viewer.Catalog.GetString("mail")}
         };
 
         /// <summary>
@@ -347,7 +402,9 @@ namespace Orts.Viewer3D.RollingStock
         {
             public PickupObj Pickup;
             public MSTSWagon Wagon;
+            public MSTSLocomotive SteamLocomotiveWithTender;
             public IntakePoint IntakePoint;
+
         }
 
         /// <summary>
@@ -364,6 +421,7 @@ namespace Orts.Viewer3D.RollingStock
             var shortestD2 = float.MaxValue;
             WagonAndMatchingPickup nearestPickup = null;
             float distanceFromFrontOfTrainM = 0f;
+            int index = 0;
             foreach (var car in train.Cars)
             {
                 if (car is MSTSWagon)
@@ -388,11 +446,12 @@ namespace Orts.Viewer3D.RollingStock
                                     (uint)intake.Type == pickup.PickupType)
                                  || ((uint)intake.Type == pickup.PickupType && (uint)intake.Type > (uint)MSTSWagon.PickupType.FreightSand && (wagon.WagonType == TrainCar.WagonTypes.Tender || wagon is MSTSLocomotive)))
                                 {
-                                    var intakePosition = car.WorldPosition; //TODO Convert this into the position of the intake.
+                                    var intakePosition = new Vector3(0, 0, -intake.OffsetM);
+                                    Vector3.Transform(ref intakePosition, ref car.WorldPosition.XNAMatrix, out intakePosition);
 
                                     var intakeLocation = new WorldLocation(
                                         car.WorldPosition.TileX, car.WorldPosition.TileZ,
-                                        car.WorldPosition.Location.X, car.WorldPosition.Location.Y, car.WorldPosition.Location.Z);
+                                        intakePosition.X, intakePosition.Y, -intakePosition.Z);
 
                                     var d2 = WorldLocation.GetDistanceSquared(intakeLocation, pickup.Location);
                                     if (d2 < shortestD2)
@@ -401,6 +460,19 @@ namespace Orts.Viewer3D.RollingStock
                                         nearestPickup = new WagonAndMatchingPickup();
                                         nearestPickup.Pickup = pickup;
                                         nearestPickup.Wagon = wagon;
+                                        if (wagon.WagonType == TrainCar.WagonTypes.Tender)
+                                        {
+                                            // Normal arrangement would be steam locomotive followed by the tender car.
+                                            if (index > 0 && train.Cars[index - 1] is MSTSSteamLocomotive && !wagon.Flipped && !train.Cars[index - 1].Flipped)
+                                                nearestPickup.SteamLocomotiveWithTender = train.Cars[index - 1] as MSTSLocomotive;
+                                            // but after reversal point or turntable reversal order of cars is reversed too!
+                                            else if (index < train.Cars.Count - 1 && train.Cars[index + 1] is MSTSSteamLocomotive && wagon.Flipped && train.Cars[index + 1].Flipped)
+                                                nearestPickup.SteamLocomotiveWithTender = train.Cars[index + 1] as MSTSLocomotive;
+                                            else if (index > 0 && train.Cars[index - 1] is MSTSSteamLocomotive)
+                                                nearestPickup.SteamLocomotiveWithTender = train.Cars[index - 1] as MSTSLocomotive;
+                                            else if (index < train.Cars.Count - 1 && train.Cars[index + 1] is MSTSSteamLocomotive)
+                                                nearestPickup.SteamLocomotiveWithTender = train.Cars[index + 1] as MSTSLocomotive;
+                                        }
                                         nearestPickup.IntakePoint = intake;
                                     }
                                 }
@@ -409,6 +481,7 @@ namespace Orts.Viewer3D.RollingStock
                     }
                     distanceFromFrontOfTrainM += wagon.CarLengthM;
                 }
+                index++;
             }
             return nearestPickup;
         }
@@ -421,40 +494,36 @@ namespace Orts.Viewer3D.RollingStock
         /// <returns></returns>
         float GetDistanceToM(WagonAndMatchingPickup match)
         {
-            var intakePosition = match.Wagon.WorldPosition; //TODO Convert this into the position of the intake.
+            var intakePosition = new Vector3(0, 0, -match.IntakePoint.OffsetM);
+            Vector3.Transform(ref intakePosition, ref match.Wagon.WorldPosition.XNAMatrix, out intakePosition);
 
             var intakeLocation = new WorldLocation(
                 match.Wagon.WorldPosition.TileX, match.Wagon.WorldPosition.TileZ,
-                match.Wagon.WorldPosition.Location.X, match.Wagon.WorldPosition.Location.Y, match.Wagon.WorldPosition.Location.Z);
+                intakePosition.X, intakePosition.Y, -intakePosition.Z);
 
             return (float)Math.Sqrt(WorldLocation.GetDistanceSquared(intakeLocation, match.Pickup.Location));
         }
 
+        /// <summary>
         // This process is tied to the Shift T key combination
         // The purpose of is to perform immediate refueling without having to pull up alongside the fueling station.
+        /// </summary>
         public void ImmediateRefill()
         {
-            MatchedWagonAndPickup = null;   // Ensures that releasing the Shift T key doesn't do anything unless there is something to do.
-
             var loco = this.Locomotive;
-            var match = GetMatchingPickup(loco.Train);
-
-            if (match == null && !(loco is MSTSElectricLocomotive))
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
-                loco.RefillImmediately();
+            
+            if (loco == null)
                 return;
-            }
-            if (match == null)
+            
+            foreach(var car in loco.Train.Cars)
             {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Electric loco and no pickup. Command rejected"));
-                return;
-            }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && loco is MSTSSteamLocomotive))
-            {
-                Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
-                loco.RefillImmediately();
-                return;
+                // There is no need to check for the tender.  The MSTSSteamLocomotive is the primary key in the refueling process when using immediate refueling.
+                // Electric locomotives may have steam heat boilers fitted, and they can refill these
+                if (car is MSTSDieselLocomotive || car is MSTSSteamLocomotive || (car is MSTSElectricLocomotive && loco.IsSteamHeatFitted))
+                {
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetString("Refill: Immediate refill process selected, refilling immediately."));
+                    (car as MSTSLocomotive).RefillImmediately();
+                }
             }
         }
 
@@ -469,7 +538,7 @@ namespace Orts.Viewer3D.RollingStock
             var loco = this.Locomotive;
 
             var match = GetMatchingPickup(loco.Train);
-            if (match == null && !(loco is MSTSElectricLocomotive))
+            if (match == null && !(loco is MSTSElectricLocomotive && loco.IsSteamHeatFitted))
                 return;
             if (match == null)
             {
@@ -505,10 +574,18 @@ namespace Orts.Viewer3D.RollingStock
                     FormatStrings.FormatSpeedLimit(match.Pickup.SpeedRange.MaxMpS, Viewer.MilepostUnitsMetric)));
                 return;
             }
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && loco is MSTSSteamLocomotive))
+            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || match.Wagon is MSTSElectricLocomotive ||  (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
             {
+                // Note: The tender contains the intake information, but the steam locomotive includes the controller information that is needed for the refueling process.
+
+                float fraction = 0;
+
                 // classical MSTS Freightanim, handled as usual
-                var fraction = loco.GetFilledFraction(match.Pickup.PickupType);
+                if(match.SteamLocomotiveWithTender != null)
+                    fraction = match.SteamLocomotiveWithTender.GetFilledFraction(match.Pickup.PickupType);
+                else
+                    fraction = match.Wagon.GetFilledFraction(match.Pickup.PickupType);
+                                
                 if (fraction > 0.99)
                 {
                     Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} supply now replenished.",
@@ -518,11 +595,15 @@ namespace Orts.Viewer3D.RollingStock
                 else
                 {
                     MSTSWagon.RefillProcess.OkToRefill = true;
-                    StartRefilling(match.Pickup.PickupType, fraction);
+                    if (match.SteamLocomotiveWithTender != null)
+                        StartRefilling(match.Pickup, fraction, match.SteamLocomotiveWithTender);
+                    else
+                        StartRefilling(match.Pickup, fraction, match.Wagon);
+
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
             }
-            else
+            else if (match.Wagon.FreightAnimations != null)
             {
                 // freight wagon animation
                 var fraction = match.Wagon.GetFilledFraction(match.Pickup.PickupType);
@@ -534,7 +615,7 @@ namespace Orts.Viewer3D.RollingStock
                 }
                 else if (fraction < 0.01 && match.Pickup.PickupCapacity.FeedRateKGpS < 0)
                 {
-                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Refill: {0} fuel or freight now unloaded.",
+                    Viewer.Simulator.Confirmer.Message(ConfirmLevel.None, Viewer.Catalog.GetStringFmt("Unload: {0} fuel or freight now unloaded.",
                         PickupTypeDictionary[match.Pickup.PickupType]));
                     return;
                 }
@@ -542,7 +623,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     MSTSWagon.RefillProcess.OkToRefill = true;
                     MSTSWagon.RefillProcess.Unload = match.Pickup.PickupCapacity.FeedRateKGpS < 0;
-                    match.Wagon.StartRefillingOrUnloading(match.Pickup.PickupType, match.IntakePoint, fraction, MSTSWagon.RefillProcess.Unload);
+                    match.Wagon.StartRefillingOrUnloading(match.Pickup, match.IntakePoint, fraction, MSTSWagon.RefillProcess.Unload);
                     MatchedWagonAndPickup = match;  // Save away for HandleUserInput() to use when key is released.
                 }
             }
@@ -553,12 +634,38 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public void RefillChangeTo(float? target)
         {
-            var matchedWagonAndPickup = GetMatchingPickup(Locomotive.Train);   // Save away for RefillCommand to use.
+            MSTSNotchController controller = new MSTSNotchController();
+            var loco = this.Locomotive;
+
+            var matchedWagonAndPickup = GetMatchingPickup(loco.Train);   // Save away for RefillCommand to use.
             if (matchedWagonAndPickup != null)
             {
-                var controller = Locomotive.GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
+                if (matchedWagonAndPickup.SteamLocomotiveWithTender != null)
+                    controller = matchedWagonAndPickup.SteamLocomotiveWithTender.GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
+                else
+                    controller = (matchedWagonAndPickup.Wagon as MSTSLocomotive).GetRefillController((uint)matchedWagonAndPickup.Pickup.PickupType);
                 controller.StartIncrease(target);
             }
+        }
+
+        /// <summary>
+        /// Starts a continuous increase in controlled value. This method also receives TrainCar car to process individual locomotives for refueling.
+        /// </summary>
+        /// <param name="type">Pickup point</param>
+        public void StartRefilling(PickupObj matchPickup, float fraction, TrainCar car)
+        {
+            var controller = (car as MSTSLocomotive).GetRefillController(matchPickup.PickupType);
+
+            if (controller == null)
+            {
+                Viewer.Simulator.Confirmer.Message(ConfirmLevel.Error, Viewer.Catalog.GetString("Incompatible pickup type"));
+                return;
+            }
+            (car as MSTSLocomotive).SetStepSize(matchPickup);
+            controller.SetValue(fraction);
+            controller.CommandStartTime = Viewer.Simulator.ClockTime;  // for Replay to use 
+            Viewer.Simulator.Confirmer.Message(ConfirmLevel.Information, Viewer.Catalog.GetString("Starting refill"));
+            controller.StartIncrease(controller.MaximumValue);
         }
 
         /// <summary>
@@ -580,6 +687,14 @@ namespace Orts.Viewer3D.RollingStock
         }
 
         /// <summary>
+        // Immediate refueling process is different from the process of refueling individual locomotives.
+        /// </summary> 
+        public void StopImmediateRefilling(CommandLog log)
+        {
+            new ImmediateRefillCommand(log);  // for Replay to use
+        }
+
+        /// <summary>
         /// Ends a continuous increase in controlled value.
         /// </summary>
         public void StopRefillingOrUnloading(CommandLog log)
@@ -590,8 +705,13 @@ namespace Orts.Viewer3D.RollingStock
             MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
             var match = MatchedWagonAndPickup;
             var controller = new MSTSNotchController();
-            if (match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && Locomotive is MSTSSteamLocomotive))
-                controller = Locomotive.GetRefillController(MatchedWagonAndPickup.Pickup.PickupType);
+            if (match.Wagon is MSTSElectricLocomotive || match.Wagon is MSTSDieselLocomotive || match.Wagon is MSTSSteamLocomotive || (match.Wagon.WagonType == TrainCar.WagonTypes.Tender && match.SteamLocomotiveWithTender != null))
+            {
+                if (match.SteamLocomotiveWithTender != null)
+                    controller = match.SteamLocomotiveWithTender.GetRefillController(MatchedWagonAndPickup.Pickup.PickupType);
+                else
+                    controller = (match.Wagon as MSTSLocomotive).GetRefillController(MatchedWagonAndPickup.Pickup.PickupType);
+            }
             else
             {
                 controller = match.Wagon.WeightLoadController;
@@ -603,7 +723,6 @@ namespace Orts.Viewer3D.RollingStock
                 controller.StopIncrease();
             else controller.StopDecrease();
         }
-
         #endregion
     } // Class LocomotiveViewer
 
@@ -625,21 +744,24 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         /// <param name="viewer">Viver3D</param>
         /// <param name="FileName">Name of the Texture</param>
-        public static void LoadTextures(Viewer viewer, string FileName)
+        public static bool LoadTextures(Viewer viewer, string FileName)
         {
             if (string.IsNullOrEmpty(FileName))
-                return;
+                return false;
 
             if (DayTextures.Keys.Contains(FileName))
-                return;
+                return false;
 
-            DayTextures.Add(FileName, viewer.TextureManager.Get(FileName));
+            DayTextures.Add(FileName, viewer.TextureManager.Get(FileName, true));
 
             var nightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "night"), Path.GetFileName(FileName));
             NightTextures.Add(FileName, viewer.TextureManager.Get(nightpath));
 
-            var lightpath = Path.Combine(Path.Combine(Path.GetDirectoryName(FileName), "cablight"), Path.GetFileName(FileName));
-            LightTextures.Add(FileName, viewer.TextureManager.Get(lightpath));
+            var lightdirectory = Path.Combine(Path.GetDirectoryName(FileName), "cablight");
+            var lightpath = Path.Combine(lightdirectory, Path.GetFileName(FileName));
+            var lightTexture = viewer.TextureManager.Get(lightpath);
+            LightTextures.Add(FileName, lightTexture);
+            return Directory.Exists(lightdirectory);
         }
 
         static Texture2D[] Disassemble(GraphicsDevice graphicsDevice, Texture2D texture, int frameCount, Point frameGrid, string fileName)
@@ -792,7 +914,7 @@ namespace Orts.Viewer3D.RollingStock
         /// <param name="isLight">Is Cab Light on?</param>
         /// <param name="isNightTexture"></param>
         /// <returns>The Texture represented by its index</returns>
-        public static Texture2D GetTextureByIndexes(string FileName, int indx, bool isDark, bool isLight, out bool isNightTexture)
+        public static Texture2D GetTextureByIndexes(string FileName, int indx, bool isDark, bool isLight, out bool isNightTexture, bool hasCabLightDirectory)
         {
             Texture2D retval = SharedMaterialManager.MissingTexture;
             Texture2D[] tmp = null;
@@ -804,9 +926,18 @@ namespace Orts.Viewer3D.RollingStock
 
             if (isLight)
             {
-                // Light on: use light texture when dark, if available.
+                // Light on: use light texture when dark, if available; else select accordingly presence of CabLight directory.
                 if (isDark)
+                {
                     tmp = PLightTextures[FileName];
+                    if (tmp == null)
+                    {
+                        if (hasCabLightDirectory)
+                            tmp = PNightTextures[FileName];
+                        else
+                            tmp = PDayTextures[FileName];
+                    }
+                }
                 // Both light and day textures should be used as-is in this situation.
                 isNightTexture = true;
             }
@@ -836,7 +967,7 @@ namespace Orts.Viewer3D.RollingStock
         /// <param name="isLight">Is Cab Light on?</param>
         /// <param name="isNightTexture"></param>
         /// <returns>The Texture</returns>
-        public static Texture2D GetTexture(string FileName, bool isDark, bool isLight, out bool isNightTexture)
+        public static Texture2D GetTexture(string FileName, bool isDark, bool isLight, out bool isNightTexture, bool hasCabLightDirectory)
         {
             Texture2D retval = SharedMaterialManager.MissingTexture;
             isNightTexture = false;
@@ -846,9 +977,14 @@ namespace Orts.Viewer3D.RollingStock
 
             if (isLight)
             {
-                // Light on: use light texture when dark, if available.
+                // Light on: use light texture when dark, if available; else check if CabLightDirectory available to decide.
                 if (isDark)
+                {
                     retval = LightTextures[FileName];
+                    if (retval == SharedMaterialManager.MissingTexture)
+                        retval = hasCabLightDirectory ? NightTextures[FileName] : DayTextures[FileName];
+                }
+
                 // Both light and day textures should be used as-is in this situation.
                 isNightTexture = true;
             }
@@ -894,7 +1030,6 @@ namespace Orts.Viewer3D.RollingStock
     public class CabRenderer : RenderPrimitive
     {
         private SpriteBatchMaterial _Sprite2DCabView;
-        private Rectangle _CabRect = new Rectangle();
         private Matrix _Scale = Matrix.Identity;
         private Texture2D _CabTexture;
         private CabShader _Shader;
@@ -907,6 +1042,7 @@ namespace Orts.Viewer3D.RollingStock
         private MSTSLocomotive _Locomotive;
         private int _Location;
         private bool _isNightTexture;
+        private bool HasCabLightDirectory = false;
         public Dictionary<int, CabViewControlRenderer> ControlMap;
 
         [CallOnThread("Loader")]
@@ -916,22 +1052,6 @@ namespace Orts.Viewer3D.RollingStock
             _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
             _Viewer = viewer;
             _Locomotive = car;
-
-            // _Viewer.DisplaySize intercepted to adjust cab view height
-            Point DisplaySize = _Viewer.DisplaySize;
-            DisplaySize.Y = _Viewer.CabHeightPixels;
-
-            // Use same shader for both front-facing and rear-facing cabs.
-            if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
-            {
-                _Shader = new CabShader(viewer.GraphicsDevice,
-                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
-                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
-                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
-                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
-            }
-
-            _PrevScreenSize = DisplaySize;
 
             #region Create Control renderers
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
@@ -944,7 +1064,7 @@ namespace Orts.Viewer3D.RollingStock
                     // Loading ACE files, skip displaying ERROR messages
                     foreach (var cabfile in cabView.CVFFile.TwoDViews)
                     {
-                        CABTextureManager.LoadTextures(viewer, cabfile);
+                        HasCabLightDirectory = CABTextureManager.LoadTextures(viewer, cabfile);
                     }
 
                     if (cabView.CVFFile.CabViewControls == null)
@@ -1034,6 +1154,27 @@ namespace Orts.Viewer3D.RollingStock
                 i++;
             }
             #endregion
+
+            _Viewer.AdjustCabHeight(_Viewer.DisplaySize.X, _Viewer.DisplaySize.Y);
+
+            _Viewer.CabCamera.ScreenChanged();
+
+            // _Viewer.DisplaySize intercepted to adjust cab view height
+            Point DisplaySize = _Viewer.DisplaySize;
+            DisplaySize.Y = _Viewer.CabHeightPixels;
+
+            // Use same shader for both front-facing and rear-facing cabs.
+            if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
+            {
+                _Shader = new CabShader(viewer.GraphicsDevice,
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
+            }
+
+            _PrevScreenSize = DisplaySize;
+
         }
 
         public CabRenderer(Viewer viewer, MSTSLocomotive car, CabViewFile CVFFile) //used by 3D cab as a refrence, thus many can be eliminated
@@ -1134,7 +1275,7 @@ namespace Orts.Viewer3D.RollingStock
             if (!_Locomotive.ShowCab)
                 return;
 
-            bool Dark = _Viewer.MaterialManager.sunDirection.Y <= 0f || _Viewer.Camera.IsUnderground;
+            bool Dark = _Viewer.MaterialManager.sunDirection.Y <= -0.085f || _Viewer.Camera.IsUnderground;
             bool CabLight = _Locomotive.CabLightOn;
 
             CabCamera cbc = _Viewer.Camera as CabCamera;
@@ -1148,13 +1289,9 @@ namespace Orts.Viewer3D.RollingStock
             }
 
             var i = (_Locomotive.UsingRearCab) ? 1 : 0;
-            _CabTexture = CABTextureManager.GetTexture(_Locomotive.CabViewList[i].CVFFile.TwoDViews[_Location], Dark, CabLight, out _isNightTexture);
+            _CabTexture = CABTextureManager.GetTexture(_Locomotive.CabViewList[i].CVFFile.TwoDViews[_Location], Dark, CabLight, out _isNightTexture, HasCabLightDirectory);
             if (_CabTexture == SharedMaterialManager.MissingTexture)
                 return;
-
-            // Cab view height adjusted to allow for clip or stretch
-            _CabRect.Width = _Viewer.DisplaySize.X;
-            _CabRect.Height = _Viewer.CabHeightPixels;
 
             if (_PrevScreenSize != _Viewer.DisplaySize && _Shader != null)
             {
@@ -1174,42 +1311,52 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            var cabScale = new Vector2((float)_Viewer.CabWidthPixels / _CabTexture.Width, (float)_Viewer.CabHeightPixels / _CabTexture.Height);
             // Cab view vertical position adjusted to allow for clip or stretch.
-            Rectangle stretchedCab;
-            if (_Viewer.Simulator.CarVibrating > 0 || _Viewer.Simulator.UseSuperElevation > 0 || _Locomotive.Train.IsTilting)
+            var cabPos = new Vector2(_Viewer.CabXOffsetPixels / cabScale.X, -_Viewer.CabYOffsetPixels / cabScale.Y);
+            var cabSize = new Vector2((_Viewer.CabWidthPixels - _Viewer.CabExceedsDisplayHorizontally) / cabScale.X, (_Viewer.CabHeightPixels - _Viewer.CabExceedsDisplay) / cabScale.Y);
+            int round(float x)
             {
-                if (_CabTexture != null)
-                    stretchedCab = new Rectangle(-50, -40, _CabTexture.Width + 100, _CabTexture.Height + 80);
-                else stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
+                return (int)Math.Round(x);
             }
-            else
-                stretchedCab = new Rectangle(_CabRect.Left, _CabRect.Top + _Viewer.CabYOffsetPixels, _CabRect.Width, _CabRect.Height);
+            var cabRect = new Rectangle(round(cabPos.X), round(cabPos.Y), round(cabSize.X), round(cabSize.Y));
 
-            if (_Location == 0 && _Shader != null)
+            if (_Shader != null)
             {
                 // TODO: Readd ability to control night time lighting.
-                if (_Viewer.Settings.UseMSTSEnv == false)
-                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.Simulator.Weather.OvercastFactor);
-                else
-                    _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, _Viewer.World.MSTSSky.mstsskyovercastFactor);
-
-                _Shader.SetTextureData(stretchedCab.Left, stretchedCab.Top, stretchedCab.Width, stretchedCab.Height);
+                float overcast = _Viewer.Settings.UseMSTSEnv ? _Viewer.World.MSTSSky.mstsskyovercastFactor : _Viewer.Simulator.Weather.OvercastFactor;
+                _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, overcast);
+                _Shader.SetTextureData(cabRect.Left, cabRect.Top, cabRect.Width, cabRect.Height);
                 _Shader.CurrentTechnique.Passes[0].Apply();
             }
 
-            if (_CabTexture != null)
+            if (_CabTexture == null)
+                return;
+
+            var drawOrigin = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
+            var drawPos = new Vector2(_Viewer.CabWidthPixels / 2, _Viewer.CabHeightPixels / 2);
+            // Cab view position adjusted to allow for letterboxing.
+            drawPos.X += _Viewer.CabXLetterboxPixels;
+            drawPos.Y += _Viewer.CabYLetterboxPixels;
+
+            _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, drawPos, cabRect, Color.White, 0f, drawOrigin, cabScale, SpriteEffects.None, 0f);
+
+            // Draw letterboxing.
+            Texture2D letterboxTexture = new Texture2D(graphicsDevice, 1, 1);
+            letterboxTexture.SetData<Color>(new Color[] { Color.Black });
+            void drawLetterbox(int x, int y, int w, int h)
             {
-                if (this._Viewer.Simulator.UseSuperElevation > 0 || _Viewer.Simulator.CarVibrating > 0 || _Locomotive.Train.IsTilting)
-                {
-                    var scale = new Vector2((float)_CabRect.Width / _CabTexture.Width, (float)_CabRect.Height / _CabTexture.Height);
-                    var place = new Vector2(_CabRect.Width / 2 - 50 * scale.X, _CabRect.Height / 2 + _Viewer.CabYOffsetPixels - 40 * scale.Y);
-                    var place2 = new Vector2(_CabTexture.Width / 2, _CabTexture.Height / 2);
-                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, place, stretchedCab, Color.White, 0, place2, scale, SpriteEffects.None, 0f);
-                }
-                else
-                {
-                    _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, stretchedCab, Color.White);
-                }
+                _Sprite2DCabView.SpriteBatch.Draw(letterboxTexture, new Rectangle(x, y, w, h), Color.White);
+            }
+            if (_Viewer.CabXLetterboxPixels > 0)
+            {
+                drawLetterbox(0, 0, _Viewer.CabXLetterboxPixels, _Viewer.DisplaySize.Y);
+                drawLetterbox(_Viewer.CabXLetterboxPixels + _Viewer.CabWidthPixels, 0, _Viewer.DisplaySize.X - _Viewer.CabWidthPixels - _Viewer.CabXLetterboxPixels, _Viewer.DisplaySize.Y);
+            }
+            if (_Viewer.CabYLetterboxPixels > 0)
+            {
+                drawLetterbox(0, 0, _Viewer.DisplaySize.X, _Viewer.CabYLetterboxPixels);
+                drawLetterbox(0, _Viewer.CabYLetterboxPixels + _Viewer.CabHeightPixels, _Viewer.DisplaySize.X, _Viewer.DisplaySize.Y - _Viewer.CabHeightPixels - _Viewer.CabYLetterboxPixels);
             }
             //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
         }
@@ -1238,6 +1385,7 @@ namespace Orts.Viewer3D.RollingStock
         protected Vector2 Position;
         protected Texture2D Texture;
         protected bool IsNightTexture;
+        protected bool HasCabLightDirectory;
 
         Matrix Matrix = Matrix.Identity;
 
@@ -1250,7 +1398,7 @@ namespace Orts.Viewer3D.RollingStock
 
             ControlView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
 
-            CABTextureManager.LoadTextures(Viewer, Control.ACEFile);
+            HasCabLightDirectory = CABTextureManager.LoadTextures(Viewer, Control.ACEFile);
         }
 
         public CABViewControlTypes GetControlType()
@@ -1318,7 +1466,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             ControlDial = control;
 
-            Texture = CABTextureManager.GetTexture(Control.ACEFile, false, false, out IsNightTexture);
+            Texture = CABTextureManager.GetTexture(Control.ACEFile, false, false, out IsNightTexture, HasCabLightDirectory);
             if (ControlDial.Height < Texture.Height)
                 Scale = (float)(ControlDial.Height / Texture.Height);
             Origin = new Vector2((float)Texture.Width / 2, ControlDial.Center / Scale);
@@ -1326,18 +1474,19 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-            var dark = Viewer.MaterialManager.sunDirection.Y <= 0f || Viewer.Camera.IsUnderground;
+            var dark = Viewer.MaterialManager.sunDirection.Y <= -0.085f || Viewer.Camera.IsUnderground;
 
-            Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture);
+            Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
             if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
-            Position.X = (float)Viewer.DisplaySize.X / 640 * ((float)Control.PositionX + Origin.X * Scale);
-            Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y * Scale) + Viewer.CabYOffsetPixels;
-            ScaleToScreen = (float)Viewer.DisplaySize.X / 640 * Scale;
+            // Cab view position adjusted to allow for letterboxing.
+            Position.X = (float)Viewer.CabWidthPixels / 640 * ((float)Control.PositionX + Origin.X * Scale) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            Position.Y = (float)Viewer.CabHeightPixels / 480 * ((float)Control.PositionY + Origin.Y * Scale) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
+            ScaleToScreen = (float)Viewer.CabWidthPixels / 640 * Scale;
 
             var rangeFraction = GetRangeFraction();
             var direction = ControlDial.Direction == 0 ? 1 : -1;
@@ -1381,7 +1530,7 @@ namespace Orts.Viewer3D.RollingStock
             if ((Control.ControlType == CABViewControlTypes.REVERSER_PLATE) || (Gauge.ControlStyle == CABViewControlStyles.POINTER))
             {
                 DrawColor = Color.White;
-                Texture = CABTextureManager.GetTexture(Control.ACEFile, false, Locomotive.CabLightOn, out IsNightTexture);
+                Texture = CABTextureManager.GetTexture(Control.ACEFile, false, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
                 SourceRectangle.Width = (int)Texture.Width;
                 SourceRectangle.Height = (int)Texture.Height;
             }
@@ -1396,8 +1545,8 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, locomotive, control, shader)
         {
             Gauge = control;
-            CABTextureManager.LoadTextures(Viewer, control.FireACEFile);
-            Texture = CABTextureManager.GetTexture(control.FireACEFile, false, Locomotive.CabLightOn, out IsNightTexture);
+            HasCabLightDirectory = CABTextureManager.LoadTextures(Viewer, control.FireACEFile);
+            Texture = CABTextureManager.GetTexture(control.FireACEFile, false, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
             DrawColor = Color.White;
             SourceRectangle.Width = (int)Texture.Width;
             SourceRectangle.Height = (int)Texture.Height;
@@ -1416,8 +1565,8 @@ namespace Orts.Viewer3D.RollingStock
         {
             if (!(Gauge is CVCFirebox))
             {
-                var dark = Viewer.MaterialManager.sunDirection.Y <= 0f || Viewer.Camera.IsUnderground;
-                Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture);
+                var dark = Viewer.MaterialManager.sunDirection.Y <= -0.085f || Viewer.Camera.IsUnderground;
+                Texture = CABTextureManager.GetTexture(Control.ACEFile, dark, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
             }
             if (Texture == SharedMaterialManager.MissingTexture)
                 return;
@@ -1425,7 +1574,7 @@ namespace Orts.Viewer3D.RollingStock
             base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height adjusted to allow for clip or stretch.
-            var xratio = (float)Viewer.DisplaySize.X / 640;
+            var xratio = (float)Viewer.CabWidthPixels / 640;
             var yratio = (float)Viewer.CabHeightPixels / 480;
 
             float percent, xpos, ypos, zeropos;
@@ -1447,38 +1596,45 @@ namespace Orts.Viewer3D.RollingStock
                 ypos = (float)Gauge.Height * percent;
             }
 
+            int destX, destY, destW, destH;
             if (Gauge.ControlStyle == CABViewControlStyles.SOLID || Gauge.ControlStyle == CABViewControlStyles.LIQUID)
             {
                 if (Control.MinValue < 0)
                 {
                     if (Gauge.Orientation == 0)
                     {
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
-                        DestinationRectangle.Y = (int)(yratio * Control.PositionY) + Viewer.CabYOffsetPixels;
-                        DestinationRectangle.Width = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
-                        DestinationRectangle.Height = (int)(yratio * ypos);
+                        destX = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
+                        destY = (int)(yratio * Control.PositionY);
+                        destW = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
+                        destH = (int)(yratio * ypos);
                     }
                     else
                     {
-                        DestinationRectangle.X = (int)(xratio * Control.PositionX);
-                        DestinationRectangle.Y = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos))) + Viewer.CabYOffsetPixels;
-                        DestinationRectangle.Width = (int)(xratio * xpos);
-                        DestinationRectangle.Height = (int)(yratio * (ypos > zeropos ? ypos - zeropos : zeropos - ypos));
+                        destX = (int)(xratio * Control.PositionX);
+                        if (Gauge.Direction != 1 && !IsFire)
+                            destY = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos)));
+                        else
+                            destY = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos)));
+                        destW = (int)(xratio * xpos);
+                        destH = (int)(yratio * (ypos > zeropos ? ypos - zeropos : zeropos - ypos));
                     }
                 }
                 else
                 {
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX);
                     var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                     if (Gauge.Direction != 0)  // column grows from bottom or from right
                     {
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
-                        topY += Gauge.Height * (1 - percent);
+                        destX = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
+                        if (Gauge.Orientation != 0)
+                            topY += Gauge.Height * (1 - percent);
                     }
-                    // Cab view vertical position adjusted to allow for clip or stretch.
-                    DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
-                    DestinationRectangle.Width = (int)(xratio * xpos);
-                    DestinationRectangle.Height = (int)(yratio * ypos);
+                    else
+                    {
+                        destX = (int)(xratio * Control.PositionX);
+                    }
+                    destY = (int)(yratio * topY);
+                    destW = (int)(xratio * xpos);
+                    destH = (int)(yratio * ypos);
                 }
             }
             else // pointer gauge using texture
@@ -1486,26 +1642,26 @@ namespace Orts.Viewer3D.RollingStock
                 var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                 if (Gauge.Orientation == 0) // gauge horizontal
                 {
-                    DestinationRectangle.X = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos));
                     if (Gauge.Direction != 0)  // column grows from right
-                        DestinationRectangle.X = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos));
+                        destX = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos));
+                    else
+                        destX = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos));
                 }
                 else // gauge vertical
                 {
                     topY += ypos - 0.5 * Gauge.Area.Height;
-                    DestinationRectangle.X = (int)(xratio * Control.PositionX);
+                    destX = (int)(xratio * Control.PositionX);
                     if (Gauge.Direction != 0)  // column grows from bottom
                         topY += Gauge.Height - 2 * ypos;
                 }
-                // Cab view vertical position adjusted to allow for clip or stretch.
-                DestinationRectangle.Y = (int)(yratio * topY) + Viewer.CabYOffsetPixels;
-                DestinationRectangle.Width = (int)(xratio * Gauge.Area.Width);
-                DestinationRectangle.Height = (int)(yratio * Gauge.Area.Height);
+                destY = (int)(yratio * topY);
+                destW = (int)(xratio * Gauge.Area.Width);
+                destH = (int)(yratio * Gauge.Area.Height);
 
                 // Adjust coal texture height, because it mustn't show up at the bottom of door (see Scotsman)
                 // TODO: cut the texture at the bottom instead of stretching
                 if (Gauge is CVCFirebox)
-                    DestinationRectangle.Height = Math.Min(DestinationRectangle.Height, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - DestinationRectangle.Y);
+                    destH = Math.Min(destH, (int)(yratio * (Control.PositionY + 0.5 * Gauge.Area.Height)) - destY);
             }
             if (Control.MinValue < 0 && Control.ControlType != CABViewControlTypes.REVERSER_PLATE && Gauge.ControlStyle != CABViewControlStyles.POINTER)
             {
@@ -1522,6 +1678,19 @@ namespace Orts.Viewer3D.RollingStock
                     else DrawColor = new Color(Gauge.PositiveColor.R, Gauge.PositiveColor.G, Gauge.PositiveColor.B, Gauge.PositiveColor.A);
                 }
             }
+
+            // Cab view vertical position adjusted to allow for clip or stretch.
+            destX -= Viewer.CabXOffsetPixels;
+            destY += Viewer.CabYOffsetPixels;
+
+            // Cab view position adjusted to allow for letterboxing.
+            destX += Viewer.CabXLetterboxPixels;
+            destY += Viewer.CabYLetterboxPixels;
+
+            DestinationRectangle.X = destX;
+            DestinationRectangle.Y = destY;
+            DestinationRectangle.Width = destW;
+            DestinationRectangle.Height = destH;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -1563,7 +1732,7 @@ namespace Orts.Viewer3D.RollingStock
         {
             ControlDiscrete = control;
             CABTextureManager.DisassembleTexture(viewer.GraphicsDevice, Control.ACEFile, (int)Control.Width, (int)Control.Height, ControlDiscrete.FramesCount, ControlDiscrete.FramesX, ControlDiscrete.FramesY);
-            Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, 0, false, false, out IsNightTexture);
+            Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, 0, false, false, out IsNightTexture, HasCabLightDirectory);
             SourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
             Scale = (float)(Math.Min(Control.Height, Texture.Height) / Texture.Height); // Allow only downscaling of the texture, and not upscaling
 
@@ -1597,19 +1766,20 @@ namespace Orts.Viewer3D.RollingStock
                 if ((mS.MSStyles.Count > index) && (mS.MSStyles[index] == 1) && (CumulativeTime > CVCFlashTimeOn))
                     return;
             }
-            var dark = Viewer.MaterialManager.sunDirection.Y <= 0f || Viewer.Camera.IsUnderground;
+            var dark = Viewer.MaterialManager.sunDirection.Y <= -0.085f || Viewer.Camera.IsUnderground;
 
-            Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, index, dark, Locomotive.CabLightOn, out IsNightTexture);
+            Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, index, dark, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
             if (Texture == SharedMaterialManager.MissingTexture)
                 return;
 
             base.PrepareFrame(frame, elapsedTime);
 
             // Cab view height and vertical position adjusted to allow for clip or stretch.
-            var xratio = (float)Viewer.DisplaySize.X / 640;
+            var xratio = (float)Viewer.CabWidthPixels / 640;
             var yratio = (float)Viewer.CabHeightPixels / 480;
-            DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001);
-            DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels;
+            // Cab view position adjusted to allow for letterboxing.
+            DestinationRectangle.X = (int)(xratio * Control.PositionX * 1.0001) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            DestinationRectangle.Y = (int)(yratio * Control.PositionY * 1.0001) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
             DestinationRectangle.Width = (int)(xratio * Math.Min(Control.Width, Texture.Width));  // Allow only downscaling of the texture, and not upscaling
             DestinationRectangle.Height = (int)(yratio * Math.Min(Control.Height, Texture.Height));  // Allow only downscaling of the texture, and not upscaling
         }
@@ -1642,38 +1812,51 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.BLOWER:
                 case CABViewControlTypes.DAMPERS_FRONT:
                 case CABViewControlTypes.STEAM_HEAT:
+                case CABViewControlTypes.ORTS_WATER_SCOOP:
                 case CABViewControlTypes.WATER_INJECTOR1:
                 case CABViewControlTypes.WATER_INJECTOR2:
+                case CABViewControlTypes.SMALL_EJECTOR:
+                case CABViewControlTypes.ORTS_LARGE_EJECTOR:
                 case CABViewControlTypes.FIREHOLE:
                     index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.THROTTLE:
                 case CABViewControlTypes.THROTTLE_DISPLAY:
-                    if (Locomotive.ThrottleController.SmoothMax() == null)
-                        index = Locomotive.ThrottleController.CurrentNotch;
-                    else
-                        index = PercentToIndex(data);
+                    index = PercentToIndex(data);
                     break;
                 case CABViewControlTypes.FRICTION_BRAKING:
                     index = data > 0.001 ? 1 : 0;
                     break;
                 case CABViewControlTypes.DYNAMIC_BRAKE:
                 case CABViewControlTypes.DYNAMIC_BRAKE_DISPLAY:
+                    var dynBrakePercent = Locomotive.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING ?
+                        Locomotive.DynamicBrakePercent : Locomotive.LocalDynamicBrakePercent;
                     if (Locomotive.DynamicBrakeController != null)
                     {
-                        if (Locomotive.DynamicBrakePercent == -1)
+                        if (dynBrakePercent == -1)
                             break;
                         if (!Locomotive.HasSmoothStruc)
+                        {
                             index = Locomotive.DynamicBrakeController != null ? Locomotive.DynamicBrakeController.CurrentNotch : 0;
+                        }
                         else
-                            index = PercentToIndex(Locomotive.DynamicBrakePercent);
+                            index = PercentToIndex(dynBrakePercent);
                     }
                     else
                     {
-                        index = PercentToIndex(Locomotive.DynamicBrakePercent);
+                        index = PercentToIndex(dynBrakePercent);
                     }
                     break;
                 case CABViewControlTypes.CPH_DISPLAY:
+                    if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0)
+                        // TODO <CSComment> This is a sort of hack to allow MSTS-compliant operation of Dynamic brake indications in the standard USA case with 8 steps (e.g. Dash9)
+                        // This hack returns to code of previous OR versions (e.g. release 1.0).
+                        // The clean solution for MSTS compliance would be not to increment the percentage of the dynamic brake at first dynamic brake key pression, so that
+                        // subsequent steps become of 12.5% as in MSTS instead of 11.11% as in OR. This requires changes in the physics logic </CSComment>
+                        index = (int)((ControlDiscrete.FramesCount) * Locomotive.GetCombinedHandleValue(false));
+                    else
+                        index = PercentToIndex(Locomotive.GetCombinedHandleValue(false));
+                    break;
                 case CABViewControlTypes.CP_HANDLE:
                     if (Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleDynamic && Locomotive.DynamicBrakePercent >= 0
                         || Locomotive.CombinedControlType == MSTSLocomotive.CombinedControl.ThrottleAir && Locomotive.TrainBrakeController.CurrentValue > 0)
@@ -1689,6 +1872,7 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.RIGHTDOOR:
                 case CABViewControlTypes.MIRRORS:
                 case CABViewControlTypes.HORN:
+                case CABViewControlTypes.VACUUM_EXHAUSTER:
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.BELL:
                 case CABViewControlTypes.SANDERS:
@@ -1697,10 +1881,20 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.FRONT_HLIGHT:
                 case CABViewControlTypes.PANTOGRAPH:
                 case CABViewControlTypes.PANTOGRAPH2:
+                case CABViewControlTypes.ORTS_PANTOGRAPH3:
+                case CABViewControlTypes.ORTS_PANTOGRAPH4:
                 case CABViewControlTypes.PANTOGRAPHS_4:
                 case CABViewControlTypes.PANTOGRAPHS_4C:
                 case CABViewControlTypes.PANTOGRAPHS_5:
                 case CABViewControlTypes.PANTO_DISPLAY:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_STATE:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_CLOSED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_AUTHORIZED:
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED:
                 case CABViewControlTypes.DIRECTION:
                 case CABViewControlTypes.DIRECTION_DISPLAY:
                 case CABViewControlTypes.ASPECT_DISPLAY:
@@ -1710,14 +1904,80 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.EMERGENCY_BRAKE:
                 case CABViewControlTypes.DOORS_DISPLAY:
                 case CABViewControlTypes.CYL_COCKS:
+                case CABViewControlTypes.ORTS_BLOWDOWN_VALVE:
                 case CABViewControlTypes.ORTS_CYL_COMP:
                 case CABViewControlTypes.STEAM_INJ1:
                 case CABViewControlTypes.STEAM_INJ2:
-                case CABViewControlTypes.SMALL_EJECTOR:
                 case CABViewControlTypes.GEARS_DISPLAY:
+                case CABViewControlTypes.CAB_RADIO:
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
+                case CABViewControlTypes.ORTS_HELPERS_DIESEL_ENGINES:
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STATE:
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STARTER:
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STOPPER:
+                case CABViewControlTypes.ORTS_CABLIGHT:
+                case CABViewControlTypes.ORTS_LEFTDOOR:
+                case CABViewControlTypes.ORTS_RIGHTDOOR:
+                case CABViewControlTypes.ORTS_MIRRORS:
+                    index = (int)data;
+                    break;
+
+                // Train Control System controls
+                case CABViewControlTypes.ORTS_TCS1:
+                case CABViewControlTypes.ORTS_TCS2:
+                case CABViewControlTypes.ORTS_TCS3:
+                case CABViewControlTypes.ORTS_TCS4:
+                case CABViewControlTypes.ORTS_TCS5:
+                case CABViewControlTypes.ORTS_TCS6:
+                case CABViewControlTypes.ORTS_TCS7:
+                case CABViewControlTypes.ORTS_TCS8:
+                case CABViewControlTypes.ORTS_TCS9:
+                case CABViewControlTypes.ORTS_TCS10:
+                case CABViewControlTypes.ORTS_TCS11:
+                case CABViewControlTypes.ORTS_TCS12:
+                case CABViewControlTypes.ORTS_TCS13:
+                case CABViewControlTypes.ORTS_TCS14:
+                case CABViewControlTypes.ORTS_TCS15:
+                case CABViewControlTypes.ORTS_TCS16:
+                case CABViewControlTypes.ORTS_TCS17:
+                case CABViewControlTypes.ORTS_TCS18:
+                case CABViewControlTypes.ORTS_TCS19:
+                case CABViewControlTypes.ORTS_TCS20:
+                case CABViewControlTypes.ORTS_TCS21:
+                case CABViewControlTypes.ORTS_TCS22:
+                case CABViewControlTypes.ORTS_TCS23:
+                case CABViewControlTypes.ORTS_TCS24:
+                case CABViewControlTypes.ORTS_TCS25:
+                case CABViewControlTypes.ORTS_TCS26:
+                case CABViewControlTypes.ORTS_TCS27:
+                case CABViewControlTypes.ORTS_TCS28:
+                case CABViewControlTypes.ORTS_TCS29:
+                case CABViewControlTypes.ORTS_TCS30:
+                case CABViewControlTypes.ORTS_TCS31:
+                case CABViewControlTypes.ORTS_TCS32:
+                case CABViewControlTypes.ORTS_TCS33:
+                case CABViewControlTypes.ORTS_TCS34:
+                case CABViewControlTypes.ORTS_TCS35:
+                case CABViewControlTypes.ORTS_TCS36:
+                case CABViewControlTypes.ORTS_TCS37:
+                case CABViewControlTypes.ORTS_TCS38:
+                case CABViewControlTypes.ORTS_TCS39:
+                case CABViewControlTypes.ORTS_TCS40:
+                case CABViewControlTypes.ORTS_TCS41:
+                case CABViewControlTypes.ORTS_TCS42:
+                case CABViewControlTypes.ORTS_TCS43:
+                case CABViewControlTypes.ORTS_TCS44:
+                case CABViewControlTypes.ORTS_TCS45:
+                case CABViewControlTypes.ORTS_TCS46:
+                case CABViewControlTypes.ORTS_TCS47:
+                case CABViewControlTypes.ORTS_TCS48:
                     index = (int)data;
                     break;
             }
+            // If it is a control with NumPositions and NumValues, the index becomes the reference to the Positions entry, which in turn is the frame index within the .ace file
+            if (ControlDiscrete is CVCDiscrete && !(ControlDiscrete is CVCSignal) && (ControlDiscrete as CVCDiscrete).Positions.Count > index &&
+                (ControlDiscrete as CVCDiscrete).Positions.Count == ControlDiscrete.Values.Count && index >= 0)
+                index = (ControlDiscrete as CVCDiscrete).Positions[index];
 
             if (index >= ControlDiscrete.FramesCount) index = ControlDiscrete.FramesCount - 1;
             if (index < 0) index = 0;
@@ -1757,27 +2017,154 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.FRONT_HLIGHT: var hl = ChangedValue(0); if (hl != 0) new HeadlightCommand(Viewer.Log, hl > 0); break;
                 case CABViewControlTypes.WHISTLE:
                 case CABViewControlTypes.HORN: new HornCommand(Viewer.Log, ChangedValue(Locomotive.Horn ? 1 : 0) > 0); break;
+                case CABViewControlTypes.VACUUM_EXHAUSTER: new VacuumExhausterCommand(Viewer.Log, ChangedValue(Locomotive.VacuumExhausterPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.BELL: new BellCommand(Viewer.Log, ChangedValue(Locomotive.Bell ? 1 : 0) > 0); break;
                 case CABViewControlTypes.SANDERS:
                 case CABViewControlTypes.SANDING: new SanderCommand(Viewer.Log, ChangedValue(Locomotive.Sander ? 1 : 0) > 0); break;
-                case CABViewControlTypes.PANTOGRAPH: new PantographCommand(Viewer.Log, 1, ChangedValue(Locomotive.Pantographs[1].State == PantographState.Up ? 1 : 0) > 0); break;
-                case CABViewControlTypes.PANTOGRAPH2: new PantographCommand(Viewer.Log, 2, ChangedValue(Locomotive.Pantographs[2].State == PantographState.Up ? 1 : 0) > 0); break;
+                case CABViewControlTypes.PANTOGRAPH: new PantographCommand(Viewer.Log, 1, ChangedValue(Locomotive.Pantographs[1].CommandUp ? 1 : 0) > 0); break;
+                case CABViewControlTypes.PANTOGRAPH2: new PantographCommand(Viewer.Log, 2, ChangedValue(Locomotive.Pantographs[2].CommandUp ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_PANTOGRAPH3: new PantographCommand(Viewer.Log, 3, ChangedValue(Locomotive.Pantographs[3].CommandUp ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_PANTOGRAPH4: new PantographCommand(Viewer.Log, 4, ChangedValue(Locomotive.Pantographs[4].CommandUp ? 1 : 0) > 0); break;
+                case CABViewControlTypes.PANTOGRAPHS_4C:
+                case CABViewControlTypes.PANTOGRAPHS_4:
+                    var pantos = ChangedValue(0);
+                    if (pantos != 0)
+                    {
+                        if (Locomotive.Pantographs[1].State == PantographState.Down && Locomotive.Pantographs[2].State == PantographState.Down)
+                        {
+                            if (pantos > 0) new PantographCommand(Viewer.Log, 1, true);
+                            else if (Control.ControlType == CABViewControlTypes.PANTOGRAPHS_4C) new PantographCommand(Viewer.Log, 2, true);
+                        }
+                        else if (Locomotive.Pantographs[1].State == PantographState.Up && Locomotive.Pantographs[2].State == PantographState.Down)
+                        {
+                            if (pantos > 0) new PantographCommand(Viewer.Log, 2, true);
+                            else new PantographCommand(Viewer.Log, 1, false);
+                        }
+                        else if (Locomotive.Pantographs[1].State == PantographState.Up && Locomotive.Pantographs[2].State == PantographState.Up)
+                        {
+                            if (pantos > 0) new PantographCommand(Viewer.Log, 1, false);
+                            else new PantographCommand(Viewer.Log, 2, false);
+                        }
+                        else if (Locomotive.Pantographs[1].State == PantographState.Down && Locomotive.Pantographs[2].State == PantographState.Up)
+                        {
+                            if (pantos < 0) new PantographCommand(Viewer.Log, 1, true);
+                            else if (Control.ControlType == CABViewControlTypes.PANTOGRAPHS_4C) new PantographCommand(Viewer.Log, 2, false);
+                        }
+                    }
+                    break;
+                case CABViewControlTypes.STEAM_HEAT: Locomotive.SetSteamHeatValue(ChangedValue(Locomotive.SteamHeatController.IntermediateValue)); break;
+                case CABViewControlTypes.ORTS_WATER_SCOOP: if (((Locomotive as MSTSSteamLocomotive).WaterScoopDown ? 1 : 0) != ChangedValue(Locomotive.WaterScoopDown ? 1 : 0)) new ToggleWaterScoopCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
+                    new CircuitBreakerClosingOrderCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).PowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0) > 0);
+                    new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0);
+                    break;
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER: new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, ChangedValue(UserInput.IsMouseLeftButtonPressed ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION: new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, ChangedValue((Locomotive as MSTSElectricLocomotive).PowerSupply.CircuitBreaker.DriverClosingAuthorization ? 1 : 0) > 0); break;
                 case CABViewControlTypes.EMERGENCY_BRAKE: if ((Locomotive.EmergencyButtonPressed ? 1 : 0) != ChangedValue(Locomotive.EmergencyButtonPressed ? 1 : 0)) new EmergencyPushButtonCommand(Viewer.Log); break;
                 case CABViewControlTypes.RESET: new AlerterCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.AlerterButtonPressed ? 1 : 0) > 0); break;
                 case CABViewControlTypes.CP_HANDLE: Locomotive.SetCombinedHandleValue(ChangedValue(Locomotive.GetCombinedHandleValue(true))); break;
                 // Steam locomotives only:
                 case CABViewControlTypes.CUTOFF: (Locomotive as MSTSSteamLocomotive).SetCutoffValue(ChangedValue((Locomotive as MSTSSteamLocomotive).CutoffController.IntermediateValue)); break;
                 case CABViewControlTypes.BLOWER: (Locomotive as MSTSSteamLocomotive).SetBlowerValue(ChangedValue((Locomotive as MSTSSteamLocomotive).BlowerController.IntermediateValue)); break;
-                case CABViewControlTypes.STEAM_HEAT: (Locomotive as MSTSSteamLocomotive).SetSteamHeatValue(ChangedValue((Locomotive as MSTSSteamLocomotive).SteamHeatController.IntermediateValue)); break;
                 case CABViewControlTypes.DAMPERS_FRONT: (Locomotive as MSTSSteamLocomotive).SetDamperValue(ChangedValue((Locomotive as MSTSSteamLocomotive).DamperController.IntermediateValue)); break;
                 case CABViewControlTypes.FIREHOLE: (Locomotive as MSTSSteamLocomotive).SetFireboxDoorValue(ChangedValue((Locomotive as MSTSSteamLocomotive).FireboxDoorController.IntermediateValue)); break;
                 case CABViewControlTypes.WATER_INJECTOR1: (Locomotive as MSTSSteamLocomotive).SetInjector1Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1Controller.IntermediateValue)); break;
                 case CABViewControlTypes.WATER_INJECTOR2: (Locomotive as MSTSSteamLocomotive).SetInjector2Value(ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2Controller.IntermediateValue)); break;
                 case CABViewControlTypes.CYL_COCKS: if (((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCocksAreOpen ? 1 : 0)) new ToggleCylinderCocksCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_BLOWDOWN_VALVE: if (((Locomotive as MSTSSteamLocomotive).BlowdownValveOpen ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).BlowdownValveOpen ? 1 : 0)) new ToggleBlowdownValveCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_CYL_COMP: if (((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).CylinderCompoundOn ? 1 : 0)) new ToggleCylinderCompoundCommand(Viewer.Log); break;
                 case CABViewControlTypes.STEAM_INJ1: if (((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector1IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 1); break;
                 case CABViewControlTypes.STEAM_INJ2: if (((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0) != ChangedValue((Locomotive as MSTSSteamLocomotive).Injector2IsOn ? 1 : 0)) new ToggleInjectorCommand(Viewer.Log, 2); break;
-                case CABViewControlTypes.SMALL_EJECTOR: break; // TODO: Unimplemented
+                case CABViewControlTypes.SMALL_EJECTOR: (Locomotive as MSTSSteamLocomotive).SetSmallEjectorValue(ChangedValue((Locomotive as MSTSSteamLocomotive).SmallEjectorController.IntermediateValue)); break;
+                case CABViewControlTypes.ORTS_LARGE_EJECTOR: (Locomotive as MSTSSteamLocomotive).SetLargeEjectorValue(ChangedValue((Locomotive as MSTSSteamLocomotive).LargeEjectorController.IntermediateValue)); break;
+                //
+                case CABViewControlTypes.CAB_RADIO: new CabRadioCommand(Viewer.Log, ChangedValue(Locomotive.CabRadioOn ? 1 : 0) > 0); break;
+                case CABViewControlTypes.WIPERS: new WipersCommand(Viewer.Log, ChangedValue(Locomotive.Wiper ? 1 : 0) > 0); break;
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE:
+                    var dieselLoco = Locomotive as MSTSDieselLocomotive;
+                    if ((dieselLoco.DieselEngines[0].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running ||
+                                dieselLoco.DieselEngines[0].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Stopped) &&
+                                ChangedValue(1) == 0) new TogglePlayerEngineCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_HELPERS_DIESEL_ENGINES:
+                    foreach (var car in Locomotive.Train.Cars)
+                    {
+                        dieselLoco = car as MSTSDieselLocomotive;
+                        if (dieselLoco != null && dieselLoco.AcceptMUSignals)
+                        {
+                            if (car == Viewer.Simulator.PlayerLocomotive && dieselLoco.DieselEngines.Count > 1)
+                            {
+                                if ((dieselLoco.DieselEngines[1].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running ||
+                                            dieselLoco.DieselEngines[1].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Stopped) &&
+                                            ChangedValue(1) == 0) new ToggleHelpersEngineCommand(Viewer.Log);
+                                break;
+                            }
+                            else if (car != Viewer.Simulator.PlayerLocomotive)
+                            {
+                                if ((dieselLoco.DieselEngines[0].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running ||
+                                            dieselLoco.DieselEngines[0].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Stopped) &&
+                                            ChangedValue(1) == 0) new ToggleHelpersEngineCommand(Viewer.Log);
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STARTER:
+                    dieselLoco = Locomotive as MSTSDieselLocomotive;
+                    if (dieselLoco.DieselEngines[0].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Stopped &&
+                                ChangedValue(1) == 0) new TogglePlayerEngineCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_PLAYER_DIESEL_ENGINE_STOPPER:
+                    dieselLoco = Locomotive as MSTSDieselLocomotive;
+                    if (dieselLoco.DieselEngines[0].EngineStatus == Orts.Simulation.RollingStocks.SubSystems.PowerSupplies.DieselEngine.Status.Running &&
+                                ChangedValue(1) == 0) new TogglePlayerEngineCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_CABLIGHT:
+                    if ((Locomotive.CabLightOn ? 1 : 0) != ChangedValue(Locomotive.CabLightOn ? 1 : 0)) new ToggleCabLightCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_LEFTDOOR:
+                    if ((Locomotive.GetCabFlipped() ? (Locomotive.DoorRightOpen ? 1 : 0) : Locomotive.DoorLeftOpen ? 1 : 0)
+                        != ChangedValue(Locomotive.GetCabFlipped() ? (Locomotive.DoorRightOpen ? 1 : 0) : Locomotive.DoorLeftOpen ? 1 : 0)) new ToggleDoorsLeftCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_RIGHTDOOR:
+                    if ((Locomotive.GetCabFlipped() ? (Locomotive.DoorLeftOpen ? 1 : 0) : Locomotive.DoorRightOpen ? 1 : 0)
+                         != ChangedValue(Locomotive.GetCabFlipped() ? (Locomotive.DoorLeftOpen ? 1 : 0) : Locomotive.DoorRightOpen ? 1 : 0)) new ToggleDoorsRightCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_MIRRORS:
+                    if ((Locomotive.MirrorOpen ? 1 : 0) != ChangedValue(Locomotive.MirrorOpen ? 1 : 0)) new ToggleMirrorsCommand(Viewer.Log); break;
+
+                // Train Control System controls
+                case CABViewControlTypes.ORTS_TCS1:
+                case CABViewControlTypes.ORTS_TCS2:
+                case CABViewControlTypes.ORTS_TCS3:
+                case CABViewControlTypes.ORTS_TCS4:
+                case CABViewControlTypes.ORTS_TCS5:
+                case CABViewControlTypes.ORTS_TCS6:
+                case CABViewControlTypes.ORTS_TCS7:
+                case CABViewControlTypes.ORTS_TCS8:
+                case CABViewControlTypes.ORTS_TCS9:
+                case CABViewControlTypes.ORTS_TCS10:
+                case CABViewControlTypes.ORTS_TCS11:
+                case CABViewControlTypes.ORTS_TCS12:
+                case CABViewControlTypes.ORTS_TCS13:
+                case CABViewControlTypes.ORTS_TCS14:
+                case CABViewControlTypes.ORTS_TCS15:
+                case CABViewControlTypes.ORTS_TCS16:
+                case CABViewControlTypes.ORTS_TCS17:
+                case CABViewControlTypes.ORTS_TCS18:
+                case CABViewControlTypes.ORTS_TCS19:
+                case CABViewControlTypes.ORTS_TCS20:
+                case CABViewControlTypes.ORTS_TCS21:
+                case CABViewControlTypes.ORTS_TCS22:
+                case CABViewControlTypes.ORTS_TCS23:
+                case CABViewControlTypes.ORTS_TCS24:
+                case CABViewControlTypes.ORTS_TCS25:
+                case CABViewControlTypes.ORTS_TCS26:
+                case CABViewControlTypes.ORTS_TCS27:
+                case CABViewControlTypes.ORTS_TCS28:
+                case CABViewControlTypes.ORTS_TCS29:
+                case CABViewControlTypes.ORTS_TCS30:
+                case CABViewControlTypes.ORTS_TCS31:
+                case CABViewControlTypes.ORTS_TCS32:
+                    int commandIndex = (int)Control.ControlType - (int)CABViewControlTypes.ORTS_TCS1;
+                    if (ChangedValue(1) > 0 ^ Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex])
+                        new TCSButtonCommand(Viewer.Log, !Locomotive.TrainControlSystem.TCSCommandButtonDown[commandIndex], commandIndex);
+                    new TCSSwitchCommand(Viewer.Log, ChangedValue(Locomotive.TrainControlSystem.TCSCommandSwitchOn[commandIndex] ? 1 : 0) > 0, commandIndex);
+                    break;
             }
 
         }
@@ -1802,7 +2189,7 @@ namespace Orts.Viewer3D.RollingStock
                 try
                 {
                     var val = ControlDiscrete.Values[0] <= ControlDiscrete.Values[ControlDiscrete.Values.Count - 1] ?
-                        ControlDiscrete.Values.Where(v => (float)v <= percent).Last() : ControlDiscrete.Values.Where(v => (float)v <= percent).First();
+                        ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).Last() : ControlDiscrete.Values.Where(v => (float)v <= percent + 0.00001).First();
                     index = ControlDiscrete.Values.IndexOf(val);
                 }
                 catch
@@ -1836,6 +2223,7 @@ namespace Orts.Viewer3D.RollingStock
         protected Rectangle DrawPosition;
         string DrawText;
         Color DrawColor;
+        float DrawRotation;
 
         [CallOnThread("Loader")]
         public CabViewDigitalRenderer(Viewer viewer, MSTSLocomotive car, CVCDigital digital, CabShader shader)
@@ -1858,15 +2246,18 @@ namespace Orts.Viewer3D.RollingStock
             var digital = Control as CVCDigital;
 
             Num = Locomotive.GetDataOf(Control);
+            if (digital.MinValue < digital.MaxValue) Num = MathHelper.Clamp(Num, (float)digital.MinValue, (float)digital.MaxValue);
             if (Math.Abs(Num) < digital.AccuracySwitch)
                 Format = Format2;
             else
                 Format = Format1;
             DrawFont = Viewer.WindowManager.TextManager.GetExact(digital.FontFamily, Viewer.CabHeightPixels * digital.FontSize / 480, digital.FontStyle == 0 ? System.Drawing.FontStyle.Regular : System.Drawing.FontStyle.Bold);
-            DrawPosition.X = (int)(Position.X * Viewer.DisplaySize.X / 640);
-            DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels;
+            // Cab view position adjusted to allow for letterboxing.
+            DrawPosition.X = (int)(Position.X * Viewer.CabWidthPixels / 640) + (Viewer.CabExceedsDisplayHorizontally > 0 ? DrawFont.Height / 4 : 0) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            DrawPosition.Y = (int)((Position.Y + Control.Height / 2) * Viewer.CabHeightPixels / 480) - DrawFont.Height / 2 + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
             DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
             DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);
+            DrawRotation = digital.Rotation;
 
             if (Control.ControlType == CABViewControlTypes.CLOCK)
             {
@@ -1923,7 +2314,7 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawText, Alignment, DrawColor);
+            DrawFont.Draw(ControlView.SpriteBatch, DrawPosition, Point.Zero, DrawRotation, DrawText, Alignment, DrawColor, Color.Black);
         }
 
         public string GetDigits(out Color DrawColor)
@@ -2077,8 +2468,8 @@ namespace Orts.Viewer3D.RollingStock
     {
         MSTSLocomotive Locomotive;
 
-        protected PoseableShape TrainCarShape = null;
-        Dictionary<int, AnimatedPartMultiState> AnimateParts = null;
+        public PoseableShape TrainCarShape = null;
+        public Dictionary<int, AnimatedPartMultiState> AnimateParts = null;
         Dictionary<int, ThreeDimCabGaugeNative> Gauges = null;
         Dictionary<int, AnimatedPart> OnDemandAnimateParts = null; //like external wipers, and other parts that will be switched on by mouse in the future
         //Dictionary<int, DigitalDisplay> DigitParts = null;
@@ -2096,7 +2487,7 @@ namespace Orts.Viewer3D.RollingStock
             if (car.CabView3D != null)
             {
                 var shapePath = car.CabView3D.ShapeFilePath;
-                TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + Path.GetDirectoryName(shapePath), car.WorldPosition, ShapeFlags.ShadowCaster);
+                TrainCarShape = new PoseableShape(viewer, shapePath + '\0' + Path.GetDirectoryName(shapePath), car.WorldPosition, ShapeFlags.ShadowCaster | ShapeFlags.Interior);
                 locoViewer.ThreeDimentionCabRenderer = new CabRenderer(viewer, car, car.CabView3D.CVFFile);
             }
             else locoViewer.ThreeDimentionCabRenderer = locoViewer._CabRenderer;
@@ -2197,10 +2588,10 @@ namespace Orts.Viewer3D.RollingStock
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             bool KeyPressed = false;
-            if (UserInput.IsDown(UserCommands.CameraPanDown)) KeyPressed = true;
-            if (UserInput.IsDown(UserCommands.CameraPanUp)) KeyPressed = true;
-            if (UserInput.IsDown(UserCommands.CameraPanLeft)) KeyPressed = true;
-            if (UserInput.IsDown(UserCommands.CameraPanRight)) KeyPressed = true;
+            if (UserInput.IsDown(UserCommand.CameraPanDown)) KeyPressed = true;
+            if (UserInput.IsDown(UserCommand.CameraPanUp)) KeyPressed = true;
+            if (UserInput.IsDown(UserCommand.CameraPanLeft)) KeyPressed = true;
+            if (UserInput.IsDown(UserCommand.CameraPanRight)) KeyPressed = true;
             if (KeyPressed == true)
             {
                 //	foreach (var p in DigitParts) p.Value.RecomputeLocation();
@@ -2402,6 +2793,9 @@ namespace Orts.Viewer3D.RollingStock
                         break;
                 }
             }
+
+            SceneryMaterialOptions options = SceneryMaterialOptions.ShaderFullBright | SceneryMaterialOptions.AlphaBlendingAdd | SceneryMaterialOptions.UndergroundTexture;
+
             if (String.IsNullOrEmpty(TrainCarShape.SharedShape.ReferencePath))
             {
                 if (!File.Exists(globalText + imageName))
@@ -2409,7 +2803,7 @@ namespace Orts.Viewer3D.RollingStock
                     Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
                         ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
                 }
-                material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+                material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(options), 0);
             }
             else
             {
@@ -2417,9 +2811,9 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     Trace.TraceInformation("Ignored missing " + imageName + " using default. You can copy the " + imageName + " from OR\'s AddOns folder to " + globalText +
                         ", or place it under " + TrainCarShape.SharedShape.ReferencePath);
-                    material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+                    material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, globalText, imageName), (int)(options), 0);
                 }
-                else material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, TrainCarShape.SharedShape.ReferencePath + @"\", imageName), (int)(SceneryMaterialOptions.None | SceneryMaterialOptions.AlphaBlendingBlend), 0);
+                else material = Viewer.MaterialManager.Load("Scenery", Helpers.GetTextureFile(Viewer.Simulator, Helpers.TextureFlags.None, TrainCarShape.SharedShape.ReferencePath + @"\", imageName), (int)(options), 0);
             }
 
             return material;
@@ -2513,7 +2907,7 @@ namespace Orts.Viewer3D.RollingStock
             Matrix m = XNAMatrix * mx;
 
             // TODO: Make this use AddAutoPrimitive instead.
-            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref m, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()
@@ -2729,7 +3123,7 @@ namespace Orts.Viewer3D.RollingStock
             Matrix m = XNAMatrix * mx;
 
             // TODO: Make this use AddAutoPrimitive instead.
-            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.World, ref m, ShapeFlags.None);
+            frame.AddPrimitive(this.shapePrimitive.Material, this.shapePrimitive, RenderPrimitiveGroup.Interior, ref m, ShapeFlags.None);
         }
 
         internal void Mark()
@@ -2833,7 +3227,7 @@ namespace Orts.Viewer3D.RollingStock
     public class AnimatedPartMultiState : AnimatedPart
     {
         public CABViewControlTypes Type;
-        int Key;
+        public int Key;
         /// <summary>
         /// Construct with a link to the shape that contains the animated parts 
         /// </summary>

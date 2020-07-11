@@ -64,14 +64,18 @@ namespace ORTS.Scripting.Api
         LowerPantograph,
         CloseCircuitBreaker,
         OpenCircuitBreaker,
-        GiveCircuitBreakerClosingAuthority,
-        RemoveCircuitBreakerClosingAuthority,
+        CloseCircuitBreakerButtonPressed,
+        CloseCircuitBreakerButtonReleased,
+        OpenCircuitBreakerButtonPressed,
+        OpenCircuitBreakerButtonReleased,
+        GiveCircuitBreakerClosingAuthorization,
+        RemoveCircuitBreakerClosingAuthorization,
         StartEngine,
         StopEngine,
         ClosePowerContactor,
         OpenPowerContactor,
-        GivePowerContactorClosingAuthority,
-        RemovePowerContactorClosingAuthority
+        GivePowerContactorClosingAuthorization,
+        RemovePowerContactorClosingAuthorization
     }
 
     public enum PowerSupplyState

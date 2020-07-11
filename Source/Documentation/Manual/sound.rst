@@ -50,7 +50,7 @@ play at the correct speed, a frequency curve halving the speed has to be
 inserted. OR behaves the same as MSTS in this case.
 
 Discrete Triggers
-=================
+-----------------
 
 Unlike MSTS, OR does not restrict the operation of some discrete triggers 
 related to locomotives to the cabview related .sms file (usually named 
@@ -96,7 +96,7 @@ Trigger       Function
     41        FireboxDoorClose
     42        SteamSafetyValveOn
     43        SteamSafetyValveOff
-    44        SteamHeatChange (currently not managed)
+    44        SteamHeatChange
     45        Pantograph1Up
     46        Pantograph1Down
     47        Pantograph1Toggle
@@ -113,9 +113,9 @@ Trigger       Function
 =========     ===============================================
 
 MSTS .sms files for crossings (``crossing.sms``), control error and permission 
-announcements (``ingame.sms``) together with their triggers are managed by OR.
+announcements (``ingame.sms``) together with their triggers, and for fuel tower are managed by OR.
 
-MSTS triggers for derailment and fuel tower are currently not managed by OR.
+MSTS triggers for derailment are currently not managed by OR.
 
 MSTS .sms files related to weather (``clear_ex.sms``, ``clear_in.sms``, 
 ``rain_ex.sms``, ``rain_in.sms``, ``snow_ex.sms``, ``snow_in.sms``) are 
@@ -125,6 +125,8 @@ The signal file (``signal.sms``) and its discrete trigger 1 is managed by OR.
 
 Moreover, OR manages the extended set of discrete triggers provided by MSTSbin.
 
+.. _sound-discrete:
+
 OR-Specific Discrete Triggers
 -----------------------------
 
@@ -132,52 +134,146 @@ OR manages the following set of new discrete triggers that were not present
 under MSTS. If MSTS (or MSTSbin) executes an .sms where such discrete 
 triggers are used, it simply ignores the related statements.
 
-- triggers 101 - GearUp and 102 - GearDown for gear-based engines; they are 
-  triggered by the ``<E>`` and ``<Shift+E>`` keys respectively, and they 
-  are propagated to all gear-based diesel engines of a train and run also for 
-  AI trains
-- triggers 103 - ReverserToForwardBackward and 104 - ReverserToNeutral (valid 
-  for all locomotive types); this couple of triggers allows to distinguish if 
-  the reverser is moved towards an active or towards a neutral position, which 
-  is not possible under MSTS
-- triggers 105 - DoorOpen and 106 - DoorClose (valid for all locomotive 
-  types); they are triggered by the ``<Q>`` and ``<Shift+Q>`` keys and are 
-  propagated to the wagons of the consist (that is also the .sms files of 
-  the wagons can refer to these triggers)
-- triggers 107 - MirrorOpen and 108 - MirrorClose (valid for all locomotive 
-  types); they are triggered by the ``<Shift+Q>`` key.
+In addition, OpenRails extends triggers 23 and 24 (electric locomotive power 
+on/power off), that were introduced by MSTSbin, to diesel engines. Keys 
+``<Shift+Y>`` (for diesel player engine) and ``<Ctrl+Y>`` (for diesel 
+helpers), apart from physically powering on and off the diesel engines, 
+trigger the above triggers.
+
+=========     ==============================================================================================================================================================
+Trigger       Function
+=========     ==============================================================================================================================================================
+101           GearUp : for gear-based engines, triggered by the ``<E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
+102           GearDown : for gear-based engines, triggered by the ``<Shift+E>`` key, propagated to all gear-based diesel engines of a train and run also for AI trains
+103           ReverserToForwardBackward : reverser moved towards the forward or backward position
+104           ReverserToNeutral : reverser moved towards the neutral position
+105           DoorOpen : triggered by the ``<Q>`` and ``<Shift+Q>`` keys and propagated to the wagons of the consist
+106           DoorClose : triggered by the ``<Q>`` and ``<Shift+Q>`` keys and propagated to the wagons of the consist
+107           MirrorOpen : triggered by the ``<Shift+Q>`` key
+108           MirrorClose : triggered by the ``<Shift+Q>`` key
+=========     ==============================================================================================================================================================
 
 Triggers from 109 to 118 are used for TCS scripting, as follows:
 
-- triggers 109 and 110: TrainControlSystemInfo1 and -Info2
-- triggers 111 and 112: TrainControlSystemActivate and -Deactivate
-- triggers 113 and 114: TrainControlSystemPenalty1 and -Penalty2
-- triggers 115 and 116: TrainControlSystemWarning1 and -Warning2
-- triggers 117 and 118: TrainControlSystemAlert1 and -Alert2.
+=========     ============================
+Trigger       Function
+=========     ============================
+109           TrainControlSystemInfo1
+110           TrainControlSystemInfo2
+111           TrainControlSystemActivate
+112           TrainControlSystemDeactivate
+113           TrainControlSystemPenalty1
+114           TrainControlSystemPenalty2
+115           TrainControlSystemWarning1
+116           TrainControlSystemWarning2
+117           TrainControlSystemAlert1
+118           TrainControlSystemAlert2
+=========     ============================
 
 Triggers from 121 to 136 are used to synchronize steam locomotive chuffs with 
 wheel rotation. The sixteen triggers are divided into two wheel rotations. 
 Therefore every trigger is separated from the preceding one by a rotation 
 angle of 45 degrees.
 
-- triggers 137 -- CylinderCocksOpen and 138 -- CylinderCocksClose (valid for 
-  steam locomotive) triggered when cylinder cocks are opened or closed
-- trigger  139 -- TrainBrakePressureStoppedChanging (valid for all rolling 
-  stock equipped with train brakes) to supplement triggers 14 and 54, and make 
-  looped brake sounds possible
-- trigger  140 -- EngineBrakePressureStoppedChanging (valid for locomotives 
-  with engine/independent brakes) to supplement triggers 21 and 22, and make 
-  looped brake sounds possible
-- triggers 141 -- BrakePipePressureIncrease and 142 -- 
-  BrakePipePressureDecrease and 143 -- BrakePipePressureStoppedChanging (valid 
-  for rolling stock equipped with train brakes) triggered by brake 
-  pipe/brakeline pressure changes
+Triggers 137 and 138 are used for the cylinder cocks of steam locomotives:
 
-In addition, OpenRails extends triggers 23 and 24 (electric locomotive power 
-on/power off), that were introduced by MSTSbin, to diesel engines. Keys 
-``<Shift+Y>`` (for diesel player engine) and ``<Ctrl+Y>`` (for diesel 
-helpers), apart from physically powering on and off the diesel engines, 
-trigger the above triggers.
+=========     =============================================================
+Trigger       Function
+=========     =============================================================
+137           CylinderCocksOpen : triggered when cylinder cocks are opened
+138           CylinderCocksClose : triggered when cylinder cocks are closed
+=========     =============================================================
+
+Triggers from 139 to 143 can be used to make looped brake sounds:
+
+=========     ============================================================================================================================================================================
+Trigger       Function
+=========     ============================================================================================================================================================================
+139           TrainBrakePressureStoppedChanging : for rolling stock equipped with train brakes, to use with triggers 14 and 54, triggered when the automatic brake pressure stops changing
+140           EngineBrakePressureStoppedChanging : for locomotives with engine/independent brakes, to use with triggers 21 and 22, triggered when the engine brake pressure stops changing
+141           BrakePipePressureIncrease : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure increases
+142           BrakePipePressureDecrease : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure decreases
+143           BrakePipePressureStoppedChanging : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure stops changing
+=========     ============================================================================================================================================================================
+
+
+=========     ======================================================================
+Trigger       Function
+=========     ======================================================================
+147           SteamGearLeverToggle : Toggles when steam gear lever is moved.
+148           AIFiremanSoundOn : AI fireman mode is on.
+149           AIFiremanSoundOff : AI fireman mode is off, ie in Manual Firing mode.
+=========     ======================================================================
+
+Triggers from 150 to 158 are used for the circuit breaker sounds.
+
+The following triggers are activated when the state of the circuit breaker changes:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+150           CircuitBreakerOpen
+151           CircuitBreakerClosing
+152           CircuitBreakerClosed
+=========     =====================================
+
+The following triggers are activated when the driver moves the buttons or switches in the cab:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+153           CircuitBreakerClosingOrderOn
+154           CircuitBreakerClosingOrderOff
+155           CircuitBreakerOpeningOrderOn
+156           CircuitBreakerOpeningOrderOff
+157           CircuitBreakerClosingAuthorizationOn
+158           CircuitBreakerClosingAuthorizationOff
+=========     =====================================
+
+Trigger 161 is activated when the cab light is switched on or off.
+
+The following triggers are activated when the state of the cab radio changes 
+(see :ref:`here <cabs-cabradio>`):
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+162           Cab radio switched on
+163           Cab radio switched off
+=========     =====================================
+
+The following triggers are activated when the state of the engines 
+different from the first one change state in a diesel locomotive 
+(see :ref:`here <cabs-dieselenginesonoff>`):
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+167           Second engine power on
+168           Second engine power off
+=========     =====================================
+
+Following triggers are activated when a 3rd and a 4th Pantograph 
+are present on the locomotive:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+169           Pantograph3Up
+170           Pantograph3Down
+171           Pantograph4Up
+172           Pantograph4Down
+=========     =====================================
+
+The following triggers are used to activate the gear positions:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+200           GearPosition0
+201           GearPosition1
+202           GearPosition2
+=========     =====================================
 
 Variable Triggers
 -----------------
@@ -225,3 +321,102 @@ Testing Sound Files at Runtime
 
 The :ref:`sound debug window <driving-sound-debug>` is a useful tool for 
 testing.
+
+Automatic switch and curve squeal track sound
+=============================================
+
+With this feature a specific track sound is played when a train passes over any switch or 
+crossover, or over a curve with a low radius, which highly enhances the sound experience.
+If this feature is enabled there is no more 
+need to lay down specific sound regions around or sound sources above every 
+switch or over curves. This is a lengthy task, and in fact most of the routes aren't 
+equipped with such sound regions or sound sources.
+Three automatic sounds are supported::
+
+-  switch sound
+-  curve squeal sound
+-  curve + switch sound (when wagon is both on curve and switch).
+
+It is possible to define also only one or two of these automatic sounds. If switch and 
+curve squeal sound are defined, and no curve + switch sound is defined, the curve squeal 
+sound is played when a wagon is both on curve and switch.
+The curve radius threshold below which the curve squeal sound is played is 350 meters for 
+freight wagons and 301 meters for all other trainsets.
+
+To enable this feature steps here below must be followed:
+
+1. Suitable external and internal automatic sounds must be available (.sms files); 
+   usually you find them in the root's ``SOUND``. It often occurs that switch track 
+   and curve squeal sounds are available in modern routes. If not, they must be created 
+   or searched on the web. A test sound set may be downloaded from 
+   `here <http://www.interazioni-educative.it/Varie/DemoAutoSound.zip>`_.
+2. For every route it must be checked whether a reference to the three automatic track 
+   sounds are present in the route's ``ttype.dat`` file. If they are, you can proceed 
+   to next step. 
+   Else you must insert three new lines at the end of ``ttype.dat``, adding the reference 
+   to the automatic track sounds, and you must add 3 to the number on top of the file.
+   Here below an example of a default ``ttype.dat`` can be found,  where three new lines 
+   referring to the above test sound have been added in last position::
+
+     SIMISA@@@@@@@@@@JINX0t1t______
+     
+     13
+     TrackType ( "Default" "EuropeSteamTrack0In.sms" "EuropeSteamTrack0Ex.sms" )
+     TrackType ( "Concrete Supported"	"EuropeSteamTrack1In.sms" "EuropeSteamTrack1Ex.sms" )
+     TrackType ( "Wood Supported"	"EuropeSteamTrack2In.sms" "EuropeSteamTrack2Ex.sms" )
+     TrackType ( "In Tunnel" "EuropeSteamTrack3In.sms" "EuropeSteamTrack3Ex.sms" )
+     TrackType ( "Steel Bridge" "EuropeSteamTrack4In.sms" "EuropeSteamTrack4Ex.sms" )
+     TrackType ( "Girder Bridge" "EuropeSteamTrack5In.sms" "EuropeSteamTrack5Ex.sms" )
+     TrackType ( "Under Bridge" "EuropeSteamTrack6In.sms" "EuropeSteamTrack6Ex.sms" )
+     TrackType ( "Concrete Bridge" "EuropeSteamTrack7In.sms" "EuropeSteamTrack7Ex.sms" )
+     TrackType ( "Crossing Platform" "EuropeSteamTrack8In.sms" "EuropeSteamTrack8Ex.sms" )
+     TrackType ( "Wooden Bridge" "EuropeSteamTrack9In.sms" "EuropeSteamTrack9Ex.sms" )
+     TrackType ( "Switch" "switchtrack7in.sms" "switchtrack7ex.sms" )
+     TrackType ( "Switch" "DemoAutoSound/switchtrackin.sms" "DemoAutoSound/switchtrackex.sms"     )
+     TrackType ( "Squeal Curve" "DemoAutoSound/curvesquealtrackin.sms" "DemoAutoSound/curvesquealtrackex.sms"   )
+     TrackType ( "Squeal Switch" "DemoAutoSound/curveswitchtrackin.sms" "DemoAutoSound/curveswitchtrackex.sms"   )
+
+3. For every route you must tell OR which of the ttype sound files are those related to 
+   automatic sounds. This is done by inserting following line in the route's ``.trk`` file::
+     
+     ORTSSwitchSMSNumber ( 10 )
+     ORTSCurveSMSNumber ( 11 )       
+     ORTSCurveSwitchSMSNumber ( 12 ) 
+
+   A better solution, because it leaves the ``.trk`` file unaltered, is to create an 
+   ``OpenRails`` subfolder within the route's folder, and to put in it an integration 
+   ``.trk`` file, named like the base one, and with following sample content (supposing 
+   the base .trk file is named ``ITALIA13.trk``::
+
+
+        
+       include ( "../ITALIA13.trk" )
+          ORTSDefaultTurntableSMS ( turntable.sms )
+          ORTSSwitchSMSNumber ( 10 )
+          ORTSCurveSMSNumber ( 11 )       
+          ORTSCurveSwitchSMSNumber ( 12 )  
+
+      
+   Note that the above the ``include`` line a blank line must be present.
+   Note also that with the same integration ``.trk`` file also the default turntable sound 
+   is defined, in case this route has turntables or transfertables.                  
+ 
+   As already stated, you can also define in ``ttype.dat`` and in the ``.trk`` file only 
+   one or only two types of automatic sounds.
+
+.. _sound-external:   
+
+Override % of external sound heard internally for a specific trainset
+=====================================================================
+
+External sounds are reproduced at a lower volume when heard within a cab or 
+passenger view. The % of external sound heard internally is defined in the 
+``Audio Options`` menu window.
+This percentage may be overridden for any trainset inserting in the Wagon 
+section of any .eng or .wag file (or in their "include" file as explained 
+:ref:`here <physics-inclusions>`) following line::
+
+  ORTSExternalSoundPassedThroughPercent ( 50 ) 
+
+where the number in parenthesis may be anyone from 0 (nothing heard internally) 
+to 100 (external sound reproduced at original volume).  

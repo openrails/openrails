@@ -451,7 +451,7 @@ namespace Orts.Formats.Msts
         public uint ShapeIndex { get; set; }
 
         /// <summary>The angle of this junction</summary>
-        private double angle = -1;
+        private double angle = double.MaxValue;
         /// <summary>The angle has been set through section file</summary>
         private bool AngleComputed; //
 
@@ -496,20 +496,22 @@ namespace Orts.Formats.Msts
             AngleComputed = true;
             try //so many things can be in conflict for trackshapes, tracksections etc.
             {
-                SectionIdx[] SectionIdxs = tsectionDat.TrackShapes.Get(ShapeIndex).SectionIdxs;
+                TrackShape trackShape = tsectionDat.TrackShapes.Get(ShapeIndex);
+                SectionIdx[] SectionIdxs = trackShape.SectionIdxs;
 
-                foreach (SectionIdx id in SectionIdxs)
+                for (int index = 0; index <= SectionIdxs.Length-1 ; index++)
                 {
-                    uint[] sections = id.TrackSections;
+                    if (index == trackShape.MainRoute) continue;
+                    uint[] sections = SectionIdxs[index].TrackSections;
 
                     for (int i = 0; i < sections.Length; i++)
                     {
-                        uint sid = id.TrackSections[i];
+                        uint sid = SectionIdxs[index].TrackSections[i];
                         TrackSection section = tsectionDat.TrackSections[sid];
 
                         if (section.SectionCurve != null)
                         {
-                            angle = Math.Abs(section.SectionCurve.Angle);
+                            angle = section.SectionCurve.Angle;
                             break;
                         }
                     }

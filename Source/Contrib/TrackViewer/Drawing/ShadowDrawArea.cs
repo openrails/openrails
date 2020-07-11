@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+// COPYRIGHT 2014 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -578,7 +578,6 @@ namespace ORTS.TrackViewer.Drawing
             catch {
                 graphicsDevice.SetRenderTarget(null); // return control to main render target
             }
-            graphicsDevice.SetRenderTarget(null); 
         }
 
         /// <summary>

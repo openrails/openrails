@@ -17,13 +17,13 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using ORTS.Common;
-using ORTS.Settings;
-using System;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -161,6 +161,16 @@ namespace Orts.Viewer3D.Popups
 
         void TrainListLabel_Click(Control arg1, Point arg2)
         {
+            if (PickedTrainFromList != null && PickedTrainFromList.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+            {
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Train in turntable not aligned to a track can't be selected"));
+                return;
+            }
+            if (PickedTrainFromList != null && Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.Train != null && Viewer.PlayerLocomotive.Train.ControlMode == Train.TRAIN_CONTROL.TURNTABLE)
+            {
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("Player train can't be switched when in turntable not aligned to a track"));
+                return;
+            }
             Viewer.Simulator.TrainSwitcher.SuspendOldPlayer = false;
             if (PickedTrainFromList != null && PickedTrainFromList != Viewer.SelectedTrain)
             {
@@ -173,7 +183,7 @@ namespace Orts.Viewer3D.Popups
                 (PickedTrainFromList as AITrain).IncorporatingTrain.IsPathless && (PickedTrainFromList as AITrain).IncorporatingTrain == Viewer.SelectedTrain)) && !PickedTrainFromList.IsActualPlayerTrain &&
                 Viewer.Simulator.IsAutopilotMode && PickedTrainFromList.IsPlayable)
             {
-                if (UserInput.IsDown(UserCommands.GameSuspendOldPlayer))
+                if (UserInput.IsDown(UserCommand.GameSuspendOldPlayer))
                     Viewer.Simulator.TrainSwitcher.SuspendOldPlayer = true;
                 //Ask for change of driven train
                 Viewer.Simulator.TrainSwitcher.SelectedAsPlayer = PickedTrainFromList;

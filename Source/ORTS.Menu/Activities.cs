@@ -26,6 +26,7 @@ namespace ORTS.Menu
     public class Activity
     {
         public readonly string Name;
+        public readonly string ActivityID;
         public readonly string Description;
         public readonly string Briefing;
         public readonly StartTime StartTime = new StartTime(10, 0, 0);
@@ -41,9 +42,13 @@ namespace ORTS.Menu
 
         protected Activity(string filePath, Folder folder, Route route)
         {
-            if (filePath == null)
+            if (filePath == null && this is DefaultExploreActivity)
             {
                 Name = catalog.GetString("- Explore Route -");
+            }
+            else if (filePath == null && this is ExploreThroughActivity)
+            {
+                Name = catalog.GetString("+ Explore in Activity Mode +");
             }
             else if (File.Exists(filePath))
             {
@@ -53,22 +58,27 @@ namespace ORTS.Menu
                     var actFile = new ActivityFile(filePath);
                     var srvFile = new ServiceFile(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "SERVICES"), actFile.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name + ".srv"));
                     // ITR activities are excluded.
-                    showInList = actFile.Tr_Activity.Tr_Activity_Header.Mode != ActivityMode.IntroductoryTrainRide;
-                    Name = actFile.Tr_Activity.Tr_Activity_Header.Name.Trim();
-                    Description = actFile.Tr_Activity.Tr_Activity_Header.Description;
-                    Briefing = actFile.Tr_Activity.Tr_Activity_Header.Briefing;
-                    StartTime = actFile.Tr_Activity.Tr_Activity_Header.StartTime;
-                    Season = actFile.Tr_Activity.Tr_Activity_Header.Season;
-                    Weather = actFile.Tr_Activity.Tr_Activity_Header.Weather;
-                    Difficulty = actFile.Tr_Activity.Tr_Activity_Header.Difficulty;
-                    Duration = actFile.Tr_Activity.Tr_Activity_Header.Duration;
-                    Consist = new Consist(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS"), srvFile.Train_Config + ".con"), folder);
-                    Path = new Path(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "PATHS"), srvFile.PathID + ".pat"));
-                    if (!Path.IsPlayerPath)
+                    if (actFile.Tr_Activity.Tr_Activity_Header.RouteID.ToUpper() == route.RouteID.ToUpper())
                     {
-                        // Not nice to throw an error now. Error was originally thrown by new Path(...);
-                        throw new InvalidDataException("Not a player path");
+                        Name = actFile.Tr_Activity.Tr_Activity_Header.Name.Trim();
+                        if (actFile.Tr_Activity.Tr_Activity_Header.Mode == ActivityMode.IntroductoryTrainRide) Name = "Introductory Train Ride";
+                        Description = actFile.Tr_Activity.Tr_Activity_Header.Description;
+                        Briefing = actFile.Tr_Activity.Tr_Activity_Header.Briefing;
+                        StartTime = actFile.Tr_Activity.Tr_Activity_Header.StartTime;
+                        Season = actFile.Tr_Activity.Tr_Activity_Header.Season;
+                        Weather = actFile.Tr_Activity.Tr_Activity_Header.Weather;
+                        Difficulty = actFile.Tr_Activity.Tr_Activity_Header.Difficulty;
+                        Duration = actFile.Tr_Activity.Tr_Activity_Header.Duration;
+                        Consist = new Consist(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS"), srvFile.Train_Config + ".con"), folder);
+                        Path = new Path(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "PATHS"), srvFile.PathID + ".pat"));
+                        if (!Path.IsPlayerPath)
+                        {
+                            // Not nice to throw an error now. Error was originally thrown by new Path(...);
+                            throw new InvalidDataException("Not a player path");
+                        }
                     }
+                    else//Activity and route have different RouteID.
+                        Name = "<" + catalog.GetString("Not same route:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
                 catch
                 {
@@ -96,7 +106,8 @@ namespace ORTS.Menu
             var activities = new List<Activity>();
             if (route != null)
             {
-                activities.Add(new ExploreActivity());
+                activities.Add(new DefaultExploreActivity());
+                activities.Add(new ExploreThroughActivity());
                 var directory = System.IO.Path.Combine(route.Path, "ACTIVITIES");
                 if (Directory.Exists(directory))
                 {
@@ -127,4 +138,10 @@ namespace ORTS.Menu
         {
         }
     }
+
+    public class DefaultExploreActivity : ExploreActivity
+    { }
+
+    public class ExploreThroughActivity : ExploreActivity
+    { }
 }

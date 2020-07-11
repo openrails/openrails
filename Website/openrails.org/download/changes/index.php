@@ -1,7 +1,7 @@
 ﻿<?php include "../../shared/head.php" ?>
     <link rel="stylesheet" href="../../shared/iframe/iframe.css" type="text/css" />
   </head>
-  
+
   <body>
     <div class="container"><!-- Centres content and sets fixed width to suit device -->
 <?php include "../../shared/banners/choose_banner.php" ?>
@@ -16,6 +16,9 @@
         <div class="col-md-12">
           <p>
             This is a list of all the code changes since the last stable version. Those since the previous testing version are <span class="text-primary">highlighted</span>.
+          </p>
+          <p>
+            <strong>For users on X4081 and earlier:</strong> Due to an issue with the updater, you will need to <a href="../program/confirm.php?file=OpenRails-Testing.zip">manually download the latest version</a> once before you can continue updating within the application.
           </p>
           <ul class="revisions">
             <?php include "../../api/update/testing/changelog_stable.html" ?>

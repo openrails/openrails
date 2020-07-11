@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  StdCtrls, Buttons, timetabledata, charencstreams;
+  StdCtrls, Buttons, LazUTF8, timetabledata, charencstreams;
 
 type
 
@@ -86,13 +86,13 @@ end;
 
 procedure TForm5.BitBtn2Click(Sender: TObject);   //Speichern und zurück
 begin
-  if not directoryexists(utf8tosys(getroutepath+'Activities\Openrails')) then begin
+  if not directoryexists(UTF8ToSys(getroutepath+'Activities\Openrails')) then begin
     //if messagedlg('Die Bahnhofsdateien müssen im Ordner "Activities\Openrails\" der Strecke gespeichert werden. Soll der Ordner erstellt werden?', mtConfirmation, [mbyes,mbno],0) = mryes then begin
     if messagedlg(VrzNotExists, mtConfirmation, [mbyes,mbno],0) = mryes then begin
-      createdir(utf8tosys(getroutepath+'Activities\Openrails'));
+      createdir(UTF8ToSys(getroutepath+'Activities\Openrails'));
     end;
   end;
-  savedialog1.InitialDir:=utf8tosys(getroutepath+'Activities\Openrails');
+  savedialog1.InitialDir:=UTF8ToSys(getroutepath+'Activities\Openrails');
   //savedialog1.Title:='Bahnhöfe speichern';
   savedialog1.Title:=savedlgtitle;
   //savedialog1.Filter:='Bahnhofsdateien|*.stations';
@@ -105,7 +105,7 @@ begin
     fces.HaveType:=true;
     fCES.UniStreamType:=ufUtf16le;
     fCES.UTF8Text:=memo1.text;
-    fces.SaveToFile(utf8tosys(savedialog1.FileName));
+    fces.SaveToFile(UTF8ToSys(savedialog1.FileName));
     fCes.Free;
     writestations;
   end;
@@ -114,7 +114,7 @@ end;
 
 procedure TForm5.BitBtn1Click(Sender: TObject);     // Auswählen
 begin
-  memo1.Lines:=loadstations(utf8tosys(getroutepath+'Activities\Openrails\'+listbox1.Items[Listbox1.itemindex]));
+  memo1.Lines:=loadstations(UTF8ToSys(getroutepath+'Activities\Openrails\'+listbox1.Items[Listbox1.itemindex]));
   writestations;
   form5.modalresult:=mrok;
 end;

@@ -22,7 +22,8 @@
         </p>
       </div>
 			<div class="col-md-6">
-        <form role="form" action="http://ccgi.jakeman.plus.com/forms/forward_message.php" method="get">
+        <!-- send this to another host as uktrainsim doesn't support mail() -->
+        <form role="form" action="http://ccgi.jakeman.plus.com/or/forward_message.php" method="get">
           <div class="form-group">
             <label for="emailAddress">Email address</label>
             <input type="email" class="form-control" id="emailAddress" name="from" placeholder="Enter your email address. (We do not share this.)" autofocus required>
@@ -31,12 +32,14 @@
             <label for="emailSubject">Subject</label>
             <input type="text" class="form-control" id="emailSubject" name="subject" placeholder="Enter your subject">
           </div>
-    			<input type = "hidden" name="send_to_name"   value="or_website">
-		    	<input type = "hidden" name="send_to_domain" value="jakeman.plus.com">
-			    <input type = "hidden" name="success_url"    value="http://openrails.org/contact/success.php"> 
+    			<input type="hidden" name="send_to_name"   value="or_website">
+		    	<input type="hidden" name="send_to_domain" value="jakeman.plus.com">
+			    <input type="hidden" name="success_url"    value="http://openrails.org/contact/success.php"> 
+		    	<?php $ip = $_SERVER['REMOTE_ADDR']; echo "<input type='hidden' name='ip' value='$ip'>" ?>
+		    	<?php $referer = $_SERVER['HTTP_REFERER']; echo "<input type='hidden' name='referer' value='$referer'>" ?>
           <div class="form-group">
             <label for="emailMessage">Message</label>
-            <textarea class="form-control" rows="10" id="emailMessage" name="body" placeholder="Enter your message" required></textarea>
+            <textarea class="form-control" rows="10" id="emailMessage" name="body" placeholder="Enter your message" required title="Please follow the guidance to the left about reporting problems."></textarea>
           </div>
           <button type="submit" class="btn btn-default">Send</button>
         </form>

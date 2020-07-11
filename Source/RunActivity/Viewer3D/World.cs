@@ -27,7 +27,7 @@ namespace Orts.Viewer3D
     public class World
     {
         readonly Viewer Viewer;
-        public readonly WeatherControl WeatherControl;
+        public WeatherControl WeatherControl;
         public readonly SkyViewer Sky;
         public readonly MSTSSkyDrawer MSTSSky;
         public readonly PrecipitationViewer Precipitation;
@@ -48,13 +48,21 @@ namespace Orts.Viewer3D
         bool PerformanceTune;
 
         [CallOnThread("Render")]
-        public World(Viewer viewer)
+        public World(Viewer viewer, double gameTime)
         {
             Viewer = viewer;
             PerformanceInitialViewingDistance = Viewer.Settings.ViewingDistance;
             PerformanceInitialLODBias = Viewer.Settings.LODBias;
             // Control stuff first.
-            WeatherControl = new WeatherControl(viewer);
+            // check if weather file is defined
+            if (string.IsNullOrEmpty(viewer.Simulator.UserWeatherFile))
+            {
+                WeatherControl = new WeatherControl(viewer);
+            }
+            else
+            {
+                WeatherControl = new AutomaticWeather(viewer, viewer.Simulator.UserWeatherFile, gameTime);
+            }
             // Then drawers.
             if (viewer.Settings.UseMSTSEnv)
                 MSTSSky = new MSTSSkyDrawer(viewer);

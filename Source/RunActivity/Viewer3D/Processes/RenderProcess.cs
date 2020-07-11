@@ -51,6 +51,7 @@ namespace Orts.Viewer3D.Processes
         RenderFrame NextFrame;      // we prepare the next frame in the background while the current one is rendering,
 
         public bool IsMouseVisible { get; set; }  // handles cross thread issues by signalling RenderProcess of a change
+        public Cursor ActualCursor = Cursors.Default;
 
         // Diagnostic information
         public SmoothedData FrameRate { get; private set; }
@@ -230,10 +231,13 @@ namespace Orts.Viewer3D.Processes
             if (IsMouseVisible != Game.IsMouseVisible)
                 Game.IsMouseVisible = IsMouseVisible;
 
+            Cursor.Current = ActualCursor;
+
             if (ToggleFullScreenRequested)
             {
                 SynchronizeGraphicsDeviceManager();
                 ToggleFullScreenRequested = false;
+                Viewer.DefaultViewport = GraphicsDevice.Viewport;
             }
 
             if (gameTime.TotalGameTime.TotalSeconds > 0.001)

@@ -17,8 +17,12 @@
 
 // This file is the responsibility of the 3D & Environment Team. 
 
+using System;
+using Orts.Common;
+using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D.RollingStock
 {
@@ -31,6 +35,15 @@ namespace Orts.Viewer3D.RollingStock
             : base(viewer, car)
         {
             ElectricLocomotive = car;
+            if (ElectricLocomotive.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
+                ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
+                (car.Train.MUDirection != Direction.N && ElectricLocomotive.PowerOn))))
+            {
+                ElectricLocomotive.SignalEvent(Event.Pantograph1Up);
+                ElectricLocomotive.SignalEvent(Event.EnginePowerOn);
+                ElectricLocomotive.SignalEvent(Event.ReverserToForwardBackward);
+                ElectricLocomotive.SignalEvent(Event.ReverserChange);
+            }
         }
 
         /// <summary>
@@ -40,6 +53,20 @@ namespace Orts.Viewer3D.RollingStock
         public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             base.HandleUserInput(elapsedTime);
+        }
+
+        public override void InitializeUserInputCommands()
+        {
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingOrder, new Action[] {
+                () => new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, false),
+                () => {
+                    new CircuitBreakerClosingOrderCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingOrder);
+                    new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, true);
+                }
+            });
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true)});
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingAuthorization) });
+            base.InitializeUserInputCommands();
         }
 
         /// <summary>

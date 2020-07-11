@@ -35,6 +35,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Processes
@@ -57,6 +58,7 @@ namespace Orts.Viewer3D.Processes
 
         struct savedValues
         {
+            public string pathName;
             public float initialTileX;
             public float initialTileZ;
             public string[] args;
@@ -114,11 +116,15 @@ namespace Orts.Viewer3D.Processes
             var actions = new[] { "start", "resume", "replay", "replay_from_save", "test"};
             foreach (var possibleAction in actions)
                 if (args.Contains("-" + possibleAction) || args.Contains("/" + possibleAction, StringComparer.OrdinalIgnoreCase))
+                {
                     action = possibleAction;
+                    Game.Settings.MultiplayerServer = false;
+                    Game.Settings.MultiplayerClient = false;
+                }
 
             // Look for required type of action
             var acttype = "";
-            var acttypes = new[] { "activity", "explorer", "timetable" };
+            var acttypes = new[] { "activity", "explorer", "exploreactivity", "timetable" };
             foreach (var possibleActType in acttypes)
                 if (args.Contains("-" + possibleActType) || args.Contains("/" + possibleActType, StringComparer.OrdinalIgnoreCase))
                     acttype = possibleActType;
@@ -126,14 +132,18 @@ namespace Orts.Viewer3D.Processes
             Acttype = acttype;
 
             // Collect all non-action options.
-            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1)) && !acttype.Contains(a.Substring(1))).Select(a => a.Substring(1));
+            var options = args.Where(a => (a.StartsWith("-") || a.StartsWith("/")) && !actions.Contains(a.Substring(1)) && !acttype.Contains(a.Substring(1))).Select(a => a.Substring(1)).ToArray();
 
             // Collect all non-options as data.
             var data = args.Where(a => !a.StartsWith("-") && !a.StartsWith("/")).ToArray();
 
             // No action, check for data; for now assume any data is good data.
-            if ((action.Length == 0) && (data.Length > 0))
-                action = "start";
+            if (action.Length == 0 && data.Length > 0)
+            {
+                // in multiplayer start/resume there is no "-start" or "-resume" string, so you have to discriminate
+                if (Acttype.Length > 0 || options.Length == 0) action = "start";
+                else action = "resume";
+            }
 
             var settings = Game.Settings;
 
@@ -221,6 +231,9 @@ namespace Orts.Viewer3D.Processes
                                 error.Message,
                                 String.Join("\n", data.Select(d => "\u2022 " + d).ToArray())),
                                 Application.ProductName + " " + VersionInfo.VersionOrBuild, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        else if (error is Traveller.MissingTrackNodeException)
+                            MessageBox.Show(String.Format("Open Rails detected a track section which is not present in tsection.dat and cannot continue.\n\n" +
+                                "Most likely you don't have the XTracks or Ytracks version needed for this route."));
                         else if (error is FileNotFoundException)
                         {
                             MessageBox.Show(String.Format(
@@ -285,12 +298,21 @@ namespace Orts.Viewer3D.Processes
                     break;
             }
 
-            Viewer = new Viewer(Simulator, Game);
-
             if (Client != null)
             {
                 Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
+                // wait 5 seconds to see if you get a reply from server with updated position/consist data, else go on
+               
+                System.Threading.Thread.Sleep(5000);
+                if (Simulator.Trains[0].jumpRequested)
+                {
+                    Simulator.Trains[0].UpdateRemoteTrainPos(0);
+                }
+                var cancellation = Game.LoaderProcess.CancellationToken;
+                if (cancellation.IsCancellationRequested) return;
             }
+
+            Viewer = new Viewer(Simulator, Game);
 
             Game.ReplaceState(new GameStateViewer3D(Viewer));
         }
@@ -301,13 +323,14 @@ namespace Orts.Viewer3D.Processes
         [CallOnThread("Updater")]
         public static void Save()
         {
-            if (MPManager.IsMultiPlayer()) return; //no save for multiplayer sessions yet
+            if (MPManager.IsMultiPlayer() && !MPManager.IsServer()) return; //no save for multiplayer sessions yet
             // Prefix with the activity filename so that, when resuming from the Menu.exe, we can quickly find those Saves 
             // that are likely to match the previously chosen route and activity.
             // Append the current date and time, so that each file is unique.
             // This is the "sortable" date format, ISO 8601, but with "." in place of the ":" which are not valid in filenames.
-            var fileStem = String.Format("{0} {1:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
-                (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName), DateTime.Now);
+            var fileStem = String.Format("{0} {1} {2:yyyy'-'MM'-'dd HH'.'mm'.'ss}", Simulator.Activity != null ? Simulator.ActivityFileName :
+                (!String.IsNullOrEmpty(Simulator.TimetableFileName) ? Simulator.RoutePathName + " " + Simulator.TimetableFileName : Simulator.RoutePathName),
+                MPManager.IsMultiPlayer() && MPManager.IsServer() ? "$Multipl$ " : "" , DateTime.Now);
 
             using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".save", FileMode.Create, FileAccess.Write)))
             {
@@ -316,6 +339,8 @@ namespace Orts.Viewer3D.Processes
                 outf.Write(VersionInfo.Build);
 
                 // Save heading data used in Menu.exe
+                if (MPManager.IsMultiPlayer() && MPManager.IsServer())
+                    outf.Write("$Multipl$");
                 outf.Write(Simulator.RouteName);
                 outf.Write(Simulator.PathName);
 
@@ -341,9 +366,45 @@ namespace Orts.Viewer3D.Processes
 
                 Simulator.Save(outf);
                 Viewer.Save(outf, fileStem);
+                // Save multiplayer parameters
+                if (MPManager.IsMultiPlayer() && MPManager.IsServer())
+                    MPManager.OnlineTrains.Save (outf);
 
                 // Write out position within file so we can check when restoring.
                 outf.Write(outf.BaseStream.Position);
+            }
+
+            //Debrief Eval
+            if (Viewer.Settings.DebriefActivityEval)
+            {
+                var dbfEvalFiles = Directory.GetFiles(UserSettings.UserDataFolder, Simulator.ActivityFileName + "*.dbfeval");
+                foreach (var files in dbfEvalFiles)
+                   File.Delete(files);//Delete all debrief eval files previously saved, for the same activity.//fileDbfEval
+
+                using (BinaryWriter outf = new BinaryWriter(new FileStream(UserSettings.UserDataFolder + "\\" + fileStem + ".dbfeval", FileMode.Create, FileAccess.Write)))
+                {
+                    // Save debrief eval values.
+                    outf.Write(ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count);
+                    for (int i = 0; i < ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Count; i++)
+                    {
+                        outf.Write((string) ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding[i]);
+                    }
+                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeed);
+                    outf.Write(Popups.TrackMonitor.DbfEvalOverSpeedTimeS);
+                    outf.Write(Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS);
+                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving);
+                    outf.Write(RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped);
+                    outf.Write(Simulation.Physics.Train.NumOfCouplerBreaks);
+                    outf.Write(Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh);
+                    outf.Write(Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast);
+                    outf.Write(Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose);
+                    outf.Write(Simulator.DbfEvalOverSpeedCoupling);
+                    outf.Write(Viewer.DbfEvalAutoPilotTimeS);
+                    outf.Write(Viewer.DbfEvalIniAutoPilotTimeS);
+                    outf.Write(Simulator.PlayerLocomotive.DistanceM + Popups.HelpWindow.DbfEvalDistanceTravelled);
+                }
             }
         }
 
@@ -371,27 +432,78 @@ namespace Orts.Viewer3D.Processes
                     var values = GetSavedValues(inf);
                     Acttype = values.acttype;
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
+                    Simulator.Restore(inf, values.pathName, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
+                    if (Client != null || Server != null)
+                        if (Acttype == "activity") Simulator.GetPathAndConsist();
+                    if (Client != null)
+                    {
+                        Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
+                    }
                     Viewer.Restore(inf);
+
+                    if (MPManager.IsMultiPlayer() && MPManager.IsServer())
+                        MPManager.OnlineTrains.Restore(inf);
+
 
                     var restorePosition = inf.BaseStream.Position;
                     var savePosition = inf.ReadInt64();
                     if (restorePosition != savePosition)
                         throw new InvalidDataException("Saved game stream position is incorrect.");
+
+                    //Restore Debrief eval data
+                    var dbfevalfile = saveFile.Replace(".save", ".dbfeval");
+                    if (settings.DebriefActivityEval && File.Exists(dbfevalfile))
+                    {
+                        using (BinaryReader infDbfEval = new BinaryReader(new FileStream(dbfevalfile, FileMode.Open, FileAccess.Read)))
+                        {
+                            int nDepartBeforeBoarding = infDbfEval.ReadInt32();
+                            for (int i = 0; i < nDepartBeforeBoarding; i++)
+                            {
+                                ActivityTaskPassengerStopAt.DbfEvalDepartBeforeBoarding.Add(infDbfEval.ReadString());
+                            }
+                            Popups.TrackMonitor.DbfEvalOverSpeed = infDbfEval.ReadInt32();
+                            Popups.TrackMonitor.DbfEvalOverSpeedTimeS = infDbfEval.ReadDouble();
+                            Popups.TrackMonitor.DbfEvalIniOverSpeedTimeS = infDbfEval.ReadDouble();
+                            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBmoving = infDbfEval.ReadInt32();
+                            RollingStock.MSTSLocomotiveViewer.DbfEvalEBPBstopped = infDbfEval.ReadInt32();
+                            Simulation.Physics.Train.NumOfCouplerBreaks = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.MSTSLocomotive.DbfEvalFullTrainBrakeUnder8kmh = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.SubSystems.ScriptedTrainControlSystem.DbfevalFullBrakeAbove16kmh = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.TrainCar.DbfEvalTrainOverturned = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFast = infDbfEval.ReadInt32();
+                            Simulation.RollingStocks.TrainCar.DbfEvalTravellingTooFastSnappedBrakeHose = infDbfEval.ReadInt32();
+                            Simulator.DbfEvalOverSpeedCoupling = infDbfEval.ReadInt32();
+                            Viewer.DbfEvalAutoPilotTimeS = infDbfEval.ReadDouble();
+                            Viewer.DbfEvalIniAutoPilotTimeS = infDbfEval.ReadDouble();
+                            Popups.HelpWindow.DbfEvalDistanceTravelled = infDbfEval.ReadSingle();
+                        }
+                    }
+                    else if (settings.DebriefActivityEval && !File.Exists(dbfevalfile))
+                    {   //Resume mode: .dbfeval file doesn't exist.
+                        settings.DebriefActivityEval = false;//avoid to generate a new report.
+                    }
                 }
                 catch (Exception error)
                 {
-                    if (saveRevision > settings.YoungestFailedToRestore)
+                    if (versionOrBuild == VersionInfo.VersionOrBuild)
                     {
-                        settings.YoungestFailedToRestore = saveRevision;
-                        settings.Save("YoungestFailedToRestore");
-                        Trace.TraceInformation("YoungestFailedToRestore set to Save's revision: {0}", saveRevision);
+                        // If the save version is the same as the program version, we can't be an incompatible save - it's just a bug.
+                        throw;
                     }
-                    // Rethrow the existing error if it is already an IncompatibleSaveException.
-                    if (error is IncompatibleSaveException)
-                        throw error;
-                    throw new IncompatibleSaveException(saveFile, versionOrBuild, error);
+                    else
+                    {
+                        if (saveRevision > settings.YoungestFailedToRestore)
+                        {
+                            settings.YoungestFailedToRestore = saveRevision;
+                            settings.Save("YoungestFailedToRestore");
+                            Trace.TraceInformation("YoungestFailedToRestore set to Save's revision: {0}", saveRevision);
+                        }
+                        // Rethrow the existing error if it is already an IncompatibleSaveException.
+                        if (error is IncompatibleSaveException)
+                            throw;
+                        throw new IncompatibleSaveException(saveFile, versionOrBuild, error);
+                    }
                 }
 
                 // Reload the command log
@@ -502,7 +614,7 @@ namespace Orts.Viewer3D.Processes
 
                     var values = GetSavedValues(inf);
                     InitSimulator(settings, values.args, "Resume", values.acttype);
-                    Simulator.Restore(inf, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
+                    Simulator.Restore(inf, values.pathName, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
                     Viewer.Restore(inf);
                 }
@@ -856,6 +968,7 @@ namespace Orts.Viewer3D.Processes
                     break;
 
                 case "explorer":
+                case "exploreactivity":
                     if (args.Length < 5) throw new InvalidCommandLine("Mode 'explorer' needs 5 arguments: path file, consist file, time (hh[:mm[:ss]]), season (0-3), weather (0-2).");
                     Console.WriteLine("Route      = {0}", GetRouteName(args[0]));
                     Console.WriteLine("Path       = {0} ({1})", GetPathName(args[0]), args[0]);
@@ -908,6 +1021,13 @@ namespace Orts.Viewer3D.Processes
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
                     Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+                    break;
+
+                case "exploreactivity":
+                    Simulator = new Simulator(settings, args[0], false);
+                    if (LoadingScreen == null)
+                        LoadingScreen = new LoadingScreenPrimitive(Game);
+                    Simulator.SetExploreThroughActivity(args[0], args[1], args[2], args[3], args[4]);
                     break;
 
                 case "timetable":
@@ -1080,8 +1200,11 @@ namespace Orts.Viewer3D.Processes
         {
             savedValues values = default(savedValues);
             // Skip the heading data used in Menu.exe
-            inf.ReadString();    // Route name
-            inf.ReadString();    // Path name
+            // Done so even if not elegant to be compatible with existing save files
+            var routeNameOrMultipl = inf.ReadString();
+            if (routeNameOrMultipl == "$Multipl$")
+                inf.ReadString(); // Route name
+            values.pathName = inf.ReadString();    // Path name
             inf.ReadInt32();     // Time elapsed in game (secs)
             inf.ReadInt64();     // Date and time in real world
             inf.ReadSingle();    // Current location of player train TileX
@@ -1132,11 +1255,11 @@ namespace Orts.Viewer3D.Processes
             {
                 var dd = (float)Material.Texture.Width / 2;
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-dd - 0.5f, +dd + 0.5f, -3), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+dd - 0.5f, +dd + 0.5f, -3), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -3), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
-			    };
+                    new VertexPositionTexture(new Vector3(-dd - 0.5f, +dd + 0.5f, -3), new Vector2(0, 0)),
+                    new VertexPositionTexture(new Vector3(+dd - 0.5f, +dd + 0.5f, -3), new Vector2(1, 0)),
+                    new VertexPositionTexture(new Vector3(-dd - 0.5f, -dd + 0.5f, -3), new Vector2(0, 1)),
+                    new VertexPositionTexture(new Vector3(+dd - 0.5f, -dd + 0.5f, -3), new Vector2(1, 1)),
+                };
             }
             
             public override void Draw(GraphicsDevice graphicsDevice)
@@ -1177,11 +1300,11 @@ namespace Orts.Viewer3D.Processes
                     h = h * scale / 2;
                 }
                 return new[] {
-				    new VertexPositionTexture(new Vector3(-w - 0.5f, +h + 0.5f, -2), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(+w - 0.5f, +h + 0.5f, -2), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(-w - 0.5f, -h + 0.5f, -2), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(+w - 0.5f, -h + 0.5f, -2), new Vector2(1, 1)),
-			    };
+                    new VertexPositionTexture(new Vector3(-w - 0.5f, +h + 0.5f, -2), new Vector2(0, 0)),
+                    new VertexPositionTexture(new Vector3(+w - 0.5f, +h + 0.5f, -2), new Vector2(1, 0)),
+                    new VertexPositionTexture(new Vector3(-w - 0.5f, -h + 0.5f, -2), new Vector2(0, 1)),
+                    new VertexPositionTexture(new Vector3(+w - 0.5f, -h + 0.5f, -2), new Vector2(1, 1)),
+                };
             }
         }
 
@@ -1204,11 +1327,11 @@ namespace Orts.Viewer3D.Processes
                 var x = -w / 2 - 0.5f;
                 var y = game.RenderProcess.DisplaySize.Y / 2 - h - 0.5f;
                 return new[] {
-				    new VertexPositionTexture(new Vector3(x + 0, -y - 0, -1), new Vector2(0, 0)),
-				    new VertexPositionTexture(new Vector3(x + w, -y - 0, -1), new Vector2(1, 0)),
-				    new VertexPositionTexture(new Vector3(x + 0, -y - h, -1), new Vector2(0, 1)),
-				    new VertexPositionTexture(new Vector3(x + w, -y - h, -1), new Vector2(1, 1)),
-			    };
+                    new VertexPositionTexture(new Vector3(x + 0, -y - 0, -1), new Vector2(0, 0)),
+                    new VertexPositionTexture(new Vector3(x + w, -y - 0, -1), new Vector2(1, 0)),
+                    new VertexPositionTexture(new Vector3(x + 0, -y - h, -1), new Vector2(0, 1)),
+                    new VertexPositionTexture(new Vector3(x + w, -y - h, -1), new Vector2(1, 1)),
+                };
             }
         }
 
@@ -1261,12 +1384,63 @@ namespace Orts.Viewer3D.Processes
             {
             }
 
+            private bool isWideScreen(Game game)
+            {
+                float x = game.RenderProcess.DisplaySize.X;
+                float y = game.RenderProcess.DisplaySize.Y;
+
+                return (x / y > 1.5);
+            }
+
             protected override Texture2D GetTexture(Game game)
             {
-                var path = Path.Combine(Simulator.RoutePath, "load.ace");
-                if (File.Exists(path))
-                    return Orts.Formats.Msts.AceFile.Texture2DFromFile(game.RenderProcess.GraphicsDevice, path);
-                return null;
+                Texture2D texture;
+                GraphicsDevice gd = game.RenderProcess.GraphicsDevice;
+                string defaultScreen = "load.ace";
+
+                string loadingScreen = Simulator.TRK.Tr_RouteFile.LoadingScreen;
+                if (isWideScreen(game))
+                {
+                    string loadingScreenWide = Simulator.TRK.Tr_RouteFile.LoadingScreenWide;
+                    loadingScreen = loadingScreenWide == null ? loadingScreen : loadingScreenWide;
+                }
+                loadingScreen = loadingScreen == null ? defaultScreen : loadingScreen;
+                var path = Path.Combine(Simulator.RoutePath, loadingScreen);
+                if (Path.GetExtension(path) == ".dds" && File.Exists(path))
+                {
+                    DDSLib.DDSFromFile(path, gd, true, out texture);
+                }
+                else if (Path.GetExtension(path) == ".ace")
+                {
+                    var alternativeTexture = Path.ChangeExtension(path, ".dds");
+
+                    if (File.Exists(alternativeTexture) && game.Settings.PreferDDSTexture)
+                    {
+                        DDSLib.DDSFromFile(alternativeTexture, gd, true, out texture);
+                    }
+                    else if (File.Exists(path))
+                    {
+                        texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(gd, path);
+                    }
+                    else
+                    {
+                        path = Path.Combine(Simulator.RoutePath, defaultScreen);
+                        if (File.Exists(path))
+                        {
+                            texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(gd, path);
+                        }
+                        else
+                        {
+                            texture = null;
+                        }
+                    }
+
+                }
+                else
+                {
+                    texture = null;
+                }
+                return texture;
             }
         }
 

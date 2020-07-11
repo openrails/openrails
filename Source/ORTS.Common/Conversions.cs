@@ -1,17 +1,17 @@
 ﻿// COPYRIGHT 2009, 2010, 2011, 2013 by the Open Rails project.
-// 
+//
 // This file is part of Open Rails.
-// 
+//
 // Open Rails is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // Open Rails is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -30,7 +30,7 @@ namespace ORTS.Common
     // Use these classes rather than in-line literal factors.
     //
     // For example to convert a number from metres to inches, use "DiameterIn = M.ToIn(DiameterM);"
-    // 
+    //
     // Many units begin with a lowercase letter (kg, kW, in, lb) but capitalised here (Kg, KW, In, Lb) for ease of reading.
     //
     // Web research suggests that VC++ will optimize "/ 2.0" replacing it with "* 0.5f" but VC# will not and cost is around 15 cycles.
@@ -149,7 +149,7 @@ namespace ORTS.Common
         public static float FromKpH(float kilometrePerHour) { return kilometrePerHour * (1.0f / 3.600f); }
         /// <summary>Convert metres/second to kilometres/hour</summary>
         public static float ToKpH(float metrePerSecond)     { return metrePerSecond   * 3.600f; }
-        
+
         /// <summary>
         /// Convert from metres/second to kilometres/hour or miles/hour, depending on value of isMetric
         /// </summary>
@@ -174,7 +174,7 @@ namespace ORTS.Common
     /// <summary>
     /// Mass conversions from and to Kilograms
     /// </summary>
-    public static class Kg 
+    public static class Kg
     {
         /// <summary>Convert from pounds (lb) to kilograms</summary>
         public static float FromLb(float lb)     { return lb * (1.0f / 2.20462f); }
@@ -197,7 +197,7 @@ namespace ORTS.Common
     /// <summary>
     /// Force conversions from and to Newtons
     /// </summary>
-    public static class N 
+    public static class N
     {
         /// <summary>Convert from pound-force to Newtons</summary>
         public static float FromLbf(float lbf)  { return lbf    * (1.0f / 0.224808943871f); }
@@ -219,7 +219,7 @@ namespace ORTS.Common
     /// <summary>
     /// Power conversions from and to Watts
     /// </summary>
-    public static class W 
+    public static class W
     {
         /// <summary>Convert from kiloWatts to Watts</summary>
         public static float FromKW(float kiloWatts) { return kiloWatts * 1000f; }
@@ -242,7 +242,7 @@ namespace ORTS.Common
     /// <summary>
     /// Stiffness conversions from and to Newtons/metre
     /// </summary>
-    public static class NpM 
+    public static class NpM
     {
     }
 
@@ -383,7 +383,7 @@ namespace ORTS.Common
     /// <summary>
     /// Liquid volume conversions from and to Litres
     /// </summary>
-    public static class L 
+    public static class L
     {
         /// <summary>Convert from UK Gallons to litres</summary>
         public static float FromGUK(float gallonUK) { return gallonUK * 4.54609f; }
@@ -393,6 +393,19 @@ namespace ORTS.Common
         public static float FromGUS(float gallonUS) { return gallonUS * 3.78541f; }
         /// <summary>Convert from litres to US Gallons</summary>
         public static float ToGUS(float litre) { return litre * (1.0f / 3.78541f); }
+    }
+
+
+    /// <summary>
+    /// convert vacuum values to psia for vacuum brakes
+    /// </summary>
+    public static class Vac
+    {
+        readonly static float OneAtmospherePSI = Bar.ToPSI(1);
+        /// <summary>vacuum in inhg to pressure in psia</summary>
+        public static float ToPress(float vac) { return OneAtmospherePSI - Bar.ToPSI(Bar.FromInHg(vac)); }
+        /// <summary>convert pressure in psia to vacuum in inhg</summary>
+        public static float FromPress(float press) { return Bar.ToInHg(Bar.FromPSI(OneAtmospherePSI - press)); }
     }
 
     /// <summary>
@@ -405,7 +418,7 @@ namespace ORTS.Common
     /// <summary>
     /// Frequency conversions from and to Hz (revolutions/sec)
     /// </summary>
-    public static class pS 
+    public static class pS
     {
         /// <summary>Convert from per Minute to per Second</summary>
         public static float FrompM(float revPerMinute) { return revPerMinute * (1.0f / 60f); }
@@ -527,15 +540,15 @@ namespace ORTS.Common
         public static string kgfpcm2 = Catalog.GetString("kgf/cm²");
         public static string kg = Catalog.GetString("kg");
         public static string t = Catalog.GetString("t");
-        public static string tonUK = Catalog.GetString("ltn");
-        public static string tonUS = Catalog.GetString("stn");
+        public static string tonUK = Catalog.GetString("t-uk");
+        public static string tonUS = Catalog.GetString("t-us");
         public static string lb = Catalog.GetString("lb");
         public static string s = Catalog.GetString("s");
         public static string min = Catalog.GetString("min");
         public static string h = Catalog.GetString("h");
         public static string l = Catalog.GetString("L");
-        public static string galUK = Catalog.GetString("Imp.gal");
-        public static string galUS = Catalog.GetString("U.S.gal");
+        public static string galUK = Catalog.GetString("g-uk");
+        public static string galUS = Catalog.GetString("g-us");
         public static string rpm = Catalog.GetString("rpm");
         public static string kW = Catalog.GetString("kW");
         public static string hp = Catalog.GetString("hp"); // mechanical (or brake) horsepower
@@ -575,6 +588,15 @@ namespace ORTS.Common
         {
             return String.Format(CultureInfo.CurrentCulture,
                 "{0:F0} {1}", MpS.FromMpS(speed, isMetric), isMetric ? kmph : mph);
+        }
+
+        /// <summary>
+        /// Formatted localized speed string, used to display speed limits, with 0 decimal precision and no unit of measure
+        /// </summary>
+        public static string FormatSpeedLimitNoUoM(float speed, bool isMetric)
+        {
+            return String.Format(CultureInfo.CurrentCulture,
+                "{0:F0}", MpS.FromMpS(speed, isMetric));
         }
 
         /// <summary>
@@ -628,6 +650,13 @@ namespace ORTS.Common
             if (isMetric)
                 return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", distanceM, m);
             return String.Format(CultureInfo.CurrentCulture, "{0:N0} {1}", Me.ToFt(distanceM), ft);
+        }
+
+        public static string FormatVeryShortDistanceDisplay(float distanceM, bool isMetric)
+        {
+            if (isMetric)
+                return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", distanceM, m);
+            return String.Format(CultureInfo.CurrentCulture, "{0:N3} {1}", Me.ToFt(distanceM), ft);
         }
 
         /// <summary>

@@ -78,8 +78,14 @@ namespace ORTS.TrackViewer.UserInterface
         ReducePath,
         /// <summary>command for showing only start node of a train path</summary>
         ReducePathFull,
+        /// <summary>command for placing the end point of a path</summary>
+        PlaceEndPoint,
+        /// <summary>command for placing a wait point for a path</summary>
+        PlaceWaitPoint,
         /// <summary>command for debugging the key map</summary>
         DebugDumpKeymap,
+        /// <summary>command for adding a label</summary>
+        AddLabel,
         /// <summary>command for quitting the application</summary>
         Quit,
         /// <summary>command for performing debug steps</summary>
@@ -114,12 +120,30 @@ namespace ORTS.TrackViewer.UserInterface
         ToggleShowPatchLines,
         /// <summary>command for allowing slow zoom with mouse</summary>
         MouseZoomSlow,
-        /// <summary>command for redo in editor</summary>
-        EditorTakesMouseClick,
+        /// <summary>Key modifier for drag actions</summary>
+        EditorTakesMouseClickDrag,
+        /// <summary>Key modifier for click actions</summary>
+        EditorTakesMouseClickAction,
         /// <summary>command for redo in editor</summary>
         EditorRedo,
         /// <summary>command for undo in editor</summary>
         EditorUndo,
+        /// <summary>Menu shortcut</summary>
+        MenuFile,
+        /// <summary>Menu shortcut</summary>
+        MenuTrackItems,
+        /// <summary>Menu shortcut</summary>
+        MenuView,
+        /// <summary>Menu shortcut</summary>
+        MenuStatusbar,
+        /// <summary>Menu shortcut</summary>
+        MenuPreferences,
+        /// <summary>Menu shortcut</summary>
+        MenuPathEditor,
+        /// <summary>Menu shortcut</summary>
+        MenuTerrain,
+        /// <summary>Menu shortcut</summary>
+        MenuHelp,
     }
 
     /* not used, because ORTS.Settings.KeyModifiers is used
@@ -183,26 +207,38 @@ namespace ORTS.TrackViewer.UserInterface
             Commands[(int)TVUserCommands.ToggleShowPlatformNames] = new ORTS.Settings.UserCommandKeyInput(0x42, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleShowSidings] = new ORTS.Settings.UserCommandKeyInput(0x43);
             Commands[(int)TVUserCommands.ToggleShowSidingNames] = new ORTS.Settings.UserCommandKeyInput(0x43, ORTS.Settings.KeyModifiers.Shift);
-            Commands[(int)TVUserCommands.ToggleShowTrainpath] = new ORTS.Settings.UserCommandKeyInput(0x57);
-            Commands[(int)TVUserCommands.ToggleShowPatFile] = new ORTS.Settings.UserCommandKeyInput(0x57, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ToggleHighlightTracks] = new ORTS.Settings.UserCommandKeyInput(0x44);
             Commands[(int)TVUserCommands.ToggleHighlightItems] = new ORTS.Settings.UserCommandKeyInput(0x44, ORTS.Settings.KeyModifiers.Shift);
-            
+            Commands[(int)TVUserCommands.ToggleShowTrainpath] = new ORTS.Settings.UserCommandKeyInput(0x57);
+            Commands[(int)TVUserCommands.ToggleShowPatFile] = new ORTS.Settings.UserCommandKeyInput(0x57, ORTS.Settings.KeyModifiers.Shift);
 
             Commands[(int)TVUserCommands.ExtendPath] = new ORTS.Settings.UserCommandKeyInput(0x49);
             Commands[(int)TVUserCommands.ExtendPathFull] = new ORTS.Settings.UserCommandKeyInput(0x49, ORTS.Settings.KeyModifiers.Shift);
             Commands[(int)TVUserCommands.ReducePath] = new ORTS.Settings.UserCommandKeyInput(0x51);
             Commands[(int)TVUserCommands.ReducePathFull] = new ORTS.Settings.UserCommandKeyInput(0x51, ORTS.Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.PlaceEndPoint] = new ORTS.Settings.UserCommandKeyInput(0x12);
+            Commands[(int)TVUserCommands.PlaceWaitPoint] = new ORTS.Settings.UserCommandKeyInput(0x11);
 
+            Commands[(int)TVUserCommands.AddLabel]   = new ORTS.Settings.UserCommandKeyInput(0x26);
             Commands[(int)TVUserCommands.Quit]       = new ORTS.Settings.UserCommandKeyInput(0x10);
             Commands[(int)TVUserCommands.Debug]      = new ORTS.Settings.UserCommandKeyInput(0x34);
             Commands[(int)TVUserCommands.DebugDumpKeymap] = new ORTS.Settings.UserCommandKeyInput(0x3B, ORTS.Settings.KeyModifiers.Alt);
 
             Commands[(int)TVUserCommands.MouseZoomSlow] = new UserCommandModifierInput(Settings.KeyModifiers.Shift);
 
-            Commands[(int)TVUserCommands.EditorTakesMouseClick] = new UserCommandModifierInput(Settings.KeyModifiers.Control);
+            Commands[(int)TVUserCommands.EditorTakesMouseClickAction] = new UserCommandModifierInput(Settings.KeyModifiers.Shift);
+            Commands[(int)TVUserCommands.EditorTakesMouseClickDrag] = new UserCommandModifierInput(Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorUndo] = new ORTS.Settings.UserCommandKeyInput(0x2C, ORTS.Settings.KeyModifiers.Control);
             Commands[(int)TVUserCommands.EditorRedo] = new ORTS.Settings.UserCommandKeyInput(0x15, ORTS.Settings.KeyModifiers.Control);
+
+            Commands[(int)TVUserCommands.MenuFile] = new ORTS.Settings.UserCommandKeyInput(0x21, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuView] = new ORTS.Settings.UserCommandKeyInput(0x2F, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuTrackItems] = new ORTS.Settings.UserCommandKeyInput(0x17, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuStatusbar] = new ORTS.Settings.UserCommandKeyInput(0x1F, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuPreferences] = new ORTS.Settings.UserCommandKeyInput(0x19, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuPathEditor] = new ORTS.Settings.UserCommandKeyInput(0x12, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuTerrain] = new ORTS.Settings.UserCommandKeyInput(0x14, ORTS.Settings.KeyModifiers.Alt);
+            Commands[(int)TVUserCommands.MenuHelp] = new ORTS.Settings.UserCommandKeyInput(0x23, ORTS.Settings.KeyModifiers.Alt);
         }
 
     }

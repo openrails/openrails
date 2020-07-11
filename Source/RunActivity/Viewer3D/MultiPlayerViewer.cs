@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.MultiPlayer;
-using ORTS.Settings;
+using ORTS.Common.Input;
 
 namespace Orts.Viewer3D
 {
@@ -25,7 +25,8 @@ namespace Orts.Viewer3D
         //count how many times a key has been stroked, thus know if the panto should be up or down, etc. for example, stroke 11 times means up, thus send event with id 1
         static int PantoSecondCount;
         static int PantoFirstCount;
-        static int BellCount;
+        static int PantoFourthCount;
+        static int PantoThirdCount;
         static int WiperCount;
         static int HeadLightCount;
         static int DoorLeftCount;
@@ -35,40 +36,35 @@ namespace Orts.Viewer3D
         public static void HandleUserInput()
         {
             //In Multiplayer, I maybe the helper, but I can request to be the controller
-            if (UserInput.IsPressed(UserCommands.GameRequestControl))
+            // Horn and bell are managed by UpdateHornAndBell in MSTSLocomotive.cs
+            if (UserInput.IsPressed(UserCommand.GameRequestControl))
             {
                 MPManager.RequestControl();
             }
 
-            if (UserInput.IsPressed(UserCommands.ControlHorn)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 1)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlPantograph2)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO2", (++PantoSecondCount) % 2)).ToString());
 
-            if (UserInput.IsReleased(UserCommands.ControlHorn)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HORN", 0)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlPantograph1)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO1", (++PantoFirstCount) % 2)).ToString());
 
-            if (UserInput.IsPressed(UserCommands.ControlPantograph2)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO2", (++PantoSecondCount) % 2)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlPantograph4)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO4", (++PantoFourthCount) % 2)).ToString());
 
-            if (UserInput.IsPressed(UserCommands.ControlPantograph1)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO1", (++PantoFirstCount) % 2)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlPantograph3)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "PANTO3", (++PantoThirdCount) % 2)).ToString());
 
-            if (UserInput.IsPressed(UserCommands.ControlBell)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 1)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlWiper)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
 
-            if (UserInput.IsReleased(UserCommands.ControlBell)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", 0)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlDoorLeft)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORL", (++DoorLeftCount) % 2)).ToString());
 
-            if (UserInput.IsPressed(UserCommands.ControlBellToggle)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "BELL", (++BellCount) % 2)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlDoorRight)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORR", (++DoorRightCount) % 2)).ToString());
 
-            if (UserInput.IsPressed(UserCommands.ControlWiper)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "WIPER", (++WiperCount) % 2)).ToString());
+            if (UserInput.IsPressed(UserCommand.ControlMirror)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "MIRRORS", (++MirrorsCount) % 2)).ToString());
 
-            if (UserInput.IsPressed(UserCommands.ControlDoorLeft)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORL", (++DoorLeftCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlDoorRight)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "DOORR", (++DoorRightCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlMirror)) MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "MIRRORS", (++MirrorsCount) % 2)).ToString());
-
-            if (UserInput.IsPressed(UserCommands.ControlHeadlightIncrease))
+            if (UserInput.IsPressed(UserCommand.ControlHeadlightIncrease))
             {
                 HeadLightCount++; if (HeadLightCount >= 3) HeadLightCount = 2;
                 MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());
             }
 
-            if (UserInput.IsPressed(UserCommands.ControlHeadlightDecrease))
+            if (UserInput.IsPressed(UserCommand.ControlHeadlightDecrease))
             {
                 HeadLightCount--; if (HeadLightCount < 0) HeadLightCount = 0;
                 MPManager.Notify((new MSGEvent(MPManager.GetUserName(), "HEADLIGHT", HeadLightCount)).ToString());

@@ -5,7 +5,7 @@ unit utf8scanner;
 interface
 
 uses
-  Classes, SysUtils, LCLProc;
+  Classes, SysUtils, LazUTF8;      
 
 
 type

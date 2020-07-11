@@ -49,8 +49,7 @@ Basic AI Functionality
   Activity and Timetable modes, while waiting points can only be used in Activity 
   mode.
 - AI trains throw switches not lined properly before engaging them.
-- In activity mode AI trains can perform shunting actions, provided the 
-  :ref:`Extended AI shunting <operation-ai-shunting>` option has been selected.
+- In activity mode AI trains can perform shunting actions.
 - Priorities: AI trains should start as scheduled as long as there is no other 
   AI train already on a conflict path.
 
@@ -151,6 +150,8 @@ The following states are possible :
 
 Changes from Auto Node to Auto Signal and vice-versa are automatic and cannot be 
 influenced by the player.
+
+.. _operation-manual-mode:
 
 Manual Mode
 -----------
@@ -350,6 +351,8 @@ Further rules for the use of alternative paths :
   which first clears its path takes much longer to actually get to the passing 
   loop.
 
+.. _operation-reversal-points:
+
 Reversal Points
 ===============
 
@@ -369,7 +372,13 @@ cleared the diverging point, the reversal takes place later, when the diverging
 point is cleared.
 
 For player trains the reversal can take place starting from 50 meters before the 
-reversal point provided the diverging point is cleared.
+reversal point provided the diverging point is cleared.  The colour of the 
+reversal point icon in the :ref:`Track Monitor <driving-track-monitor>` is green 
+if the *diverging* point has been cleared (meaning that the player train may 
+already revert, even if it hasn't yet reached the reversal point), while it is 
+white in the opposite case (meaning that the player train must proceed further 
+towards the diverging point, eventually reaching it if colour does not change 
+to green, before reverting).
 
 As in MSTS, double reversal points can be used to set a signal at red after such 
 reversal points. However waiting points are recommended for this, as explained 
@@ -396,7 +405,7 @@ the train approaches the WP.
 For AI trains the signal returns to green (if the block conditions after the 
 signal allow this) one second after expiration of the WP.
 
-Player trains must stop BEFORE the WP For player trains the signal returns 
+For player trains the signal returns 
 to green 5 seconds after expiration of the WP.
 
 If there are more WPs in the track section where the signal resides, only the 
@@ -404,24 +413,23 @@ last one influences the signal.
 
 Waiting points cannot be used in Timetable mode.
 
+.. _operation-absoluteWP:
+
 Absolute Waiting Points
 -----------------------
 
-When the :ref:`Extended AI shunting <operation-ai-shunting>` option is selected 
-and OR is not in Timetable Mode, waiting points with a *waiting time* between 
+Waiting points with a *waiting time* between 
 30000 and 32359 are interpreted as absolute time-of-day waiting points, with a 
 format 3HHMM, where HH and MM are the hour and minute of the day in standard 
 decimal notation.
 
 If the AI train will reach the WP before this time of day, the WP will expire at 
-HH:MM. If the AI train will reach the WP later, the WP will expire after one 
-second. This type of WP can also be used in conjunction with a signal in the 
+HH:MM. If the AI train will reach the WP later, the WP will be alreay expired. This type of WP can also be used in conjunction with a signal in the 
 same track section, as explained in preceding paragraph.
 
 Again, such waiting points won't have an effect on a player train if there is no 
 signal in the same section; if instead there is a signal, it will stay red until 
-the WP has expired or until the train will stop in front of the WP (the later of 
-the two events will be considered).
+the WP has expired.
 
 Absolute waiting points are a comfortable way of synchronizing and scheduling 
 train operation.
@@ -431,7 +439,7 @@ train operation.
 Signals at Station Stops
 ========================
 
-If the Experimental Option *Forced red at station stops* has been selected, 
+If the Experimental Option :ref:`Forced red at station stops <options-forced-red>` has been selected, 
 and if there is a signal at the end of a platform, 
 that signal will be held at danger up to 2 minutes before the booked departure. 
 If the station stop is less than 2 minutes, the signal will clear as the train 
@@ -445,8 +453,6 @@ also not be held.
 In some railway control systems trains do not get a red at the station starting 
 signal when they have to stop in that station. In these cases the above option 
 must be disabled.
-
-For signals at waiting points trains, see the preceding paragraph.
 
 Speedposts and Speed Limits Set by Signals
 ==========================================
@@ -462,10 +468,9 @@ speedpost, the limit defined by the speedpost will be maintained. If a lower
 speed limit was in force due to a limit set by another signal, the allowed limit 
 is set to that as defined by the speedpost.
 
-In timetable mode a speedpost sets a limit which is higher than that set by the last signal, 
+In timetable mode if a speedpost sets a limit which is higher than that set by the last signal, 
 the limit set by the signal is overruled and the allowed limit is set to that as 
-defined by the speedpost. Instead, the valid speed limit is always the lower of 
-that of the last signal and that of the last speedpost.
+defined by the speedpost.
 
 In activity mode in the preceding case the lower of the two limits becomes 
 valid.
@@ -488,7 +493,7 @@ Further Features of AI Train Control
   held. 
 - AI trains will adhere to the speed limits. 
 - AI trains will stop at a signal approximately 30 m. short of a signal at 
-  danger. 
+  danger in Timetable mode, and at a shorter distance in activity mode. 
 - Where AI trains are allowed to follow other trains in the same section passing 
   permissive signals, the train will adjust its speed to that of the train ahead, 
   and follow at a distance of approx. 300 m. If the train ahead has stopped, the 
@@ -503,6 +508,8 @@ Further Features of AI Train Control
   etc.) are followed. The position of all AI trains at the start of an activity 
   therefore is as close as possible to what it would have been if the activity had 
   been started at the start time of the first AI train. 
+
+.. _operation-locationpath:
 
 Location-linked Passing Path Processing
 =======================================
@@ -588,7 +595,10 @@ Other Comparisons Between Running Activities in ORTS or MSTS
 End of run of AI trains
 -----------------------
 
-AI trains end their run where the end point of their path resides, as in MSTS
+AI trains end their run where the end point of their path resides, as in MSTS. 
+However they always end their run at zero speed.
+
+.. _operation-performance:
 
 Default Performance and Performance Parameters
 ----------------------------------------------
@@ -615,17 +625,48 @@ second one, the "Performance" linked to the second station is used and so on.
 From the last station up to end of path the "Default performance" mentioned 
 above is used.
 
-This corresponds to MSTS behaviour
+This corresponds to MSTS behaviour.
 
 Moreover the Efficiency parameter is used also to compute acceleration and 
 braking curves.
+
+Calculation of Train Speed Limit
+--------------------------------
+
+*For the player train*: speed limit is the lowest among:
+
+  - route speed limit as defined in the ``.trk`` file
+  - local signal speed limit
+  - local speedpost speed limit
+  - local temporary speedpost speed limit
+  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero and not 
+    equal 40
+  - locomotive speed limit in ``.eng`` file in the other cases. 
+
+ *For the AI trains*: speed limit is the lowest among:  
+
+  - route speed limit as defined in the ``.trk`` file
+  - local signal speed limit
+  - local speedpost speed limit
+  - local temporary speedpost speed limit
+  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero and not 
+    equal 40
+  - locomotive speed limit in ``.eng`` file in the other cases. 
+
+
+  - route speed limit as defined in the ``.trk`` file
+  - local signal speed limit
+  - local speedpost speed limit
+  - local temporary speedpost speed limit
+  - first parameter ``MaxVelocityA`` in ``.con`` file, if bigger than zero, 
+    multiplied by the Efficiency as explained :ref:``here <operation-performance>``.
 
 Start of Run of AI train in a Section Reserved by Another Train
 ---------------------------------------------------------------
 
 The AI train is created as in MSTS. It is up to the activity creator not to 
 generate deadlocks. Creation of a train in a section where another train resides 
-is possible only if the created train is *in front* of the pre-existing train.
+is possible only if the created train is not front-to-front with the existing train.
 
 Stop Time at Stations
 ---------------------
@@ -682,30 +723,24 @@ Extended AI Train Shunting
 General
 -------
 
-When this option is selected further AI train shunting functions are available. 
-Note that this option is not available in Timetable mode.
+Having AI trains performing shunting operations ensures more interesting and varied activities.
+
+Note that this feature is not available in Timetable mode, which has other ways to 
+perform AI Train shunting.
 
 The following additional shunting functions are available:
 
-- AI train couples to a static consist and restarts with it.
-- AI train couples to a player or AI train and becomes part of it; the coupled 
-  train continues on its path.
-- AI train couples to a player or AI train and leaves to it its cars; the 
-  coupled and coupling train continue on their path.
-- AI train couples to a player or AI train and *steals* its cars; the coupled 
-  and coupling train continue on their path.
-- AI train uncouples any number of its cars; the uncoupled part becomes a static 
-  consist. With the same function it is possible to couple any number of cars from 
-  a static consist.
-- AI train couples to a player or AI train; the resulting combined train runs 
-  for part of the path, then stops; the train is split there into two parts that 
-  continue on their own paths (*join and split* function).
-- AI train can get permission to pass a signal at danger.
+1. AI train couples to a static consist and restarts with it.
+2. AI train couples to a player or AI train and becomes part of it; the coupled train continues on its path.
+3. AI train couples to a player or AI train and leaves to it its cars; the coupled and coupling train continue on their path.
+4. AI train couples to a player or AI train and *steals* its cars; the coupled and coupling train continue on their path.
+5. AI train uncouples any number of its cars; the uncoupled part becomes a static consist. With the same function it is possible to couple any number of cars from a static consist.
+6. AI train couples to a player or AI train; the resulting combined train runs for part of the path, then stops; the train is split there into two parts that continue on their own paths (*join and split* function).
+7. AI train can get permission to pass a signal at danger.
 
 These functions are described in detail below.
 
-Some sample activities can be found `here 
-<http://www.elvastower.com/forums/index.php?/topic/25224-extended-ai-train-shunting/>`_.
+A sample activity can be found in ``Documentation\SampleFiles\Manual\Show_AI_shunting_enh.zip``.
 
 Activity Design for Extended AI Train Shunting Functions
 --------------------------------------------------------
@@ -716,7 +751,7 @@ need post-processing of the created files.
 Extended AI Functions 1 to 4 (these all involve coupling)
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-It is not always desired that AI trains couple to other trains.; e.g. the 
+It is not always desired that AI trains couple to other trains; e.g. the 
 activity could have been designed so that the trains proceed separately, but 
 then, at runtime, they could be at the same place at the same moment because 
 of timing problems. In such a case it would be undesirable that the 
@@ -725,7 +760,7 @@ trains couple. So coupling is activated only if certain conditions are met.
 In general the signal protection rules apply, that is, an AI train will find a 
 red signal if its path leads it directly to another train. So in general these 
 functions can be used only if there are no signals between the coupling train 
-and the coupled train. However, this can be overcome in two modes:
+and the coupled train. However, this can be overcome in three modes:
 
 - by the activity developer, by inserting a double reversal point between the 
   signal and the coupled train (this works only if the double reversal point is 
@@ -733,7 +768,7 @@ and the coupled train. However, this can be overcome in two modes:
 - by the player, forcing the signal to the clear state by using the 
   :ref:`dispatcher window <driving-dispatcher>`. 
 - or even better, by using extended AI shunting function #7, which is 
-  described further below, that allows the train AI to pass a signal at danger.
+  described further below, that allows the AI train to pass a signal at danger.
 
 Coupling with a static consist is not subject to other conditions, since if the 
 activity designer decided that the path would lead an AI train up to against a 
@@ -764,7 +799,7 @@ In the case where the coupled train is static:
 
 In case the coupled train is a player train or an AI train:
 
-- if there is at least one reverse point under the coupled train or further 
+- if there is at least one reverse point under the coupling train or further 
   in the same track section, the coupling train couples with the coupled 
   train; at that point there are two possibilities:
 
@@ -785,7 +820,7 @@ In case the coupled train is a player train or an AI train:
 
 Now on how to design paths:
 
-- If one wants, the coupling train to be absorbed by the coupled train: simply 
+- If one wants the coupling train to be absorbed by the coupled train: simply 
   put the end point of the path of the coupling train below the coupled train
   or further, but in the same track section.
 - If one wants the coupling train to move further on in its path after having 
@@ -823,17 +858,16 @@ and so on.
 The following possibilities arise:
 
 - The AI train proceeds and stops with the locomotive at the front, and wants to 
-  uncouple and proceed in the same direction: a WP with the above format is 
+  uncouple and proceed in the same direction: a WP with the format 4NNSS is 
   inserted where the AI train will stop, counting cars starting from the locomotive.
 - The AI train proceeds with the locomotive at the rear, and wants to uncouple 
   and proceed in the reverse direction: a reverse point has to be put in the point 
-  where the train will stop, and a WP has to be put sequentially after the reverse 
+  where the train will stop, and a 4NNSS WP has to be put sequentially after the reverse 
   point, somewhere under the part of the train that will remain with the train, 
   formatted as above. As the train has changed direction at the reverse point, 
   again cars are counted starting from the locomotive.
 - The AI locomotive proceeds and couples to a loose consist, and wants to get 
-  only a part of it: a reverse point is inserted under the loose consist, and a WP 
-  is inserted sequentially after the reverse point, somewhere under the part of 
+  only a part of it: a reverse point is inserted under the loose consist, and a 4NNSS WP is inserted sequentially after the reverse point, somewhere under the part of 
   the train that will remain with the train, formatted as above.
 
 What is NOT currently possible is the ability to couple the AI train to the 
@@ -846,6 +880,7 @@ the second AI train couple to these cars.
 
 Function 6 (Join and split)
 '''''''''''''''''''''''''''
+*Introduction*
 
 Join and split means that two trains (AI or player) each start running on their 
 own path; then they join and run coupled together a part of their path, and then 
@@ -859,12 +894,11 @@ Application 1:
 - a pair of helper locomotives couples to the rear or to the front of a long 
   train;
 - the resulting train runs uphill;
-- when they arrived uphill, the helper locomotives uncouple from the train.
-- if the helpers were coupled to the rear of the other train, the train 
-  continues forward on its path, while the helper locomotives return downhill.
-- If the helpers were coupled to the front, the helpers will enter a siding and 
-  stop; the train will continue forward on its path, and when the train has 
-  passed, the helpers can reverse and return downhill.
+- when they have arrived uphill, the helper locomotives uncouple from the train.
+
+    - if the helpers were coupled to the rear of the other train, the train continues forward on its path, while the helper locomotives return downhill.
+    - If the helpers were coupled to the front, the helpers will enter a siding and stop; the train will continue forward on its path, and when the train has passed, thee helpers can reverse and return downhill.
+
   This means that a complete helper cycle can be simulated.
 
 Application 2:
@@ -877,7 +911,7 @@ Application 2:
 - Both the joining train (the one that moves and couples to the other train -- 
   the joined train) and the joined train may be an AI train or a player train.
 
-Activity development:
+*Activity development*
 
 1)  The two trains start as separate trains, couple together and decouple 
     later in the game . After that of course such trains can couple to other 
@@ -895,13 +929,12 @@ Activity development:
     are no particular requirements; if however you want to have very short runs 
     from coupling train start to coupling moment, it could be necessary to 
     insert a couple of reversal points in between, or else the train could stop 
-    and avoid coupling. Please don't disdain double reversals: they are 
-    sometimes the only way to limit the authority range of a train. 
+    and avoid coupling. Please don't disdain double reversals: they are     sometimes the only way to limit the authority range of a train. 
 5)  If the coupling train has to couple to the front of the coupled train, 
     obviously a reversal point is needed for the coupling train: it must be laid 
     somewhere under the coupled train, or even farther down in the same track 
-    section; also in this case there can be a problem of authority, that 
-    requires that the coupled train has a couple of reversal points after the 
+    section; also in this case there can be a problem of authority, that could
+    require that the coupled train has a couple of reversal points after the 
     point where it waits to be coupled.
 6)  The incorporated train has its own path, but from coupling to decoupling 
     point it must pass over the same track sections of the path 
@@ -944,7 +977,7 @@ Activity development:
       RP are needed. This train part will wait that the part ahead will clear 
       the path before starting.
         
-Activity run hints:
+*Activity run hints*
 
 - When you run as player, you have to uncouple the train where foreseen by the 
   activity (the uncoupled train must lay in a route section present in its path). 
@@ -970,6 +1003,8 @@ just in front of the signal).
 Signal related files
 ====================
 
+*For content developers*
+
 OR manages signals as defined in the files ``sigcfg.dat`` and ``sigscr.dat`` in 
 a way that is highly compatible to MSTS. A description of their contents and 
 how to modify these two files is contained in the Word document 
@@ -991,7 +1026,7 @@ in MSTS files), then this parameter defines the number of NORMAL signal heads (n
 signals!) that are cleared down the route, including the signal heads of the 
 signal where the SignalType resides. This is not exactly as in MSTS, where quite 
 complex and strange calculations are perfomed, and in some cases could lead to 
-too few signals being cleared for a satisfactory train operation.
+too few signals being cleared for a satisfactory train operation. Moreover MSTS doesn't consider the SignalNumClearAhead () value related to the signal, but the maximum SignalNumClearAhead () encountered in the signal types used in the route. Therefore, if it is desired that OR approaches the MSTS operation, the value of SignalNumClearAhead ()of all signals must be set at the same maximum value. To avoid affecting also MSTS operation, there are two approaches that are described here below.
 
 If for a SignalType a second SignalNumClearAhead () parameter is added just 
 before the existing one, OR interprets it as the number of NORMAL SIGNALS that 
@@ -1016,7 +1051,7 @@ this way the problem of too few signals cleared for satisfactory train
 operation is usually solved.
 
 If however this single line standard sigscr.dat doesn't behave satisfactorily 
-even counting signals, it will have to be optimized for OR by modifying the 
+even counting signals (a reason has been described in preceding paragraph), it will have to be optimized for OR by modifying the 
 parameter SignalNumClearAhead () for the unsatisfactory signals; if preferred 
 the line can stay as it is, and an optimized line can be added before the 
 existing one, and it will again count signals. In this case the sigscr.dat file 
@@ -1066,6 +1101,8 @@ it has no effect on any other signals.
 
 Limitation: it is not possible to define different speeds related to type of 
 train (passenger or freight).
+
+*Definition and usage*
 
 The definition is similar to that of any other signal, with ``SignalFnType`` 
 set to ``SPEED``.
@@ -1195,11 +1232,14 @@ The syntax definition for this is::
 Allowed definitions :
 
 - Position :
+
     - Positionm : position in meters.
     - Positionkm : position in kilometers.
     - Positionmiles : position in miles.
     - Positionyd : position in yards.
+
 - Speed :
+
     - Speedkph : speed in km / hour.
     - Speedmph : speed in miles / hour.
 
@@ -1335,9 +1375,9 @@ Signal definition::
     )
 
 Signal function (reduced to show use of approach control only).
-This function uses approach control for the 'lower' route.
+This function uses approach control for the 'lower' route.::
 
-SCRIPT SL_J_40_LAC::
+    SCRIPT SL_J_40_LAC
 
     // Searchlight Top Main Junction
     extern float    block_state ();
@@ -1459,10 +1499,15 @@ without jeopardizing the functionality in normal Activity mode.
 It is a Boolean function and returns state as follows:
 
 - Activity Mode :
+
     - Returns true if :
+
         - Route from signal is not leading into a platform.
+
 - Timetable Mode :
+
     - Returns true if :
+
         - Route from signal is not leading into a platform.
         - Route from signal is leading into a platform and the train has a 
           booked stop in that platform, and any of the following states is 
@@ -1531,15 +1576,21 @@ sections, the ``TrainHasCallOn_Restricted()`` will never allow call-on.
 So, in a nutshell :
 
     - Use on approach to stations:
+
         - ``TrainHasCallOn()`` and ``TrainHasCallOn_Restricted()``:
+
             - Activity: call-on not allowed
             - Timetable: call-on allowed in specific situations (with 
               ``$callon``, ``$stable`` or ``$attach`` commands)
 
     - Use on 'free line' :
+
         - ``TrainHasCallOn()``:
+
             - Activity or Timetable: call-on always allowed
+
         - ``TrainsHasCallOn_Restricted()``:
+
             - Activity or Timetable: call-on never allowed
 
 These signals can be laid down with the MSTS RE. In the .tdb file only a 
@@ -1558,15 +1609,19 @@ Function call::
     state = NEXT_NSIG_LR(MstsSignalFunction fn_type, int n).
 
 Returned value:
-    - state of nth signal ahead,
-    - ``SIGASP_STOP``:
+
+    - state of nth signal ahead, except,
 
         - When there are less than n signals ahead of the train.
         - when any of the intermediate signals is at danger.
 
+        In those situations, the function will return SIGASP_STOP.
+
 Usage : take, for instance, the sequence of signals as shown below.
 
 .. image:: images/operation-NEXT_NSIG_LR.png
+    :align: center
+    :scale: 80%
 
 The distance between signals B and C, as well as between C and D, is shorter 
 than the required braking distance. Therefore, if D is at danger, both C and B 
@@ -1612,27 +1667,84 @@ Using 'DECOR' dummy heads, this allows these heads to be used as additional
 user settings, and as such are kind of an extension to the four available 
 ``SIGFEAT_USER`` flags.
 
-Please note that this function is still experimental.
+*Please note that this function is still experimental*.
 
 Function call::
 
-    state = HASHEAD(headname);
+    state = HASHEAD( n );
 
-Function returns 1 if head is set, else 0. 
+where n is the SignalSubObj-Number in question.
+Function returns 1 if head SignalSubObj is set, else 0.
+
+
+Signalling flag OR_NOSPEEDREDUCTION
+-----------------------------------
+Differently from MSTS, as default AI trains pass signals with aspect ``RESTRICTED`` or 
+``STOP_AND_PROCEED`` at reduced speed.
+To provide also an MSTS-compatible operation and to take into account signalling 
+systems where no a speed reduction is required when passing such signals, the flag 
+``OR_NOSPEEDREDUCTION`` has been introduced. This is an example of usage of such flag::
+
+  SignalAspects ( 7
+	SignalAspect ( STOP		"Red" )
+	SignalAspect ( STOP_AND_PROCEED	"LowYellowFlash" SpeedMPH(25) signalflags (OR_NOSPEEDREDUCTION) )
+	SignalAspect ( RESTRICTING 	"LowYellow"	SpeedMPH(25) signalflags (OR_NOSPEEDREDUCTION) )
+	SignalAspect ( APPROACH_2			"TopYellowMidGreen" )
+	SignalAspect ( APPROACH_3			"TopYellow" )
+	SignalAspect ( CLEAR_1				"MidGreen" )
+	SignalAspect ( CLEAR_2				"TopGreen" )
+  )
+
+With this flag set, no speed reduction is applied when passing the signal.
+
+
 
 .. _operation-activity:
 
 OR-Specific Additions to Activity Files
 =======================================
 
-The additions described below will be ignored by MSTS. Make these additions to 
-the .act file with a Unicode-enabled editor. Note that these additions will be 
-removed by the MSTS Activity Editor if the .act activity file is opened and 
-saved as an .act file by the AE. However, if the activity is opened in the AE 
-and saved in an .apk Activity Package, the additions will be included.
-
+The additions described below will be ignored by MSTS.
 Since activity files are not used in Timetable mode, none of the following 
 features will operate in that mode.
+You can make these additions in three different ways, which are described in following subparagraphs.
+
+Manually modifying the .act file
+--------------------------------
+
+Make these additions by modifying the .act file with a Unicode-enabled editor. 
+Note that these additions will be 
+removed by the MSTS Activity Editor if the .act activity file is opened and 
+saved as an .act file by the AE. However, if the activity is opened in the AE 
+and saved in an .apk Activity Package, the additions will instead be included.
+
+Using the TSRE5 activity editing capabilities
+---------------------------------------------
+
+The TSRE5 Route Editor includes activity editing capabilities. These capabilities 
+include addition of some OR-specific additions to activity files described in 
+following paragraphs. A note is present where this does not apply.
+
+.. _operation-extension-activity-file:
+
+Generating an extension activity file
+--------------------------------------
+
+If the TSRE5 editor isn't used, and if it is desired to avoid the problem that the 
+OR-specific additions are lost by later modifying the activity with the MSTS Activity Editor, 
+it is recommended to use this third possibility: an OpenRails subfolder must be created 
+within the route's ACTIVITIES folder, and an .act file including only the OR-specific extensions 
+used can be created with an Unicode-enable editor and then located there.
+An example of an unmodified .act file and of an extension .act file within the route's 
+OpenRails subfolder is included in file ORActivityExtensionFileSample.zip, which may be 
+found within the ``Documentation\SampleFiles\Manual`` subfolder within the OpenRails folder.
+As can be seen, the name of such extension .act file must be the same as the one of the base 
+.act file. Re events, to ensure a correct cross-correspondence between event definitions 
+within the base file and within the extension file, in the extension file within 
+the EventCategory block of every modified event the first line must be the ID () one, 
+and the ID must correspond with the one present in the base .act file. Only the added 
+lines within such EventCategory block must be present in the extension .act file.
+
 
 No Halt by Activity Message Box
 -------------------------------
@@ -1671,9 +1783,6 @@ does not work for the terminating event of the activity.
 AI Train Horn Blow
 ------------------
 
-This feature requires selection of the :ref:`Extended AI train shunting option 
-<options-ai-shunting>`.
-
 Horn blow by AI trains is achieved by inserting into the AI train path a 
 waiting point with a waiting time value between 60011 (1 second horn blow) and 
 60020 (10 seconds horn blow).
@@ -1687,6 +1796,14 @@ must be terminated before the normal waiting point is reached ( just in case).
 On the other hand, a horn blow waiting point may be positioned just after a 
 normal WP (thus achieving the effect that the train blows the horn when it 
 restarts).
+
+If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
+set to 1 in the .eng file, the bell is played for further 30 seconds after 
+the end of the horn blow.
+
+To implement this feature it is not necessary to proceed as described in the 
+first three paragraphs of this chapter. It is enough to insert the waiting 
+points within the paths with either the MSTS AE or through TrackViewer.
 
 AI Horn Blow at Level Crossings
 -------------------------------
@@ -1708,15 +1825,48 @@ the route with TrackViewer allows identification of the true level crossings.
 If a horn blow is also desired for a *simple* road crossing, the feature *AI 
 Train Horn Blow* described above must be used.
 
+If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
+set to 1 in the .eng file, the bell is played for further 30 seconds after 
+the end of the horn blow.
+
+.. _operation-event-triggered-by-ai-train:
+
+Location Event triggered by AI Train
+------------------------------------
+
+Under MSTS location events may only be triggered when the player train reaches 
+them. OR provides also location events that are triggered by AI trains.
+In this case a line like following one must be added within the
+EventCategoryLocation block::
+  
+  				ORTSTriggeringTrain ( "TestEventAI" 43230 )
+
+where "TestEventAI" is the service name of the AI train, and 43230 is the 
+starting time of day (in seconds) of the AI train. The second parameter may be 
+omitted in case there is only one AI train with the service name present in the 
+above line.
+
+This feature in connection with the :ref:`AI train Waiting Point 
+modification through event <operation-waiting-point-modification>` allows 
+synchronization between AI trains or also between an AI train and the 
+player train.
+
+This feature is not yet managed by TSRE5.
+
+
 Location Event and Time Event Sound File
 ----------------------------------------
 
 An activity file can be modified so that a sound file is played when the train 
 reaches a location specified in an EventTypeLocation event in the .act file, 
 or when a certain time interval specified in an EventTypeTime event has 
-elapsed since the start of the activity. Add the line::
+elapsed since the start of the activity. Within the Outcomes() subblock of 
+the event add following subblock::
 
-    ORTSActSoundFile ( Filename SoundType )
+    ORTSActivitySound (
+        ORTSActSoundFile ( Filename SoundType )
+        ORTSSoundLocation ( TileX TileZ X Y Z )
+        )
 
 to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
     - *Filename* = name, in quotations, of a .wav file located in the SOUND 
@@ -1733,7 +1883,12 @@ to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
             one that the locomotive has reached when the event is triggered. The 
             sound is also heard in internal views in an attenuated way, and 
             becomes attenuated by moving away from the position.
- 
+        - ``Location`` -- sound is played externally from a fixed position 
+            defined in the ORTSSoundLocation parameter. 
+            
+
+Note: Parameter ORTSSoundLocation is needed only when *Soundtype* is ``Location``.
+
 For example::
 
     EventCategoryLocation (
@@ -1742,18 +1897,22 @@ For example::
         Activation_Level ( 1 )
         Outcomes (
             DisplayMessage ( "Won't be shown because ORTSContinue = 0")
+    		ORTSActivitySound (
+				ORTSActSoundFile ( "milanogrecopirelli.wav" "Ground" )
+			)
         )
         Name ( Location6 )
         Location ( -146 14082 -1016.56 762.16 10 )
         TriggerOnStop ( 0 )
         ORTSContinue ( 0 )
-        ORTSActSoundFile ( "x_Next_stop_MiClei.wav" "Pass" )
     )
 
 Including the ``ORTSContinue`` line (explained above) inhibits the normal halting 
 of the activity by the event. Also, if the value of 0 is inserted in the line as in the example 
 above, the display of the event message is completely suppressed. Only one 
 sound file per event is allowed.
+
+This feature is not yet managed by TSRE5 in this format.
 
 .. _operation-activity-weather-change:
 
@@ -1762,8 +1921,8 @@ Weather Change Activity Event
 
 An activity can be modified so that the weather changes when running the 
 activity in ORTS. MSTS operation is not affected by these WeatherChange events. 
-The following block can be added within an Event Block (either a Location or a 
-Time event) of the .act file::
+The following block can be added within the Outcomes () block of an Event Block 
+(either a Location or a Time event) of the .act file::
 
     ORTSWeatherChange (
         ORTSOvercast ( 
@@ -1781,7 +1940,7 @@ Time event) of the .act file::
         )
     )
 
-The weather will change accordingly during the activity.The ranges of the 
+The weather will change accordingly during the activity. The ranges of the 
 factors are as follows:
 
 - *final_overcastFactor*: value from 0 to 1.
@@ -1831,3 +1990,119 @@ WeatherChange events will remove them, so they should be backed up separately.
 Opening an .act file that contains WeatherChange events with the MSTS Activity 
 Editor and packaging it without editing it generates an .apk file that contains 
 the WeatherChange events.
+
+This feature is not managed by TSRE5 in this format.
+
+.. _operation-waiting-point-modification:
+
+AI train Waiting Point modification through event
+-------------------------------------------------
+
+Purpose of the feature
+''''''''''''''''''''''
+
+An event outcome is available which modifies the waiting point expiration time 
+when the event is hit (e.g. when the player train reaches it, in case of a 
+location event).
+
+This solves AI train sync problems. If e.g. an AI train is due to couple or 
+uncouple cars to/from the player train, it must be ensured that the two trains 
+are at the right place at the right time. If however this occurs after a long 
+run of the player train, this one could be delayed, and so it is difficult to 
+guarantee that the rendez-vous occurs correctly. In this case a long lasting 
+waiting point may be placed on the AI train path. The AI train will wait there for 
+the player train. At the sync location (usuall few before the point where the player 
+train must be touched by the AI train) a location event is positioned, which 
+indicates the updated waiting point value for the AI train (usually a short 
+waiting point). When the player train will hit such location event, the AI 
+train wating point will be updated and such train will restart after the updated 
+waiting point has 
+expired, and it will couple to the player train.
+
+The feature may be used also for other features, like having an AI train 
+coupling to the player train as helper, or like guaranteeing a passenger train 
+connection in a station, or like having an AI train coupling to another AI train 
+(as the event may also be triggered by an AI train, see :ref:`Location Event 
+triggered by AI Train <operation-event-triggered-by-ai-train>`.
+
+Syntax of the feature
+'''''''''''''''''''''
+To make use of this feature it is suggested to generate an :ref:`Extension activity 
+file <operation-extension-activity-file>` .
+Here is an example of an extension activity file using such feature::
+
+  SIMISA@@@@@@@@@@JINX0a0t______
+  
+  Tr_Activity (
+  	Tr_Activity_File (
+  		Events (
+  			EventCategoryLocation (
+  				ID ( 1 )
+  				ORTSContinue ( 3 )
+  				Outcomes (
+  					ORTSRestartWaitingTrain (
+  						ORTSWaitingTrainToRestart ( "TesteventWP_ai_longerpath" 23240 )
+  							ORTSDelayToRestart ( 60 )
+  							ORTSMatchingWPDelay ( 31500 )
+  							)
+  				)
+  			)
+  		)
+  	)
+  )
+
+
+Description of parameters:
+
+1) ORTSWaitingTrainToRestart has as first parameter the service name of the AI train whose 
+   waiting point has to be modified, and as second (optional) parameter the starting 
+   time of the AI train.
+2) ORTSDelayToRestart is the new delay for the waiting point. It is expressed in seconds.
+3) ORTSMatchingWPDelay indicates the original value of the AI train waiting point; this 
+   is used to ensure 
+   that the correct waiting point is modified.
+
+The above file is also available as file TesteventWP_longerpath_extension.zip, which may be 
+found within the ``Documentation\SampleFiles\Manual`` subfolder within the OpenRails folder. 
+A sample activity using such file is available as file testeventwp_longerpath.zip in the same 
+subfolder. It is an .apk file.
+
+The activity uses the MSTS legacy route USA1 and legacy trainsets.
+
+The player train exits from the tunnel and stops at the Baltimore station. Just before this, 
+it hits the location event setting the AI train WP. Later an AI train will enter the station 
+and stop. This train hits an absolute WP just after terminating passenger unloading. As the 
+player train arrived before, such absolute WP becomes zeroed and the AI train will restart 
+without further waiting.
+
+If instead the player train is stopped before entering the station, and stays there until the 
+AI train has entered the station and unloaded passsengers, the AI train will stay further 
+there until the player train restarts, hits the location event and the modified WP time has 
+expired.
+
+This feature is not yet managed by TSRE5.
+
+Old formats
+-----------
+
+Following alternate formats are accepted by OR for Event Sound Files and 
+Weather Change. These formats are not recommended for new activities.
+
+Event Sound Files: The sound file may be defined by a single line::
+
+        ORTSActSoundFile ( Filename SoundType )
+
+to be inserted directly in the EventCategoryLocation () or 
+EventCategoryTime () block, instead of being inserted within the 
+Outcomes() subblock. In this alternate format the ``Location`` SoundType is 
+not supported.
+
+TSRE5 manages this format.
+
+Weather Change events: the ORTSWeatherChange () block may be inserted 
+directly in the EventCategoryLocation () or 
+EventCategoryTime () block, instead of being inserted within the 
+Outcomes() subblock.
+
+TSRE5 manages this format.
+

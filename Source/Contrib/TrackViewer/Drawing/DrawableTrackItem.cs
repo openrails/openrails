@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -132,6 +132,11 @@ namespace ORTS.TrackViewer.Drawing
                     this.WorldLocation.Location.X, this.WorldLocation.Location.Z,
                     this.direction);
                 this.angle = signalTraveller.RotY;
+
+                // Shift signal a little bit to be able to distinguish backfacing from normal facing
+                Microsoft.Xna.Framework.Vector3 shiftedLocation = this.WorldLocation.Location + 
+                    0.0001f * new Microsoft.Xna.Framework.Vector3((float) Math.Cos(this.angle), 0f, -(float) Math.Sin(this.angle));
+                this.WorldLocation = new WorldLocation(this.WorldLocation.TileX, this.WorldLocation.TileZ, shiftedLocation );
             }
             catch { }
         }
@@ -149,7 +154,7 @@ namespace ORTS.TrackViewer.Drawing
             }
             if (sigcfgFile.SignalTypes.ContainsKey(this.signalType))
             {
-                this.isNormal = (sigcfgFile.SignalTypes[this.signalType].FnType == SignalType.FnTypes.Normal);
+                this.isNormal = (sigcfgFile.SignalTypes[this.signalType].FnType == MstsSignalFunction.NORMAL);
             }
         }
 
@@ -168,7 +173,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 7f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.nameExtension, size, minPixelSize, colors.None, this.angle);
+                drawArea.DrawTexture(this.WorldLocation, "signal" + colors.NameExtension, size, minPixelSize, colors.None, this.angle);
                 return true;
             }
             return false;
@@ -324,7 +329,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 7;
-                drawArea.DrawTexture(this.WorldLocation, "platform" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "platform" + colors.NameExtension, size, minPixelSize);
                 returnValue = true;
             }
             if (Properties.Settings.Default.showPlatformNames)
@@ -372,7 +377,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "pickup" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "pickup" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;
@@ -408,7 +413,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 7;
-                drawArea.DrawTexture(this.WorldLocation, "hazard" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "hazard" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;
@@ -444,7 +449,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 9f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "carspawner" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "carspawner" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;
@@ -593,7 +598,7 @@ namespace ORTS.TrackViewer.Drawing
             {
                 float size = 4f; // in meters
                 int minPixelSize = 5;
-                drawArea.DrawTexture(this.WorldLocation, "sound" + colors.nameExtension, size, minPixelSize);
+                drawArea.DrawTexture(this.WorldLocation, "sound" + colors.NameExtension, size, minPixelSize);
                 return true;
             }
             return false;

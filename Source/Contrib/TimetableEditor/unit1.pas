@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  Grids, Buttons, Menus, Spin, charencstreams, timetabledata, about, clipbrd,
+  Grids, Buttons, Menus, Spin, LazUTF8, charencstreams, timetabledata, about, clipbrd,
   defaulttranslator, StdCtrls, Contnrs;
 
 type
@@ -501,10 +501,10 @@ var lines: tstringlist;
     but: integer;
     save: boolean;
 begin
-    if not directoryexists(utf8tosys(getroutepath+'Activities\Openrails')) then begin
+    if not directoryexists(UTF8ToSys(getroutepath+'Activities\Openrails')) then begin
       if messagedlg(savetimetable, mtConfirmation, [mbyes,mbno],0) = mryes then begin
       //if messagedlg('Der Zeitplan muss im Ordner "Activities\Openrails\" der Strecke gespeichert werden. Soll der Ordner erstellt werden?', mtConfirmation, [mbyes,mbno],0) = mryes then begin
-        createdir(utf8tosys(getroutepath+'Activities\Openrails'));
+        createdir(UTF8ToSys(getroutepath+'Activities\Openrails'));
       end;
     end;
     if gettitle = '' then begin
@@ -515,7 +515,7 @@ begin
     end;
     //savedialog1.Title:='Zeitplan speichern';
     savedialog1.Title:=DLGsave;
-    savedialog1.InitialDir:=utf8tosys(getroutepath+'Activities\Openrails');
+    savedialog1.InitialDir:=UTF8ToSys(getroutepath+'Activities\Openrails');
     //savedialog1.Filter:='Openrails Zeitplan|*.timetable_or';
     savedialog1.Filter:='Openrails timetable (*.timetable_or)|*.timetable_or';
     if ttfilename <> '' then savedialog1.filename:=ttfilename
@@ -547,7 +547,7 @@ begin
         fces.HaveType:=true;
         fces.UniStreamType:=ufUtf16le;
         fces.UTF8Text:=lines.text;
-        fces.SaveToFile(utf8tosys(savedialog1.filename));
+        fces.SaveToFile(UTF8ToSys(savedialog1.filename));
         fces.Free;
         unsaved:=false;
       end;
@@ -574,7 +574,7 @@ begin
     grid.cells[2,0]:='#comment';
     FCES:=TCHarEncStream.Create;
     FCES.reset;
-    fCES.LoadFromFile(utf8tosys(opendialog1.filename));
+    fCES.LoadFromFile(UTF8ToSys(opendialog1.filename));
     tmp.text:=fces.utf8text;
     //setroutepath(extractfilepath(opendialog1.filename));
     opentimetable(opendialog1.filename);
@@ -608,7 +608,7 @@ begin
     opentimetable(opendialog1.filename);
     fces:=tcharencStream.create;
     fces.reset;
-    fces.loadfromfile(utf8tosys(opendialog1.filename));
+    fces.loadfromfile(UTF8ToSys(opendialog1.filename));
     slist.text:=fces.utf8text;
     split(';',slist[0],cols);
     mcols:=0;
@@ -801,7 +801,7 @@ begin
         fces.HaveType:=true;
         fces.UniStreamType:=ufUtf16le;
         fces.UTF8Text:=lines.text;
-        fces.SaveToFile(utf8tosys(ttfilename));
+        fces.SaveToFile(UTF8ToSys(ttfilename));
         fces.Free;
         unsaved:=false;
 end;
@@ -846,7 +846,7 @@ begin
   if (opendialog1.execute) and (opendialog1.FileName<>'') then begin
     fces:=tcharencStream.create;
     fces.reset;
-    fces.loadfromfile(utf8tosys(opendialog1.filename));
+    fces.loadfromfile(UTF8ToSys(opendialog1.filename));
     slist.text:=fces.utf8text;
     split(';',slist[0],cols);
     mcols:=0;

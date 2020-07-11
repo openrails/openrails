@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
@@ -41,6 +41,10 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.label28 = new System.Windows.Forms.Label();
+            this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
+            this.checkEnableWebServer = new System.Windows.Forms.CheckBox();
+            this.checkSpeedControl = new System.Windows.Forms.CheckBox();
             this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
             this.labelPressureUnit = new System.Windows.Forms.Label();
@@ -52,12 +56,16 @@
             this.checkAlerterExternal = new System.Windows.Forms.CheckBox();
             this.checkRetainers = new System.Windows.Forms.CheckBox();
             this.tabPageAudio = new System.Windows.Forms.TabPage();
+            this.numericExternalSoundPassThruPercent = new System.Windows.Forms.NumericUpDown();
+            this.label11 = new System.Windows.Forms.Label();
             this.numericSoundVolumePercent = new System.Windows.Forms.NumericUpDown();
             this.soundVolumeLabel = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
             this.checkMSTSBINSound = new System.Windows.Forms.CheckBox();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
+            this.checkShadowAllShapes = new System.Windows.Forms.CheckBox();
+            this.checkDoubleWire = new System.Windows.Forms.CheckBox();
             this.label15 = new System.Windows.Forms.Label();
             this.labelDayAmbientLight = new System.Windows.Forms.Label();
             this.checkModelInstancing = new System.Windows.Forms.CheckBox();
@@ -82,10 +90,15 @@
             this.checkDynamicShadows = new System.Windows.Forms.CheckBox();
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
+            this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.checkHotStart = new System.Windows.Forms.CheckBox();
+            this.checkSimpleControlPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
-            this.checkCurveResistanceSpeedDependent = new System.Windows.Forms.CheckBox();
+            this.checkCurveResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkTunnelResistanceDependent = new System.Windows.Forms.CheckBox();
+            this.checkWindResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkOverrideNonElectrifiedRoutes = new System.Windows.Forms.CheckBox();
             this.labelAdhesionMovingAverageFilterSize = new System.Windows.Forms.Label();
             this.numericAdhesionMovingAverageFilterSize = new System.Windows.Forms.NumericUpDown();
@@ -106,6 +119,8 @@
             this.checkDataLogger = new System.Windows.Forms.CheckBox();
             this.label17 = new System.Windows.Forms.Label();
             this.checkDataLogPhysics = new System.Windows.Forms.CheckBox();
+            this.checkDataLogSteamPerformance = new System.Windows.Forms.CheckBox();
+            this.checkVerboseConfigurationMessages = new System.Windows.Forms.CheckBox();
             this.tabPageEvaluate = new System.Windows.Forms.TabPage();
             this.checkListDataLogTSContents = new System.Windows.Forms.CheckedListBox();
             this.labelDataLogTSInterval = new System.Windows.Forms.Label();
@@ -130,6 +145,12 @@
             this.tabPageUpdater = new System.Windows.Forms.TabPage();
             this.labelUpdateChannel = new System.Windows.Forms.Label();
             this.tabPageExperimental = new System.Windows.Forms.TabPage();
+            this.label27 = new System.Windows.Forms.Label();
+            this.numericActWeatherRandomizationLevel = new System.Windows.Forms.NumericUpDown();
+            this.label26 = new System.Windows.Forms.Label();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
+            this.numericActRandomizationLevel = new System.Windows.Forms.NumericUpDown();
             this.checkCorrectQuestionableBrakingParams = new System.Windows.Forms.CheckBox();
             this.label25 = new System.Windows.Forms.Label();
             this.precipitationBoxLength = new System.Windows.Forms.NumericUpDown();
@@ -145,10 +166,7 @@
             this.labelLODBias = new System.Windows.Forms.Label();
             this.checkShapeWarnings = new System.Windows.Forms.CheckBox();
             this.trackLODBias = new System.Windows.Forms.TrackBar();
-            this.checkAutopilot = new System.Windows.Forms.CheckBox();
-            this.checkExtendedAIShunting = new System.Windows.Forms.CheckBox();
             this.checkConditionalLoadOfNightTextures = new System.Windows.Forms.CheckBox();
-            this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.AdhesionLevelValue = new System.Windows.Forms.Label();
             this.AdhesionLevelLabel = new System.Windows.Forms.Label();
             this.trackAdhesionFactorChange = new System.Windows.Forms.TrackBar();
@@ -157,11 +175,9 @@
             this.checkCircularSpeedGauge = new System.Windows.Forms.CheckBox();
             this.checkSignalLightGlow = new System.Windows.Forms.CheckBox();
             this.checkUseMSTSEnv = new System.Windows.Forms.CheckBox();
-            this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
             this.labelPerformanceTunerTarget = new System.Windows.Forms.Label();
             this.numericPerformanceTunerTarget = new System.Windows.Forms.NumericUpDown();
             this.checkPerformanceTuner = new System.Windows.Forms.CheckBox();
-            this.checkDoubleWire = new System.Windows.Forms.CheckBox();
             this.checkLODViewingExtention = new System.Windows.Forms.CheckBox();
             this.label8 = new System.Windows.Forms.Label();
             this.numericSuperElevationGauge = new System.Windows.Forms.NumericUpDown();
@@ -173,10 +189,13 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.tabPageAudio.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundVolumePercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             this.tabPageVideo.SuspendLayout();
@@ -187,6 +206,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericCab2DStretch)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).BeginInit();
             this.tabPageSimulation.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).BeginInit();
             this.tabPageKeyboard.SuspendLayout();
             this.tabPageDataLogger.SuspendLayout();
@@ -199,6 +219,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.bindingSourceContent)).BeginInit();
             this.tabPageUpdater.SuspendLayout();
             this.tabPageExperimental.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxHeight)).BeginInit();
@@ -329,6 +351,10 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.label28);
+            this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
+            this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
+            this.tabPageGeneral.Controls.Add(this.checkSpeedControl);
             this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
@@ -352,6 +378,57 @@
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(89, 340);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(66, 13);
+            this.label28.TabIndex = 17;
+            this.label28.Text = "Port Number";
+            // 
+            // numericWebServerPort
+            // 
+            this.numericWebServerPort.Location = new System.Drawing.Point(8, 338);
+            this.numericWebServerPort.Maximum = new decimal(new int[] {
+            65534,
+            0,
+            0,
+            0});
+            this.numericWebServerPort.Minimum = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
+            this.numericWebServerPort.Name = "numericWebServerPort";
+            this.numericWebServerPort.Size = new System.Drawing.Size(70, 20);
+            this.numericWebServerPort.TabIndex = 16;
+            this.numericWebServerPort.Value = new decimal(new int[] {
+            1025,
+            0,
+            0,
+            0});
+            // 
+            // checkEnableWebServer
+            // 
+            this.checkEnableWebServer.AutoSize = true;
+            this.checkEnableWebServer.Location = new System.Drawing.Point(8, 315);
+            this.checkEnableWebServer.Name = "checkEnableWebServer";
+            this.checkEnableWebServer.Size = new System.Drawing.Size(116, 17);
+            this.checkEnableWebServer.TabIndex = 15;
+            this.checkEnableWebServer.Text = "Enable WebServer";
+            this.checkEnableWebServer.UseVisualStyleBackColor = true;
+            // 
+            // checkSpeedControl
+            // 
+            this.checkSpeedControl.AutoSize = true;
+            this.checkSpeedControl.Location = new System.Drawing.Point(304, 6);
+            this.checkSpeedControl.Name = "checkSpeedControl";
+            this.checkSpeedControl.Size = new System.Drawing.Size(92, 17);
+            this.checkSpeedControl.TabIndex = 14;
+            this.checkSpeedControl.Text = "Speed control";
+            this.checkSpeedControl.UseVisualStyleBackColor = true;
             // 
             // checkDisableTCSScripts
             // 
@@ -453,6 +530,8 @@
             // 
             // tabPageAudio
             // 
+            this.tabPageAudio.Controls.Add(this.numericExternalSoundPassThruPercent);
+            this.tabPageAudio.Controls.Add(this.label11);
             this.tabPageAudio.Controls.Add(this.numericSoundVolumePercent);
             this.tabPageAudio.Controls.Add(this.soundVolumeLabel);
             this.tabPageAudio.Controls.Add(this.label2);
@@ -465,6 +544,34 @@
             this.tabPageAudio.TabIndex = 5;
             this.tabPageAudio.Text = "Audio";
             this.tabPageAudio.UseVisualStyleBackColor = true;
+            // 
+            // numericExternalSoundPassThruPercent
+            // 
+            this.numericExternalSoundPassThruPercent.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.numericExternalSoundPassThruPercent.Location = new System.Drawing.Point(6, 81);
+            this.numericExternalSoundPassThruPercent.Name = "numericExternalSoundPassThruPercent";
+            this.numericExternalSoundPassThruPercent.Size = new System.Drawing.Size(54, 20);
+            this.numericExternalSoundPassThruPercent.TabIndex = 5;
+            this.toolTip1.SetToolTip(this.numericExternalSoundPassThruPercent, "Min 0 Max 100. Higher: louder sound\r\n\r\n");
+            this.numericExternalSoundPassThruPercent.Value = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(66, 83);
+            this.label11.Margin = new System.Windows.Forms.Padding(3);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(161, 13);
+            this.label11.TabIndex = 6;
+            this.label11.Text = "% external sound heard internally";
             // 
             // numericSoundVolumePercent
             // 
@@ -533,6 +640,8 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.checkShadowAllShapes);
+            this.tabPageVideo.Controls.Add(this.checkDoubleWire);
             this.tabPageVideo.Controls.Add(this.label15);
             this.tabPageVideo.Controls.Add(this.labelDayAmbientLight);
             this.tabPageVideo.Controls.Add(this.checkModelInstancing);
@@ -564,10 +673,30 @@
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
             // 
+            // checkShadowAllShapes
+            // 
+            this.checkShadowAllShapes.AutoSize = true;
+            this.checkShadowAllShapes.Location = new System.Drawing.Point(6, 29);
+            this.checkShadowAllShapes.Name = "checkShadowAllShapes";
+            this.checkShadowAllShapes.Size = new System.Drawing.Size(130, 17);
+            this.checkShadowAllShapes.TabIndex = 24;
+            this.checkShadowAllShapes.Text = "Shadow for all shapes";
+            this.checkShadowAllShapes.UseVisualStyleBackColor = true;
+            // 
+            // checkDoubleWire
+            // 
+            this.checkDoubleWire.AutoSize = true;
+            this.checkDoubleWire.Location = new System.Drawing.Point(307, 29);
+            this.checkDoubleWire.Name = "checkDoubleWire";
+            this.checkDoubleWire.Size = new System.Drawing.Size(135, 17);
+            this.checkDoubleWire.TabIndex = 23;
+            this.checkDoubleWire.Text = "Double overhead wires";
+            this.checkDoubleWire.UseVisualStyleBackColor = true;
+            // 
             // label15
             // 
             this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(6, 324);
+            this.label15.Location = new System.Drawing.Point(6, 352);
             this.label15.Margin = new System.Windows.Forms.Padding(3);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(138, 13);
@@ -576,7 +705,7 @@
             // 
             // labelDayAmbientLight
             // 
-            this.labelDayAmbientLight.Location = new System.Drawing.Point(6, 324);
+            this.labelDayAmbientLight.Location = new System.Drawing.Point(6, 352);
             this.labelDayAmbientLight.Margin = new System.Windows.Forms.Padding(3);
             this.labelDayAmbientLight.Name = "labelDayAmbientLight";
             this.labelDayAmbientLight.Size = new System.Drawing.Size(292, 13);
@@ -586,7 +715,7 @@
             // checkModelInstancing
             // 
             this.checkModelInstancing.AutoSize = true;
-            this.checkModelInstancing.Location = new System.Drawing.Point(6, 75);
+            this.checkModelInstancing.Location = new System.Drawing.Point(6, 98);
             this.checkModelInstancing.Name = "checkModelInstancing";
             this.checkModelInstancing.Size = new System.Drawing.Size(106, 17);
             this.checkModelInstancing.TabIndex = 3;
@@ -598,7 +727,7 @@
             this.trackDayAmbientLight.AutoSize = false;
             this.trackDayAmbientLight.BackColor = System.Drawing.SystemColors.Window;
             this.trackDayAmbientLight.LargeChange = 4;
-            this.trackDayAmbientLight.Location = new System.Drawing.Point(6, 343);
+            this.trackDayAmbientLight.Location = new System.Drawing.Point(6, 371);
             this.trackDayAmbientLight.Margin = new System.Windows.Forms.Padding(6, 3, 6, 3);
             this.trackDayAmbientLight.Maximum = 30;
             this.trackDayAmbientLight.Minimum = 15;
@@ -623,7 +752,7 @@
             // labelDistantMountainsViewingDistance
             // 
             this.labelDistantMountainsViewingDistance.AutoSize = true;
-            this.labelDistantMountainsViewingDistance.Location = new System.Drawing.Point(86, 221);
+            this.labelDistantMountainsViewingDistance.Location = new System.Drawing.Point(86, 249);
             this.labelDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(3);
             this.labelDistantMountainsViewingDistance.Name = "labelDistantMountainsViewingDistance";
             this.labelDistantMountainsViewingDistance.Size = new System.Drawing.Size(110, 13);
@@ -637,7 +766,7 @@
             0,
             0,
             0});
-            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 219);
+            this.numericDistantMountainsViewingDistance.Location = new System.Drawing.Point(26, 247);
             this.numericDistantMountainsViewingDistance.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericDistantMountainsViewingDistance.Maximum = new decimal(new int[] {
             1000,
@@ -662,7 +791,7 @@
             // checkFastFullScreenAltTab
             // 
             this.checkFastFullScreenAltTab.AutoSize = true;
-            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 29);
+            this.checkFastFullScreenAltTab.Location = new System.Drawing.Point(6, 52);
             this.checkFastFullScreenAltTab.Name = "checkFastFullScreenAltTab";
             this.checkFastFullScreenAltTab.Size = new System.Drawing.Size(129, 17);
             this.checkFastFullScreenAltTab.TabIndex = 1;
@@ -672,7 +801,7 @@
             // checkDistantMountains
             // 
             this.checkDistantMountains.AutoSize = true;
-            this.checkDistantMountains.Location = new System.Drawing.Point(6, 196);
+            this.checkDistantMountains.Location = new System.Drawing.Point(6, 224);
             this.checkDistantMountains.Name = "checkDistantMountains";
             this.checkDistantMountains.Size = new System.Drawing.Size(110, 17);
             this.checkDistantMountains.TabIndex = 10;
@@ -683,7 +812,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(66, 172);
+            this.label14.Location = new System.Drawing.Point(66, 200);
             this.label14.Margin = new System.Windows.Forms.Padding(3);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(104, 13);
@@ -697,7 +826,7 @@
             0,
             0,
             0});
-            this.numericViewingDistance.Location = new System.Drawing.Point(6, 170);
+            this.numericViewingDistance.Location = new System.Drawing.Point(6, 198);
             this.numericViewingDistance.Maximum = new decimal(new int[] {
             10000,
             0,
@@ -720,7 +849,7 @@
             // labelFOVHelp
             // 
             this.labelFOVHelp.AutoSize = true;
-            this.labelFOVHelp.Location = new System.Drawing.Point(304, 247);
+            this.labelFOVHelp.Location = new System.Drawing.Point(304, 275);
             this.labelFOVHelp.Margin = new System.Windows.Forms.Padding(3);
             this.labelFOVHelp.Name = "labelFOVHelp";
             this.labelFOVHelp.Size = new System.Drawing.Size(28, 13);
@@ -729,7 +858,7 @@
             // 
             // numericViewingFOV
             // 
-            this.numericViewingFOV.Location = new System.Drawing.Point(6, 245);
+            this.numericViewingFOV.Location = new System.Drawing.Point(6, 273);
             this.numericViewingFOV.Maximum = new decimal(new int[] {
             120,
             0,
@@ -753,7 +882,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(66, 247);
+            this.label10.Location = new System.Drawing.Point(66, 275);
             this.label10.Margin = new System.Windows.Forms.Padding(3);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(105, 13);
@@ -767,7 +896,7 @@
             0,
             0,
             0});
-            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 144);
+            this.numericCab2DStretch.Location = new System.Drawing.Point(6, 172);
             this.numericCab2DStretch.Name = "numericCab2DStretch";
             this.numericCab2DStretch.Size = new System.Drawing.Size(54, 20);
             this.numericCab2DStretch.TabIndex = 6;
@@ -777,7 +906,7 @@
             // labelCab2DStretch
             // 
             this.labelCab2DStretch.AutoSize = true;
-            this.labelCab2DStretch.Location = new System.Drawing.Point(66, 146);
+            this.labelCab2DStretch.Location = new System.Drawing.Point(66, 174);
             this.labelCab2DStretch.Margin = new System.Windows.Forms.Padding(3);
             this.labelCab2DStretch.Name = "labelCab2DStretch";
             this.labelCab2DStretch.Size = new System.Drawing.Size(88, 13);
@@ -787,7 +916,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(66, 273);
+            this.label1.Location = new System.Drawing.Point(66, 301);
             this.label1.Margin = new System.Windows.Forms.Padding(3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(103, 13);
@@ -796,7 +925,7 @@
             // 
             // numericWorldObjectDensity
             // 
-            this.numericWorldObjectDensity.Location = new System.Drawing.Point(6, 271);
+            this.numericWorldObjectDensity.Location = new System.Drawing.Point(6, 299);
             this.numericWorldObjectDensity.Maximum = new decimal(new int[] {
             10,
             0,
@@ -810,22 +939,21 @@
             // 
             this.comboWindowSize.FormattingEnabled = true;
             this.comboWindowSize.Items.AddRange(new object[] {
+            "800x600",
             "1024x768",
-            "1152x864",
             "1280x720",
-            "1280x768",
             "1280x800",
-            "1280x960",
             "1280x1024",
             "1360x768",
+            "1366x768",
             "1440x900",
+            "1536x864",
             "1600x900",
             "1680x1050",
-            "1600x1200",
-            "1768x992",
             "1920x1080",
-            "1920x1200"});
-            this.comboWindowSize.Location = new System.Drawing.Point(6, 297);
+            "1920x1200",
+            "2560x1440"});
+            this.comboWindowSize.Location = new System.Drawing.Point(6, 325);
             this.comboWindowSize.Name = "comboWindowSize";
             this.comboWindowSize.Size = new System.Drawing.Size(121, 21);
             this.comboWindowSize.TabIndex = 18;
@@ -833,7 +961,7 @@
             // checkWindowGlass
             // 
             this.checkWindowGlass.AutoSize = true;
-            this.checkWindowGlass.Location = new System.Drawing.Point(6, 52);
+            this.checkWindowGlass.Location = new System.Drawing.Point(6, 75);
             this.checkWindowGlass.Name = "checkWindowGlass";
             this.checkWindowGlass.Size = new System.Drawing.Size(151, 17);
             this.checkWindowGlass.TabIndex = 2;
@@ -843,12 +971,12 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(133, 300);
+            this.label3.Location = new System.Drawing.Point(133, 328);
             this.label3.Margin = new System.Windows.Forms.Padding(3);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(67, 13);
+            this.label3.Size = new System.Drawing.Size(255, 13);
             this.label3.TabIndex = 19;
-            this.label3.Text = "Window size";
+            this.label3.Text = "Window size (type WIDTHxHEIGHT for custom size)";
             // 
             // checkDynamicShadows
             // 
@@ -863,7 +991,7 @@
             // checkWire
             // 
             this.checkWire.AutoSize = true;
-            this.checkWire.Location = new System.Drawing.Point(6, 98);
+            this.checkWire.Location = new System.Drawing.Point(307, 6);
             this.checkWire.Name = "checkWire";
             this.checkWire.Size = new System.Drawing.Size(95, 17);
             this.checkWire.TabIndex = 4;
@@ -872,10 +1000,13 @@
             // 
             // tabPageSimulation
             // 
+            this.tabPageSimulation.Controls.Add(this.groupBox1);
             this.tabPageSimulation.Controls.Add(this.checkHotStart);
+            this.tabPageSimulation.Controls.Add(this.checkSimpleControlPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
-            this.tabPageSimulation.Controls.Add(this.checkCurveResistanceSpeedDependent);
+            this.tabPageSimulation.Controls.Add(this.checkCurveResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkTunnelResistanceDependent);
+            this.tabPageSimulation.Controls.Add(this.checkWindResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkOverrideNonElectrifiedRoutes);
             this.tabPageSimulation.Controls.Add(this.labelAdhesionMovingAverageFilterSize);
             this.tabPageSimulation.Controls.Add(this.numericAdhesionMovingAverageFilterSize);
@@ -889,15 +1020,60 @@
             this.tabPageSimulation.Text = "Simulation";
             this.tabPageSimulation.UseVisualStyleBackColor = true;
             // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.checkUseLocationPassingPaths);
+            this.groupBox1.Controls.Add(this.checkDoorsAITrains);
+            this.groupBox1.Controls.Add(this.checkForcedRedAtStationStops);
+            this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.groupBox1.Location = new System.Drawing.Point(324, 6);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(272, 168);
+            this.groupBox1.TabIndex = 0;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Activity Options";
+            // 
+            // checkDoorsAITrains
+            // 
+            this.checkDoorsAITrains.AutoSize = true;
+            this.checkDoorsAITrains.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkDoorsAITrains.Location = new System.Drawing.Point(6, 46);
+            this.checkDoorsAITrains.Name = "checkDoorsAITrains";
+            this.checkDoorsAITrains.Size = new System.Drawing.Size(163, 17);
+            this.checkDoorsAITrains.TabIndex = 45;
+            this.checkDoorsAITrains.Text = "Open/close doors in AI trains";
+            this.checkDoorsAITrains.UseVisualStyleBackColor = true;
+            // 
+            // checkForcedRedAtStationStops
+            // 
+            this.checkForcedRedAtStationStops.AutoSize = true;
+            this.checkForcedRedAtStationStops.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkForcedRedAtStationStops.Location = new System.Drawing.Point(6, 23);
+            this.checkForcedRedAtStationStops.Name = "checkForcedRedAtStationStops";
+            this.checkForcedRedAtStationStops.Size = new System.Drawing.Size(151, 17);
+            this.checkForcedRedAtStationStops.TabIndex = 23;
+            this.checkForcedRedAtStationStops.Text = "Forced red at station stops";
+            this.checkForcedRedAtStationStops.UseVisualStyleBackColor = true;
+            // 
             // checkHotStart
             // 
             this.checkHotStart.AutoSize = true;
-            this.checkHotStart.Location = new System.Drawing.Point(6, 169);
+            this.checkHotStart.Location = new System.Drawing.Point(6, 192);
             this.checkHotStart.Name = "checkHotStart";
             this.checkHotStart.Size = new System.Drawing.Size(151, 17);
             this.checkHotStart.TabIndex = 8;
             this.checkHotStart.Text = "Steam locomotive hot start";
             this.checkHotStart.UseVisualStyleBackColor = true;
+            //
+            // checkSimpleControlPhysics
+            // 
+            this.checkSimpleControlPhysics.AutoSize = true;
+            this.checkSimpleControlPhysics.Location = new System.Drawing.Point(6, 215);
+            this.checkSimpleControlPhysics.Name = "checkSimpleControlPhysics";
+            this.checkSimpleControlPhysics.Size = new System.Drawing.Size(151, 17);
+            this.checkSimpleControlPhysics.TabIndex = 8;
+            this.checkSimpleControlPhysics.Text = "Simple Control and Physics";
+            this.checkSimpleControlPhysics.UseVisualStyleBackColor = true;
             // 
             // checkCurveSpeedDependent
             // 
@@ -909,15 +1085,15 @@
             this.checkCurveSpeedDependent.Text = "Curve dependent speed limit";
             this.checkCurveSpeedDependent.UseVisualStyleBackColor = true;
             // 
-            // checkCurveResistanceSpeedDependent
+            // checkCurveResistanceDependent
             // 
-            this.checkCurveResistanceSpeedDependent.AutoSize = true;
-            this.checkCurveResistanceSpeedDependent.Location = new System.Drawing.Point(6, 77);
-            this.checkCurveResistanceSpeedDependent.Name = "checkCurveResistanceSpeedDependent";
-            this.checkCurveResistanceSpeedDependent.Size = new System.Drawing.Size(159, 17);
-            this.checkCurveResistanceSpeedDependent.TabIndex = 4;
-            this.checkCurveResistanceSpeedDependent.Text = "Curve dependent resistance";
-            this.checkCurveResistanceSpeedDependent.UseVisualStyleBackColor = true;
+            this.checkCurveResistanceDependent.AutoSize = true;
+            this.checkCurveResistanceDependent.Location = new System.Drawing.Point(6, 77);
+            this.checkCurveResistanceDependent.Name = "checkCurveResistanceDependent";
+            this.checkCurveResistanceDependent.Size = new System.Drawing.Size(159, 17);
+            this.checkCurveResistanceDependent.TabIndex = 4;
+            this.checkCurveResistanceDependent.Text = "Curve dependent resistance";
+            this.checkCurveResistanceDependent.UseVisualStyleBackColor = true;
             // 
             // checkTunnelResistanceDependent
             // 
@@ -929,10 +1105,20 @@
             this.checkTunnelResistanceDependent.Text = "Tunnel dependent resistance";
             this.checkTunnelResistanceDependent.UseVisualStyleBackColor = true;
             // 
+            // checkWindResistanceDependent
+            // 
+            this.checkWindResistanceDependent.AutoSize = true;
+            this.checkWindResistanceDependent.Location = new System.Drawing.Point(6, 146);
+            this.checkWindResistanceDependent.Name = "checkWindResistanceDependent";
+            this.checkWindResistanceDependent.Size = new System.Drawing.Size(156, 17);
+            this.checkWindResistanceDependent.TabIndex = 4;
+            this.checkWindResistanceDependent.Text = "Wind dependent resistance";
+            this.checkWindResistanceDependent.UseVisualStyleBackColor = true;
+            // 
             // checkOverrideNonElectrifiedRoutes
             // 
             this.checkOverrideNonElectrifiedRoutes.AutoSize = true;
-            this.checkOverrideNonElectrifiedRoutes.Location = new System.Drawing.Point(6, 146);
+            this.checkOverrideNonElectrifiedRoutes.Location = new System.Drawing.Point(6, 169);
             this.checkOverrideNonElectrifiedRoutes.Name = "checkOverrideNonElectrifiedRoutes";
             this.checkOverrideNonElectrifiedRoutes.Size = new System.Drawing.Size(219, 17);
             this.checkOverrideNonElectrifiedRoutes.TabIndex = 7;
@@ -1062,6 +1248,8 @@
             this.tabPageDataLogger.Controls.Add(this.checkDataLogger);
             this.tabPageDataLogger.Controls.Add(this.label17);
             this.tabPageDataLogger.Controls.Add(this.checkDataLogPhysics);
+            this.tabPageDataLogger.Controls.Add(this.checkDataLogSteamPerformance);
+            this.tabPageDataLogger.Controls.Add(this.checkVerboseConfigurationMessages);
             this.tabPageDataLogger.Location = new System.Drawing.Point(4, 22);
             this.tabPageDataLogger.Name = "tabPageDataLogger";
             this.tabPageDataLogger.Padding = new System.Windows.Forms.Padding(3);
@@ -1162,6 +1350,26 @@
             this.checkDataLogPhysics.TabIndex = 7;
             this.checkDataLogPhysics.Text = "Log physics data";
             this.checkDataLogPhysics.UseVisualStyleBackColor = true;
+            // 
+            // checkDataLogSteamPerformance
+            // 
+            this.checkDataLogSteamPerformance.AutoSize = true;
+            this.checkDataLogSteamPerformance.Location = new System.Drawing.Point(6, 180);
+            this.checkDataLogSteamPerformance.Name = "checkDataLogSteamPerformance";
+            this.checkDataLogSteamPerformance.Size = new System.Drawing.Size(163, 17);
+            this.checkDataLogSteamPerformance.TabIndex = 6;
+            this.checkDataLogSteamPerformance.Text = "Log Steam performance data";
+            this.checkDataLogSteamPerformance.UseVisualStyleBackColor = true;
+            // 
+            // checkVerboseConfigurationMessages
+            // 
+            this.checkVerboseConfigurationMessages.AutoSize = true;
+            this.checkVerboseConfigurationMessages.Location = new System.Drawing.Point(6, 236);
+            this.checkVerboseConfigurationMessages.Name = "checkVerboseConfigurationMessages";
+            this.checkVerboseConfigurationMessages.Size = new System.Drawing.Size(236, 17);
+            this.checkVerboseConfigurationMessages.TabIndex = 6;
+            this.checkVerboseConfigurationMessages.Text = "Verbose ENG/WAG configuration messages";
+            this.checkVerboseConfigurationMessages.UseVisualStyleBackColor = true;
             // 
             // tabPageEvaluate
             // 
@@ -1303,7 +1511,7 @@
             this.buttonContentBrowse.Name = "buttonContentBrowse";
             this.buttonContentBrowse.Size = new System.Drawing.Size(75, 23);
             this.buttonContentBrowse.TabIndex = 2;
-            this.buttonContentBrowse.Text = "Browse...";
+            this.buttonContentBrowse.Text = "Change...";
             this.buttonContentBrowse.UseVisualStyleBackColor = true;
             this.buttonContentBrowse.Click += new System.EventHandler(this.buttonContentBrowse_Click);
             // 
@@ -1352,7 +1560,7 @@
             this.buttonContentAdd.Name = "buttonContentAdd";
             this.buttonContentAdd.Size = new System.Drawing.Size(75, 23);
             this.buttonContentAdd.TabIndex = 0;
-            this.buttonContentAdd.Text = "Add";
+            this.buttonContentAdd.Text = "Add...";
             this.buttonContentAdd.UseVisualStyleBackColor = true;
             this.buttonContentAdd.Click += new System.EventHandler(this.buttonContentAdd_Click);
             // 
@@ -1379,27 +1587,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -1455,6 +1663,12 @@
             // 
             // tabPageExperimental
             // 
+            this.tabPageExperimental.Controls.Add(this.label27);
+            this.tabPageExperimental.Controls.Add(this.numericActWeatherRandomizationLevel);
+            this.tabPageExperimental.Controls.Add(this.label26);
+            this.tabPageExperimental.Controls.Add(this.label13);
+            this.tabPageExperimental.Controls.Add(this.label12);
+            this.tabPageExperimental.Controls.Add(this.numericActRandomizationLevel);
             this.tabPageExperimental.Controls.Add(this.checkCorrectQuestionableBrakingParams);
             this.tabPageExperimental.Controls.Add(this.label25);
             this.tabPageExperimental.Controls.Add(this.precipitationBoxLength);
@@ -1470,10 +1684,7 @@
             this.tabPageExperimental.Controls.Add(this.labelLODBias);
             this.tabPageExperimental.Controls.Add(this.checkShapeWarnings);
             this.tabPageExperimental.Controls.Add(this.trackLODBias);
-            this.tabPageExperimental.Controls.Add(this.checkAutopilot);
-            this.tabPageExperimental.Controls.Add(this.checkExtendedAIShunting);
             this.tabPageExperimental.Controls.Add(this.checkConditionalLoadOfNightTextures);
-            this.tabPageExperimental.Controls.Add(this.checkForcedRedAtStationStops);
             this.tabPageExperimental.Controls.Add(this.AdhesionLevelValue);
             this.tabPageExperimental.Controls.Add(this.AdhesionLevelLabel);
             this.tabPageExperimental.Controls.Add(this.trackAdhesionFactorChange);
@@ -1482,11 +1693,9 @@
             this.tabPageExperimental.Controls.Add(this.checkCircularSpeedGauge);
             this.tabPageExperimental.Controls.Add(this.checkSignalLightGlow);
             this.tabPageExperimental.Controls.Add(this.checkUseMSTSEnv);
-            this.tabPageExperimental.Controls.Add(this.checkUseLocationPassingPaths);
             this.tabPageExperimental.Controls.Add(this.labelPerformanceTunerTarget);
             this.tabPageExperimental.Controls.Add(this.numericPerformanceTunerTarget);
             this.tabPageExperimental.Controls.Add(this.checkPerformanceTuner);
-            this.tabPageExperimental.Controls.Add(this.checkDoubleWire);
             this.tabPageExperimental.Controls.Add(this.checkLODViewingExtention);
             this.tabPageExperimental.Controls.Add(this.label8);
             this.tabPageExperimental.Controls.Add(this.numericSuperElevationGauge);
@@ -1505,10 +1714,78 @@
             this.tabPageExperimental.Text = "Experimental";
             this.tabPageExperimental.UseVisualStyleBackColor = true;
             // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(526, 119);
+            this.label27.Margin = new System.Windows.Forms.Padding(3);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(33, 13);
+            this.label27.TabIndex = 51;
+            this.label27.Text = "Level";
+            // 
+            // numericActWeatherRandomizationLevel
+            // 
+            this.numericActWeatherRandomizationLevel.Location = new System.Drawing.Point(466, 117);
+            this.numericActWeatherRandomizationLevel.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericActWeatherRandomizationLevel.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numericActWeatherRandomizationLevel.Name = "numericActWeatherRandomizationLevel";
+            this.numericActWeatherRandomizationLevel.Size = new System.Drawing.Size(54, 20);
+            this.numericActWeatherRandomizationLevel.TabIndex = 50;
+            this.toolTip1.SetToolTip(this.numericActWeatherRandomizationLevel, "0: no randomization, 1: moderate, 2: significant; 3: high (may be unrealistic)");
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(438, 96);
+            this.label26.Margin = new System.Windows.Forms.Padding(3);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(150, 13);
+            this.label26.TabIndex = 49;
+            this.label26.Text = "Activity weather randomization";
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(301, 96);
+            this.label13.Margin = new System.Windows.Forms.Padding(3);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(109, 13);
+            this.label13.TabIndex = 48;
+            this.label13.Text = "Activity randomization";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(385, 119);
+            this.label12.Margin = new System.Windows.Forms.Padding(3);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(33, 13);
+            this.label12.TabIndex = 47;
+            this.label12.Text = "Level";
+            // 
+            // numericActRandomizationLevel
+            // 
+            this.numericActRandomizationLevel.Location = new System.Drawing.Point(325, 117);
+            this.numericActRandomizationLevel.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
+            this.numericActRandomizationLevel.Maximum = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            this.numericActRandomizationLevel.Name = "numericActRandomizationLevel";
+            this.numericActRandomizationLevel.Size = new System.Drawing.Size(54, 20);
+            this.numericActRandomizationLevel.TabIndex = 46;
+            this.toolTip1.SetToolTip(this.numericActRandomizationLevel, "0: no randomization, 1: moderate, 2: significant; 3: high (may be unrealistic)");
+            // 
             // checkCorrectQuestionableBrakingParams
             // 
             this.checkCorrectQuestionableBrakingParams.AutoSize = true;
-            this.checkCorrectQuestionableBrakingParams.Location = new System.Drawing.Point(6, 235);
+            this.checkCorrectQuestionableBrakingParams.Location = new System.Drawing.Point(304, 74);
             this.checkCorrectQuestionableBrakingParams.Name = "checkCorrectQuestionableBrakingParams";
             this.checkCorrectQuestionableBrakingParams.Size = new System.Drawing.Size(216, 17);
             this.checkCorrectQuestionableBrakingParams.TabIndex = 43;
@@ -1528,7 +1805,7 @@
             // precipitationBoxLength
             // 
             this.precipitationBoxLength.Increment = new decimal(new int[] {
-            100,
+            25,
             0,
             0,
             0});
@@ -1571,7 +1848,7 @@
             0});
             this.precipitationBoxWidth.Location = new System.Drawing.Point(10, 335);
             this.precipitationBoxWidth.Maximum = new decimal(new int[] {
-            1500,
+            3000,
             0,
             0,
             0});
@@ -1708,45 +1985,15 @@
             this.toolTip1.SetToolTip(this.trackLODBias, "Default is 0%");
             this.trackLODBias.ValueChanged += new System.EventHandler(this.trackLODBias_ValueChanged);
             // 
-            // checkAutopilot
-            // 
-            this.checkAutopilot.AutoSize = true;
-            this.checkAutopilot.Location = new System.Drawing.Point(304, 97);
-            this.checkAutopilot.Name = "checkAutopilot";
-            this.checkAutopilot.Size = new System.Drawing.Size(67, 17);
-            this.checkAutopilot.TabIndex = 20;
-            this.checkAutopilot.Text = "Autopilot";
-            this.checkAutopilot.UseVisualStyleBackColor = true;
-            // 
-            // checkExtendedAIShunting
-            // 
-            this.checkExtendedAIShunting.AutoSize = true;
-            this.checkExtendedAIShunting.Location = new System.Drawing.Point(304, 74);
-            this.checkExtendedAIShunting.Name = "checkExtendedAIShunting";
-            this.checkExtendedAIShunting.Size = new System.Drawing.Size(150, 17);
-            this.checkExtendedAIShunting.TabIndex = 19;
-            this.checkExtendedAIShunting.Text = "Extended AI train shunting";
-            this.checkExtendedAIShunting.UseVisualStyleBackColor = true;
-            // 
             // checkConditionalLoadOfNightTextures
             // 
             this.checkConditionalLoadOfNightTextures.AutoSize = true;
             this.checkConditionalLoadOfNightTextures.Location = new System.Drawing.Point(304, 28);
             this.checkConditionalLoadOfNightTextures.Name = "checkConditionalLoadOfNightTextures";
-            this.checkConditionalLoadOfNightTextures.Size = new System.Drawing.Size(206, 17);
+            this.checkConditionalLoadOfNightTextures.Size = new System.Drawing.Size(228, 17);
             this.checkConditionalLoadOfNightTextures.TabIndex = 17;
-            this.checkConditionalLoadOfNightTextures.Text = "Load night textures only when needed";
+            this.checkConditionalLoadOfNightTextures.Text = "Load day/night textures only when needed";
             this.checkConditionalLoadOfNightTextures.UseVisualStyleBackColor = true;
-            // 
-            // checkForcedRedAtStationStops
-            // 
-            this.checkForcedRedAtStationStops.AutoSize = true;
-            this.checkForcedRedAtStationStops.Location = new System.Drawing.Point(6, 212);
-            this.checkForcedRedAtStationStops.Name = "checkForcedRedAtStationStops";
-            this.checkForcedRedAtStationStops.Size = new System.Drawing.Size(151, 17);
-            this.checkForcedRedAtStationStops.TabIndex = 13;
-            this.checkForcedRedAtStationStops.Text = "Forced red at station stops";
-            this.checkForcedRedAtStationStops.UseVisualStyleBackColor = true;
             // 
             // AdhesionLevelValue
             // 
@@ -1810,7 +2057,7 @@
             // checkCircularSpeedGauge
             // 
             this.checkCircularSpeedGauge.AutoSize = true;
-            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(304, 120);
+            this.checkCircularSpeedGauge.Location = new System.Drawing.Point(6, 212);
             this.checkCircularSpeedGauge.Name = "checkCircularSpeedGauge";
             this.checkCircularSpeedGauge.Size = new System.Drawing.Size(156, 17);
             this.checkCircularSpeedGauge.TabIndex = 21;
@@ -1836,16 +2083,6 @@
             this.checkUseMSTSEnv.TabIndex = 25;
             this.checkUseMSTSEnv.Text = "MSTS environments";
             this.checkUseMSTSEnv.UseVisualStyleBackColor = true;
-            // 
-            // checkUseLocationPassingPaths
-            // 
-            this.checkUseLocationPassingPaths.AutoSize = true;
-            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(304, 189);
-            this.checkUseLocationPassingPaths.Name = "checkUseLocationPassingPaths";
-            this.checkUseLocationPassingPaths.Size = new System.Drawing.Size(215, 17);
-            this.checkUseLocationPassingPaths.TabIndex = 24;
-            this.checkUseLocationPassingPaths.Text = "Location-linked passing path processing";
-            this.checkUseLocationPassingPaths.UseVisualStyleBackColor = true;
             // 
             // labelPerformanceTunerTarget
             // 
@@ -1897,20 +2134,10 @@
             this.checkPerformanceTuner.UseVisualStyleBackColor = true;
             this.checkPerformanceTuner.Click += new System.EventHandler(this.checkPerformanceTuner_Click);
             // 
-            // checkDoubleWire
-            // 
-            this.checkDoubleWire.AutoSize = true;
-            this.checkDoubleWire.Location = new System.Drawing.Point(6, 166);
-            this.checkDoubleWire.Name = "checkDoubleWire";
-            this.checkDoubleWire.Size = new System.Drawing.Size(135, 17);
-            this.checkDoubleWire.TabIndex = 11;
-            this.checkDoubleWire.Text = "Double overhead wires";
-            this.checkDoubleWire.UseVisualStyleBackColor = true;
-            // 
             // checkLODViewingExtention
             // 
             this.checkLODViewingExtention.AutoSize = true;
-            this.checkLODViewingExtention.Location = new System.Drawing.Point(304, 143);
+            this.checkLODViewingExtention.Location = new System.Drawing.Point(304, 166);
             this.checkLODViewingExtention.Name = "checkLODViewingExtention";
             this.checkLODViewingExtention.Size = new System.Drawing.Size(268, 17);
             this.checkLODViewingExtention.TabIndex = 22;
@@ -1937,7 +2164,7 @@
             this.numericSuperElevationGauge.Location = new System.Drawing.Point(26, 94);
             this.numericSuperElevationGauge.Margin = new System.Windows.Forms.Padding(23, 3, 3, 3);
             this.numericSuperElevationGauge.Maximum = new decimal(new int[] {
-            1600,
+            1800,
             0,
             0,
             0});
@@ -2043,12 +2270,23 @@
             // checkPreferDDSTexture
             // 
             this.checkPreferDDSTexture.AutoSize = true;
-            this.checkPreferDDSTexture.Location = new System.Drawing.Point(304, 166);
+            this.checkPreferDDSTexture.Location = new System.Drawing.Point(304, 189);
             this.checkPreferDDSTexture.Name = "checkPreferDDSTexture";
             this.checkPreferDDSTexture.Size = new System.Drawing.Size(217, 17);
             this.checkPreferDDSTexture.TabIndex = 23;
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
+            // 
+            // checkUseLocationPassingPaths
+            // 
+            this.checkUseLocationPassingPaths.AutoSize = true;
+            this.checkUseLocationPassingPaths.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(6, 71);
+            this.checkUseLocationPassingPaths.Name = "checkUseLocationPassingPaths";
+            this.checkUseLocationPassingPaths.Size = new System.Drawing.Size(215, 17);
+            this.checkUseLocationPassingPaths.TabIndex = 46;
+            this.checkUseLocationPassingPaths.Text = "Location-linked passing path processing";
+            this.checkUseLocationPassingPaths.UseVisualStyleBackColor = true;
             // 
             // OptionsForm
             // 
@@ -2070,8 +2308,10 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
             this.tabPageAudio.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundVolumePercent)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).EndInit();
             this.tabPageVideo.ResumeLayout(false);
@@ -2084,6 +2324,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericWorldObjectDensity)).EndInit();
             this.tabPageSimulation.ResumeLayout(false);
             this.tabPageSimulation.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericAdhesionMovingAverageFilterSize)).EndInit();
             this.tabPageKeyboard.ResumeLayout(false);
             this.tabPageDataLogger.ResumeLayout(false);
@@ -2102,6 +2344,8 @@
             this.tabPageUpdater.PerformLayout();
             this.tabPageExperimental.ResumeLayout(false);
             this.tabPageExperimental.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericActWeatherRandomizationLevel)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericActRandomizationLevel)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxLength)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxWidth)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.precipitationBoxHeight)).EndInit();
@@ -2168,12 +2412,13 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.NumericUpDown numericViewingDistance;
         private System.Windows.Forms.CheckBox checkLODViewingExtention;
-        private System.Windows.Forms.CheckBox checkDoubleWire;
         private System.Windows.Forms.TabPage tabPageDataLogger;
         private System.Windows.Forms.ComboBox comboDataLoggerSeparator;
         private System.Windows.Forms.Label label17;
         private System.Windows.Forms.CheckBox checkDataLogPhysics;
         private System.Windows.Forms.CheckBox checkDataLogPerformance;
+        private System.Windows.Forms.CheckBox checkDataLogSteamPerformance;
+        private System.Windows.Forms.CheckBox checkVerboseConfigurationMessages;
         private System.Windows.Forms.CheckBox checkDataLogger;
         private System.Windows.Forms.CheckBox checkDataLogMisc;
         private System.Windows.Forms.Label label18;
@@ -2185,7 +2430,6 @@
         private System.Windows.Forms.NumericUpDown numericPerformanceTunerTarget;
         private System.Windows.Forms.CheckBox checkPerformanceTuner;
         private System.Windows.Forms.CheckBox checkOverrideNonElectrifiedRoutes;
-        private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
         private System.Windows.Forms.TabPage tabPageEvaluate;
         private System.Windows.Forms.CheckedListBox checkListDataLogTSContents;
         private System.Windows.Forms.Label labelDataLogTSInterval;
@@ -2194,8 +2438,9 @@
         private System.Windows.Forms.CheckBox checkDataLogTrainSpeed;
         private System.Windows.Forms.CheckBox checkUseMSTSEnv;
         private System.Windows.Forms.CheckBox checkPreferDDSTexture;
-        private System.Windows.Forms.CheckBox checkCurveResistanceSpeedDependent;
+        private System.Windows.Forms.CheckBox checkCurveResistanceDependent;
         private System.Windows.Forms.CheckBox checkTunnelResistanceDependent;
+        private System.Windows.Forms.CheckBox checkWindResistanceDependent;
         private System.Windows.Forms.Label labelLanguage;
         private System.Windows.Forms.ComboBox comboLanguage;
         private System.Windows.Forms.Label labelDistantMountainsViewingDistance;
@@ -2204,6 +2449,7 @@
         private System.Windows.Forms.CheckBox checkAlerterExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkHotStart;
+        private System.Windows.Forms.CheckBox checkSimpleControlPhysics;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
         private System.Windows.Forms.CheckBox checkVerticalSync;
         private System.Windows.Forms.ComboBox comboPressureUnit;
@@ -2225,10 +2471,7 @@
         private System.Windows.Forms.CheckBox checkUseLargeAddressAware;
         private System.Windows.Forms.TrackBar trackDayAmbientLight;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.CheckBox checkForcedRedAtStationStops;
         private System.Windows.Forms.CheckBox checkConditionalLoadOfNightTextures;
-        private System.Windows.Forms.CheckBox checkExtendedAIShunting;
-        private System.Windows.Forms.CheckBox checkAutopilot;
         private System.Windows.Forms.CheckBox checkRetainers;
         private System.Windows.Forms.Label labelLODBias;
         private System.Windows.Forms.Label label21;
@@ -2260,5 +2503,23 @@
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.NumericUpDown precipitationBoxLength;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
+        private System.Windows.Forms.CheckBox checkSpeedControl;
+        private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.CheckBox checkDoubleWire;
+        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.CheckBox checkDoorsAITrains;
+        private System.Windows.Forms.CheckBox checkForcedRedAtStationStops;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.NumericUpDown numericActRandomizationLevel;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.NumericUpDown numericActWeatherRandomizationLevel;
+        private System.Windows.Forms.Label label26;
+        private System.Windows.Forms.CheckBox checkShadowAllShapes;
+        private System.Windows.Forms.CheckBox checkEnableWebServer;
+        private System.Windows.Forms.NumericUpDown numericWebServerPort;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
     }
 }

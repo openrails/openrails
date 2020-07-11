@@ -101,6 +101,15 @@ namespace Orts.Formats.Msts
             file.VerifyEndOfBlock();
             if (!suppressShapeWarnings) Validate(filename);
         }
+
+        public void ReadAnimationBlock(string orFileName)
+        {
+            var file = SBR.Open(orFileName);
+            shape.animations = new animations(file.ReadSubBlock());
+            file.VerifyEndOfBlock();
+        }
+
+
     }
 
     public class shape
@@ -674,6 +683,7 @@ namespace Orts.Formats.Msts
                 {
                     case TokenID.uv_op_copy: Add(new uv_op_copy(subBlock)); break;
                     case TokenID.uv_op_reflectmapfull: Add(new uv_op_reflectmapfull(subBlock)); break;
+                    case TokenID.uv_op_reflectmap: Add(new uv_op_reflectmap(subBlock)); break;
                     case TokenID.uv_op_uniformscale: this.Add(new uv_op_uniformscale(subBlock)); break;
                     case TokenID.uv_op_nonuniformscale: this.Add(new uv_op_nonuniformscale(subBlock)); break;
                     default: throw new System.Exception("Unexpected uv_op: " + subBlock.ID.ToString());
@@ -708,6 +718,16 @@ namespace Orts.Formats.Msts
         public uv_op_reflectmapfull(SBR block)
         {
             block.VerifyID(TokenID.uv_op_reflectmapfull);
+            TexAddrMode = block.ReadInt();
+            block.VerifyEndOfBlock();
+        }
+    }
+
+    public class uv_op_reflectmap : uv_op
+    {
+        public uv_op_reflectmap(SBR block)
+        {
+            block.VerifyID(TokenID.uv_op_reflectmap);
             TexAddrMode = block.ReadInt();
             block.VerifyEndOfBlock();
         }

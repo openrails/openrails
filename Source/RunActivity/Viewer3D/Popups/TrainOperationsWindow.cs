@@ -62,7 +62,8 @@ namespace Orts.Viewer3D.Popups
                     var carLabel = new TrainOperationsLabel(textHeight * 6, textHeight, Owner.Viewer, car, carPosition, LabelAlignment.Center);
                     carLabel.Click += new Action<Control, Point>(carLabel_Click);
 
-                    if (car == PlayerTrain.LeadLocomotive) carLabel.Color = Color.Red;
+                    if (car == PlayerTrain.LeadLocomotive) carLabel.Color = Color.Green;
+                    if (car.BrakesStuck || ((car is MSTSLocomotive) && (car as MSTSLocomotive).PowerReduction > 0)) carLabel.Color = Color.Red;
 
                     scrollbox.Add(carLabel);
                     if (car != PlayerTrain.Cars.Last())
@@ -113,9 +114,16 @@ namespace Orts.Viewer3D.Popups
 
         void TrainOperationsCoupler_Click(Control arg1, Point arg2)
         {
-            new UncoupleCommand(Viewer.Log, CarPosition);
-            if (Viewer.CarOperationsWindow.CarPosition > CarPosition)
-                Viewer.CarOperationsWindow.Visible = false;
+            if (Viewer.Simulator.TimetableMode)
+            {
+                Viewer.Simulator.Confirmer.Information(Viewer.Catalog.GetString("In Timetable Mode uncoupling using this window is not allowed"));
+            }
+            else
+            {
+                new UncoupleCommand(Viewer.Log, CarPosition);
+                if (Viewer.CarOperationsWindow.CarPosition > CarPosition)
+                    Viewer.CarOperationsWindow.Visible = false;
+            }
         }
     }
 

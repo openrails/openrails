@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunActivity", "RunActivity\RunActivity.csproj", "{9BE44F64-417D-4AA6-AF4D-2A6A0CBC814D}"
 EndProject
@@ -39,8 +39,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrackViewer", "Contrib\Trac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Simulation", "Orts.Simulation\Orts.Simulation.csproj", "{333C4378-D82E-4B47-B561-6BA923B8FDFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ORTS.Viewer3D", "ORTS.Viewer3D\ORTS.Viewer3D.csproj", "{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataCollector", "Contrib\DataCollector\DataCollector.csproj", "{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{9C6D17E1-DC48-4B96-B9DA-A9B41F685327}"
@@ -48,6 +46,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Parsers.OR", "Orts.Parsers.OR\Orts.Parsers.OR.csproj", "{1CC3BD5C-06C5-4784-B067-F93945A7CA2C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orts.Formats.OR", "Orts.Formats.OR\Orts.Formats.OR.csproj", "{0D8D312B-2C02-4B77-A795-566394A9DB95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataConverter", "Contrib\DataConverter\DataConverter.csproj", "{D4848FAB-C391-438B-BE29-3BFFF9469480}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataValidator", "Contrib\DataValidator\DataValidator.csproj", "{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentChecker", "ContentChecker\ContentChecker.csproj", "{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -127,10 +131,6 @@ Global
 		{333C4378-D82E-4B47-B561-6BA923B8FDFD}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{333C4378-D82E-4B47-B561-6BA923B8FDFD}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{333C4378-D82E-4B47-B561-6BA923B8FDFD}.Release|Mixed Platforms.Build.0 = Release|x86
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C09BC4DF-0451-4E56-A9C9-F1871FA5266C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{22CC0DE5-5E0C-4CA4-9CC0-FF1FE6C6B2BA}.Release|Mixed Platforms.ActiveCfg = Release|x86
@@ -147,8 +147,23 @@ Global
 		{0D8D312B-2C02-4B77-A795-566394A9DB95}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{0D8D312B-2C02-4B77-A795-566394A9DB95}.Release|Mixed Platforms.ActiveCfg = Release|x86
 		{0D8D312B-2C02-4B77-A795-566394A9DB95}.Release|Mixed Platforms.Build.0 = Release|x86
+		{D4848FAB-C391-438B-BE29-3BFFF9469480}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{D4848FAB-C391-438B-BE29-3BFFF9469480}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{D4848FAB-C391-438B-BE29-3BFFF9469480}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{D4848FAB-C391-438B-BE29-3BFFF9469480}.Release|Mixed Platforms.Build.0 = Release|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{2C4EBEBF-71E9-4336-B4DF-288E8BD399A7}.Release|Mixed Platforms.Build.0 = Release|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{316A8CAC-8BD4-4A64-A384-4A3C28C5D3D8}.Release|Mixed Platforms.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CDB79CD0-E20D-487C-91A8-27BD4A9CE8A2}
 	EndGlobalSection
 EndGlobal

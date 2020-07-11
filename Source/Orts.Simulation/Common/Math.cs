@@ -33,7 +33,8 @@ namespace Orts.Common
             attitude = (float)Math.PI / 2;
             bank = 0;
             return;
-         } if (m.M21 < -0.998)
+         }
+         if (m.M21 < -0.998)
          { // singularity at south pole
             heading = (float)Math.Atan2(m.M13, m.M33);
             attitude = -(float)Math.PI / 2;
@@ -44,6 +45,15 @@ namespace Orts.Common
          bank = (float)Math.Atan2(-m.M23, m.M22);
          attitude = (float)Math.Asin(m.M21);
       }
+
+     public static float MatrixToYAngle(Matrix m)
+     {    // Assuming the angles are in radians.
+        if (m.M21 > 0.998 || m.M21 < -0.998)
+            // singularity at poles
+            return (float)Math.Atan2(m.M13, m.M33);
+
+        else return (float)Math.Atan2(-m.M31, m.M11);
+     }
 
       public struct Matrix2x2
       {

@@ -185,7 +185,7 @@ namespace Orts.Formats.Msts
             A = block.ReadInt();
             B = block.ReadInt();
             C = block.ReadInt();
-            D = block.ReadInt();
+            D = (int)block.ReadFloat();
         }
     }
 

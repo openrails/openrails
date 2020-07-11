@@ -36,14 +36,17 @@ namespace Orts.Viewer3D
         readonly ForestPrimitive Primitive;
 
         public float MaximumCenterlineOffset = 0.0f;
+        public bool CheckRoadsToo = false;
 
         public ForestViewer(Viewer viewer, ForestObj forest, WorldPosition position)
         {
             Viewer = viewer;
             Position = position;
             MaximumCenterlineOffset = Viewer.Simulator.TRK.Tr_RouteFile.ForestClearDistance;
+            CheckRoadsToo = Viewer.Simulator.TRK.Tr_RouteFile.RemoveForestTreesFromRoads;
+
             Material = viewer.MaterialManager.Load("Forest", Helpers.GetForestTextureFile(viewer.Simulator, forest.TreeTexture));
-            Primitive = new ForestPrimitive(Viewer, forest, position, MaximumCenterlineOffset);
+            Primitive = new ForestPrimitive(Viewer, forest, position, MaximumCenterlineOffset, CheckRoadsToo);
         }
 
         [CallOnThread("Updater")]
@@ -73,13 +76,15 @@ namespace Orts.Viewer3D
         readonly VertexBuffer VertexBuffer;
         public readonly int PrimitiveCount;
         public float MaximumCenterlineOffset;
+        public bool CheckRoadsToo;
 
         public readonly float ObjectRadius;
 
-        public ForestPrimitive(Viewer viewer, ForestObj forest, WorldPosition position, float maximumCenterlineOffset)
+        public ForestPrimitive(Viewer viewer, ForestObj forest, WorldPosition position, float maximumCenterlineOffset, bool checkRoadsToo)
         {
             Viewer = viewer;
             MaximumCenterlineOffset = maximumCenterlineOffset;
+            CheckRoadsToo = checkRoadsToo;
 
             var trees = CalculateTrees(viewer.Tiles, forest, position, out ObjectRadius);
 
@@ -102,8 +107,8 @@ namespace Orts.Viewer3D
             if (MaximumCenterlineOffset > 0)
             {
                 Matrix InvForestXNAMatrix = Matrix.Invert(position.XNAMatrix);
-                var addList = FindTracksClose(position.TileX, position.TileZ);
-                FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                var addList = FindTracksAndRoadsClose(position.TileX, position.TileZ);
+                FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
 
 
                 // Check for cross-tile forests
@@ -133,43 +138,43 @@ namespace Orts.Viewer3D
                 // add sections in nearby tiles for cross-tile forests
                 if (considerTile[0])
                 {
-                    addList = FindTracksClose(position.TileX + 1, position.TileZ);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX + 1, position.TileZ);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[1])
                 {
-                    addList = FindTracksClose(position.TileX - 1, position.TileZ);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX - 1, position.TileZ);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[2])
                 {
-                    addList = FindTracksClose(position.TileX, position.TileZ + 1);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX, position.TileZ + 1);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[3])
                 {
-                    addList = FindTracksClose(position.TileX, position.TileZ - 1);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX, position.TileZ - 1);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[0] && considerTile[2])
                 {
-                    addList = FindTracksClose(position.TileX + 1, position.TileZ +1);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX + 1, position.TileZ +1);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[0] && considerTile[3])
                 {
-                    addList = FindTracksClose(position.TileX + 1, position.TileZ -1);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX + 1, position.TileZ -1);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[1] && considerTile[2])
                 {
-                    addList = FindTracksClose(position.TileX-1, position.TileZ + 1);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX-1, position.TileZ + 1);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
                 if (considerTile[1] && considerTile[3])
                 {
-                    addList = FindTracksClose(position.TileX-1, position.TileZ - 1);
-                    FindTracksMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
+                    addList = FindTracksAndRoadsClose(position.TileX-1, position.TileZ - 1);
+                    FindTracksAndRoadsMoreClose(ref sections, addList, forest, position, InvForestXNAMatrix);
                 }
             }
 
@@ -183,20 +188,39 @@ namespace Orts.Viewer3D
                 bool onTrack = false;
                 var scale = MathHelper.Lerp(forest.scaleRange.Minimum, forest.scaleRange.Maximum, (float)random.NextDouble());
                 var treeSize = new Vector3(forest.treeSize.Width * scale, forest.treeSize.Height * scale, 1);
+                var heightComputed = false;
                 if (MaximumCenterlineOffset > 0 && sections != null && sections.Count > 0)
                 {
                     foreach (var section in sections)
                     {
-                        if (InitTrackSection(section, xnaTreePosition, position.TileX, position.TileZ, treeSize.X/2))
+                        onTrack = InitTrackSection(section, xnaTreePosition, position.TileX, position.TileZ, treeSize.X / 2);
+                        if (onTrack)
                         {
-                            onTrack = true;
+                            try
+                            {
+                                var trackShape = Viewer.Simulator.TSectionDat.TrackShapes.Get((uint)section.ShapeIndex);
+                                if (trackShape != null && trackShape.TunnelShape)
+                                {
+                                    xnaTreePosition.Y = tiles.LoadAndGetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z, false);
+                                    heightComputed = true;
+                                    if (xnaTreePosition.Y > section.Y + 10)
+                                    {
+                                        onTrack = false;
+                                        continue;
+                                    }
+                                }
+                            }
+                            catch
+                            {
+
+                            }
                             break;
                         }
                     }
                 }
                 if (!onTrack)
                 {
-                    xnaTreePosition.Y = tiles.LoadAndGetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z, false);
+                    if (!heightComputed) xnaTreePosition.Y = tiles.LoadAndGetElevation(position.TileX, position.TileZ, xnaTreePosition.X, -xnaTreePosition.Z, false);
                     xnaTreePosition -= position.XNAMatrix.Translation;
 
                 trees.Add(new VertexPositionNormalTexture(xnaTreePosition, treeSize, new Vector2(1, 1)));
@@ -212,19 +236,38 @@ namespace Orts.Viewer3D
 
         //map sections to W tiles
         private static Dictionary<string, List<TrVectorSection>> SectionMap;
-        public List<TrVectorSection> FindTracksClose(int TileX, int TileZ)
+        public List<TrVectorSection> FindTracksAndRoadsClose(int TileX, int TileZ)
         {
             if (SectionMap == null)
             {
                 SectionMap = new Dictionary<string, List<TrVectorSection>>();
-                foreach (var node in Viewer.Simulator.TDB.TrackDB.TrackNodes)
+                if (MaximumCenterlineOffset > 0)
                 {
-                    if (node == null || node.TrVectorNode == null) continue;
-                    foreach (var section in node.TrVectorNode.TrVectorSections)
+                    foreach (var node in Viewer.Simulator.TDB.TrackDB.TrackNodes)
                     {
-                        var key = "" + section.WFNameX + "." + section.WFNameZ;
-                        if (!SectionMap.ContainsKey(key)) SectionMap.Add(key, new List<TrVectorSection>());
-                        SectionMap[key].Add(section);
+                        if (node == null || node.TrVectorNode == null) continue;
+                        foreach (var section in node.TrVectorNode.TrVectorSections)
+                        {
+                            var key = "" + section.WFNameX + "." + section.WFNameZ;
+                            if (!SectionMap.ContainsKey(key)) SectionMap.Add(key, new List<TrVectorSection>());
+                            SectionMap[key].Add(section);
+                        }
+                    }
+                }
+                if (CheckRoadsToo)
+                {
+                    if (Viewer.Simulator.RDB != null && Viewer.Simulator.RDB.RoadTrackDB.TrackNodes != null)
+                    {
+                        foreach (var node in Viewer.Simulator.RDB.RoadTrackDB.TrackNodes)
+                        {
+                            if (node == null || node.TrVectorNode == null) continue;
+                            foreach (var section in node.TrVectorNode.TrVectorSections)
+                            {
+                                var key = "" + section.WFNameX + "." + section.WFNameZ;
+                                if (!SectionMap.ContainsKey(key)) SectionMap.Add(key, new List<TrVectorSection>());
+                                SectionMap[key].Add(section);
+                            }
+                        }
                     }
                 }
             }
@@ -248,7 +291,7 @@ namespace Orts.Viewer3D
         }
 
         // don't consider track sections outside the forest boundaries
-        public void FindTracksMoreClose(ref List<TrVectorSection> sections, List<TrVectorSection> allSections, ForestObj forest, WorldPosition position, Matrix invForestXNAMatrix)
+        public void FindTracksAndRoadsMoreClose(ref List<TrVectorSection> sections, List<TrVectorSection> allSections, ForestObj forest, WorldPosition position, Matrix invForestXNAMatrix)
         {
             if (allSections != null && allSections.Count > 0)
             {
@@ -370,7 +413,7 @@ namespace Orts.Viewer3D
         public ForestMaterial(Viewer viewer, string treeTexture)
             : base(viewer, treeTexture)
         {
-            TreeTexture = Viewer.TextureManager.Get(treeTexture);
+            TreeTexture = Viewer.TextureManager.Get(treeTexture, true);
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)

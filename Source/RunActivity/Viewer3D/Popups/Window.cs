@@ -88,7 +88,7 @@ namespace Orts.Viewer3D.Popups
             var y = location.Y;
             location.X = (int)(inf.ReadSingle() * (Owner.ScreenSize.X - location.Width));
             location.Y = (int)(inf.ReadSingle() * (Owner.ScreenSize.Y - location.Height));
-            // <CS comment> To move the window background to the correct position this is needed
+            // This is needed to move the window background to the correct position
             if ((location.X != x) || (location.Y != y))
                 LocationChanged();
         }
@@ -343,8 +343,18 @@ namespace Orts.Viewer3D.Popups
         internal override bool HandleMouseDown(WindowMouseEvent e)
         {
             DragWindowOffset = DragInvalid;
+         
             if (base.HandleMouseDown(e))
                 return true;
+
+            // prevent from dragging when clicking on vertical scrollbar
+            if (MathHelper.Distance(base.RemainingWidth, e.MousePosition.X) < 20)
+                return false;
+
+            // prevent from dragging when clicking on horizontal scrollbar
+            if (MathHelper.Distance(base.RemainingHeight, e.MousePosition.Y) < 20)
+                return false;
+
             DragWindowOffset = new Point(e.MouseDownScreenPosition.X - Window.Location.X, e.MouseDownScreenPosition.Y - Window.Location.Y);
             return true;
         }

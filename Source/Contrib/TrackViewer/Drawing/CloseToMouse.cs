@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2014, 2105 by the Open Rails project.
+﻿// COPYRIGHT 2014, 2018 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -231,15 +231,15 @@ namespace ORTS.TrackViewer.Drawing
     {
         //Note: 'Last' is the one with shortest distance
         /// <summary>Tracknode that is closest</summary>
-        public TrackNode TrackNode { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.trackNode; } }
+        public TrackNode TrackNode { get { CalcRealDistances(); return sortedTrackCandidates.Last().Value.trackNode; } }
         /// <summary>Vectorsection within the tracnode</summary>
-        public TrVectorSection VectorSection { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.vectorSection; } }
+        public TrVectorSection VectorSection { get { CalcRealDistances(); return sortedTrackCandidates.Last().Value.vectorSection; } }
         /// <summary>Index of vector section that is closest to the mouse</summary>
-        public int TrackVectorSectionIndex { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.trackVectorSectionIndex; } }
+        public int TrackVectorSectionIndex { get { CalcRealDistances(); return sortedTrackCandidates.Last().Value.trackVectorSectionIndex; } }
         /// <summary>Distance along the track describing precisely where the mouse is</summary>
-        public float DistanceAlongTrack { get { calcRealDistances(); return sortedTrackCandidates.Last().Value.distanceAlongSection; } }
+        public float DistanceAlongTrack { get { CalcRealDistances(); return sortedTrackCandidates.Last().Value.distanceAlongSection; } }
         /// <summary>Distance (squared) between mouse and closest track location</summary>
-        public override float ClosestMouseDistanceSquared { get { calcRealDistances(); return (float)sortedTrackCandidates.Last().Key; } }
+        public override float ClosestMouseDistanceSquared { get { CalcRealDistances(); return (float)sortedTrackCandidates.Last().Key; } }
 
         private TrackSectionsFile tsectionDat;
         private WorldLocation storedMouseLocation;
@@ -284,8 +284,10 @@ namespace ORTS.TrackViewer.Drawing
         public CloseToMouseTrack(TrackSectionsFile tsectionDat, TrackNode tn)
         {
             this.tsectionDat = tsectionDat;
-            sortedTrackCandidates = new SortedList<double, TrackCandidate>(new ReverseDoubleComparer());
-            sortedTrackCandidates.Add(0, new TrackCandidate(tn, null, 0, 0));
+            sortedTrackCandidates = new SortedList<double, TrackCandidate>(new ReverseDoubleComparer())
+            {
+                { 0, new TrackCandidate(tn, null, 0, 0) }
+            };
             realDistancesAreCalculated = true; // we do not want to calculate distance if we override the highlight
         }
 
@@ -295,8 +297,10 @@ namespace ORTS.TrackViewer.Drawing
         public override void Reset()
         {
             base.Reset();
-            sortedTrackCandidates = new SortedList<double, TrackCandidate>(new ReverseDoubleComparer());
-            sortedTrackCandidates.Add(float.MaxValue, new TrackCandidate(null, null, 0, 0));
+            sortedTrackCandidates = new SortedList<double, TrackCandidate>(new ReverseDoubleComparer())
+            {
+                { float.MaxValue, new TrackCandidate(null, null, 0, 0) }
+            };
             realDistancesAreCalculated = false;
         }
 
@@ -341,7 +345,7 @@ namespace ORTS.TrackViewer.Drawing
         /// <summary>
         /// Method to calculate, for each of the candidates, the real closest distance (squared) from mouse to track
         /// </summary>
-        void calcRealDistances()
+        void CalcRealDistances()
         {
             if (realDistancesAreCalculated) return;
             List<double> existingKeys = sortedTrackCandidates.Keys.ToList();
@@ -350,7 +354,7 @@ namespace ORTS.TrackViewer.Drawing
                 TrackCandidate trackCandidate = sortedTrackCandidates[distanceKey];
                 if (trackCandidate.trackNode == null) continue;
                 TrackSection trackSection = tsectionDat.TrackSections.Get(trackCandidate.vectorSection.SectionIndex);
-                DistanceLon distanceLon = calcRealDistanceSquared(trackCandidate.vectorSection, trackSection);
+                DistanceLon distanceLon = CalcRealDistanceSquared(trackCandidate.vectorSection, trackSection);
                 double realDistanceSquared = (double)distanceLon.distanceSquared;
                 
                 // Add the trackCandidate to the sorted list with its new distance squared as key
@@ -374,12 +378,14 @@ namespace ORTS.TrackViewer.Drawing
         /// The math here is not perfect (it is quite difficult to calculate the distances to a curved line 
         /// for all possibilities) but good enough. The math was designed (in Traveller.cs) to work well for close distances.
         /// Math is modified to prevent NaN and to combine straight and curved tracks.</remarks>
-        DistanceLon calcRealDistanceSquared(TrVectorSection trackVectorSection, TrackSection trackSection)
+        DistanceLon CalcRealDistanceSquared(TrVectorSection trackVectorSection, TrackSection trackSection)
         {
             //Calculate the vector from start of track to the mouse
-            Vector3 vectorToMouse = new Vector3();
-            vectorToMouse.X = storedMouseLocation.Location.X - trackVectorSection.X;
-            vectorToMouse.Z = storedMouseLocation.Location.Z - trackVectorSection.Z;
+            Vector3 vectorToMouse = new Vector3
+            {
+                X = storedMouseLocation.Location.X - trackVectorSection.X,
+                Z = storedMouseLocation.Location.Z - trackVectorSection.Z
+            };
             vectorToMouse.X += (storedMouseLocation.TileX - trackVectorSection.TileX) * 2048;
             vectorToMouse.Z += (storedMouseLocation.TileZ - trackVectorSection.TileZ) * 2048;
 

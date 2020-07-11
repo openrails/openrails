@@ -39,6 +39,7 @@ Less frequently, they get to add something entirely new and then stand ready to 
           <tr><td>Chris Jakeman * (cjakeman)</td></tr>
           <tr><td>CSantucci</td></tr>
           <tr><td>edwardk</td></tr>
+          <tr><td>Goku</td></tr>
           <tr><td>Peter Gulyas (gpz)</td></tr>
           <tr><td>James Ross *</td></tr>
           <tr><td>jeroenp</td></tr>
@@ -90,6 +91,7 @@ These are the experts in creating buildings, locos, routes, signs, even grass. T
         <p>&nbsp;</p>
           <table>
             <tr><td>engmod</td></tr>
+            <tr><td>EugenR</td></tr>
             <tr><td>Genma Saotome</td></tr>
             <tr><td>plainsman</td></tr>
             <tr><td>thegrindre</td></tr>

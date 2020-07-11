@@ -10,7 +10,7 @@ if "%SPHINXAUTOBUILD%" == "" (
 )
 set BUILDDIR=_build
 set ALLSPHINXOPTS=-d %BUILDDIR%/doctrees %SPHINXOPTS% .
-set SPHINXAUTOBUILDOPTS=--open-browser --delay 5 
+set SPHINXAUTOBUILDOPTS=--open-browser --delay 5
 set I18NSPHINXOPTS=%SPHINXOPTS% .
 if NOT "%PAPER%" == "" (
 	set ALLSPHINXOPTS=-D latex_paper_size=%PAPER% %ALLSPHINXOPTS%
@@ -24,8 +24,8 @@ if "%1" == "help" (
 	echo.Please use `make ^<target^>` where ^<target^> is one of
 	echo.  html       to make standalone HTML files
 	echo.  dirhtml    to make HTML files named index.html in directories
-	echo.  livehtml   to make standalone HTML files rebuilt automatically upon mod
 	echo.  singlehtml to make a single large HTML file
+	echo.  livehtml   to make standalone HTML files rebuilt automatically upon mod
 	echo.  pickle     to make pickle files
 	echo.  json       to make JSON files
 	echo.  htmlhelp   to make HTML files and a HTML help project
@@ -33,16 +33,17 @@ if "%1" == "help" (
 	echo.  devhelp    to make HTML files and a Devhelp project
 	echo.  epub       to make an epub
 	echo.  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter
+	echo.  latexpdf   to make PDF files
 	echo.  text       to make text files
 	echo.  man        to make manual pages
 	echo.  texinfo    to make Texinfo files
 	echo.  gettext    to make PO message catalogs
 	echo.  changes    to make an overview over all changed/added/deprecated items
-	echo.  xml        to make Docutils-native XML files
-	echo.  pseudoxml  to make pseudoxml-XML files for display purposes
 	echo.  linkcheck  to check all external links for integrity
 	echo.  doctest    to run all doctests embedded in the documentation if enabled
 	echo.  coverage   to run coverage check of the documentation if enabled
+	echo.  xml        to make Docutils-native XML files
+	echo.  pseudoxml  to make pseudoxml-XML files for display purposes
 	goto end
 )
 
@@ -173,8 +174,10 @@ if "%1" == "latex" (
 if "%1" == "latexpdf" (
 	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
 	cd %BUILDDIR%/latex
+	REM Run pdflatex twice so that the Table of Contents is correct.
     for %%t in (*.tex) do pdflatex %%t
-	cd %~dp0
+	for %%t in (*.tex) do pdflatex %%t
+	cd "%~dp0"
 	echo.
 	echo.Build finished; the PDF files are in %BUILDDIR%/latex.
 	goto end
@@ -184,7 +187,7 @@ if "%1" == "latexpdfja" (
 	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
 	cd %BUILDDIR%/latex
 	make all-pdf-ja
-	cd %~dp0
+	cd "%~dp0"
 	echo.
 	echo.Build finished; the PDF files are in %BUILDDIR%/latex.
 	goto end

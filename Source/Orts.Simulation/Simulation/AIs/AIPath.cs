@@ -88,7 +88,7 @@ namespace Orts.Simulation.AIs
                 if (tpn.HasNextMainNode)
                 {
                     node.NextMainNode = Nodes[(int)tpn.nextMainNode];
-                    node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat);
+                    node.NextMainTVNIndex = node.FindTVNIndex(node.NextMainNode, TDB, tsectiondat, i == 0 ? -1 : Nodes[i-1].NextMainTVNIndex );
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextMainTVNIndex);
                     if (node.NextMainTVNIndex < 0)
@@ -103,7 +103,7 @@ namespace Orts.Simulation.AIs
                 if (tpn.HasNextSidingNode)
                 {
                     node.NextSidingNode = Nodes[(int)tpn.nextSidingNode];
-                    node.NextSidingTVNIndex = node.FindTVNIndex(node.NextSidingNode, TDB, tsectiondat);
+                    node.NextSidingTVNIndex = node.FindTVNIndex(node.NextSidingNode, TDB, tsectiondat, i == 0 ? -1 : Nodes[i - 1].NextMainTVNIndex);
                     if (node.JunctionIndex >= 0)
                         node.IsFacingPoint = TestFacingPoint(node.JunctionIndex, node.NextSidingTVNIndex);
                     if (node.NextSidingTVNIndex < 0)
@@ -424,7 +424,7 @@ namespace Orts.Simulation.AIs
         /// <summary>
         /// Returns the index of the vector node connection this path node to the (given) nextNode.
         /// </summary>
-        public int FindTVNIndex(AIPathNode nextNode, TrackDatabaseFile TDB, TrackSectionsFile tsectiondat)
+        public int FindTVNIndex(AIPathNode nextNode, TrackDatabaseFile TDB, TrackSectionsFile tsectiondat, int previousNextMainTVNIndex)
         {
             int junctionIndexThis = JunctionIndex;
             int junctionIndexNext = nextNode.JunctionIndex;
@@ -456,17 +456,26 @@ namespace Orts.Simulation.AIs
             }
 
             //both this node and the next node are junctions: find the vector node connecting them.
+            var iCand = -1;
             for (int i = 0; i < TDB.TrackDB.TrackNodes.Count(); i++)
             {
                 TrackNode tn = TDB.TrackDB.TrackNodes[i];
                 if (tn == null || tn.TrVectorNode == null)
                     continue;
                 if (tn.TrPins[0].Link == junctionIndexThis && tn.TrPins[1].Link == junctionIndexNext)
-                    return i;
-                if (tn.TrPins[1].Link == junctionIndexThis && tn.TrPins[0].Link == junctionIndexNext)
-                    return i;
+                {
+                    iCand = i;
+                    if (i != previousNextMainTVNIndex) break;
+                    Trace.TraceInformation("Managing rocket loop at trackNode {0}", iCand);
+                }
+                else if (tn.TrPins[1].Link == junctionIndexThis && tn.TrPins[0].Link == junctionIndexNext)
+                {
+                    iCand = i;
+                    if (i != previousNextMainTVNIndex) break;
+                    Trace.TraceInformation("Managing rocket loop at trackNode {0}", iCand);
+                }
             }
-            return -1;
+            return iCand;
         }
 
         /// <summary>

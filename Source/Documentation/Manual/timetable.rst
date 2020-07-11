@@ -37,7 +37,7 @@ implementation, or in a limited context. Further development of these items is
 still required.*
 
 **Important aspects where the use of specific OR or MSTS items for timetables 
-differs significantly from its use in an activity are shown in bold.**
+differs significantly from its use in an activity are shown in bold**.
 
 Apart from the items indicated as above, it should be realised that as work 
 continues, all items are still subject to change.
@@ -169,9 +169,6 @@ The train name as defined in the first row must be unique for each train in a
 timetable file. This name is also used when referencing this train in a train 
 command; see details below.
 
-This name is also used when referencing this train in a train command, see 
-details below.
-
 The sequence of trains is not important.
 
 Location Details
@@ -252,7 +249,8 @@ Special rows
 - ``#Path`` row. 
   
   The #path row defines the path of that train. The path must be a \*.pat file as 
-  defined by the MSTS Activity Editor, and must be located in the route's Path 
+  defined by the MSTS Activity Editor or by Trackviewer, and must be located
+  in the route's Path 
   directory. This field is compulsory.
   
   The timetable uses the same paths as those defined for activities.
@@ -274,7 +272,7 @@ Special rows
   store this as binary for future use. Binary paths are stored in a subdirectory 
   named ``OpenRails`` which must be created in the Paths directory of the route.
   
-  Important:
+  **Important:**
 
     - If a path is edited, the binary version must be deleted manually, otherwise the program will still use this older version.
     - If a route is edited, such that the .tdb might have been changed, all binary paths must be deleted.
@@ -290,7 +288,8 @@ Special rows
 
   For the player train, the consist is always used even if the train is formed 
   out of another train. The consist definition must be a \*.con file as defined 
-  by the MSTS Activity Editor, and must be stored in the defined consist 
+  by the MSTS Activity Editor or by the TSRE5 consist editor,
+  and must be stored in the defined consist 
   directory.
 
   Also a more complex syntax of the consist definition is possible, as described 
@@ -408,7 +407,7 @@ Special rows
   deceleration (``$dec``) values used for that train.
 
   The program uses average acceleration and deceleration values for all trains 
-  (difference values for freight, passenger and high speed trains). But these 
+  (different values for freight, passenger and high speed trains). But these 
   values are not always adequate, especially for modern trains. This can lead to 
   delays when trying to run to a real life timetable.
 
@@ -441,8 +440,7 @@ Special rows
   the row is not included or the field is not set for a particular train, the 
   train is removed from the activity after it has terminated.
 
-  *The #dispose row presently does not affect the end of the run for the player 
-  train.* 
+  *The #dispose row presently does not affect the end of the run for the player train*. 
 
 Control commands
 ----------------
@@ -556,8 +554,7 @@ The commands ``$hold`` and ``$nosignalwait`` can also be set as location command
 
     Command qualifiers :
 
-        ``/maxdelay=n``: n is the maximum delay (in minutes) of the arriving train 
-            for which this train is held.
+        ``/maxdelay=n`` : n is the maximum delay (in minutes) of the arriving train for which this train is held.
 
             If the delay of the arriving train exceeds this value the train will 
             not wait. The maximum delay is independent from this train's own 
@@ -565,11 +562,9 @@ The commands ``$hold`` and ``$nosignalwait`` can also be set as location command
 
             This qualifier and its  value are compulsory.
 
-        ``/hold=h``: h is the time (in minutes) the train is still held after 
-            the other train has arrived, and relates to the time required by the 
-            passengers to make the connection.
+        ``/hold=h`` : h is the time (in minutes) the train is still held after the other train has arrived, and relates to the time required by the passengers to make the connection.
 
-            This qualifier and its  value are compulsory.
+            This qualifier and its value are compulsory.
 
 ``$wait *``
 
@@ -607,8 +602,7 @@ The commands ``$hold`` and ``$nosignalwait`` can also be set as location command
 
     Command qualifiers :
 
-        ``/maxdelay=n``: n is the maximum delay (in minutes) of the referenced 
-            train for which the wait is still valid.
+        ``/maxdelay=n``: n is the maximum delay (in minutes) of the referenced train for which the wait is still valid.
 
             This delay is compensated for any delay of the train which is to 
             wait, e.g. if maxdelay is 5 minutes, the referenced train has a 
@@ -618,12 +612,9 @@ The commands ``$hold`` and ``$nosignalwait`` can also be set as location command
             This parameter is optional, if not set a maxdelay of 0 minutes is 
             set as default.
 
-        ``/notstarted``: the wait will also be applied if the referenced train has 
-            not yet started.
+        ``/notstarted``: the wait will also be applied if the referenced train has not yet started.
 
-        ``/owndelay=n`` (n is delay in minutes); the owndelay qualifier command 
-            makes the command valid only if the train in question is delayed by at 
-            least the total minutes as set for the owndelay qualifier.
+        ``/owndelay=n`` (n is delay in minutes); the owndelay qualifier command makes the command valid only if the train in question is delayed by at least the total minutes as set for the owndelay qualifier.
 
             This can be used to hold a late-running train such that is does not 
             cause additional delays to other trains, in particular on single 
@@ -652,19 +643,12 @@ The commands ``$hold`` and ``$nosignalwait`` can also be set as location command
 
     Command qualifiers:
     
-        ``/maxdelay=n``: n is the maximum delay (in minutes) of the referenced 
-            train for which the wait is still valid. This delay is compensated by 
-            any delay of the train which is to wait, e.g. if maxdelay is 5 minutes, 
-            the referenced train has a delay of 8 minutes but this train itself has 
-            a delay of 4 minutes, the compensated delay is 4 minutes and thus the 
-            wait is still valid.
+        ``/maxdelay=n``: n is the maximum delay (in minutes) of the referenced train for which the wait is still valid. This delay is compensated by any delay of the train which is to wait, e.g. if maxdelay is 5 minutes, the referenced train has a delay of 8 minutes but this train itself has a delay of 4 minutes, the compensated delay is 4 minutes and thus the wait is still valid.
 
             This parameter is optional, if not set a maxdelay of 0 minutes is 
             set as default.
         
-        ``/owndelay=n`` (n is delay in minutes); the owndelay qualifier  command 
-            makes the command valid only if the train in question is delayed by at 
-            least the total minutes as set for the owndelay qualifier.
+        ``/owndelay=n`` (n is delay in minutes): the owndelay qualifier  command makes the command valid only if the train in question is delayed by at least the total minutes as set for the owndelay qualifier.
 
             This can be used to hold a late-running train such that is does not 
             cause additional delays to other trains, in particular on single 
@@ -792,22 +776,16 @@ or when the player train itself has a dispose command.
 
     Command qualifiers:
     
-        ``/runround=<path>``: <path> is the path to be used by the engine to 
-            perform the runround.
+        ``/runround=<path>``: <path> is the path to be used by the engine to perform the runround.
 
             This qualifier is optional; if set, the value is compulsory.
         
-        ``/rrtime=time``: time is the definition of the time at which the 
-            runround is to take place. The time must be defined in HH:mm and must 
-            use the 24 hour clock.
+        ``/rrtime=time``: time is the definition of the time at which the runround is to take place. The time must be defined in HH:mm and must use the 24 hour clock.
 
             This qualifier is only valid in combination with the /runround 
             qualifier, is optional but if set, the value is compulsory.
 
-        ``/setstop``: if this train itself has no station stops defined but the 
-            train it is to form starts at a station, this command will copy the 
-            details of the first station stop of the formed train, to ensure this 
-            train will stop at the correct location.
+        ``/setstop``: if this train itself has no station stops defined but the train it is to form starts at a station, this command will copy the details of the first station stop of the formed train, to ensure this train will stop at the correct location.
 
             For this qualifier to work correctly, the path of the incoming train 
             must terminate in the platform area of the departing train.
@@ -876,32 +854,19 @@ or when the player train itself has a dispose command.
 
     Command qualifiers :
 
-        ``/out_path=<path>``: <path> is the path to be used by the train to move 
-            out to the 'stable' position. The start of the path must match the end 
-            of the path of the incoming train.
+        ``/out_path=<path>``: <path> is the path to be used by the train to move out to the 'stable' position. The start of the path must match the end of the path of the incoming train.
 
-        ``/out_time = time``: time definition when the outward run must be 
-            started. Time is defined as HH:mm and must use the 24 hour clock.
+        ``/out_time = time``: time definition when the outward run must be started. Time is defined as HH:mm and must use the 24 hour clock.
 
-        ``/in_path=<path>``: <path> is the path to be used by the train for the 
-            inward run from the 'stable' position to the start of the new train. 
-            The start of the path must match the end of the out_path, the end of 
-            the path must match the start of the path for the new train.
+        ``/in_path=<path>``: <path> is the path to be used by the train for the inward run from the 'stable' position to the start of the new train. The start of the path must match the end of the out_path, the end of the path must match the start of the path for the new train.
 
-        ``/in_time = time``: time definition when the inward run must be 
-            started. Time is defined as HH:mm and must use the 24 hour clock.
+        ``/in_time = time``: time definition when the inward run must be started. Time is defined as HH:mm and must use the 24 hour clock.
 
-        ``/runround=<path>``: <path> is the path to be used by the engine to 
-            perform the runround. For details, see the $forms command definition of 
-            the time at which the runround is to take place. The time must be 
-            defined in HH:mm and must use the 24 hour clock.
+        ``/runround=<path>``: <path> is the path to be used by the engine to perform the runround. For details, see the $forms command definition of the time at which the runround is to take place. The time must be defined in HH:mm and must use the 24 hour clock.
 
-        ``/rrtime=time``: time is the definition of the time at which the 
-            runaround is to take place. The time must be defined in HH:mm and must 
-            use the 24 hour clock.
+        ``/rrtime=time``: time is the definition of the time at which the runaround is to take place. The time must be defined in HH:mm and must use the 24 hour clock.
 
-        ``/rrpos = <runround position>``: the position within the 'stable' move at 
-            which the runround is to take place.
+        ``/rrpos = <runround position>``: the position within the 'stable' move at which the runround is to take place.
 
             Possible values:
 
@@ -911,15 +876,11 @@ or when the player train itself has a dispose command.
                 - in: the runround will take place after completion of the 
                   inward move.
 
-        ``/static``: train will become a 'static' train after completing the 
-            outward move.
+        ``/static``: train will become a 'static' train after completing the outward move.
 
-        ``/forms=<train>``: train will form the new train after completion of 
-            the inward move. See the $forms command for details.
+        ``/forms=<train>``: train will form the new train after completion of the inward move. See the $forms command for details.
 
-        ``/triggers=<train>``: train will trigger the new train after completion 
-            of the inward move. The train will change to the consist of the new 
-            train at the 'stable' position. See the $triggers command for details.
+        ``/triggers=<train>``: train will trigger the new train after completion of the inward move. The train will change to the consist of the new train at the 'stable' position. See the $triggers command for details.
 
     Use of command qualifiers :
 
@@ -1012,13 +973,11 @@ close enough to another train to couple to this train. It is this logic which
 allows the player train to couple to any static train.
 
 However, this logic contains some actions which do not match the processing of 
-timetable trains. Therefore this has now been disabled for timetable mode. 
-Presently, therefore, coupling of trains is not possible in timetable mode 
-except for runround commands in dispose options.
+timetable trains.
+*Therefore this has now been disabled for timetable mode*. 
+*Presently, therefore, coupling of trains is not possible in timetable mode except for runround commands in dispose options*.
 
-Also uncoupling through the F9 window could be disabled in the near future for 
-timetable mode. In due course, new attach/detach functions will be included in 
-the timetable concept to replace the existing functions.
+*Also uncoupling through the F9 window could be disabled in the near future for timetable mode*. *In due course, new attach/detach functions will be included in the timetable concept to replace the existing functions*.
 
 .. _timetable-signalling:
 
