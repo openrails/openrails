@@ -45,6 +45,7 @@ Revisions are kept in <a href="https://github.com/openrails/openrails">a public 
 From your PC, you can simply view the repository from a web browser. 
 GitHub.com provides the GitHub Desktop program to interface between GitHub.com and your PC (for 64-bit Windows only).
 Other Windows programs are SourceTree and TortoiseGit and also Visual Studio includes a Git tool.
+See our <a href="https://onedrive.live.com/view.aspx?resid=7F0F05E28F47C189!295694&ithint=file%2cdocx&authkey=!ABYL6qOsIy85Bdc">step-by-step instructions for starting to work with Git</a>.
       </p><p>
 The main folders in the repository are:
     </p>
