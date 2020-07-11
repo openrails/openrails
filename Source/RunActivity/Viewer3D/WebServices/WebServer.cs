@@ -230,7 +230,7 @@ namespace Orts.Viewer3D.WebServices
 
         #region /API/TRAINDRIVINGDISPLAY
         [Route(HttpVerbs.Get, "/TRAINDRIVINGDISPLAY")]
-        public IEnumerable<TrainDrivingDisplay.ListLabel> TrainDrivingDisplay() => Viewer.TrainDrivingDisplayList();
+        public IEnumerable<TrainDrivingDisplay.ListLabel> TrainDrivingDisplay([QueryField] bool normalText) => Viewer.TrainDrivingDisplayList(normalText);
         #endregion
     }
 }

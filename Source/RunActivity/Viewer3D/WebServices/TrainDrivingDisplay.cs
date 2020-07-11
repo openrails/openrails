@@ -19,6 +19,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using ORTS.Common;
+using ORTS.Common.Input;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -234,32 +235,77 @@ namespace Orts.Viewer3D.WebServices
 
             // Second block
             // Direction
-            string reverserIndicator = showMUReverser ? $"{Math.Abs(train.MUReverserPercent)}% " : "";
-            AddLabel(new ListLabel
             {
-                FirstCol = Viewer.Catalog.GetString(locomotive.EngineType == TrainCar.EngineTypes.Steam ? "Reverser" : "Direction"),
-                LastCol = $"{reverserIndicator}{FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(locomotive.Direction))}",
-            });
+                UserCommand? reverserCommand = GetPressedKey(UserCommand.ControlBackwards, UserCommand.ControlForwards);
+                string reverserKey;
+                bool moving = Math.Abs(trainCar.SpeedMpS) > 1;
+                bool nonSteamEnd = trainCar.EngineType != TrainCar.EngineTypes.Steam && trainCar.Direction == Direction.N && (trainCar.ThrottlePercent >= 1 || moving);
+                bool steamEnd = locomotive is MSTSSteamLocomotive steamLocomotive2 && steamLocomotive2.CutoffController.MaximumValue == Math.Abs(train.MUReverserPercent / 100);
+                if (reverserCommand != null && (nonSteamEnd || steamEnd))
+                    reverserKey = Symbols.End + ColorCode[Color.Yellow];
+                else if (reverserCommand == UserCommand.ControlBackwards)
+                    reverserKey = Symbols.ArrowDown + ColorCode[Color.Yellow];
+                else if (reverserCommand == UserCommand.ControlForwards)
+                    reverserKey = Symbols.ArrowUp + ColorCode[Color.Yellow];
+                else
+                    reverserKey = "";
+
+                string reverserIndicator = showMUReverser ? $"{Round(Math.Abs(train.MUReverserPercent))}% " : "";
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString(locomotive.EngineType == TrainCar.EngineTypes.Steam ? "Reverser" : "Direction"),
+                    LastCol = $"{reverserIndicator}{FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(locomotive.Direction))}",
+                    KeyPressed = reverserKey,
+                    SymbolCol = reverserKey,
+                });
+            }
 
             // Throttle
-            AddLabel(new ListLabel
             {
-                FirstCol = Viewer.Catalog.GetString(locomotive is MSTSSteamLocomotive ? "Regulator" : "Throttle"),
-                LastCol = $"{locomotive.ThrottlePercent}%",
-            });
+                UserCommand? throttleCommand = GetPressedKey(UserCommand.ControlThrottleDecrease, UserCommand.ControlThrottleIncrease);
+                string throttleKey;
+                bool upperLimit = throttleCommand == UserCommand.ControlThrottleIncrease && locomotive.ThrottleController.MaximumValue == trainCar.ThrottlePercent / 100;
+                bool lowerLimit = throttleCommand == UserCommand.ControlThrottleDecrease && trainCar.ThrottlePercent == 0;
+                if (locomotive.DynamicBrakePercent < 1 && (upperLimit || lowerLimit))
+                    throttleKey = Symbols.End + ColorCode[Color.Yellow];
+                else if (locomotive.DynamicBrakePercent > -1)
+                    throttleKey = Symbols.EndLower + ColorCode[Color.Yellow];
+                else if (throttleCommand == UserCommand.ControlThrottleIncrease)
+                    throttleKey = Symbols.ArrowUp + ColorCode[Color.Yellow];
+                else if (throttleCommand == UserCommand.ControlThrottleDecrease)
+                    throttleKey = Symbols.ArrowDown + ColorCode[Color.Yellow];
+                else
+                    throttleKey = "";
+
+                AddLabel(new ListLabel
+                {
+                    FirstCol = Viewer.Catalog.GetString(locomotive is MSTSSteamLocomotive ? "Regulator" : "Throttle"),
+                    LastCol = $"{Round(locomotive.ThrottlePercent)}%",
+                    KeyPressed = throttleKey,
+                    SymbolCol = throttleKey,
+                });
+            }
 
             // Cylinder Cocks
             if (locomotive is MSTSSteamLocomotive steamLocomotive)
             {
-                string cocksIndicator;
+                string cocksIndicator, cocksKey;
                 if (steamLocomotive.CylinderCocksAreOpen)
+                {
                     cocksIndicator = Viewer.Catalog.GetString("Open") + ColorCode[Color.Orange];
+                    cocksKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
+                }
                 else
+                {
                     cocksIndicator = Viewer.Catalog.GetString("Closed") + ColorCode[Color.White];
+                    cocksKey = "";
+                }
                 AddLabel(new ListLabel
                 {
                     FirstCol = Viewer.Catalog.GetString("Cylinder cocks"),
                     LastCol = cocksIndicator,
+                    KeyPressed = cocksKey,
+                    SymbolCol = cocksKey,
                 });
             }
 
@@ -267,10 +313,13 @@ namespace Orts.Viewer3D.WebServices
             if (locomotive.GetSanderOn())
             {
                 bool sanderBlocked = locomotive.AbsSpeedMpS > locomotive.SanderSpeedOfMpS;
+                string sanderKey = Symbols.ArrowToRight + ColorCode[Color.Yellow];
                 AddLabel(new ListLabel
                 {
                     FirstCol = Viewer.Catalog.GetString("Sander"),
                     LastCol = sanderBlocked ? Viewer.Catalog.GetString("Blocked") + ColorCode[Color.OrangeRed] : Viewer.Catalog.GetString("On") + ColorCode[Color.Orange],
+                    KeyPressed = sanderKey,
+                    SymbolCol = sanderKey,
                 });
             }
             else
@@ -279,6 +328,8 @@ namespace Orts.Viewer3D.WebServices
                 {
                     FirstCol = Viewer.Catalog.GetString("Sander"),
                     LastCol = Viewer.Catalog.GetString("Off"),
+                    KeyPressed = "",
+                    SymbolCol = "",
                 });
             }
 
@@ -293,11 +344,26 @@ namespace Orts.Viewer3D.WebServices
 
             if (trainBrakeStatus.Contains(Viewer.Catalog.GetString("EQ")))
             {
+                string brakeKey;
+                switch (GetPressedKey(UserCommand.ControlTrainBrakeDecrease, UserCommand.ControlTrainBrakeIncrease))
+                {
+                    case UserCommand.ControlTrainBrakeDecrease:
+                        brakeKey = Symbols.ArrowDown + ColorCode[Color.Yellow];
+                        break;
+                    case UserCommand.ControlTrainBrakeIncrease:
+                        brakeKey = Symbols.ArrowUp + ColorCode[Color.Yellow];
+                        break;
+                    default:
+                        brakeKey = "";
+                        break;
+                }
                 brakeInfoValue = trainBrakeStatus.Substring(0, trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EQ"))).TrimEnd();
                 AddLabel(new ListLabel
                 {
                     FirstCol = Viewer.Catalog.GetString("Train brake"),
                     LastCol = $"{brakeInfoValue}{ColorCode[Color.Cyan]}",
+                    KeyPressed = brakeKey,
+                    SymbolCol = brakeKey,
                 });
 
                 index = trainBrakeStatus.IndexOf(Viewer.Catalog.GetString("EQ"));
@@ -479,12 +545,50 @@ namespace Orts.Viewer3D.WebServices
                             LastCol = valuePart.Length > 1 ? Viewer.Catalog.GetString(valuePart.Replace(" ", string.Empty )) : "",
                         });
                     }
-                    else if (keyPart.StartsWith(Viewer.Catalog.GetString("Gear")) || parts.Contains(Viewer.Catalog.GetString("Pantographs")))
+                    else if (keyPart.StartsWith(Viewer.Catalog.GetString("Gear")))
                     {
+                        string gearKey;
+                        switch (GetPressedKey(UserCommand.ControlGearDown, UserCommand.ControlGearUp))
+                        {
+                            case UserCommand.ControlGearDown:
+                                gearKey = Symbols.ArrowDown + ColorCode[Color.Yellow];
+                                break;
+                            case UserCommand.ControlGearUp:
+                                gearKey = Symbols.ArrowUp + ColorCode[Color.Yellow];
+                                break;
+                            default:
+                                gearKey = "";
+                                break;
+                        }
+
                         AddLabel(new ListLabel
                         {
                             FirstCol = Viewer.Catalog.GetString(keyPart),
                             LastCol = valuePart != null ? Viewer.Catalog.GetString(valuePart) : "",
+                            KeyPressed = gearKey,
+                            SymbolCol = gearKey,
+                        });
+                    }
+                    else if (parts.Contains(Viewer.Catalog.GetString("Pantographs")))
+                    {
+                        string pantoKey;
+                        switch (GetPressedKey(UserCommand.ControlPantograph1))
+                        {
+                            case UserCommand.ControlPantograph1:
+                                string arrow = parts[1].StartsWith(Viewer.Catalog.GetString("Up")) ? Symbols.ArrowUp : Symbols.ArrowDown;
+                                pantoKey = arrow + ColorCode[Color.Yellow];
+                                break;
+                            default:
+                                pantoKey = "";
+                                break;
+                        }
+
+                        AddLabel(new ListLabel
+                        {
+                            FirstCol = Viewer.Catalog.GetString(keyPart),
+                            LastCol = valuePart != null ? Viewer.Catalog.GetString(valuePart) : "",
+                            KeyPressed = pantoKey,
+                            SymbolCol = pantoKey,
                         });
                     }
                     else if (parts.Contains(Viewer.Catalog.GetString("Engine")))
@@ -618,5 +722,11 @@ namespace Orts.Viewer3D.WebServices
             AddLabel(new ListLabel());
             return labels;
         }
+
+        private static string Round(float x) => $"{Math.Round(x):F0}";
+
+        private static UserCommand? GetPressedKey(params UserCommand[] keysToTest) => keysToTest
+            .Where((UserCommand key) => UserInput.IsDown(key))
+            .FirstOrDefault();
     }
 }
