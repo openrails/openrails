@@ -234,7 +234,7 @@ namespace Orts.Viewer3D.WebServices
 
             // Second block
             // Direction
-            string reverserIndicator = showMUReverser ? $"{Math.Abs(train.MUReverserPercent)}% " : "";
+            string reverserIndicator = showMUReverser ? $"{Round(Math.Abs(train.MUReverserPercent))}% " : "";
             AddLabel(new ListLabel
             {
                 FirstCol = Viewer.Catalog.GetString(locomotive.EngineType == TrainCar.EngineTypes.Steam ? "Reverser" : "Direction"),
@@ -245,7 +245,7 @@ namespace Orts.Viewer3D.WebServices
             AddLabel(new ListLabel
             {
                 FirstCol = Viewer.Catalog.GetString(locomotive is MSTSSteamLocomotive ? "Regulator" : "Throttle"),
-                LastCol = $"{locomotive.ThrottlePercent}%",
+                LastCol = $"{Round(locomotive.ThrottlePercent)}%",
             });
 
             // Cylinder Cocks
@@ -618,5 +618,7 @@ namespace Orts.Viewer3D.WebServices
             AddLabel(new ListLabel());
             return labels;
         }
+
+        private static string Round(float x) => $"{Math.Round(x):F0}";
     }
 }
