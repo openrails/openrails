@@ -60,7 +60,7 @@ namespace Orts.Formats.OR
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        public virtual IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
             throw new InvalidOperationException();
         }
@@ -85,28 +85,28 @@ namespace Orts.Formats.OR
         string Engine { get; set; }
     }
 
-    public interface IConsistSubconsist : IConsistItem
+    public interface IConsistReference : IConsistItem
     {
         string Consist { get; set; }
     }
 
     internal static class ConsistItemExtensions
     {
-        public static IEnumerable<WagonSpecification> GetGenericWagonList(this IConsistItem item, string basePath, IDictionary<string, string> folders, int startUiD)
+        public static IEnumerable<WagonReference> GetGenericWagonList(this IConsistItem item, string basePath, IDictionary<string, string> folders, int startUiD)
         {
             if (item is IConsistWagon wagon)
             {
                 string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", wagon.Wagon), ".wag");
                 foreach (int _ in Enumerable.Range(0, wagon.Count))
-                    yield return new WagonSpecification(filePath, wagon.Flipped, startUiD++);
+                    yield return new WagonReference(filePath, wagon.Flipped, startUiD++);
             }
             else if (item is IConsistEngine engine)
             {
                 string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", engine.Engine), ".eng");
                 foreach (int _ in Enumerable.Range(0, engine.Count))
-                    yield return new WagonSpecification(filePath, engine.Flipped, startUiD++);
+                    yield return new WagonReference(filePath, engine.Flipped, startUiD++);
             }
-            else if (item is IConsistSubconsist consist)
+            else if (item is IConsistReference consist)
             {
                 throw new NotImplementedException();
             }
@@ -123,15 +123,15 @@ namespace Orts.Formats.OR
     {
         public IList<ListConsistItem> List { get; } = new List<ListConsistItem>();
 
-        public override IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        public override IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
             int uiD = 0;
             foreach (IConsistItem item in List)
             {
-                foreach (WagonSpecification wagonSpec in item.GetGenericWagonList(basePath, folders, uiD))
+                foreach (WagonReference wagonRef in item.GetGenericWagonList(basePath, folders, uiD))
                 {
                     uiD++;
-                    yield return wagonSpec;
+                    yield return wagonRef;
                 }
             }
         }
@@ -154,7 +154,7 @@ namespace Orts.Formats.OR
         public string Engine { get; set; }
     }
 
-    public class ListConsistSubconsist : ListConsistItem, IConsistSubconsist
+    public class ListConsistReference : ListConsistItem, IConsistReference
     {
         public string Consist { get; set; }
     }
@@ -183,7 +183,7 @@ namespace Orts.Formats.OR
             else if (!isWagon && isEngine && !isConsist)
                 item = new ListConsistEngine();
             else if (!isWagon && !isEngine && isConsist)
-                item = new ListConsistSubconsist();
+                item = new ListConsistReference();
             else
                 throw new JsonSerializationException("Ambiguous consist item");
             serializer.Populate(jsonObject.CreateReader(), item);
@@ -202,7 +202,7 @@ namespace Orts.Formats.OR
     {
         public IList<RandomConsistItem> Random { get; } = new List<RandomConsistItem>();
 
-        public override IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        public override IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
             throw new NotImplementedException();
         }
@@ -226,7 +226,7 @@ namespace Orts.Formats.OR
         public string Engine { get; set; }
     }
 
-    public class RandomConsistSubconsist : RandomConsistItem, IConsistSubconsist
+    public class RandomConsistReference : RandomConsistItem, IConsistReference
     {
         public string Consist { get; set; }
     }
@@ -255,7 +255,7 @@ namespace Orts.Formats.OR
             else if (!isWagon && isEngine && !isConsist)
                 item = new RandomConsistEngine();
             else if (!isWagon && !isEngine && isConsist)
-                item = new RandomConsistSubconsist();
+                item = new RandomConsistReference();
             else
                 throw new JsonSerializationException("Ambiguous consist item");
             serializer.Populate(jsonObject.CreateReader(), item);

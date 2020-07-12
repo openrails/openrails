@@ -27,6 +27,12 @@ namespace Orts.Simulation.Simulation
 {
     public static class GenericConsist
     {
+        /// <summary>
+        /// Load a consist file by name.
+        /// </summary>
+        /// <param name="basePath">The content directory.</param>
+        /// <param name="name">The consist filename (without an extension) to search for.</param>
+        /// <returns>The loaded consist.</returns>
         public static IConsist LoadFile(string basePath, string name)
         {
             string filePath = LocateFile(basePath, name);
@@ -35,6 +41,11 @@ namespace Orts.Simulation.Simulation
             return LoadFile(filePath);
         }
 
+        /// <summary>
+        /// Load a consist file by path.
+        /// </summary>
+        /// <param name="filePath">The path to the consist.</param>
+        /// <returns>The loaded consist.</returns>
         public static IConsist LoadFile(string filePath)
         {
             switch (Path.GetExtension(filePath).ToLower())
@@ -44,10 +55,16 @@ namespace Orts.Simulation.Simulation
                 case ".con":
                     return new Formats.Msts.ConsistFile(filePath);
                 default:
-                    throw new InvalidOperationException("Invalid consist file type");
+                    throw new InvalidDataException("Unknown consist format");
             }
         }
 
+        /// <summary>
+        /// Locate a consist file by name.
+        /// </summary>
+        /// <param name="basePath">The content directory.</param>
+        /// <param name="name">The consist filename (without an extension) to search for.</param>
+        /// <returns>The path to the consist.</returns>
         public static string LocateFile(string basePath, string name)
         {
             string filePath = Path.Combine(basePath, "trains", "consists", name);
@@ -60,43 +77,53 @@ namespace Orts.Simulation.Simulation
                 throw new FileNotFoundException($"Consist not found: {name}");
         }
 
+        /// <summary>
+        /// Determine whether a consist should tilt.
+        /// </summary>
         public static bool IsTilting(string name) => name.ToLower().Contains("tilted");
 
+        /// <summary>
+        /// Load the wagons of a consist into the simulator.
+        /// </summary>
+        /// <param name="consist">The consist file to load.</param>
+        /// <param name="simulator">The game instance.</param>
+        /// <param name="playerTrain">If set, errors that affect the first wagon are fatal.</param>
+        /// <returns>The list of loaded <see cref="TrainCar"/>s.</returns>
         public static IEnumerable<TrainCar> LoadTrainCars(this IConsist consist, Simulator simulator, bool playerTrain = false)
         {
             UserSettings settings = simulator.Settings;
             bool first = true;
-            IEnumerable<WagonSpecification> Iterator()
+            IEnumerable<WagonReference> Iterator()
             {
-                foreach (WagonSpecification wagonSpec in consist.GetWagonList(simulator.BasePath, settings.Folders.Folders))
+                foreach (WagonReference wagonRef in consist.GetWagonList(simulator.BasePath, settings.Folders.Folders))
                 {
-                    yield return wagonSpec;
+                    yield return wagonRef;
                     first = false;
                 }
             }
-            foreach (WagonSpecification wagonSpec in Iterator())
+            foreach (WagonReference wagonRef in Iterator())
             {
-                if (!File.Exists(wagonSpec.FilePath))
+                if (!File.Exists(wagonRef.FilePath))
                 {
-                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonSpec.FilePath, consist.Name);
+                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonRef.FilePath, consist.Name);
                     continue;
                 }
 
                 TrainCar car;
                 try
                 {
-                    car = RollingStock.Load(simulator, wagonSpec.FilePath);
+                    car = RollingStock.Load(simulator, wagonRef.FilePath);
                 }
                 catch (Exception error)
                 {
-                    var exception = new FileLoadException(wagonSpec.FilePath, error);
+                    var exception = new FileLoadException(wagonRef.FilePath, error);
                     if (first && playerTrain) // First wagon is the player's loco and required, so issue a fatal error message
                         throw exception;
                     Trace.WriteLine(exception);
                     continue;
                 }
-                car.Flipped = wagonSpec.Flipped;
-                car.UiD = wagonSpec.UiD;
+                car.Flipped = wagonRef.Flipped;
+                car.UiD = wagonRef.UiD;
                 yield return car;
             }
         }

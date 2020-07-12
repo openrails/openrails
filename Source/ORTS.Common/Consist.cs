@@ -23,15 +23,15 @@ using System.Linq;
 namespace ORTS.Common
 {
     /// <summary>
-    /// An engine or wagon reference that has been prepared for loading by the simulator.
+    /// An engine or wagon reference for loading by the simulator.
     /// </summary>
-    public class WagonSpecification
+    public class WagonReference
     {
         public string FilePath { get; }
         public bool Flipped { get; }
         public int UiD { get; }
 
-        public WagonSpecification(string filePath, bool flipped, int uid)
+        public WagonReference(string filePath, bool flipped, int uid)
         {
             FilePath = filePath;
             Flipped = flipped;
@@ -39,14 +39,42 @@ namespace ORTS.Common
         }
     }
 
+    /// <summary>
+    /// A generic consist of wagons and engines. Its composition may be nondeterministc.
+    /// </summary>
     public interface IConsist
     {
         string Name { get; }
         float? MaxVelocityMpS { get; }
         float Durability { get; }
         bool PlayerDrivable { get; }
-        IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null);
+
+        /// <summary>
+        /// Obtain a list of <see cref="WagonReference"/>s to be loaded by the simulator.
+        /// </summary>
+        /// <remarks>
+        /// If a preferred locomotive is specified but the constraint cannot be satisifed, this method should return an empty iterator.
+        /// </remarks>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="folders">A dictionary of other available content directories.</param>
+        /// <param name="preferredLocomotivePath">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
+        /// <returns></returns>
+        IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null);
+
+        /// <summary>
+        /// Get the head-end locomotives that this consist can spawn with.
+        /// </summary>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="folders">A dictionary of other available content directories.</param>
+        /// <returns>The locomotives, identified by their filesystem paths.</returns>
         ICollection<string> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders);
+
+        /// <summary>
+        /// Get the head-end locomotives that this consist can spawn with if reversed.
+        /// </summary>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="folders">A dictionary of other available content directories.</param>
+        /// <returns>The locomotives, identified by their filesystem paths.</returns>
         ICollection<string> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders);
     }
 

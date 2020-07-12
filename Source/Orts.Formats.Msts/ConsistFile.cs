@@ -76,13 +76,13 @@ namespace Orts.Formats.Msts
             return lastEngine != null ? new string[] { WagonPath(basePath, lastEngine) } : new string[] { };
         }
 
-        public IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
-            var empty = new WagonSpecification[0];
+            var empty = new WagonReference[0];
             if (preferredLocomotivePath != null && PathsEqual(GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault(), preferredLocomotivePath))
                 return empty;
             return Train.TrainCfg.WagonList
-                .Select((Wagon wagon) => new WagonSpecification(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
+                .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
         }
 
         private static string WagonPath(string basePath, Wagon wagon)
