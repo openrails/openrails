@@ -32,8 +32,10 @@ using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
+using Orts.Simulation.Simulation;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -2337,12 +2339,12 @@ namespace Orts.Simulation.Timetables
                         TTTrain.IsTilting = false;
                     }
 
-                    ConsistFile conFile = null;
+                    IConsist conFile = null;
 
                     // try to load config file, exit if failed
                     try
                     {
-                        conFile = new ConsistFile(consistFile);
+                        conFile = new Formats.Msts.ConsistFile(consistFile);
                     }
                     catch (Exception e)
                     {
@@ -2355,7 +2357,13 @@ namespace Orts.Simulation.Timetables
                     }
 
                     // add wagons
-                    List<TrainCar> cars = AddWagons(conFile, trainsetDirectory, simulator, consistReverse);
+                    var cars = new List<TrainCar>(conFile.LoadTrainCars(simulator));
+                    if (consistReverse)
+                    {
+                        foreach (TrainCar car in cars)
+                            car.Flipped = !car.Flipped;
+                        cars.Reverse();
+                    }
 
                     // add wagons
                     int carId = 0;
@@ -2372,18 +2380,8 @@ namespace Orts.Simulation.Timetables
                     }
 
                     // derive speed
-
-                    if (conFile.Train.TrainCfg.MaxVelocity != null && conFile.Train.TrainCfg.MaxVelocity.A > 0)
-                    {
-                        if (confMaxSpeed.HasValue)
-                        {
-                            confMaxSpeed = Math.Min(confMaxSpeed.Value, conFile.Train.TrainCfg.MaxVelocity.A);
-                        }
-                        else
-                        {
-                            confMaxSpeed = Math.Min((float)simulator.TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
-                        }
-                    }
+                    if (conFile.MaxVelocityMpS != null)
+                        confMaxSpeed = Math.Min(confMaxSpeed ?? (float)simulator.TRK.Tr_RouteFile.SpeedLimit, conFile.MaxVelocityMpS.Value);
                 }
 
                 if (TTTrain.Cars.Count <= 0)
@@ -2426,61 +2424,6 @@ namespace Orts.Simulation.Timetables
                 }
 
                 return (true);
-            }
-
-            //================================================================================================//
-            /// <summary>
-            /// Add wagons from consist file to traincar list
-            /// </summary>
-            /// <param name="consistFile">Processed consist File</param>
-            /// <param name="trainsetDirectory">Consist Directory</param>
-            /// <param name="simulator">Simulator</param>
-            /// <returns>Generated TrainCar list</returns>
-            public List<TrainCar> AddWagons(Orts.Formats.Msts.ConsistFile consistFile, string trainsDirectory, Simulator simulator, bool consistReverse)
-            {
-                List<TrainCar> cars = new List<TrainCar>();
-
-                // add wagons
-                foreach (Wagon wagon in consistFile.Train.TrainCfg.WagonList)
-                {
-                    string wagonFolder = Path.Combine(trainsDirectory, wagon.Folder);
-                    string wagonFilePath = Path.Combine(wagonFolder, wagon.Name + ".wag");
-
-                    TrainCar car = null;
-
-                    if (wagon.IsEngine)
-                        wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
-
-                    if (!File.Exists(wagonFilePath))
-                    {
-                        Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonFilePath, consistFile);
-                        continue;
-                    }
-
-                    //try
-                    //{
-                    car = RollingStock.Load(simulator, wagonFilePath);
-                    car.Flipped = wagon.Flip;
-
-                    if (consistReverse)
-                    {
-                        car.Flipped = !car.Flipped;
-                        cars.Insert(0, car);
-                    }
-                    else
-                    {
-                        cars.Add(car);
-                    }
-
-                    //}
-                    //catch (Exception error)
-                    //{
-                    //    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
-                    //}
-
-                }// for each rail car
-
-                return (cars);
             }
 
             //================================================================================================//

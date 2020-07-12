@@ -20,6 +20,7 @@ using System.IO;
 using System.Linq;
 using GNU.Gettext;
 using Orts.Formats.Msts;
+using ORTS.Common;
 using ORTS.Settings;
 
 namespace ORTS.Menu
@@ -38,7 +39,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    var conFile = new ConsistFile(filePath);
+                    IConsist conFile = new ConsistFile(filePath);
                     Name = conFile.Name.Trim();
                     Locomotive = GetLocomotive(conFile, folder);
                 }
@@ -62,7 +63,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    var conFile = new ConsistFile(filePath);
+                    IConsist conFile = new ConsistFile(filePath);
                     Name = conFile.Name.Trim();
                     Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
                 }
@@ -133,34 +134,36 @@ namespace ORTS.Menu
             return consist;
         }
 
-        static Locomotive GetLocomotive(ConsistFile conFile, Folder folder)
+        static Locomotive GetLocomotive(IConsist conFile, Folder folder)
         {
-            foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
+            ICollection<string> choices = conFile.GetLeadLocomotiveChoices(folder.Path, new Dictionary<string, string>());
+            string one = choices.FirstOrDefault();
+            if (one == null)
+                return null;
+            try
             {
-                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
-                try
-                {
-                    return new Locomotive(filePath);
-                }
-                catch { }
+                return new Locomotive(one);
             }
-            return null;
+            catch
+            {
+                return null;
+            }
         }
 
-        static Locomotive GetLocomotiveReverse(ConsistFile conFile, Folder folder)
+        static Locomotive GetLocomotiveReverse(IConsist conFile, Folder folder)
         {
-            Locomotive newLocomotive = null;
-
-            foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
+            ICollection<string> choices = conFile.GetReverseLocomotiveChoices(folder.Path, new Dictionary<string, string>());
+            string one = choices.FirstOrDefault();
+            if (one == null)
+                return null;
+            try
             {
-                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
-                try
-                {
-                    newLocomotive = new Locomotive(filePath);
-                }
-                catch { }
+                return new Locomotive(one);
             }
-            return (newLocomotive);
+            catch
+            {
+                return null;
+            }
         }
 
     }

@@ -17,15 +17,18 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
     /// <summary>
     /// Work with consist files
     /// </summary>
-    public class ConsistFile
+    public class ConsistFile : IConsist
     {
         public string Name; // from the Name field or label field of the consist file
         public Train_Config Train;
@@ -37,6 +40,47 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
                 });
             Name = Train.TrainCfg.Name;
+        }
+
+        public float? MaxVelocityMpS
+        {
+            get
+            {
+                float a = Train.TrainCfg.MaxVelocity?.A ?? 0f;
+                if (a <= 0f || a == 40f)
+                    return null;
+                else
+                    return a;
+            }
+        }
+
+        public float Durability => Train.TrainCfg.Durability;
+
+        string IConsist.Name => Train.TrainCfg.Name;
+
+        public ICollection<string> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
+        {
+            Wagon firstEngine = Train.TrainCfg.WagonList
+                .Where((Wagon wagon) => wagon.IsEngine)
+                .FirstOrDefault();
+            return firstEngine != null ? new string[] { WagonPath(basePath, firstEngine) } : new string[] { };
+        }
+
+        public ICollection<string> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
+        {
+            Wagon lastEngine = Train.TrainCfg.WagonList
+                .Where((Wagon wagon) => wagon.IsEngine)
+                .LastOrDefault();
+            return lastEngine != null ? new string[] { WagonPath(basePath, lastEngine) } : new string[] { };
+        }
+
+        public IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders) => Train.TrainCfg.WagonList
+            .Select((Wagon wagon) => new WagonSpecification(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
+
+        private static string WagonPath(string basePath, Wagon wagon)
+        {
+            string trainsetPath = Path.Combine(basePath, "trains", "trainset");
+            return Path.Combine(trainsetPath, wagon.Folder, Path.ChangeExtension(wagon.Name, wagon.IsEngine ? ".eng" : ".wag"));
         }
 
         public override string ToString()

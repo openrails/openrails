@@ -27,6 +27,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.Signalling;
+using Orts.Simulation.Simulation;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
 using ORTS.Settings;
@@ -1111,54 +1112,27 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            ConsistFile conFile = new ConsistFile(conFileName);
-            CurveDurability = conFile.Train.TrainCfg.Durability;   // Finds curve durability of consist based upon the value in consist file
+            IConsist conFile = new Formats.Msts.ConsistFile(conFileName);
+            CurveDurability = conFile.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
-            foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
+            foreach (TrainCar car in conFile.LoadTrainCars(this, playerTrain: true))
             {
-                string wagonFolder = BasePath + @"\trains\trainset\" + wagon.Folder;
-                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
-                if (wagon.IsEngine)
-                    wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+                if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
+                else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
+                train.Cars.Add(car);
+                car.Train = train;
+                train.Length += car.CarLengthM;
 
-                if (!File.Exists(wagonFilePath))
+                var mstsDieselLocomotive = car as MSTSDieselLocomotive;
+                if (Activity != null && mstsDieselLocomotive != null)
+                    mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+
+                var mstsSteamLocomotive = car as MSTSSteamLocomotive;
+                if (Activity != null && mstsSteamLocomotive != null)
                 {
-                    // First wagon is the player's loco and required, so issue a fatal error message
-                    if (wagon == conFile.Train.TrainCfg.WagonList[0])
-                        Trace.TraceError("Player's locomotive {0} cannot be loaded in {1}", wagonFilePath, conFileName);
-                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonFilePath, conFileName);
-                    continue;
-                }
-
-                try
-                {
-                    TrainCar car = RollingStock.Load(this, wagonFilePath);
-                    car.Flipped = wagon.Flip;
-                    car.UiD = wagon.UiD;
-                    if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
-                    else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
-                    train.Cars.Add(car);
-                    car.Train = train;
-                    train.Length += car.CarLengthM;
-
-                    var mstsDieselLocomotive = car as MSTSDieselLocomotive;
-                    if (Activity != null && mstsDieselLocomotive != null)
-                        mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
-
-                    var mstsSteamLocomotive = car as MSTSSteamLocomotive;
-                    if (Activity != null && mstsSteamLocomotive != null)
-                    {
-                        mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
-                        mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
-                    }
-                }
-                catch (Exception error)
-                {
-                    // First wagon is the player's loco and required, so issue a fatal error message
-                    if (wagon == conFile.Train.TrainCfg.WagonList[0])
-                        throw new FileLoadException(wagonFilePath, error);
-                    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
+                    mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
+                    mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
                 }
             }// for each rail car
 
@@ -1186,12 +1160,7 @@ namespace Orts.Simulation
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
 
             PlayerLocomotive = InitialPlayerLocomotive();
-            if ((conFile.Train.TrainCfg.MaxVelocity == null) ||
-                ((conFile.Train.TrainCfg.MaxVelocity != null) && ((conFile.Train.TrainCfg.MaxVelocity.A <= 0f) || (conFile.Train.TrainCfg.MaxVelocity.A == 40f))))
-                train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
-            else
-                train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
-
+            train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.MaxVelocityMpS ?? ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
 
             train.AITrainBrakePercent = 100; //<CSComment> This seems a tricky way for the brake modules to test if it is an AI train or not
             return (train);
