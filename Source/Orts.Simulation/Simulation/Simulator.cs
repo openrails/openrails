@@ -384,7 +384,8 @@ namespace Orts.Simulation
             ExplorePathFile = path;
             ExploreConFile = consist;
             patFileName = Path.ChangeExtension(path, "PAT");
-            conFileName = Path.ChangeExtension(consist, "CON");
+            string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
+            conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             ClockTime = StartTime.TotalSeconds;
@@ -401,7 +402,8 @@ namespace Orts.Simulation
             ExplorePathFile = path;
             ExploreConFile = consist;
             patFileName = Path.ChangeExtension(path, "PAT");
-            conFileName = Path.ChangeExtension(consist, "CON");
+            string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
+            conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time = StartTime.Hours + StartTime.Minutes * 60 +
@@ -617,7 +619,7 @@ namespace Orts.Simulation
         {
             var PlayerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
             var srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + PlayerServiceFileName + ".SRV");
-            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            conFileName = GenericConsist.LocateFile(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
         }
 
@@ -1091,11 +1093,11 @@ namespace Orts.Simulation
             srvFile.Name = playerServiceFileName;
             srvFile.Train_Config = playerServiceFileName;
             srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
-            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            conFileName = GenericConsist.LocateFile(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
-            if (conFileName.Contains("tilted")) train.IsTilting = true;
+            train.IsTilting = GenericConsist.IsTilting(conFileName);
 
 #if ACTIVITY_EDITOR
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
@@ -1112,7 +1114,7 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            IConsist conFile = new Formats.Msts.ConsistFile(conFileName);
+            IConsist conFile = GenericConsist.LoadFile(conFileName);
             CurveDurability = conFile.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
@@ -1184,7 +1186,7 @@ namespace Orts.Simulation
                 srvFile.Train_Config = playerServiceFileName;
                 srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
             }
-            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            conFileName = GenericConsist.LocateFile(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
@@ -1235,7 +1237,7 @@ namespace Orts.Simulation
                 Train.TCRoutePath dummyRoute = new Train.TCRoutePath(train.Path, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
             }
 
-            if (conFileName.Contains("tilted")) train.IsTilting = true;
+            train.IsTilting = GenericConsist.IsTilting(srvFile.Train_Config);
 
             return train;
         }

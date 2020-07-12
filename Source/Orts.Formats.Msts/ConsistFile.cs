@@ -42,6 +42,8 @@ namespace Orts.Formats.Msts
             Name = Train.TrainCfg.Name;
         }
 
+        string IConsist.Name => Train.TrainCfg.Name;
+
         public float? MaxVelocityMpS
         {
             get
@@ -56,7 +58,7 @@ namespace Orts.Formats.Msts
 
         public float Durability => Train.TrainCfg.Durability;
 
-        string IConsist.Name => Train.TrainCfg.Name;
+        public bool PlayerDrivable => true;
 
         public ICollection<string> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
         {

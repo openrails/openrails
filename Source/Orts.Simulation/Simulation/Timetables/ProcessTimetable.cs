@@ -1374,10 +1374,6 @@ namespace Orts.Simulation.Timetables
                 }
 
                 string pathFilefull = ExtractPathString(pathDirectory, fileStrings[pathRow][columnIndex], ref TTTrain);
-
-                string trainsDirectory = Path.Combine(ttInfo.simulator.BasePath, "Trains");
-                string consistDirectory = Path.Combine(trainsDirectory, "Consists");
-
                 string consistdef = fileStrings[consistRow][columnIndex];
 
                 // no consist defined : exit
@@ -1388,7 +1384,6 @@ namespace Orts.Simulation.Timetables
                 }
 
                 List<consistInfo> consistdetails = ProcessConsistInfo(consistdef);
-                string trainsetDirectory = Path.Combine(trainsDirectory, "trainset");
 
                 // extract path
                 string pathExtension = Path.GetExtension(pathFilefull);
@@ -1403,7 +1398,7 @@ namespace Orts.Simulation.Timetables
 
                 // build consist
                 bool returnValue = true;
-                returnValue = BuildConsist(consistdetails, trainsetDirectory, consistDirectory, ttInfo.simulator);
+                returnValue = BuildConsist(consistdetails, ttInfo.simulator);
 
                 // return if consist could not be loaded
                 if (!returnValue) return (returnValue);
@@ -2318,40 +2313,30 @@ namespace Orts.Simulation.Timetables
             /// <param name="consistFile">Defined consist file</param>
             /// <param name="trainsetDirectory">Consist directory</param>
             /// <param name="simulator">Simulator</param>
-            public bool BuildConsist(List<consistInfo> consistSets, string trainsetDirectory, string consistDirectory, Simulator simulator)
+            public bool BuildConsist(List<consistInfo> consistSets, Simulator simulator)
             {
-                TTTrain.IsTilting = true;
-
+                bool tilt = true;
                 float? confMaxSpeed = null;
                 TTTrain.Length = 0.0f;
 
                 foreach (consistInfo consistDetails in consistSets)
                 {
                     bool consistReverse = consistDetails.reversed;
-                    string consistFile = Path.Combine(consistDirectory, consistDetails.consistFile);
-
-                    string pathExtension = Path.GetExtension(consistFile);
-                    if (String.IsNullOrEmpty(pathExtension))
-                        consistFile = Path.ChangeExtension(consistFile, "con");
-
-                    if (!consistFile.Contains("tilted"))
-                    {
-                        TTTrain.IsTilting = false;
-                    }
+                    tilt = tilt && GenericConsist.IsTilting(consistDetails.consistFile);
 
                     IConsist conFile = null;
 
                     // try to load config file, exit if failed
                     try
                     {
-                        conFile = new Formats.Msts.ConsistFile(consistFile);
+                        conFile = GenericConsist.LoadFile(simulator.BasePath, consistDetails.consistFile);
                     }
                     catch (Exception e)
                     {
-                        if (!reportedConsistFailures.Contains(consistFile.ToString()))
+                        if (!reportedConsistFailures.Contains(consistDetails.consistFile))
                         {
-                            Trace.TraceInformation("Reading " + consistFile.ToString() + " : " + e.ToString());
-                            reportedConsistFailures.Add(consistFile.ToString());
+                            Trace.TraceInformation($"Reading {consistDetails.consistFile} : {e}");
+                            reportedConsistFailures.Add(consistDetails.consistFile);
                             return (false);
                         }
                     }
@@ -2393,6 +2378,7 @@ namespace Orts.Simulation.Timetables
                 // set train details
                 TTTrain.CheckFreight();
                 TTTrain.SpeedSettings.routeSpeedMpS = (float)simulator.TRK.Tr_RouteFile.SpeedLimit;
+                TTTrain.IsTilting = tilt;
 
                 if (!confMaxSpeed.HasValue || confMaxSpeed.Value <= 0f)
                 {

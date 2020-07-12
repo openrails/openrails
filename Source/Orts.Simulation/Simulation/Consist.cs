@@ -25,8 +25,43 @@ using System.IO;
 
 namespace Orts.Simulation.Simulation
 {
-    public static class ConsistExtensions
+    public static class GenericConsist
     {
+        public static IConsist LoadFile(string basePath, string name)
+        {
+            string filePath = LocateFile(basePath, name);
+            if (filePath == null)
+                throw new FileNotFoundException($"Could not locate consist: {name}");
+            return LoadFile(filePath);
+        }
+
+        public static IConsist LoadFile(string filePath)
+        {
+            switch (Path.GetExtension(filePath).ToLower())
+            {
+                case ".consist-or":
+                    return Formats.OR.ConsistFile.LoadFrom(filePath);
+                case ".con":
+                    return new Formats.Msts.ConsistFile(filePath);
+                default:
+                    throw new InvalidOperationException("Invalid consist file type");
+            }
+        }
+
+        public static string LocateFile(string basePath, string name)
+        {
+            string filePath = Path.Combine(basePath, "trains", "consists", name);
+            string WithExtension(string ext) => Path.ChangeExtension(filePath, ext);
+            if (File.Exists(WithExtension(".consist-or")))
+                return WithExtension(".consist-or");
+            else if (File.Exists(WithExtension(".con")))
+                return WithExtension(".con");
+            else
+                throw new FileNotFoundException($"Consist not found: {name}");
+        }
+
+        public static bool IsTilting(string name) => name.ToLower().Contains("tilted");
+
         public static IEnumerable<TrainCar> LoadTrainCars(this IConsist consist, Simulator simulator, bool playerTrain = false)
         {
             UserSettings settings = simulator.Settings;

@@ -848,8 +848,7 @@ namespace Orts.Simulation.AIs
         {
             // read consist file
 
-            string consistFileName = Simulator.BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
-            IConsist conFile = new ConsistFile(consistFileName);
+            IConsist conFile = GenericConsist.LoadFile(Simulator.BasePath, srvFile.Train_Config);
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
             // Patch Placingproblem - JeroenP
@@ -876,7 +875,7 @@ namespace Orts.Simulation.AIs
             if (!Simulator.NameDictionary.ContainsKey(train.Name.ToLower()))
                 Simulator.NameDictionary.Add(train.Name.ToLower(), train);
 
-            if (consistFileName.Contains("tilted")) train.IsTilting = true;
+            train.IsTilting = GenericConsist.IsTilting(srvFile.Train_Config);
 
             // also set Route max speed for speedpost-processing in train.cs
             train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
