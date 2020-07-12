@@ -21,8 +21,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-using Orts.Formats.Msts;
-
 namespace ContentChecker
 {
     /// <summary>
@@ -37,7 +35,23 @@ namespace ContentChecker
         /// <param name="file">The file that needs to be loaded</param>
         public override void TryLoading(string file)
         {
-            var act = new ConsistFile(file);
+            new Orts.Formats.Msts.ConsistFile(file);
+        }
+    }
+
+    /// <summary>
+    /// Loader class for .consist-or files
+    /// </summary>
+    class NativeConsistLoader : Loader
+    {
+        /// <summary>
+        /// Try to load the file.
+        /// Possibly this might raise an exception. That exception is not caught here
+        /// </summary>
+        /// <param name="file">The file that needs to be loaded</param>
+        public override void TryLoading(string file)
+        {
+            Orts.Formats.OR.ConsistFile.LoadFrom(file);
         }
     }
 }

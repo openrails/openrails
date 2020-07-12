@@ -180,7 +180,7 @@ namespace ORTS.ContentManager
                     var data = new Consist(content);
                     details.AppendFormat("Name:\t{1}{0}", Environment.NewLine, data.Name);
                     details.AppendFormat("Car ID:\tDirection:\tName:\t{0}", Environment.NewLine);
-                    foreach (var car in data.Cars)
+                    foreach (var car in data.Items)
                         details.AppendFormat("{1}\t{2}\t\u0001{3}\u0002Car\u0001{0}", Environment.NewLine, car.ID, car.Direction, car.Name);
                     details.AppendFormat("{0}", Environment.NewLine);
                 }

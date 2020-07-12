@@ -95,12 +95,22 @@ namespace LibAE.Formats
                     }
                 }
                 string consistPath = Path.Combine(routeParent, "../TRAINS/CONSISTS");
-                subdirectoryEntries = Directory.GetFileSystemEntries(consistPath, "*.con");
-                foreach (string consist in subdirectoryEntries)
+                foreach (string fullPathConsist in ConsistUtilities.AllConsistFiles(consistPath))
                 {
-                    string fullPathConsist = Path.GetFullPath(consist);
-                    var consistName = new Orts.Formats.Msts.ConsistFile(fullPathConsist);
-                    ConsistInfo conInfo = new ConsistInfo(consistName.ToString(), fullPathConsist);
+                    IConsist consistFile;
+                    switch (Path.GetExtension(fullPathConsist).ToLowerInvariant())
+                    {
+                        case ".consist-or":
+                            consistFile = Orts.Formats.OR.ConsistFile.LoadFrom(fullPathConsist);
+                            break;
+                        case ".con":
+                            consistFile = new Orts.Formats.Msts.ConsistFile(fullPathConsist);
+                            break;
+                        default:
+                            consistFile = null;
+                            break;
+                    }
+                    ConsistInfo conInfo = new ConsistInfo(consistFile.Name, fullPathConsist);
                     trainConsists.Add(conInfo); 
                 }
             }

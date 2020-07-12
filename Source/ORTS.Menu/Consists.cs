@@ -33,29 +33,7 @@ namespace ORTS.Menu
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
-        internal Consist(string filePath, Folder folder)
-        {
-            if (File.Exists(filePath))
-            {
-                try
-                {
-                    IConsist conFile = new ConsistFile(filePath);
-                    Name = conFile.Name.Trim();
-                    Locomotive = GetLocomotive(conFile, folder);
-                }
-                catch
-                {
-                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-                }
-                if (Locomotive == null) throw new InvalidDataException("Consist '" + filePath + "' is excluded.");
-                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-            }
-            else
-            {
-                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-            }
-            FilePath = filePath;
-        }
+        internal Consist(string filePath, Folder folder) : this(filePath, folder, false) { }
 
         internal Consist(string filePath, Folder folder, bool reverseConsist)
         {
@@ -63,7 +41,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    IConsist conFile = new ConsistFile(filePath);
+                    IConsist conFile = LoadConsist(filePath);
                     Name = conFile.Name.Trim();
                     Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
                 }
@@ -81,6 +59,19 @@ namespace ORTS.Menu
             FilePath = filePath;
         }
 
+        private static IConsist LoadConsist(string filePath)
+        {
+            switch (System.IO.Path.GetExtension(filePath).ToLowerInvariant())
+            {
+                case ".consist-or":
+                    return Orts.Formats.OR.ConsistFile.LoadFrom(filePath);
+                case ".con":
+                    return new Orts.Formats.Msts.ConsistFile(filePath);
+                default:
+                    throw new InvalidDataException("Unknown consist format");
+            }
+        }
+
         public override string ToString()
         {
             return Name;
@@ -89,41 +80,35 @@ namespace ORTS.Menu
         public static List<Consist> GetConsists(Folder folder)
         {
             var consists = new List<Consist>();
-            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
+            string directory = System.IO.Path.Combine(folder.Path, "trains", "consists");
             if (Directory.Exists(directory))
             {
-                foreach (var consist in Directory.GetFiles(directory, "*.con"))
+                foreach (string consist in ConsistUtilities.AllConsistFiles(directory))
                 {
+                    Consist loaded;
                     try
                     {
-                        consists.Add(new Consist(consist, folder));
+                        loaded = new Consist(consist, folder);
                     }
-                    catch { }
+                    catch
+                    {
+                        continue;
+                    }
+                    consists.Add(loaded);
                 }
             }
             return consists;
         }
 
-        public static Consist GetConsist(Folder folder, string name)
-        {
-            Consist consist = null;
-            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
-            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
-
-            try
-            {
-                consist = new Consist(file, folder);
-            }
-            catch { }
-
-            return consist;
-        }
+        public static Consist GetConsist(Folder folder, string name) => GetConsist(folder, name, false);
 
         public static Consist GetConsist(Folder folder, string name, bool reverseConsist)
         {
             Consist consist = null;
-            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
-            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
+            string directory = System.IO.Path.Combine(folder.Path, "trains", "consists");
+            string ortsConsist = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, ".consist-or"));
+            string mstsConsist = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, ".con"));
+            string file = File.Exists(ortsConsist) ? ortsConsist : mstsConsist;
 
             try
             {

@@ -64,6 +64,8 @@ namespace Orts.Formats.OR
         {
             throw new InvalidOperationException();
         }
+
+        public override string ToString() => Name;
     }
 
     #region Item interfaces

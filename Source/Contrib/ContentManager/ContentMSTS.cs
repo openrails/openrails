@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using ORTS.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -80,8 +81,20 @@ namespace ORTS.ContentManager
             {
                 var path = Path.Combine(Path.Combine(PathName, "Trains"), "Consists");
                 if (Directory.Exists(path))
-                    foreach (var item in Directory.GetFiles(path, "*.con"))
-                        yield return new ContentMSTSConsist(this, Path.Combine(path, item));
+                {
+                    foreach (string item in ConsistUtilities.AllConsistFiles(path))
+                    {
+                        switch (Path.GetExtension(item).ToLowerInvariant())
+                        {
+                            case ".consist-or":
+                                yield return new ContentORTSConsist(this, item);
+                                break;
+                            case ".con":
+                                yield return new ContentMSTSConsist(this, item);
+                                break;
+                        }
+                    }
+                }
             }
         }
 
@@ -203,6 +216,19 @@ namespace ORTS.ContentManager
         public override ContentType Type { get { return ContentType.Path; } }
 
         public ContentMSTSPath(Content parent, string path)
+            : base(parent)
+        {
+            Name = Path.GetFileNameWithoutExtension(path);
+            PathName = path;
+        }
+    }
+
+    [Serializable]
+    public class ContentORTSConsist : Content
+    {
+        public override ContentType Type { get => ContentType.Consist; }
+
+        public ContentORTSConsist(Content parent, string path)
             : base(parent)
         {
             Name = Path.GetFileNameWithoutExtension(path);

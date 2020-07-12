@@ -15,7 +15,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace ORTS.Common
 {
@@ -45,5 +48,38 @@ namespace ORTS.Common
         IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null);
         ICollection<string> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders);
         ICollection<string> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders);
+    }
+
+    public static class ConsistUtilities
+    {
+        /// <summary>
+        /// Enumerate all consist files in a directory. Native (.consist-or) files will shadow legacy (.con) ones.
+        /// </summary>
+        /// <param name="consistsDirectory">The directory to search.</param>
+        /// <returns>All files with known consist file extensions.</returns>
+        public static IEnumerable<string> AllConsistFiles(string consistsDirectory)
+        {
+            ICollection<string> BaseNames(string pattern) => new HashSet<string>(
+                Directory.GetFileSystemEntries(consistsDirectory, pattern)
+                    .Select((string path) => Path.GetFileNameWithoutExtension(path)),
+                StringComparer.InvariantCultureIgnoreCase);
+
+            var ortsBaseNames = BaseNames("*.consist-or");
+            var mstsBaseNames = BaseNames("*.con");
+
+            IEnumerable<string> CombinedIterator()
+            {
+                foreach (string baseName in ortsBaseNames.Union(mstsBaseNames))
+                {
+                    // Prioritize native .consist-or files.
+                    string extension = ortsBaseNames.Contains(baseName) ? ".consist-or" : ".con";
+                    yield return Path.GetFullPath(Path.ChangeExtension(Path.Combine(consistsDirectory, baseName), extension));
+                }
+            }
+
+            string[] consists = CombinedIterator().ToArray();
+            Array.Sort(consists);
+            return consists;
+        }
     }
 }
