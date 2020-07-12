@@ -54,7 +54,7 @@ function ApiTrainDriving() {
 				var codeColor = ['???','??!','?!?','?!!','!??','!!?','!!!','%%%','$$$'];
 
 				// Table title
-				Str += "<tr> <td colspan='5' onclick='changeNormalTextMode()' style='text-align: center'>" + 'Train Driving Info' + "</td></tr>";
+				Str += "<tr> <td colspan='5' style='text-align: center'>" + 'Train Driving Info' + "</td></tr>";
 				Str += "<tr> <td colspan='5' class='separator'></td></tr>";
 
 				// Customize data
@@ -145,7 +145,7 @@ function ApiTrainDriving() {
 				}
 				Str += "</table>";
 				// space at bottom
-				Str += "<tr> <td colspan='5' style='text-align: center'><img src='/or_logo.png' height='16' width='16'></img></td> </tr>";
+				Str += "<tr> <td colspan='5' onclick='changeNormalTextMode()' style='text-align: center'><img src='/or_logo.png' height='16' width='16'></img></td> </tr>";
                 Str += "</table>";
 				TrainDriving.innerHTML = Str;
 			}
