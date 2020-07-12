@@ -41,7 +41,7 @@ namespace ORTS.Common
         string Name { get; }
         float? MaxVelocityMpS { get; }
         float Durability { get; }
-        IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders);
+        IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null);
         ICollection<string> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders);
         ICollection<string> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders);
     }

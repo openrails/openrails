@@ -74,14 +74,22 @@ namespace Orts.Formats.Msts
             return lastEngine != null ? new string[] { WagonPath(basePath, lastEngine) } : new string[] { };
         }
 
-        public IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders) => Train.TrainCfg.WagonList
-            .Select((Wagon wagon) => new WagonSpecification(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
+        public IEnumerable<WagonSpecification> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        {
+            var empty = new WagonSpecification[0];
+            if (preferredLocomotivePath != null && PathsEqual(GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault(), preferredLocomotivePath))
+                return empty;
+            return Train.TrainCfg.WagonList
+                .Select((Wagon wagon) => new WagonSpecification(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
+        }
 
         private static string WagonPath(string basePath, Wagon wagon)
         {
             string trainsetPath = Path.Combine(basePath, "trains", "trainset");
             return Path.Combine(trainsetPath, wagon.Folder, Path.ChangeExtension(wagon.Name, wagon.IsEngine ? ".eng" : ".wag"));
         }
+
+        private static bool PathsEqual(string path1, string path2) => Path.GetFullPath(path1).Equals(Path.GetFullPath(path2), StringComparison.OrdinalIgnoreCase);
 
         public override string ToString()
         {
