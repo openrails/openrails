@@ -273,6 +273,12 @@ Trigger       Function
 200           GearPosition0
 201           GearPosition1
 202           GearPosition2
+203           GearPosition3
+204           GearPosition4
+205           GearPosition5
+206           GearPosition6
+207           GearPosition7
+208           GearPosition8
 =========     =====================================
 
 Variable Triggers
