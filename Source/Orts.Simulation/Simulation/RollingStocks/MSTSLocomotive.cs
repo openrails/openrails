@@ -3101,8 +3101,26 @@ namespace Orts.Simulation.RollingStocks
                     case 1:
                         SignalEvent(Event.GearPosition1);
                         break;
-                    default:
+                    case 2:
                         SignalEvent(Event.GearPosition2);
+                        break;
+                    case 3:
+                        SignalEvent(Event.GearPosition3);
+                        break;
+                    case 4:
+                        SignalEvent(Event.GearPosition4);
+                        break;
+                    case 5:
+                        SignalEvent(Event.GearPosition5);
+                        break;
+                    case 6:
+                        SignalEvent(Event.GearPosition6);
+                        break;
+                    case 7:
+                        SignalEvent(Event.GearPosition7);
+                        break;
+                    default:
+                        SignalEvent(Event.GearPosition8);
                         break;
                 }
                 PreviousGearBoxNotch = GearBoxController.CurrentNotch; // Update previous value for next time around
