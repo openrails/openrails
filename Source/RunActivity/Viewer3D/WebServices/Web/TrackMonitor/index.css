@@ -6,6 +6,10 @@
 	/*border-spacing: 0;*/
 }
 
+table td{
+	color :	white;
+}
+
 /* Apply rounded border */
 .border{
 	border-spacing: 0;
