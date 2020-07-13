@@ -65,9 +65,9 @@ namespace Orts.Formats.OR
         }
 
         public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null) =>
-            GetWagonList(new ConsistStore(), basePath, folders, startUiD: 0, preferredLocomotivePath);
+            GetWagonList(new ConsistStore(), basePath, folders, preferredLocomotivePath);
 
-        internal virtual IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
+        internal virtual IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
             throw new InvalidOperationException();
         }
@@ -159,11 +159,23 @@ namespace Orts.Formats.OR
             else if (item is IConsistReference consist)
             {
                 (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(basePath, consist.Consist);
+                IEnumerable<WagonReference> wagonRefs;
                 if (subConsist is ConsistFile ortsConsist)
-                    return ortsConsist.GetWagonList(subStore, basePath, folders, startUiD, preferredLocomotivePath);
+                    // ORTS consists can reference other consists, and hence need a ConsistStore to guard against recursion.
+                    wagonRefs = ortsConsist.GetWagonList(subStore, basePath, folders, preferredLocomotivePath);
                 else
-                    return subConsist.GetWagonList(basePath, folders) // Override the .con-specified UiD's.
+                    wagonRefs = subConsist.GetWagonList(basePath, folders, preferredLocomotivePath);
+                if (consist.Flip)
+                {
+                    return wagonRefs
+                        .Reverse()
+                        .Select((WagonReference wagonRef, int i) => new WagonReference(wagonRef.FilePath, !wagonRef.Flipped, startUiD + i));
+                }
+                else
+                {
+                    return wagonRefs
                         .Select((WagonReference wagonRef, int i) => new WagonReference(wagonRef.FilePath, wagonRef.Flipped, startUiD + i));
+                }
             }
             else
             {
@@ -181,13 +193,14 @@ namespace Orts.Formats.OR
     {
         public IList<ListConsistItem> List { get; } = new List<ListConsistItem>();
 
-        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
+        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
+            int uiD = 0;
             foreach (IConsistItem item in List)
             {
-                foreach (WagonReference wagonRef in item.GetGenericWagonList(store, basePath, folders, startUiD, preferredLocomotivePath))
+                foreach (WagonReference wagonRef in item.GetGenericWagonList(store, basePath, folders, uiD, preferredLocomotivePath))
                 {
-                    startUiD++;
+                    uiD++;
                     yield return wagonRef;
                 }
             }
@@ -263,7 +276,7 @@ namespace Orts.Formats.OR
     {
         public IList<RandomConsistItem> Random { get; } = new List<RandomConsistItem>();
 
-        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
+        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
             throw new NotImplementedException();
         }
