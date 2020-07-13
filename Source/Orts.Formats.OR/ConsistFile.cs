@@ -86,7 +86,7 @@ namespace Orts.Formats.OR
         /// <summary>
         /// Reverse the orientation of the item at loading.
         /// </summary>
-        bool Flipped { get; set; }
+        bool Flip { get; set; }
 
         /// <summary>
         /// The installation profile (content directory) to search for this item; the current one if null.
@@ -145,13 +145,13 @@ namespace Orts.Formats.OR
             {
                 string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", wagon.Wagon), ".wag");
                 foreach (int _ in Enumerable.Range(0, wagon.Count))
-                    yield return new WagonReference(filePath, wagon.Flipped, startUiD++);
+                    yield return new WagonReference(filePath, wagon.Flip, startUiD++);
             }
             else if (item is IConsistEngine engine)
             {
                 string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", engine.Engine), ".eng");
                 foreach (int _ in Enumerable.Range(0, engine.Count))
-                    yield return new WagonReference(filePath, engine.Flipped, startUiD++);
+                    yield return new WagonReference(filePath, engine.Flip, startUiD++);
             }
             else if (item is IConsistReference consist)
             {
@@ -191,7 +191,7 @@ namespace Orts.Formats.OR
     public class ListConsistItem : IConsistItem
     {
         public int Count { get; set; } = 1;
-        public bool Flipped { get; set; } = false;
+        public bool Flip { get; set; } = false;
         public string Profile { get; set; } = null;
     }
 
@@ -266,7 +266,7 @@ namespace Orts.Formats.OR
     public class RandomConsistItem : IConsistItem
     {
         public int Count { get; set; } = 1;
-        public bool Flipped { get; set; } = false;
+        public bool Flip { get; set; } = false;
         public string Profile { get; set; } = null;
         public float Probability { get; set; }
     }

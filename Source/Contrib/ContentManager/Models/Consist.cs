@@ -116,13 +116,13 @@ namespace ORTS.ContentManager.Models
             internal OrtsCar(ListConsistWagon wagon, int n) : base(
                 id: n.ToString(),
                 name: wagon.Wagon,
-                direction: wagon.Flipped ? Direction.Backwards : Direction.Forwards,
+                direction: wagon.Flip ? Direction.Backwards : Direction.Forwards,
                 type: ItemType.Wagon) { }
 
             internal OrtsCar(ListConsistEngine engine, int n) : base(
                 id: n.ToString(),
                 name: engine.Engine,
-                direction: engine.Flipped ? Direction.Backwards : Direction.Forwards,
+                direction: engine.Flip ? Direction.Backwards : Direction.Forwards,
                 type: ItemType.Engine) { }
         }
 
