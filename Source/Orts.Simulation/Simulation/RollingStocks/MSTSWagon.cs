@@ -456,6 +456,7 @@ namespace Orts.Simulation.RollingStocks
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
             MaxBrakeForceN = InitialMaxBrakeForceN;
             CentreOfGravityM = InitialCentreOfGravityM;
+            IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0; // test to see if OR thinks that Davis Values have been entered in WG file.
 
             if (FreightAnimations != null)
             {
@@ -1639,7 +1640,6 @@ namespace Orts.Simulation.RollingStocks
 
         private void UpdateTrainBaseResistance()
         {
-            IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0; // test to see if OR thinks that Davis Values have been entered in WG file.
             IsBelowMergeSpeed = AbsSpeedMpS < MergeSpeedMpS;
             IsStandStill = AbsSpeedMpS < 0.1f;
             bool isStartingFriction = StandstillFrictionN != 0;
