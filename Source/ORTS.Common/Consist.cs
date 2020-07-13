@@ -81,6 +81,19 @@ namespace ORTS.Common
     public static class ConsistUtilities
     {
         /// <summary>
+        /// Locate a consist by filename. Prioritize the native (.consist-or) format if available.
+        /// </summary>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="filename">The filename of the consist.</param>
+        /// <returns>The consist path with the preferred extension.</returns>
+        public static string ResolveConsist(string basePath, string filename)
+        {
+            string baseFile = Path.Combine(basePath, "trains", "consists", filename);
+            string ortsConsist = Path.ChangeExtension(baseFile, ".consist-or");
+            return File.Exists(ortsConsist) ? ortsConsist : Path.ChangeExtension(baseFile, ".con");
+        }
+
+        /// <summary>
         /// Enumerate all consist files in a directory. Native (.consist-or) files will shadow legacy (.con) ones.
         /// </summary>
         /// <param name="consistsDirectory">The directory to search.</param>

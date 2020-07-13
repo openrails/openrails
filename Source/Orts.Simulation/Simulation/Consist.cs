@@ -35,8 +35,8 @@ namespace Orts.Simulation.Simulation
         /// <returns>The loaded consist.</returns>
         public static IConsist LoadFile(string basePath, string name)
         {
-            string filePath = LocateFile(basePath, name);
-            if (filePath == null)
+            string filePath = ConsistUtilities.ResolveConsist(basePath, name);
+            if (!File.Exists(filePath))
                 throw new FileNotFoundException($"Could not locate consist: {name}");
             return LoadFile(filePath);
         }
@@ -57,24 +57,6 @@ namespace Orts.Simulation.Simulation
                 default:
                     throw new InvalidDataException("Unknown consist format");
             }
-        }
-
-        /// <summary>
-        /// Locate a consist file by name.
-        /// </summary>
-        /// <param name="basePath">The content directory.</param>
-        /// <param name="name">The consist filename (without an extension) to search for.</param>
-        /// <returns>The path to the consist.</returns>
-        public static string LocateFile(string basePath, string name)
-        {
-            string filePath = Path.Combine(basePath, "trains", "consists", name);
-            string WithExtension(string ext) => Path.ChangeExtension(filePath, ext);
-            if (File.Exists(WithExtension(".consist-or")))
-                return WithExtension(".consist-or");
-            else if (File.Exists(WithExtension(".con")))
-                return WithExtension(".con");
-            else
-                throw new FileNotFoundException($"Consist not found: {name}");
         }
 
         /// <summary>

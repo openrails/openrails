@@ -105,10 +105,7 @@ namespace ORTS.Menu
         public static Consist GetConsist(Folder folder, string name, bool reverseConsist)
         {
             Consist consist = null;
-            string directory = System.IO.Path.Combine(folder.Path, "trains", "consists");
-            string ortsConsist = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, ".consist-or"));
-            string mstsConsist = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, ".con"));
-            string file = File.Exists(ortsConsist) ? ortsConsist : mstsConsist;
+            string file = ConsistUtilities.ResolveConsist(folder.Path, name);
 
             try
             {

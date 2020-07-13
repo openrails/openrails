@@ -158,7 +158,7 @@ namespace Orts.Formats.OR
             }
             else if (item is IConsistReference consist)
             {
-                (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(Path.Combine(basePath, "trains", "consists", consist.Consist));
+                (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(basePath, consist.Consist);
                 if (subConsist is ConsistFile ortsConsist)
                     return ortsConsist.GetWagonList(subStore, basePath, folders, startUiD, preferredLocomotivePath);
                 else
@@ -403,11 +403,9 @@ namespace Orts.Formats.OR
         /// </summary>
         /// <param name="baseName">The consist file to load.</param>
         /// <returns>The loaded consist and a new <see cref="ConsistStore"/> handle.</returns>
-        public (IConsist, ConsistStore) CreateSubConsist(string baseName)
+        public (IConsist, ConsistStore) CreateSubConsist(string basePath, string filename)
         {
-            string ortsFile = Path.ChangeExtension(baseName, ".consist-or");
-            string filePath = Path.GetFullPath(File.Exists(ortsFile) ? ortsFile : Path.ChangeExtension(baseName, ".con"));
-
+            string filePath = ConsistUtilities.ResolveConsist(basePath, filename);
             if (Visited.Contains(filePath))
                 throw new RecursiveConsistException($"Consist loads itself: {filePath}");
 
