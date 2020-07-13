@@ -190,6 +190,14 @@ namespace Orts.Common
         GearPosition0,
         GearPosition1,
         GearPosition2,
+        GearPosition3,
+        GearPosition4,
+        GearPosition5,
+        GearPosition6,
+        GearPosition7,
+        GearPosition8,
+
+
     }
 
     public static class Events
@@ -395,6 +403,12 @@ namespace Orts.Common
                         case 200: return Event.GearPosition0;
                         case 201: return Event.GearPosition1;
                         case 202: return Event.GearPosition2;
+                        case 203: return Event.GearPosition3;
+                        case 204: return Event.GearPosition4;
+                        case 205: return Event.GearPosition5;
+                        case 206: return Event.GearPosition6;
+                        case 207: return Event.GearPosition7;
+                        case 208: return Event.GearPosition8;
 
                         default: return 0;
                     }
