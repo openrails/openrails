@@ -64,7 +64,10 @@ namespace Orts.Formats.OR
             throw new NotImplementedException();
         }
 
-        public virtual IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null) =>
+            GetWagonList(new ConsistStore(), basePath, folders, startUiD: 0, preferredLocomotivePath);
+
+        internal virtual IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
         {
             throw new InvalidOperationException();
         }
@@ -129,14 +132,14 @@ namespace Orts.Formats.OR
         /// <param name="startUiD">The UiD of the generated wagon, or, if this item generates multiple wagons,
         /// the first UiD in the sequence. Subsequent UiD's will count up.</param>
         /// <returns></returns>
-        public static IEnumerable<WagonReference> GetGenericWagonList(this IConsistItem item, string basePath, IDictionary<string, string> folders, int startUiD)
+        public static IEnumerable<WagonReference> GetGenericWagonList(this IConsistItem item, ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
         {
             if (item.Profile != null)
             {
                 if (!folders.TryGetValue(item.Profile, out string newBasePath))
                 {
                     Trace.WriteLine($"Unknown installation profile: {item.Profile}");
-                    yield break;
+                    return new WagonReference[0] { };
                 }
                 basePath = newBasePath;
             }
@@ -144,18 +147,23 @@ namespace Orts.Formats.OR
             if (item is IConsistWagon wagon)
             {
                 string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", wagon.Wagon), ".wag");
-                foreach (int _ in Enumerable.Range(0, wagon.Count))
-                    yield return new WagonReference(filePath, wagon.Flip, startUiD++);
+                return Enumerable.Range(0, wagon.Count)
+                    .Select((int i) => new WagonReference(filePath, wagon.Flip, startUiD + i));
             }
             else if (item is IConsistEngine engine)
             {
                 string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", engine.Engine), ".eng");
-                foreach (int _ in Enumerable.Range(0, engine.Count))
-                    yield return new WagonReference(filePath, engine.Flip, startUiD++);
+                return Enumerable.Range(0, engine.Count)
+                    .Select((int i) => new WagonReference(filePath, engine.Flip, startUiD + i));
             }
             else if (item is IConsistReference consist)
             {
-                throw new NotImplementedException();
+                (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(Path.Combine(basePath, "trains", "consists", consist.Consist));
+                if (subConsist is ConsistFile ortsConsist)
+                    return ortsConsist.GetWagonList(subStore, basePath, folders, startUiD, preferredLocomotivePath);
+                else
+                    return subConsist.GetWagonList(basePath, folders) // Override the .con-specified UiD's.
+                        .Select((WagonReference wagonRef, int i) => new WagonReference(wagonRef.FilePath, wagonRef.Flipped, startUiD + i));
             }
             else
             {
@@ -173,14 +181,13 @@ namespace Orts.Formats.OR
     {
         public IList<ListConsistItem> List { get; } = new List<ListConsistItem>();
 
-        public override IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
         {
-            int uiD = 0;
             foreach (IConsistItem item in List)
             {
-                foreach (WagonReference wagonRef in item.GetGenericWagonList(basePath, folders, uiD))
+                foreach (WagonReference wagonRef in item.GetGenericWagonList(store, basePath, folders, startUiD, preferredLocomotivePath))
                 {
-                    uiD++;
+                    startUiD++;
                     yield return wagonRef;
                 }
             }
@@ -256,7 +263,7 @@ namespace Orts.Formats.OR
     {
         public IList<RandomConsistItem> Random { get; } = new List<RandomConsistItem>();
 
-        public override IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
         {
             throw new NotImplementedException();
         }
@@ -356,5 +363,83 @@ namespace Orts.Formats.OR
         {
             throw new NotImplementedException();
         }
+    }
+
+    /// <summary>
+    /// Tracks the current stack of visited consists, so as to prevent recursion, and caches consist file loads.
+    /// </summary>
+    /// <remarks>
+    /// NOT thread-safe.
+    /// </remarks>
+    internal class ConsistStore
+    {
+        /// <summary>
+        /// Multiple stores share the same cache.
+        /// </summary>
+        private readonly Dictionary<string, IConsist> Consists;
+
+        /// <summary>
+        /// Each store has its own running stack of visited consists.
+        /// </summary>
+        private readonly HashSet<string> Visited;
+
+        /// <summary>
+        /// Creates a top-level consist store.
+        /// </summary>
+        public ConsistStore()
+        {
+            Consists = new Dictionary<string, IConsist>();
+            Visited = new HashSet<string>();
+        }
+
+        private ConsistStore(Dictionary<string, IConsist> consists, HashSet<string> visited)
+        {
+            Consists = consists;
+            Visited = visited;
+        }
+
+        /// <summary>
+        /// Add a new layer of recursion by loading a sub-consist.
+        /// </summary>
+        /// <param name="baseName">The consist file to load.</param>
+        /// <returns>The loaded consist and a new <see cref="ConsistStore"/> handle.</returns>
+        public (IConsist, ConsistStore) CreateSubConsist(string baseName)
+        {
+            string ortsFile = Path.ChangeExtension(baseName, ".consist-or");
+            string filePath = Path.GetFullPath(File.Exists(ortsFile) ? ortsFile : Path.ChangeExtension(baseName, ".con"));
+
+            if (Visited.Contains(filePath))
+                throw new RecursiveConsistException($"Consist loads itself: {filePath}");
+
+            IConsist consist;
+            if (Consists.TryGetValue(filePath, out IConsist cached))
+            {
+                consist = cached;
+            }
+            else
+            {
+                switch (Path.GetExtension(filePath).ToLowerInvariant())
+                {
+                    case ".consist-or":
+                        consist = ConsistFile.LoadFrom(filePath);
+                        break;
+                    case ".con":
+                        consist = new Msts.ConsistFile(filePath);
+                        break;
+                    default:
+                        throw new InvalidDataException("Unknown consist format");
+                }
+                Consists[filePath] = consist;
+            }
+            return (consist, new ConsistStore(Consists, new HashSet<string>(Visited) { filePath }));
+        }
+    }
+
+    /// <summary>
+    /// A consist refers (directly or indirectly) to itself, creating an infinite-length train.
+    /// </summary>
+    public class RecursiveConsistException : Exception
+    {
+        public RecursiveConsistException(string message) : base(message) { }
     }
 }
