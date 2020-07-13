@@ -20,6 +20,7 @@ using Newtonsoft.Json.Linq;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -86,6 +87,11 @@ namespace Orts.Formats.OR
         /// Reverse the orientation of the item at loading.
         /// </summary>
         bool Flipped { get; set; }
+
+        /// <summary>
+        /// The installation profile (content directory) to search for this item; the current one if null.
+        /// </summary>
+        string Profile { get; set; }
     }
 
     public interface IConsistWagon : IConsistItem
@@ -125,6 +131,16 @@ namespace Orts.Formats.OR
         /// <returns></returns>
         public static IEnumerable<WagonReference> GetGenericWagonList(this IConsistItem item, string basePath, IDictionary<string, string> folders, int startUiD)
         {
+            if (item.Profile != null)
+            {
+                if (!folders.TryGetValue(item.Profile, out string newBasePath))
+                {
+                    Trace.WriteLine($"Unknown installation profile: {item.Profile}");
+                    yield break;
+                }
+                basePath = newBasePath;
+            }
+
             if (item is IConsistWagon wagon)
             {
                 string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", wagon.Wagon), ".wag");
@@ -176,6 +192,7 @@ namespace Orts.Formats.OR
     {
         public int Count { get; set; } = 1;
         public bool Flipped { get; set; } = false;
+        public string Profile { get; set; } = null;
     }
 
     public class ListConsistWagon : ListConsistItem, IConsistWagon
@@ -250,6 +267,7 @@ namespace Orts.Formats.OR
     {
         public int Count { get; set; } = 1;
         public bool Flipped { get; set; } = false;
+        public string Profile { get; set; } = null;
         public float Probability { get; set; }
     }
 
