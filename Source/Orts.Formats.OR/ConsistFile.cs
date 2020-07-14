@@ -34,7 +34,7 @@ namespace Orts.Formats.OR
     /// </summary>
     public class ConsistFile : IConsist
     {
-        public string Name { get; } = "Loose consist.";
+        public string DisplayName { get; } = "Loose consist.";
         public float? MaxVelocityMpS { get; }
         public float Durability { get; } = 1f;
         public bool PlayerDrivable { get; } = true;
@@ -72,7 +72,7 @@ namespace Orts.Formats.OR
             throw new InvalidOperationException();
         }
 
-        public override string ToString() => Name;
+        public override string ToString() => DisplayName;
     }
 
     #region Item interfaces

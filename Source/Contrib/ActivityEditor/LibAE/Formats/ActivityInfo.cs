@@ -110,7 +110,7 @@ namespace LibAE.Formats
                             consistFile = null;
                             break;
                     }
-                    ConsistInfo conInfo = new ConsistInfo(consistFile.Name, fullPathConsist);
+                    ConsistInfo conInfo = new ConsistInfo(consistFile.DisplayName, fullPathConsist);
                     trainConsists.Add(conInfo); 
                 }
             }

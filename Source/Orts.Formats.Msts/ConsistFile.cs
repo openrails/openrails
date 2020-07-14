@@ -42,7 +42,7 @@ namespace Orts.Formats.Msts
             Name = Train.TrainCfg.Name;
         }
 
-        string IConsist.Name => Train.TrainCfg.Name;
+        string IConsist.DisplayName => Train.TrainCfg.Name;
 
         public float? MaxVelocityMpS
         {

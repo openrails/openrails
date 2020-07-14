@@ -87,7 +87,7 @@ namespace Orts.Simulation.Simulation
             {
                 if (!File.Exists(wagonRef.FilePath))
                 {
-                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonRef.FilePath, consist.Name);
+                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonRef.FilePath, consist.DisplayName);
                     continue;
                 }
 

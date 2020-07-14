@@ -39,7 +39,7 @@ namespace ORTS.ContentManager.Models
             {
                 case ".consist-or":
                     var ortsConsist = Orts.Formats.OR.ConsistFile.LoadFrom(content.PathName);
-                    Name = ortsConsist.Name;
+                    Name = ortsConsist.DisplayName;
                     Items = GetOrtsItems(ortsConsist);
                     break;
                 case ".con":

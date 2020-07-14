@@ -44,7 +44,7 @@ namespace ORTS.Common
     /// </summary>
     public interface IConsist
     {
-        string Name { get; }
+        string DisplayName { get; }
         float? MaxVelocityMpS { get; }
         float Durability { get; }
         bool PlayerDrivable { get; }

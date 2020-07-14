@@ -42,7 +42,7 @@ namespace ORTS.Menu
                 try
                 {
                     IConsist conFile = LoadConsist(filePath);
-                    Name = conFile.Name.Trim();
+                    Name = conFile.DisplayName.Trim();
                     Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
                 }
                 catch
