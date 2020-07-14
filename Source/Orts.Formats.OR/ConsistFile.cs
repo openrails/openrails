@@ -145,42 +145,61 @@ namespace Orts.Formats.OR
             }
 
             if (item is IConsistWagon wagon)
-            {
-                string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", wagon.Wagon), ".wag");
-                return Enumerable.Range(0, wagon.Count)
-                    .Select((int i) => new WagonReference(filePath, wagon.Flip, startUiD + i));
-            }
+                return GetWagonWagonList(wagon, basePath, startUiD);
             else if (item is IConsistEngine engine)
-            {
-                string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", engine.Engine), ".eng");
-                return Enumerable.Range(0, engine.Count)
-                    .Select((int i) => new WagonReference(filePath, engine.Flip, startUiD + i));
-            }
+                return GetEngineWagonList(engine, basePath, startUiD);
             else if (item is IConsistReference consist)
+                return GetConsistWagonList(store, consist, basePath, folders, startUiD, preferredLocomotivePath);
+            else
+                throw new InvalidOperationException();
+        }
+
+        private static IEnumerable<WagonReference> GetWagonWagonList(IConsistWagon wagon, string basePath, int startUiD)
+        {
+            string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", wagon.Wagon), ".wag");
+            return Enumerable.Range(0, wagon.Count)
+                .Select((int i) => new WagonReference(filePath, wagon.Flip, startUiD + i));
+        }
+
+        private static IEnumerable<WagonReference> GetEngineWagonList(IConsistEngine engine, string basePath, int startUiD)
+        {
+            string filePath = Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", engine.Engine), ".eng");
+            return Enumerable.Range(0, engine.Count)
+                .Select((int i) => new WagonReference(filePath, engine.Flip, startUiD + i));
+        }
+
+        private static IEnumerable<WagonReference> GetConsistWagonList(ConsistStore store, IConsistReference consist, string basePath, IDictionary<string, string> folders, int startUiD, string preferredLocomotivePath = null)
+        {
+            (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(basePath, consist.Consist);
+            IEnumerable<WagonReference> MakeList(int localStartUiD)
             {
-                (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(basePath, consist.Consist);
-                IEnumerable<WagonReference> wagonRefs;
+                IEnumerable<WagonReference> localWagonRefs;
                 if (subConsist is ConsistFile ortsConsist)
                     // ORTS consists can reference other consists, and hence need a ConsistStore to guard against recursion.
-                    wagonRefs = ortsConsist.GetWagonList(subStore, basePath, folders, preferredLocomotivePath);
+                    localWagonRefs = ortsConsist.GetWagonList(subStore, basePath, folders, preferredLocomotivePath);
                 else
-                    wagonRefs = subConsist.GetWagonList(basePath, folders, preferredLocomotivePath);
+                    localWagonRefs = subConsist.GetWagonList(basePath, folders, preferredLocomotivePath);
                 if (consist.Flip)
                 {
-                    return wagonRefs
+                    return localWagonRefs
                         .Reverse()
-                        .Select((WagonReference wagonRef, int i) => new WagonReference(wagonRef.FilePath, !wagonRef.Flipped, startUiD + i));
+                        .Select((WagonReference wagonRef, int i) => new WagonReference(wagonRef.FilePath, !wagonRef.Flipped, localStartUiD + i));
                 }
                 else
                 {
-                    return wagonRefs
-                        .Select((WagonReference wagonRef, int i) => new WagonReference(wagonRef.FilePath, wagonRef.Flipped, startUiD + i));
+                    return localWagonRefs
+                        .Select((WagonReference wagonRef, int i) => new WagonReference(wagonRef.FilePath, wagonRef.Flipped, localStartUiD + i));
                 }
             }
-            else
+
+            IEnumerable<WagonReference> wagonRefs = new WagonReference[0] { };
+            foreach (int _ in Enumerable.Range(0, consist.Count))
             {
-                throw new InvalidOperationException();
+                var thisList = new List<WagonReference>(MakeList(startUiD));
+                startUiD += thisList.Count;
+                wagonRefs = wagonRefs.Concat(thisList);
             }
+            return wagonRefs;
         }
     }
     #endregion
