@@ -295,7 +295,7 @@ namespace Orts.Formats.OR
     {
         public IList<RandomConsistItem> Random { get; } = new List<RandomConsistItem>();
 
-        private static readonly Random Rng = new Random();
+        private static readonly Random RnJesus = new Random();
 
         internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
@@ -311,7 +311,7 @@ namespace Orts.Formats.OR
                 return new WagonReference[0] { };
 
             // TODO: Implement preferredLocomotivePath.
-            double random = Rng.NextDouble() * p;
+            double random = RnJesus.NextDouble() * p;
             RandomConsistItem selected = table
                 .Where(((float, float, RandomConsistItem) tuple) => tuple.Item1 <= random && random < tuple.Item2)
                 .Select(((float, float, RandomConsistItem) tuple) => tuple.Item3)
