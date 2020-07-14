@@ -303,7 +303,11 @@ namespace Orts.Formats.OR
             float p = 0f;
             foreach (RandomConsistItem item in Random)
             {
-                float nextP = p + item.Probability;
+                float nextP;
+                checked
+                {
+                    nextP = p + Math.Max(item.Probability, 0f);
+                }
                 table.Add((p, nextP, item));
                 p = nextP;
             }
