@@ -295,9 +295,28 @@ namespace Orts.Formats.OR
     {
         public IList<RandomConsistItem> Random { get; } = new List<RandomConsistItem>();
 
+        private static readonly Random Rng = new Random();
+
         internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
         {
-            throw new NotImplementedException();
+            var table = new List<(float, float, RandomConsistItem)>();
+            float p = 0f;
+            foreach (RandomConsistItem item in Random)
+            {
+                float nextP = p + item.Probability;
+                table.Add((p, nextP, item));
+                p = nextP;
+            }
+            if (p == 0f)
+                return new WagonReference[0] { };
+
+            // TODO: Implement preferredLocomotivePath.
+            double random = Rng.NextDouble() * p;
+            RandomConsistItem selected = table
+                .Where(((float, float, RandomConsistItem) tuple) => tuple.Item1 <= random && random < tuple.Item2)
+                .Select(((float, float, RandomConsistItem) tuple) => tuple.Item3)
+                .First();
+            return selected.GetGenericWagonList(store, basePath, folders, startUiD: 0, preferredLocomotivePath);
         }
     }
 
