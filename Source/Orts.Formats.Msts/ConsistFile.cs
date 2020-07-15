@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -60,27 +59,32 @@ namespace Orts.Formats.Msts
 
         public bool PlayerDrivable => true;
 
-        public ICollection<string> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
+        public ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
         {
             Wagon firstEngine = Train.TrainCfg.WagonList
                 .Where((Wagon wagon) => wagon.IsEngine)
                 .FirstOrDefault();
-            return firstEngine != null ? new string[] { WagonPath(basePath, firstEngine) } : new string[] { };
+            if (firstEngine == null)
+                return PreferredLocomotive.NoLocomotiveSet;
+            else
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(WagonPath(basePath, firstEngine)) };
         }
 
-        public ICollection<string> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
+        public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
         {
             Wagon lastEngine = Train.TrainCfg.WagonList
                 .Where((Wagon wagon) => wagon.IsEngine)
                 .LastOrDefault();
-            return lastEngine != null ? new string[] { WagonPath(basePath, lastEngine) } : new string[] { };
+            if (lastEngine == null)
+                return PreferredLocomotive.NoLocomotiveSet;
+            else
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(WagonPath(basePath, lastEngine)) };
         }
 
-        public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null)
+        public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
-            var empty = new WagonReference[0];
-            if (preferredLocomotivePath != null && PathsEqual(GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault(), preferredLocomotivePath))
-                return empty;
+            if (GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
+                return new WagonReference[0] { };
             return Train.TrainCfg.WagonList
                 .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
         }
@@ -90,8 +94,6 @@ namespace Orts.Formats.Msts
             string trainsetPath = Path.Combine(basePath, "trains", "trainset");
             return Path.Combine(trainsetPath, wagon.Folder, Path.ChangeExtension(wagon.Name, wagon.IsEngine ? ".eng" : ".wag"));
         }
-
-        private static bool PathsEqual(string path1, string path2) => Path.GetFullPath(path1).Equals(Path.GetFullPath(path2), StringComparison.OrdinalIgnoreCase);
 
         public override string ToString()
         {

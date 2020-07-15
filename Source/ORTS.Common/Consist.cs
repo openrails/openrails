@@ -59,23 +59,63 @@ namespace ORTS.Common
         /// <param name="folders">A dictionary of other available content directories.</param>
         /// <param name="preferredLocomotivePath">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
         /// <returns></returns>
-        IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, string preferredLocomotivePath = null);
+        IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null);
 
         /// <summary>
         /// Get the head-end locomotives that this consist can spawn with.
         /// </summary>
+        /// <remarks>
+        /// Consists without locomotives should return <see cref="PreferredLocomotive.NoLocomotiveSet"/>.
+        /// </remarks>
         /// <param name="basePath">The current content directory.</param>
         /// <param name="folders">A dictionary of other available content directories.</param>
         /// <returns>The locomotives, identified by their filesystem paths.</returns>
-        ICollection<string> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders);
+        ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders);
 
         /// <summary>
         /// Get the head-end locomotives that this consist can spawn with if reversed.
         /// </summary>
+        /// <remarks>
+        /// Consists without locomotives should return <see cref="PreferredLocomotive.NoLocomotiveSet"/>.
+        /// </remarks>
         /// <param name="basePath">The current content directory.</param>
         /// <param name="folders">A dictionary of other available content directories.</param>
         /// <returns>The locomotives, identified by their filesystem paths.</returns>
-        ICollection<string> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders);
+        ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders);
+    }
+
+    /// <summary>
+    /// Identifies a preferred locomotive for the creation of a player consist.
+    /// </summary>
+    public sealed class PreferredLocomotive : IEquatable<PreferredLocomotive>
+    {
+        public string FilePath { get; }
+        
+        /// <summary>
+        /// Special value to explicitly request a consist with no locomotive.
+        /// </summary>
+        public static readonly PreferredLocomotive NoLocomotive = new PreferredLocomotive();
+
+        /// <summary>
+        /// Singleton set for consists without a locomotive.
+        /// </summary>
+        public static readonly ISet<PreferredLocomotive> NoLocomotiveSet = new HashSet<PreferredLocomotive>() { NoLocomotive };
+
+        public PreferredLocomotive(string filePath)
+        {
+            FilePath = Path.GetFullPath(filePath);
+        }
+
+        private PreferredLocomotive()
+        {
+            FilePath = "";
+        }
+
+        public override bool Equals(object other) => other is PreferredLocomotive cast && Equals(cast);
+
+        public bool Equals(PreferredLocomotive other) => other != null && FilePath == other.FilePath;
+
+        public override int GetHashCode() => FilePath.GetHashCode();
     }
 
     public static class ConsistUtilities
@@ -100,7 +140,7 @@ namespace ORTS.Common
         /// <returns>All files with known consist file extensions.</returns>
         public static IEnumerable<string> AllConsistFiles(string consistsDirectory)
         {
-            ICollection<string> BaseNames(string pattern) => new HashSet<string>(
+            ISet<string> BaseNames(string pattern) => new HashSet<string>(
                 Directory.GetFileSystemEntries(consistsDirectory, pattern)
                     .Select((string path) => Path.GetFileNameWithoutExtension(path)),
                 StringComparer.InvariantCultureIgnoreCase);

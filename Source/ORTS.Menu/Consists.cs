@@ -33,9 +33,9 @@ namespace ORTS.Menu
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
-        internal Consist(string filePath, Folder folder) : this(filePath, folder, false) { }
+        internal Consist(string filePath, Folder folder, IList<Folder> allFolders) : this(filePath, folder, allFolders, false) { }
 
-        internal Consist(string filePath, Folder folder, bool reverseConsist)
+        internal Consist(string filePath, Folder folder, IList<Folder> allFolders, bool reverseConsist)
         {
             if (File.Exists(filePath))
             {
@@ -43,7 +43,7 @@ namespace ORTS.Menu
                 {
                     IConsist conFile = LoadConsist(filePath);
                     Name = conFile.DisplayName.Trim();
-                    Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
+                    Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder, allFolders) : GetLocomotive(conFile, folder, allFolders);
                 }
                 catch
                 {
@@ -77,7 +77,7 @@ namespace ORTS.Menu
             return Name;
         }
 
-        public static List<Consist> GetConsists(Folder folder)
+        public static List<Consist> GetConsists(Folder folder, IList<Folder> allFolders)
         {
             var consists = new List<Consist>();
             string directory = System.IO.Path.Combine(folder.Path, "trains", "consists");
@@ -88,7 +88,7 @@ namespace ORTS.Menu
                     Consist loaded;
                     try
                     {
-                        loaded = new Consist(consist, folder);
+                        loaded = new Consist(consist, folder, allFolders);
                     }
                     catch
                     {
@@ -100,31 +100,33 @@ namespace ORTS.Menu
             return consists;
         }
 
-        public static Consist GetConsist(Folder folder, string name) => GetConsist(folder, name, false);
+        public static Consist GetConsist(Folder folder, IList<Folder> allFolders, string name) => GetConsist(folder, allFolders, name, false);
 
-        public static Consist GetConsist(Folder folder, string name, bool reverseConsist)
+        public static Consist GetConsist(Folder folder, IList<Folder> allFolders, string name, bool reverseConsist)
         {
             Consist consist = null;
             string file = ConsistUtilities.ResolveConsist(folder.Path, name);
 
             try
             {
-                consist = new Consist(file, folder, reverseConsist);
+                consist = new Consist(file, folder, allFolders, reverseConsist);
             }
             catch { }
 
             return consist;
         }
 
-        static Locomotive GetLocomotive(IConsist conFile, Folder folder)
+        static Locomotive GetLocomotive(IConsist conFile, Folder folder, IList<Folder> allFolders)
         {
-            ICollection<string> choices = conFile.GetLeadLocomotiveChoices(folder.Path, new Dictionary<string, string>());
-            string one = choices.FirstOrDefault();
-            if (one == null)
+            // TODO: Support one-to-many relationships between consists and locomotives.
+            IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
+            ISet<PreferredLocomotive> choices = conFile.GetLeadLocomotiveChoices(folder.Path, foldersDict);
+            PreferredLocomotive one = choices.FirstOrDefault() ?? PreferredLocomotive.NoLocomotive;
+            if (one == PreferredLocomotive.NoLocomotive)
                 return null;
             try
             {
-                return new Locomotive(one);
+                return new Locomotive(one.FilePath);
             }
             catch
             {
@@ -132,15 +134,17 @@ namespace ORTS.Menu
             }
         }
 
-        static Locomotive GetLocomotiveReverse(IConsist conFile, Folder folder)
+        static Locomotive GetLocomotiveReverse(IConsist conFile, Folder folder, IList<Folder> allFolders)
         {
-            ICollection<string> choices = conFile.GetReverseLocomotiveChoices(folder.Path, new Dictionary<string, string>());
-            string one = choices.FirstOrDefault();
-            if (one == null)
+            // TODO: Support one-to-many relationships between consists and locomotives.
+            IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
+            ISet<PreferredLocomotive> choices = conFile.GetReverseLocomotiveChoices(folder.Path, foldersDict);
+            PreferredLocomotive one = choices.FirstOrDefault() ?? PreferredLocomotive.NoLocomotive;
+            if (one == PreferredLocomotive.NoLocomotive)
                 return null;
             try
             {
-                return new Locomotive(one);
+                return new Locomotive(one.FilePath);
             }
             catch
             {
