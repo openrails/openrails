@@ -157,7 +157,7 @@ namespace Orts.Viewer3D.Processes
                     case "start-profile":
                         InitLogging(settings, args);
                         InitLoading(args);
-                        Start(settings, acttype, data);
+                        Start(settings, acttype, options, data);
                         break;
                     case "resume":
                         InitLogging(settings, args);
@@ -284,9 +284,9 @@ namespace Orts.Viewer3D.Processes
         /// Run the specified activity from the beginning.
         /// This is the start for MSTS Activity or Explorer mode or Timetable mode
         /// </summary>
-        void Start(UserSettings settings, string acttype, string[] args)
+        void Start(UserSettings settings, string acttype, string[] options, string[] args)
         {
-            InitSimulator(settings, args, "", acttype);
+            InitSimulator(settings, args, "", acttype, options);
 
             switch (acttype)
             {
@@ -945,12 +945,12 @@ namespace Orts.Viewer3D.Processes
             File.Copy(logFileName, toFile, true);
         }
 
-        void InitSimulator(UserSettings settings, string[] args, string mode)
+        void InitSimulator(UserSettings settings, string[] args, string mode, string[] options = null)
         {
-            InitSimulator(settings, args, mode, "");
+            InitSimulator(settings, args, mode, "", options);
         }
 
-        void InitSimulator(UserSettings settings, string[] args, string mode, string acttype)
+        void InitSimulator(UserSettings settings, string[] args, string mode, string acttype, string[] options = null)
         {
             if (String.IsNullOrEmpty(acttype))
             {
@@ -995,6 +995,22 @@ namespace Orts.Viewer3D.Processes
                     throw new InvalidCommandLine("Unexpected mode '" + acttype + "' with argument count " + args.Length);
             }
 
+            PreferredLocomotive preferredLoco = null;
+            IEnumerable<string> keyOptions = (options ?? new string[0] { })
+                .Where((string o) => o.Contains('='));
+            foreach (string option in keyOptions)
+            {
+                string[] split = option.Split(new char[] { '=' }, 2);
+                string key = split[0];
+                string value = split[1];
+                switch (key)
+                {
+                    case "preferredLocomotive":
+                        preferredLoco = new PreferredLocomotive(value);
+                        break;
+                }
+            }
+
             LogSeparator();
             if (settings.MultiplayerServer || settings.MultiplayerClient)
             {
@@ -1017,25 +1033,26 @@ namespace Orts.Viewer3D.Processes
                     Simulator = new Simulator(settings, args[0], false);
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
-                    Simulator.SetActivity(args[0]);
+                    Simulator.SetActivity(args[0], preferredLoco);
                     break;
 
                 case "explorer":
                     Simulator = new Simulator(settings, args[0], false);
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
-                    Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+                    Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4], preferredLoco);
                     break;
 
                 case "exploreactivity":
                     Simulator = new Simulator(settings, args[0], false);
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
-                    Simulator.SetExploreThroughActivity(args[0], args[1], args[2], args[3], args[4]);
+                    Simulator.SetExploreThroughActivity(args[0], args[1], args[2], args[3], args[4], preferredLoco);
                     break;
 
                 case "timetable":
                     Simulator = new Simulator(settings, args[0], true);
+                    Simulator.PreferredLocomotive = preferredLoco;
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
                     if (String.Compare(mode, "start", true) != 0) // no specific action for start, handled in start_timetable

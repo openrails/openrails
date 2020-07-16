@@ -57,7 +57,7 @@ namespace ORTS.Common
         /// </remarks>
         /// <param name="basePath">The current content directory.</param>
         /// <param name="folders">A dictionary of other available content directories.</param>
-        /// <param name="preferredLocomotivePath">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
+        /// <param name="preference">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
         /// <returns></returns>
         IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null);
 

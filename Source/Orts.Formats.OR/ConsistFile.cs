@@ -298,10 +298,19 @@ namespace Orts.Formats.OR
 
         internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
+            Dictionary<ListConsistItem, ISet<PreferredLocomotive>> locoSets = List
+                .ToDictionary((ListConsistItem item) => item, (ListConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders));
+            bool satisfiable = locoSets
+                .Values
+                .Any((ISet<PreferredLocomotive> choices) => choices.Contains(preference));
+            if (!satisfiable)
+                yield break;
+
             int uiD = 0;
-            foreach (IConsistItem item in List)
+            foreach (ListConsistItem item in List)
             {
-                foreach (WagonReference wagonRef in item.GetGenericWagonList(store, basePath, folders, uiD, preference))
+                PreferredLocomotive target = locoSets[item].Contains(preference) ? preference : PreferredLocomotive.NoLocomotive;
+                foreach (WagonReference wagonRef in item.GetGenericWagonList(store, basePath, folders, uiD, target))
                 {
                     uiD++;
                     yield return wagonRef;
@@ -419,7 +428,9 @@ namespace Orts.Formats.OR
         {
             var table = new List<(float, float, RandomConsistItem)>();
             float p = 0f;
-            foreach (RandomConsistItem item in Random)
+            IEnumerable<RandomConsistItem> searchItems = Random
+                .Where((RandomConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders).Contains(preference));
+            foreach (RandomConsistItem item in searchItems)
             {
                 float nextP;
                 checked
@@ -432,7 +443,6 @@ namespace Orts.Formats.OR
             if (p == 0f)
                 return new WagonReference[0] { };
 
-            // TODO: Implement preferredLocomotivePath.
             double random = RnJesus.NextDouble() * p;
             RandomConsistItem selected = table
                 .Where(((float, float, RandomConsistItem) tuple) => tuple.Item1 <= random && random < tuple.Item2)

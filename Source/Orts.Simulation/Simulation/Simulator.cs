@@ -117,6 +117,7 @@ namespace Orts.Simulation
         public string ExploreConFile;
         public string patFileName;
         public string conFileName;
+        public PreferredLocomotive PreferredLocomotive { get; set; }
         public AIPath PlayerPath;
         public LevelCrossings LevelCrossings;
         public RoadDatabaseFile RDB;
@@ -349,10 +350,11 @@ namespace Orts.Simulation
             Log = new CommandLog(this);
         }
 
-        public void SetActivity(string activityPath)
+        public void SetActivity(string activityPath, PreferredLocomotive preferredLocomotive = null)
         {
             ActivityFileName = Path.GetFileNameWithoutExtension(activityPath);
             Activity = new ActivityFile(activityPath);
+            PreferredLocomotive = preferredLocomotive;
 
             // check for existence of activity file in OpenRails subfolder
 
@@ -379,10 +381,11 @@ namespace Orts.Simulation
             }
             IsAutopilotMode = true;
         }
-        public void SetExplore(string path, string consist, string start, string season, string weather)
+        public void SetExplore(string path, string consist, string start, string season, string weather, PreferredLocomotive preferredLocomotive = null)
         {
             ExplorePathFile = path;
             ExploreConFile = consist;
+            PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
             string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
             conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
@@ -393,7 +396,7 @@ namespace Orts.Simulation
             WeatherType = (WeatherType)int.Parse(weather);
         }
 
-        public void SetExploreThroughActivity(string path, string consist, string start, string season, string weather)
+        public void SetExploreThroughActivity(string path, string consist, string start, string season, string weather, PreferredLocomotive preferredLocomotive = null)
         {
             ActivityFileName = "ea$" + RoutePathName + "$" + DateTime.Today.Year.ToString() + DateTime.Today.Month.ToString() + DateTime.Today.Day.ToString() +
                 DateTime.Today.Hour.ToString() + DateTime.Today.Minute.ToString() + DateTime.Today.Second.ToString();
@@ -401,6 +404,7 @@ namespace Orts.Simulation
             ActivityRun = new Activity(Activity, this);
             ExplorePathFile = path;
             ExploreConFile = consist;
+            PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
             string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
             conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");

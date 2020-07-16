@@ -21,14 +21,13 @@ using System.Linq;
 using GNU.Gettext;
 using Orts.Formats.Msts;
 using ORTS.Common;
-using ORTS.Settings;
 
 namespace ORTS.Menu
 {
     public class Consist
     {
         public readonly string Name;
-        public readonly Locomotive Locomotive = new Locomotive("unknown");
+        public readonly ISet<Locomotive> Locomotives = new HashSet<Locomotive>() { new Locomotive("unknown") };
         public readonly string FilePath;
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
@@ -43,13 +42,14 @@ namespace ORTS.Menu
                 {
                     IConsist conFile = LoadConsist(filePath);
                     Name = conFile.DisplayName.Trim();
-                    Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder, allFolders) : GetLocomotive(conFile, folder, allFolders);
+                    Locomotives = reverseConsist ? GetLocomotivesReverse(conFile, folder, allFolders) : GetLocomotives(conFile, folder, allFolders);
                 }
                 catch
                 {
                     Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
-                if (Locomotive == null) throw new InvalidDataException("Consist '" + filePath + "' is excluded.");
+                if (Locomotives.Count <= 0)
+                    throw new InvalidDataException($"Consist '{filePath}' is excluded.");
                 if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             else
@@ -116,40 +116,40 @@ namespace ORTS.Menu
             return consist;
         }
 
-        static Locomotive GetLocomotive(IConsist conFile, Folder folder, IList<Folder> allFolders)
+        static ISet<Locomotive> GetLocomotives(IConsist conFile, Folder folder, IList<Folder> allFolders)
         {
-            // TODO: Support one-to-many relationships between consists and locomotives.
             IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
             ISet<PreferredLocomotive> choices = conFile.GetLeadLocomotiveChoices(folder.Path, foldersDict);
-            PreferredLocomotive one = choices.FirstOrDefault() ?? PreferredLocomotive.NoLocomotive;
-            if (one == PreferredLocomotive.NoLocomotive)
-                return null;
-            try
-            {
-                return new Locomotive(one.FilePath);
-            }
-            catch
-            {
-                return null;
-            }
+            return choices
+                .Where((PreferredLocomotive pl) => !pl.Equals(PreferredLocomotive.NoLocomotive))
+                .Select((PreferredLocomotive pl) => LoadLocomotive(pl))
+                .Where((Locomotive loco) => loco != null)
+                .ToHashSet();
         }
 
-        static Locomotive GetLocomotiveReverse(IConsist conFile, Folder folder, IList<Folder> allFolders)
+        static ISet<Locomotive> GetLocomotivesReverse(IConsist conFile, Folder folder, IList<Folder> allFolders)
         {
-            // TODO: Support one-to-many relationships between consists and locomotives.
             IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
             ISet<PreferredLocomotive> choices = conFile.GetReverseLocomotiveChoices(folder.Path, foldersDict);
-            PreferredLocomotive one = choices.FirstOrDefault() ?? PreferredLocomotive.NoLocomotive;
-            if (one == PreferredLocomotive.NoLocomotive)
-                return null;
+            return choices
+                .Where((PreferredLocomotive pl) => !pl.Equals(PreferredLocomotive.NoLocomotive))
+                .Select((PreferredLocomotive pl) => LoadLocomotive(pl))
+                .Where((Locomotive loco) => loco != null)
+                .ToHashSet();
+        }
+
+        private static Locomotive LoadLocomotive(PreferredLocomotive locoSpec)
+        {
+            Locomotive loaded;
             try
             {
-                return new Locomotive(one.FilePath);
+                loaded = new Locomotive(locoSpec.FilePath);
             }
             catch
             {
-                return null;
+                loaded = null;
             }
+            return loaded;
         }
 
     }
