@@ -582,12 +582,12 @@ namespace Orts.Formats.OR
         /// <summary>
         /// Multiple stores share the same cache.
         /// </summary>
-        private readonly Dictionary<string, IConsist> Consists;
+        private Dictionary<string, IConsist> Consists { get; }
 
         /// <summary>
         /// Each store has its own running stack of visited consists.
         /// </summary>
-        private readonly HashSet<string> Visited;
+        private HashSet<string> Visited { get; }
 
         /// <summary>
         /// Creates a top-level consist store.
@@ -598,9 +598,9 @@ namespace Orts.Formats.OR
             Visited = new HashSet<string>();
         }
 
-        private ConsistStore(Dictionary<string, IConsist> consists, HashSet<string> visited)
+        private ConsistStore(ConsistStore parent, HashSet<string> visited)
         {
-            Consists = consists;
+            Consists = parent.Consists;
             Visited = visited;
         }
 
@@ -635,7 +635,7 @@ namespace Orts.Formats.OR
                 }
                 Consists[filePath] = consist;
             }
-            return (consist, new ConsistStore(Consists, new HashSet<string>(Visited) { filePath }));
+            return (consist, new ConsistStore(this, new HashSet<string>(Visited) { filePath }));
         }
     }
 
