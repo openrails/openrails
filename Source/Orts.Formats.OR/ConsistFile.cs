@@ -300,7 +300,7 @@ namespace Orts.Formats.OR
         {
             Dictionary<ListConsistItem, ISet<PreferredLocomotive>> locoSets = List
                 .ToDictionary((ListConsistItem item) => item, (ListConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders));
-            bool satisfiable = locoSets
+            bool satisfiable = preference == null || locoSets
                 .Values
                 .Any((ISet<PreferredLocomotive> choices) => choices.Contains(preference));
             if (!satisfiable)
@@ -309,7 +309,11 @@ namespace Orts.Formats.OR
             int uiD = 0;
             foreach (ListConsistItem item in List)
             {
-                PreferredLocomotive target = locoSets[item].Contains(preference) ? preference : PreferredLocomotive.NoLocomotive;
+                PreferredLocomotive target;
+                if (preference == null)
+                    target = null;
+                else
+                    target = locoSets[item].Contains(preference) ? preference : PreferredLocomotive.NoLocomotive;
                 foreach (WagonReference wagonRef in item.GetGenericWagonList(store, basePath, folders, uiD, target))
                 {
                     uiD++;
@@ -428,8 +432,9 @@ namespace Orts.Formats.OR
         {
             var table = new List<(float, float, RandomConsistItem)>();
             float p = 0f;
-            IEnumerable<RandomConsistItem> searchItems = Random
-                .Where((RandomConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders).Contains(preference));
+            IEnumerable<RandomConsistItem> searchItems = Random;
+            if (preference != null)
+                searchItems = searchItems.Where((RandomConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders).Contains(preference));
             foreach (RandomConsistItem item in searchItems)
             {
                 float nextP;
