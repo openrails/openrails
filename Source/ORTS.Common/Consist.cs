@@ -58,8 +58,20 @@ namespace ORTS.Common
         /// <param name="basePath">The current content directory.</param>
         /// <param name="folders">A dictionary of other available content directories.</param>
         /// <param name="preference">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
-        /// <returns></returns>
-        IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null);
+        /// <returns>The wagons.</returns>
+        IEnumerable<WagonReference> GetForwardWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null);
+
+        /// <summary>
+        /// Obtain a list of <see cref="WagonReference"/>s to be loaded by the simulator in reverse order.
+        /// </summary>
+        /// <remarks>
+        /// If a preferred locomotive is specified but the constraint cannot be satisifed, this method should return an empty iterator.
+        /// </remarks>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="folders">A dictionary of other available content directories.</param>
+        /// <param name="preference">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
+        /// <returns>The wagons, flipped and in reverse order.</returns>
+        IEnumerable<WagonReference> GetReverseWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null);
 
         /// <summary>
         /// Get the head-end locomotives that this consist can spawn with.

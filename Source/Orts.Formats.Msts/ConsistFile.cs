@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -81,12 +80,21 @@ namespace Orts.Formats.Msts
                 return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(WagonPath(basePath, lastEngine)) };
         }
 
-        public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        public IEnumerable<WagonReference> GetForwardWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
             if (GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
                 return new WagonReference[0] { };
             return Train.TrainCfg.WagonList
                 .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
+        }
+
+        public IEnumerable<WagonReference> GetReverseWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        {
+            if (GetReverseLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
+                return new WagonReference[0] { };
+            return Train.TrainCfg.WagonList
+                .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), !wagon.Flip, wagon.UiD))
+                .Reverse();
         }
 
         private static string WagonPath(string basePath, Wagon wagon)

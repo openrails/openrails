@@ -2327,13 +2327,7 @@ namespace Orts.Simulation.Timetables
                     }
 
                     // add wagons
-                    var cars = new List<TrainCar>(conFile.LoadTrainCars(simulator, playerTrain));
-                    if (consistReverse)
-                    {
-                        foreach (TrainCar car in cars)
-                            car.Flipped = !car.Flipped;
-                        cars.Reverse();
-                    }
+                    var cars = new List<TrainCar>(conFile.LoadTrainCars(simulator, flip: consistReverse, playerTrain: playerTrain));
 
                     // add wagons
                     int carId = 0;
