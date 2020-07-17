@@ -20,7 +20,6 @@ using Newtonsoft.Json.Linq;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -55,25 +54,28 @@ namespace Orts.Formats.OR
         }
 
         public ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders) =>
-            GetLeadLocomotiveChoices(new ConsistStore(), basePath, folders);
+            GetLeadLocomotiveChoices(new LocomotiveChoiceMemoizer(new ConsistStore(), basePath, folders));
 
-        internal virtual ISet<PreferredLocomotive> GetLeadLocomotiveChoices(ConsistStore store, string basePath, IDictionary<string, string> folders)
+        internal virtual ISet<PreferredLocomotive> GetLeadLocomotiveChoices(LocomotiveChoiceMemoizer memoizer)
         {
             throw new InvalidOperationException();
         }
 
         public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders) =>
-            GetReverseLocomotiveChoices(new ConsistStore(), basePath, folders);
+            GetReverseLocomotiveChoices(new LocomotiveChoiceMemoizer(new ConsistStore(), basePath, folders));
 
-        internal virtual ISet<PreferredLocomotive> GetReverseLocomotiveChoices(ConsistStore store, string basePath, IDictionary<string, string> folders)
+        internal virtual ISet<PreferredLocomotive> GetReverseLocomotiveChoices(LocomotiveChoiceMemoizer memoizer)
         {
             throw new InvalidOperationException();
         }
 
-        public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null) =>
-            GetWagonList(new ConsistStore(), basePath, folders, preference);
+        public IEnumerable<WagonReference> GetWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        {
+            var store = new ConsistStore();
+            return GetWagonList(store, new LocomotiveChoiceMemoizer(store, basePath, folders), basePath, folders, preference);
+        }
 
-        internal virtual IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        internal virtual IEnumerable<WagonReference> GetWagonList(ConsistStore store, LocomotiveChoiceMemoizer memoizer, string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
             throw new InvalidOperationException();
         }
@@ -138,43 +140,34 @@ namespace Orts.Formats.OR
         /// <param name="startUiD">The UiD of the generated wagon, or, if this item generates multiple wagons,
         /// the first UiD in the sequence. Subsequent UiD's will count up.</param>
         /// <returns></returns>
-        public static IEnumerable<WagonReference> GetGenericWagonList(this IConsistItem item, ConsistStore store, string basePath, IDictionary<string, string> folders, int startUiD, PreferredLocomotive preference = null)
+        public static IEnumerable<WagonReference> GetGenericWagonList(this IConsistItem item, ConsistStore store, LocomotiveChoiceMemoizer memoizer, string basePath, IDictionary<string, string> folders, int startUiD, PreferredLocomotive preference = null)
         {
-            if (item.Profile != null)
-            {
-                if (!folders.TryGetValue(item.Profile, out string newBasePath))
-                {
-                    UnknownProfile(item.Profile);
-                    return new WagonReference[0] { };
-                }
-                basePath = newBasePath;
-            }
-
+            basePath = item.ResolveBasePath(basePath, folders);
             if (item is IConsistWagon wagon)
-                return GetWagonWagonList(wagon, basePath, startUiD);
+                return GetWagonWagonList(wagon, basePath, folders, startUiD);
             else if (item is IConsistEngine engine)
-                return GetEngineWagonList(engine, basePath, startUiD);
+                return GetEngineWagonList(engine, basePath, folders, startUiD);
             else if (item is IConsistReference consist)
-                return GetConsistWagonList(store, consist, basePath, folders, startUiD, preference);
+                return GetConsistWagonList(store, consist, memoizer, basePath, folders, startUiD, preference);
             else
                 throw new InvalidOperationException();
         }
 
-        private static IEnumerable<WagonReference> GetWagonWagonList(IConsistWagon wagon, string basePath, int startUiD)
+        private static IEnumerable<WagonReference> GetWagonWagonList(IConsistWagon wagon, string basePath, IDictionary<string, string> folders, int startUiD)
         {
-            string filePath = wagon.GetPath(basePath);
+            string filePath = wagon.GetPath(basePath, folders);
             return Enumerable.Range(0, wagon.Count)
                 .Select((int i) => new WagonReference(filePath, wagon.Flip, startUiD + i));
         }
 
-        private static IEnumerable<WagonReference> GetEngineWagonList(IConsistEngine engine, string basePath, int startUiD)
+        private static IEnumerable<WagonReference> GetEngineWagonList(IConsistEngine engine, string basePath, IDictionary<string, string> folders, int startUiD)
         {
-            string filePath = engine.GetPath(basePath);
+            string filePath = engine.GetPath(basePath, folders);
             return Enumerable.Range(0, engine.Count)
                 .Select((int i) => new WagonReference(filePath, engine.Flip, startUiD + i));
         }
 
-        private static IEnumerable<WagonReference> GetConsistWagonList(ConsistStore store, IConsistReference consist, string basePath, IDictionary<string, string> folders, int startUiD, PreferredLocomotive preference = null)
+        private static IEnumerable<WagonReference> GetConsistWagonList(ConsistStore store, IConsistReference consist, LocomotiveChoiceMemoizer memoizer, string basePath, IDictionary<string, string> folders, int startUiD, PreferredLocomotive preference = null)
         {
             (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(basePath, consist.Consist);
             IEnumerable<WagonReference> MakeList(int localStartUiD)
@@ -182,7 +175,7 @@ namespace Orts.Formats.OR
                 IEnumerable<WagonReference> localWagonRefs;
                 if (subConsist is ConsistFile ortsConsist)
                     // ORTS consists can reference other consists, and hence need a ConsistStore to guard against recursion.
-                    localWagonRefs = ortsConsist.GetWagonList(subStore, basePath, folders, preference);
+                    localWagonRefs = ortsConsist.GetWagonList(subStore, memoizer, basePath, folders, preference);
                 else
                     localWagonRefs = subConsist.GetWagonList(basePath, folders, preference);
                 if (consist.Flip)
@@ -208,83 +201,43 @@ namespace Orts.Formats.OR
             return wagonRefs;
         }
 
-        public static ISet<PreferredLocomotive> GetGenericLeadLocomotiveChoices(this IConsistItem item, ConsistStore store, string basePath, IDictionary<string, string> folders)
+        /// <summary>
+        /// Get the wagon specification file path for an <see cref="IConsistWagon"/>.
+        /// </summary>
+        /// <param name="wagon">The wagon.</param>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="folders">All other content directories.</param>
+        /// <returns>The path to the .wag file.</returns>
+        public static string GetPath(this IConsistWagon wagon, string basePath, IDictionary<string, string> folders) =>
+            Path.ChangeExtension(Path.Combine(wagon.ResolveBasePath(basePath, folders), "trains", "trainset", wagon.Wagon), ".wag");
+
+        /// <summary>
+        /// Get the engine specification file for an <see cref="IConsistEngine"/>.
+        /// </summary>
+        /// <param name="engine">The engine.</param>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="folders">All other content directories.</param>
+        /// <returns>The path to the .eng file</returns>
+        public static string GetPath(this IConsistEngine engine, string basePath, IDictionary<string, string> folders) =>
+            Path.ChangeExtension(Path.Combine(engine.ResolveBasePath(basePath, folders), "trains", "trainset", engine.Engine), ".eng");
+
+        /// <summary>
+        /// Get the content directory for an <see cref="IConsistItem"/> that may or may not reside in the current content directory.
+        /// </summary>
+        /// <param name="item">The item to query.</param>
+        /// <param name="basePath">The current content directory.</param>
+        /// <param name="folders">All other content directories.</param>
+        /// <returns>The resolved content directory, which may or may not be equivalent to basePath.</returns>
+        public static string ResolveBasePath(this IConsistItem item, string basePath, IDictionary<string, string> folders)
         {
             if (item.Profile != null)
             {
                 if (!folders.TryGetValue(item.Profile, out string newBasePath))
-                {
-                    UnknownProfile(item.Profile);
-                    return new HashSet<PreferredLocomotive>();
-                }
-                basePath = newBasePath;
+                    throw new DirectoryNotFoundException($"Unknown installation profile: {item.Profile}");
+                return newBasePath;
             }
-
-            if (item is IConsistWagon)
-            {
-                return PreferredLocomotive.NoLocomotiveSet;
-            }
-            else if (item is IConsistEngine engine)
-            {
-                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(engine.GetPath(basePath)) };
-            }
-            else if (item is IConsistReference consist)
-            {
-                (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(basePath, consist.Consist);
-                if (subConsist is ConsistFile ortsConsist)
-                    // ORTS consists can reference other consists, and hence need a ConsistStore to guard against recursion.
-                    return ortsConsist.GetLeadLocomotiveChoices(subStore, basePath, folders);
-                else
-                    return subConsist.GetLeadLocomotiveChoices(basePath, folders);
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
+            return basePath;
         }
-
-        public static ISet<PreferredLocomotive> GetGenericReverseLocomotiveChoices(this IConsistItem item, ConsistStore store, string basePath, IDictionary<string, string> folders)
-        {
-            if (item.Profile != null)
-            {
-                if (!folders.TryGetValue(item.Profile, out string newBasePath))
-                {
-                    UnknownProfile(item.Profile);
-                    return new HashSet<PreferredLocomotive>();
-                }
-                basePath = newBasePath;
-            }
-
-            if (item is IConsistWagon)
-            {
-                return PreferredLocomotive.NoLocomotiveSet;
-            }
-            else if (item is IConsistEngine engine)
-            {
-                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(engine.GetPath(basePath)) };
-            }
-            else if (item is IConsistReference consist)
-            {
-                (IConsist subConsist, ConsistStore subStore) = store.CreateSubConsist(basePath, consist.Consist);
-                if (subConsist is ConsistFile ortsConsist)
-                    // ORTS consists can reference other consists, and hence need a ConsistStore to guard against recursion.
-                    return ortsConsist.GetReverseLocomotiveChoices(subStore, basePath, folders);
-                else
-                    return subConsist.GetReverseLocomotiveChoices(basePath, folders);
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
-
-        private static void UnknownProfile(string name) => Trace.WriteLine($"Unknown installation profile: {name}");
-
-        private static string GetPath(this IConsistWagon wagon, string basePath) =>
-            Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", wagon.Wagon), ".wag");
-
-        private static string GetPath(this IConsistEngine engine, string basePath) =>
-            Path.ChangeExtension(Path.Combine(basePath, "trains", "trainset", engine.Engine), ".eng");
     }
     #endregion
 
@@ -296,10 +249,10 @@ namespace Orts.Formats.OR
     {
         public IList<ListConsistItem> List { get; set; } = new List<ListConsistItem>();
 
-        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, LocomotiveChoiceMemoizer memoizer, string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
             Dictionary<ListConsistItem, ISet<PreferredLocomotive>> locoSets = List
-                .ToDictionary((ListConsistItem item) => item, (ListConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders));
+                .ToDictionary((ListConsistItem item) => item, (ListConsistItem item) => memoizer.GetLeadLocomotiveChoices(item));
             bool satisfiable = preference == null || locoSets
                 .Values
                 .Any((ISet<PreferredLocomotive> choices) => choices.Contains(preference));
@@ -314,7 +267,7 @@ namespace Orts.Formats.OR
                     target = null;
                 else
                     target = locoSets[item].Contains(preference) ? preference : PreferredLocomotive.NoLocomotive;
-                foreach (WagonReference wagonRef in item.GetGenericWagonList(store, basePath, folders, uiD, target))
+                foreach (WagonReference wagonRef in item.GetGenericWagonList(store, memoizer, basePath, folders, uiD, target))
                 {
                     uiD++;
                     yield return wagonRef;
@@ -322,12 +275,12 @@ namespace Orts.Formats.OR
             }
         }
 
-        internal override ISet<PreferredLocomotive> GetLeadLocomotiveChoices(ConsistStore store, string basePath, IDictionary<string, string> folders)
+        internal override ISet<PreferredLocomotive> GetLeadLocomotiveChoices(LocomotiveChoiceMemoizer memoizer)
         {
             var engines = new HashSet<PreferredLocomotive>();
             foreach (IConsistItem item in List)
             {
-                ISet<PreferredLocomotive> choices = item.GetGenericLeadLocomotiveChoices(store, basePath, folders);
+                ISet<PreferredLocomotive> choices = memoizer.GetLeadLocomotiveChoices(item);
                 bool moreEngines = choices.Contains(PreferredLocomotive.NoLocomotive);
 
                 choices.Remove(PreferredLocomotive.NoLocomotive);
@@ -339,12 +292,12 @@ namespace Orts.Formats.OR
             return engines.Count > 0 ? engines : PreferredLocomotive.NoLocomotiveSet;
         }
 
-        internal override ISet<PreferredLocomotive> GetReverseLocomotiveChoices(ConsistStore store, string basePath, IDictionary<string, string> folders)
+        internal override ISet<PreferredLocomotive> GetReverseLocomotiveChoices(LocomotiveChoiceMemoizer memoizer)
         {
             var engines = new HashSet<PreferredLocomotive>();
             foreach (IConsistItem item in List.Reverse())
             {
-                ISet<PreferredLocomotive> choices = item.GetGenericReverseLocomotiveChoices(store, basePath, folders);
+                ISet<PreferredLocomotive> choices = memoizer.GetReverseLocomotiveChoices(item);
                 bool moreEngines = choices.Contains(PreferredLocomotive.NoLocomotive);
 
                 choices.Remove(PreferredLocomotive.NoLocomotive);
@@ -428,13 +381,13 @@ namespace Orts.Formats.OR
 
         private static readonly Random RnJesus = new Random();
 
-        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        internal override IEnumerable<WagonReference> GetWagonList(ConsistStore store, LocomotiveChoiceMemoizer memoizer, string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
             var table = new List<(float, float, RandomConsistItem)>();
             float p = 0f;
             IEnumerable<RandomConsistItem> searchItems = Random;
             if (preference != null)
-                searchItems = searchItems.Where((RandomConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders).Contains(preference));
+                searchItems = searchItems.Where((RandomConsistItem item) => memoizer.GetLeadLocomotiveChoices(item).Contains(preference));
             foreach (RandomConsistItem item in searchItems)
             {
                 float nextP;
@@ -453,21 +406,21 @@ namespace Orts.Formats.OR
                 .Where(((float, float, RandomConsistItem) tuple) => tuple.Item1 <= random && random < tuple.Item2)
                 .Select(((float, float, RandomConsistItem) tuple) => tuple.Item3)
                 .First();
-            return selected.GetGenericWagonList(store, basePath, folders, startUiD: 0, preference);
+            return selected.GetGenericWagonList(store, memoizer, basePath, folders, startUiD: 0, preference);
         }
 
-        internal override ISet<PreferredLocomotive> GetLeadLocomotiveChoices(ConsistStore store, string basePath, IDictionary<string, string> folders) => Random
+        internal override ISet<PreferredLocomotive> GetLeadLocomotiveChoices(LocomotiveChoiceMemoizer memoizer) => Random
             .Where((RandomConsistItem item) => item.Probability > 0f)
-            .Select((RandomConsistItem item) => item.GetGenericLeadLocomotiveChoices(store, basePath, folders))
+            .Select((RandomConsistItem item) => memoizer.GetLeadLocomotiveChoices(item))
             .Aggregate(new HashSet<PreferredLocomotive>(), (ISet<PreferredLocomotive> accum, IEnumerable<PreferredLocomotive> choices) =>
             {
                 accum.UnionWith(choices);
                 return accum;
             });
 
-        internal override ISet<PreferredLocomotive> GetReverseLocomotiveChoices(ConsistStore store, string basePath, IDictionary<string, string> folders) => Random
+        internal override ISet<PreferredLocomotive> GetReverseLocomotiveChoices(LocomotiveChoiceMemoizer memoizer) => Random
             .Where((RandomConsistItem item) => item.Probability > 0f)
-            .Select((RandomConsistItem item) => item.GetGenericReverseLocomotiveChoices(store, basePath, folders))
+            .Select((RandomConsistItem item) => memoizer.GetReverseLocomotiveChoices(item))
             .Aggregate(new HashSet<PreferredLocomotive>(), (ISet<PreferredLocomotive> accum, IEnumerable<PreferredLocomotive> choices) =>
             {
                 accum.UnionWith(choices);
@@ -575,7 +528,7 @@ namespace Orts.Formats.OR
     /// Tracks the current stack of visited consists, so as to prevent recursion, and caches consist file loads.
     /// </summary>
     /// <remarks>
-    /// NOT thread-safe.
+    /// <strong>NOT</strong> thread-safe.
     /// </remarks>
     internal class ConsistStore
     {
@@ -590,7 +543,7 @@ namespace Orts.Formats.OR
         private HashSet<string> Visited { get; }
 
         /// <summary>
-        /// Creates a top-level consist store.
+        /// Create a top-level consist store.
         /// </summary>
         public ConsistStore()
         {
@@ -636,6 +589,149 @@ namespace Orts.Formats.OR
                 Consists[filePath] = consist;
             }
             return (consist, new ConsistStore(this, new HashSet<string>(Visited) { filePath }));
+        }
+    }
+
+    /// <summary>
+    /// Memoizer for <see cref="ConsistFile.GetLeadLocomotiveChoices(string, IDictionary{string, string})"/>
+    /// and <see cref="ConsistFile.GetReverseLocomotiveChoices(string, IDictionary{string, string})"/> computations.
+    /// </summary>
+    /// <remarks>
+    /// <strong>NOT</strong> thread-safe.
+    /// </remarks>
+    internal class LocomotiveChoiceMemoizer
+    {
+        /// <summary>
+        /// Each memoizer has its own <see cref="ConsistStore"/>.
+        /// </summary>
+        private ConsistStore Store { get; }
+
+        /// <summary>
+        /// Each memoizer has its own current content directory.
+        /// </summary>
+        private string BasePath { get; }
+
+        /// <summary>
+        /// Memoizers share the content folder dictionary.
+        /// </summary>
+        private IDictionary<string, string> Folders { get; }
+
+        /// <summary>
+        /// The lead locomotive choices cache.
+        /// </summary>
+        private Dictionary<IConsistItem, ISet<PreferredLocomotive>> LeadLocomotives { get; }
+
+        /// <summary>
+        /// The reverse locomotive choices cache.
+        /// </summary>
+        private Dictionary<IConsistItem, ISet<PreferredLocomotive>> ReverseLocomotives { get; }
+
+        /// <summary>
+        /// Create a top-level locomotive choice memoizer.
+        /// </summary>
+        /// <param name="store">The top-level consist cache.</param>
+        /// <param name="basePath">The top-level content directory.</param>
+        /// <param name="folders">All other content directories.</param>
+        public LocomotiveChoiceMemoizer(ConsistStore store, string basePath, IDictionary<string, string> folders)
+        {
+            Store = store;
+            BasePath = basePath;
+            Folders = folders;
+            LeadLocomotives = new Dictionary<IConsistItem, ISet<PreferredLocomotive>>();
+            ReverseLocomotives = new Dictionary<IConsistItem, ISet<PreferredLocomotive>>();
+        }
+
+        private LocomotiveChoiceMemoizer(LocomotiveChoiceMemoizer parent, string basePath, ConsistStore store)
+        {
+            Store = store;
+            BasePath = basePath;
+            Folders = parent.Folders;
+            LeadLocomotives = parent.LeadLocomotives;
+            ReverseLocomotives = parent.ReverseLocomotives;
+        }
+
+        /// <summary>
+        /// Get the head-end locomotives that this consist item can spawn with.
+        /// </summary>
+        /// <param name="item">The consist item.</param>
+        /// <returns>The set of all <see cref="PreferredLocomotive"/> choices, or <see cref="PreferredLocomotive.NoLocomotiveSet"/>
+        /// for wagons or references to all-wagon consists.</returns>
+        public ISet<PreferredLocomotive> GetLeadLocomotiveChoices(IConsistItem item)
+        {
+            if (LeadLocomotives.TryGetValue(item, out ISet<PreferredLocomotive> cached))
+                return cached;
+
+            ISet<PreferredLocomotive> choices = GetLeadLocomotiveChoicesUncached(item);
+            LeadLocomotives[item] = choices;
+            return choices;
+        }
+
+        private ISet<PreferredLocomotive> GetLeadLocomotiveChoicesUncached(IConsistItem item)
+        {
+            string basePath = item.ResolveBasePath(BasePath, Folders);
+            if (item is IConsistWagon)
+            {
+                return PreferredLocomotive.NoLocomotiveSet;
+            }
+            else if (item is IConsistEngine engine)
+            {
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(engine.GetPath(BasePath, Folders)) };
+            }
+            else if (item is IConsistReference consist)
+            {
+                (IConsist subConsist, ConsistStore subStore) = Store.CreateSubConsist(basePath, consist.Consist);
+                if (subConsist is ConsistFile ortsConsist)
+                    // ORTS consists can reference other consists, and hence need a ConsistStore to guard against recursion.
+                    return ortsConsist.GetLeadLocomotiveChoices(new LocomotiveChoiceMemoizer(this, basePath, subStore));
+                else
+                    return subConsist.GetLeadLocomotiveChoices(basePath, Folders);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        /// <summary>
+        /// Get the reverse-direction locomotives that this consist item can spawn with.
+        /// </summary>
+        /// <param name="item">The consist item.</param>
+        /// <returns>The set of all <see cref="PreferredLocomotive"/> choices, or <see cref="PreferredLocomotive.NoLocomotiveSet"/>
+        /// for wagons or references to all-wagon consists.</returns>
+        public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(IConsistItem item)
+        {
+            if (ReverseLocomotives.TryGetValue(item, out ISet<PreferredLocomotive> cached))
+                return cached;
+
+            ISet<PreferredLocomotive> choices = GetReverseLocomotiveChoicesUncached(item);
+            ReverseLocomotives[item] = choices;
+            return choices;
+        }
+
+        private ISet<PreferredLocomotive> GetReverseLocomotiveChoicesUncached(IConsistItem item)
+        {
+            string basePath = item.ResolveBasePath(BasePath, Folders);
+            if (item is IConsistWagon)
+            {
+                return PreferredLocomotive.NoLocomotiveSet;
+            }
+            else if (item is IConsistEngine engine)
+            {
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(engine.GetPath(BasePath, Folders)) };
+            }
+            else if (item is IConsistReference consist)
+            {
+                (IConsist subConsist, ConsistStore subStore) = Store.CreateSubConsist(basePath, consist.Consist);
+                if (subConsist is ConsistFile ortsConsist)
+                    // ORTS consists can reference other consists, and hence need a ConsistStore to guard against recursion.
+                    return ortsConsist.GetReverseLocomotiveChoices(new LocomotiveChoiceMemoizer(this, basePath, subStore));
+                else
+                    return subConsist.GetReverseLocomotiveChoices(basePath, Folders);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
         }
     }
 
