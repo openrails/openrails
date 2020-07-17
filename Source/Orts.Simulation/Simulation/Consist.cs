@@ -70,13 +70,12 @@ namespace Orts.Simulation.Simulation
         /// <param name="consist">The consist file to load.</param>
         /// <param name="simulator">The game instance.</param>
         /// <param name="flip">If set, reverse the consist.</param>
-        /// <param name="playerTrain">If set, load the preferred player locomotive, and errors that affect the first wagon are fatal.</param>
+        /// <param name="playerTrain">If set, errors that affect the first wagon are fatal.</param>
         /// <param name="preference">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
         /// <returns>The list of loaded <see cref="TrainCar"/>s.</returns>
-        public static IEnumerable<TrainCar> LoadTrainCars(this IConsist consist, Simulator simulator, bool flip = false, bool playerTrain = false)
+        public static IEnumerable<TrainCar> LoadTrainCars(this IConsist consist, Simulator simulator, bool flip = false, bool playerTrain = false, PreferredLocomotive preference = null)
         {
             UserSettings settings = simulator.Settings;
-            PreferredLocomotive preference = playerTrain ? simulator.PreferredLocomotive : null;
             bool first = true;
             IEnumerable<WagonReference> Iterator()
             {

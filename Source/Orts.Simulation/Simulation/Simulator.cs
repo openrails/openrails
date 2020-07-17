@@ -1122,7 +1122,7 @@ namespace Orts.Simulation
             CurveDurability = conFile.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
-            foreach (TrainCar car in conFile.LoadTrainCars(this, playerTrain: true))
+            foreach (TrainCar car in conFile.LoadTrainCars(this, playerTrain: true, preference: PreferredLocomotive))
             {
                 if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
                 else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.

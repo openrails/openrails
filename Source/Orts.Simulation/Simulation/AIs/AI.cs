@@ -890,7 +890,12 @@ namespace Orts.Simulation.AIs
 
             // add wagons
             train.Length = 0.0f;
-            foreach (TrainCar car in conFile.LoadTrainCars(Simulator, playerTrain: isInitialPlayerTrain))
+            IEnumerable<TrainCar> cars;
+            if (isInitialPlayerTrain && Simulator.PreferredLocomotive != null)
+                cars = conFile.LoadTrainCars(Simulator, playerTrain: true, preference: Simulator.PreferredLocomotive);
+            else
+                cars = conFile.LoadTrainCars(Simulator, playerTrain: isInitialPlayerTrain);
+            foreach (TrainCar car in cars)
             {
                 train.Cars.Add(car);
                 car.Train = train;

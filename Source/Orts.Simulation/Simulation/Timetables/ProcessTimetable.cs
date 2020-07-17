@@ -2301,6 +2301,7 @@ namespace Orts.Simulation.Timetables
             public bool BuildConsist(List<consistInfo> consistSets, Simulator simulator, bool playerTrain = false)
             {
                 bool tilt = true;
+                bool preferenceSatisfied = !playerTrain || simulator.PreferredLocomotive == null;
                 float? confMaxSpeed = null;
                 TTTrain.Length = 0.0f;
 
@@ -2327,7 +2328,34 @@ namespace Orts.Simulation.Timetables
                     }
 
                     // add wagons
-                    var cars = new List<TrainCar>(conFile.LoadTrainCars(simulator, flip: consistReverse, playerTrain: playerTrain));
+                    IEnumerable<TrainCar> cars;
+                    if (playerTrain && simulator.PreferredLocomotive != null)
+                    {
+                        // If we have a player-preferred locomotive, we need to look for the first consist in the list that supports it.
+                        if (preferenceSatisfied)
+                        {
+                            cars = conFile.LoadTrainCars(simulator, flip: consistReverse, playerTrain: true);
+                        }
+                        else
+                        {
+                            ISet<PreferredLocomotive> locos;
+                            IDictionary<string, string> folders = simulator.Settings.Folders.Folders;
+                            locos = consistReverse ? conFile.GetReverseLocomotiveChoices(simulator.BasePath, folders) : conFile.GetLeadLocomotiveChoices(simulator.BasePath, folders);
+                            if (locos.Contains(simulator.PreferredLocomotive))
+                            {
+                                cars = conFile.LoadTrainCars(simulator, flip: consistReverse, playerTrain: true, preference: simulator.PreferredLocomotive);
+                                preferenceSatisfied = true;
+                            }
+                            else
+                            {
+                                cars = conFile.LoadTrainCars(simulator, flip: consistReverse, playerTrain: true, preference: PreferredLocomotive.NoLocomotive);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        cars = conFile.LoadTrainCars(simulator, flip: consistReverse, playerTrain: playerTrain);
+                    }
 
                     // add wagons
                     int carId = 0;
