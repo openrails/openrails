@@ -24,6 +24,7 @@ using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation;
+using Orts.Simulation.Simulation;
 using Orts.Viewer3D.Debugging;
 using ORTS.Common;
 using ORTS.Settings;
@@ -1147,16 +1148,13 @@ namespace Orts.Viewer3D.Processes
 
         string GetConsistName(string path)
         {
-            if (!HasExtension(path, ".con"))
-                return null;
-
-            ConsistFile con = null;
+            IConsist con = null;
             try
             {
-                con = new ConsistFile(path);
+                con = GenericConsist.LoadFile(path);
             }
             catch { }
-            return con?.Name;
+            return con?.DisplayName;
         }
 
         private bool HasExtension(string path, string ext) => Path.GetExtension(path).Equals(ext, StringComparison.OrdinalIgnoreCase);
