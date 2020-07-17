@@ -103,9 +103,6 @@ namespace Orts.Formats.Msts
             return Path.Combine(trainsetPath, wagon.Folder, Path.ChangeExtension(wagon.Name, wagon.IsEngine ? ".eng" : ".wag"));
         }
 
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
     }
 }
