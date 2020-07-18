@@ -647,7 +647,8 @@ namespace Orts.Simulation.Physics
             Number = inf.ReadInt32();
             TotalNumber = Math.Max(Number + 1, TotalNumber);
             Name = inf.ReadString();
-            SpeedMpS = inf.ReadSingle();
+            SpeedMpS = LastSpeedMpS = inf.ReadSingle();
+            AccelerationMpSpS.ForceSmoothValue(inf.ReadSingle());
             TrainType = (TRAINTYPE)inf.ReadInt32();
             if (TrainType == TRAINTYPE.STATIC) ColdStart = true;
             MUDirection = (Direction)inf.ReadInt32();
@@ -985,6 +986,7 @@ namespace Orts.Simulation.Physics
             outf.Write(Number);
             outf.Write(Name);
             outf.Write(SpeedMpS);
+            outf.Write(AccelerationMpSpS.SmoothedValue);
             outf.Write((int)TrainType);
             outf.Write((int)MUDirection);
             outf.Write(MUThrottlePercent);
