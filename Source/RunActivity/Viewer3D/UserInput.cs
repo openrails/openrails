@@ -52,7 +52,7 @@ namespace Orts.Viewer3D
 
         public static RailDriverState RDState;
 
-        public static InputSettings InputSettings;
+        static InputSettings InputSettings;
 
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys key);
