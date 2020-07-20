@@ -44,6 +44,12 @@ namespace Tests.Orts.Parsers.OR
             }
             using (var file = new TestFile("\t"))
             {
+                var tr = new TimetableReader(file.FileName);
+                Assert.Equal(1, tr.Strings.Count);
+                Assert.Equal(2, tr.Strings[0].Length);
+            }
+            using (var file = new TestFile(":"))
+            {
                 Assert.Throws(typeof(InvalidDataException), () => {
                     var tr = new TimetableReader(file.FileName);
                 });
