@@ -31,7 +31,6 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows.Forms;
 using Path = ORTS.Menu.Path;
 
@@ -101,6 +100,7 @@ namespace ORTS
         public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
         public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
+        public Locomotive SelectedTimetableLocomotive { get => (Locomotive)comboBoxTimetableLocomotive.SelectedItem; }
         public WeatherFileInfo SelectedWeatherFile { get { return (WeatherFileInfo)comboBoxTimetableWeatherFile.SelectedItem; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
@@ -461,6 +461,7 @@ namespace ORTS
             var selectedTrain = comboBoxTimetableTrain.SelectedItem as TimetableFileLite.TrainInformation;
             SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, Folders, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
             SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
+            ShowTimetableConsist();
             ShowDetails();
         }
         #endregion
@@ -694,10 +695,10 @@ namespace ORTS
                     SelectedTimetableTrain != null ? SelectedTimetableTrain.Column.ToString() : "",
                 radioButtonModeActivity.Checked ?
                     SelectedActivity is ExploreActivity && SelectedPath != null ? SelectedPath.FilePath : "" :
-                    SelectedTimetableDay.ToString(),
+                    "",
                 radioButtonModeActivity.Checked ?
                     SelectedActivity is ExploreActivity ? SelectedStartTime : "" :
-                    "",
+                    SelectedTimetableDay.ToString(),
                 // Shared items
                 radioButtonModeActivity.Checked ?
                     SelectedActivity is ExploreActivity ? SelectedStartSeason.ToString() : "" :
@@ -724,6 +725,8 @@ namespace ORTS
             comboBoxStartTime.DropDownStyle = SelectedActivity is ExploreActivity ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
             comboBoxTimetable.Enabled = comboBoxTimetableSet.Items.Count > 0;
             comboBoxTimetableTrain.Enabled = comboBoxTimetable.Items.Count > 0;
+            comboBoxTimetableConsist.Enabled = false;
+            comboBoxTimetableLocomotive.Enabled = comboBoxTimetableLocomotive.Items.Count > 1;
             comboBoxTimetableWeatherFile.Enabled = comboBoxTimetableWeatherFile.Items.Count > 0;
             //Avoid to Start with a non valid Activity/Locomotive/Consist.
             buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked && !comboBoxActivity.Text.StartsWith("<") && !comboBoxLocomotive.Text.StartsWith("<") ?
@@ -1102,6 +1105,36 @@ namespace ORTS
                 foreach (var train in trains)
                     comboBoxTimetableTrain.Items.Add(train);
                 UpdateFromMenuSelection<TimetableFileLite.TrainInformation>(comboBoxTimetableTrain, UserSettings.Menu_SelectionIndex.Train, t => t.Column.ToString());
+            }
+            ShowTimetableConsist();
+            UpdateEnabled();
+        }
+        #endregion
+
+        #region Timetable consist
+        void ShowTimetableConsist()
+        {
+            comboBoxTimetableConsist.Items.Clear();
+            if (SelectedTimetableConsist != null)
+            {
+                comboBoxTimetableConsist.Items.Add(SelectedTimetableConsist.Name);
+                comboBoxTimetableConsist.SelectedIndex = 0;
+            }
+            ShowTimetableLocomotive();
+        }
+        #endregion
+
+        #region Timetable locomotive
+        void ShowTimetableLocomotive()
+        {
+            comboBoxTimetableLocomotive.Items.Clear();
+            if (SelectedTimetableConsist != null)
+            {
+                Locomotive[] locomotives = SelectedTimetableConsist.Locomotives
+                    .ToArray();
+                Array.Sort(locomotives);
+                comboBoxTimetableLocomotive.Items.AddRange(locomotives);
+                UpdateFromMenuSelection(comboBoxTimetableLocomotive, UserSettings.Menu_SelectionIndex.TimetableLocomotive, (Locomotive loco) => loco.Name);
             }
             UpdateEnabled();
         }

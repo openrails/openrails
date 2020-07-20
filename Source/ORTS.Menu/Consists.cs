@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -154,7 +155,7 @@ namespace ORTS.Menu
 
     }
 
-    public class Locomotive
+    public class Locomotive : IComparable<Locomotive>
     {
         public readonly string Name;
         public readonly string Description;
@@ -212,5 +213,7 @@ namespace ORTS.Menu
         {
             return Name.GetHashCode();
         }
+
+        public int CompareTo(Locomotive other) => string.Compare(Name, other.Name);
     }
 }

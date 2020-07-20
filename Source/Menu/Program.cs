@@ -151,9 +151,19 @@ namespace ORTS
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
                             break;
                     }
-
-                    if (MainForm.SelectedConsist.Locomotives.Count > 1)
-                        parameters.Add($"-preferredLocomotive=\"{MainForm.SelectedLocomotive.FilePath}\"");
+                    switch (MainForm.SelectedAction)
+                    {
+                        case MainForm.UserAction.SingleplayerNewGame:
+                        case MainForm.UserAction.MultiplayerClient:
+                        case MainForm.UserAction.MultiplayerServer:
+                            if (MainForm.SelectedConsist.Locomotives.Count > 1)
+                                parameters.Add($"-preferredLocomotive=\"{MainForm.SelectedLocomotive.FilePath}\"");
+                            break;
+                        case MainForm.UserAction.SinglePlayerTimetableGame:
+                            if (MainForm.SelectedTimetableConsist.Locomotives.Count > 1)
+                                parameters.Add($"-preferredLocomotive=\"{MainForm.SelectedTimetableLocomotive.FilePath}\"");
+                            break;
+                    }
 
                     var processStartInfo = new System.Diagnostics.ProcessStartInfo();
                     processStartInfo.FileName = MainForm.RunActivityProgram;
