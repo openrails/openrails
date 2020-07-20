@@ -113,7 +113,7 @@ namespace Orts.Formats.OR
         /// <summary>
         /// The installation profile (content directory) to search for this item; the current one if null.
         /// </summary>
-        string Profile { get; set; }
+        string X_Profile { get; set; }
     }
 
     public interface IConsistWagon : IConsistItem
@@ -303,10 +303,10 @@ namespace Orts.Formats.OR
         /// <returns>The resolved content directory, which may or may not be equivalent to basePath.</returns>
         public static string ResolveBasePath(this IConsistItem item, string basePath, IDictionary<string, string> folders)
         {
-            if (item.Profile != null)
+            if (item.X_Profile != null)
             {
-                if (!folders.TryGetValue(item.Profile, out string newBasePath))
-                    throw new DirectoryNotFoundException($"Unknown installation profile: {item.Profile}");
+                if (!folders.TryGetValue(item.X_Profile, out string newBasePath))
+                    throw new DirectoryNotFoundException($"Unknown installation profile: {item.X_Profile}");
                 return newBasePath;
             }
             return basePath;
@@ -414,7 +414,7 @@ namespace Orts.Formats.OR
     {
         public int Count { get; set; } = 1;
         public bool Flip { get; set; } = false;
-        public string Profile { get; set; } = null;
+        public string X_Profile { get; set; } = null;
     }
 
     public class ListConsistWagon : ListConsistItem, IConsistWagon
@@ -560,7 +560,7 @@ namespace Orts.Formats.OR
     {
         public int Count { get; set; } = 1;
         public bool Flip { get; set; } = false;
-        public string Profile { get; set; } = null;
+        public string X_Profile { get; set; } = null;
         public float Probability { get; set; }
     }
 
