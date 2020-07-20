@@ -27,6 +27,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.Signalling;
+using Orts.Simulation.Simulation;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
 using ORTS.Settings;
@@ -116,6 +117,7 @@ namespace Orts.Simulation
         public string ExploreConFile;
         public string patFileName;
         public string conFileName;
+        public PreferredLocomotive PreferredLocomotive { get; set; }
         public AIPath PlayerPath;
         public LevelCrossings LevelCrossings;
         public RoadDatabaseFile RDB;
@@ -348,10 +350,11 @@ namespace Orts.Simulation
             Log = new CommandLog(this);
         }
 
-        public void SetActivity(string activityPath)
+        public void SetActivity(string activityPath, PreferredLocomotive preferredLocomotive = null)
         {
             ActivityFileName = Path.GetFileNameWithoutExtension(activityPath);
             Activity = new ActivityFile(activityPath);
+            PreferredLocomotive = preferredLocomotive;
 
             // check for existence of activity file in OpenRails subfolder
 
@@ -378,12 +381,14 @@ namespace Orts.Simulation
             }
             IsAutopilotMode = true;
         }
-        public void SetExplore(string path, string consist, string start, string season, string weather)
+        public void SetExplore(string path, string consist, string start, string season, string weather, PreferredLocomotive preferredLocomotive = null)
         {
             ExplorePathFile = path;
             ExploreConFile = consist;
+            PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
-            conFileName = Path.ChangeExtension(consist, "CON");
+            string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
+            conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             ClockTime = StartTime.TotalSeconds;
@@ -391,7 +396,7 @@ namespace Orts.Simulation
             WeatherType = (WeatherType)int.Parse(weather);
         }
 
-        public void SetExploreThroughActivity(string path, string consist, string start, string season, string weather)
+        public void SetExploreThroughActivity(string path, string consist, string start, string season, string weather, PreferredLocomotive preferredLocomotive = null)
         {
             ActivityFileName = "ea$" + RoutePathName + "$" + DateTime.Today.Year.ToString() + DateTime.Today.Month.ToString() + DateTime.Today.Day.ToString() +
                 DateTime.Today.Hour.ToString() + DateTime.Today.Minute.ToString() + DateTime.Today.Second.ToString();
@@ -399,8 +404,10 @@ namespace Orts.Simulation
             ActivityRun = new Activity(Activity, this);
             ExplorePathFile = path;
             ExploreConFile = consist;
+            PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
-            conFileName = Path.ChangeExtension(consist, "CON");
+            string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
+            conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time = StartTime.Hours + StartTime.Minutes * 60 +
@@ -616,7 +623,7 @@ namespace Orts.Simulation
         {
             var PlayerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
             var srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + PlayerServiceFileName + ".SRV");
-            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            conFileName = ConsistUtilities.ResolveConsist(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
         }
 
@@ -1090,11 +1097,11 @@ namespace Orts.Simulation
             srvFile.Name = playerServiceFileName;
             srvFile.Train_Config = playerServiceFileName;
             srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
-            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            conFileName = ConsistUtilities.ResolveConsist(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
-            if (conFileName.Contains("tilted")) train.IsTilting = true;
+            train.IsTilting = GenericConsist.IsTilting(conFileName);
 
 #if ACTIVITY_EDITOR
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
@@ -1111,54 +1118,27 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            ConsistFile conFile = new ConsistFile(conFileName);
-            CurveDurability = conFile.Train.TrainCfg.Durability;   // Finds curve durability of consist based upon the value in consist file
+            IConsist conFile = GenericConsist.LoadFile(conFileName);
+            CurveDurability = conFile.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
-            foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
+            foreach (TrainCar car in conFile.LoadTrainCars(this, playerTrain: true, preference: PreferredLocomotive))
             {
-                string wagonFolder = BasePath + @"\trains\trainset\" + wagon.Folder;
-                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag"; ;
-                if (wagon.IsEngine)
-                    wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+                if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
+                else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
+                train.Cars.Add(car);
+                car.Train = train;
+                train.Length += car.CarLengthM;
 
-                if (!File.Exists(wagonFilePath))
+                var mstsDieselLocomotive = car as MSTSDieselLocomotive;
+                if (Activity != null && mstsDieselLocomotive != null)
+                    mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+
+                var mstsSteamLocomotive = car as MSTSSteamLocomotive;
+                if (Activity != null && mstsSteamLocomotive != null)
                 {
-                    // First wagon is the player's loco and required, so issue a fatal error message
-                    if (wagon == conFile.Train.TrainCfg.WagonList[0])
-                        Trace.TraceError("Player's locomotive {0} cannot be loaded in {1}", wagonFilePath, conFileName);
-                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonFilePath, conFileName);
-                    continue;
-                }
-
-                try
-                {
-                    TrainCar car = RollingStock.Load(this, wagonFilePath);
-                    car.Flipped = wagon.Flip;
-                    car.UiD = wagon.UiD;
-                    if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
-                    else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
-                    train.Cars.Add(car);
-                    car.Train = train;
-                    train.Length += car.CarLengthM;
-
-                    var mstsDieselLocomotive = car as MSTSDieselLocomotive;
-                    if (Activity != null && mstsDieselLocomotive != null)
-                        mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
-
-                    var mstsSteamLocomotive = car as MSTSSteamLocomotive;
-                    if (Activity != null && mstsSteamLocomotive != null)
-                    {
-                        mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
-                        mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
-                    }
-                }
-                catch (Exception error)
-                {
-                    // First wagon is the player's loco and required, so issue a fatal error message
-                    if (wagon == conFile.Train.TrainCfg.WagonList[0])
-                        throw new FileLoadException(wagonFilePath, error);
-                    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
+                    mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
+                    mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
                 }
             }// for each rail car
 
@@ -1186,12 +1166,7 @@ namespace Orts.Simulation
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
 
             PlayerLocomotive = InitialPlayerLocomotive();
-            if ((conFile.Train.TrainCfg.MaxVelocity == null) ||
-                ((conFile.Train.TrainCfg.MaxVelocity != null) && ((conFile.Train.TrainCfg.MaxVelocity.A <= 0f) || (conFile.Train.TrainCfg.MaxVelocity.A == 40f))))
-                train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
-            else
-                train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
-
+            train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.MaxVelocityMpS ?? ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
 
             train.AITrainBrakePercent = 100; //<CSComment> This seems a tricky way for the brake modules to test if it is an AI train or not
             return (train);
@@ -1215,7 +1190,7 @@ namespace Orts.Simulation
                 srvFile.Train_Config = playerServiceFileName;
                 srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
             }
-            conFileName = BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            conFileName = ConsistUtilities.ResolveConsist(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
@@ -1266,7 +1241,7 @@ namespace Orts.Simulation
                 Train.TCRoutePath dummyRoute = new Train.TCRoutePath(train.Path, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
             }
 
-            if (conFileName.Contains("tilted")) train.IsTilting = true;
+            train.IsTilting = GenericConsist.IsTilting(srvFile.Train_Config);
 
             return train;
         }

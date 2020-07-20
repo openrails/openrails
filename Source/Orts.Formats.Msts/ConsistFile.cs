@@ -15,17 +15,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Orts.Parsers.Msts;
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
     /// <summary>
     /// Work with consist files
     /// </summary>
-    public class ConsistFile
+    public class ConsistFile : IConsist
     {
         public string Name; // from the Name field or label field of the consist file
         public Train_Config Train;
@@ -39,9 +40,69 @@ namespace Orts.Formats.Msts
             Name = Train.TrainCfg.Name;
         }
 
-        public override string ToString()
+        string IConsist.DisplayName => Train.TrainCfg.Name;
+
+        public float? MaxVelocityMpS
         {
-            return Name;
+            get
+            {
+                float a = Train.TrainCfg.MaxVelocity?.A ?? 0f;
+                if (a <= 0f || a == 40f)
+                    return null;
+                else
+                    return a;
+            }
         }
+
+        public float Durability => Train.TrainCfg.Durability;
+
+        public bool PlayerDrivable => true;
+
+        public ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
+        {
+            Wagon firstEngine = Train.TrainCfg.WagonList
+                .Where((Wagon wagon) => wagon.IsEngine)
+                .FirstOrDefault();
+            if (firstEngine == null)
+                return PreferredLocomotive.NoLocomotiveSet;
+            else
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(WagonPath(basePath, firstEngine)) };
+        }
+
+        public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
+        {
+            Wagon lastEngine = Train.TrainCfg.WagonList
+                .Where((Wagon wagon) => wagon.IsEngine)
+                .LastOrDefault();
+            if (lastEngine == null)
+                return PreferredLocomotive.NoLocomotiveSet;
+            else
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(WagonPath(basePath, lastEngine)) };
+        }
+
+        public IEnumerable<WagonReference> GetForwardWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        {
+            if (GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
+                return new WagonReference[0] { };
+            return Train.TrainCfg.WagonList
+                .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
+        }
+
+        public IEnumerable<WagonReference> GetReverseWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
+        {
+            if (GetReverseLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
+                return new WagonReference[0] { };
+            return Train.TrainCfg.WagonList
+                .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), !wagon.Flip, wagon.UiD))
+                .Reverse();
+        }
+
+        private static string WagonPath(string basePath, Wagon wagon)
+        {
+            string trainsetPath = Path.Combine(basePath, "trains", "trainset");
+            return Path.Combine(trainsetPath, wagon.Folder, Path.ChangeExtension(wagon.Name, wagon.IsEngine ? ".eng" : ".wag"));
+        }
+
+        public override string ToString() => Name;
     }
 }
