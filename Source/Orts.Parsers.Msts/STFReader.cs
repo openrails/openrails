@@ -529,6 +529,8 @@ namespace Orts.Parsers.Msts
                 return defaultValue.Value;
             }
 
+            if (item.Length == 0)
+                return 0x0;
             uint val;
             if (uint.TryParse(item, parseHex, parseNFI, out val)) return val;
             STFException.TraceWarning(this, "Cannot parse the constant hex string " + item);
