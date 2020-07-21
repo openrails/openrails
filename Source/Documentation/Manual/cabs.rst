@@ -171,6 +171,37 @@ Here is an example of a cab light control block within the .cvf file::
             )
 
 
+Signed Traction Braking control
+-------------------------------
+
+This cabview control shows the signed value of the force (+ve or -ve, that is 
+tractive or due to dynamic braking) as displayed 
+in many real loco cabs. The control is ORTS_SIGNED_TRACTION_BRAKING. 
+For comparison, the MSTS-compatible TRACTION_BRAKING cabview control shows the 
+absolute value of the force. 
+Here is an example of a cab light control block within the .cvf file::
+
+
+            Dial (
+                Type ( ORTS_SIGNED_TRACTION_BRAKING DIAL )
+                Position ( 319 223 3 32 )
+                Graphic ( ../../Common.Cab/CabE464/AgoDin.ace )
+                Style ( NEEDLE )
+                ScaleRange ( -761 1600 )
+                ScalePos ( 190 70 )
+                Units ( AMPS )
+                Pivot ( 36 )
+                DirIncrease ( 0 )
+                )
+
+Signed Traction Total Braking control
+-------------------------------------
+
+ORTS_SIGNED_TRACTION_TOTAL_BRAKING control behaves and is defined like 
+ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking 
+force does include also the train brake force in addition to the dynamic 
+brake force.
+
 Further OR cab controls
 -----------------------
 
@@ -305,6 +336,25 @@ the first two, or all three.
 Note that you cannot use the MS Cabview editor on the .cvf file after having 
 inserted these optional lines, because the editor will delete these added 
 lines when the file is saved.
+
+Rotation of Digital controls
+----------------------------
+
+One of the drawbacks of rendering a cabview in 2D is that some parts of it 
+are not shown with a frontal, horizontal, view. Displaying a horizontal digital 
+control on it generates an unrealistc effect. This is the rationale of following 
+entry, to be added within a Digital cabview control block in the .cvf file::
+
+  ORTSAngle ( 5 )
+
+The number in parenthesis is the angle in degrees with respect to the horizontal 
+(positive for counterclockwise rotation).
+
+Here an example of a red max speed indication that has been rotated by 5 degrees
+
+.. image:: images/cabs-digitals-rotation.png
+
+Rotation may be applied, with the same syntax, also to DigitalClock cab controls.
 
 3D cabs
 =======

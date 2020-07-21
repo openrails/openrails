@@ -196,6 +196,15 @@ Trigger       Function
 143           BrakePipePressureStoppedChanging : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure stops changing
 =========     ============================================================================================================================================================================
 
+
+=========     ======================================================================
+Trigger       Function
+=========     ======================================================================
+147           SteamGearLeverToggle : Toggles when steam gear lever is moved.
+148           AIFiremanSoundOn : AI fireman mode is on.
+149           AIFiremanSoundOff : AI fireman mode is off, ie in Manual Firing mode.
+=========     ======================================================================
+
 Triggers from 150 to 158 are used for the circuit breaker sounds.
 
 The following triggers are activated when the state of the circuit breaker changes:
@@ -254,6 +263,22 @@ Trigger       Function
 170           Pantograph3Down
 171           Pantograph4Up
 172           Pantograph4Down
+=========     =====================================
+
+The following triggers are used to activate the gear positions:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+200           GearPosition0
+201           GearPosition1
+202           GearPosition2
+203           GearPosition3
+204           GearPosition4
+205           GearPosition5
+206           GearPosition6
+207           GearPosition7
+208           GearPosition8
 =========     =====================================
 
 Variable Triggers

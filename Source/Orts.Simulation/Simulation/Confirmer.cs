@@ -50,11 +50,13 @@ namespace Orts.Simulation
       , PlayerDiesel
       , HelperDiesel
       , DieselFuel
+      , SteamHeatBoilerWater
       // Steam power
       , SteamLocomotiveReverser
       , Regulator
       , Injector1
       , Injector2
+      , BlowdownValve
       , Blower
       , SteamHeat
       , Damper
@@ -64,7 +66,9 @@ namespace Orts.Simulation
       , FireShovelfull
       , CylinderCocks
       , CylinderCompound
+      , LargeEjector
       , SmallEjector
+      , VacuumExhauster
       , TenderCoal
       , TenderWater
       // General
@@ -165,6 +169,7 @@ namespace Orts.Simulation
             Func<string, string> GetString = (value) => Simulator.Catalog.GetString(value);
             Func<string, string, string> GetParticularString = (context, value) => Simulator.Catalog.GetParticularString(context, value);
 
+            // The following list needs to be in the same order as the list above under CabControl
             ConfirmText = new string[][] {
                 new string [] { GetString("<none>") } 
                 // Power
@@ -183,12 +188,14 @@ namespace Orts.Simulation
                 // Diesel power
                 , new string [] { GetString("Player Diesel Power"), GetString("off"), null, GetString("on"), null, null, GetString("locked. Close throttle then re-try.") }
                 , new string [] { GetString("Helper Diesel Power"), GetString("off"), null, GetString("on") }
-                , new string [] { GetString("Diesel Tank"), null, null, GetString("re-fueled"), null, GetString("level") } 
+                , new string [] { GetString("Diesel Tank"), null, null, GetString("re-fueled"), null, GetString("level") }
+                , new string [] { GetString("Boiler Water Tank"), null, null, GetString("re-fueled"), null, GetString("level") }
                 // Steam power
                 , new string [] { GetParticularString("Steam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
                 , new string [] { GetString("Regulator"), null, null, null, GetString("close"), GetString("open") }    // Throttle for steam locomotives
                 , new string [] { GetString("Injector 1"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
-                , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") } 
+                , new string [] { GetString("Injector 2"), GetString("off"), null, GetString("on"), GetString("close"), GetString("open") }
+                , new string [] { GetString("Blowdown Valve"), GetString("close"), null, GetString("open") }
                 , new string [] { GetString("Blower"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("SteamHeat"), null, null, null, GetString("decrease"), GetString("increase") } 
                 , new string [] { GetString("Damper"), null, null, null, GetString("close"), GetString("open") } 
@@ -197,8 +204,10 @@ namespace Orts.Simulation
                 , new string [] { GetString("Manual Firing"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Fire"), null, null, GetString("add shovel-full") } 
                 , new string [] { GetString("Cylinder Cocks"), GetString("close"), null, GetString("open") } 
-                , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") } 
-                , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") } 
+                , new string [] { GetString("Cylinder Compound"), GetString("close"), null, GetString("open") }
+                , new string [] { GetString("LargeEjector"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("SmallEjector"), null, null, null, GetString("decrease"), GetString("increase") }
+                , new string [] { GetString("VacuumExhauster"), GetString("normal"), null, GetString("fast") }
                 , new string [] { GetString("Tender"), null, null, GetString("Coal re-filled"), null, GetString("Coal level") } 
                 , new string [] { GetString("Tender"), null, null, GetString("Water re-filled"), null, GetString("Water level") }
                 // General

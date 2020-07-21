@@ -16,87 +16,71 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Orts.Viewer3D.Debugging
 {
     public partial class MessageViewer : Form
-   {
-	   private void clearAllClick(object sender, EventArgs e)
-	   {
-		   messages.Items.Clear();
-	   }
+    {
+        public MessageViewer()
+        {
+            InitializeComponent();
+        }
 
-	   private void composeClick(object sender, EventArgs e)
-	   {
-		   MSG.Enabled = true;
-		   MultiPlayer.MPManager.Instance().ComposingText = true;
-	   }
-	   
-	   private void replySelectedClick(object sender, EventArgs e)
-	   {
-		   var count = 0;
-		   while (count < 3)
-		   {
-			   try
-			   {
-				   var chosen = messages.SelectedItems;
-				   var msg = MSG.Text;
-				   msg = msg.Replace("\r", "");
-				   msg = msg.Replace("\t", "");
-				   if (msg == "") return;
-				   if (chosen.Count > 0)
-				   {
-					   var user = "";
-
-					   for (var i = 0; i < chosen.Count; i++)
-					   {
-						   var tmp = (string)chosen[i];
-						   var index = tmp.IndexOf(':');
-						   if (index < 0) continue;
-						   tmp = tmp.Substring(0, index)+"\r";
-						   if (user.Contains(tmp)) continue;
-						   user += tmp;
-					   }
-					   user += "0END";
-
-					   MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-					   MSG.Text = "";
-					   //MSG.Enabled = false;
-					   MultiPlayer.MPManager.Instance().ComposingText = false;
-
-				   }
-				   return;
-			   }
-			   catch { count++; }
-		   }
-	   }
-	   public MessageViewer()
-	   {
-		   InitializeComponent();
-	   }
-
-	   public bool addNewMessage(double time, string msg)
-	   {
-		   var count = 0;
-		   while (count < 3)
-		   {
-			   try
-			   {
-				   if (messages.Items.Count > 10)
-				   {
-					   messages.Items.RemoveAt(0);
-				   }
-				   messages.Items.Add(msg);
-				   Show();
-				   Visible = true;
-				   BringToFront();
-				   break;
-			   }
-			   catch { count++; }
-		   }
-		   return true;
-	   }
-
-   }
+        private void ClearAllClick(object sender, EventArgs e)
+        {
+            messages.Items.Clear();
+        }
+        
+        private void ComposeClick(object sender, EventArgs e)
+        {
+            MSG.Enabled = true;
+            MultiPlayer.MPManager.Instance().ComposingText = true;
+        }
+        
+        private void ReplySelectedClick(object sender, EventArgs e)
+        {
+            string msg = MSG.Text
+                .Replace("\r", "")
+                .Replace("\t", "");
+            if (msg == "")
+                return;
+            if (messages.SelectedItems.Count > 0)
+            {
+                var users = messages.SelectedItems.Cast<string>()
+                    .Where((string u) => u.Contains(":"))
+                    .Distinct()
+                    .Select((string u) => $"{u.Substring(0, u.IndexOf(':'))}\r");
+                string user = string.Join("", users) + "0END";
+                string msgText = new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg).ToString();
+                foreach (int _ in Enumerable.Range(0, 3))
+                {
+                    try
+                    {
+                        MultiPlayer.MPManager.Notify(msgText);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                    break;
+                }
+                MSG.Text = "";
+                //MSG.Enabled = false;
+                MultiPlayer.MPManager.Instance().ComposingText = false;
+            }
+        }
+        
+        public bool AddNewMessage(double _, string msg)
+        {
+            if (messages.Items.Count > 10)
+                messages.Items.RemoveAt(0);
+            messages.Items.Add(msg);
+            Show();
+            Visible = true;
+            BringToFront();
+            return true;
+        }
+    }
 }

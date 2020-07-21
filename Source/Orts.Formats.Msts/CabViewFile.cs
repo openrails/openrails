@@ -89,6 +89,7 @@ namespace Orts.Formats.Msts
         DYNAMIC_BRAKE_DISPLAY,
         SANDERS,
         WIPERS,
+        VACUUM_EXHAUSTER,
         HORN,
         BELL,
         FRONT_HLIGHT,
@@ -120,6 +121,7 @@ namespace Orts.Formats.Msts
         BLOWER,
         STEAM_INJ1,
         STEAM_INJ2,
+        ORTS_BLOWDOWN_VALVE,
         DAMPERS_FRONT,
         DAMPERS_BACK,
         STEAM_HEAT,
@@ -168,10 +170,63 @@ namespace Orts.Formats.Msts
         ORTS_MIRRORS,
         ORTS_PANTOGRAPH3,
         ORTS_PANTOGRAPH4,
+        ORTS_LARGE_EJECTOR,
         ORTS_WATER_SCOOP,
         ORTS_HOURDIAL,
         ORTS_MINUTEDIAL,
         ORTS_SECONDDIAL,
+		ORTS_SIGNED_TRACTION_BRAKING,
+        ORTS_SIGNED_TRACTION_TOTAL_BRAKING,
+
+        // TCS Controls
+        ORTS_TCS1,
+        ORTS_TCS2,
+        ORTS_TCS3,
+        ORTS_TCS4,
+        ORTS_TCS5,
+        ORTS_TCS6,
+        ORTS_TCS7,
+        ORTS_TCS8,
+        ORTS_TCS9,
+        ORTS_TCS10,
+        ORTS_TCS11,
+        ORTS_TCS12,
+        ORTS_TCS13,
+        ORTS_TCS14,
+        ORTS_TCS15,
+        ORTS_TCS16,
+        ORTS_TCS17,
+        ORTS_TCS18,
+        ORTS_TCS19,
+        ORTS_TCS20,
+        ORTS_TCS21,
+        ORTS_TCS22,
+        ORTS_TCS23,
+        ORTS_TCS24,
+        ORTS_TCS25,
+        ORTS_TCS26,
+        ORTS_TCS27,
+        ORTS_TCS28,
+        ORTS_TCS29,
+        ORTS_TCS30,
+        ORTS_TCS31,
+        ORTS_TCS32,
+        ORTS_TCS33,
+        ORTS_TCS34,
+        ORTS_TCS35,
+        ORTS_TCS36,
+        ORTS_TCS37,
+        ORTS_TCS38,
+        ORTS_TCS39,
+        ORTS_TCS40,
+        ORTS_TCS41,
+        ORTS_TCS42,
+        ORTS_TCS43,
+        ORTS_TCS44,
+        ORTS_TCS45,
+        ORTS_TCS46,
+        ORTS_TCS47,
+        ORTS_TCS48,
 
         // Further CabViewControlTypes must be added above this line, to avoid their malfunction in 3DCabs
         EXTERNALWIPERS,
@@ -572,6 +627,7 @@ namespace Orts.Formats.Msts
         public float FontSize { get; set; }
         public int FontStyle { get; set; }
         public string FontFamily = "";
+        public float Rotation { get; set; }
 
         public CVCDigital()
         {
@@ -636,7 +692,8 @@ namespace Orts.Formats.Msts
                             new STFReader.TokenProcessor("controlcolour", ()=>{ DecreaseColor = ParseControlColor(stf); }) });
                     }
                 }),
-                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); })
+                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),
+                new STFReader.TokenProcessor("ortsangle", () => { ParseRotation(stf); }),              
             });
         }
 
@@ -677,6 +734,14 @@ namespace Orts.Formats.Msts
             if (fontFamily != null) FontFamily = fontFamily;
             stf.SkipRestOfBlock();
          }
+
+        protected virtual void ParseRotation(STFReader stf)
+        {
+            stf.MustMatch("(");
+            Rotation = - MathHelper.ToRadians((float)stf.ReadDouble(0));
+            stf.SkipRestOfBlock();
+        }
+
     }
 
     public class CVCDigitalClock : CVCDigital
@@ -694,7 +759,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
                 new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }),
-                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); })
+                new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),
+                new STFReader.TokenProcessor("ortsangle", () => { ParseRotation(stf); })
             });
         }
 
@@ -1029,7 +1095,7 @@ namespace Orts.Formats.Msts
                     ControlType == CABViewControlTypes.ORTS_PANTOGRAPH3 || ControlType == CABViewControlTypes.ORTS_PANTOGRAPH4)
                     ControlStyle = CABViewControlStyles.ONOFF;
                 if (ControlType == CABViewControlTypes.HORN || ControlType == CABViewControlTypes.SANDERS || ControlType == CABViewControlTypes.BELL 
-                    || ControlType == CABViewControlTypes.RESET)
+                    || ControlType == CABViewControlTypes.RESET || ControlType == CABViewControlTypes.VACUUM_EXHAUSTER)
                     ControlStyle = CABViewControlStyles.WHILE_PRESSED;
                 if (ControlType == CABViewControlTypes.DIRECTION && Orientation == 0)
                     Direction = 1 - Direction;

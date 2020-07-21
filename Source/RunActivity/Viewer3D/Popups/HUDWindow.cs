@@ -264,6 +264,19 @@ namespace Orts.Viewer3D.Popups
             }
         }
 
+        // ==========================================================================================================================================
+        //      Method to construct the various Heads Up Display pages for use by the WebServer 
+        //      Replaces the Prepare Frame Method
+        //      djr - 20171221
+        // ==========================================================================================================================================
+        public TableData PrepareTable(int PageNo)
+        {
+            var table = new TableData() { Cells = new string[1, 1] };
+
+            TextPages[PageNo](table);
+            return (table);
+        }
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             // Completely customise the rendering of the HUD - don't call base.Draw(spriteBatch).
@@ -307,7 +320,22 @@ namespace Orts.Viewer3D.Popups
         }
 
         #region Table handling
-        sealed class TableData
+
+
+        // ==========================================================================================================================================
+        //      Class used to construct table for display of Heads Up Display pages
+        //      Original Code has been altered making the class public for use by the WebServer
+        //      djr - 20171221
+        // ==========================================================================================================================================
+        //sealed class TableData
+        //{
+        //    public string[,] Cells;
+        //    public int CurrentRow;
+        //    public int CurrentLabelColumn;
+        //    public int CurrentValueColumn;
+        //}
+
+        public sealed class TableData
         {
             public string[,] Cells;
             public int CurrentRow;
@@ -499,7 +527,7 @@ namespace Orts.Viewer3D.Popups
                 Viewer.Catalog.GetString("Out of Control"), "",
                 Viewer.Catalog.GetString("Cab Aspect"));
             TableAddLine(table);
-            TableSetCells(table, 0, locomotive.CarID + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? Viewer.Catalog.GetString("R") : Viewer.Catalog.GetString("F")),
+            TableSetCells(table, 0, locomotive.CarID + " " + (mstsLocomotive == null ? "" : mstsLocomotive.UsingRearCab ? Viewer.Catalog.GetParticularString("Cab", "R") : Viewer.Catalog.GetParticularString("Cab", "F")),
                 train.IsTilting ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"),
                 train.IsFreight ? Viewer.Catalog.GetString("Freight") : Viewer.Catalog.GetString("Pass"),
                 FormatStrings.FormatShortDistanceDisplay(train.Length, locomotive.IsMetric),
@@ -526,7 +554,7 @@ namespace Orts.Viewer3D.Popups
                     train.IsFreight ? Viewer.Catalog.GetString("Freight") : Viewer.Catalog.GetString("Pass"),
                     FormatStrings.FormatShortDistanceDisplay(car.CarLengthM, locomotive.IsMetric),
                     FormatStrings.FormatLargeMass(car.MassKG, locomotive.IsMetric, locomotive.IsUK),
-                    (car.IsDriveable ? "D" : "") + (car.HasFrontCab || car.HasFront3DCab ? "F" : "") + (car.HasRearCab || car.HasRear3DCab ? "R" : ""),
+                    (car.IsDriveable ? Viewer.Catalog.GetParticularString("Cab", "D") : "") + (car.HasFrontCab || car.HasFront3DCab ? Viewer.Catalog.GetParticularString("Cab", "F") : "") + (car.HasRearCab || car.HasRear3DCab ? Viewer.Catalog.GetParticularString("Cab", "R") : ""),
                     GetCarWhyteLikeNotation(car));
                 TableAddLine(table);
             }
@@ -604,10 +632,8 @@ namespace Orts.Viewer3D.Popups
 
                         if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumBrakeEQFitted)
                             {
-                                TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
+                                TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}",
                                 Viewer.Catalog.GetString("PlayerLoco"),
-                                Viewer.Catalog.GetString("Main reservoir"),
-                                FormatStrings.FormatPressure(Vac.FromPress((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumMainResVacuumPSIAorInHg), PressureUnit.InHg, PressureUnit.InHg, true),
                                 Viewer.Catalog.GetString("Exhauster"),
                                 (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumExhausterIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
                             }
@@ -841,7 +867,7 @@ namespace Orts.Viewer3D.Popups
                 var car = train.Cars[j];
                 TableSetCell(table, 0, "{0}", car.CarID);
                 TableSetCell(table, 1, "{0}", FormatStrings.FormatForce(car.TotalForceN, car.IsMetric));
-                TableSetCell(table, 2, "{0}", FormatStrings.FormatForce(car.MotiveForceN, car.IsMetric));
+                TableSetCell(table, 2, "{0}{1}", FormatStrings.FormatForce(car.MotiveForceN, car.IsMetric), car.WheelSlip ? "!!!" : car.WheelSlipWarning ? "???" : "");
                 TableSetCell(table, 3, "{0}", FormatStrings.FormatForce(car.BrakeForceN + car.DynamicBrakeForceN, car.IsMetric));
                 TableSetCell(table, 4, "{0}", FormatStrings.FormatForce(car.FrictionForceN, car.IsMetric));
                 TableSetCell(table, 5, "{0}", FormatStrings.FormatForce(car.GravityForceN, car.IsMetric));
@@ -855,7 +881,7 @@ namespace Orts.Viewer3D.Popups
                 TableSetCell(table, 13, "{0:F2}%", -car.CurrentElevationPercent);
                 TableSetCell(table, 14, "{0}", FormatStrings.FormatDistance(car.CurrentCurveRadius, car.IsMetric));
                 TableSetCell(table, 15, "{0:F0}%", car.BrakeShoeCoefficientFriction * 100.0f);
-                TableSetCell(table, 16, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : "No");
+                TableSetCell(table, 16, car.HUDBrakeSkid ? Viewer.Catalog.GetString("Yes") : Viewer.Catalog.GetString("No"));
                 TableSetCell(table, 17, "{0} {1}", FormatStrings.FormatTemperature(car.WheelBearingTemperatureDegC, car.IsMetric, false), car.DisplayWheelBearingTemperatureStatus);
 
                 // Possibly needed for buffing forces

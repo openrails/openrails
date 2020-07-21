@@ -196,7 +196,7 @@ namespace Orts.Viewer3D.Debugging
 
             MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
             {
-                addNewMessage(e.Time, e.Message);
+                AddNewMessage(e.Time, e.Message);
             };
         }
 
@@ -290,14 +290,10 @@ namespace Orts.Viewer3D.Debugging
 				  {
 					  foreach (TrPin pin in currNode.TrPins)
 					  {
-						  TrVectorSection item = null;
-						  try
-						  {
-							  if (nodes[pin.Link].TrVectorNode == null || nodes[pin.Link].TrVectorNode.TrVectorSections.Length < 1) continue;
-							  if (pin.Direction == 1) item = nodes[pin.Link].TrVectorNode.TrVectorSections.First();
-							  else item = nodes[pin.Link].TrVectorNode.TrVectorSections.Last();
-						  }
-						  catch { continue; }
+						  var vectorSections = nodes[pin.Link]?.TrVectorNode?.TrVectorSections;
+						  if (vectorSections == null || vectorSections.Length < 1)
+						      continue;
+						  TrVectorSection item = pin.Direction == 1 ? vectorSections.First() : vectorSections.Last();
 						  dVector A = new dVector(currNode.UiD.TileX, currNode.UiD.X, currNode.UiD.TileZ, + currNode.UiD.Z);
 						  dVector B = new dVector(item.TileX, + item.X, item.TileZ, + item.Z);
                           var x = dVector.DistanceSqr(A, B);
@@ -597,41 +593,26 @@ namespace Orts.Viewer3D.Debugging
 			  else { rmvButton.Visible = false; chkAllowNew.Visible = false; chkAllowUserSwitch.Visible = false; chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false; }
 		  }
 		  if (firstShow || followTrain) {
-			  WorldPosition pos;
 			  //see who should I look at:
 			  //if the player is selected in the avatar list, show the player, otherwise, show the one with the lowest index
-			  if (Program.Simulator.PlayerLocomotive != null) pos = Program.Simulator.PlayerLocomotive.WorldPosition;
-			  else pos = Program.Simulator.Trains[0].Cars[0].WorldPosition;
-			  bool hasSelectedTrain = false;
+			  WorldPosition pos = Program.Simulator.PlayerLocomotive == null ? Program.Simulator.Trains.First().Cars.First().WorldPosition : Program.Simulator.PlayerLocomotive.WorldPosition;
 			  if (AvatarView.SelectedIndices.Count > 0 && !AvatarView.SelectedIndices.Contains(0))
 			  {
-					  try
-					  {
-						  var i = 10000;
-						  foreach (var index in AvatarView.SelectedIndices)
-						  {
-							  if ((int)index < i) i = (int)index;
-						  }
-						  var name = AvatarView.Items[i].Text.Split(' ')[0].Trim() ;
-						  if (MultiPlayer.MPManager.OnlineTrains.Players.ContainsKey(name))
-						  {
-							  pos = MultiPlayer.MPManager.OnlineTrains.Players[name].Train.Cars[0].WorldPosition;
-						  }
-						  else if (MultiPlayer.MPManager.Instance().lostPlayer.ContainsKey(name))
-						  {
-							  pos = MultiPlayer.MPManager.Instance().lostPlayer[name].Train.Cars[0].WorldPosition;
-						  }
-						  hasSelectedTrain = true;
-					  }
-					  catch { }
+				  int i = AvatarView.SelectedIndices.Cast<int>().Min();
+				  string name = (AvatarView.Items[i].Text ?? "").Split(' ').First().Trim();
+				  if (MultiPlayer.MPManager.OnlineTrains.Players.TryGetValue(name, out MultiPlayer.OnlinePlayer player))
+					  pos = player?.Train?.Cars?.FirstOrDefault()?.WorldPosition;
+				  else if (MultiPlayer.MPManager.Instance().lostPlayer.TryGetValue(name, out MultiPlayer.OnlinePlayer lost))
+					  pos = lost?.Train?.Cars?.FirstOrDefault()?.WorldPosition;
 			  }
-			  if (hasSelectedTrain == false && PickedTrain != null && PickedTrain.Cars != null && PickedTrain.Cars.Count > 0)
+			  if (pos == null)
+				  pos = PickedTrain?.Cars?.FirstOrDefault()?.WorldPosition;
+			  if (pos != null)
 			  {
-				  pos = PickedTrain.Cars[0].WorldPosition;
+				  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
+				  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
+				  firstShow = false;
 			  }
-			  var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
-			  ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
-			  firstShow = false;
 		  }
 
 		  try
@@ -812,14 +793,11 @@ namespace Orts.Viewer3D.Debugging
 				var drawRed = 0;
 				int ValidTrain = selectedTrainList.Count();
 				//add trains quit into the end, will draw them in gray
-				try
-				{
-					foreach (var lost in MultiPlayer.MPManager.Instance().lostPlayer)
-					{
-						if (lost.Value.Train != null && !selectedTrainList.Contains(lost.Value.Train)) selectedTrainList.Add(lost.Value.Train);
-					}
-				}
-				catch { }
+				var quitTrains = MultiPlayer.MPManager.Instance().lostPlayer.Values
+					.Select((MultiPlayer.OnlinePlayer lost) => lost?.Train)
+					.Where((Train t) => t != null)
+					.Where((Train t) => !selectedTrainList.Contains(t));
+				selectedTrainList.AddRange(quitTrains);
 				foreach (Train t in selectedTrainList)
 				{
 					drawRed++;//how many red has been drawn
@@ -1665,24 +1643,13 @@ namespace Orts.Viewer3D.Debugging
 		  LastCursorPosition.Y = e.Y;
 	  }
 
-	  public bool addNewMessage(double time, string msg)
+	  public bool AddNewMessage(double _, string msg)
 	  {
-		  var count = 0;
-		  while (count < 3)
-		  {
-			  try
-			  {
-				  if (messages.Items.Count > 10)
-				  {
-					  messages.Items.RemoveAt(0);
-				  }
-				  messages.Items.Add(msg);
-				  messages.SelectedIndex = messages.Items.Count - 1;
-				  messages.SelectedIndex = -1;
-				  break;
-			  }
-			  catch { count++; }
-		  }
+		  if (messages.Items.Count > 10)
+			  messages.Items.RemoveAt(0);
+		  messages.Items.Add(msg);
+		  messages.SelectedIndex = messages.Items.Count - 1;
+		  messages.SelectedIndex = -1;
 		  return true;
 	  }
 
@@ -1746,19 +1713,19 @@ namespace Orts.Viewer3D.Debugging
 		  {
 			  if (MultiPlayer.MPManager.IsServer())
 			  {
+				  var users = MultiPlayer.MPManager.OnlineTrains.Players.Keys
+					  .Select((string u) => $"{u}\r");
+				  string user = string.Join("", users) + "0END";
+				  string msgText = new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg).ToString();
 				  try
 				  {
-					  var user = "";
-					  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
-					  {
-						  user += p.Key + "\r";
-					  }
-					  user += "0END";
-					  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-					  MSG.Text = "";
-
+					  MultiPlayer.MPManager.Notify(msgText);
 				  }
 				  catch { }
+				  finally
+				  {
+					  MSG.Text = "";
+				  }
 			  }
 			  else
 			  {
@@ -1836,18 +1803,19 @@ namespace Orts.Viewer3D.Debugging
 
 				  if (MultiPlayer.MPManager.IsServer())
 				  {
+					  var users = MultiPlayer.MPManager.OnlineTrains.Players.Keys
+						  .Select((string u) => $"{u}\r");
+					  user += string.Join("", users) + "0END";
+					  string msgText = new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg).ToString();
 					  try
 					  {
-						  foreach (var p in MultiPlayer.MPManager.OnlineTrains.Players)
-						  {
-							  user += p.Key + "\r";
-						  }
-						  user += "0END";
-						  MultiPlayer.MPManager.Notify((new MultiPlayer.MSGText(MultiPlayer.MPManager.GetUserName(), user, msg)).ToString());
-						  MSG.Text = "";
-
+						  MultiPlayer.MPManager.Notify(msgText);
 					  }
 					  catch { }
+					  finally
+					  {
+						  MSG.Text = "";
+					  }
 				  }
 				  else
 				  {
@@ -2146,21 +2114,40 @@ namespace Orts.Viewer3D.Debugging
 		   Item = item;
 		   Signal = signal;
 		   hasDir = false;
-		   Location.X = item.TileX * 2048 + item.X; Location.Y = item.TileZ * 2048 + item.Z;
-		   try
+		   Location.X = item.TileX * 2048 + item.X;
+		   Location.Y = item.TileZ * 2048 + item.Z;
+		   var node = Program.Simulator.TDB.TrackDB.TrackNodes?[signal.trackNode];
+		   Vector2 v2;
+		   if (node?.TrVectorNode != null)
 		   {
-			   var node = Program.Simulator.TDB.TrackDB.TrackNodes[signal.trackNode];
-			   Vector2 v2;
-			   if (node.TrVectorNode != null) { var ts = node.TrVectorNode.TrVectorSections[0]; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
-			   else if (node.TrJunctionNode != null) { var ts = node.UiD; v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z); }
-			   else throw new Exception();
-			   var v1 = new Vector2(Location.X, Location.Y); var v3 = v1 - v2; v3.Normalize(); v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 12f : -12f);
-			   Dir.X = v2.X; Dir.Y = v2.Y;
-               v2 = v1 - Vector2.Multiply(v3, signal.direction == 0 ? 1.5f : -1.5f);//shift signal along the dir for 2m, so signals will not be overlapped
-               Location.X = v2.X; Location.Y = v2.Y;
-			   hasDir = true;
+			   var ts = node.TrVectorNode.TrVectorSections?.FirstOrDefault();
+			   if (ts == null)
+				   return;
+			   v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z);
 		   }
-		   catch {  }
+		   else if (node?.TrJunctionNode != null)
+		   {
+			   var ts = node?.UiD;
+			   if (ts == null)
+				   return;
+			   v2 = new Vector2(ts.TileX * 2048 + ts.X, ts.TileZ * 2048 + ts.Z);
+		   }
+		   else
+		   {
+			   return;
+		   }
+		   var v1 = new Vector2(Location.X, Location.Y);
+		   var v3 = v1 - v2;
+		   v3.Normalize();
+		   void copyTo(Vector2 input, ref PointF output)
+		   {
+			   output.X = input.X;
+			   output.Y = input.Y;
+		   }
+		   copyTo(v1 - Vector2.Multiply(v3, signal.direction == 0 ? 12f : -12f), ref Dir);
+		   //shift signal along the dir for 2m, so signals will not be overlapped
+		   copyTo(v1 - Vector2.Multiply(v3, signal.direction == 0 ? 1.5f : -1.5f), ref Location);
+		   hasDir = true;
 	   }
    }
    #endregion
