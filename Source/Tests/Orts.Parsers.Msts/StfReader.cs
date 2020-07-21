@@ -697,7 +697,8 @@ namespace Tests.Orts.Parsers.Msts
                 reader.SkipRestOfBlock();
                 Assert.Equal("wagon(lights()", reader.Tree.ToLower());
 
-                reader.ReadItem();
+                if (reader.ReadItem() == STFReader.EndBlockCommentSentinel)
+                    reader.ReadItem();
                 reader.ReadItem();
                 Assert.Equal("wagon(sound", reader.Tree.ToLower());
                 Assert.Equal("test.sms", reader.ReadStringBlock(""));
