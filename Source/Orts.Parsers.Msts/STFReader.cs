@@ -1660,7 +1660,7 @@ namespace Orts.Parsers.Msts
             }
             #endregion
             #region Handle #&_ markers
-            else if (!skip_mode && ((!string_mode && (c == '#' || c == '_')) || (string_mode && c == '_')))
+            else if ((!skip_mode && !string_mode) && ((c == '#') || (c == '_')))
             {
                 #region Move on to a whitespace so we can pick up any token starting with a #
                 for (;;)
