@@ -157,8 +157,8 @@ namespace ORTS.Common
                     .Select((string path) => Path.GetFileNameWithoutExtension(path)),
                 StringComparer.InvariantCultureIgnoreCase);
 
-            var ortsBaseNames = BaseNames("*.consist-or");
-            var mstsBaseNames = BaseNames("*.con");
+            ISet<string> ortsBaseNames = BaseNames("*.consist-or");
+            ISet<string> mstsBaseNames = BaseNames("*.con");
 
             IEnumerable<string> CombinedIterator()
             {
