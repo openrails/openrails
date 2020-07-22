@@ -1458,16 +1458,12 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
         
         [Fact]
-        public static void WarnOnMissingBlockAfterComment()
+        public static void DontWarnOnMissingBlockAfterComment()
         {
-            // todo: old stf reader would simply return 'b'. Throwing an exception is perhaps harsh
             AssertWarnings.NotExpected();
             string someFollowingToken = "b";
-            AssertStfException.Throws(() => 
-            {
-                var reader = Create.Reader("comment a " + someFollowingToken);
-                Assert.Equal(someFollowingToken, reader.ReadItem());
-            }, "expected.*open");
+            STFReader reader = Create.Reader("comment a " + someFollowingToken);
+            Assert.Equal(someFollowingToken, reader.ReadItem());
         }
 
         [Fact]
@@ -1489,16 +1485,12 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
 
         [Fact]
-        public static void WarnOnMissingBlockAfterSkip()
+        public static void DontWarnOnMissingBlockAfterSkip()
         {
-            // todo: old stf reader would simply return 'b'. Throwing an exception is perhaps harsh
             AssertWarnings.NotExpected();
             string someFollowingToken = "b";
-            AssertStfException.Throws(() =>
-            {
-                var reader = Create.Reader("skip a " + someFollowingToken);
-                Assert.Equal(someFollowingToken, reader.ReadItem());
-            }, "expected.*open");
+            STFReader reader = Create.Reader("skip a " + someFollowingToken);
+            Assert.Equal(someFollowingToken, reader.ReadItem());
         }
 
         [Fact]
@@ -1930,7 +1922,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
 
         [Fact]
-        public static void SkipValueStartingWithUnderscore()
+        public static void DontSkipValueStartingWithUnderscore()
         {
             AssertWarnings.NotExpected();
             string underscoreToken = "_underscore";
@@ -1938,9 +1930,8 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             string followingToken = "followingtoken";
             string inputString = underscoreToken + " " + toBeSkippedToken + " " + followingToken;
             var reader = Create.Reader(inputString);
-            // todo spec change?: old STF reader would return _underscore and tobeskippedtoken"
-            //Assert.Equal(underscoreToken, reader.ReadString());
-            //Assert.Equal(toBeSkippedToken, reader.ReadString());
+            Assert.Equal(underscoreToken, reader.ReadString());
+            Assert.Equal(toBeSkippedToken, reader.ReadString());
             Assert.Equal(followingToken, reader.ReadString());
 
         }
