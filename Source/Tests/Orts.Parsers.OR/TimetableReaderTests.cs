@@ -33,18 +33,24 @@ namespace Tests.Orts.Parsers.OR
             using (var file = new TestFile(";"))
             {
                 var tr = new TimetableReader(file.FileName);
-                Assert.Equal(1, tr.Strings.Count);
+                Assert.Single(tr.Strings);
                 Assert.Equal(2, tr.Strings[0].Length);
             }
             using (var file = new TestFile(","))
             {
                 var tr = new TimetableReader(file.FileName);
-                Assert.Equal(1, tr.Strings.Count);
+                Assert.Single(tr.Strings);
                 Assert.Equal(2, tr.Strings[0].Length);
             }
             using (var file = new TestFile("\t"))
             {
-                Assert.Throws(typeof(InvalidDataException), () => {
+                var tr = new TimetableReader(file.FileName);
+                Assert.Single(tr.Strings);
+                Assert.Equal(2, tr.Strings[0].Length);
+            }
+            using (var file = new TestFile(":"))
+            {
+                Assert.Throws<InvalidDataException>(() => {
                     var tr = new TimetableReader(file.FileName);
                 });
             }
