@@ -176,25 +176,33 @@ namespace ORTS.Menu
             }
             else if (File.Exists(filePath))
             {
-                var showInList = true;
+                EngineFile engFile;
                 try
                 {
-                    var engFile = new EngineFile(filePath);
-                    showInList = !string.IsNullOrEmpty(engFile.CabViewFile);
-                    Name = engFile.Name.Trim();
-                    Description = engFile.Description.Trim();
+                    engFile = new EngineFile(filePath);
                 }
                 catch
                 {
-                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                    Name = $"<{catalog.GetString("load error:")} {System.IO.Path.GetFileNameWithoutExtension(filePath)}>";
+                    engFile = null;
                 }
-                if (!showInList) throw new InvalidDataException(catalog.GetStringFmt("Locomotive '{0}' is excluded.", filePath));
-                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
-                if (string.IsNullOrEmpty(Description)) Description = null;
+                if (engFile != null)
+                {
+                    bool showInList = !string.IsNullOrEmpty(engFile.CabViewFile);
+                    if (!showInList)
+                        throw new InvalidDataException(catalog.GetStringFmt("Locomotive '{0}' is excluded.", filePath));
+
+                    string name = (engFile.Name ?? "").Trim();
+                    Name = name != "" ? name : $"<{catalog.GetString("unnamed:")} {System.IO.Path.GetFileNameWithoutExtension(filePath)}>";
+
+                    string description = (engFile.Description ?? "").Trim();
+                    if (description != "")
+                        Description = description;
+                }
             }
             else
             {
-                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                Name = $"<{catalog.GetString("missing:")} {System.IO.Path.GetFileNameWithoutExtension(filePath)}>";
             }
             FilePath = filePath;
         }
