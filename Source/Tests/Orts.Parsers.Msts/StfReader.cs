@@ -724,7 +724,7 @@ namespace Tests.Orts.Parsers.Msts.StfException
         public static void BeConstructableFromStfReader()
         {
             var reader = Tests.Orts.Parsers.Msts.StfReader.Create.Reader("sometoken");
-            Assert.DoesNotThrow(() => new STFException(reader, "some message"));
+            new STFException(reader, "some message");
         }
 
 #if NEW_READER
@@ -2844,7 +2844,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         /// </summary>
         /// <param name="testCode">Code that will be executed</param>
         /// <param name="pattern">The pattern that the exception message should match</param>
-        public static void Throws(Assert.ThrowsDelegate testCode, string pattern)
+        public static void Throws(Action testCode, string pattern)
         {
             var exception = Record.Exception(testCode);
             Assert.NotNull(exception);
