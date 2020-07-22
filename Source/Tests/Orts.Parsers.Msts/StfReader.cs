@@ -1060,12 +1060,14 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         public static void StoreSourceLineNumberOfLastReadToken()
         {
             //AssertWarnings.Activate();
-            List<TokenTester> tokenTesters = new List<TokenTester>();
-            //tokenTesters.Add(new TokenTester("a b", new int[] { 1, 1 }));
-            tokenTesters.Add(new TokenTester("a\nb", new int[] { 1, 2 }));
-            //tokenTesters.Add(new TokenTester("a\nb\nc", new int[] { 1, 2, 3 }));
-            //tokenTesters.Add(new TokenTester("a b\n\nc", new int[] { 1, 1, 3 }));
-            //tokenTesters.Add(new TokenTester("a(b(\nc)\nc)", new int[] { 1, 1, 1, 1, 2, 2, 3, 3 }));
+            var tokenTesters = new TokenTester[]
+            {
+                new TokenTester("a b", new int[] { 1, 1 }),
+                new TokenTester("a \nb", new int[] { 1, 2 }),
+                new TokenTester("a \nb \nc", new int[] { 1, 2, 3 }),
+                new TokenTester("a b \n\nc", new int[] { 1, 1, 3 }),
+                new TokenTester("a(b(\nc)\nc)", new int[] { 1, 1, 1, 1, 2, 2, 3, 3 })
+            };
 
             foreach (var tokenTester in tokenTesters)
             {
