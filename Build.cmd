@@ -95,6 +95,9 @@ SET Revision=%OpenRails_Revision%
 REM Restore NuGet packages.
 nuget restore Source\ORTS.sln || GOTO :error
 
+REM Restore NuGet packages.
+nuget restore Source\ORTS.sln || GOTO :error
+
 REM Recreate Program directory for output.
 CALL :recreate "Program" || GOTO :error
 
