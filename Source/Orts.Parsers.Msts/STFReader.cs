@@ -240,7 +240,7 @@ namespace Orts.Parsers.Msts
 
         /// <summary>Property that returns true when the EOF has been reached
         /// </summary>
-        public bool Eof { get { return PeekChar() == -1; } }
+        public bool Eof { get { return PeekPastWhitespace() == -1; } }
         /// <summary>Filename property for the file being parsed - for reporting purposes
         /// </summary>
         public string FileName { get; private set; }
