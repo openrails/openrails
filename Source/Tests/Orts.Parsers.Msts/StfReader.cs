@@ -76,7 +76,7 @@ namespace Tests.Orts.Parsers.Msts
                 Assert.True(reader.EndOfBlock(), "STFReader.EndOfBlock()");
                 Assert.Equal("EmptyFile.stf", reader.FileName);
                 Assert.Equal(1, reader.LineNumber);
-                Assert.Equal(null, reader.SimisSignature);
+                Assert.Null(reader.SimisSignature);
                 // Note, the Debug.Assert() in reader.Tree is already captured by AssertWarnings.Expected.
                 // For the rest, we do not care which exception is being thrown.
                 var exception = Record.Exception(() => reader.Tree);
@@ -87,7 +87,7 @@ namespace Tests.Orts.Parsers.Msts
                 reader.ParseBlock(new STFReader.TokenProcessor[0]);
                 reader.ParseFile(new STFReader.TokenProcessor[0]);
                 Assert.Equal(-1, reader.PeekPastWhitespace());
-                Assert.Equal(false, reader.ReadBoolBlock(false));
+                Assert.False(reader.ReadBoolBlock(false));
                 Assert.Equal(0, reader.ReadDouble(null));
                 Assert.Equal(0, reader.ReadDoubleBlock(null));
                 Assert.Equal(0, reader.ReadFloat(STFReader.UNITS.None, null));
@@ -98,7 +98,7 @@ namespace Tests.Orts.Parsers.Msts
                 Assert.Equal(0, reader.ReadIntBlock(null));
                 Assert.Equal("", reader.ReadItem());
                 Assert.Equal("", reader.ReadString());
-                Assert.Equal(null, reader.ReadStringBlock(null));
+                Assert.Null(reader.ReadStringBlock(null));
                 Assert.Equal(0U, reader.ReadUInt(null));
                 Assert.Equal(0U, reader.ReadUIntBlock(null));
                 Assert.Equal(Vector3.Zero, reader.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero));
@@ -131,7 +131,7 @@ namespace Tests.Orts.Parsers.Msts
                 Assert.False(reader.EndOfBlock(), "STFReader.EndOfBlock()");
                 Assert.Equal("EmptyBlock.stf", reader.FileName);
                 Assert.Equal(1, reader.LineNumber);
-                Assert.Equal(null, reader.SimisSignature);
+                Assert.Null(reader.SimisSignature);
                 Assert.Throws<STFException>(() => reader.MustMatch("Something Else"));
                 // We can't rewind the STFReader and it has advanced forward now. :(
             }
@@ -224,8 +224,8 @@ namespace Tests.Orts.Parsers.Msts
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("(true ignored) (false ignored) (1.123456789 ignored) (1e9 ignored) (1.1e9 ignored) (2.123456 ignored) (2e9 ignored) (2.1e9 ignored) (00ABCDEF ignored) (123456 ignored) (-123456 ignored) (234567 ignored)")), "", Encoding.Unicode, false))
             {
-                Assert.Equal(true, reader.ReadBoolBlock(false));
-                Assert.Equal(false, reader.ReadBoolBlock(true));
+                Assert.True(reader.ReadBoolBlock(false));
+                Assert.False(reader.ReadBoolBlock(true));
                 Assert.Equal(1.123456789, reader.ReadDoubleBlock(null));
                 Assert.Equal(1e9, reader.ReadDoubleBlock(null));
                 Assert.Equal(1.1e9, reader.ReadDoubleBlock(null));
@@ -818,7 +818,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             AssertWarnings.NotExpected();
             string firstToken = "firsttoken";
             var reader = Create.Reader(firstToken);
-            Assert.Equal(null, reader.SimisSignature);
+            Assert.Null(reader.SimisSignature);
         }
 
 #if NEW_READER
@@ -2054,6 +2054,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
                 (SOMEDEFAULT, SOMEDEFAULT, (reader, x) => reader.ReadIntBlock(x));
         }
 
+        [Fact]
         public static void ReturnValueInBlock()
         {
             StfTokenReaderCommon.ReturnValueInBlock<int>(SOMEDEFAULTS, reader => reader.ReadIntBlock(null));
@@ -2417,6 +2418,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
                 (SOMEDEFAULT, SOMEDEFAULT, (reader, x) => reader.ReadDoubleBlock(x));
         }
 
+        [Fact]
         public static void ReturnValueInBlock()
         {
             StfTokenReaderCommon.ReturnValueInBlock<double>(SOMEDEFAULTS, reader => reader.ReadDoubleBlock(null));
@@ -2499,6 +2501,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
                 (SOMEDEFAULT, SOMEDEFAULT, (reader, x) => reader.ReadFloatBlock(STFReader.UNITS.None, x));
         }
 
+        [Fact]
         public static void ReturnValueInBlock()
         {
             StfTokenReaderCommon.ReturnValueInBlock<float>
