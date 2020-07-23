@@ -79,20 +79,16 @@ namespace ORTS.ContentManager
             }
             else if (type == ContentType.Consist)
             {
-                var path = Path.Combine(Path.Combine(PathName, "Trains"), "Consists");
-                if (Directory.Exists(path))
+                foreach (string item in TrainFileUtilities.AllTrainFiles(PathName))
                 {
-                    foreach (string item in ConsistUtilities.AllConsistFiles(path))
+                    switch (Path.GetExtension(item).ToLowerInvariant())
                     {
-                        switch (Path.GetExtension(item).ToLowerInvariant())
-                        {
-                            case ".consist-or":
-                                yield return new ContentORTSConsist(this, item);
-                                break;
-                            case ".con":
-                                yield return new ContentMSTSConsist(this, item);
-                                break;
-                        }
+                        case ".train-or":
+                            yield return new ContentORTSTrain(this, item);
+                            break;
+                        case ".con":
+                            yield return new ContentMSTSConsist(this, item);
+                            break;
                     }
                 }
             }
@@ -224,11 +220,11 @@ namespace ORTS.ContentManager
     }
 
     [Serializable]
-    public class ContentORTSConsist : Content
+    public class ContentORTSTrain : Content
     {
         public override ContentType Type { get => ContentType.Consist; }
 
-        public ContentORTSConsist(Content parent, string path)
+        public ContentORTSTrain(Content parent, string path)
             : base(parent)
         {
             Name = Path.GetFileNameWithoutExtension(path);

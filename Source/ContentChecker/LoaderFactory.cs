@@ -47,7 +47,7 @@ namespace ContentChecker
                 case ".ace": return new AceLoader();
                 case ".act": return new ActivityLoader();
                 case ".asv": return new NotUsedLoader();  // activity save file, binary format
-                case ".consist-or": return new NativeConsistLoader();
+                case ".train-or": return new TrainLoader();
                 case ".con": return new ConsistLoader();
                 case ".cvf": return new CabviewLoader();
                 case ".eng": return new EngineLoader();

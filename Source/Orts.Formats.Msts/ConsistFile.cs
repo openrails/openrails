@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using Orts.Parsers.Msts;
 using ORTS.Common;
@@ -26,7 +26,7 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Work with consist files
     /// </summary>
-    public class ConsistFile : IConsist
+    public class ConsistFile : ITrainFile
     {
         public string Name; // from the Name field or label field of the consist file
         public Train_Config Train;
@@ -40,7 +40,7 @@ namespace Orts.Formats.Msts
             Name = Train.TrainCfg.Name;
         }
 
-        string IConsist.DisplayName => Train.TrainCfg.Name;
+        string ITrainFile.DisplayName => Train.TrainCfg.Name;
 
         public float? MaxVelocityMpS
         {
@@ -66,7 +66,7 @@ namespace Orts.Formats.Msts
             if (firstEngine == null)
                 return PreferredLocomotive.NoLocomotiveSet;
             else
-                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(WagonPath(basePath, firstEngine)) };
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(EnginePath(basePath, firstEngine)) };
         }
 
         public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
@@ -77,7 +77,7 @@ namespace Orts.Formats.Msts
             if (lastEngine == null)
                 return PreferredLocomotive.NoLocomotiveSet;
             else
-                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(WagonPath(basePath, lastEngine)) };
+                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(EnginePath(basePath, lastEngine)) };
         }
 
         public IEnumerable<WagonReference> GetForwardWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
@@ -85,7 +85,7 @@ namespace Orts.Formats.Msts
             if (GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
                 return new WagonReference[0] { };
             return Train.TrainCfg.WagonList
-                .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
+                .Select((Wagon wagon) => new WagonReference(EngineOrWagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
         }
 
         public IEnumerable<WagonReference> GetReverseWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
@@ -93,14 +93,23 @@ namespace Orts.Formats.Msts
             if (GetReverseLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
                 return new WagonReference[0] { };
             return Train.TrainCfg.WagonList
-                .Select((Wagon wagon) => new WagonReference(WagonPath(basePath, wagon), !wagon.Flip, wagon.UiD))
+                .Select((Wagon wagon) => new WagonReference(EngineOrWagonPath(basePath, wagon), !wagon.Flip, wagon.UiD))
                 .Reverse();
         }
 
-        private static string WagonPath(string basePath, Wagon wagon)
+        private static string EnginePath(string basePath, Wagon engine)
         {
-            string trainsetPath = Path.Combine(basePath, "trains", "trainset");
-            return Path.Combine(trainsetPath, wagon.Folder, Path.ChangeExtension(wagon.Name, wagon.IsEngine ? ".eng" : ".wag"));
+            Debug.Assert(engine.IsEngine);
+            return TrainFileUtilities.ResolveEngineFile(basePath, engine.Folder.Split(new char[] { '/', '\\' }), engine.Name);
+        }
+
+        private static string EngineOrWagonPath(string basePath, Wagon wagon)
+        {
+            string[] subFolders = wagon.Folder.Split(new char[] { '/', '\\' });
+            if (wagon.IsEngine)
+                return TrainFileUtilities.ResolveEngineFile(basePath, subFolders, wagon.Name);
+            else
+                return TrainFileUtilities.ResolveWagonFile(basePath, subFolders, wagon.Name);
         }
 
         public override string ToString() => Name;

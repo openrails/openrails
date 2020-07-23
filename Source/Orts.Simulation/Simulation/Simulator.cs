@@ -116,7 +116,7 @@ namespace Orts.Simulation
         public string ExplorePathFile;
         public string ExploreConFile;
         public string patFileName;
-        public string conFileName;
+        public string trainFileName;
         public PreferredLocomotive PreferredLocomotive { get; set; }
         public AIPath PlayerPath;
         public LevelCrossings LevelCrossings;
@@ -388,7 +388,7 @@ namespace Orts.Simulation
             PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
             string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
-            conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
+            trainFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             ClockTime = StartTime.TotalSeconds;
@@ -407,7 +407,7 @@ namespace Orts.Simulation
             PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
             string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
-            conFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
+            trainFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time = StartTime.Hours + StartTime.Minutes * 60 +
@@ -617,13 +617,13 @@ namespace Orts.Simulation
         }
 
         /// <summary>
-        /// Gets path and consist of player train in multiplayer resume in activity
+        /// Gets path and train of player train in multiplayer resume in activity
         /// </summary>
-        public void GetPathAndConsist()
+        public void GetPathAndTrain()
         {
             var PlayerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
             var srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + PlayerServiceFileName + ".SRV");
-            conFileName = ConsistUtilities.ResolveConsist(BasePath, srvFile.Train_Config);
+            trainFileName = TrainFileUtilities.ResolveTrainFile(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
         }
 
@@ -1097,11 +1097,11 @@ namespace Orts.Simulation
             srvFile.Name = playerServiceFileName;
             srvFile.Train_Config = playerServiceFileName;
             srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
-            conFileName = ConsistUtilities.ResolveConsist(BasePath, srvFile.Train_Config);
+            trainFileName = TrainFileUtilities.ResolveTrainFile(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
-            train.IsTilting = GenericConsist.IsTilting(conFileName);
+            train.IsTilting = GenericTrain.IsTilting(trainFileName);
 
 #if ACTIVITY_EDITOR
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
@@ -1118,11 +1118,11 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            IConsist conFile = GenericConsist.LoadFile(conFileName);
-            CurveDurability = conFile.Durability;   // Finds curve durability of consist based upon the value in consist file
+            ITrainFile trainFile = GenericTrain.LoadFile(trainFileName);
+            CurveDurability = trainFile.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
-            foreach (TrainCar car in conFile.LoadTrainCars(this, playerTrain: true, preference: PreferredLocomotive))
+            foreach (TrainCar car in trainFile.LoadCars(this, playerTrain: true, preference: PreferredLocomotive))
             {
                 if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
                 else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
@@ -1166,7 +1166,7 @@ namespace Orts.Simulation
             InitialTileZ = Trains[0].FrontTDBTraveller.TileZ + (Trains[0].FrontTDBTraveller.Z / 2048);
 
             PlayerLocomotive = InitialPlayerLocomotive();
-            train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.MaxVelocityMpS ?? ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
+            train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, trainFile.MaxVelocityMpS ?? ((MSTSLocomotive)PlayerLocomotive).MaxSpeedMpS);
 
             train.AITrainBrakePercent = 100; //<CSComment> This seems a tricky way for the brake modules to test if it is an AI train or not
             return (train);
@@ -1190,7 +1190,7 @@ namespace Orts.Simulation
                 srvFile.Train_Config = playerServiceFileName;
                 srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
             }
-            conFileName = ConsistUtilities.ResolveConsist(BasePath, srvFile.Train_Config);
+            trainFileName = TrainFileUtilities.ResolveTrainFile(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
@@ -1241,7 +1241,7 @@ namespace Orts.Simulation
                 Train.TCRoutePath dummyRoute = new Train.TCRoutePath(train.Path, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
             }
 
-            train.IsTilting = GenericConsist.IsTilting(srvFile.Train_Config);
+            train.IsTilting = GenericTrain.IsTilting(srvFile.Train_Config);
 
             return train;
         }

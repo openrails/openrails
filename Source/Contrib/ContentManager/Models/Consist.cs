@@ -37,13 +37,13 @@ namespace ORTS.ContentManager.Models
             Debug.Assert(content.Type == ContentType.Consist);
             switch (System.IO.Path.GetExtension(content.PathName).ToLowerInvariant())
             {
-                case ".consist-or":
-                    var ortsConsist = Orts.Formats.OR.ConsistFile.LoadFrom(content.PathName);
+                case ".train-or":
+                    var ortsConsist = TrainFile.LoadFrom(content.PathName);
                     Name = ortsConsist.DisplayName;
                     Items = GetOrtsItems(ortsConsist);
                     break;
                 case ".con":
-                    var mstsConsist = new Orts.Formats.Msts.ConsistFile(content.PathName);
+                    var mstsConsist = new ConsistFile(content.PathName);
                     Name = mstsConsist.Name;
                     Items = GetMstsItems(mstsConsist);
                     break;
@@ -57,13 +57,13 @@ namespace ORTS.ContentManager.Models
         /// </summary>
         /// <param name="file">The consist structure to query.</param>
         /// <returns>An iterator of items.</returns>
-        private static IEnumerable<Item> GetOrtsItems(Orts.Formats.OR.ConsistFile file)
+        private static IEnumerable<Item> GetOrtsItems(TrainFile file)
         {
             var items = new List<Item>();
             int n = 0;
-            if (file is ListConsistFile listFile)
+            if (file is ListTrainFile listFile)
             {
-                foreach (ListConsistItem item in listFile.List)
+                foreach (ListTrainItem item in listFile.List)
                     items.Add(CreateOrtsItem(item, n++));
             }
             return items.Where((Item item) => item != null);
@@ -113,13 +113,13 @@ namespace ORTS.ContentManager.Models
         /// </summary>
         internal class OrtsCar : Item
         {
-            internal OrtsCar(ListConsistWagon wagon, int n) : base(
+            internal OrtsCar(ListTrainWagon wagon, int n) : base(
                 id: n.ToString(),
                 name: wagon.Wagon,
                 direction: wagon.Flip ? Direction.Backwards : Direction.Forwards,
                 type: ItemType.Wagon) { }
 
-            internal OrtsCar(ListConsistEngine engine, int n) : base(
+            internal OrtsCar(ListTrainEngine engine, int n) : base(
                 id: n.ToString(),
                 name: engine.Engine,
                 direction: engine.Flip ? Direction.Backwards : Direction.Forwards,
@@ -129,14 +129,14 @@ namespace ORTS.ContentManager.Models
         /// <summary>
         /// Factory method to create ORTS <see cref="Item"/>s.
         /// </summary>
-        /// <param name="item">The <see cref="ListConsistItem"/> or <see cref="RandomConsistItem"/>.</param>
+        /// <param name="item">The <see cref="ListTrainItem"/> or <see cref="RandomTrainItem"/>.</param>
         /// <param name="n">The ID of the new item.</param>
         /// <returns>The newly created item.</returns>
-        internal static Item CreateOrtsItem(IConsistItem item, int n)
+        internal static Item CreateOrtsItem(ITrainListItem item, int n)
         {
-            if (item is ListConsistWagon listWagonItem)
+            if (item is ListTrainWagon listWagonItem)
                 return new OrtsCar(listWagonItem, n);
-            else if (item is ListConsistEngine listEngineItem)
+            else if (item is ListTrainEngine listEngineItem)
                 return new OrtsCar(listEngineItem, n);
             else
                 return null;
