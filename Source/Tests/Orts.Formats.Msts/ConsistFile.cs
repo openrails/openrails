@@ -17,6 +17,7 @@
 
 using Orts.Formats.Msts;
 using ORTS.Common;
+using System.Collections.Generic;
 using System.IO;
 using Xunit;
 
@@ -24,6 +25,8 @@ namespace Tests.Orts.Formats.Msts
 {
     public class ConsistFileTests
     {
+        private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
+
         [Fact]
         public static void TestTrainProperties()
         {
@@ -35,6 +38,91 @@ namespace Tests.Orts.Formats.Msts
             Assert.Equal(36.65728f, train.MaxVelocityMpS);
             Assert.Equal(0.5f, train.Durability);
             Assert.True(train.PlayerDrivable);
+        }
+
+        [Fact]
+        public static void TestForwardWagonReferences()
+        {
+            using (TestContent content = new TestContent())
+            {
+                ITrainFile train = new ConsistFile(MakeTestFile(content));
+                var expected = new WagonReference[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2bnsfcar", "US2BNSFCAR.wag"), false, 0),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "dash9", "DASH9.eng"), false, 1),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), false, 2),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), false, 3),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), false, 4),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), false, 5),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "gp38", "GP38.eng"), true, 6),
+                };
+                Assert.Equal(expected, train.GetForwardWagonList(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void TestReverseWagonReferences()
+        {
+            using (TestContent content = new TestContent())
+            {
+                ITrainFile train = new ConsistFile(MakeTestFile(content));
+                var expected = new WagonReference[]
+                {
+                    // For the moment, we use the UiD's as entered into the .con file; no reversing.
+                    new WagonReference(Path.Combine(content.TrainsetPath, "gp38", "GP38.eng"), false, 6),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), true, 5),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), true, 4),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), true, 3),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2graincar", "US2GRAINCAR.wag"), true, 2),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "dash9", "DASH9.eng"), true, 1),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "us2bnsfcar", "US2BNSFCAR.wag"), true, 0),
+                };
+                Assert.Equal(expected, train.GetReverseWagonList(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void TestForwardLocomotiveChoices()
+        {
+            using (TestContent content = new TestContent())
+            {
+                ITrainFile train = new ConsistFile(MakeTestFile(content));
+                var locomotive = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "dash9", "DASH9.eng"));
+                Assert.Equal(new HashSet<PreferredLocomotive>() { locomotive }, train.GetLeadLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void TestReverseLocomotiveChoices()
+        {
+            using (TestContent content = new TestContent())
+            {
+                ITrainFile train = new ConsistFile(MakeTestFile(content));
+                var locomotive = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "gp38", "GP38.eng"));
+                Assert.Equal(new HashSet<PreferredLocomotive>() { locomotive }, train.GetReverseLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void TestNoForwardWagonReferencesGivenUnsatisifablePreference()
+        {
+            using (TestContent content = new TestContent())
+            {
+                ITrainFile train = new ConsistFile(MakeTestFile(content));
+                var unsatisfiable = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "acela", "acela.eng"));
+                Assert.Empty(train.GetForwardWagonList(content.Path, Folders, preference: unsatisfiable));
+            }
+        }
+
+        [Fact]
+        public static void TestNoReverseWagonReferencesGivenUnsatisifablePreference()
+        {
+            using (TestContent content = new TestContent())
+            {
+                ITrainFile train = new ConsistFile(MakeTestFile(content));
+                var unsatisfiable = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "acela", "acela.eng"));
+                Assert.Empty(train.GetReverseWagonList(content.Path, Folders, preference: unsatisfiable));
+            }
         }
 
         private static string MakeTestFile(TestContent content)
