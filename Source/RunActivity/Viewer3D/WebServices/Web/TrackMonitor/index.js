@@ -180,7 +180,7 @@ async function ApiTrackMonitor() {
 			}
 			else {
 				// first col = FirstCol data
-				Str += DisplayItem(row > 25 ? 'center' : 'left', 1, firstColor, stringColorFirst, firstColor ? newDataFirst : data.FirstCol, row > 25 ? true : false);
+				Str += DisplayItem(row > 25 && controlMode.indexOf("AUTO") != -1? 'center' : 'left', 1, firstColor, stringColorFirst, firstColor ? newDataFirst : data.FirstCol, row > 25 && controlMode.indexOf("AUTO") != -1? true : false);
 
 				// second col = TrackColLeft data
 				Str += DisplayItem('right', 1, trackColorLeft, stringColorTrackLeft, trackColorLeft ? newDataTrackLeft : data.TrackColLeft, false);
@@ -188,7 +188,7 @@ async function ApiTrackMonitor() {
 				// third col = TrackCol data
 				if (row > 12 && data.TrackCol.indexOf("││") == -1) {
 					let size = 24;
-					Str += `<td><img src='${await DrawPng(trackMonitorImages, data.TrackColItem)}' width ='${size}' height ='${size}' style='background-color:black' /></td>`;
+					Str += `<td><img src='${await DrawPng(trackMonitorImages, data.TrackColItem)}' width ='${size}' height ='${size}' ColorCode='${`` + (data.TrackCol.indexOf("↶")!= -1 || data.TrackCol.indexOf("✋")!= -1? stringColorTrack :'') + ``}' style='background-color: black' /></td>`;
 					Str += "<td></td>";
 				}
 				else {

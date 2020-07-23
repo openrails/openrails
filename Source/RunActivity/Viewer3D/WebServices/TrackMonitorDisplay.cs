@@ -155,6 +155,7 @@ namespace Orts.Viewer3D.WebServices
             public static readonly Rectangle LeftArrowSprite = new Rectangle(0, 168, 24, 24);
             public static readonly Rectangle RightArrowSprite = new Rectangle(24, 168, 24, 24);
             public static readonly Rectangle ReversalSprite = new Rectangle(0, 24, 24, 24);
+            public static readonly Rectangle WaitingPointSprite = new Rectangle(24, 24, 24, 24);
             public static readonly Rectangle InvalidReversalSprite = new Rectangle(24, 144, 24, 24);
             public static readonly Dictionary<TrainPosition, Rectangle> TrainPositionSprite = new Dictionary<TrainPosition, Rectangle>
             {
@@ -380,6 +381,8 @@ namespace Orts.Viewer3D.WebServices
                             DrawAutoModeInfo(trackLabels, thisInfo, useMetric);
                             break;
                         case Train.TRAIN_CONTROL.TURNTABLE:
+                            break;
+                        default:
                             DrawManualModeInfo(trackLabels, thisInfo, useMetric);
                             break;
                     }
@@ -504,7 +507,7 @@ namespace Orts.Viewer3D.WebServices
                 zeroObjectPointTop = zeroObjectPointMiddle + Positions.Train[1];
                 zeroObjectPointBottom = zeroObjectPointMiddle - Positions.Train[2];
             }
-            float distanceFactor = (endObjectArea - startObjectArea - Positions.Train[4]) / MaximumDistanceM / trainInfo.direction == -1 ? 2 : 1;
+            float distanceFactor = (endObjectArea - startObjectArea - Positions.Train[4]) / MaximumDistanceM / (trainInfo.direction == -1 ? 2 : 1);
 
             // Draw direction arrow
             if (trainInfo.direction == 0)
@@ -523,7 +526,7 @@ namespace Orts.Viewer3D.WebServices
             if (trainInfo.direction !=0)
             {
                 // Draw fixed distance indications
-                float markerIntervalM = DrawDistanceMarkers(labels, distanceFactor, zeroObjectPointBottom, numberOfMarkers: 3, direction: TrainDirection.Backward, useMetric);
+                float markerIntervalM = DrawDistanceMarkers(labels, distanceFactor, zeroObjectPointBottom, numberOfMarkers: 4, direction: TrainDirection.Backward, useMetric);
 
                 // Draw backward items
                 DrawTrackItems(labels, trainInfo.ObjectInfoBackward, zeroObjectPointBottom, distanceFactor, markerIntervalM, direction: TrainDirection.Backward, useMetric);
@@ -596,7 +599,7 @@ namespace Orts.Viewer3D.WebServices
             int zeroObjectPointMiddle = startObjectArea + (endObjectArea - startObjectArea) / 2;
             int zeroObjectPointTop = zeroObjectPointMiddle + Positions.Train[1];
             int zeroObjectPointBottom = zeroObjectPointMiddle - Positions.Train[2];
-            float distanceFactor = (endObjectArea - startObjectArea) / MaximumDistanceM;
+            float distanceFactor = (zeroObjectPointTop - startObjectArea) / MaximumDistanceM;
 
             // Draw train position line
             ListLabel DarkGraySeparator(ListLabel _) => new ListLabel
@@ -678,7 +681,7 @@ namespace Orts.Viewer3D.WebServices
             foreach (int ipos in imarkers)
             {
                 float actDistanceM = markerIntervalM * ipos;
-                int itemOffset = (int)(actDistanceM * distanceFactor);
+                int itemOffset = Convert.ToInt32(actDistanceM * distanceFactor);
                 int itemLocationWS = ItemLocationToRow(zeroPoint, zeroPoint + itemOffset * (direction == TrainDirection.Forward ? -1 : 1));
                 ChangeLabelAt(labels, itemLocationWS, (ListLabel dataCol) =>
                 {
@@ -719,7 +722,8 @@ namespace Orts.Viewer3D.WebServices
             var trackItems = new List<TrackItem>(itemList
                 .Select(MakeTrackItem)
                 .Where((TrackItem item) => item.Render)
-                .Where((TrackItem item) => item.Item.DistanceToTrainM < MaximumDistanceM - TextSpacing / distanceFactor));
+                .Where((TrackItem item) => (item.Item.DistanceToTrainM < MaximumDistanceM - TextSpacing / distanceFactor)
+                    || (item.Item.ItemType == TRAINOBJECTTYPE.SIGNAL && item.Item.DistanceToTrainM > markerIntervalM && item.Item.SignalState != TrackMonitorSignalAspect.Stop)));
             // Keep a pointer to the next available row. If a track item conflicts with a previously placed one, bump it to the next row.
             var nextLocations = new Dictionary<TrackItemColumn, int>();
             foreach (TrackItem trackItem in trackItems)
@@ -736,11 +740,20 @@ namespace Orts.Viewer3D.WebServices
                 if (direction == TrainDirection.Forward)
                 {
                     itemLocationWS = Math.Min(nextLocationWS, ItemLocationToRow(zeroPoint, zeroPoint - itemOffset));
+                    // Signal at top
+                    if (trackItem.Item.ItemType == TRAINOBJECTTYPE.SIGNAL && trackItem.Item.SignalState != TrackMonitorSignalAspect.Stop && trackItem.Item.DistanceToTrainM > MaximumDistanceM)
+                    {
+                        ChangeLabelAt(labels, itemLocationWS, (ListLabel dataCol) =>
+                        {
+                            dataCol.DistCol = FormatStrings.FormatDistance(trackItem.Item.DistanceToTrainM, useMetric);
+                            return dataCol;
+                        });
+                    }
                     nextLocationWS = itemLocationWS - 1;
                 }
                 else
                 {
-                    itemLocationWS = Math.Max(nextLocationWS, ItemLocationToRow(zeroPoint, zeroPoint + itemOffset));
+                    itemLocationWS = ItemLocationToRow(zeroPoint, Math.Max(nextLocationWS, zeroPoint + itemOffset));
                     nextLocationWS = itemLocationWS + 1;
                 }
                 nextLocations[column] = nextLocationWS;
@@ -949,6 +962,7 @@ namespace Orts.Viewer3D.WebServices
             {
                 Color color = Item.Enabled ? Color.Yellow : Color.OrangeRed;
                 dataCol.TrackCol = $"{Symbols.WaitingPointWS}{ColorCode[color]}";
+                dataCol.TrackColItem = Sprites.WaitingPointSprite;
                 return dataCol;
             }
         }
@@ -1059,13 +1073,15 @@ namespace Orts.Viewer3D.WebServices
                     return Round(MathHelper.Clamp(itemLocation * (11f / 200f), 0, 11));
                 case 224: // Auto mode track + train zone
                     return Round(MathHelper.Clamp(itemLocation * (12f / 200f), 0, 12));
+                case 320: // forwardsY
                 case 240: // forwardsY
                 case 0:   // backwardsY
                     return Round(MathHelper.Clamp(itemLocation * (16f / 240f), 0, 16));
                 case 108: // Manual mode upper zone
-                    return Round(MathHelper.Clamp(itemLocation * (6f / 93f), 0, 6));
-                case 132: // Manual mode lower zone
-                    return Round(MathHelper.Clamp(itemLocation * (16f / 232f), 10, 16));
+                    return (int)MathHelper.Clamp(itemLocation * (6f / 93f), 0, 6);
+                case 132:// lower zone
+                    return Orts.MultiPlayer.MPManager.IsMultiPlayer() ? Round(MathHelper.Clamp(itemLocation * (16.0f / 266.0f), 9, 16))// MultiPlayer mode
+                        : Round(MathHelper.Clamp(itemLocation * (16f / 232f), 10, 16));// Manual mode
                 default:
                     return 0;
             }
