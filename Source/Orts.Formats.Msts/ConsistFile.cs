@@ -82,7 +82,7 @@ namespace Orts.Formats.Msts
 
         public IEnumerable<WagonReference> GetForwardWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
-            if (GetLeadLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
+            if (preference != null && !GetLeadLocomotiveChoices(basePath, folders).Contains(preference))
                 return new WagonReference[0] { };
             return Train.TrainCfg.WagonList
                 .Select((Wagon wagon) => new WagonReference(EngineOrWagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
@@ -90,7 +90,7 @@ namespace Orts.Formats.Msts
 
         public IEnumerable<WagonReference> GetReverseWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
         {
-            if (GetReverseLocomotiveChoices(basePath, folders).FirstOrDefault().Equals(preference))
+            if (preference != null && !GetReverseLocomotiveChoices(basePath, folders).Contains(preference))
                 return new WagonReference[0] { };
             return Train.TrainCfg.WagonList
                 .Select((Wagon wagon) => new WagonReference(EngineOrWagonPath(basePath, wagon), !wagon.Flip, wagon.UiD))
