@@ -40,7 +40,8 @@ namespace ORTS.Common
 
         public override bool Equals(object other) => other is WagonReference cast && Equals(cast);
 
-        public bool Equals(WagonReference other) => Path.GetFullPath(FilePath).Equals(Path.GetFullPath(other.FilePath), StringComparison.InvariantCultureIgnoreCase)
+        public bool Equals(WagonReference other) => other != null
+            && Path.GetFullPath(FilePath).Equals(Path.GetFullPath(other.FilePath), StringComparison.InvariantCultureIgnoreCase)
             && Flipped == other.Flipped
             && UiD == other.UiD;
 
@@ -133,7 +134,8 @@ namespace ORTS.Common
 
         public override bool Equals(object other) => other is PreferredLocomotive cast && Equals(cast);
 
-        public bool Equals(PreferredLocomotive other) => other != null && FilePath == other.FilePath;
+        public bool Equals(PreferredLocomotive other) => other != null
+            && Path.GetFullPath(FilePath).Equals(Path.GetFullPath(other.FilePath), StringComparison.InvariantCultureIgnoreCase);
 
         public override int GetHashCode() => FilePath.GetHashCode();
     }
