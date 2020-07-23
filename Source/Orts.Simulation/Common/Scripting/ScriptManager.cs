@@ -46,6 +46,7 @@ namespace Orts.Common.Scripting
             cp.ReferencedAssemblies.Add("System.dll");
             cp.ReferencedAssemblies.Add("System.Core.dll");
             cp.ReferencedAssemblies.Add("ORTS.Common.dll");
+            cp.ReferencedAssemblies.Add("Orts.Formats.Msts.dll");
             cp.ReferencedAssemblies.Add("Orts.Simulation.dll");
             return cp;
         }
@@ -56,7 +57,7 @@ namespace Orts.Common.Scripting
             Simulator = simulator;
         }
 
-        public object Load(string[] pathArray, string name)
+        public object Load(string[] pathArray, string name, string nameSpace = "ORTS.Scripting.Script")
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -74,7 +75,7 @@ namespace Orts.Common.Scripting
             
             path = path.ToLowerInvariant();
 
-            var type = String.Format("ORTS.Scripting.Script.{0}", Path.GetFileNameWithoutExtension(path));
+            var type = String.Format("{0}.{1}", nameSpace, Path.GetFileNameWithoutExtension(path).Replace('-', '_'));
 
             if (Scripts.ContainsKey(path))
                 return Scripts[path].CreateInstance(type, true);
@@ -86,7 +87,15 @@ namespace Orts.Common.Scripting
                 {
                     var script = compilerResults.CompiledAssembly;
                     Scripts.Add(path, script);
-                    return script.CreateInstance(type, true);
+
+                    var instance = script.CreateInstance(type, true);
+
+                    if (script == null)
+                    {
+                        Trace.TraceWarning("Script file {0} has compiled, but the class was not instanciated. The class name is probably wrong.", path); ;
+                    }
+
+                    return instance;
                 }
                 else
                 {
