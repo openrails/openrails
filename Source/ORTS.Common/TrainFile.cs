@@ -40,11 +40,11 @@ namespace ORTS.Common
 
         public override bool Equals(object other) => other is WagonReference cast && Equals(cast);
 
-        public bool Equals(WagonReference other) => FilePath == other.FilePath
+        public bool Equals(WagonReference other) => Path.GetFullPath(FilePath).Equals(Path.GetFullPath(other.FilePath), StringComparison.InvariantCultureIgnoreCase)
             && Flipped == other.Flipped
             && UiD == other.UiD;
 
-        public override int GetHashCode() => Tuple.Create(FilePath, Flipped, UiD).GetHashCode();
+        public override int GetHashCode() => Tuple.Create(Path.GetFullPath(FilePath).ToLowerInvariant(), Flipped, UiD).GetHashCode();
     }
 
     /// <summary>
