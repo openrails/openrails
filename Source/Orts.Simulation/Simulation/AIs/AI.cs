@@ -848,7 +848,7 @@ namespace Orts.Simulation.AIs
         {
             // read consist file
 
-            IConsist conFile = GenericConsist.LoadFile(Simulator.BasePath, srvFile.Train_Config);
+            ITrainFile trainFile = GenericTrain.LoadFile(Simulator.BasePath, srvFile.Train_Config);
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
             // Patch Placingproblem - JeroenP
@@ -866,7 +866,7 @@ namespace Orts.Simulation.AIs
                 return null;
             }
 
-            float maxVelocityMpS = conFile.MaxVelocityMpS ?? 0f;
+            float maxVelocityMpS = trainFile.MaxVelocityMpS ?? 0f;
             // sd.Name is the name of the service file.
             // srvFile.Name points to the name of the service within the Name() category such as Name ( "Eastbound Freight Train" ) in the service file.
             AITrain train = new AITrain(Simulator, sd, this, aiPath, srvFile.Efficiency, srvFile.Name, trfDef, maxVelocityMpS);
@@ -875,7 +875,7 @@ namespace Orts.Simulation.AIs
             if (!Simulator.NameDictionary.ContainsKey(train.Name.ToLower()))
                 Simulator.NameDictionary.Add(train.Name.ToLower(), train);
 
-            train.IsTilting = GenericConsist.IsTilting(srvFile.Train_Config);
+            train.IsTilting = GenericTrain.IsTilting(srvFile.Train_Config);
 
             // also set Route max speed for speedpost-processing in train.cs
             train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
@@ -892,9 +892,9 @@ namespace Orts.Simulation.AIs
             train.Length = 0.0f;
             IEnumerable<TrainCar> cars;
             if (isInitialPlayerTrain && Simulator.PreferredLocomotive != null)
-                cars = conFile.LoadTrainCars(Simulator, playerTrain: true, preference: Simulator.PreferredLocomotive);
+                cars = trainFile.LoadCars(Simulator, playerTrain: true, preference: Simulator.PreferredLocomotive);
             else
-                cars = conFile.LoadTrainCars(Simulator, playerTrain: isInitialPlayerTrain);
+                cars = trainFile.LoadCars(Simulator, playerTrain: isInitialPlayerTrain);
             foreach (TrainCar car in cars)
             {
                 train.Cars.Add(car);

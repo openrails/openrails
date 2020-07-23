@@ -57,7 +57,7 @@
     <Compile Include="AlmostEqual.cs" />
     <Compile Include="CancellationToken.cs" />
     <Compile Include="CancellationTokenSource.cs" />
-    <Compile Include="Consist.cs" />
+    <Compile Include="TrainFile.cs" />
     <Compile Include="Conversions.cs" />
     <Compile Include="Coordinates.cs" />
     <Compile Include="DataLogger.cs" />

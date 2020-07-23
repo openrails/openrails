@@ -41,7 +41,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    IConsist conFile = LoadConsist(filePath);
+                    ITrainFile conFile = LoadConsist(filePath);
                     Name = conFile.DisplayName.Trim();
                     Locomotives = reverseConsist ? GetLocomotivesReverse(conFile, folder, allFolders) : GetLocomotives(conFile, folder, allFolders);
                 }
@@ -60,16 +60,16 @@ namespace ORTS.Menu
             FilePath = filePath;
         }
 
-        private static IConsist LoadConsist(string filePath)
+        private static ITrainFile LoadConsist(string filePath)
         {
             switch (System.IO.Path.GetExtension(filePath).ToLowerInvariant())
             {
-                case ".consist-or":
-                    return Orts.Formats.OR.ConsistFile.LoadFrom(filePath);
+                case ".train-or":
+                    return Orts.Formats.OR.TrainFile.LoadFrom(filePath);
                 case ".con":
                     return new Orts.Formats.Msts.ConsistFile(filePath);
                 default:
-                    throw new InvalidDataException("Unknown consist format");
+                    throw new InvalidDataException("Unknown train format");
             }
         }
 
@@ -81,22 +81,18 @@ namespace ORTS.Menu
         public static List<Consist> GetConsists(Folder folder, IList<Folder> allFolders)
         {
             var consists = new List<Consist>();
-            string directory = System.IO.Path.Combine(folder.Path, "trains", "consists");
-            if (Directory.Exists(directory))
+            foreach (string consist in TrainFileUtilities.AllTrainFiles(folder.Path))
             {
-                foreach (string consist in ConsistUtilities.AllConsistFiles(directory))
+                Consist loaded;
+                try
                 {
-                    Consist loaded;
-                    try
-                    {
-                        loaded = new Consist(consist, folder, allFolders);
-                    }
-                    catch
-                    {
-                        continue;
-                    }
-                    consists.Add(loaded);
+                    loaded = new Consist(consist, folder, allFolders);
                 }
+                catch
+                {
+                    continue;
+                }
+                consists.Add(loaded);
             }
             return consists;
         }
@@ -106,7 +102,7 @@ namespace ORTS.Menu
         public static Consist GetConsist(Folder folder, IList<Folder> allFolders, string name, bool reverseConsist)
         {
             Consist consist = null;
-            string file = ConsistUtilities.ResolveConsist(folder.Path, name);
+            string file = TrainFileUtilities.ResolveTrainFile(folder.Path, name);
 
             try
             {
@@ -117,7 +113,7 @@ namespace ORTS.Menu
             return consist;
         }
 
-        static ISet<Locomotive> GetLocomotives(IConsist conFile, Folder folder, IList<Folder> allFolders)
+        static ISet<Locomotive> GetLocomotives(ITrainFile conFile, Folder folder, IList<Folder> allFolders)
         {
             IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
             ISet<PreferredLocomotive> choices = conFile.GetLeadLocomotiveChoices(folder.Path, foldersDict);
@@ -128,7 +124,7 @@ namespace ORTS.Menu
                 .ToHashSet();
         }
 
-        static ISet<Locomotive> GetLocomotivesReverse(IConsist conFile, Folder folder, IList<Folder> allFolders)
+        static ISet<Locomotive> GetLocomotivesReverse(ITrainFile conFile, Folder folder, IList<Folder> allFolders)
         {
             IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
             ISet<PreferredLocomotive> choices = conFile.GetReverseLocomotiveChoices(folder.Path, foldersDict);

@@ -25,55 +25,55 @@ using System.IO;
 
 namespace Orts.Simulation.Simulation
 {
-    public static class GenericConsist
+    public static class GenericTrain
     {
         /// <summary>
-        /// Load a consist file by name.
+        /// Load a train file by name.
         /// </summary>
         /// <param name="basePath">The content directory.</param>
-        /// <param name="name">The consist filename (without an extension) to search for.</param>
-        /// <returns>The loaded consist.</returns>
-        public static IConsist LoadFile(string basePath, string name)
+        /// <param name="name">The train filename (without an extension) to search for.</param>
+        /// <returns>The loaded train.</returns>
+        public static ITrainFile LoadFile(string basePath, string name)
         {
-            string filePath = ConsistUtilities.ResolveConsist(basePath, name);
+            string filePath = TrainFileUtilities.ResolveTrainFile(basePath, name);
             if (!File.Exists(filePath))
-                throw new FileNotFoundException($"Could not locate consist: {name}");
+                throw new FileNotFoundException($"Could not locate train: {name}");
             return LoadFile(filePath);
         }
 
         /// <summary>
-        /// Load a consist file by path.
+        /// Load a train file by path.
         /// </summary>
-        /// <param name="filePath">The path to the consist.</param>
-        /// <returns>The loaded consist.</returns>
-        public static IConsist LoadFile(string filePath)
+        /// <param name="filePath">The path to the train.</param>
+        /// <returns>The loaded train.</returns>
+        public static ITrainFile LoadFile(string filePath)
         {
             switch (Path.GetExtension(filePath).ToLower())
             {
-                case ".consist-or":
-                    return Formats.OR.ConsistFile.LoadFrom(filePath);
+                case ".train-or":
+                    return Formats.OR.TrainFile.LoadFrom(filePath);
                 case ".con":
                     return new Formats.Msts.ConsistFile(filePath);
                 default:
-                    throw new InvalidDataException("Unknown consist format");
+                    throw new InvalidDataException("Unknown train format");
             }
         }
 
         /// <summary>
-        /// Determine whether a consist should tilt.
+        /// Determine whether a train should tilt.
         /// </summary>
         public static bool IsTilting(string name) => name.ToLower().Contains("tilted");
 
         /// <summary>
-        /// Load the wagons of a consist into the simulator.
+        /// Load the wagons of a train into the simulator.
         /// </summary>
-        /// <param name="consist">The consist file to load.</param>
+        /// <param name="train">The train file to load.</param>
         /// <param name="simulator">The game instance.</param>
-        /// <param name="flip">If set, reverse the consist.</param>
+        /// <param name="flip">If set, reverse the train.</param>
         /// <param name="playerTrain">If set, errors that affect the first wagon are fatal.</param>
         /// <param name="preference">Request a formation with a particular lead locomotive, identified by a filesystem path.</param>
         /// <returns>The list of loaded <see cref="TrainCar"/>s.</returns>
-        public static IEnumerable<TrainCar> LoadTrainCars(this IConsist consist, Simulator simulator, bool flip = false, bool playerTrain = false, PreferredLocomotive preference = null)
+        public static IEnumerable<TrainCar> LoadCars(this ITrainFile train, Simulator simulator, bool flip = false, bool playerTrain = false, PreferredLocomotive preference = null)
         {
             UserSettings settings = simulator.Settings;
             bool first = true;
@@ -81,9 +81,9 @@ namespace Orts.Simulation.Simulation
             {
                 IEnumerable<WagonReference> list;
                 if (flip)
-                    list = consist.GetReverseWagonList(simulator.BasePath, settings.Folders.Folders, preference);
+                    list = train.GetReverseWagonList(simulator.BasePath, settings.Folders.Folders, preference);
                 else
-                    list = consist.GetForwardWagonList(simulator.BasePath, settings.Folders.Folders, preference);
+                    list = train.GetForwardWagonList(simulator.BasePath, settings.Folders.Folders, preference);
                 foreach (WagonReference wagonRef in list)
                 {
                     yield return wagonRef;
@@ -94,7 +94,7 @@ namespace Orts.Simulation.Simulation
             {
                 if (!File.Exists(wagonRef.FilePath))
                 {
-                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonRef.FilePath, consist.DisplayName);
+                    Trace.TraceWarning("Ignored missing wagon {0} in train {1}", wagonRef.FilePath, train.DisplayName);
                     continue;
                 }
 
