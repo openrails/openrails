@@ -57,4 +57,17 @@ namespace ORTS.ContentManager
             PathName = parent.PathName;
         }
     }
+
+    [Serializable]
+    public class ContentORTSTrain : Content
+    {
+        public override ContentType Type { get => ContentType.Consist; }
+
+        public ContentORTSTrain(Content parent, string path)
+            : base(parent)
+        {
+            Name = Path.GetFileNameWithoutExtension(path);
+            PathName = path;
+        }
+    }
 }

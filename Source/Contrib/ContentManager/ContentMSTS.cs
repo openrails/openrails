@@ -220,19 +220,6 @@ namespace ORTS.ContentManager
     }
 
     [Serializable]
-    public class ContentORTSTrain : Content
-    {
-        public override ContentType Type { get => ContentType.Consist; }
-
-        public ContentORTSTrain(Content parent, string path)
-            : base(parent)
-        {
-            Name = Path.GetFileNameWithoutExtension(path);
-            PathName = path;
-        }
-    }
-
-    [Serializable]
     public class ContentMSTSConsist : Content
     {
         public override ContentType Type { get { return ContentType.Consist; } }
