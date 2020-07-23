@@ -25,7 +25,7 @@ namespace ORTS.Common
     /// <summary>
     /// An engine or wagon reference for loading by the simulator.
     /// </summary>
-    public class WagonReference
+    public class WagonReference : IEquatable<WagonReference>
     {
         public string FilePath { get; }
         public bool Flipped { get; }
@@ -37,6 +37,14 @@ namespace ORTS.Common
             Flipped = flipped;
             UiD = uid;
         }
+
+        public override bool Equals(object other) => other is WagonReference cast && Equals(cast);
+
+        public bool Equals(WagonReference other) => FilePath == other.FilePath
+            && Flipped == other.Flipped
+            && UiD == other.UiD;
+
+        public override int GetHashCode() => Tuple.Create(FilePath, Flipped, UiD).GetHashCode();
     }
 
     /// <summary>
