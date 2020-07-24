@@ -33,7 +33,7 @@ namespace ORTS.Common
 
         public WagonReference(string filePath, bool flipped, int uid)
         {
-            FilePath = filePath;
+            FilePath = Path.GetFullPath(filePath);
             Flipped = flipped;
             UiD = uid;
         }
@@ -41,7 +41,7 @@ namespace ORTS.Common
         public override bool Equals(object other) => other is WagonReference cast && Equals(cast);
 
         public bool Equals(WagonReference other) => other != null
-            && Path.GetFullPath(FilePath).Equals(Path.GetFullPath(other.FilePath), StringComparison.InvariantCultureIgnoreCase)
+            && FilePath.Equals(other.FilePath, StringComparison.InvariantCultureIgnoreCase)
             && Flipped == other.Flipped
             && UiD == other.UiD;
 
@@ -135,7 +135,7 @@ namespace ORTS.Common
         public override bool Equals(object other) => other is PreferredLocomotive cast && Equals(cast);
 
         public bool Equals(PreferredLocomotive other) => other != null
-            && Path.GetFullPath(FilePath).Equals(Path.GetFullPath(other.FilePath), StringComparison.InvariantCultureIgnoreCase);
+            && FilePath.Equals(other.FilePath, StringComparison.InvariantCultureIgnoreCase);
 
         public override int GetHashCode() => FilePath.GetHashCode();
     }
