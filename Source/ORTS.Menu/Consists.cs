@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using GNU.Gettext;
 using Orts.Formats.Msts;
+using Orts.Formats.OR;
 using ORTS.Common;
 
 namespace ORTS.Menu
@@ -65,9 +66,9 @@ namespace ORTS.Menu
             switch (System.IO.Path.GetExtension(filePath).ToLowerInvariant())
             {
                 case ".train-or":
-                    return Orts.Formats.OR.TrainFile.LoadFrom(filePath);
+                    return TrainFile.LoadFrom(filePath);
                 case ".con":
-                    return new Orts.Formats.Msts.ConsistFile(filePath);
+                    return new ConsistFile(filePath);
                 default:
                     throw new InvalidDataException("Unknown train format");
             }
