@@ -74,7 +74,7 @@ namespace ORTS.ContentManager.Models
         /// </summary>
         /// <param name="file">The consist structure to query.</param>
         /// <returns>An iterator of items.</returns>
-        private static IEnumerable<Item> GetMstsItems(Orts.Formats.Msts.ConsistFile file) => file.Train.TrainCfg.WagonList
+        private static IEnumerable<Item> GetMstsItems(ConsistFile file) => file.Train.TrainCfg.WagonList
             .Select((Wagon wagon) => new MstsCar(wagon));
 
         public enum Direction{
