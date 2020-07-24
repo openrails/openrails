@@ -225,10 +225,15 @@ namespace ORTS.Common
         /// <returns>All files with known train or consist file extensions.</returns>
         public static IEnumerable<string> AllTrainFiles(string basePath)
         {
-            ISet<string> BaseNames(string directory, string pattern) => new HashSet<string>(
-                Directory.GetFileSystemEntries(directory, pattern)
-                    .Select((string path) => Path.GetFileNameWithoutExtension(path)),
-                StringComparer.InvariantCultureIgnoreCase);
+            ISet<string> BaseNames(string directory, string pattern)
+            {
+                if (!Directory.Exists(directory))
+                    return new HashSet<string>();
+                return new HashSet<string>(
+                    Directory.GetFileSystemEntries(directory, pattern)
+                        .Select((string path) => Path.GetFileNameWithoutExtension(path)),
+                    StringComparer.InvariantCultureIgnoreCase);
+            }
 
             ISet<string> ortsBaseNames = BaseNames(Path.Combine(basePath, "trains", "lists"), "*.train-or");
             ISet<string> mstsBaseNames = BaseNames(Path.Combine(basePath, "trains", "consists"), "*.con");
