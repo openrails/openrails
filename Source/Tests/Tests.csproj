@@ -62,6 +62,7 @@
     <Compile Include="AssertWarnings.cs" />
     <Compile Include="DynamicPrecisionEqualityComparer.cs" />
     <Compile Include="Orts.Formats.Msts\ConsistFile.cs" />
+    <Compile Include="Orts.Formats.OR\TrainFile.cs" />
     <Compile Include="Orts.Parsers.Msts\StfReader.cs" />
     <Compile Include="Orts.Common\Conversions.cs" />
     <Compile Include="Orts.Parsers.OR\TimetableReaderTests.cs" />
@@ -73,6 +74,10 @@
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
       <Name>Orts.Formats.Msts</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orts.Formats.OR\Orts.Formats.OR.csproj">
+      <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
+      <Name>Orts.Formats.OR</Name>
     </ProjectReference>
     <ProjectReference Include="..\Orts.Parsers.Msts\Orts.Parsers.Msts.csproj">
       <Project>{8A84696C-3559-49B8-B27F-BB6932D8A1C6}</Project>
