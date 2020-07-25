@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<!--
+COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+
+This file is part of Open Rails.
+
+Open Rails is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Open Rails is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html>
+<head>
+    <title>OPEN RAILS - Sample API</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- adds zooming for mobiles -->
+    <link rel="shortcut icon" type="image/png" href="/or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
+    <link rel="stylesheet" type="text/css" href="/index.css"><!-- share styles with home page -->
+    <link href="index.css" rel="stylesheet" type="text/css">
+    <script src="index.js"></script>
+</head>
+
+<body onload="setInterval (ApiSampleCaller, 500)">
+    <div id=menu><a href="/">Back to Menu</a></div>
+    <br><h2>Open Rails Web Server - API Sample</h2>
+
+
+    <b>Sample String Data:</b>
+    <div id="strData"></div><br />
+    <b>Sample Integer Data:</b>
+    <div id="intData"></div><br />
+    <b>Date Data:</b>
+    <div id="dateData"></div><br />
+
+    <b>String Array Members:</b>
+    <div id="arrayMember0"></div>
+    <div id="arrayMember1"></div>
+    <div id="arrayMember2"></div>
+    <div id="arrayMember3"></div>
+    <div id="arrayMember4"></div><br />
+
+    <b>Embedded Class:</b><br />
+    <b>Embedded String Data:</b>
+    <div id="embeddedStr"></div><br />
+    <b>Embedded Integer Data:</b>
+    <div id="embeddedNumb"></div><br />
+
+    <img src="or_logo.png" />
+</body>
+</html>
