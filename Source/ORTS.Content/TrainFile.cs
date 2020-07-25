@@ -167,7 +167,7 @@ namespace ORTS.Content
         /// <param name="filename">The filename, minus its extension, of the file to locate.</param>
         /// <returns>The full path to the train file.</returns>
         public static string ResolveOrtsTrainFile(string basePath, string filename) =>
-            Path.GetFullPath(Path.ChangeExtension(Path.Combine(basePath, "trains", "lists", filename), ".train-or"));
+            Path.GetFullPath(Path.ChangeExtension(Path.Combine(basePath, "trains", "consists", filename), ".train-or"));
 
         /// <summary>
         /// Locate a consist by filename.
@@ -235,7 +235,7 @@ namespace ORTS.Content
                     StringComparer.InvariantCultureIgnoreCase);
             }
 
-            ISet<string> ortsBaseNames = BaseNames(Path.Combine(basePath, "trains", "lists"), "*.train-or");
+            ISet<string> ortsBaseNames = BaseNames(Path.Combine(basePath, "trains", "consists"), "*.train-or");
             ISet<string> mstsBaseNames = BaseNames(Path.Combine(basePath, "trains", "consists"), "*.con");
 
             IEnumerable<string> CombinedIterator()
@@ -245,7 +245,7 @@ namespace ORTS.Content
                     string path;
                     // Prioritize native .train-or files.
                     if (ortsBaseNames.Contains(baseName))
-                        path = Path.ChangeExtension(Path.Combine(basePath, "trains", "lists", baseName), ".train-or");
+                        path = Path.ChangeExtension(Path.Combine(basePath, "trains", "consists", baseName), ".train-or");
                     else
                         path = Path.ChangeExtension(Path.Combine(basePath, "trains", "consists", baseName), ".con");
                     yield return Path.GetFullPath(path);

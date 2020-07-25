@@ -388,15 +388,7 @@ namespace Orts.Simulation
             ExploreConFile = consist;
             PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
-            switch (Path.GetDirectoryName(consist).ToLowerInvariant())
-            {
-                case "consists":
-                    trainFileName = Path.ChangeExtension(consist, "CON");
-                    break;
-                case "lists":
-                    trainFileName = Path.ChangeExtension(consist, "TRAIN-OR");
-                    break;
-            }
+            trainFileName = ResolveConsistFileExtension(consist);
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             ClockTime = StartTime.TotalSeconds;
@@ -414,15 +406,7 @@ namespace Orts.Simulation
             ExploreConFile = consist;
             PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
-            switch (Path.GetDirectoryName(consist).ToLowerInvariant())
-            {
-                case "consists":
-                    trainFileName = Path.ChangeExtension(consist, "CON");
-                    break;
-                case "lists":
-                    trainFileName = Path.ChangeExtension(consist, "TRAIN-OR");
-                    break;
-            }
+            trainFileName = ResolveConsistFileExtension(consist);
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time = StartTime.Hours + StartTime.Minutes * 60 +
@@ -432,6 +416,22 @@ namespace Orts.Simulation
             Season = (SeasonType)int.Parse(season);
             WeatherType = (WeatherType)int.Parse(weather);
             IsAutopilotMode = true;
+        }
+
+        private static string ResolveConsistFileExtension(string consistPath)
+        {
+            switch (Path.GetExtension(consistPath).ToLowerInvariant())
+            {
+                case ".train-or":
+                case ".con":
+                    return consistPath;
+                default:
+                    string ortsTrain = Path.ChangeExtension(consistPath, ".train-or");
+                    if (File.Exists(ortsTrain))
+                        return ortsTrain;
+                    else
+                        return Path.ChangeExtension(consistPath, ".con");
+            }
         }
 
         public void Start(CancellationToken cancellation)
