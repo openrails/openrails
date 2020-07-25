@@ -84,9 +84,9 @@ namespace ORTS
             this.comboBoxDifficulty = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.panelModeTimetable = new System.Windows.Forms.Panel();
-            this.label17 = new System.Windows.Forms.Label();
+            this.labelTimetableLocomotive = new System.Windows.Forms.Label();
             this.comboBoxTimetableLocomotive = new System.Windows.Forms.ComboBox();
-            this.label16 = new System.Windows.Forms.Label();
+            this.labelTimetableConsist = new System.Windows.Forms.Label();
             this.comboBoxTimetableConsist = new System.Windows.Forms.ComboBox();
             this.labelTimetableWeatherFile = new System.Windows.Forms.Label();
             this.comboBoxTimetableWeatherFile = new System.Windows.Forms.ComboBox();
@@ -708,9 +708,9 @@ namespace ORTS
             // 
             // panelModeTimetable
             // 
-            this.panelModeTimetable.Controls.Add(this.label17);
+            this.panelModeTimetable.Controls.Add(this.labelTimetableLocomotive);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableLocomotive);
-            this.panelModeTimetable.Controls.Add(this.label16);
+            this.panelModeTimetable.Controls.Add(this.labelTimetableConsist);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableConsist);
             this.panelModeTimetable.Controls.Add(this.labelTimetableWeatherFile);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableWeatherFile);
@@ -733,16 +733,16 @@ namespace ORTS
             this.panelModeTimetable.TabIndex = 10;
             this.panelModeTimetable.Visible = false;
             // 
-            // label17
+            // labelTimetableLocomotive
             // 
-            this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(3, 143);
-            this.label17.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(65, 13);
-            this.label17.TabIndex = 8;
-            this.label17.Text = "Locomotive:";
-            this.label17.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelTimetableLocomotive.AutoSize = true;
+            this.labelTimetableLocomotive.Location = new System.Drawing.Point(3, 143);
+            this.labelTimetableLocomotive.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelTimetableLocomotive.Name = "labelTimetableLocomotive";
+            this.labelTimetableLocomotive.Size = new System.Drawing.Size(65, 13);
+            this.labelTimetableLocomotive.TabIndex = 8;
+            this.labelTimetableLocomotive.Text = "Locomotive:";
+            this.labelTimetableLocomotive.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBoxTimetableLocomotive
             // 
@@ -753,16 +753,16 @@ namespace ORTS
             this.comboBoxTimetableLocomotive.Size = new System.Drawing.Size(193, 21);
             this.comboBoxTimetableLocomotive.TabIndex = 9;
             // 
-            // label16
+            // labelTimetableConsist
             // 
-            this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(3, 117);
-            this.label16.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
-            this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(44, 13);
-            this.label16.TabIndex = 6;
-            this.label16.Text = "Consist:";
-            this.label16.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.labelTimetableConsist.AutoSize = true;
+            this.labelTimetableConsist.Location = new System.Drawing.Point(3, 117);
+            this.labelTimetableConsist.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelTimetableConsist.Name = "labelTimetableConsist";
+            this.labelTimetableConsist.Size = new System.Drawing.Size(44, 13);
+            this.labelTimetableConsist.TabIndex = 6;
+            this.labelTimetableConsist.Text = "Consist:";
+            this.labelTimetableConsist.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // comboBoxTimetableConsist
             // 
@@ -1093,9 +1093,9 @@ namespace ORTS
         private System.Windows.Forms.CheckBox checkDebriefActivityEval;
         private System.Windows.Forms.Label labelTimetableWeatherFile;
         private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
-        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label labelTimetableLocomotive;
         private System.Windows.Forms.ComboBox comboBoxTimetableLocomotive;
-        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.Label labelTimetableConsist;
         private System.Windows.Forms.ComboBox comboBoxTimetableConsist;
     }
 }
