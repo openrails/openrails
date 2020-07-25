@@ -1115,7 +1115,7 @@ namespace Orts.Simulation
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
-            train.IsTilting = GenericTrain.IsTilting(trainFileName);
+            train.IsTilting = GenericTrain.IsTilting(Path.GetFileNameWithoutExtension(trainFileName));
 
 #if ACTIVITY_EDITOR
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
