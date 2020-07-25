@@ -82,6 +82,9 @@ namespace Orts.Viewer3D
         public override string OutputDirectory { get { return string.Empty; } }
         public override string OutputFilename { get { return string.Empty; } }
 
+        public override ContentIdentity SourceIdentity { get { return sourceIdentity; } }
+        readonly ContentIdentity sourceIdentity = new ContentIdentity();
+
         public override OpaqueDataDictionary Parameters { get { return parameters; } }
         OpaqueDataDictionary parameters = new OpaqueDataDictionary();
 
@@ -98,12 +101,9 @@ namespace Orts.Viewer3D
 
     class Logger : ContentBuildLogger
     {
-        public override void LogMessage(string message, params object[] messageArgs) { Console.WriteLine(message, messageArgs); }
-        public override void LogImportantMessage(string message, params object[] messageArgs) { Console.WriteLine(message, messageArgs); }
-        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs)
-        {
-            Console.WriteLine("{0}({1}): {2} {3}", Path.GetFileName(contentIdentity.SourceFilename), contentIdentity.FragmentIdentifier, message, messageArgs?[0]);
-        }
+        public override void LogMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
+        public override void LogImportantMessage(string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
+        public override void LogWarning(string helpLink, ContentIdentity contentIdentity, string message, params object[] messageArgs) => Console.WriteLine(message, messageArgs);
     }
 
     [CallOnThread("Render")]

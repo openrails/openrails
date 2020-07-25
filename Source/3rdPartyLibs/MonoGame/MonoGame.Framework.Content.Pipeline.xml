@@ -6,8 +6,11 @@
     <members>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent">
             <summary>
-            Encapsulates and provides operations, such as format conversions, on the source audio. This type is produced by the audio importers and used by audio processors to produce compiled audio assets.
+            Encapsulates and provides operations, such as format conversions, on the 
+            source audio. This type is produced by the audio importers and used by audio
+            processors to produce compiled audio assets.
             </summary>
+            <remarks>Note that AudioContent can load and process audio files that are not supported by the importers.</remarks>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.ContentItem">
             <summary>
@@ -42,20 +45,6 @@
             <param name="audioFileType">Type of the processed audio: WAV, MP3 or WMA.</param>
             <remarks>Constructs the object from the specified source file, in the format specified.</remarks>
         </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.QualityToSampleRate(Microsoft.Xna.Framework.Content.Pipeline.Audio.ConversionQuality)">
-            <summary>
-            Returns the sample rate for the given quality setting.
-            </summary>
-            <param name="quality">The quality setting.</param>
-            <returns>The sample rate for the quality.</returns>
-        </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.QualityToBitRate(Microsoft.Xna.Framework.Content.Pipeline.Audio.ConversionQuality)">
-            <summary>
-            Returns the bitrate for the given quality setting.
-            </summary>
-            <param name="quality">The quality setting.</param>
-            <returns>The bitrate for the quality.</returns>
-        </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.ConvertFormat(Microsoft.Xna.Framework.Content.Pipeline.Audio.ConversionFormat,Microsoft.Xna.Framework.Content.Pipeline.Audio.ConversionQuality,System.String)">
             <summary>
             Transcodes the source audio to the target format and quality.
@@ -68,47 +57,47 @@
             the Data property.
             </param>
         </member>
-        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.Data">
-            <summary>
-            Gets the raw audio data.
-            </summary>
-            <value>If unprocessed, the source data; otherwise, the processed data.</value>
-        </member>
-        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.Duration">
-            <summary>
-            Gets the duration (in milliseconds) of the audio data.
-            </summary>
-            <value>Duration of the audio data.</value>
-        </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.FileName">
             <summary>
-            Gets the file name containing the audio data.
+            The name of the original source audio file.
             </summary>
-            <value>The name of the file containing this data.</value>
         </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.FileType">
             <summary>
-            Gets the AudioFileType of this audio source.
+            The type of the original source audio file.
             </summary>
-            <value>The AudioFileType of this audio source.</value>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.Data">
+            <summary>
+            The current raw audio data without header information.
+            </summary>
+            <remarks>
+            This changes from the source data to the output data after conversion.
+            For MP3 and WMA files this throws an exception to match XNA behavior.
+            </remarks>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.Duration">
+            <summary>
+            The duration of the audio data.
+            </summary>
         </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.Format">
             <summary>
-            Gets the AudioFormat of this audio source.
+            The current format of the audio data.
             </summary>
-            <value>The AudioFormat of this audio source.</value>
+            <remarks>This changes from the source format to the output format after conversion.</remarks>
         </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.LoopLength">
             <summary>
-            Gets the loop length, in samples.
+            The current loop length in samples.
             </summary>
-            <value>The number of samples in the loop.</value>
+            <remarks>This changes from the source loop length to the output loop length after conversion.</remarks>
         </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent.LoopStart">
             <summary>
-            Gets the loop start, in samples.
+            The current loop start location in samples.
             </summary>
-            <value>The number of samples to the start of the loop.</value>
+            <remarks>This changes from the source loop start to the output loop start after conversion.</remarks>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioFileType">
             <summary>
@@ -128,6 +117,11 @@
         <member name="F:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioFileType.Wma">
             <summary>
             The WMA format
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioFileType.Ogg">
+            <summary>
+            The Ogg format
             </summary>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioFormat">
@@ -188,6 +182,37 @@
             </summary>
             <param name="format">The conversion format</param>
             <returns>The file extension for the given conversion format.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioProfile.ForPlatform(Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
+            <summary>
+            Find the profile for this target platform.
+            </summary>
+            <param name="platform">The platform target for audio.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioProfile.Supports(Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
+            <summary>
+            Returns true if this profile supports audio processing for this platform.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioProfile.ConvertAudio(Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform,Microsoft.Xna.Framework.Content.Pipeline.Audio.ConversionQuality,Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent)">
+            <summary>
+            Converts the audio content to work on targeted platform.
+            </summary>
+            <param name="platform">The platform to build the audio content for.</param>
+            <param name="quality">The suggested audio quality level.</param>
+            <param name="content">The audio content to convert.</param>
+            <returns>The quality used for conversion which could be different from the suggested quality.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioProfile.ConvertStreamingAudio(Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform,Microsoft.Xna.Framework.Content.Pipeline.Audio.ConversionQuality,Microsoft.Xna.Framework.Content.Pipeline.Audio.AudioContent,System.String@)">
+            <summary>
+            Converts the audio content to a streaming format that works on targeted platform.
+            </summary>
+            <param name="platform">The platform to build the audio content for.</param>
+            <param name="quality">The suggested audio quality level.</param>
+            <param name="content">he audio content to convert.</param>
+            <param name="outputFileName"></param>
+            <returns>The quality used for conversion which could be different from the suggested quality.</returns>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Audio.ConversionFormat">
             <summary>
@@ -275,34 +300,12 @@
             Returns a path string normalized to the\Windows\standard.
             </summary>
         </member>
-        <member name="M:MonoGame.Framework.Content.Pipeline.Builder.PathHelper.NormalizeOS(System.String)">
-            <summary>
-            Returns a path string normalized to the current platform standard.
-            </summary>
-        </member>
-        <member name="M:MonoGame.Framework.Content.Pipeline.Builder.PathHelper.NormalizeOS(System.String,Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
-            <summary>
-            Returns a path string normalized to the current platform standard.
-            </summary>
-            <param name="path">Path to normalize</param>
-            <param name="targetPlatform">The platform to normalize for</param>
-            <returns>The normalized path</returns>
-        </member>
         <member name="M:MonoGame.Framework.Content.Pipeline.Builder.PathHelper.GetRelativePath(System.String,System.String)">
             <summary>
             Returns a path relative to the base path.
             </summary>
             <param name="basePath">The path to make relative to.  Must end with directory seperator.</param>
             <param name="path">The path to be made relative to the basePath.</param>
-            <returns>The relative path or the original string if it is not absolute or cannot be made relative.</returns>
-        </member>
-        <member name="M:MonoGame.Framework.Content.Pipeline.Builder.PathHelper.GetRelativePath(System.String,System.String,Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
-            <summary>
-            Returns a path relative to the base path.
-            </summary>
-            <param name="basePath">The path to make relative to.  Must end with directory seperator.</param>
-            <param name="path">The path to be made relative to the basePath.</param>
-            <param name="targetPlatform">The platform to normalize the path for.</param>
             <returns>The relative path or the original string if it is not absolute or cannot be made relative.</returns>
         </member>
         <member name="P:MonoGame.Framework.Content.Pipeline.Builder.PipelineBuildEvent.SourceFile">
@@ -660,6 +663,11 @@
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.ContentProcessorContext.Logger">
             <summary>
             Gets the logger interface used for status messages or warnings.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.ContentProcessorContext.SourceIdentity">
+            <summary>
+            Gets the ContentIdentity representing the source asset imported.
             </summary>
         </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.ContentProcessorContext.OutputDirectory">
@@ -1314,6 +1322,37 @@
             <param name="comparer">The comparer.</param>
             <returns>A enumeration of selected values</returns>
         </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.TextureProfile.ForPlatform(Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
+            <summary>
+            Find the profile for this target platform.
+            </summary>
+            <param name="platform">The platform target for textures.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.TextureProfile.Supports(Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
+            <summary>
+            Returns true if this profile supports texture processing for this platform.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.TextureProfile.Requirements(Microsoft.Xna.Framework.Content.Pipeline.ContentProcessorContext,Microsoft.Xna.Framework.Content.Pipeline.Processors.TextureProcessorOutputFormat,System.Boolean@,System.Boolean@)">
+            <summary>
+            Determines if the texture format will require power-of-two dimensions and/or equal width and height.
+            </summary>
+            <param name="context">The processor context.</param>
+            <param name="format">The desired texture format.</param>
+            <param name="requiresPowerOfTwo">True if the texture format requires power-of-two dimensions.</param>
+            <param name="requiresSquare">True if the texture format requires equal width and height.</param>
+            <returns>True if the texture format requires power-of-two dimensions.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.TextureProfile.ConvertTexture(Microsoft.Xna.Framework.Content.Pipeline.ContentProcessorContext,Microsoft.Xna.Framework.Content.Pipeline.Graphics.TextureContent,Microsoft.Xna.Framework.Content.Pipeline.Processors.TextureProcessorOutputFormat,System.Boolean)">
+            <summary>
+            Performs conversion of the texture content to the correct format.
+            </summary>
+            <param name="context">The processor context.</param>
+            <param name="content">The content to be compressed.</param>
+            <param name="format">The user requested format for compression.</param>
+            <param name="isSpriteFont">If the texture has represents a sprite font, i.e. is greyscale and has sharp black/white contrast.</param>
+        </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.Dxt1BitmapContent.TryGetFormat(Microsoft.Xna.Framework.Graphics.SurfaceFormat@)">
             <summary>
             Gets the corresponding GPU texture format for the specified bitmap type.
@@ -1481,6 +1520,31 @@
             Normal text.
             </summary>
         </member>
+        <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.LocalizedFontDescription">
+            <summary>
+            Normally, when you add a .spritefont file to your project, this data is
+            deserialized into a FontDescription object, which is then built into a
+            SpriteFontContent by the FontDescriptionProcessor. But to localize the
+            font, we want to add some additional data, so our custom processor can
+            know what .resx files it needs to scan. We do this by defining our own
+            custom font description class, deriving from the built in FontDescription
+            type, and adding a new property to store the resource filenames.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.LocalizedFontDescription.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.LocalizedFontDescription.ResourceFiles">
+            <summary>
+            Add a new property to our font description, which will allow us to
+            include a ResourceFiles element in the .spritefont XML. We use the
+            ContentSerializer attribute to mark this as optional, so existing
+            .spritefont files that do not include this ResourceFiles element
+            can be imported as well.
+            </summary>
+        </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent">
             <summary>
             Provides properties that define various aspects of a geometry batch.
@@ -1589,50 +1653,12 @@
             Returns the next power of two. Returns same value if already is PoT.
             </summary>
         </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GraphicsUtil.IsCompressedTextureFormat(Microsoft.Xna.Framework.Content.Pipeline.Processors.TextureProcessorOutputFormat)">
-            <summary>
-            Returns true if the format is a compressed format.
-            </summary>
-            <param name="format">The texture processor output format.</param>
-            <returns>True if the format is a compressed format.</returns>
-        </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GraphicsUtil.RequiresPowerOfTwo(Microsoft.Xna.Framework.Content.Pipeline.Processors.TextureProcessorOutputFormat,Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform,Microsoft.Xna.Framework.Graphics.GraphicsProfile)">
-            <summary>
-            Determines if the texture format requires power-of-two dimensions on the target platform.
-            </summary>
-            <param name="format">The texture format.</param>
-            <param name="platform">The target platform.</param>
-            <param name="profile">The targeted graphics profile.</param>
-            <returns>True if the texture format requires power-of-two dimensions on the target platform.</returns>
-        </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GraphicsUtil.RequiresSquare(Microsoft.Xna.Framework.Content.Pipeline.Processors.TextureProcessorOutputFormat,Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
-            <summary>
-            Determines if the given texture format requires equal width and height on the target platform.
-            </summary>
-            <param name="format">The texture format.</param>
-            <param name="platform">The target platform.</param>
-            <returns>True if the texture format requires equal width and height on the target platform.</returns>
-        </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GraphicsUtil.CalculateAlphaRange(Microsoft.Xna.Framework.Content.Pipeline.Graphics.BitmapContent)">
             <summary>
             Gets the alpha range in a set of pixels.
             </summary>
             <param name="bitmap">A bitmap of full-colour floating point pixel data in RGBA or BGRA order.</param>
             <returns>A member of the AlphaRange enum to describe the range of alpha in the pixel data.</returns>
-        </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GraphicsUtil.GetTextureFormatForPlatform(Microsoft.Xna.Framework.Content.Pipeline.Processors.TextureProcessorOutputFormat,Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform)">
-            <summary>
-            If format is TextureProcessorOutputFormat.Compressed, the appropriate compressed texture format for the target
-            platform is returned. Otherwise the format is returned unchanged.
-            </summary>
-            <param name="format">The supplied texture format.</param>
-            <param name="platform">The target platform.</param>
-            <returns>The texture format.</returns>
-        </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GraphicsUtil.CompressTexture(Microsoft.Xna.Framework.Graphics.GraphicsProfile,Microsoft.Xna.Framework.Content.Pipeline.Graphics.TextureContent,Microsoft.Xna.Framework.Content.Pipeline.Processors.TextureProcessorOutputFormat,Microsoft.Xna.Framework.Content.Pipeline.ContentProcessorContext,System.Boolean,System.Boolean)">
-            <summary>
-            Compresses TextureContent in a format appropriate to the platform
-            </summary>
         </member>
         <member name="F:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GraphicsUtil.AlphaRange.Opaque">
             <summary>
@@ -1731,6 +1757,95 @@
             </summary>
             <value>true if this object is read-only; false otherwise.</value>
         </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.AddTriangleVertex(System.Int32)">
+            <summary>
+            Adds a vertex into the index collection.
+            </summary>
+            <param name="indexIntoVertexCollection">Index of the inserted vertex, in the collection.
+            This corresponds to the value returned by <see cref="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.CreatePosition(System.Single,System.Single,System.Single)"/>.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.CreatePosition(System.Single,System.Single,System.Single)">
+            <summary>
+            Inserts the specified vertex position into the vertex channel.
+            </summary>
+            <param name="x">Value of the x component of the vector.</param>
+            <param name="y">Value of the y component of the vector.</param>
+            <param name="z">Value of the z component of the vector.</param>
+            <returns>Index of the inserted vertex.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.CreatePosition(Microsoft.Xna.Framework.Vector3)">
+            <summary>
+            Inserts the specified vertex position into the vertex channel at the specified index.
+            </summary>
+            <param name="pos">Value of the vertex being inserted.</param>
+            <returns>Index of the vertex being inserted.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.FinishMesh">
+            <summary>
+            Ends the creation of a mesh.
+            </summary>
+            <returns>Resultant mesh.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.SetMaterial(Microsoft.Xna.Framework.Content.Pipeline.Graphics.MaterialContent)">
+            <summary>
+            Sets the material for the next triangles.
+            </summary>
+            <param name="material">Material for the next triangles.</param>
+            <remarks>
+            Sets the material for the triangles being defined next. This material
+            and the opaque data dictionary, set with <see cref="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.SetOpaqueData(Microsoft.Xna.Framework.Content.Pipeline.OpaqueDataDictionary)"/>
+            define the <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent"/>  object containing the next
+            triangles. When you set a new material or opaque data dictionary the
+            triangles you add afterwards will belong to a new
+            <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent"/> object.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.SetOpaqueData(Microsoft.Xna.Framework.Content.Pipeline.OpaqueDataDictionary)">
+            <summary>
+            Sets the opaque data for the next triangles.
+            </summary>
+            <param name="opaqueData">Opaque data dictionary for the next triangles.</param>
+            <remarks>
+            Sets the opaque data dictionary for the triangles being defined next. This dictionary
+            and the material, set with <see cref="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.SetMaterial(Microsoft.Xna.Framework.Content.Pipeline.Graphics.MaterialContent)"/>, define the <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent"/>
+            object containing the next triangles. When you set a new material or opaque data dictionary
+            the triangles you add afterwards will belong to a new <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent"/> object.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.SetVertexChannelData(System.Int32,System.Object)">
+            <summary>
+            Sets the specified vertex data with new data.
+            </summary>
+            <param name="vertexDataIndex">Index of the vertex data channel being set. This should match the index returned by CreateVertexChannel.</param>
+            <param name="channelData">New data values for the vertex data. The data type being set must match the data type for the vertex channel specified by vertexDataIndex.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.StartMesh(System.String)">
+            <summary>
+            Initializes the creation of a mesh.
+            </summary>
+            <param name="name">Name of the mesh.</param>
+            <returns>Object used when building the mesh.</returns>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.MergeDuplicatePositions">
+            <summary>
+            Gets or sets the current value for position merging of the mesh.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.MergePositionTolerance">
+            <summary>
+            Gets or sets the tolerance for <see cref="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.MergeDuplicatePositions"/>.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.Name">
+            <summary>
+            Gets or sets the name of the current  <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshContent"/> object being processed.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshBuilder.SwapWindingOrder">
+            <summary>
+            Reverses the triangle winding order of the specified mesh.
+            </summary>
+        </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshContent">
             <summary>
             Provides properties and methods that define various aspects of a mesh.
@@ -1797,6 +1912,37 @@
             <summary>
             Traverses a skeleton depth-first and builds a list of its bones.
             </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshHelper.MergeDuplicatePositions(Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshContent,System.Single)">
+            <summary>
+            Merge any positions in the <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.PositionCollection"/> of the
+            specified mesh that are at a distance less than the specified tolerance
+            from each other.
+            </summary>
+            <param name="mesh">Mesh to be processed.</param>
+            <param name="tolerance">Tolerance value that determines how close 
+            positions must be to each other to be merged.</param>
+            <remarks>
+            This method will also update the <see cref="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexContent.PositionIndices"/>
+            in the <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent"/> of the specified mesh.
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshHelper.MergeDuplicateVertices(Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent)">
+            <summary>
+            Merge vertices with the same <see cref="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexContent.PositionIndices"/> and
+            <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexChannel"/> data within the specified
+            <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.GeometryContent"/>.
+            </summary>
+            <param name="geometry">Geometry to be processed.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshHelper.MergeDuplicateVertices(Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshContent)">
+            <summary>
+            Merge vertices with the same <see cref="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexContent.PositionIndices"/> and
+            <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexChannel"/> data within the <see cref="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshContent.Geometry"/>
+            of this mesh. If you want to merge positions too, call 
+            <see cref="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshHelper.MergeDuplicatePositions(Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshContent,System.Single)"/> on your mesh before this function.
+            </summary>
+            <param name="mesh">Mesh to be processed</param>
         </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshHelper.SwapWindingOrder(Microsoft.Xna.Framework.Content.Pipeline.Graphics.MeshContent)">
             <summary>
@@ -2108,6 +2254,13 @@
             Removes the element at the specified index position.
             </summary>
             <param name="index">Index of the element to remove.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexChannel.RemoveRange(System.Int32,System.Int32)">
+            <summary>
+            Removes a range of values from the channel.
+            </summary>
+            <param name="index">The zero-based starting index of the range of elements to remove.</param>
+            <param name="count"> The number of elements to remove.</param>
         </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexChannel.Items">
             <summary>
@@ -2423,6 +2576,13 @@
             Removes the element at the specified index position.
             </summary>
             <param name="index">Index of the element to remove.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexChannel`1.RemoveRange(System.Int32,System.Int32)">
+            <summary>
+            Removes a range of values from the channel.
+            </summary>
+            <param name="index">The zero-based starting index of the range of elements to remove.</param>
+            <param name="count"> The number of elements to remove.</param>
         </member>
         <member name="P:Microsoft.Xna.Framework.Content.Pipeline.Graphics.VertexChannel`1.Items">
             <summary>
@@ -2771,6 +2931,24 @@
             Disables debugging for all profiles, produce optimized shaders.
             </summary>
         </member>
+        <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Processors.LocalizedFontProcessor">
+            <summary>
+            Custom processor extends the SpriteFont build process to scan over the resource
+            strings used by the game, automatically adding whatever characters it finds in
+            them to the font. This makes sure the game will always have all the characters
+            it needs, no matter what languages it is localized into, while still producing
+            an efficient font that does not waste space on unnecessary characters. This is
+            especially useful for languages such as Japanese and Korean, which have
+            potentially thousands of different characters, although games typically only
+            use a small fraction of these. Building only the characters we need is far more
+            efficient than if we tried to include the entire CJK character region.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Processors.LocalizedFontProcessor.Process(Microsoft.Xna.Framework.Content.Pipeline.Graphics.LocalizedFontDescription,Microsoft.Xna.Framework.Content.Pipeline.ContentProcessorContext)">
+            <summary>
+            Converts a font description into SpriteFont format.
+            </summary>
+        </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Processors.MaterialProcessor">
             <summary>
             Provides methods and properties for maintaining a collection of named texture references.
@@ -2958,7 +3136,7 @@
             Represents a processed sound effect.
             </summary>
         </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Processors.SoundEffectContent.#ctor(System.Collections.ObjectModel.ReadOnlyCollection{System.Byte},System.Collections.ObjectModel.ReadOnlyCollection{System.Byte},System.Int32,System.Int32,System.Int32)">
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Processors.SoundEffectContent.#ctor(System.Collections.Generic.IEnumerable{System.Byte},System.Collections.Generic.IEnumerable{System.Byte},System.Int32,System.Int32,System.Int32)">
             <summary>
             Initializes a new instance of the SoundEffectContent class.
             </summary>
@@ -4946,7 +5124,33 @@
         <member name="M:TwoMGFX.MojoShader.NativeMethods.MOJOSHADER_glProgramReady">
             Return Type: void
         </member>
-        <member name="M:TwoMGFX.ParseNode.Eval(TwoMGFX.ParseTree,System.Object[])">
+        <member name="M:TwoMGFX.ShaderProfile.ForPlatform(System.String)">
+            <summary>
+            Returns the correct profile for the named platform or
+            null if no supporting profile is found.
+            </summary>
+        </member>
+        <member name="M:TwoMGFX.ShaderProfile.FromName(System.String)">
+            <summary>
+            Returns the profile by name or null if no match is found.
+            </summary>
+        </member>
+        <member name="P:TwoMGFX.ShaderProfile.All">
+            <summary>
+            Returns all the loaded shader profiles.
+            </summary>
+        </member>
+        <member name="P:TwoMGFX.ShaderProfile.Name">
+            <summary>
+            Returns the name of the shader profile.
+            </summary>
+        </member>
+        <member name="P:TwoMGFX.ShaderProfile.FormatId">
+            <summary>
+            Returns the format identifier used in the MGFX file format.
+            </summary>
+        </member>
+        <member name="M:TwoMGFX.TPGParser.ParseNode.Eval(TwoMGFX.TPGParser.ParseTree,System.Object[])">
             <summary>
             this implements the evaluation functionality, cannot be used directly
             </summary>
@@ -4954,21 +5158,21 @@
             <param name="paramlist">optional input parameters</param>
             <returns>a partial result of the evaluation</returns>
         </member>
-        <member name="M:TwoMGFX.ParseTree.Eval(System.Object[])">
+        <member name="M:TwoMGFX.TPGParser.ParseTree.Eval(System.Object[])">
             <summary>
             this is the entry point for executing and evaluating the parse tree.
             </summary>
             <param name="paramlist">additional optional input parameters</param>
             <returns>the output of the evaluation function</returns>
         </member>
-        <member name="M:TwoMGFX.Scanner.Scan(TwoMGFX.TokenType[])">
+        <member name="M:TwoMGFX.TPGParser.Scanner.Scan(TwoMGFX.TPGParser.TokenType[])">
             <summary>
             executes a lookahead of the next token
             and will advance the scan on the input string
             </summary>
             <returns></returns>
         </member>
-        <member name="M:TwoMGFX.Scanner.LookAhead(TwoMGFX.TokenType[])">
+        <member name="M:TwoMGFX.TPGParser.Scanner.LookAhead(TwoMGFX.TPGParser.TokenType[])">
             <summary>
             returns token with longest best match
             </summary>
@@ -5569,6 +5773,14 @@
             <param name="output">The output writer object.</param>
             <param name="value">The value to write to the output.</param>
         </member>
+        <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler.MultiArrayWriter`1">
+            <summary>
+            Writes the array value to the output.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler.MultiArrayWriter`1.OnAddedToContentWriter(Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler.ContentWriter)">
+            <inheritdoc/>
+        </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler.NullableWriter`1">
             <summary>
             Writes the nullable value to the output.
@@ -5865,7 +6077,7 @@
         </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate.NamespaceAliasHelper.GetRelativeNamespace(System.String,System.String)">
             <summary>
-            Returns just the portion <paramref name="@namespace"/> relative to <paramref name="namespaceParent"/>.
+            Returns just the portion <paramref name="namespace"/> relative to <paramref name="namespaceParent"/>.
             For example, given namespaceParent=Foo.Bar and @namespace=Foo.Bar.Baz, will return Baz.
             </summary>
         </member>
@@ -6010,6 +6222,105 @@
             Gets or sets the string representing the processor in a user interface. This name is not used by the content pipeline and should not be passed to the BuildAssets task (a custom MSBuild task used by XNA Game Studio). It is used for display purposes only.
             </summary>
         </member>
+        <member name="T:Microsoft.Xna.Framework.Content.Pipeline.ContentStats">
+            <summary>
+            Content building statistics for a single source content file.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.ContentStats.SourceFile">
+            <summary>
+            The absolute path to the source content file.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.ContentStats.DestFile">
+            <summary>
+            The absolute path to the destination content file.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.ContentStats.ProcessorType">
+            <summary>
+            The content processor type name.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.ContentStats.ContentType">
+            <summary>
+            The content type name.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.ContentStats.SourceFileSize">
+            <summary>
+            The source file size in bytes.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.ContentStats.DestFileSize">
+            <summary>
+            The destination file size in bytes.
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.ContentStats.BuildSeconds">
+            <summary>
+            The content build time in seconds.
+            </summary>
+        </member>
+        <member name="T:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection">
+            <summary>
+            A collection of content building statistics for use in diagnosing content issues.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.TryGetStats(System.String,Microsoft.Xna.Framework.Content.Pipeline.ContentStats@)">
+            <summary>
+             Get the content statistics for a source file and returns true if found.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.Reset">
+            <summary>
+            Clears all the content statistics.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.RecordStats(System.String,System.String,System.String,System.Type,System.Single)">
+            <summary>
+            Store content building stats for a source file.
+            </summary>
+            <param name="sourceFile">The absolute path to the source asset file.</param>
+            <param name="destFile">The absolute path to the destination content file.</param>
+            <param name="processorType">The type name of the content processor.</param>
+            <param name="contentType">The content type object.</param>
+            <param name="buildSeconds">The build time in seconds.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.CopyPreviousStats(System.String)">
+            <summary>
+            Copy content building stats to the current collection from the PreviousStats.
+            </summary>
+            <param name="sourceFile">The absolute path to the source asset file.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.Read(System.String)">
+            <summary>
+            Load the content statistics from a folder.
+            </summary>
+            <param name="outputPath">The folder where the .mgstats file can be found.</param>
+            <returns>Returns the content statistics or an empty collection.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.Write(System.String)">
+            <summary>
+            Write the content statistics to a folder with the .mgstats file name.
+            </summary>
+            <param name="outputPath">The folder to write the .mgstats file.</param>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.MergePreviousStats">
+            <summary>
+            Merge in statistics from PreviousStats that do not exist in this collection.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.PreviousStats">
+            <summary>
+            Optionally used for copying stats that were stored in another collection.
+            </summary>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.ContentStatsCollection.Stats">
+            <summary>
+             The internal content statistics dictionary.
+            </summary>
+        </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.DdsLoader">
             <summary>
             Loader class for DDS format image files.
@@ -6078,6 +6389,20 @@
             <remarks>
             It's apparently necessary to use the full path when running on some systems.
             </remarks>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ExternalTool.EnsureExecutable(System.String)">
+            <summary>   
+            Ensures the specified executable has the executable bit set.  If the    
+            executable doesn't have the executable bit set on Linux or Mac OS, then 
+            Mono will refuse to execute it. 
+            </summary>  
+            <param name="path">The full path to the executable.</param> 
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.ExternalTool.DeleteFile(System.String)">
+            <summary>
+            Safely deletes the file if it exists.
+            </summary>
+            <param name="filePath">The path to the file to delete.</param>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.FbxImporter">
             <summary>
@@ -6160,6 +6485,12 @@
             Gets or sets the identity of the content item that caused the exception.
             </summary>
         </member>
+        <member name="T:Microsoft.Xna.Framework.Content.Pipeline.LoadedTypeCollection`1">
+            <summary>
+            A helper for collecting instances of a particular type
+            by scanning the types in loaded assemblies.
+            </summary>
+        </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.Mp3Importer">
             <summary>
             Provides methods for reading MP3 audio files for use in the Content Pipeline.
@@ -6191,9 +6522,27 @@
             <param name="context">Contains information for importing a game asset, such as a logger interface.</param>
             <returns>Resulting game asset.</returns>
         </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpaqueDataDictionary.GetValue``1(System.String,``0)">
+            <summary>
+            Get the value for the specified key
+            </summary>
+            <key>The key of the item to retrieve.</key>
+            <defaultValue>The default value to return if the key does not exist.</defaultValue>
+            <returns>The item cast as T, or the default value if the item is not present in the dictonary.</returns>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.ImportXnaMaterials">
+            <summary>
+            Converts all Assimp <see cref="T:Assimp.Material"/>s to standard XNA compatible <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MaterialContent"/>s.
+            </summary>
+        </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.ImportMaterials">
             <summary>
-            Converts all Assimp <see cref="T:Assimp.Material"/>s to XNA <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MaterialContent"/>s.
+            Returns all the Assimp <see cref="T:Assimp.Material"/> features as a <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.MaterialContent"/>.
             </summary>
         </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.ImportNodes">
@@ -6248,11 +6597,12 @@
             <param name="parent">The <paramref name="aiParent"/> node converted to XNA.</param>
             <returns>The XNA <see cref="T:Microsoft.Xna.Framework.Content.Pipeline.Graphics.NodeContent"/>.</returns>
         </member>
-        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.ImportAnimation(Assimp.Animation)">
+        <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.ImportAnimation(Assimp.Animation,System.String)">
             <summary>
             Converts the specified animation to XNA.
             </summary>
             <param name="aiAnimation">The animation.</param>
+            <param name="nodeName">An optional filter.</param>
             <returns>The animation converted to XNA.</returns>
         </member>
         <member name="M:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.GetSubtree(Assimp.Node,System.Collections.Generic.List{Assimp.Node})">
@@ -6286,6 +6636,12 @@
             </summary>
             <param name="name">The mangled node name.</param>
             <returns>The original node name.</returns>
+        </member>
+        <member name="P:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.XnaComptatible">
+            <summary>
+            This disables some Assimp model loading features so that
+            the resulting content is the same as what the XNA FbxImporter 
+            </summary>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.OpenAssetImporter.FbxPivot">
             <summary>Defines the frame for local scale/rotation/translation of FBX nodes.</summary>
@@ -6507,11 +6863,6 @@
             Xbox 360 video game and entertainment system
             </summary>
         </member>
-        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform.WindowsPhone">
-            <summary>
-            Windows Phone
-            </summary>
-        </member>
         <member name="F:Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform.iOS">
             <summary>
             Apple iOS-based devices (iPod Touch, iPhone, iPad)
@@ -6569,6 +6920,21 @@
         <member name="F:Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform.PlayStation4">
             <summary>
             Sony PlayStation4
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform.PSVita">
+            <summary>
+            PlayStation Vita
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform.XboxOne">
+            <summary>
+            Xbox One
+            </summary>
+        </member>
+        <member name="F:Microsoft.Xna.Framework.Content.Pipeline.TargetPlatform.Switch">
+            <summary>
+            Nintendo Switch
             </summary>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.TargetPlatformTypeConverter">
@@ -6671,6 +7037,7 @@
             <param name="filename">Name of a game asset file.</param>
             <param name="context">Contains information for importing a game asset, such as a logger interface.</param>
             <returns>Resulting game asset.</returns>
+            <remarks>This importer supports PCM in unsigned 8-bit, signed 16-bit, signed 24-bit, IEEE Float 32-bit, MS-ADPCM or IMA/ADPCM with sample rates from 8KHz up to 48KHz.</remarks>
         </member>
         <member name="T:Microsoft.Xna.Framework.Content.Pipeline.WmaImporter">
             <summary>

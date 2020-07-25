@@ -57,8 +57,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework, Version=3.5.0.1046, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="MonoGame.Framework">
       <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="MonoGame.Framework.Content.Pipeline">
