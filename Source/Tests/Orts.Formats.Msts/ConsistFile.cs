@@ -31,7 +31,7 @@ namespace Tests.Orts.Formats.Msts
         public static void TestTrainProperties()
         {
             ITrainFile train;
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
                 train = new ConsistFile(MakeDrivableTestFile(content));
 
             Assert.Equal("Test consist", train.DisplayName);
@@ -43,10 +43,10 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestForwardWagonReferences()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeDrivableTestFile(content));
-                var expected = new WagonReference[]
+                var train = new ConsistFile(MakeDrivableTestFile(content));
+                var expected = new[]
                 {
                     new WagonReference(Path.Combine(content.TrainsetPath, "us2bnsfcar", "US2BNSFCAR.wag"), false, 0),
                     new WagonReference(Path.Combine(content.TrainsetPath, "dash9", "DASH9.eng"), false, 1),
@@ -63,10 +63,10 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestReverseWagonReferences()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeDrivableTestFile(content));
-                var expected = new WagonReference[]
+                var train = new ConsistFile(MakeDrivableTestFile(content));
+                var expected = new[]
                 {
                     // For the moment, we use the UiD's as entered into the .con file; no reversing.
                     new WagonReference(Path.Combine(content.TrainsetPath, "gp38", "GP38.eng"), false, 6),
@@ -84,9 +84,9 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestForwardLocomotiveChoices()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeDrivableTestFile(content));
+                var train = new ConsistFile(MakeDrivableTestFile(content));
                 var locomotive = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "dash9", "DASH9.eng"));
                 Assert.Equal(new HashSet<PreferredLocomotive>() { locomotive }, train.GetLeadLocomotiveChoices(content.Path, Folders));
             }
@@ -95,9 +95,9 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestReverseLocomotiveChoices()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeDrivableTestFile(content));
+                var train = new ConsistFile(MakeDrivableTestFile(content));
                 var locomotive = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "gp38", "GP38.eng"));
                 Assert.Equal(new HashSet<PreferredLocomotive>() { locomotive }, train.GetReverseLocomotiveChoices(content.Path, Folders));
             }
@@ -106,9 +106,9 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestNoForwardLocomotiveChoices()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeNonDrivableTestFile(content));
+                var train = new ConsistFile(MakeNonDrivableTestFile(content));
                 Assert.Equal(PreferredLocomotive.NoLocomotiveSet, train.GetLeadLocomotiveChoices(content.Path, Folders));
             }
         }
@@ -116,9 +116,9 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestNoReverseLocomotiveChoices()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeNonDrivableTestFile(content));
+                var train = new ConsistFile(MakeNonDrivableTestFile(content));
                 Assert.Equal(PreferredLocomotive.NoLocomotiveSet, train.GetReverseLocomotiveChoices(content.Path, Folders));
             }
         }
@@ -126,9 +126,9 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestNoForwardWagonReferencesGivenUnsatisifablePreference()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeDrivableTestFile(content));
+                var train = new ConsistFile(MakeDrivableTestFile(content));
                 var unsatisfiable = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "acela", "acela.eng"));
                 Assert.Empty(train.GetForwardWagonList(content.Path, Folders, preference: unsatisfiable));
             }
@@ -137,9 +137,9 @@ namespace Tests.Orts.Formats.Msts
         [Fact]
         public static void TestNoReverseWagonReferencesGivenUnsatisifablePreference()
         {
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                ITrainFile train = new ConsistFile(MakeDrivableTestFile(content));
+                var train = new ConsistFile(MakeDrivableTestFile(content));
                 var unsatisfiable = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "acela", "acela.eng"));
                 Assert.Empty(train.GetReverseWagonList(content.Path, Folders, preference: unsatisfiable));
             }
@@ -187,7 +187,7 @@ Train (
 		)
 	)
 )";
-            string path = Path.Combine(content.ConsistsPath, "test_drivable.con");
+            var path = Path.Combine(content.ConsistsPath, "test_drivable.con");
             File.WriteAllText(path, text);
             return path;
         }
@@ -209,7 +209,7 @@ Train (
 		)
 	)
 )";
-            string path = Path.Combine(content.ConsistsPath, "test_nondrivable.con");
+            var path = Path.Combine(content.ConsistsPath, "test_nondrivable.con");
             File.WriteAllText(path, text);
             return path;
         }

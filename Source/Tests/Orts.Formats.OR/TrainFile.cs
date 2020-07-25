@@ -59,9 +59,9 @@ namespace Tests.Orts.Formats.OR
                     },
                 },
             };
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                var expected = new WagonReference[]
+                var expected = new[]
                 {
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng"), false, 0),
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeWagon.wag"), false, 1),
@@ -100,9 +100,9 @@ namespace Tests.Orts.Formats.OR
                     },
                 },
             };
-            using (TestContent content = new TestContent())
+            using (var content = new TestContent())
             {
-                var expected = new WagonReference[]
+                var expected = new[]
                 {
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"), false, 0),
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeWagon.wag"), true, 1),
