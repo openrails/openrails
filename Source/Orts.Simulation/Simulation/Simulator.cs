@@ -1133,11 +1133,11 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            ITrainFile trainFile = GenericTrain.LoadFile(trainFileName);
+            var trainFile = GenericTrain.LoadFile(trainFileName);
             CurveDurability = trainFile.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
-            foreach (TrainCar car in trainFile.LoadCars(this, playerTrain: true, preference: PreferredLocomotive))
+            foreach (var car in trainFile.LoadCars(this, playerTrain: true, preference: PreferredLocomotive))
             {
                 if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
                 else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.

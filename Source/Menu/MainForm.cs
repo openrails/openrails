@@ -885,7 +885,7 @@ namespace ORTS
             {
                 comboBoxLocomotive.Items.Clear();
                 comboBoxLocomotive.Items.Add(new Locomotive());
-                ISet<Locomotive> allLocomotives = Consists
+                var allLocomotives = Consists
                     .Select((Consist c) => c.Locomotives)
                     .Aggregate(new HashSet<Locomotive>(), (ISet<Locomotive> accum, ISet<Locomotive> choices) =>
                     {
@@ -1130,7 +1130,7 @@ namespace ORTS
             comboBoxTimetableLocomotive.Items.Clear();
             if (SelectedTimetableConsist != null)
             {
-                Locomotive[] locomotives = SelectedTimetableConsist.Locomotives
+                var locomotives = SelectedTimetableConsist.Locomotives
                     .ToArray();
                 Array.Sort(locomotives);
                 comboBoxTimetableLocomotive.Items.AddRange(locomotives);
@@ -1192,7 +1192,7 @@ namespace ORTS
                         ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
                         if (SelectedTimetableConsist.Locomotives.Count == 1)
                         {
-                            Locomotive loco = SelectedTimetableConsist.Locomotives.First();
+                            var loco = SelectedTimetableConsist.Locomotives.First();
                             ShowDetail(catalog.GetStringFmt("Locomotive: {0}", loco.Name ?? ""), (loco.Description ?? "").Split('\n'));
                         }
                     }

@@ -849,7 +849,7 @@ namespace Orts.Simulation.AIs
         {
             // read consist file
 
-            ITrainFile trainFile = GenericTrain.LoadFile(Simulator.BasePath, srvFile.Train_Config);
+            var trainFile = GenericTrain.LoadFile(Simulator.BasePath, srvFile.Train_Config);
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
             // Patch Placingproblem - JeroenP
@@ -896,7 +896,7 @@ namespace Orts.Simulation.AIs
                 cars = trainFile.LoadCars(Simulator, playerTrain: true, preference: Simulator.PreferredLocomotive);
             else
                 cars = trainFile.LoadCars(Simulator, playerTrain: isInitialPlayerTrain);
-            foreach (TrainCar car in cars)
+            foreach (var car in cars)
             {
                 train.Cars.Add(car);
                 car.Train = train;

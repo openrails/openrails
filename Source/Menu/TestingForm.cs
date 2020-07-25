@@ -111,7 +111,7 @@ namespace ORTS
 
             TestActivityLoader = new Task<SortableBindingList<TestActivity>>(this, () =>
             {
-                IList<Folder> folders = Folder.GetFolders(Settings);
+                var folders = Folder.GetFolders(Settings);
                 return new SortableBindingList<TestActivity>((from f in folders
                                                               from r in Route.GetRoutes(f)
                                                               from a in Activity.GetActivities(f, folders, r)
