@@ -33,6 +33,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using Orts.Simulation.Simulation;
 using ORTS.Common;
+using ORTS.Content;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

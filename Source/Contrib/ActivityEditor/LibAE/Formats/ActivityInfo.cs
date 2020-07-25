@@ -30,7 +30,7 @@ using Newtonsoft.Json.Linq;
 using MSTS;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using ORTS.Common;
+using ORTS.Content;
 using Orts.Formats.OR;
 
 namespace LibAE.Formats

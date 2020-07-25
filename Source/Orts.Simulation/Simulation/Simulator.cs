@@ -30,6 +30,7 @@ using Orts.Simulation.Signalling;
 using Orts.Simulation.Simulation;
 using Orts.Simulation.Timetables;
 using ORTS.Common;
+using ORTS.Content;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;

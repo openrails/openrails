@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace ORTS.Common
+namespace ORTS.Content
 {
     /// <summary>
     /// An engine or wagon reference for loading by the simulator.

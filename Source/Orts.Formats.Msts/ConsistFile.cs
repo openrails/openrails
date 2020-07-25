@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Orts.Parsers.Msts;
-using ORTS.Common;
+using ORTS.Content;
 
 namespace Orts.Formats.Msts
 {

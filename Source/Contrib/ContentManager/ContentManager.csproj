@@ -96,11 +96,11 @@
       <Project>{570709FA-0C8A-4B1D-BA2D-D9455AFD9B5C}</Project>
       <Name>Orts.Formats.Msts</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\ORTS.Common\ORTS.Common.csproj">
-      <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
-      <Name>ORTS.Common</Name>
+    <ProjectReference Include="..\..\ORTS.Content\ORTS.Content.csproj">
+      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
+      <Name>ORTS.Content</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Orts.Formats.OR\Orts.Formats.OR.csproj">
+      <ProjectReference Include="..\..\Orts.Formats.OR\Orts.Formats.OR.csproj">
       <Project>{0d8d312b-2c02-4b77-a795-566394a9db95}</Project>
       <Name>Orts.Formats.OR</Name>
     </ProjectReference>
