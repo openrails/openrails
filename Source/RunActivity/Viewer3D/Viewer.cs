@@ -1124,29 +1124,23 @@ namespace Orts.Viewer3D
                 if (Program.DebugViewer != null && Program.DebugViewer.Enabled && (Program.DebugViewer.switchPickedItem != null || Program.DebugViewer.signalPickedItem != null))
                 {
                     WorldLocation wos;
-                    try
+                    TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem?.Item?.TrJunctionNode;
+                    if (nextSwitchTrack != null)
                     {
-                        if (Program.DebugViewer.switchPickedItem != null)
-                        {
-                            TrJunctionNode nextSwitchTrack = Program.DebugViewer.switchPickedItem.Item.TrJunctionNode;
-                            wos = new WorldLocation(nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.X, nextSwitchTrack.TN.UiD.Y + 8, nextSwitchTrack.TN.UiD.Z);
-                        }
-                        else
-                        {
-                            var s = Program.DebugViewer.signalPickedItem.Item;
-                            wos = new WorldLocation(s.TileX, s.TileZ, s.X, s.Y + 8, s.Z);
-                        }
-                        if (FreeRoamCameraList.Count == 0)
-                        {
-                            new UseFreeRoamCameraCommand(Log);
-                        }
-                        FreeRoamCamera.SetLocation(wos);
-                        //FreeRoamCamera
-                        FreeRoamCamera.Activate();
+                        wos = new WorldLocation(nextSwitchTrack.TN.UiD.TileX, nextSwitchTrack.TN.UiD.TileZ, nextSwitchTrack.TN.UiD.X, nextSwitchTrack.TN.UiD.Y + 8, nextSwitchTrack.TN.UiD.Z);
                     }
-                    catch { }
-
-
+                    else
+                    {
+                        var s = Program.DebugViewer.signalPickedItem.Item;
+                        wos = new WorldLocation(s.TileX, s.TileZ, s.X, s.Y + 8, s.Z);
+                    }
+                    if (FreeRoamCameraList.Count == 0)
+                    {
+                        new UseFreeRoamCameraCommand(Log);
+                    }
+                    FreeRoamCamera.SetLocation(wos);
+                    //FreeRoamCamera
+                    FreeRoamCamera.Activate();
                 }
             }
 

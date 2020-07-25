@@ -21,6 +21,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Common;
+using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation;
 using Orts.Viewer3D.Debugging;
@@ -730,12 +731,15 @@ namespace Orts.Viewer3D.Processes
         {
             if (settings.Logging && (settings.LoggingPath.Length > 0) && Directory.Exists(settings.LoggingPath))
             {
-                var fileName = settings.LoggingFilename;
+                string fileName;
                 try
                 {
-                    fileName = String.Format(fileName, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
+                    fileName = string.Format(settings.LoggingFilename, Application.ProductName, VersionInfo.VersionOrBuild, VersionInfo.Version, VersionInfo.Build, DateTime.Now);
                 }
-                catch { }
+                catch (FormatException)
+                {
+                    fileName = settings.LoggingFilename;
+                }
                 foreach (var ch in Path.GetInvalidFileNameChars())
                     fileName = fileName.Replace(ch, '.');
 
@@ -1084,89 +1088,93 @@ namespace Orts.Viewer3D.Processes
 
         string GetRouteName(string path)
         {
+            if (!HasExtension(path, ".act") && !HasExtension(path, ".pat"))
+                return null;
+
+            RouteFile trk = null;
             try
             {
-                if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
-                {
-                    var trk = new Orts.Formats.Msts.RouteFile(MSTS.MSTSPath.GetTRKFileName(Path.GetDirectoryName(Path.GetDirectoryName(path))));
-                    return trk.Tr_RouteFile.Name;
-                }
+                trk = new RouteFile(MSTS.MSTSPath.GetTRKFileName(Path.GetDirectoryName(Path.GetDirectoryName(path))));
             }
             catch { }
-            return null;
+            return trk?.Tr_RouteFile?.Name;
         }
 
         string GetActivityName(string path)
         {
+            if (!HasExtension(path, ".act"))
+                return null;
+            
+            ActivityFile act = null;
             try
             {
-                if (Path.GetExtension(path).Equals(".act", StringComparison.OrdinalIgnoreCase))
-                {
-                    var act = new Orts.Formats.Msts.ActivityFile(path);
-                    return act.Tr_Activity.Tr_Activity_Header.Name;
-                }
+                act = new ActivityFile(path);
             }
             catch { }
-            return null;
+            return act?.Tr_Activity?.Tr_Activity_Header?.Name;
         }
 
         string GetPathName(string path)
         {
+            if (!HasExtension(path, ".pat"))
+                return null;
+
+            PathFile pat = null;
             try
             {
-                if (Path.GetExtension(path).Equals(".pat", StringComparison.OrdinalIgnoreCase))
-                {
-                    var pat = new Orts.Formats.Msts.PathFile(path);
-                    return pat.Name;
-                }
+                pat = new PathFile(path);
             }
             catch { }
-            return null;
+            return pat?.Name;
         }
 
         string GetConsistName(string path)
         {
+            if (!HasExtension(path, ".con"))
+                return null;
+
+            ConsistFile con = null;
             try
             {
-                if (Path.GetExtension(path).Equals(".con", StringComparison.OrdinalIgnoreCase))
-                {
-                    var con = new Orts.Formats.Msts.ConsistFile(path);
-                    return con.Name;
-                }
+                con = new ConsistFile(path);
             }
             catch { }
-            return null;
+            return con?.Name;
         }
+
+        private bool HasExtension(string path, string ext) => Path.GetExtension(path).Equals(ext, StringComparison.OrdinalIgnoreCase);
 
         string GetTime(string timeString)
         {
+            string[] time = timeString.Split(':');
+            if (time.Length == 0)
+                return null;
+
+            string ts = null;
             try
             {
-                var time = timeString.Split(':');
-                return new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0).ToString();
+                ts = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0).ToString();
             }
-            catch { }
-            return null;
+            catch (ArgumentOutOfRangeException) { }
+            catch (FormatException) { }
+            catch (OverflowException) { }
+            return ts;
         }
 
         string GetSeason(string season)
         {
-            try
-            {
-                return Enum.Parse(typeof(Orts.Formats.Msts.SeasonType), season).ToString();
-            }
-            catch { }
-            return null;
+            if (Enum.TryParse(season, out SeasonType value))
+                return value.ToString();
+            else
+                return null;
         }
 
         string GetWeather(string weather)
         {
-            try
-            {
-                return Enum.Parse(typeof(Orts.Formats.Msts.WeatherType), weather).ToString();
-            }
-            catch { }
-            return null;
+            if (Enum.TryParse(weather, out WeatherType value))
+                return value.ToString();
+            else
+                return null;
         }
 
         void LogSeparator()

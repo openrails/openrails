@@ -168,6 +168,47 @@ Disable TCS scripts
 This option disables the train control system scripts for locomotives where
 these have been implemented.
 
+Enable web server
+-----------------
+
+This option enables an internal web server that can be used to display game and
+train status information in a browser, intended for use on secondary screens.
+When activated, the server can be accessed (on the local machine only) at
+``http://localhost:<port>``, where ``<port>`` is the specified port number.
+
+.. admonition:: For core developers
+
+    The web server serves content out of the ``Content\Web`` subfolder of the OR
+    program folder; it features a simple API to obtain data from the simulator.
+    Responses are OR data structures
+    `serialized <https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_JsonConvert.htm>`_
+    in JSON format. API call paths are case-sensitive.
+
+    .. list-table::
+       :widths: 15 15 35 35
+       :header-rows: 1
+
+       * - Method
+         - API call
+         - Description
+         - Response type
+       * - GET
+         - ``/API/HUD/<n>``
+         - | Retrieves the information rendered on the ``<F5>`` HUD, row by row,
+           | page by page, where ``<n>`` is the desired HUD page number.
+         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.HudApiArray
+       * - GET
+         - | ``/API/TRAINMONITOR``
+           | or ``/API/TRAININFO``
+         - | Retrieves information rendered on the Track Monitor, such as speed,
+           | acceleration, grade, and upcoming hazards.
+         - Orts.Simulation.Physics.Train.TrainInfo
+       * - GET
+         - ``/API/APISAMPLE``
+         - | A test object that demonstrates the JSON serialization of various
+           | data types.
+         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.ApiSampleData
+
 Audio Options
 =============
 
