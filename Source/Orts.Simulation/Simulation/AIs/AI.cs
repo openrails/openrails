@@ -37,6 +37,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Timetables;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
+using ORTS.Content;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;

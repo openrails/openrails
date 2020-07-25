@@ -27,6 +27,7 @@ using Orts.Simulation;
 using Orts.Simulation.Simulation;
 using Orts.Viewer3D.Debugging;
 using ORTS.Common;
+using ORTS.Content;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;

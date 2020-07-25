@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Simulation.RollingStocks;
-using ORTS.Common;
+using ORTS.Content;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
