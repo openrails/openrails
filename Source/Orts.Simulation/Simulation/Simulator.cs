@@ -387,8 +387,15 @@ namespace Orts.Simulation
             ExploreConFile = consist;
             PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
-            string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
-            trainFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
+            switch (Path.GetDirectoryName(consist).ToLowerInvariant())
+            {
+                case "consists":
+                    trainFileName = Path.ChangeExtension(consist, "CON");
+                    break;
+                case "lists":
+                    trainFileName = Path.ChangeExtension(consist, "TRAIN-OR");
+                    break;
+            }
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             ClockTime = StartTime.TotalSeconds;
@@ -406,8 +413,15 @@ namespace Orts.Simulation
             ExploreConFile = consist;
             PreferredLocomotive = preferredLocomotive;
             patFileName = Path.ChangeExtension(path, "PAT");
-            string nativeConsist = Path.ChangeExtension(consist, "CONSIST-OR");
-            trainFileName = File.Exists(nativeConsist) ? nativeConsist : Path.ChangeExtension(consist, "CON");
+            switch (Path.GetDirectoryName(consist).ToLowerInvariant())
+            {
+                case "consists":
+                    trainFileName = Path.ChangeExtension(consist, "CON");
+                    break;
+                case "lists":
+                    trainFileName = Path.ChangeExtension(consist, "TRAIN-OR");
+                    break;
+            }
             var time = start.Split(':');
             TimeSpan StartTime = new TimeSpan(int.Parse(time[0]), time.Length > 1 ? int.Parse(time[1]) : 0, time.Length > 2 ? int.Parse(time[2]) : 0);
             Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition.Time = StartTime.Hours + StartTime.Minutes * 60 +
@@ -1101,7 +1115,7 @@ namespace Orts.Simulation
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
-            train.IsTilting = GenericTrain.IsTilting(trainFileName);
+            train.IsTilting = GenericTrain.IsTilting(Path.GetFileNameWithoutExtension(trainFileName));
 
 #if ACTIVITY_EDITOR
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
