@@ -42,7 +42,7 @@ namespace ORTS.Menu
             {
                 try
                 {
-                    ITrainFile conFile = LoadConsist(filePath);
+                    var conFile = LoadConsist(filePath);
                     Name = conFile.DisplayName.Trim();
                     Locomotives = reverseConsist ? GetLocomotivesReverse(conFile, folder, allFolders) : GetLocomotives(conFile, folder, allFolders);
                 }
@@ -82,7 +82,7 @@ namespace ORTS.Menu
         public static List<Consist> GetConsists(Folder folder, IList<Folder> allFolders)
         {
             var consists = new List<Consist>();
-            foreach (string consist in TrainFileUtilities.AllTrainFiles(folder.Path))
+            foreach (var consist in TrainFileUtilities.AllTrainFiles(folder.Path))
             {
                 Consist loaded;
                 try
@@ -103,7 +103,7 @@ namespace ORTS.Menu
         public static Consist GetConsist(Folder folder, IList<Folder> allFolders, string name, bool reverseConsist)
         {
             Consist consist = null;
-            string file = TrainFileUtilities.ResolveTrainFile(folder.Path, name);
+            var file = TrainFileUtilities.ResolveTrainFile(folder.Path, name);
 
             try
             {
@@ -116,8 +116,8 @@ namespace ORTS.Menu
 
         static ISet<Locomotive> GetLocomotives(ITrainFile conFile, Folder folder, IList<Folder> allFolders)
         {
-            IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
-            ISet<PreferredLocomotive> choices = conFile.GetLeadLocomotiveChoices(folder.Path, foldersDict);
+            var foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
+            var choices = conFile.GetLeadLocomotiveChoices(folder.Path, foldersDict);
             return choices
                 .Where((PreferredLocomotive pl) => !pl.Equals(PreferredLocomotive.NoLocomotive))
                 .Select((PreferredLocomotive pl) => LoadLocomotive(pl))
@@ -127,8 +127,8 @@ namespace ORTS.Menu
 
         static ISet<Locomotive> GetLocomotivesReverse(ITrainFile conFile, Folder folder, IList<Folder> allFolders)
         {
-            IDictionary<string, string> foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
-            ISet<PreferredLocomotive> choices = conFile.GetReverseLocomotiveChoices(folder.Path, foldersDict);
+            var foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
+            var choices = conFile.GetReverseLocomotiveChoices(folder.Path, foldersDict);
             return choices
                 .Where((PreferredLocomotive pl) => !pl.Equals(PreferredLocomotive.NoLocomotive))
                 .Select((PreferredLocomotive pl) => LoadLocomotive(pl))

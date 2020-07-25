@@ -998,13 +998,13 @@ namespace Orts.Viewer3D.Processes
             }
 
             PreferredLocomotive preferredLoco = null;
-            IEnumerable<string> keyOptions = (options ?? new string[0] { })
+            var keyOptions = (options ?? new string[0] { })
                 .Where((string o) => o.Contains('='));
             foreach (string option in keyOptions)
             {
-                string[] split = option.Split(new char[] { '=' }, 2);
-                string key = split[0];
-                string value = split[1];
+                var split = option.Split(new char[] { '=' }, 2);
+                var key = split[0];
+                var value = split[1];
                 switch (key)
                 {
                     case "preferredLocomotive":

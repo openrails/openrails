@@ -46,7 +46,7 @@ namespace Orts.Formats.Msts
         {
             get
             {
-                float a = Train.TrainCfg.MaxVelocity?.A ?? 0f;
+                var a = Train.TrainCfg.MaxVelocity?.A ?? 0f;
                 if (a <= 0f || a == 40f)
                     return null;
                 else
@@ -60,7 +60,7 @@ namespace Orts.Formats.Msts
 
         public ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
         {
-            Wagon firstEngine = Train.TrainCfg.WagonList
+            var firstEngine = Train.TrainCfg.WagonList
                 .Where((Wagon wagon) => wagon.IsEngine)
                 .FirstOrDefault();
             if (firstEngine == null)
@@ -71,7 +71,7 @@ namespace Orts.Formats.Msts
 
         public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
         {
-            Wagon lastEngine = Train.TrainCfg.WagonList
+            var lastEngine = Train.TrainCfg.WagonList
                 .Where((Wagon wagon) => wagon.IsEngine)
                 .LastOrDefault();
             if (lastEngine == null)
@@ -105,7 +105,7 @@ namespace Orts.Formats.Msts
 
         private static string EngineOrWagonPath(string basePath, Wagon wagon)
         {
-            string[] subFolders = wagon.Folder.Split(new char[] { '/', '\\' });
+            var subFolders = wagon.Folder.Split(new char[] { '/', '\\' });
             if (wagon.IsEngine)
                 return TrainFileUtilities.ResolveEngineFile(basePath, subFolders, wagon.Name);
             else

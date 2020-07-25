@@ -94,8 +94,8 @@ namespace LibAE.Formats
                         routePaths.Add(route);
                     }
                 }
-                string basePath = Path.GetDirectoryName(routeParent);
-                foreach (string fullPathConsist in TrainFileUtilities.AllTrainFiles(basePath))
+                var basePath = Path.GetDirectoryName(routeParent);
+                foreach (var fullPathConsist in TrainFileUtilities.AllTrainFiles(basePath))
                 {
                     ITrainFile consistFile;
                     switch (Path.GetExtension(fullPathConsist).ToLowerInvariant())
@@ -110,7 +110,7 @@ namespace LibAE.Formats
                             consistFile = null;
                             break;
                     }
-                    ConsistInfo conInfo = new ConsistInfo(consistFile.DisplayName, fullPathConsist);
+                    var conInfo = new ConsistInfo(consistFile.DisplayName, fullPathConsist);
                     trainConsists.Add(conInfo); 
                 }
             }
