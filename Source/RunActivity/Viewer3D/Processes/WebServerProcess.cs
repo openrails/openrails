@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 
+using EmbedIO.Net;
 using System.Threading;
 using Orts.Viewer3D.WebServices;
 using ORTS.Common;
@@ -63,9 +64,8 @@ namespace Orts.Viewer3D.Processes
                 return;
 
             string myWebContentPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Content\\Web");
-            string Url(string ip) => $"http://{ip}:{Game.Settings.WebServerPort}";
-            var urls = new string[] { Url("[::1]"), Url("127.0.0.1"), Url("localhost") };
-            using (EmbedIO.WebServer server = WebServer.CreateWebServer(urls, myWebContentPath))
+            EndPointManager.UseIpv6 = true;
+            using (EmbedIO.WebServer server = WebServer.CreateWebServer($"http://*:{Game.Settings.WebServerPort}", myWebContentPath))
                 server.RunAsync(StopServer.Token).Wait();
         }
     }
