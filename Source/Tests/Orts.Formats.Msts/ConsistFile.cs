@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Orts.Formats.Msts;
-using ORTS.Common;
+using ORTS.Content;
 using System.Collections.Generic;
 using System.IO;
 using Xunit;

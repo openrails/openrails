@@ -71,6 +71,10 @@
     <Compile Include="TestFile.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ORTS.Content\ORTS.Content.csproj">
+      <Project>{812685a7-2683-4102-a3ca-2a5ced2e61ee}</Project>
+      <Name>ORTS.Content</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Orts.Formats.Msts\Orts.Formats.Msts.csproj">
       <Project>{570709fa-0c8a-4b1d-ba2d-d9455afd9b5c}</Project>
       <Name>Orts.Formats.Msts</Name>
@@ -87,7 +91,7 @@
       <Project>{DA94D876-7D35-46C3-AECE-AFACE72C686C}</Project>
       <Name>ORTS.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
+      <ProjectReference Include="..\Orts.Parsers.OR\Orts.Parsers.OR.csproj">
       <Project>{1cc3bd5c-06c5-4784-b067-f93945a7ca2c}</Project>
       <Name>Orts.Parsers.OR</Name>
     </ProjectReference>
