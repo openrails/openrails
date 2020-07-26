@@ -326,16 +326,8 @@ namespace Orts.MultiPlayer
                 url = areas[6].Trim();
                 ParseTrainCars(areas[7].Trim());
                 leadingID = areas[1].Trim();
-                int index = path.LastIndexOf("\\PATHS\\", StringComparison.OrdinalIgnoreCase);
-                if (index > 0)
-                {
-                    path = path.Remove(0, index + 7);
-                }
-                index = con.LastIndexOf("\\CONSISTS\\", StringComparison.OrdinalIgnoreCase);
-                if (index > 0)
-                {
-                    con = con.Remove(0, index + 10);
-                }
+                path = Path.GetFileName(path);
+                con = Path.GetFileName(con);
                 if (areas.Length >= 9) { version = int.Parse(areas[8]); }
                 if (areas.Length >= 10)
                 {
