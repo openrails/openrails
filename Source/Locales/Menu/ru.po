@@ -633,7 +633,7 @@ msgstr "{0}%"
 #: ../../Menu/Options.cs:632
 #, csharp-format
 msgid "No detail (-{0}%)"
-msgstr "No detail (-{0}%)"
+msgstr "Без деталей (-{0}%)"
 
 #: ../../Menu/Options.cs:634
 #, csharp-format
@@ -779,7 +779,7 @@ msgstr "Дальность видимости (км)"
 
 #: ../../Menu/Options.Designer.cs:798
 msgid "Fast full-screen alt-tab"
-msgstr "Переход по Alt-Tab конда развёрнуто"
+msgstr "Переход по Alt-Tab когда развёрнуто"
 
 #: ../../Menu/Options.Designer.cs:808
 msgid "Distant mountains"
@@ -1089,7 +1089,7 @@ msgstr "Возвышение"
 
 #: ../../Menu/Options.Designer.cs:2277
 msgid "Load DDS textures in preference to ACE"
-msgstr "Приоритет загрузки текстур DDS в вместо ACE"
+msgstr "Приоритет загрузки текстур DDS вместо ACE"
 
 #: ../../Menu/Options.Designer.cs:2288
 msgid "Location-linked passing path processing"
