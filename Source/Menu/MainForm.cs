@@ -91,7 +91,7 @@ namespace ORTS
         // Activity mode items
         public Activity SelectedActivity { get { return (Activity)comboBoxActivity.SelectedItem; } }
         public Consist SelectedConsist { get { return (Consist)comboBoxConsist.SelectedItem; } }
-        public Locomotive SelectedLocomotive { get => (Locomotive)comboBoxLocomotive.SelectedItem; }
+        public Locomotive SelectedLocomotive => (Locomotive)comboBoxLocomotive.SelectedItem;
         public Path SelectedPath { get { return (Path)comboBoxHeadTo.SelectedItem; } }
         public string SelectedStartTime { get { return comboBoxStartTime.Text; } }
 
@@ -100,7 +100,7 @@ namespace ORTS
         public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
         public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
-        public Locomotive SelectedTimetableLocomotive { get => (Locomotive)comboBoxTimetableLocomotive.SelectedItem; }
+        public Locomotive SelectedTimetableLocomotive => (Locomotive)comboBoxTimetableLocomotive.SelectedItem;
         public WeatherFileInfo SelectedWeatherFile { get { return (WeatherFileInfo)comboBoxTimetableWeatherFile.SelectedItem; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
