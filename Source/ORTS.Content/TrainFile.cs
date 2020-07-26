@@ -120,7 +120,7 @@ namespace ORTS.Content
         /// <summary>
         /// Singleton set for trains without a locomotive.
         /// </summary>
-        public static readonly ISet<PreferredLocomotive> NoLocomotiveSet = new HashSet<PreferredLocomotive>() { NoLocomotive };
+        public static ISet<PreferredLocomotive> NoLocomotiveSet => new HashSet<PreferredLocomotive>() { NoLocomotive };
 
         public PreferredLocomotive(string filePath)
         {
