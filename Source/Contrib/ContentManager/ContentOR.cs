@@ -61,7 +61,7 @@ namespace ORTS.ContentManager
     [Serializable]
     public class ContentORTSTrain : Content
     {
-        public override ContentType Type { get => ContentType.Consist; }
+        public override ContentType Type => ContentType.Consist;
 
         public ContentORTSTrain(Content parent, string path)
             : base(parent)
