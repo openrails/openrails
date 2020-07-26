@@ -247,6 +247,7 @@ namespace Orts.Simulation.Physics
         public float maxTimeS = 120;                     // check ahead for distance covered in 2 mins.
         public float minCheckDistanceM = 5000;           // minimum distance to check ahead
         public float minCheckDistanceManualM = 3000;     // minimum distance to check ahead in manual mode
+        public float CheckDistanceM => Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
 
         public float standardOverlapM = 15.0f;           // standard overlap on clearing sections
         public float junctionOverlapM = 75.0f;           // standard overlap on clearing sections
@@ -3023,10 +3024,6 @@ namespace Orts.Simulation.Physics
 
             // get next items within max distance
 
-            float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
-
-            // look maxTimeS or minCheckDistance ahead
-
             ObjectItemInfo nextObject;
             ObjectItemInfo prevObject = firstObject;
 
@@ -3035,7 +3032,7 @@ namespace Orts.Simulation.Physics
             int nextIndex = routeListIndex;
 
             while (returnState == ObjectItemInfo.ObjectItemFindState.Object &&
-                distanceToLastObject < maxDistance &&
+                distanceToLastObject < CheckDistanceM &&
                 nextAspect != MstsSignalAspect.STOP)
             {
                 int foundSection = -1;
@@ -3474,15 +3471,13 @@ namespace Orts.Simulation.Physics
                 // read next items if last item within max distance
                 //
 
-                float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
-
                 int routeListIndex = PresentPosition[0].RouteListIndex;
                 int lastIndex = routeListIndex;
                 float offset = PresentPosition[0].TCOffset;
 
                 prevObject = SignalObjectItems[SignalObjectItems.Count - 1];  // last object
 
-                while (lastDistance < maxDistance &&
+                while (lastDistance < CheckDistanceM &&
                           returnState == ObjectItemInfo.ObjectItemFindState.Object &&
                           nextAspect != MstsSignalAspect.STOP)
                 {
@@ -7706,8 +7701,7 @@ namespace Orts.Simulation.Physics
             //            }
 
             // look maxTimeS or minCheckDistance ahead
-            float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
-            if (EndAuthorityType[0] == END_AUTHORITY.MAX_DISTANCE && DistanceToEndNodeAuthorityM[0] > maxDistance)
+            if (EndAuthorityType[0] == END_AUTHORITY.MAX_DISTANCE && DistanceToEndNodeAuthorityM[0] > CheckDistanceM)
             {
                 return;   // no update required //
             }
@@ -9071,7 +9065,7 @@ namespace Orts.Simulation.Physics
                 List<int> tempSections = new List<int>();
 
                 tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
-                        requiredPosition.TCDirection, forward, minCheckDistanceM, true, false,
+                        requiredPosition.TCDirection, forward, CheckDistanceM, true, false,
                         false, false, true, false, false, false, false, IsFreight);
 
                 if (tempSections.Count > 0)
@@ -9155,10 +9149,10 @@ namespace Orts.Simulation.Physics
 
             // if route does not end with signal and is too short, extend
 
-            if (!endWithSignal && totalLengthM < minCheckDistanceM)
+            if (!endWithSignal && totalLengthM < CheckDistanceM)
             {
 
-                float extendedDistanceM = minCheckDistanceM - totalLengthM;
+                float extendedDistanceM = CheckDistanceM - totalLengthM;
                 TCRouteElement lastElement = newRoute[newRoute.Count - 1];
 
                 int lastSectionIndex = lastElement.TCSectionIndex;
@@ -9213,17 +9207,17 @@ namespace Orts.Simulation.Physics
 
             // if route is too long, remove sections at end
 
-            else if (totalLengthM > minCheckDistanceM)
+            else if (totalLengthM > CheckDistanceM)
             {
                 float remainingLengthM = totalLengthM - signalRef.TrackCircuitList[newRoute[0].TCSectionIndex].Length; // do not count first section
-                bool lengthExceeded = remainingLengthM > minCheckDistanceM;
+                bool lengthExceeded = remainingLengthM > CheckDistanceM;
 
                 for (int iindex = newRoute.Count - 1; iindex > 1 && lengthExceeded; iindex--)
                 {
                     thisElement = newRoute[iindex];
                     thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
 
-                    if ((remainingLengthM - thisSection.Length) > minCheckDistanceM)
+                    if ((remainingLengthM - thisSection.Length) > CheckDistanceM)
                     {
                         remainingLengthM -= thisSection.Length;
                         newRoute.RemoveAt(iindex);
@@ -9404,7 +9398,7 @@ namespace Orts.Simulation.Physics
                     int lastDirection = newRoute[newRoute.Count - 1].Direction;
                     if (lastSection.EndSignals[lastDirection] != null && lastSection.EndSignals[lastDirection].thisRef == nextUnclearSignalIndex)
                     {
-                        float remainingDistance = minCheckDistanceM - endAuthorityDistanceM;
+                        float remainingDistance = CheckDistanceM - endAuthorityDistanceM;
                         SignalObject reqSignal = signalRef.SignalObjects[nextUnclearSignalIndex];
                         newRoute = reqSignal.requestClearSignalExplorer(newRoute, remainingDistance, forward ? routedForward : routedBackward, false, 0);
                     }
@@ -9899,7 +9893,6 @@ namespace Orts.Simulation.Physics
             }
 
             // use direction forward only
-            float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
             float clearedDistanceM = 0.0f;
 
             int activeSectionIndex = thisSectionIndex;
@@ -9930,7 +9923,7 @@ namespace Orts.Simulation.Physics
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[activeSectionIndex];
                     clearedDistanceM = GetDistanceToTrain(activeSectionIndex, thisSection.Length);
 
-                    if (clearedDistanceM > maxDistance)
+                    if (clearedDistanceM > CheckDistanceM)
                     {
                         EndAuthorityType[0] = END_AUTHORITY.MAX_DISTANCE;
                         LastReservedSection[0] = thisSection.Index;
