@@ -62,7 +62,11 @@ namespace Tests
         /// <summary>
         /// Create a mock using a temporary folder.
         /// </summary>
-        public TestContent() => Path = Combine(GetTempPath(), GetRandomFileName());
+        public TestContent()
+        {
+            Path = Combine(GetTempPath(), GetRandomFileName());
+            Mkdir();
+        }
 
         private string Mkdir(params string[] subPath)
         {
