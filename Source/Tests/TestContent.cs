@@ -27,8 +27,6 @@ namespace Tests
     /// </summary>
     public class TestContent : IDisposable
     {
-        private bool Disposed = false;
-
         /// <summary>
         /// The base path.
         /// </summary>
@@ -76,11 +74,13 @@ namespace Tests
             return path;
         }
 
+        /// <summary>
+        /// Delete the temporary folder and all of its contents.
+        /// </summary>
         public void Dispose()
         {
-            if (!Disposed)
+            if (Directory.Exists(Path))
                 Directory.Delete(Path, true);
-            Disposed = true;
         }
     }
 }
