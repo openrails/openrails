@@ -22,20 +22,46 @@ using static System.IO.Path;
 
 namespace Tests
 {
+    /// <summary>
+    /// Mocks an MSTS/ORTS content directory for integration testing.
+    /// </summary>
     public class TestContent : IDisposable
     {
         private bool Disposed = false;
 
+        /// <summary>
+        /// The base path.
+        /// </summary>
         public string Path { get; }
 
-        public string ConsistsPath { get => Mkdir("trains", "consists"); }
+        /// <summary>
+        /// The consist file directory.
+        /// </summary>
+        public string ConsistsPath { get => Mkdir("TRAINS", "CONSISTS"); }
 
-        public string TrainsetPath { get => Mkdir("trains", "trainset"); }
+        /// <summary>
+        /// The rolling stock directory.
+        /// </summary>
+        public string TrainsetPath { get => Mkdir("TRAINS", "TRAINSET"); }
 
-        public string RoutesPath { get => Mkdir("routes"); }
+        /// <summary>
+        /// The routes directory.
+        /// </summary>
+        public string RoutesPath { get => Mkdir("ROUTES"); }
 
-        public string SoundPath { get => Mkdir("sound"); }
+        /// <summary>
+        /// The global data directory.
+        /// </summary>
+        public string GlobalPath { get => Mkdir("GLOBAL"); }
 
+        /// <summary>
+        /// The global sound directory.
+        /// </summary>
+        public string SoundPath { get => Mkdir("SOUND"); }
+
+        /// <summary>
+        /// Create a mock using a temporary folder.
+        /// </summary>
         public TestContent() => Path = Combine(GetTempPath(), GetRandomFileName());
 
         private string Mkdir(params string[] subPath)
