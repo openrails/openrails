@@ -2564,15 +2564,11 @@ namespace Orts.Viewer3D.RollingStock
                                 break;
                             default:
                                 //cvf file has no external wipers, left door, right door and mirrors key word
-                                if (locoViewer.ThreeDimentionCabRenderer.ControlMap.ContainsKey(key))
-                                {
-                                    style = locoViewer.ThreeDimentionCabRenderer.ControlMap[key];
-                                }
-                                else
+                                if (!locoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(key, out style))
                                 {
                                     var cvfBasePath = Path.Combine(Path.GetDirectoryName(Locomotive.WagFilePath), "CABVIEW");
                                     var cvfFilePath = Path.Combine(cvfBasePath, Locomotive.CVFFileName);
-                                    Trace.TraceWarning("Cabview control " + tmp[0].Trim() + " has not been defined in CVF file " + cvfFilePath);
+                                    Trace.TraceWarning($"Cabview control {tmp[0].Trim()} has not been defined in CVF file {cvfFilePath}");
                                 }
                                 break;
                         }
