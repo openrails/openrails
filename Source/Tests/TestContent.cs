@@ -35,27 +35,27 @@ namespace Tests
         /// <summary>
         /// The consist file directory.
         /// </summary>
-        public string ConsistsPath { get => Mkdir("TRAINS", "CONSISTS"); }
+        public string ConsistsPath => Mkdir("TRAINS", "CONSISTS");
 
         /// <summary>
         /// The rolling stock directory.
         /// </summary>
-        public string TrainsetPath { get => Mkdir("TRAINS", "TRAINSET"); }
+        public string TrainsetPath => Mkdir("TRAINS", "TRAINSET");
 
         /// <summary>
         /// The routes directory.
         /// </summary>
-        public string RoutesPath { get => Mkdir("ROUTES"); }
+        public string RoutesPath => Mkdir("ROUTES");
 
         /// <summary>
         /// The global data directory.
         /// </summary>
-        public string GlobalPath { get => Mkdir("GLOBAL"); }
+        public string GlobalPath => Mkdir("GLOBAL");
 
         /// <summary>
         /// The global sound directory.
         /// </summary>
-        public string SoundPath { get => Mkdir("SOUND"); }
+        public string SoundPath  => Mkdir("SOUND");
 
         /// <summary>
         /// Create a mock using a temporary folder.
