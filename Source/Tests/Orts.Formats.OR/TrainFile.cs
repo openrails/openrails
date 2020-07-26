@@ -28,7 +28,7 @@ namespace Tests.Orts.Formats.OR
         private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
 
         [Fact]
-        private static void GetTrainForwardWagonReferences()
+        private static void GetListForwardWagonReferences()
         {
             var train = new ListTrainFile()
             {

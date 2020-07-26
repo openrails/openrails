@@ -31,14 +31,14 @@ namespace Tests.ORTS.Content
         private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
 
         [Fact]
-        public static void CompareCaseInsensitiveWagonReferences() => AssertAllEqual(
+        public static void CompareSimilarWagonReferences() => AssertAllEqual(
             new WagonReference(@"C:\MSTS\TRAINS\TRAINSET\SomeDirectory\SomeWagon.wag", false, 0),
             new WagonReference(@"C:\MSTS\TRAINS\TRAINSET\..\..\TRAINS\TRAINSET\SomeDirectory\SomeWagon.wag", false, 0),
             new WagonReference(@"C:\msts\trains\trainset\somedirectory\somewagon.WAG", false, 0),
             new WagonReference(@"c:/Msts/Trains/Trainset/Somedirectory/Somewagon.wAg", false, 0));
 
         [Fact]
-        public static void CompareCaseInsensitivePreferredLocomotives() => AssertAllEqual(
+        public static void CompareSimilarPreferredLocomotives() => AssertAllEqual(
             new PreferredLocomotive(@"C:\MSTS\TRAINS\TRAINSET\SomeDirectory\SomeEngine.eng"),
             new PreferredLocomotive(@"C:\MSTS\TRAINS\TRAINSET\..\..\TRAINS\TRAINSET\SomeDirectory\SomeEngine.eng"),
             new PreferredLocomotive(@"C:\msts\trains\trainset\somedirectory\someengine.ENG"),
