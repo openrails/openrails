@@ -19,6 +19,8 @@ using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Simulation;
+using ORTS.Content;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
@@ -140,7 +142,7 @@ namespace Orts.MultiPlayer
             }
             p.url = player.url;
             p.LeadingLocomotiveID = player.leadingID;
-            p.con = MPManager.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
+            p.con = TrainFileUtilities.ResolveTrainFile(MPManager.Simulator.BasePath, player.con);
             p.path = MPManager.Simulator.RoutePath + "\\PATHS\\" + player.path;
             Train train = new Train(MPManager.Simulator);
             train.TrainType = Train.TRAINTYPE.REMOTE;
@@ -151,7 +153,7 @@ namespace Orts.MultiPlayer
             {
                 train.Number = player.num;
             }
-            if (player.con.Contains("tilted")) train.IsTilting = true;
+            train.IsTilting = GenericTrain.IsTilting(Path.GetFileNameWithoutExtension(player.con));
             int direction = player.dir;
             train.travelled = player.Travelled;
             train.TrainMaxSpeedMpS = player.trainmaxspeed;
