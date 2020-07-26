@@ -48,14 +48,14 @@ namespace Tests.ORTS.Content
         public static void ResolveStandaloneMstsConsistFile()
         {
             using (var content = new TestContent())
-                Assert.Equal(MakeMstsConsistFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"));
+                Assert.Equal(MakeMstsConsistFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"), StringComparer.InvariantCultureIgnoreCase);
         }
 
         [Fact]
         public static void ResolveStandaloneOrtsTrainFile()
         {
             using (var content = new TestContent())
-                Assert.Equal(MakeOrtsTrainFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"));
+                Assert.Equal(MakeOrtsTrainFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"), StringComparer.InvariantCultureIgnoreCase);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Tests.ORTS.Content
             using (var content = new TestContent())
             {
                 MakeMstsConsistFile(content);
-                Assert.Equal(MakeOrtsTrainFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"));
+                Assert.Equal(MakeOrtsTrainFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"), StringComparer.InvariantCultureIgnoreCase);
             }
         }
 
