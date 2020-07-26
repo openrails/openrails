@@ -28,8 +28,6 @@ namespace Tests
 
         public string Path { get; }
 
-        public string TrainsPath { get => Mkdir("trains", "lists"); }
-
         public string ConsistsPath { get => Mkdir("trains", "consists"); }
 
         public string TrainsetPath { get => Mkdir("trains", "trainset"); }
