@@ -17,12 +17,8 @@
 
 using Orts.Formats.OR;
 using ORTS.Content;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Orts.Formats.OR
@@ -32,7 +28,7 @@ namespace Tests.Orts.Formats.OR
         private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
 
         [Fact]
-        private static void TestListTrainForwardWagonReferences()
+        private static void GetTrainForwardWagonReferences()
         {
             var train = new ListTrainFile()
             {
@@ -73,7 +69,7 @@ namespace Tests.Orts.Formats.OR
         }
 
         [Fact]
-        private static void TestListTrainReverseWagonReferences()
+        private static void GetListReverseWagonReferences()
         {
             var train = new ListTrainFile()
             {

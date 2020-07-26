@@ -28,7 +28,7 @@ namespace Tests.Orts.Formats.Msts
         private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
 
         [Fact]
-        public static void TestTrainProperties()
+        public static void ReadAbstractedTrainProperties()
         {
             ITrainFile train;
             using (var content = new TestContent())
@@ -41,7 +41,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestForwardWagonReferences()
+        public static void GetForwardWagonReferences()
         {
             using (var content = new TestContent())
             {
@@ -61,7 +61,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestReverseWagonReferences()
+        public static void GetReverseWagonReferences()
         {
             using (var content = new TestContent())
             {
@@ -82,7 +82,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestForwardLocomotiveChoices()
+        public static void GetForwardLocomotiveChoices()
         {
             using (var content = new TestContent())
             {
@@ -93,7 +93,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestReverseLocomotiveChoices()
+        public static void GetReverseLocomotiveChoices()
         {
             using (var content = new TestContent())
             {
@@ -104,7 +104,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestNoForwardLocomotiveChoices()
+        public static void GetForwardLocomotiveChoicesWithoutEngine()
         {
             using (var content = new TestContent())
             {
@@ -114,7 +114,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestNoReverseLocomotiveChoices()
+        public static void GetReverseLocomotiveChoicesWithoutEngine()
         {
             using (var content = new TestContent())
             {
@@ -124,7 +124,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestNoForwardWagonReferencesGivenUnsatisifablePreference()
+        public static void GetForwardWagonReferencesGivenUnsatisifablePreference()
         {
             using (var content = new TestContent())
             {
@@ -135,7 +135,7 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
-        public static void TestNoReverseWagonReferencesGivenUnsatisifablePreference()
+        public static void GetReverseWagonReferencesGivenUnsatisifablePreference()
         {
             using (var content = new TestContent())
             {
