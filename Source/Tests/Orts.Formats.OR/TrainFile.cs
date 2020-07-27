@@ -1113,12 +1113,12 @@ namespace Tests.Orts.Formats.OR
                     new RandomTrainEngine()
                     {
                         Engine = "SomeLocomotiveA",
-                        Probability = 0.5f,
+                        Probability = 0.9f,
                     },
                     new RandomTrainEngine()
                     {
                         Engine = "SomeLocomotiveB",
-                        Probability = 0.5f,
+                        Probability = 0.1f,
                     },
                 },
             };
@@ -1144,12 +1144,12 @@ namespace Tests.Orts.Formats.OR
                     new RandomTrainEngine()
                     {
                         Engine = "SomeLocomotiveA",
-                        Probability = 0.5f,
+                        Probability = 0.1f,
                     },
                     new RandomTrainEngine()
                     {
                         Engine = "SomeLocomotiveB",
-                        Probability = 0.5f,
+                        Probability = 0.9f,
                     },
                 },
             };
