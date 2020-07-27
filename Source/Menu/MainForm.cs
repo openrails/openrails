@@ -892,8 +892,10 @@ namespace ORTS
                         accum.UnionWith(choices);
                         return accum;
                     });
-                foreach (var loco in allLocomotives.Distinct().OrderBy(l => l.ToString()))
-                    comboBoxLocomotive.Items.Add(loco);
+                comboBoxLocomotive.Items.AddRange(allLocomotives
+                    .Distinct()
+                    .OrderBy((Locomotive l) => l.ToString())
+                    .ToArray());
                 if (comboBoxLocomotive.Items.Count == 1)
                     comboBoxLocomotive.Items.Clear();
                 UpdateFromMenuSelection<Locomotive>(comboBoxLocomotive, UserSettings.Menu_SelectionIndex.Locomotive, l => l.FilePath);
