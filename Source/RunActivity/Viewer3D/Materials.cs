@@ -98,23 +98,45 @@ namespace Orts.Viewer3D
                         }
                         else
                         {
-                            try //in case of no texture in wintersnow etc, go up one level
+                            Texture2D missing()
                             {
-                                var p = System.IO.Directory.GetParent(path);//returns the current level of dir
-
-                                p = System.IO.Directory.GetParent(p.FullName);//go up one level
-                                var s = p.FullName + "\\" + Path.GetFileName(path);
-                                if (File.Exists(s) &&  s.ToLower().Contains("texture")) //in texure and exists
+                                if (required)
+                                    Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
+                                return defaultTexture;
+                            }
+                            Texture2D invalid()
+                            {
+                                if (required)
+                                    Trace.TraceWarning("Invalid texture {0} replaced with default texture", path);
+                                return defaultTexture;
+                            }
+                            //in case of no texture in wintersnow etc, go up one level
+                            DirectoryInfo currentDir;
+                            string searchPath;
+                            try
+                            {
+                                currentDir = Directory.GetParent(path);//returns the current level of dir
+                                searchPath = $"{Directory.GetParent(currentDir.FullName).FullName}\\{Path.GetFileName(path)}";
+                            }
+                            catch
+                            {
+                                return missing();
+                            }
+                            if (File.Exists(searchPath) && searchPath.ToLower().Contains("texture")) //in texture and exists
+                            {
+                                try
                                 {
-                                    texture = Orts.Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, s);
+                                    texture = Formats.Msts.AceFile.Texture2DFromFile(GraphicsDevice, searchPath);
                                 }
-                                else {
-                                    if (required)
-                                        Trace.TraceWarning("Missing texture {0} replaced with default texture", path);
-                                    return defaultTexture;
+                                catch
+                                {
+                                    return invalid();
                                 }
                             }
-                            catch { texture = defaultTexture; return defaultTexture; }
+                            else
+                            {
+                                return missing();
+                            }
                         }
                     }
                     else

@@ -33,7 +33,7 @@
 		  this.messages = new System.Windows.Forms.ListBox();
 		  this.MSG = new System.Windows.Forms.TextBox();
 		  this.compose = new System.Windows.Forms.Button();
-		  this.compose.Click += new System.EventHandler(this.composeClick);
+		  this.compose.Click += new System.EventHandler(this.ComposeClick);
 		  this.SuspendLayout();
 		  // 
 		  // clearAll
@@ -45,7 +45,7 @@
 		  this.clearAll.TabIndex = 2;
 		  this.clearAll.Text = "Clear All";
 		  this.clearAll.UseVisualStyleBackColor = true;
-		  this.clearAll.Click += new System.EventHandler(this.clearAllClick);
+		  this.clearAll.Click += new System.EventHandler(this.ClearAllClick);
 		  // 
 		  // replySelected
 		  // 
@@ -56,7 +56,7 @@
 		  this.replySelected.TabIndex = 4;
 		  this.replySelected.Text = "Reply Selected";
 		  this.replySelected.UseVisualStyleBackColor = true;
-		  this.replySelected.Click += new System.EventHandler(this.replySelectedClick);
+		  this.replySelected.Click += new System.EventHandler(this.ReplySelectedClick);
 		  // 
 		  // messages
 		  // 
