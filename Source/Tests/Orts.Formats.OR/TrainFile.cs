@@ -20,6 +20,7 @@ using Orts.Formats.OR;
 using ORTS.Content;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xunit;
 
 namespace Tests.Orts.Formats.OR
@@ -360,6 +361,33 @@ namespace Tests.Orts.Formats.OR
             {
                 var unsatisfiable = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "acela", "acela.eng"));
                 Assert.Empty(train.GetForwardWagonList(content.Path, Folders, preference: unsatisfiable));
+            }
+        }
+
+        [Fact]
+        public static void DisallowRecursiveListTrains()
+        {
+            var train = new ListTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                    },
+                    new ListTrainReference()
+                    {
+                        Train = "test",
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "test.train-or"), JsonConvert.SerializeObject(train));
+                var iterator = train.GetForwardWagonList(content.Path, Folders);
+                Assert.Throws<RecursiveTrainException>(() => iterator.Count());
             }
         }
 
@@ -732,6 +760,59 @@ namespace Tests.Orts.Formats.OR
                 File.WriteAllText(Path.Combine(content.ConsistsPath, "parent.train-or"), JsonConvert.SerializeObject(parentTrain));
                 File.WriteAllText(Path.Combine(content.ConsistsPath, "child.train-or"), JsonConvert.SerializeObject(childTrain));
                 Assert.Equal(PreferredLocomotive.NoLocomotiveSet, parentTrain.GetLeadLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void DisallowIndirectlyRecursiveListTrains()
+        {
+            var trainA = new ListTrainFile()
+            {
+                DisplayName = "Train A",
+                PlayerDrivable = true,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                    },
+                    new ListTrainReference()
+                    {
+                        Train = "trainB",
+                    },
+                },
+            };
+            var trainB = new ListTrainFile()
+            {
+                DisplayName = "Train B",
+                PlayerDrivable = false,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainReference()
+                    {
+                        Train = "trainC",
+                    },
+                },
+            };
+            var trainC = new ListTrainFile()
+            {
+                DisplayName = "Train C",
+                PlayerDrivable = false,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainReference()
+                    {
+                        Train = "trainA",
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "trainA.train-or"), JsonConvert.SerializeObject(trainA));
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "trainB.train-or"), JsonConvert.SerializeObject(trainB));
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "trainC.train-or"), JsonConvert.SerializeObject(trainC));
+                var iterator = trainA.GetForwardWagonList(content.Path, Folders);
+                Assert.Throws<RecursiveTrainException>(() => iterator.Count());
             }
         }
         #endregion
@@ -1122,6 +1203,208 @@ namespace Tests.Orts.Formats.OR
             };
             using (var content = new TestContent())
                 Assert.Empty(train.GetLeadLocomotiveChoices(content.Path, Folders));
+        }
+        #endregion
+
+        #region List train type -> Random train type
+        [Fact]
+        public static void GetRandomInListLeadLocomotiveChoicesWithLeadingWagon()
+        {
+            var parentTrain = new ListTrainFile()
+            {
+                DisplayName = "Parent train",
+                PlayerDrivable = true,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainReference()
+                    {
+                        Train = "child",
+                    },
+                    new ListTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                    },
+                },
+            };
+            var childTrain = new RandomTrainFile()
+            {
+                DisplayName = "Child train",
+                PlayerDrivable = false,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainWagon()
+                    {
+                        Wagon = "SomeWagon",
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "parent.train-or"), JsonConvert.SerializeObject(parentTrain));
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "child.train-or"), JsonConvert.SerializeObject(childTrain));
+                var expected = new HashSet<PreferredLocomotive>()
+                {
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng")),
+                };
+                Assert.Equal(expected, parentTrain.GetLeadLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void GetRandomInListReverseLocomotiveChoicesWithLeadingWagon()
+        {
+            var parentTrain = new ListTrainFile()
+            {
+                DisplayName = "Parent train",
+                PlayerDrivable = true,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                    },
+                    new ListTrainReference()
+                    {
+                        Train = "child",
+                    },
+                },
+            };
+            var childTrain = new RandomTrainFile()
+            {
+                DisplayName = "Child train",
+                PlayerDrivable = false,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainWagon()
+                    {
+                        Wagon = "SomeWagon",
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "parent.train-or"), JsonConvert.SerializeObject(parentTrain));
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "child.train-or"), JsonConvert.SerializeObject(childTrain));
+                var expected = new HashSet<PreferredLocomotive>()
+                {
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng")),
+                };
+                Assert.Equal(expected, parentTrain.GetReverseLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void GetRandomInListForwardWagonReferencesWithLeadingWagon()
+        {
+            var parentTrain = new ListTrainFile()
+            {
+                DisplayName = "Parent train",
+                PlayerDrivable = true,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainReference()
+                    {
+                        Train = "child",
+                    },
+                    new ListTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                    },
+                },
+            };
+            var childTrain = new RandomTrainFile()
+            {
+                DisplayName = "Child train",
+                PlayerDrivable = false,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.9f,
+                    },
+                    new RandomTrainWagon()
+                    {
+                        Wagon = "SomeWagon",
+                        Probability = 0.1f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "parent.train-or"), JsonConvert.SerializeObject(parentTrain));
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "child.train-or"), JsonConvert.SerializeObject(childTrain));
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeWagon.wag"), false, 0),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"), false, 1),
+                };
+                Assert.Equal(expected, parentTrain.GetForwardWagonList(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void GetRandomInListReverseWagonReferencesWithLeadingWagon()
+        {
+            var parentTrain = new ListTrainFile()
+            {
+                DisplayName = "Parent train",
+                PlayerDrivable = true,
+                List = new ListTrainItem[]
+                {
+                    new ListTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                    },
+                    new ListTrainReference()
+                    {
+                        Train = "child",
+                    },
+                },
+            };
+            var childTrain = new RandomTrainFile()
+            {
+                DisplayName = "Child train",
+                PlayerDrivable = false,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.9f,
+                    },
+                    new RandomTrainWagon()
+                    {
+                        Wagon = "SomeWagon",
+                        Probability = 0.1f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "parent.train-or"), JsonConvert.SerializeObject(parentTrain));
+                File.WriteAllText(Path.Combine(content.ConsistsPath, "child.train-or"), JsonConvert.SerializeObject(childTrain));
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeWagon.wag"), true, 0),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"), true, 1),
+                };
+                Assert.Equal(expected, parentTrain.GetReverseWagonList(content.Path, Folders));
+            }
         }
         #endregion
     }
