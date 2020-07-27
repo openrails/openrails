@@ -45,6 +45,20 @@ namespace Tests.ORTS.Content
             new PreferredLocomotive(@"c:/Msts/Trains/Trainset/Somedirectory/Someengine.EnG"));
 
         [Fact]
+        public static void CompareSimilarWagonReferenceHashCodes() => AssertAllEqualHashCodes(
+            new WagonReference(@"C:\MSTS\TRAINS\TRAINSET\SomeDirectory\SomeWagon.wag", false, 0),
+            new WagonReference(@"C:\MSTS\TRAINS\TRAINSET\..\..\TRAINS\TRAINSET\SomeDirectory\SomeWagon.wag", false, 0),
+            new WagonReference(@"C:\msts\trains\trainset\somedirectory\somewagon.WAG", false, 0),
+            new WagonReference(@"c:/Msts/Trains/Trainset/Somedirectory/Somewagon.wAg", false, 0));
+
+        [Fact]
+        public static void CompareSimilarPreferredLocomotiveHashCodes() => AssertAllEqualHashCodes(
+            new PreferredLocomotive(@"C:\MSTS\TRAINS\TRAINSET\SomeDirectory\SomeEngine.eng"),
+            new PreferredLocomotive(@"C:\MSTS\TRAINS\TRAINSET\..\..\TRAINS\TRAINSET\SomeDirectory\SomeEngine.eng"),
+            new PreferredLocomotive(@"C:\msts\trains\trainset\somedirectory\someengine.ENG"),
+            new PreferredLocomotive(@"c:/Msts/Trains/Trainset/Somedirectory/Someengine.EnG"));
+
+        [Fact]
         public static void ResolveStandaloneMstsConsistFile()
         {
             using (var content = new TestContent())
@@ -117,6 +131,15 @@ Train (
                         select Tuple.Create(a, b);
             foreach ((T a, T b) in pairs)
                 Assert.Equal(a, b);
+        }
+
+        private static void AssertAllEqualHashCodes<T>(params T[] sequence)
+        {
+            var pairs = from a in sequence
+                        from b in sequence
+                        select Tuple.Create(a, b);
+            foreach ((T a, T b) in pairs)
+                Assert.Equal(a.GetHashCode(), b.GetHashCode());
         }
     }
 }
