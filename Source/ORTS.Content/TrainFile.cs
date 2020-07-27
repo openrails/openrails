@@ -45,7 +45,7 @@ namespace ORTS.Content
             && Flipped == other.Flipped
             && UiD == other.UiD;
 
-        public override int GetHashCode() => Tuple.Create(Path.GetFullPath(FilePath).ToLowerInvariant(), Flipped, UiD).GetHashCode();
+        public override int GetHashCode() => Tuple.Create(FilePath.ToLowerInvariant(), Flipped, UiD).GetHashCode();
     }
 
     /// <summary>
@@ -137,7 +137,7 @@ namespace ORTS.Content
         public bool Equals(PreferredLocomotive other) => other != null
             && FilePath.Equals(other.FilePath, StringComparison.InvariantCultureIgnoreCase);
 
-        public override int GetHashCode() => FilePath.GetHashCode();
+        public override int GetHashCode() => FilePath.ToLowerInvariant().GetHashCode();
     }
 
     public static class TrainFileUtilities
