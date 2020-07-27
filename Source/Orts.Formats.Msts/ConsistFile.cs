@@ -60,6 +60,9 @@ namespace Orts.Formats.Msts
 
         public ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
         {
+            if (Train.TrainCfg.WagonList.Count == 0)
+                return new HashSet<PreferredLocomotive>();
+
             var firstEngine = Train.TrainCfg.WagonList
                 .Where((Wagon wagon) => wagon.IsEngine)
                 .FirstOrDefault();
@@ -71,6 +74,9 @@ namespace Orts.Formats.Msts
 
         public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
         {
+            if (Train.TrainCfg.WagonList.Count == 0)
+                return new HashSet<PreferredLocomotive>();
+
             var lastEngine = Train.TrainCfg.WagonList
                 .Where((Wagon wagon) => wagon.IsEngine)
                 .LastOrDefault();

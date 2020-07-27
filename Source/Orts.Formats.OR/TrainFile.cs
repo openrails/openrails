@@ -388,6 +388,9 @@ namespace Orts.Formats.OR
 
         internal override ISet<PreferredLocomotive> GetLeadLocomotiveChoices(LocomotiveChoiceMemoizer memoizer)
         {
+            if (List.Count == 0)
+                return new HashSet<PreferredLocomotive>();
+
             var engines = new HashSet<PreferredLocomotive>();
             foreach (ITrainListItem item in List)
             {
@@ -405,6 +408,9 @@ namespace Orts.Formats.OR
 
         internal override ISet<PreferredLocomotive> GetReverseLocomotiveChoices(LocomotiveChoiceMemoizer memoizer)
         {
+            if (List.Count == 0)
+                return new HashSet<PreferredLocomotive>();
+
             var engines = new HashSet<PreferredLocomotive>();
             foreach (ITrainListItem item in List.Reverse())
             {

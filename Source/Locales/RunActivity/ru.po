@@ -963,7 +963,7 @@ msgstr "Режим АЛС"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:527
 msgid "Out of Control"
-msgstr ""
+msgstr "Автостоп"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:528
 msgid "Cab Aspect"
@@ -1542,13 +1542,13 @@ msgstr "Реверсор"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
 msgctxt "Coupler"
 msgid "F"
-msgstr ""
+msgstr "П"
 
 #. Context: Coupler
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
 msgctxt "Coupler"
 msgid "R"
-msgstr ""
+msgstr "З"
 
 #. Context: Coupler
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
@@ -1715,7 +1715,7 @@ msgstr "АЛС - Исслед"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
 msgid "OutOfControl : "
-msgstr ""
+msgstr "Автостоп"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
 msgid "Inactive"
