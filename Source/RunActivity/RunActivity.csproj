@@ -183,6 +183,8 @@
     <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />
+    <Compile Include="Viewer3D\WebServices\TrackMonitorDisplay.cs" />
+    <Compile Include="Viewer3D\WebServices\TrainDrivingDisplay.cs" />
     <Compile Include="Viewer3D\WebServices\WebServer.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\World.cs" />
@@ -344,6 +346,12 @@
     <Content Include="Viewer3D\WebServices\Web\index.css" />
     <Content Include="Viewer3D\WebServices\Web\index.html" />
     <Content Include="Viewer3D\WebServices\Web\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\TrackMonitor\SignalAspects.png" />
+    <Content Include="Viewer3D\WebServices\Web\TrackMonitor\TrackMonitorImages.png" />
+    <Content Include="Viewer3D\WebServices\Web\TrainDriving\index.css" />
+    <Content Include="Viewer3D\WebServices\Web\TrainDriving\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\TrainDriving\index.js" />
+    <Content Include="Viewer3D\WebServices\Web\TrackMonitor\index.css" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitor\index.html" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitor\index.js" />
   </ItemGroup>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE HTML>
+<!DOCTYPE HTML>
 <!--
 COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 
@@ -20,21 +20,19 @@ along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- adds zooming for mobiles -->
-  <title>OR: Track Monitor API</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- adds zooming for mobiles -->
+  <title>OR: Train Driving API</title>
   <link rel="shortcut icon" type="image/png" href="/or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
   <link rel="stylesheet" type="text/css" href="/index.css"><!-- share styles with home page -->
-  <link rel="stylesheet" type="text/css" href="index.css">
-
+	<link rel="stylesheet" type="text/css" href="index.css">
 </head>
-<body id="body" onload="setInterval (ApiTrackMonitor, 500)">
-  <p id="demo"></p>
+
+<body id="body" onload="setInterval (ApiTrainDriving, 500)">
   <div id=menu><a href="/">Back to Menu</a></div>
   <div>
     <br/>
-    <button class="button" onclick="changePageColor()" id="buttonDN">Night</button>
-    <table class="border" style="background-color:black;" id="TrackMonitor">
-    </table>
+    <button class="button" onclick="changePageColor()" id="buttonDN">Day</button>
+    <table class="border" style="background-color:black;" id="TrainDriving"></table>
   </div>
   <script src="index.js"></script>
 </body>
