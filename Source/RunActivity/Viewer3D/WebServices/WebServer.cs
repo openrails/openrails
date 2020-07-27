@@ -216,6 +216,12 @@ namespace Orts.Viewer3D.WebServices
         #endregion
 
 
+        #region /API/TRACKMONITORDISPLAY
+        [Route(HttpVerbs.Get, "/TRACKMONITORDISPLAY")]
+        public IEnumerable<TrackMonitorDisplay.ListLabel> TrackMonitorDisplayList() => Viewer.TrackMonitorDisplayList();
+        #endregion
+
+
         #region /API/TRACKMONITOR
         [Route(HttpVerbs.Get, "/TRACKMONITOR")]
         public Train.TrainInfo TrackMonitor() => Viewer.PlayerTrain.GetTrainInfo();
