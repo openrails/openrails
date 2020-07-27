@@ -735,5 +735,394 @@ namespace Tests.Orts.Formats.OR
             }
         }
         #endregion
+
+        #region Random train type
+        [Fact]
+        private static void GetRandomOneForwardWagonReference()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotive.eng"), false, 0),
+                };
+                Assert.Equal(expected, train.GetForwardWagonList(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomOneReverseWagonReferenceWithZeroProbabilityItem()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 1f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"), true, 0),
+                };
+                Assert.Equal(expected, train.GetReverseWagonList(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomRepeatedForwardWagonReferences()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                        Count = 3,
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                        Count = 3,
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotive.eng"), false, 0),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotive.eng"), false, 1),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotive.eng"), false, 2),
+                };
+                Assert.Equal(expected, train.GetForwardWagonList(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomRepeatedReverseWagonReferences()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                        Count = 3,
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotive",
+                        Count = 3,
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotive.eng"), true, 0),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotive.eng"), true, 1),
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotive.eng"), true, 2),
+                };
+                Assert.Equal(expected, train.GetReverseWagonList(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomLeadLocomotiveChoices()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.33f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 0.33f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveC",
+                        Probability = 0.34f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new HashSet<PreferredLocomotive>()
+                {
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveC.eng")),
+                };
+                Assert.Equal(expected, train.GetLeadLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomReverseLocomotiveChoices()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.33f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 0.33f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveC",
+                        Probability = 0.34f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new HashSet<PreferredLocomotive>()
+                {
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveC.eng")),
+                };
+                Assert.Equal(expected, train.GetReverseLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomLeadLocomotiveChoicesWithWagon()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.33f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 0.33f,
+                    },
+                    new RandomTrainWagon()
+                    {
+                        Wagon = "SomeWagon1",
+                        Probability = 0.34f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new HashSet<PreferredLocomotive>()
+                {
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng")),
+                    PreferredLocomotive.NoLocomotive,
+                };
+                Assert.Equal(expected, train.GetLeadLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomReverseLocomotiveChoicesWithZeroProbabilityItem()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 0f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveC",
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new HashSet<PreferredLocomotive>()
+                {
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng")),
+                    new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveC.eng")),
+                };
+                Assert.Equal(expected, train.GetReverseLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomForwardWagonReferenceGivenPreference()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"), false, 0),
+                };
+                var preference = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"));
+                Assert.Equal(expected, train.GetForwardWagonList(content.Path, Folders, preference));
+            }
+        }
+
+        private static void GetRandomReverseWagonReferenceGivenPreference()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var expected = new[]
+                {
+                    new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng"), true, 0),
+                };
+                var preference = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveA.eng"));
+                Assert.Equal(expected, train.GetReverseWagonList(content.Path, Folders, preference));
+            }
+        }
+
+        [Fact]
+        private static void GetRandomForwardWagonReferenceGivenUnsatisfiablePreference()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = true,
+                Random = new RandomTrainItem[]
+                {
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveA",
+                        Probability = 0.5f,
+                    },
+                    new RandomTrainEngine()
+                    {
+                        Engine = "SomeLocomotiveB",
+                        Probability = 0.5f,
+                    },
+                },
+            };
+            using (var content = new TestContent())
+            {
+                var unsatisfiable = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "acela", "acela.eng"));
+                Assert.Empty(train.GetForwardWagonList(content.Path, Folders, preference: unsatisfiable));
+            }
+        }
+
+        [Fact]
+        private static void GetEmptyRandomLeadLocomotiveChoices()
+        {
+            var train = new RandomTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = false,
+                Random = new RandomTrainItem[] { },
+            };
+            using (var content = new TestContent())
+                Assert.Empty(train.GetLeadLocomotiveChoices(content.Path, Folders));
+        }
+        #endregion
     }
 }
