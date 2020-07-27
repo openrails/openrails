@@ -1,0 +1,93 @@
+#table {
+	padding: 20px;
+	border: 2px;
+	border-spacing: 2px;
+}
+
+table td{
+	color :	white;
+}
+
+/* Apply rounded border */
+.border{
+	border-spacing: 0;
+	border: gray 2px solid;
+	border-radius: 20px;
+
+}
+
+.button{
+	border: gray 2px solid;
+	border-radius: 20px;
+	text-align: center;
+	width: 50px;
+	margin: 4px 2px;
+}
+
+/* Allows to apply text color */
+td[ColorCode= "???"]{
+	background-color:black;
+	color:yellow;
+}
+td[ColorCode= "??!"]{
+	background-color:black;
+	color:Green;
+}
+td[ColorCode= "?!?"]{
+	background-color:black;
+	color:Black;
+}
+td[ColorCode= "?!!"]{
+	background-color:black;
+	color:PaleGreen;
+}
+td[ColorCode= "!??"]{
+	background-color:black;
+	color:White;
+}
+td[ColorCode= "!!?"]{
+	background-color:black;
+	color:Orange;
+}
+td[ColorCode= "!!!"]{
+	background-color:black;
+	color:OrangeRed;
+}
+td[ColorCode= "%%%"]{
+	background-color:black;
+	color:Cyan;
+}
+td[ColorCode= "%$$"]{
+	background-color: black;
+	color:brown;
+}
+td[ColorCode= "%%$"]{
+	background-color: black;
+	color:lightgreen;
+}
+td[ColorCode= "$%$"]{
+	background-color: black;
+	color:blue;
+}
+td[ColorCode= "$$$"]{
+	background-color:black;
+	color:LightSkyBlue;
+}
+
+/* Separator between diferent info area*/
+.separator{
+	border-bottom: 1px solid gray;
+}
+.separatorred{
+	border-bottom: 1px solid red;
+}
+.separatordarkgray{
+	border-bottom: 1px solid darkgray;
+}
+
+/* Developper: Used as help for cells alignement*/
+td{
+	/*border: black 1px solid;*/
+	border-spacing: 0;
+	border-radius: 7px;
+}
