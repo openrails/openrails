@@ -124,6 +124,26 @@ namespace Tests.Orts.Formats.Msts
         }
 
         [Fact]
+        public static void GetEmptyForwardLocomotiveChoices()
+        {
+            using (var content = new TestContent())
+            {
+                var train = new ConsistFile(MakeEmptyTestFile(content));
+                Assert.Empty(train.GetLeadLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
+        public static void GetEmptyReverseLocomotiveChoices()
+        {
+            using (var content = new TestContent())
+            {
+                var train = new ConsistFile(MakeEmptyTestFile(content));
+                Assert.Empty(train.GetReverseLocomotiveChoices(content.Path, Folders));
+            }
+        }
+
+        [Fact]
         public static void GetForwardWagonReferencesGivenUnsatisifablePreference()
         {
             using (var content = new TestContent())
@@ -210,6 +230,24 @@ Train (
 	)
 )";
             var path = Path.Combine(content.ConsistsPath, "test_nondrivable.con");
+            File.WriteAllText(path, text);
+            return path;
+        }
+
+        private static string MakeEmptyTestFile(TestContent content)
+        {
+            const string text = @"SIMISA@@@@@@@@@@JINX0D0t______
+
+Train (
+	TrainCfg ( ""test_empty""
+		Name(""Empty consist"")
+		Serial(1)
+		MaxVelocity(0.00000 0.10000)
+		NextWagonUID(0)
+		Durability(0.00000)
+	)
+)";
+            var path = Path.Combine(content.ConsistsPath, "test_empty.con");
             File.WriteAllText(path, text);
             return path;
         }

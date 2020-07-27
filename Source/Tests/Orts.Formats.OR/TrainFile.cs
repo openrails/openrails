@@ -312,6 +312,32 @@ namespace Tests.Orts.Formats.OR
         }
 
         [Fact]
+        private static void GetEmptyListLeadLocomotiveChoices()
+        {
+            var train = new ListTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = false,
+                List = new ListTrainItem[] { },
+            };
+            using (var content = new TestContent())
+                Assert.Empty(train.GetLeadLocomotiveChoices(content.Path, Folders));
+        }
+
+        [Fact]
+        private static void GetEmptyListReverseLocomotiveChoices()
+        {
+            var train = new ListTrainFile()
+            {
+                DisplayName = "Test train",
+                PlayerDrivable = false,
+                List = new ListTrainItem[] { },
+            };
+            using (var content = new TestContent())
+                Assert.Empty(train.GetReverseLocomotiveChoices(content.Path, Folders));
+        }
+
+        [Fact]
         public static void GetListForwardWagonReferencesGivenUnsatisifablePreference()
         {
             var train = new ListTrainFile()
