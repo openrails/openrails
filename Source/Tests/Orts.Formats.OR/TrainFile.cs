@@ -1353,7 +1353,8 @@ namespace Tests.Orts.Formats.OR
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeWagon.wag"), false, 0),
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"), false, 1),
                 };
-                Assert.Equal(expected, parentTrain.GetForwardWagonList(content.Path, Folders));
+                var preference = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"));
+                Assert.Equal(expected, parentTrain.GetForwardWagonList(content.Path, Folders, preference));
             }
         }
 
@@ -1403,7 +1404,8 @@ namespace Tests.Orts.Formats.OR
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeWagon.wag"), true, 0),
                     new WagonReference(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"), true, 1),
                 };
-                Assert.Equal(expected, parentTrain.GetReverseWagonList(content.Path, Folders));
+                var preference = new PreferredLocomotive(Path.Combine(content.TrainsetPath, "SomeLocomotiveB.eng"));
+                Assert.Equal(expected, parentTrain.GetReverseWagonList(content.Path, Folders, preference));
             }
         }
         #endregion
