@@ -918,8 +918,11 @@ namespace ORTS
             if (SelectedActivity == null || SelectedActivity is ExploreActivity)
             {
                 comboBoxConsist.Items.Clear();
-                foreach (var consist in Consists.Where(c => c.Locomotives.Contains(comboBoxLocomotive.SelectedItem)).OrderBy(c => c.Name))
-                    comboBoxConsist.Items.Add(consist);
+                comboBoxConsist.Items.AddRange(Consists
+                    .Where((Consist c) => c.Locomotives.Contains(comboBoxLocomotive.SelectedItem))
+                    .Where((Consist c) => c.PlayerDrivable)
+                    .OrderBy((Consist c) => c.Name)
+                    .ToArray());
                 UpdateFromMenuSelection<Consist>(comboBoxConsist, UserSettings.Menu_SelectionIndex.Consist, c => c.FilePath);
             }
             UpdateEnabled();
