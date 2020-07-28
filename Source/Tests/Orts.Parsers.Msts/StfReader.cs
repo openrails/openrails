@@ -1018,21 +1018,6 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
 
         [Fact]
-        public static void AtFinalWhiteSpaceBeAtEOF()
-        {
-            AssertWarnings.NotExpected();
-            var inputStrings = new string[] { " ", "\n  \n\t" };
-            foreach (string inputString in inputStrings)
-            {
-                var reader = Create.Reader("sometoken" + inputString);
-                {
-                    reader.ReadItem();
-                    Assert.True(reader.Eof);
-                }
-            }
-        }
-
-        [Fact]
         public static void AtEOFKeepBeingAtEOF()
         {
             AssertWarnings.NotExpected();
