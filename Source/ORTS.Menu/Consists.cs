@@ -28,9 +28,10 @@ namespace ORTS.Menu
 {
     public class Consist
     {
-        public readonly string Name;
-        public readonly ISet<Locomotive> Locomotives = new HashSet<Locomotive>() { new Locomotive("unknown") };
-        public readonly string FilePath;
+        public string Name { get; }
+        public ISet<Locomotive> Locomotives { get; } = new HashSet<Locomotive>() { new Locomotive("unknown") };
+        public string FilePath { get; }
+        public bool PlayerDrivable { get; }
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
@@ -45,6 +46,7 @@ namespace ORTS.Menu
                     var conFile = LoadConsist(filePath);
                     Name = conFile.DisplayName.Trim();
                     Locomotives = reverseConsist ? GetLocomotivesReverse(conFile, folder, allFolders) : GetLocomotives(conFile, folder, allFolders);
+                    PlayerDrivable = conFile.PlayerDrivable;
                 }
                 catch
                 {
