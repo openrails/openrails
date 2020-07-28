@@ -2522,7 +2522,6 @@ namespace Orts.Viewer3D.RollingStock
             DigitParts3D = new Dictionary<int, ThreeDimCabDigit>();
             Gauges = new Dictionary<int, ThreeDimCabGaugeNative>();
             OnDemandAnimateParts = new Dictionary<int, AnimatedPart>();
-            CABViewControlTypes type;
             // Find the animated parts
             if (TrainCarShape != null && TrainCarShape.SharedShape.Animations != null)
             {
@@ -2536,33 +2535,43 @@ namespace Orts.Viewer3D.RollingStock
                     //     ASPECT_SIGNAL:0:0-2: first ASPECT_SIGNAL, parameter is 0, this component is part 2 of this cab control
                     //     ASPECT_SIGNAL:1:0  second ASPECT_SIGNAL, parameter is 0, this component is the only one for this cab control
                     typeName = matrixName.Split('-')[0]; //a part may have several sub-parts, like ASPECT_SIGNAL:0:0-1, ASPECT_SIGNAL:0:0-2
-                    type = CABViewControlTypes.NONE;
                     tmpPart = null;
                     int order, key;
                     string parameter1 = "0", parameter2 = "";
                     CabViewControlRenderer style = null;
                     //ASPECT_SIGNAL:0:0
                     var tmp = typeName.Split(':');
-                    try
+                    if (tmp.Length < 2 || !int.TryParse(tmp[1].Trim(), out order))
                     {
-                        order = int.Parse(tmp[1].Trim());
-                        if (tmp.Length >= 3) parameter1 = tmp[2].Trim();
-                        if (tmp.Length == 4) parameter2 = tmp[3].Trim();//we can get max two parameters per part
-                    }
-                    catch { continue; }
-                    try
-                    {
-                        type = (CABViewControlTypes)Enum.Parse(typeof(CABViewControlTypes), tmp[0].Trim(), true); //convert from string to enum
-                        key = 1000 * (int)type + order;
-                        if (type != CABViewControlTypes.EXTERNALWIPERS && type != CABViewControlTypes.MIRRORS && type != CABViewControlTypes.LEFTDOOR && type != CABViewControlTypes.RIGHTDOOR)
-                            style = locoViewer.ThreeDimentionCabRenderer.ControlMap[key]; //cvf file has no external wipers, left door, right door and mirrors key word
-                    }
-                    catch
-                    {
-                        type = CABViewControlTypes.NONE;
                         continue;
                     }
+                    else if (tmp.Length >= 3)
+                    {
+                        parameter1 = tmp[2].Trim();
+                        if (tmp.Length == 4) //we can get max two parameters per part
+                            parameter2 = tmp[3].Trim();
+                    }
 
+                    if (Enum.TryParse(tmp[0].Trim(), true, out CABViewControlTypes type))
+                    {
+                        key = 1000 * (int)type + order;
+                        switch (type)
+                        {
+                            case CABViewControlTypes.EXTERNALWIPERS:
+                            case CABViewControlTypes.MIRRORS:
+                            case CABViewControlTypes.LEFTDOOR:
+                            case CABViewControlTypes.RIGHTDOOR:
+                                break;
+                            default:
+                                //cvf file has no external wipers, left door, right door and mirrors key word
+                                style = locoViewer.ThreeDimentionCabRenderer.ControlMap[key];
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        continue;
+                    }
 
                     key = 1000 * (int)type + order;
                     if (style != null && style is CabViewDigitalRenderer)//digits?
@@ -3268,22 +3277,14 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         public void Update(MSTSLocomotiveViewer locoViewer, ElapsedTime elapsedTime)
         {
-            if (MatrixIndexes.Count == 0 || !locoViewer._has3DCabRenderer) return;
+            if (MatrixIndexes.Count == 0 || !locoViewer._has3DCabRenderer)
+                return;
 
-            CabViewControlRenderer cvfr;
-            float index;
-            try
+            if (locoViewer.ThreeDimentionCabRenderer.ControlMap.TryGetValue(Key, out CabViewControlRenderer cvfr))
             {
-                cvfr = locoViewer.ThreeDimentionCabRenderer.ControlMap[Key];
-                if (cvfr is CabViewDiscreteRenderer)
-                {
-                    index = (cvfr as CabViewDiscreteRenderer).GetDrawIndex();
-                }
-                else index = cvfr.GetRangeFraction() * this.FrameCount;
+                float index = cvfr is CabViewDiscreteRenderer renderer ? renderer.GetDrawIndex() : cvfr.GetRangeFraction() * FrameCount;
+                SetFrameClamp(index);
             }
-            catch { cvfr = null; index = 0; }
-            if (cvfr == null) return;
-            this.SetFrameClamp(index);
         }
     }
 }
