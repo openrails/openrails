@@ -647,6 +647,8 @@ namespace ORTS
             checkDebriefActivityEval.Checked = Settings.DebriefActivityEval;
             //TO DO: Debrief TTactivity evaluation
             //checkDebriefTTActivityEval.Checked = Settings.DebriefTTActivityEval;
+            radioButtonModeActivity.Checked = Settings.IsModeActivity;
+            radioButtonModeTimetable.Checked = !Settings.IsModeActivity;
 
             textBoxMPUser.Text = Settings.Multiplayer_User;
             textBoxMPHost.Text = Settings.Multiplayer_Host + ":" + Settings.Multiplayer_Port;
@@ -661,6 +663,7 @@ namespace ORTS
             Settings.DebriefActivityEval = checkDebriefActivityEval.Checked;
             //TO DO: Debrief TTactivity evaluation
             //Settings.DebriefTTActivityEval = checkDebriefTTActivityEval.Checked;
+            Settings.IsModeActivity = radioButtonModeActivity.Checked;
 
             var mpHost = textBoxMPHost.Text.Split(':');
             Settings.Multiplayer_Host = mpHost[0];

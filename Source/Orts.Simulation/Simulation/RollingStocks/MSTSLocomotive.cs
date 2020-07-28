@@ -370,6 +370,8 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController DynamicBrakeController;
         public MSTSNotchController GearBoxController;
 
+        private int PreviousGearBoxNotch;
+
         public float EngineBrakeIntervention = -1;
         public float TrainBrakeIntervention = -1;
         public float ThrottleIntervention = -1;
@@ -1026,6 +1028,7 @@ namespace Orts.Simulation.RollingStocks
             base.Save(outf);
 
             TrainControlSystem.Save(outf);
+            LocomotiveAxle.Save(outf);
         }
 
         /// <summary>
@@ -1068,6 +1071,7 @@ namespace Orts.Simulation.RollingStocks
             base.Restore(inf);
 
             TrainControlSystem.Restore(inf);
+            LocomotiveAxle = new Axle(inf);
         }
 
         public bool IsLeadLocomotive()
@@ -1346,6 +1350,7 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
             if (Train.IsActualPlayerTrain)
             {
+                TrainControlSystem.InitializeMoving();
                 TrainBrakeController.InitializeMoving();
                 BrakeSystem.LocoInitializeMoving();
             }
@@ -3043,6 +3048,7 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController.StartIncrease();
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Increase, GearBoxController.CurrentNotch);
                 AlerterReset(TCSEvent.GearBoxChanged);
+                SignalGearBoxChangeEvents();
             }
 
             ChangeGearUp();
@@ -3067,6 +3073,7 @@ namespace Orts.Simulation.RollingStocks
                 GearBoxController.StartDecrease();
                 Simulator.Confirmer.ConfirmWithPerCent(CabControl.GearBox, CabSetting.Decrease, GearBoxController.CurrentNotch);
                 AlerterReset(TCSEvent.GearBoxChanged);
+                SignalGearBoxChangeEvents();
             }
 
             ChangeGearDown();
@@ -3077,6 +3084,48 @@ namespace Orts.Simulation.RollingStocks
             if (GearBoxController != null)
             {
                 GearBoxController.StopDecrease();
+            }
+        }
+
+        /// <summary>
+        /// Trigger sound events when the gearbox increases or decreases.
+        /// </summary>
+        private void SignalGearBoxChangeEvents()
+        {
+            // Only activate sound event if notch has actually changed
+            if (GearBoxController.CurrentNotch != PreviousGearBoxNotch)
+            {
+                switch (GearBoxController.CurrentNotch)
+                {
+                    case 0:
+                        SignalEvent(Event.GearPosition0);
+                        break;
+                    case 1:
+                        SignalEvent(Event.GearPosition1);
+                        break;
+                    case 2:
+                        SignalEvent(Event.GearPosition2);
+                        break;
+                    case 3:
+                        SignalEvent(Event.GearPosition3);
+                        break;
+                    case 4:
+                        SignalEvent(Event.GearPosition4);
+                        break;
+                    case 5:
+                        SignalEvent(Event.GearPosition5);
+                        break;
+                    case 6:
+                        SignalEvent(Event.GearPosition6);
+                        break;
+                    case 7:
+                        SignalEvent(Event.GearPosition7);
+                        break;
+                    default:
+                        SignalEvent(Event.GearPosition8);
+                        break;
+                }
+                PreviousGearBoxNotch = GearBoxController.CurrentNotch; // Update previous value for next time around
             }
         }
 
@@ -4008,7 +4057,7 @@ namespace Orts.Simulation.RollingStocks
                                 break;
                     
                             case CABViewControlUnits.KILO_LBS:
-                                data = data / 4448.22162f;
+                                data = N.ToLbf(data) * 0.001f;
                                 break;
                         }                   
                         if (direction == 1 && !(cvc is CVCGauge))
@@ -4054,11 +4103,39 @@ namespace Orts.Simulation.RollingStocks
                                 break;
 
                             case CABViewControlUnits.KILO_LBS:
-                                data = data / 4448.22162f;
+                                data = N.ToLbf(data) * 0.001f;
                                 break;
                         }
  //                       if (direction == 1 && !(cvc is CVCGauge))
  //                           data = -data;
+                        break;
+                    }
+                    // this considers both the dynamic as well as the train braking
+                case CABViewControlTypes.ORTS_SIGNED_TRACTION_TOTAL_BRAKING:
+                    {
+                        var direction = 0; // Forwards
+                        if (cvc is CVCGauge && ((CVCGauge)cvc).Orientation == 0)
+                            direction = ((CVCGauge)cvc).Direction;
+                        data = 0.0f;
+                        if (Math.Abs(SpeedMpS) == 0.0f)
+                            data = 0.0f;
+                        else if (Math.Abs(FilteredMotiveForceN) - Math.Abs(BrakeForceN + DynamicBrakeForceN) > 0)
+                            data = Math.Abs(this.FilteredMotiveForceN);
+                        else if (Math.Abs(FilteredMotiveForceN) - Math.Abs(BrakeForceN + DynamicBrakeForceN) < 0)
+                            data = -Math.Abs(BrakeForceN + DynamicBrakeForceN);
+                        switch (cvc.Units)
+                        {
+                            case CABViewControlUnits.NEWTONS:
+                                break;
+
+                            case CABViewControlUnits.KILO_NEWTONS:
+                                data = data / 1000.0f;
+                                break;
+
+                            case CABViewControlUnits.KILO_LBS:
+                                data = N.ToLbf(data) * 0.001f;
+                                break;
+                        }
                         break;
                     }
                 case CABViewControlTypes.DYNAMIC_BRAKE_FORCE:
@@ -4100,7 +4177,7 @@ namespace Orts.Simulation.RollingStocks
                                 break;
 
                             case CABViewControlUnits.KILO_LBS:
-                                data = data / 4448.22162f;
+                                data = N.ToLbf(data) * 0.001f;
                                 break;
                         }
                         if (direction == 1 && !(cvc is CVCGauge))

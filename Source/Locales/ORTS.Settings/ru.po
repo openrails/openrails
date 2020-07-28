@@ -1,0 +1,33 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2020-06-09 02:45:39+0300\n"
+"PO-Revision-Date: 2020-06-09 03:35+0300\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.3.1\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+"Language: ru\n"
+
+#: ../../ORTS.Settings/InputSettings.cs:513
+#, csharp-format
+msgid "{0} requires and is modified by Shift"
+msgstr "для модификации {0} нужен Shift"
+
+#: ../../ORTS.Settings/InputSettings.cs:515
+#, csharp-format
+msgid "{0} requires and is modified by Control"
+msgstr "для модификации {0} нужен Control"
+
+#: ../../ORTS.Settings/InputSettings.cs:517
+#, csharp-format
+msgid "{0} requires and is modified by Alt"
+msgstr "для модификации {0} нужен Alt"
+
+#: ../../ORTS.Settings/InputSettings.cs:548
+#, csharp-format
+msgid "{0} and {1} both match {2}"
+msgstr "{2} одновременно назначено для {0} и {1}"

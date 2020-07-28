@@ -102,7 +102,9 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController LargeEjectorController = new MSTSNotchController(0, 1, 0.1f);
 
         public bool Injector1IsOn;
+        bool Injector1SoundIsOn = false;
         public bool Injector2IsOn;
+        bool Injector2SoundIsOn = false;
         public bool CylinderCocksAreOpen;
         public bool BlowdownValveOpen;
         public bool CylinderCompoundOn;  // Flag to indicate whether compound locomotive is in compound or simple mode of operation - simple = true (ie bypass valve is open)
@@ -119,7 +121,10 @@ namespace Orts.Simulation.RollingStocks
         bool FullBoilerHeat = false;    // Boiler heat has exceeded max possible heat in boiler (max operating steam pressure)
         bool FullMaxPressBoilerHeat = false; // Boiler heat has exceed the max total possible heat in boiler (max safety valve pressure)
         bool ShovelAnyway = false; // Predicts when the AI fireman should be increasing the fire burn rate despite the heat in the boiler
-        bool IsGrateLimit = false; // Grate limit of locomotive exceeded
+        /// <summary>
+        /// Grate limit of locomotive exceedeed?
+        /// </summary>
+        public bool IsGrateLimit { get; protected set; } = false;
         bool HasSuperheater = false;  // Flag to indicate whether locomotive is superheated steam type
         bool IsSuperSet = false;    // Flag to indicate whether superheating is reducing cylinder condenstation
         bool IsSaturated = false;     // Flag to indicate locomotive is saturated steam type
@@ -220,9 +225,15 @@ namespace Orts.Simulation.RollingStocks
         float IdealFireMassKG;      // Target fire mass
         float MaxFireMassKG;        // Max possible fire mass
         float MaxFiringRateKGpS;              // Max rate at which fireman or stoker can can feed coal into fire
-        float GrateLimitLBpFt2 = 150.0f;       // Max combustion rate of the grate, once this is reached, no more steam is produced.
+        /// <summary>
+        /// Max combustion rate of the grate; once this is reached, no more steam is produced.
+        /// </summary>
+        public float GrateLimitLBpFt2 { get; protected set; } = 150.0f;
         float MaxFuelBurnGrateKGpS;            // Maximum rate of fuel burnt depending upon grate limit
-        float GrateCombustionRateLBpFt2;     // Grate combustion rate, ie how many lbs coal burnt per sq ft grate area.
+        /// <summary>
+        /// Grate combustion rate, i.e. how many lbs coal burnt per sq ft grate area.
+        /// </summary>
+        public float GrateCombustionRateLBpFt2 { get; protected set; }
         float ORTSMaxFiringRateKGpS;          // OR equivalent of above
         float DisplayMaxFiringRateKGpS;     // Display value of MaxFiringRate
         public float SafetyValveUsageLBpS;
@@ -393,14 +404,17 @@ namespace Orts.Simulation.RollingStocks
         float BkW_Diff;                 // Net Energy into boiler after steam loads taken.
         float WaterVolL;                // Actual volume of water in bolier (litres)
         float BoilerHeatOutBTUpS = 0.0f;// heat out of boiler in BTU
-        float BoilerHeatInBTUpS = 0.0f; // heat into boiler in BTU
+        /// <summary>
+        /// Heat into boiler in BTU
+        /// </summary>
+        public float BoilerHeatInBTUpS { get; protected set; } = 0.0f;
         float BoilerHeatExcess;         // Vlaue of excess boiler heat
         float InjCylEquivSizeIN;        // Calculate the equivalent cylinder size for purpose of sizing the injector.
         float InjectorSize;             // size of injector installed on boiler
 
         // Values from previous iteration to use in UpdateFiring() and show in HUD
-        float PreviousBoilerHeatOutBTUpS = 0.0f;
-        public float PreviousTotalSteamUsageLBpS;
+        public float PreviousBoilerHeatOutBTUpS { get; protected set; } = 0.0f;
+        public float PreviousTotalSteamUsageLBpS { get; protected set; }
         float Injector1WaterDelTempF = 65f;   // Injector 1 water delivery temperature - F
         float Injector2WaterDelTempF = 65f;   // Injector 1 water delivery temperature - F
         float Injector1TempFraction;    // Find the fraction above the min temp of water delivery
@@ -5439,6 +5453,8 @@ namespace Orts.Simulation.RollingStocks
                     Injector1Fraction = 0.0f;
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
+                    StopInjector1Sound();
+                    StopInjector2Sound();
                 }
                 else if (WaterGlassLevelIN <= 7.0 && WaterGlassLevelIN > 6.875 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
                 {
@@ -5447,6 +5463,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.875 && WaterGlassLevelIN > 6.75 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
                 {
@@ -5455,6 +5472,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.75 && WaterGlassLevelIN > 6.675 && !InjectorLockedOut)  // turn injector 1 on 20% if water level in boiler drops below 7.0
                 {
@@ -5463,6 +5481,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.675 && WaterGlassLevelIN > 6.5 && !InjectorLockedOut)
                 {
@@ -5471,6 +5490,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.5 && WaterGlassLevelIN > 6.375 && !InjectorLockedOut)
                 {
@@ -5479,6 +5499,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.375 && WaterGlassLevelIN > 6.25 && !InjectorLockedOut)
                 {
@@ -5487,6 +5508,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.25 && WaterGlassLevelIN > 6.125 && !InjectorLockedOut)
                 {
@@ -5495,6 +5517,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.125 && WaterGlassLevelIN > 6.0 && !InjectorLockedOut)
                 {
@@ -5503,6 +5526,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 6.0 && WaterGlassLevelIN > 5.875 && !InjectorLockedOut)
                 {
@@ -5511,6 +5535,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (WaterGlassLevelIN <= 5.875 && WaterGlassLevelIN > 5.75 && !InjectorLockedOut)
                 {
@@ -5519,6 +5544,7 @@ namespace Orts.Simulation.RollingStocks
                     Injector2IsOn = false;
                     Injector2Fraction = 0.0f;
                     InjectorLockedOut = true;
+                    PlayInjector1SoundIfStarting();
                 }
                 else if (BoilerPressurePSI > (MaxBoilerPressurePSI - 100.0))  // If boiler pressure is not too low then turn on injector 2
                 {
@@ -5527,66 +5553,72 @@ namespace Orts.Simulation.RollingStocks
                         Injector2IsOn = true;
                         Injector2Fraction = 0.1f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 5.675 && WaterGlassLevelIN > 5.5 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.2f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 5.5 && WaterGlassLevelIN > 5.325 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.3f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 5.325 && WaterGlassLevelIN > 5.25 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.4f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 5.25 && WaterGlassLevelIN > 5.125 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.5f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 5.125 && WaterGlassLevelIN > 5.0 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.6f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 5.0 && WaterGlassLevelIN > 4.875 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.7f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 4.875 && WaterGlassLevelIN > 4.75 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.8f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 4.75 && WaterGlassLevelIN > 4.625 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 0.9f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                     else if (WaterGlassLevelIN <= 4.625 && WaterGlassLevelIN > 4.5 && !InjectorLockedOut)
                     {
                         Injector2IsOn = true;
                         Injector2Fraction = 1.0f;
                         InjectorLockedOut = true;
+                        PlayInjector2SoundIfStarting();
                     }
                 }
-
-                // Put sound triggers in for the injectors in AI Fireman mode
-                SignalEvent(Injector1IsOn ? Event.WaterInjector1On : Event.WaterInjector1Off); // hook for sound trigger
-                SignalEvent(Injector2IsOn ? Event.WaterInjector2On : Event.WaterInjector2Off); // hook for sound trigger
 
                 float BoilerHeatCheck = BoilerHeatOutBTUpS / BoilerHeatInBTUpS;
                 BoilerHeatExcess = BoilerHeatBTU / MaxBoilerHeatBTU;
@@ -5643,6 +5675,55 @@ namespace Orts.Simulation.RollingStocks
             }
             #endregion
         }
+
+        /// <summary>
+        /// Turn on the injector 1 sound only when the injector starts.
+        /// </summary>
+        private void PlayInjector1SoundIfStarting()
+        {
+            if (!Injector1SoundIsOn)
+            {
+                Injector1SoundIsOn = true;
+                SignalEvent(Event.WaterInjector1On);
+            }
+        }
+
+        /// <summary>
+        /// Turn on the injector 2 sound only when the injector starts.
+        /// </summary>
+        private void PlayInjector2SoundIfStarting()
+        {
+            if (!Injector2SoundIsOn)
+            {
+                Injector2SoundIsOn = true;
+                SignalEvent(Event.WaterInjector2On);
+            }
+        }
+
+        /// <summary>
+        /// Turn off the injector 1 sound only when the injector stops.
+        /// </summary>
+        private void StopInjector1Sound()
+        {
+            if (Injector1SoundIsOn)
+            {
+                Injector1SoundIsOn = false;
+                SignalEvent(Event.WaterInjector1Off);
+            }
+        }
+
+        /// <summary>
+        /// Turn off the injector 2 sound only when the injector stops.
+        /// </summary>
+        private void StopInjector2Sound()
+        {
+            if (Injector2SoundIsOn)
+            {
+                Injector2SoundIsOn = false;
+                SignalEvent(Event.WaterInjector2Off);
+            }
+        }
+
 
         protected override void UpdateCarSteamHeat(float elapsedClockSeconds)
         {
@@ -6569,6 +6650,8 @@ public void SteamStartGearBoxIncrease()
                             DisplayMaxIndicatedHorsePowerHP = 0.0f;
                             DrawbarHorsePowerHP = 0.0f;
                             DrawBarPullLbsF = 0.0f;
+                            SignalEvent(Event.SteamGearLeverToggle);
+                            SignalEvent(Event.GearPosition0);
                         }
                         else if (SteamGearPosition == 1.0)
                         {
@@ -6578,6 +6661,8 @@ public void SteamStartGearBoxIncrease()
                             MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                             DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
                             SteamGearRatio = SteamGearRatioLow;
+                            SignalEvent(Event.SteamGearLeverToggle);
+                            SignalEvent(Event.GearPosition1);
 
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
@@ -6605,6 +6690,8 @@ public void SteamStartGearBoxIncrease()
                             MaxLocoSpeedMpH = MpS.ToMpH(HighMaxGearedSpeedMpS);
                             DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
                             SteamGearRatio = SteamGearRatioHigh;
+                            SignalEvent(Event.SteamGearLeverToggle);
+                            SignalEvent(Event.GearPosition2);
 
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
@@ -6660,6 +6747,8 @@ public void SteamStartGearBoxIncrease()
                             SteamGearRatio = SteamGearRatioLow;
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
+                            SignalEvent(Event.SteamGearLeverToggle);
+                            SignalEvent(Event.GearPosition1);
 
                             // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
                             MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
@@ -6688,6 +6777,8 @@ public void SteamStartGearBoxIncrease()
                             DisplayMaxIndicatedHorsePowerHP = 0.0f;
                             DrawbarHorsePowerHP = 0.0f;
                             DrawBarPullLbsF = 0.0f;
+                            SignalEvent(Event.SteamGearLeverToggle);
+                            SignalEvent(Event.GearPosition0);
                         }
                     }
                 }

@@ -183,8 +183,21 @@ namespace Orts.Common
         BoilerBlowdownOn,
         BoilerBlowdownOff,
 
+        SteamGearLeverToggle,
         AIFiremanSoundOn,
-        AIFiremanSoundOff
+        AIFiremanSoundOff,
+
+        GearPosition0,
+        GearPosition1,
+        GearPosition2,
+        GearPosition3,
+        GearPosition4,
+        GearPosition5,
+        GearPosition6,
+        GearPosition7,
+        GearPosition8,
+
+
     }
 
     public static class Events
@@ -337,6 +350,7 @@ namespace Orts.Common
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
 
+                        case 147: return Event.SteamGearLeverToggle;
                         case 148: return Event.AIFiremanSoundOn;
                         case 149: return Event.AIFiremanSoundOff;
 
@@ -384,6 +398,17 @@ namespace Orts.Common
                         case 187: return Event.GenericEvent7;
                         case 188: return Event.GenericEvent8;
                         //
+
+
+                        case 200: return Event.GearPosition0;
+                        case 201: return Event.GearPosition1;
+                        case 202: return Event.GearPosition2;
+                        case 203: return Event.GearPosition3;
+                        case 204: return Event.GearPosition4;
+                        case 205: return Event.GearPosition5;
+                        case 206: return Event.GearPosition6;
+                        case 207: return Event.GearPosition7;
+                        case 208: return Event.GearPosition8;
 
                         default: return 0;
                     }
