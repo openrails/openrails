@@ -345,13 +345,23 @@ namespace Orts.Formats.OR
                 yield break;
 
             int uiD = 0;
+            bool satisfied = preference == null;
             foreach (ListTrainItem item in List)
             {
                 PreferredLocomotive target;
-                if (preference == null)
+                if (satisfied)
+                {
                     target = null;
+                }
+                else if (locoSets[item].Contains(preference))
+                {
+                    target = preference;
+                    satisfied = true;
+                }
                 else
-                    target = locoSets[item].Contains(preference) ? preference : PreferredLocomotive.NoLocomotive;
+                {
+                    target = PreferredLocomotive.NoLocomotive;
+                }
                 foreach (WagonReference wagonRef in item.GetForwardWagonList(store, memoizer, basePath, folders, uiD, target))
                 {
                     uiD++;
@@ -371,13 +381,23 @@ namespace Orts.Formats.OR
                 yield break;
 
             int uiD = 0;
+            bool satisfied = preference == null;
             foreach (ListTrainItem item in List.Reverse())
             {
                 PreferredLocomotive target;
-                if (preference == null)
+                if (satisfied)
+                {
                     target = null;
+                }
+                else if (locoSets[item].Contains(preference))
+                {
+                    target = preference;
+                    satisfied = true;
+                }
                 else
-                    target = locoSets[item].Contains(preference) ? preference : PreferredLocomotive.NoLocomotive;
+                {
+                    target = PreferredLocomotive.NoLocomotive;
+                }
                 foreach (WagonReference wagonRef in item.GetReverseWagonList(store, memoizer, basePath, folders, uiD, target))
                 {
                     uiD++;
