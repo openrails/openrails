@@ -4,16 +4,50 @@
 Developing OR Content
 *********************
 
-Open Rails already has some own development tools and is defining and developing other ones. A path editor is available within TrackViewer under the *Tools* button in the main menu window. An editor for timetable mode is also available under the *Tools* button. Route editor and consist editor are in an advanced stage of development and may already be tested. You can read about and download the consist editor `here <http://www.elvastower.com/forums/index.php?/topic/28623-new-consist-editor-for-open-rails/>`_ .
-You can read about and download the TSRE5 route editor `at this link <http://www.elvastower.com/forums/index.php?/topic/26669-new-route-editor-for-open-rails/>`_
+At this time, developing content for Open Rails in large part means developing
+content for Microsoft Train Simulator. As Open Rails continues to define its own
+native data formats, it is expected that more unique features and editors will
+become available in the future.
 
-IT is of course already possible to develop OR content (rolling stock, routes, 3D 
-objects, activities) using the tools used to develop MSTS content, thanks to 
-the high compatibility that OR has with MSTS. Below, some of the advantages of 
-OR-specific content are described.
+Many MSTS files have already been extended with OR-specific parameters, as
+symbolized by their special ``ORTS`` prefix. Some native formats have also been
+introduced within the MSTS content directory structure.
+
+New Open Rails Content Formats
+==============================
+
+DDS Textures
+------------
+
+Open Rails introduces DDS texture support in addition to ACE, the sole format
+that was supported by Microsoft Train Simulator. DDS is an industry-standard
+format and it is more efficient for the GPU to work with.
+
+Timetables
+----------
+
+Timetable files are :ref:`located <timetable-file-structure>` within a special
+subfolder of the route's activities directory. The Timetable Editor tool offers
+an easier way to construct .timetable-or files.
+
+Legacy Content Formats
+======================
+
+Thanks to the high degree of compatibility that Open Rails has with Microsoft
+Train Simulator, it is of course entirely possible to develop assets, rolling
+stock, routes, and activities using the tools used to develop MSTS content.
+
+Open Rails' Track Viewer tool includes an MSTS-compatible path editor.
+
+Separately from the Open Rails project, the TSRE ("Train Sim Route Explorer")
+`project <http://koniec.org/tsre5/>`_ has developed a suite of MSTS and
+OR-compatible consist, route, and activity editors.
+
+Advantages of Building for Open Rails
+=====================================
 
 Rolling Stock
-=============
+-------------
 
 - OR is able to display shapes with many more polygons than MSTS. Shapes with 
   more than 100.000 polys have been developed and displayed without problems.
@@ -25,7 +59,7 @@ Rolling Stock
 - Rolling stock running on super-elevated track improves gaming experience.
 
 Routes
-======
+------
 
 - Routes are displayed in higher resolution.
 - Extended viewing distance yields much more realism.
@@ -35,7 +69,7 @@ Routes
 - :ref:`Widescreen<features-route-loading-screen>` and hi-res loading screen.
 
 Activities
-==========
+----------
 
 - :ref:`Timetable mode <timetable>` is a new activity type available only in 
   Open Rails that allows for development of timetable based gaming sessions.
