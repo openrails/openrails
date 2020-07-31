@@ -319,15 +319,13 @@ namespace Orts.MultiPlayer
                 frontorrearcab = data[16];
                 headlight = int.Parse(data[17]);
                 //user = areas[0].Trim();
-                con = areas[2].Trim();
-                route = areas[3].Trim();
+                con = Path.GetFileName(areas[2].Trim());
+                route = Path.GetFileName(areas[3].Trim());
                 path = areas[4].Trim();
                 dir = int.Parse(areas[5].Trim());
                 url = areas[6].Trim();
                 ParseTrainCars(areas[7].Trim());
                 leadingID = areas[1].Trim();
-                path = Path.GetFileName(path);
-                con = Path.GetFileName(con);
                 if (areas.Length >= 9) { version = int.Parse(areas[8]); }
                 if (areas.Length >= 10)
                 {
