@@ -30,7 +30,7 @@ using ORTS.Common.Input;
 
 namespace Orts.Viewer3D
 {
-    #region MSTSSkyConstants
+    #region MSTSSkyVariables
     public class MSTSSkyConstants
     {
         // Sky dome constants
@@ -43,8 +43,8 @@ namespace Orts.Viewer3D
         public static float mstsskyTilev;
         public static float mstscloudTileu;
         public static float mstscloudTilev;
-        
     }
+
     #endregion
 
     #region MSTSSkyDrawer
@@ -106,9 +106,13 @@ namespace Orts.Viewer3D
             MSTSSkyVectors = new SunMoonPos();
 
             //viewer.World.MSTSSky.MSTSSkyMaterial.Viewer.MaterialManager.sunDirection.Y < 0
-            // Set starting value
-            mstsskyseasonType = -1;
-
+            // Set default values
+            mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
+            date.ordinalDate = 82 + mstsskyseasonType * 91;
+            // TODO: Set the following three externally from ORTS route files (future)
+            date.month = 1 + date.ordinalDate / 30;
+            date.day = 21;
+            date.year = 2010;
             // Default wind speed and direction
             mstsskywindSpeed = 5.0f; // m/s (approx 11 mph)
             mstsskywindDirection = 4.7f; // radians (approx 270 deg, i.e. westerly)
@@ -120,7 +124,16 @@ namespace Orts.Viewer3D
         /// </summary>
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
-             // Adjust dome position so the bottom edge is not visible
+            if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
+            {
+                mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
+                date.ordinalDate = 82 + mstsskyseasonType * 91;
+                // TODO: Set the following three externally from ORTS route files (future)
+                date.month = 1 + date.ordinalDate / 30;
+                date.day = 21;
+                date.year = 2010;
+            }
+            // Adjust dome position so the bottom edge is not visible
             Vector3 ViewerXNAPosition = new Vector3(MSTSSkyViewer.Camera.Location.X, MSTSSkyViewer.Camera.Location.Y - 100, -MSTSSkyViewer.Camera.Location.Z);
             Matrix XNASkyWorldLocation = Matrix.CreateTranslation(ViewerXNAPosition);
 
@@ -134,15 +147,6 @@ namespace Orts.Viewer3D
                 step2 = step2 < maxSteps - 1 ? step2 + 1 : 0; // limit to max. steps in case activity starts near midnight
                 // Get the current latitude and longitude coordinates
                 mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
-                if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
-                {
-                    mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-                    date.ordinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
-                    // TODO: Set the following three externally from ORTS route files (future)
-                    date.month = 1 + date.ordinalDate / 30;
-                    date.day = 21;
-                    date.year = 2017;
-                }
                 // Fill in the sun- and moon-position lookup tables
                 for (int i = 0; i < maxSteps; i++)
                 {
@@ -259,16 +263,17 @@ namespace Orts.Viewer3D
 
         public void LoadPrep()
         {
-
-
+            if (mstsskyseasonType != (int)MSTSSkyViewer.Simulator.Season)
+            {
+                mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
+                date.ordinalDate = 82 + mstsskyseasonType * 91;
+                date.month = 1 + date.ordinalDate / 30;
+                date.day = 21;
+                date.year = 2010;
+            }
             mstsskyworldLoc = new WorldLatLon();
             // Get the current latitude and longitude coordinates
             mstsskyworldLoc.ConvertWTC(MSTSSkyViewer.Camera.TileX, MSTSSkyViewer.Camera.TileZ, MSTSSkyViewer.Camera.Location, ref mstsskylatitude, ref mstsskylongitude);
-            mstsskyseasonType = (int)MSTSSkyViewer.Simulator.Season;
-            date.ordinalDate = mstsskylatitude >= 0 ? 82 + mstsskyseasonType * 91 : (82 + (mstsskyseasonType + 2) * 91) % 365;
-            date.month = 1 + date.ordinalDate / 30;
-            date.day = 21;
-            date.year = 2017;
             float fractClockTime = (float)MSTSSkyViewer.Simulator.ClockTime / 86400;
             mstsskysolarDirection = SunMoonPos.SolarAngle(mstsskylatitude, mstsskylongitude, fractClockTime, date);
             mstsskyworldLoc = null;
@@ -289,9 +294,7 @@ namespace Orts.Viewer3D
     public class MSTSSkyMesh : RenderPrimitive
     {
         private VertexBuffer MSTSSkyVertexBuffer;
-        private static VertexDeclaration MSTSSkyVertexDeclaration;
         private static IndexBuffer MSTSSkyIndexBuffer;
-        private static int MSTSSkyVertexStride;  // in bytes
         public int drawIndex;
         VertexPositionNormalTexture[] vertexList;
         private static short[] triangleListIndices; // Trilist buffer.
@@ -314,16 +317,16 @@ namespace Orts.Viewer3D
         // plus six more for the moon quad
         private static short indexCount = 6 + 2 * ((MSTSSkyConstants.skySides * 6 * ((MSTSSkyConstants.skyLevels + 3)) + 3 * MSTSSkyConstants.skySides));
         /// <summary>
-        ///
+        /// Constructor.
+        /// </summary>
 
-        /// Constructor
         public MSTSSkyMesh(RenderProcess renderProcess)
         {
             // Initialize the vertex and point-index buffers
             vertexList = new VertexPositionNormalTexture[numVertices];
             triangleListIndices = new short[indexCount];
+
             // Sky dome
-            //MSTSSkyDomeVertexList((numVertices - 4) / 2, mstsskyRadius, 0f, mstsskytextureu, mstsskytexturev);
             MSTSSkyDomeVertexList(0, mstsskyRadius, mstsskytextureu, mstsskytexturev);
             MSTSSkyDomeTriangleList(0, 0);
             // Cloud dome
@@ -336,8 +339,7 @@ namespace Orts.Viewer3D
         }
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = MSTSSkyVertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(MSTSSkyVertexBuffer, 0, MSTSSkyVertexStride);
+            graphicsDevice.SetVertexBuffer(MSTSSkyVertexBuffer);
             graphicsDevice.Indices = MSTSSkyIndexBuffer;
 
             switch (drawIndex)
@@ -413,7 +415,7 @@ namespace Orts.Viewer3D
             // Single vertex at zenith
             vertexList[vertexIndex].Position = new Vector3(0, radius, 0);
             vertexList[vertexIndex].Normal = new Vector3(0, 1, 0);
-            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f * tile_u, 0.5f *tile_v); // (top overlay)
+            vertexList[vertexIndex].TextureCoordinate = new Vector2(0.5f * tile_u, 0.5f * tile_v); // (top overlay)
         }
 
         /// <summary>
@@ -421,7 +423,6 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="index">The starting triangle index number</param>
         /// <param name="pass">A multiplier used to arrive at the starting vertex number</param>
-        /// 
         static void MSTSSkyDomeTriangleList(short index, short pass)
         {
             // ----------------------------------------------------------------------
@@ -513,13 +514,8 @@ namespace Orts.Viewer3D
         /// </summary>
         private void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
         {
-            if (MSTSSkyVertexDeclaration == null)
-            {
-                MSTSSkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                MSTSSkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
-            }
             // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            MSTSSkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
+            MSTSSkyVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexList.Length, BufferUsage.WriteOnly);
             MSTSSkyVertexBuffer.SetData(vertexList);
             if (MSTSSkyIndexBuffer == null)
             {
@@ -551,17 +547,16 @@ namespace Orts.Viewer3D
         private float mstscloudtexturex;
         private float mstscloudtexturey;
 
+
         public MSTSSkyMaterial(Viewer viewer)
             : base(viewer, null)
         {
             MSTSSkyShader = Viewer.MaterialManager.SkyShader;
-            
-            //// TODO: This should happen on the loader thread. 
+            // TODO: This should happen on the loader thread. 
             if (viewer.ENVFile.SkyLayers != null)
             {
                 var mstsskytexture = Viewer.ENVFile.SkyLayers.ToArray();
                 int count = Viewer.ENVFile.SkyLayers.Count;
-                
 
                 string[] mstsSkyTexture = new string[Viewer.ENVFile.SkyLayers.Count];
 
@@ -574,7 +569,6 @@ namespace Orts.Viewer3D
                         MSTSDayTexture = MSTSSkyTexture[i];
                         mstsskytexturex = mstsskytexture[i].TileX;
                         mstsskytexturey = mstsskytexture[i].TileY;
-
                     }
                     else if(mstsskytexture[i].Fadein_Begin_Time != null)
                     {
@@ -607,8 +601,8 @@ namespace Orts.Viewer3D
                 string mstsSkySunTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[0].TextureName.ToString();
                 string mstsSkyMoonTexture = Viewer.Simulator.RoutePath + @"\envfiles\textures\" + mstsskysatellitetexture[1].TextureName.ToString();
 
-                MSTSSkySunTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
-                MSTSSkyMoonTexture = Orts.Formats.Msts.AceFile.Texture2DFromFile(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
+                MSTSSkySunTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, mstsSkySunTexture);
+                MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, mstsSkyMoonTexture);
             }
             else
                 MSTSSkyMoonTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "MoonMap.png"));
@@ -652,36 +646,32 @@ namespace Orts.Viewer3D
             MSTSSkyShader.WindSpeed = Viewer.World.MSTSSky.mstsskywindSpeed;
             MSTSSkyShader.WindDirection = Viewer.World.MSTSSky.mstsskywindDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
+            for (var i = 0; i < 5; i++)
+                graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
+
             // Sky dome
-            var rs = graphicsDevice.RenderState;
-            rs.DepthBufferWriteEnable = false;
+            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
             MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Sky"];
             Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 1;
             MSTSSkyShader.SetViewMatrix(ref XNAViewMatrix);
-            MSTSSkyShader.Begin();
             ShaderPassesSky.Reset();
             while (ShaderPassesSky.MoveNext())
             {
-                ShaderPassesSky.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     MSTSSkyShader.SetMatrix(ref wvp);
-                    MSTSSkyShader.CommitChanges();
+                    ShaderPassesSky.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesSky.Current.End();
             }
-            MSTSSkyShader.End();
             MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Moon"];
             Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 2;
 
-            rs.AlphaBlendEnable = true;
-            rs.CullMode = CullMode.CullClockwiseFace;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             // Send the transform matrices to the shader
             int mstsskyRadius = Viewer.World.MSTSSky.MSTSSkyMesh.mstsskyRadius;
@@ -689,21 +679,17 @@ namespace Orts.Viewer3D
             XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.MSTSSky.mstsskylunarDirection * (mstsskyRadius));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
-            MSTSSkyShader.Begin();
             ShaderPassesMoon.Reset();
             while (ShaderPassesMoon.MoveNext())
             {
-                ShaderPassesMoon.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
                     MSTSSkyShader.SetMatrix(ref wvp);
-                    MSTSSkyShader.CommitChanges();
+                    ShaderPassesMoon.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesMoon.Current.End();
             }
-            MSTSSkyShader.End();
 
             for (int i = 0; i < MSTSSkyCloudTexture.Count; i++)
                 if (i == 0)
@@ -712,36 +698,26 @@ namespace Orts.Viewer3D
                     MSTSSkyShader.CurrentTechnique = MSTSSkyShader.Techniques["Clouds"];
                     Viewer.World.MSTSSky.MSTSSkyMesh.drawIndex = 3;
 
-                    rs.CullMode = CullMode.CullCounterClockwiseFace;
+                    graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
-                    MSTSSkyShader.Begin();
                     ShaderPassesClouds[0].Reset();
                     while (ShaderPassesClouds[0].MoveNext())
                     {
-                        ShaderPassesClouds[0].Current.Begin();
                         foreach (var item in renderItems)
                         {
                             Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                             MSTSSkyShader.SetMatrix(ref wvp);
-                            MSTSSkyShader.CommitChanges();
+                            ShaderPassesClouds[0].Current.Apply();
                             item.RenderPrimitive.Draw(graphicsDevice);
                         }
-                        ShaderPassesClouds[0].Current.End();
                     }
-                    MSTSSkyShader.End();
-
-                    rs.CullMode = CullMode.CullCounterClockwiseFace;
-
                 }
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DepthBufferWriteEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         public override bool GetBlending()

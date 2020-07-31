@@ -86,6 +86,7 @@ namespace Orts.Viewer3D
         static Color[] NeedleTextureData;
 
         readonly DriverMachineInterfaceShader Shader;
+        readonly CabShader cabShader;
         readonly Viewer Viewer;
         MSTSLocomotive Locomotive;
 
@@ -110,7 +111,8 @@ namespace Orts.Viewer3D
         readonly Rectangle SourceRectangle = new Rectangle(0, 0, Width, Height);
         public float Scale { get; private set; }
         
-        public CircularSpeedGauge(int width, int height, int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale, MSTSLocomotive locomotive, Viewer viewer)
+        public CircularSpeedGauge(int width, int height, int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale,
+            MSTSLocomotive locomotive, Viewer viewer, CabShader shader)
         {
             UnitVisible = unitVisible;
             SetUnit(unitMetric);
@@ -120,6 +122,7 @@ namespace Orts.Viewer3D
             MaxVisibleScale = maxVisibleScale;
             Viewer = viewer;
             Locomotive = locomotive;
+            cabShader = shader;
             
             SizeTo(width, height);
             SetRange(MaxSpeed);
@@ -142,7 +145,7 @@ namespace Orts.Viewer3D
                             v <= 15 && 5 < u && u < 9
                             || 15 < v && v <= 23 && 5f - (float)(v - 15) / 8f * 3f < u && u < 9f + (float)(v - 15) / 8f * 3f
                             || 23 < v && v < 82 && 2 < u && u < 12
-                        ) ? Color.White : Color.TransparentBlack;
+                        ) ? Color.White : Color.Transparent;
             }
         }
         
@@ -374,12 +377,29 @@ namespace Orts.Viewer3D
                 spriteBatch.Draw(ColorTexture, new Rectangle(x, y, length, 1), null, Color.White, lines.W, new Vector2(0, 0), SpriteEffects.None, 0);
             }
 
-            Shader.CurrentTechnique = Shader.Techniques["CircularSpeedGauge"];
-            Shader.Begin();
-            Shader.CurrentTechnique.Passes[0].Begin();
-            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.TransparentBlack, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
-            Shader.CurrentTechnique.Passes[0].End();
-            Shader.End();
+            // Monogame Spritebatch change Shaders procedure.
+            // Following spriteBatch.Begin statements must reflect those for CabSpriteBatchMaterial in materials.cs
+
+            // Apply DriverMachineInterface Shader
+
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
+            
+            // Draw gauge needle centre and speed limit markings
+
+            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
+
+            // Re-apply normal Cab lighting Shader
+
+            spriteBatch.End();
+            if (cabShader != null)
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, cabShader);
+            else
+                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null ,null);
+
+            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
+            
+            // End of spritebatch change Shaders
 
             foreach (var text in DialSpeeds)
             {
@@ -450,7 +470,8 @@ namespace Orts.Viewer3D
                 (int)MpS.ToKpH(maxSpeedMpS) == 240 || (int)MpS.ToKpH(maxSpeedMpS) == 260,
                 0,
                 (MSTSLocomotive)owner.Viewer.PlayerLocomotive,
-                owner.Viewer
+                owner.Viewer,
+                null
             );
         }
 
@@ -511,7 +532,8 @@ namespace Orts.Viewer3D
                 Control.MaxValue == 240 || Control.MaxValue == 260,
                 (int)Control.MinValue,
                 Locomotive,
-                Viewer
+                Viewer,
+                shader
             );
         }
 
@@ -530,7 +552,7 @@ namespace Orts.Viewer3D
 
 		public override void Draw(GraphicsDevice graphicsDevice)
         {
-            CircularSpeedGauge.Draw(ControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
+            CircularSpeedGauge.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
         }
     }
 
