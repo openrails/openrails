@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-06-06 21:59:06+0300\n"
-"PO-Revision-Date: 2020-06-06 23:05+0300\n"
+"POT-Creation-Date: 2009-12-28 00:25:09+0300\n"
+"PO-Revision-Date: 2020-07-31 01:57+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -167,7 +167,7 @@ msgstr ""
 "Имя должно содержать 4-10 символов, кроме пробела, апострофа, кавычек и "
 "дефиса и не должно начинаться с цифры."
 
-#: ../../Menu/MainForm.cs:1125
+#: ../../Menu/MainForm.cs:1128
 msgid "Activity Briefing"
 msgstr "Инструктаж"
 
@@ -198,52 +198,52 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:1114
+#: ../../Menu/MainForm.cs:1117
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Игровой полигон {0}"
 
-#: ../../Menu/MainForm.cs:1120 ../../Menu/MainForm.cs:1153
+#: ../../Menu/MainForm.cs:1123 ../../Menu/MainForm.cs:1156
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Локомотив: {0}"
 
-#: ../../Menu/MainForm.cs:1124
+#: ../../Menu/MainForm.cs:1127
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Сценарий: {0}"
 
-#: ../../Menu/MainForm.cs:1129 ../../Menu/MainForm.cs:1158
+#: ../../Menu/MainForm.cs:1132 ../../Menu/MainForm.cs:1161
 #, csharp-format
 msgid "Path: {0}"
 msgstr "Маршрут: {0}"
 
-#: ../../Menu/MainForm.cs:1130
+#: ../../Menu/MainForm.cs:1133
 #, csharp-format
 msgid "Starting at: {0}"
 msgstr "Отправление из: {0}"
 
-#: ../../Menu/MainForm.cs:1131
+#: ../../Menu/MainForm.cs:1134
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr "Прибытие в: {0}"
 
-#: ../../Menu/MainForm.cs:1139
+#: ../../Menu/MainForm.cs:1142
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr "Расписание: {0}"
 
-#: ../../Menu/MainForm.cs:1143
+#: ../../Menu/MainForm.cs:1146
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr "График: {0}"
 
-#: ../../Menu/MainForm.cs:1147
+#: ../../Menu/MainForm.cs:1150
 #, csharp-format
 msgid "Train: {0}"
 msgstr "Поезд: {0}"
 
-#: ../../Menu/MainForm.cs:1150
+#: ../../Menu/MainForm.cs:1153
 #, csharp-format
 msgid "Consist: {0}"
 msgstr "Состав: {0}"
@@ -633,7 +633,7 @@ msgstr "{0}%"
 #: ../../Menu/Options.cs:632
 #, csharp-format
 msgid "No detail (-{0}%)"
-msgstr "No detail (-{0}%)"
+msgstr "Без деталей (-{0}%)"
 
 #: ../../Menu/Options.cs:634
 #, csharp-format
@@ -779,7 +779,7 @@ msgstr "Дальность видимости (км)"
 
 #: ../../Menu/Options.Designer.cs:798
 msgid "Fast full-screen alt-tab"
-msgstr "Переход по Alt-Tab конда развёрнуто"
+msgstr "Переход по Alt-Tab когда развёрнуто"
 
 #: ../../Menu/Options.Designer.cs:808
 msgid "Distant mountains"
@@ -1089,7 +1089,7 @@ msgstr "Возвышение"
 
 #: ../../Menu/Options.Designer.cs:2277
 msgid "Load DDS textures in preference to ACE"
-msgstr "Приоритет загрузки текстур DDS в вместо ACE"
+msgstr "Приоритет загрузки текстур DDS вместо ACE"
 
 #: ../../Menu/Options.Designer.cs:2288
 msgid "Location-linked passing path processing"
