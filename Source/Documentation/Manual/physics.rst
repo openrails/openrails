@@ -1176,14 +1176,11 @@ OR models the heat loss from a boiler with some standard default settings,
 however the model can be customised to suit the locomotive by adjusting the 
 following settings.
 
--``ORTSBoilerSurfaceArea`` ==> Surface area of the boiler / fire box that impacts 
-heat loss. Default UoM - ft^2
+- ``ORTSBoilerSurfaceArea`` - Surface area of the boiler / fire box that impacts heat loss. Default UoM - ft^2
 
-- ``ORTSFractionBoilerInsulated`` - Fraction of boiler surface area covered by 
-insulation (less then 1)
+- ``ORTSFractionBoilerInsulated`` - Fraction of boiler surface area covered by insulation (less then 1)
 
-- ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. 
-Default UoM - (BTU / ((sq. ft.) / hr.)) / (1 (in. / F)) 
+- ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. Default UoM - (BTU / ((sq. ft.) / hr.)) / (1 (in. / F)) 
 
 Steam Boiler Blowdown
 '''''''''''''''''''''
@@ -1279,8 +1276,8 @@ controls:
 - ``<Alt+U>`` -- increase steam pipe pressure (and hence train temperature)
 - ``<Alt+D>`` -- decrease steam pipe pressure (and hence train temperature)
 
-The steam heating control valve can be configured by adding an enginecontroller
-called ``ORTSSTeamHeat ( w, x, y, z)``. It should be configured as a standard
+The steam heating control valve can be configured by adding an engine controller
+called ``ORTSSteamHeat ( w, x, y, z)``. It should be configured as a standard
 4 value controller.
 
 The primary purpose of this model is to calculate steam usage for the heating, 
@@ -1299,38 +1296,38 @@ which can be inserted in the wagon file section can be adjusted as follows.
 
 The passenger (or other heated cars) can be adjusted with the following parameters:
 
-``ORTSHeatingWindowDeratingFactor`` - is the fraction of the car side that is occupied 
-by windows.
-``ORTSHeatingCompartmentTemperatureSet`` - is the temperature that the car thermostat 
-is set to.
-``ORTSHeatingCompartmentPipeAreaFactor`` - is a factor that adjusts the heating area of 
-the steam heater in the passenger compartment.
-``ORTSHeatingTrainPipeOuterDiameter`` - outer diameter of the main steam pipe that runs 
-the length of the train.
-``ORTSHeatingTrainPipeInnerDiameter`` - inner diameter of the main steam pipe that runs 
-the length of the train.
-``ORTSHeatingConnectingHoseOuterDiameter`` - outer diameter of the connecting hose between
- carriages.
-``ORTSHeatingConnectingHoseInnerDiameter`` - inner diameter of the connecting hose between
- carriages.
+- ``ORTSHeatingWindowDeratingFactor`` - is the fraction of the car side that is occupied by windows.
+
+- ``ORTSHeatingCompartmentTemperatureSet`` - is the temperature that the car thermostat is set to.
+
+- ``ORTSHeatingCompartmentPipeAreaFactor`` - is a factor that adjusts the heating area of the steam heater in the passenger compartment.
+
+- ``ORTSHeatingTrainPipeOuterDiameter`` - outer diameter of the main steam pipe that runs the length of the train.
+
+- ``ORTSHeatingTrainPipeInnerDiameter`` - inner diameter of the main steam pipe that runs the length of the train.
+
+- ``ORTSHeatingConnectingHoseOuterDiameter`` - outer diameter of the connecting hose between carriages.
+
+- ``ORTSHeatingConnectingHoseInnerDiameter`` - inner diameter of the connecting hose between carriages.
+
 
 For diesel locomotives or steam heating boiler vans the following parameters can be used 
-to set the parameters of the steam heating boiler.
-``ORTSWagonSpecialType`` - can be used to indicate whether the car is a boiler van 
-(set = HeatingBoiler), or if the car is heated (set = Heated).
-``ORTSHeatingBoilerWaterUsage`` - is the water usage for the steam heating boiler, and is 
-a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = water 
-usage (g-uk/hr).
-``ORTSHeatingBoilerFuelUsage`` - is the fuel usage for the steam heating boiler, and is 
-a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = fuel 
-usage (g-uk/hr).
-``ORTSHeatingBoilerWaterTankCapacity`` - is the feed water tank capacity for the steam boiler.
+to set the parameters of the steam heating boiler:
 
-``ORTSHeatingBoilerFuelTankCapacity`` - is the fuel tank capacity for the steam boiler. 
-Applies to steam heating boiler cars only. 
+- ``ORTSWagonSpecialType`` - can be used to indicate whether the car is a boiler van (set = HeatingBoiler), or if the car is heated (set = Heated).
 
-Special effects can also be added to support the steam heating model, see the section called 
-"Special Visual Effects for Locomotives or Wagons" for more information.
+- ``ORTSHeatingBoilerWaterUsage`` - is the water usage for the steam heating boiler, and is a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = water usage (g-uk/hr).
+
+- ``ORTSHeatingBoilerFuelUsage`` - is the fuel usage for the steam heating boiler, and is a table with a series of x and y parameters, where x = steam usage (lb/hr) and y = fuel usage (g-uk/hr).
+
+- ``ORTSHeatingBoilerWaterTankCapacity`` - is the feed water tank capacity for the steam boiler.
+
+- ``ORTSHeatingBoilerFuelTankCapacity`` - is the fuel tank capacity for the steam boiler. Applies to steam heating boiler cars only. 
+
+
+Special effects can also be added to support the steam heating model, see the section 
+:ref:`Special Visual Effects for Locomotives or Wagons <visual-effects>` for more information.
+
 
 Steam Locomotives -- Physics Parameters for Optimal Operation
 -------------------------------------------------------------
@@ -1575,8 +1572,10 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 |                                                           |                   |unused             |                   |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 
-Special Visual Effects for Locomotives or Wagons
-------------------------------------------------
+.. _visual-effects:
+
+`Special Visual Effects for Locomotives or Wagons`
+--------------------------------------------------
 Steam exhausts on a steam locomotive, and other special visual effects can be modelled in OR by defining
 appropriate visual effects in the ``SteamSpecialEffects`` section of the steam locomotive ENG file, the
 ``DieselSpecialEffects`` section of the diesel locomotive ENG file, or the ``SpecialEffects`` section
@@ -1629,17 +1628,13 @@ an ENG file):
   This generator was used to provide additional auxiliary power for the train, and
   could have been used for air conditioning, heating lighting, etc.
 
-- Wagon Smoke (named ``WagonSmokeFX``) -- represents the smoke coming from say a
-  wood fire. This might have been a heating unit located in the guards van of the train.
+- Wagon Smoke (named ``WagonSmokeFX``) -- represents the smoke coming from say a wood fire. This might have been a heating unit located in the guards van of the train.
 
-- Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a
-  steam pipe connection between wagons.
+- Heating Hose (named ``HeatingHoseFX``) -- represents the steam escaping from a steam pipe connection between wagons.
 
-- Heating Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the 
-steam escaping from the steam trap under a passenger compartment.
+- Heating Compartment Steam Trap (named ``HeatingCompartmentSteamTrapFX``) -- represents the steam escaping from the steam trap under a passenger compartment.
 
-- Heating Main Pipe Steam Trap (named ``HeatingMainPipeSteamTrapFX``) -- represents the steam escaping from a
-  steam trap in the main steam pipe running under the passenger car.
+- Heating Main Pipe Steam Trap (named ``HeatingMainPipeSteamTrapFX``) -- represents the steam escaping from a steam trap in the main steam pipe running under the passenger car.
 
 NB: If a steam effect is not defined in the ``SteamSpecialEffects``,  ``DieselSpecialEffects``, or the
 ``SpecialEffects`` section of an ENG/WAG file, then it will not be displayed  in the simulation.
@@ -2338,7 +2333,10 @@ Where:
 - R = Curve resistance,
 - W = vehicle weight,
 - F = Coefficient of Friction,
-- |mgr| = 0.5 for dry, smooth steel-to-steel; wet rail 0.1 -- 0.3,
+
+  - 0.1 -- 0.3 for wet rail
+  - 0.5 for dry, smooth steel-to-steel 
+
 - D = track gauge,
 - L = Rigid wheelbase,
 - r = curve radius.
@@ -2846,7 +2844,7 @@ where
 
 .. math::
 
-    A=\frac{0.00003318\cdot\rho\cdot F_t}{(1-F_{tr}/F_t)^2},
+    A=\frac{0.00003318\cdot rho\cdot F_t}{(1-F_{tr}/F_t)^2},
 
     B=174.419(1-F_{tr}/F_t)^2,
 
@@ -2855,7 +2853,7 @@ where
 +-----------------------------------------------------------+-----------------------------------------------------------+
 |F\ :sub:`t` -- tunnel cross-sectional area (m\ :sup:`2`\ ) |F\ :sub:`tr` -- train cross-sectional area (m\ :sup:`2`\ ) |
 +-----------------------------------------------------------+-----------------------------------------------------------+
-||rgr| -- density of air ( = 1.2 kg/m\ :sup:`3`\ )          |R\ :sub:`t` -- tunnel perimeter (m)                        |
+|\rho -- density of air ( = 1.2 kg/m\ :sup:`3`\ )           |R\ :sub:`t` -- tunnel perimeter (m)                        |
 +-----------------------------------------------------------+-----------------------------------------------------------+
 |L\ :sub:`tr` -- length of train (m)                        |L\ :sub:`t` -- length of tunnel (m)                        |
 +-----------------------------------------------------------+-----------------------------------------------------------+
