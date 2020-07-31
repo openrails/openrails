@@ -284,6 +284,33 @@ Trigger       Function
 Variable Triggers
 -----------------
 
+ORTS
+^^^^
+
+The sound objects attached to a vehicle (wagon or loco) can respond in volume and frequency to changes in the vehicle's properties.
+There are 7 properties:		
+- distance squared from a sound source (m^2)
+
+- speed (m/s)	
+
+- pressure in the brake cylinder (psi)	
+
+- centrifugal force due to traversing a curve (N)	
+
+- 3 variables in range 0 - 1:
+
+  - Variable1 reflects the throttle
+
+  - Variable2 reflects the engine's RPM (diesel) or Tractive Force (electric) or cylinder pressure (steam)
+
+  - Variable3 reflects the dynamic brake (diesel | electric) or fuel rate (steam)
+		
+Note: Separately, for a whole route, sounds for all curves below a certain radius can be automatically triggered as vehicles pass - see :ref:`sound-curve` below.		
+
+
+Comparison with MSTS
+^^^^^^^^^^^^^^^^^^^^
+
 OR manages all of the variable triggers managed by MSTS. There can be some 
 difference in the relationship between physical locomotive variables (e.g. 
 Force) and the related variable. This applies to Variable2 and Variable3. 
@@ -327,6 +354,8 @@ Testing Sound Files at Runtime
 
 The :ref:`sound debug window <driving-sound-debug>` is a useful tool for 
 testing.
+
+.. _sound-curve:
 
 Automatic switch and curve squeal track sound
 =============================================
