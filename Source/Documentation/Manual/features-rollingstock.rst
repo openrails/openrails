@@ -12,8 +12,10 @@ OR supports the whole set of lights accepted by MSTS.
 Tilting trains
 ==============
 
-OR supports tilting trains. A train tilts when its .con file name contains the 
-*tilted* string: e.g. ``ETR460_tilted.con``.
+OR supports tilting trains. If loaded from a MSTS .con file, a train tilts when
+its filename contains the *tilted* string, i.e. ``ETR460_tilted.con``. If loaded
+from an OR .train-or file, a train tilts when the *IsTilted* flag is set; for
+this format, the filename has no effect.
 
 .. image:: images/features-tilting.png
 
