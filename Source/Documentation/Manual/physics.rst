@@ -2338,7 +2338,10 @@ Where:
 - R = Curve resistance,
 - W = vehicle weight,
 - F = Coefficient of Friction,
-- |mgr| = 0.5 for dry, smooth steel-to-steel; wet rail 0.1 -- 0.3,
+
+  - 0.1 -- 0.3 for wet rail
+  - 0.5 for dry, smooth steel-to-steel 
+
 - D = track gauge,
 - L = Rigid wheelbase,
 - r = curve radius.
@@ -2846,7 +2849,7 @@ where
 
 .. math::
 
-    A=\frac{0.00003318\cdot\rho\cdot F_t}{(1-F_{tr}/F_t)^2},
+    A=\frac{0.00003318\cdot rho\cdot F_t}{(1-F_{tr}/F_t)^2},
 
     B=174.419(1-F_{tr}/F_t)^2,
 
@@ -2855,7 +2858,7 @@ where
 +-----------------------------------------------------------+-----------------------------------------------------------+
 |F\ :sub:`t` -- tunnel cross-sectional area (m\ :sup:`2`\ ) |F\ :sub:`tr` -- train cross-sectional area (m\ :sup:`2`\ ) |
 +-----------------------------------------------------------+-----------------------------------------------------------+
-||rgr| -- density of air ( = 1.2 kg/m\ :sup:`3`\ )          |R\ :sub:`t` -- tunnel perimeter (m)                        |
+|\rho -- density of air ( = 1.2 kg/m\ :sup:`3`\ )           |R\ :sub:`t` -- tunnel perimeter (m)                        |
 +-----------------------------------------------------------+-----------------------------------------------------------+
 |L\ :sub:`tr` -- length of train (m)                        |L\ :sub:`t` -- length of tunnel (m)                        |
 +-----------------------------------------------------------+-----------------------------------------------------------+
