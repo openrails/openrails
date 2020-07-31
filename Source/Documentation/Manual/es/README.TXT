@@ -1,2 +1,0 @@
-This is a temporary arrangement to make the Spanish manual maintained by Javier (Xavivilla) available to all users.
-The intention is to get Javier to update his rst files using GitHub and make them part of the build that delivers the English manual.

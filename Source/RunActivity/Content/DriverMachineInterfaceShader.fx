@@ -56,10 +56,10 @@ sampler ImageSampler = sampler_state
 
 struct PIXEL_INPUT
 {
-    float4 Position  : SV_POSITION;
-    float4 Color     : COLOR0;
-    float2 TexCoords : TEXCOORD0;
-    float3 Normal    : NORMAL;
+	//float2 Position  : VPOS;
+	float2 TexCoords : TEXCOORD0;
+	float4 Color     : COLOR0;
+	float3 Normal    : NORMAL;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -128,6 +128,6 @@ float4 PSCircularSpeedGauge(PIXEL_INPUT In) : COLOR0
 
 technique CircularSpeedGauge {
 	pass Pass_0 {
-		PixelShader = compile ps_4_0_level_9_3 PSCircularSpeedGauge();
+		PixelShader = compile ps_2_0 PSCircularSpeedGauge();
 	}
 }

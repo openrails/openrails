@@ -21,7 +21,6 @@ using System.Text;
 using System.Windows.Media.Imaging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Orts.Viewer3D;
 using Orts.Viewer3D.Popups;
 
 namespace ORTS.TrackViewer.Drawing
@@ -113,7 +112,7 @@ namespace ORTS.TrackViewer.Drawing
             Texture2D tempTexture;
             try
             {
-                tempTexture = SharedTextureManager.Get(graphicsDevice, fullFileName);
+                tempTexture = Texture2D.FromFile(graphicsDevice, fullFileName);
             }
             catch
             {
@@ -140,7 +139,7 @@ namespace ORTS.TrackViewer.Drawing
                 pixels[i] = ColorWithHighlights.Highlighted(pixels[i], offset);
             }
 
-            Texture2D outTexture = new Texture2D(graphicsDevice, texture.Width, texture.Height, false, SurfaceFormat.Color);
+            Texture2D outTexture = new Texture2D(graphicsDevice, texture.Width, texture.Height, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
             outTexture.SetData<Color>(pixels);
             return outTexture;
         }
@@ -154,13 +153,13 @@ namespace ORTS.TrackViewer.Drawing
         private static Texture2D CreateCircleTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
             int radius = (outerRadius - 2)/2; // So circle doesn't go out of bounds
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius,  false, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius,  0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
             // Colour the entire texture transparent first.
             for (int i = 0; i < data.Length; i++)
-                data[i] = Color.Transparent;
+                data[i] = Color.TransparentWhite;
 
             // Work out the minimum step necessary using trigonometry + sine approximation.
             double angleStep = 1f / radius;
@@ -187,7 +186,7 @@ namespace ORTS.TrackViewer.Drawing
         private static Texture2D CreateDiscTexture(GraphicsDevice graphicsDevice, int outerRadius)
         {
             int radius = (outerRadius - 1) / 2;
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, false, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
@@ -202,7 +201,7 @@ namespace ORTS.TrackViewer.Drawing
                     }
                     else
                     {
-                        data[i] = Color.Transparent;
+                        data[i] = Color.TransparentWhite;
                     }
                 }
             }
@@ -221,7 +220,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             int radius = (outerRadius - 1) / 2;
             int innerRadius = (2 * radius) / 3;
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, false, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
@@ -237,7 +236,7 @@ namespace ORTS.TrackViewer.Drawing
                     }
                     else
                     {
-                        data[i] = Color.Transparent;
+                        data[i] = Color.TransparentWhite;
                     }
                 }
             }
@@ -257,7 +256,7 @@ namespace ORTS.TrackViewer.Drawing
             int radius = (outerRadius - 1) / 2;
             int innerRadius = (3 * radius) / 4;
             int crossWidth = 5;
-            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, false, SurfaceFormat.Color);
+            Texture2D texture = new Texture2D(graphicsDevice, outerRadius, outerRadius, 0, TextureUsage.AutoGenerateMipMap, SurfaceFormat.Color);
 
             Color[] data = new Color[outerRadius * outerRadius];
 
@@ -266,7 +265,7 @@ namespace ORTS.TrackViewer.Drawing
                 for (int y = -radius; y <= radius; y++)
                 {
                     int i = (x + radius) * outerRadius + (y + radius);
-                    data[i] = Color.Transparent; //default
+                    data[i] = Color.TransparentWhite; //default
                     int r2 = x * x + y * y;
                     if (r2 <= radius * radius)
                     {
