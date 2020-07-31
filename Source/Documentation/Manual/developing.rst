@@ -30,6 +30,29 @@ Timetable files are :ref:`located <timetable-file-structure>` within a special
 subfolder of the route's activities directory. The Timetable Editor tool offers
 an easier way to construct .timetable-or files.
 
+Trains
+------
+
+The Open Rails replacement for MSTS' "consist," a "train" is a sequence of
+wagons and engines that can be spawned to represent a player or an AI. Unlike
+consist files, which contained fixed lists of wagons and engines, Open Rails
+train files may also:
+
+- Refer to other train files.
+- Select probabilistically from a set of mutually exclusive alternatives.
+
+Train files use the .train-or extension and they are stored in JSON format. Like
+consist files, train files are located in the TRAINS\CONSISTS directory; if a
+consist file and train file both share the same filename, the train file takes
+priority.
+
+Each train file must declare a single type, along with a list of child wagons,
+engines, trains, or consists. The following types are available:
+
+- "List" trains combine their children items in linear order.
+- "Random" trains randomly select one of their children items, with
+  customizable probability weights.
+
 Legacy Content Formats
 ======================
 
