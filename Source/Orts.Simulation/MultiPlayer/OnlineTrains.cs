@@ -153,7 +153,7 @@ namespace Orts.MultiPlayer
             {
                 train.Number = player.num;
             }
-            train.IsTilting = GenericTrain.IsTilting(Path.GetFileNameWithoutExtension(player.con));
+            train.IsTilting = player.Tilting;
             int direction = player.dir;
             train.travelled = player.Travelled;
             train.TrainMaxSpeedMpS = player.trainmaxspeed;
