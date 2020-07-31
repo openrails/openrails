@@ -57,6 +57,7 @@ namespace ORTS.Content
         float? MaxVelocityMpS { get; }
         float Durability { get; }
         bool PlayerDrivable { get; }
+        bool IsTilting { get; }
 
         /// <summary>
         /// Obtain a list of <see cref="WagonReference"/>s to be loaded by the simulator.

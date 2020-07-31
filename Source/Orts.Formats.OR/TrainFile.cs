@@ -38,6 +38,7 @@ namespace Orts.Formats.OR
         public float? MaxVelocityMpS { get; set; }
         public float Durability { get; set; } = 1f;
         public bool PlayerDrivable { get; set; } = true;
+        public bool IsTilting { get; set; } = false;
 
         /// <summary>
         /// Load a train from a JSON file.

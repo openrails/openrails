@@ -142,7 +142,7 @@ namespace Orts.MultiPlayer
             }
             p.url = player.url;
             p.LeadingLocomotiveID = player.leadingID;
-            p.con = TrainFileUtilities.ResolveTrainFile(MPManager.Simulator.BasePath, player.con);
+            p.con = MPManager.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
             p.path = MPManager.Simulator.RoutePath + "\\PATHS\\" + player.path;
             Train train = new Train(MPManager.Simulator);
             train.TrainType = Train.TRAINTYPE.REMOTE;
@@ -153,7 +153,7 @@ namespace Orts.MultiPlayer
             {
                 train.Number = player.num;
             }
-            train.IsTilting = GenericTrain.IsTilting(Path.GetFileNameWithoutExtension(player.con));
+            train.IsTilting = player.Tilting;
             int direction = player.dir;
             train.travelled = player.Travelled;
             train.TrainMaxSpeedMpS = player.trainmaxspeed;

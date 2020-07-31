@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Orts.Parsers.Msts;
 using ORTS.Content;
@@ -30,6 +31,7 @@ namespace Orts.Formats.Msts
     {
         public string Name; // from the Name field or label field of the consist file
         public Train_Config Train;
+        public bool IsTilting { get; }
 
         public ConsistFile(string filePath)
         {
@@ -38,6 +40,9 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
                 });
             Name = Train.TrainCfg.Name;
+            IsTilting = Path.GetFileNameWithoutExtension(filePath)
+                .ToLowerInvariant()
+                .Contains("tilted");
         }
 
         string ITrainFile.DisplayName => Train.TrainCfg.Name;

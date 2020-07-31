@@ -1116,8 +1116,6 @@ namespace Orts.Simulation
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
-            train.IsTilting = GenericTrain.IsTilting(Path.GetFileNameWithoutExtension(trainFileName));
-
 #if ACTIVITY_EDITOR
             AIPath aiPath = new AIPath(TDB, TSectionDat, patFileName, TimetableMode, orRouteConfig);
 #else
@@ -1161,6 +1159,7 @@ namespace Orts.Simulation
 
             train.PresetExplorerPath(aiPath, Signals);
             train.ControlMode = Train.TRAIN_CONTROL.EXPLORER;
+            train.IsTilting = trainFile.IsTilting;
 
             bool canPlace = true;
             Train.TCSubpathRoute tempRoute = train.CalculateInitialTrainPosition(ref canPlace);
@@ -1255,8 +1254,6 @@ namespace Orts.Simulation
                 int orgDirection = (train.RearTDBTraveller != null) ? (int)train.RearTDBTraveller.Direction : -2;
                 Train.TCRoutePath dummyRoute = new Train.TCRoutePath(train.Path, orgDirection, 0, Signals, -1, Settings);   // SPA: Add settings to get enhanced mode
             }
-
-            train.IsTilting = GenericTrain.IsTilting(srvFile.Train_Config);
 
             return train;
         }

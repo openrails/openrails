@@ -264,6 +264,7 @@ namespace Orts.MultiPlayer
         public string code = "";
         public int num; //train number
         public string con; //consist
+        public bool Tilting { get; }
         public string path; //path consist and path will always be double quoted
         public string route;
         public int dir; //direction
@@ -319,19 +320,19 @@ namespace Orts.MultiPlayer
                 frontorrearcab = data[16];
                 headlight = int.Parse(data[17]);
                 //user = areas[0].Trim();
-                con = areas[2].Trim();
-                route = areas[3].Trim();
-                path = areas[4].Trim();
-                dir = int.Parse(areas[5].Trim());
-                url = areas[6].Trim();
-                ParseTrainCars(areas[7].Trim());
+                con = Path.GetFileName(areas[2].Trim());
+                Tilting = bool.Parse(areas[3]);
+                route = Path.GetFileName(areas[4].Trim());
+                path = areas[5].Trim();
+                dir = int.Parse(areas[6].Trim());
+                url = areas[7].Trim();
+                ParseTrainCars(areas[8].Trim());
                 leadingID = areas[1].Trim();
-                path = Path.GetFileName(path);
-                con = Path.GetFileName(con);
-                if (areas.Length >= 9) { version = int.Parse(areas[8]); }
                 if (areas.Length >= 10)
+                    version = int.Parse(areas[9]);
+                if (areas.Length >= 11)
                 {
-                    MD5 = areas[9];
+                    MD5 = areas[10];
                     if (MPManager.Instance().MD5Check == "")
                     {
                         MPManager.Instance().GetMD5HashFromTDBFile();
@@ -388,6 +389,7 @@ namespace Orts.MultiPlayer
                 dir = (int)t.RearTDBTraveller.Direction; num = tn; TileX = t.RearTDBTraveller.TileX;
                 TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.DistanceTravelledM;
                 trainmaxspeed = t.TrainMaxSpeedMpS;
+                Tilting = t.IsTilting;
             }
             seconds = (int)MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
             pantofirst = pantosecond = pantothird = pantofourth = 0;
@@ -426,7 +428,7 @@ namespace Orts.MultiPlayer
         {
             string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
                 + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + trainmaxspeed.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + pantothird + " " + pantofourth + " " + frontorrearcab + " " + headlight + " \r" +
-                leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
+                $"{leadingID}\r{con}\r{Tilting}\r{route}\r{path}\r{dir}\r{url}\r";
             for (var i = 0; i < cars.Length; i++)
             {
                 var c = cars[i];

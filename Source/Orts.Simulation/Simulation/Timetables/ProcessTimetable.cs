@@ -2309,7 +2309,6 @@ namespace Orts.Simulation.Timetables
                 foreach (consistInfo consistDetails in consistSets)
                 {
                     bool consistReverse = consistDetails.reversed;
-                    tilt = tilt && GenericTrain.IsTilting(consistDetails.consistFile);
 
                     ITrainFile trainFile = null;
 
@@ -2375,6 +2374,9 @@ namespace Orts.Simulation.Timetables
                     // derive speed
                     if (trainFile.MaxVelocityMpS != null)
                         confMaxSpeed = Math.Min(confMaxSpeed ?? (float)simulator.TRK.Tr_RouteFile.SpeedLimit, trainFile.MaxVelocityMpS.Value);
+
+                    // set tilt
+                    tilt = tilt && trainFile.IsTilting;
                 }
 
                 if (TTTrain.Cars.Count <= 0)

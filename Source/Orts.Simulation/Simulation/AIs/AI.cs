@@ -876,7 +876,7 @@ namespace Orts.Simulation.AIs
             if (!Simulator.NameDictionary.ContainsKey(train.Name.ToLower()))
                 Simulator.NameDictionary.Add(train.Name.ToLower(), train);
 
-            train.IsTilting = GenericTrain.IsTilting(srvFile.Train_Config);
+            train.IsTilting = trainFile.IsTilting;
 
             // also set Route max speed for speedpost-processing in train.cs
             train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;

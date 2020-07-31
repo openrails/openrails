@@ -60,11 +60,6 @@ namespace Orts.Simulation.Simulation
         }
 
         /// <summary>
-        /// Determine whether a train should tilt.
-        /// </summary>
-        public static bool IsTilting(string name) => name.ToLower().Contains("tilted");
-
-        /// <summary>
         /// Load the wagons of a train into the simulator.
         /// </summary>
         /// <param name="train">The train file to load.</param>
