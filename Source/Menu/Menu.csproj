@@ -202,6 +202,12 @@
     </PreBuildEvent>
     <PostBuildEvent>echo $Revision: 000 $&gt;Revision.txt
 date /t&gt;&gt;Revision.txt
-time /t&gt;&gt;Revision.txt</PostBuildEvent>
+time /t&gt;&gt;Revision.txt
+
+REM Copy Spanish manual until we can make its RST files part of the build.
+CD ..\
+IF EXIST "Program\Documentation\es" RMDIR "Program\Documentation\es" /S /Q
+IF NOT EXIST "Program\Documentation\es" MKDIR "Program\Documentation\es"
+COPY "Source\Documentation\Manual\es\Manual.pdf" "Program\Documentation\es\"</PostBuildEvent>
   </PropertyGroup>
 </Project>
