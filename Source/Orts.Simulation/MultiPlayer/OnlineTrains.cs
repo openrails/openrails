@@ -142,7 +142,7 @@ namespace Orts.MultiPlayer
             }
             p.url = player.url;
             p.LeadingLocomotiveID = player.leadingID;
-            p.con = TrainFileUtilities.ResolveTrainFile(MPManager.Simulator.BasePath, player.con);
+            p.con = MPManager.Simulator.BasePath + "\\TRAINS\\CONSISTS\\" + player.con;
             p.path = MPManager.Simulator.RoutePath + "\\PATHS\\" + player.path;
             Train train = new Train(MPManager.Simulator);
             train.TrainType = Train.TRAINTYPE.REMOTE;
