@@ -57,6 +57,36 @@ namespace Tests.ORTS.Content
             new PreferredLocomotive(@"c:/Msts/Trains/Trainset/Somedirectory/Someengine.EnG"));
 
         [Fact]
+        public static void ResolveWagonFileWithPeriods()
+        {
+            const string filename = "wagon.with.periods";
+            var subFolders = new[] { "testwagon" };
+            using (var content = new TestContent())
+            {
+                var expected = subFolders
+                    .Prepend(content.TrainsetPath)
+                    .Append($"{filename}.wag")
+                    .ToArray();
+                AssertPathsEqual(Path.Combine(expected), TrainFileUtilities.ResolveWagonFile(content.Path, subFolders, filename));
+            }
+        }
+
+        [Fact]
+        public static void ResolveEngineFileWithPeriods()
+        {
+            const string filename = "engine.with.periods";
+            var subFolders = new[] { "testengine" };
+            using (var content = new TestContent())
+            {
+                var expected = subFolders
+                    .Prepend(content.TrainsetPath)
+                    .Append($"{filename}.eng")
+                    .ToArray();
+                AssertPathsEqual(Path.Combine(expected), TrainFileUtilities.ResolveEngineFile(content.Path, subFolders, filename));
+            }
+        }
+
+        [Fact]
         public static void ResolveStandaloneMstsConsistFile() => ResolveConsist("test");
 
         [Fact]
@@ -77,20 +107,20 @@ namespace Tests.ORTS.Content
         private static void ResolveConsist(string filename)
         {
             using (var content = new TestContent())
-                Assert.Equal(MakeMstsConsistFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename), StringComparer.InvariantCultureIgnoreCase);
+                AssertPathsEqual(MakeMstsConsistFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename));
         }
 
         private static void ResolveTrain(string filename)
         {
             using (var content = new TestContent())
-                Assert.Equal(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename), StringComparer.InvariantCultureIgnoreCase);
+                AssertPathsEqual(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename));
         }
         private static void ResolveTrainThatShadowsConsist(string filename)
         {
             using (var content = new TestContent())
             {
                 MakeMstsConsistFile(content, filename);
-                Assert.Equal(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename), StringComparer.InvariantCultureIgnoreCase);
+                AssertPathsEqual(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename));
             }
         }
 
@@ -200,6 +230,15 @@ Train (
             var path = Path.Combine(content.ConsistsPath, $"{filename}.con");
             File.WriteAllText(path, text);
             return path;
+        }
+
+        private static void AssertPathsEqual(params string[] paths)
+        {
+            var pairs = from a in paths
+                        from b in paths
+                        select Tuple.Create(a, b);
+            foreach ((string a, string b) in pairs)
+                Assert.Equal(Path.GetFullPath(a), Path.GetFullPath(b), StringComparer.InvariantCultureIgnoreCase);
         }
 
         private static void AssertAllEqual<T>(params T[] sequence)
