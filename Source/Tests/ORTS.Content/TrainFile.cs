@@ -28,8 +28,6 @@ namespace Tests.ORTS.Content
 {
     public class TrainFileTests
     {
-        private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
-
         [Fact]
         public static void CompareSimilarWagonReferences() => AssertAllEqual(
             new WagonReference(@"C:\MSTS\TRAINS\TRAINSET\SomeDirectory\SomeWagon.wag", false, 0),
