@@ -59,30 +59,110 @@ namespace Tests.ORTS.Content
             new PreferredLocomotive(@"c:/Msts/Trains/Trainset/Somedirectory/Someengine.EnG"));
 
         [Fact]
-        public static void ResolveStandaloneMstsConsistFile()
-        {
-            using (var content = new TestContent())
-                Assert.Equal(MakeMstsConsistFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"), StringComparer.InvariantCultureIgnoreCase);
-        }
+        public static void ResolveStandaloneMstsConsistFile() => ResolveConsist("test");
 
         [Fact]
-        public static void ResolveStandaloneOrtsTrainFile()
-        {
-            using (var content = new TestContent())
-                Assert.Equal(MakeOrtsTrainFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"), StringComparer.InvariantCultureIgnoreCase);
-        }
+        public static void ResolveStandaloneOrtsTrainFile() => ResolveTrain("test");
 
         [Fact]
-        public static void ResolveShadowingOrtsTrainFile()
+        public static void ResolveShadowingOrtsTrainFile() => ResolveTrainThatShadowsConsist("test");
+
+        [Fact]
+        public static void ResolveStandaloneMstsConsistFileWithPeriods() => ResolveConsist("test.with.periods");
+
+        [Fact]
+        public static void ResolveStandaloneOrtsTrainFileWithPeriods() => ResolveTrain("test.with.periods");
+
+        [Fact]
+        public static void ResolveShadowingOrtsTrainFileWithPeriods() => ResolveTrainThatShadowsConsist("test.with.periods");
+
+        private static void ResolveConsist(string filename)
+        {
+            using (var content = new TestContent())
+                Assert.Equal(MakeMstsConsistFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename), StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        private static void ResolveTrain(string filename)
+        {
+            using (var content = new TestContent())
+                Assert.Equal(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename), StringComparer.InvariantCultureIgnoreCase);
+        }
+        private static void ResolveTrainThatShadowsConsist(string filename)
         {
             using (var content = new TestContent())
             {
-                MakeMstsConsistFile(content);
-                Assert.Equal(MakeOrtsTrainFile(content), TrainFileUtilities.ResolveTrainFile(content.Path, "test"), StringComparer.InvariantCultureIgnoreCase);
+                MakeMstsConsistFile(content, filename);
+                Assert.Equal(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename), StringComparer.InvariantCultureIgnoreCase);
             }
         }
 
-        private static string MakeOrtsTrainFile(TestContent content)
+        [Fact]
+        public static void EnumerateOneConsistFile() =>
+            TestAllTrainFiles(consists: new[] { "test" });
+
+        [Fact]
+        public static void EnumerateMultipleConsistFiles() =>
+            TestAllTrainFiles(consists: new[] { "test1", "test2", "test3" });
+
+        [Fact]
+        public static void EnumerateMultipleConsistFilesWithPeriods() =>
+            TestAllTrainFiles(consists: new[] { "test.period.1", "test.period.2", "test.period.3" });
+
+        [Fact]
+        public static void EnumerateOneTrainFile() =>
+            TestAllTrainFiles(trains: new[] { "test" });
+
+        [Fact]
+        public static void EnumerateMultipleTrainFiles() =>
+            TestAllTrainFiles(trains: new[] { "test1", "test2", "test3" });
+
+        [Fact]
+        public static void EnumerateMultipleTrainFilesWithPeriods() =>
+            TestAllTrainFiles(trains: new[] { "test.period.1", "test.period.2", "test.period.3" });
+
+        [Fact]
+        public static void EnumerateConsistAndTrainFiles() =>
+            TestAllTrainFiles(consists: new[] { "test1", "test2", "test3" }, trains: new[] { "testA", "testB", "testC" });
+
+        [Fact]
+        public static void EnumerateConsistAndTrainFilesWithPeriods() =>
+            TestAllTrainFiles(consists: new[] { "test.no.1", "test.no.2", "test.no.3" }, trains: new[] { "te.st.A", "te.st.B", "te.st.C" });
+
+        [Fact]
+        public static void EnumerateTrainFileShadowingConsistFile() =>
+            TestAllTrainFiles(consists: new[] { "test" }, trains: new[] { "test" });
+
+        [Fact]
+        public static void EnumerateMultipleTrainFilesShadowingConsistFiles() =>
+            TestAllTrainFiles(consists: new[] { "test1", "test2", "testA" }, trains: new[] { "test1", "test2", "testB" });
+
+        private static void TestAllTrainFiles(string[] consists = null, string[] trains = null)
+        {
+            var empty = new string[0] { };
+            consists = consists ?? empty;
+            trains = trains ?? empty;
+
+            using (var content = new TestContent())
+            {
+                foreach (var filename in consists)
+                    MakeMstsConsistFile(content, filename);
+                foreach (var filename in trains)
+                    MakeOrtsTrainFile(content, filename);
+
+                var trainsSet = new HashSet<string>(trains, StringComparer.InvariantCultureIgnoreCase);
+                var expected = consists
+                    .Where((string filename) => !trainsSet.Contains(filename))
+                    .Select((string filename) => Path.GetFullPath(Path.Combine(content.ConsistsPath, $"{filename}.con")))
+                    .ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+                expected.UnionWith(trains
+                    .Select((string filename) => Path.GetFullPath(Path.Combine(content.ConsistsPath, $"{filename}.train-or"))));
+
+                foreach (var trainFile in TrainFileUtilities.AllTrainFiles(content.Path))
+                    Assert.Contains(trainFile, expected);
+            }
+        }
+
+        private static string MakeOrtsTrainFile(TestContent content, string filename)
         {
             var train = new ListTrainFile()
             {
@@ -97,17 +177,17 @@ namespace Tests.ORTS.Content
                     },
                 },
             };
-            var path = Path.Combine(content.ConsistsPath, "test.train-or");
+            var path = Path.Combine(content.ConsistsPath, $"{filename}.train-or");
             File.WriteAllText(path, JsonConvert.SerializeObject(train));
             return path;
         }
 
-        private static string MakeMstsConsistFile(TestContent content)
+        private static string MakeMstsConsistFile(TestContent content, string filename)
         {
-            const string text = @"SIMISA@@@@@@@@@@JINX0D0t______
+            var text = @"SIMISA@@@@@@@@@@JINX0D0t______
 
 Train (
-	TrainCfg ( ""test""
+	TrainCfg ( """ + filename + @"""
 		Name(""Test consist"")
 		Serial(1)
 		MaxVelocity(0.00000 0.10000)
@@ -119,7 +199,7 @@ Train (
 		)
 	)
 )";
-            var path = Path.Combine(content.ConsistsPath, "test.con");
+            var path = Path.Combine(content.ConsistsPath, $"{filename}.con");
             File.WriteAllText(path, text);
             return path;
         }
