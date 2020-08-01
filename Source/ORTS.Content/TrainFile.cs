@@ -196,7 +196,7 @@ namespace ORTS.Content
             };
             path.AddRange(subFolders);
             path.Add(filename);
-            return Path.GetFullPath(Path.ChangeExtension(Path.Combine(path.ToArray()), ".wag"));
+            return Path.GetFullPath(AddExtensionIfNotPresent(Path.Combine(path.ToArray()), ".wag"));
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace ORTS.Content
             };
             path.AddRange(subFolders);
             path.Add(filename);
-            return Path.GetFullPath(Path.ChangeExtension(Path.Combine(path.ToArray()), ".eng"));
+            return Path.GetFullPath(AddExtensionIfNotPresent(Path.Combine(path.ToArray()), ".eng"));
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace ORTS.Content
             }
 
             var trains = CombinedIterator().ToArray();
-            Array.Sort(trains, BaseNameComprarerInstance);
+            Array.Sort(trains, BaseNameComprarer);
             return trains;
         }
 
@@ -267,9 +267,9 @@ namespace ORTS.Content
         private static string AddExtensionIfNotPresent(string path, string extension) =>
             Path.GetExtension(path) == extension ? path : path + extension;
 
-        private static readonly BaseNameComparer BaseNameComprarerInstance = new BaseNameComparer();
+        private static readonly BaseNameComparerClass BaseNameComprarer = new BaseNameComparerClass();
 
-        private class BaseNameComparer : IComparer<string>
+        private class BaseNameComparerClass : IComparer<string>
         {
             public int Compare(string x, string y)
             {
