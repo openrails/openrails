@@ -168,7 +168,7 @@ namespace ORTS.Content
         /// <param name="filename">The filename, minus its extension, of the file to locate.</param>
         /// <returns>The full path to the train file.</returns>
         public static string ResolveOrtsTrainFile(string basePath, string filename) =>
-            Path.GetFullPath(Path.ChangeExtension(Path.Combine(basePath, "trains", "consists", filename), ".train-or"));
+            Path.GetFullPath(AddExtensionIfNotPresent(Path.Combine(basePath, "trains", "consists", filename), ".train-or"));
 
         /// <summary>
         /// Locate a consist by filename.
@@ -177,7 +177,7 @@ namespace ORTS.Content
         /// <param name="filename">The filename, minus its extension, of the file to locate.</param>
         /// <returns>The full path to the consist file.</returns>
         public static string ResolveMstsConsist(string basePath, string filename) =>
-            Path.GetFullPath(Path.ChangeExtension(Path.Combine(basePath, "trains", "consists", filename), ".con"));
+            Path.GetFullPath(AddExtensionIfNotPresent(Path.Combine(basePath, "trains", "consists", filename), ".con"));
 
         /// <summary>
         /// Locate a wagon.
@@ -196,7 +196,7 @@ namespace ORTS.Content
             };
             path.AddRange(subFolders);
             path.Add(filename);
-            return Path.GetFullPath(Path.ChangeExtension(Path.Combine(path.ToArray()), ".wag"));
+            return Path.GetFullPath(AddExtensionIfNotPresent(Path.Combine(path.ToArray()), ".wag"));
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace ORTS.Content
             };
             path.AddRange(subFolders);
             path.Add(filename);
-            return Path.GetFullPath(Path.ChangeExtension(Path.Combine(path.ToArray()), ".eng"));
+            return Path.GetFullPath(AddExtensionIfNotPresent(Path.Combine(path.ToArray()), ".eng"));
         }
 
         /// <summary>
@@ -236,8 +236,8 @@ namespace ORTS.Content
                     StringComparer.InvariantCultureIgnoreCase);
             }
 
-            ISet<string> ortsBaseNames = BaseNames(Path.Combine(basePath, "trains", "consists"), "*.train-or");
-            ISet<string> mstsBaseNames = BaseNames(Path.Combine(basePath, "trains", "consists"), "*.con");
+            var ortsBaseNames = BaseNames(Path.Combine(basePath, "trains", "consists"), "*.train-or");
+            var mstsBaseNames = BaseNames(Path.Combine(basePath, "trains", "consists"), "*.con");
 
             IEnumerable<string> CombinedIterator()
             {
@@ -246,19 +246,30 @@ namespace ORTS.Content
                     string path;
                     // Prioritize native .train-or files.
                     if (ortsBaseNames.Contains(baseName))
-                        path = Path.ChangeExtension(Path.Combine(basePath, "trains", "consists", baseName), ".train-or");
+                        path = AddExtensionIfNotPresent(Path.Combine(basePath, "trains", "consists", baseName), ".train-or");
                     else
-                        path = Path.ChangeExtension(Path.Combine(basePath, "trains", "consists", baseName), ".con");
+                        path = AddExtensionIfNotPresent(Path.Combine(basePath, "trains", "consists", baseName), ".con");
                     yield return Path.GetFullPath(path);
                 }
             }
 
-            string[] trains = CombinedIterator().ToArray();
-            Array.Sort(trains, new BaseNameComparer());
+            var trains = CombinedIterator().ToArray();
+            Array.Sort(trains, BaseNameComprarer);
             return trains;
         }
 
-        private class BaseNameComparer : IComparer<string>
+        /// <summary>
+        /// Check that a file path has a requested file extension and, if not, add it.
+        /// </summary>
+        /// <param name="path">The file path to check.</param>
+        /// <param name="extension">The extension, which must include the leading period; e.g. ".con".</param>
+        /// <returns>The file path with the requested extension.</returns>
+        private static string AddExtensionIfNotPresent(string path, string extension) =>
+            Path.GetExtension(path) == extension ? path : path + extension;
+
+        private static readonly BaseNameComparerClass BaseNameComprarer = new BaseNameComparerClass();
+
+        private class BaseNameComparerClass : IComparer<string>
         {
             public int Compare(string x, string y)
             {
