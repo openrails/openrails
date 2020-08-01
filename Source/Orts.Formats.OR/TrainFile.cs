@@ -294,8 +294,13 @@ namespace Orts.Formats.OR
         /// <param name="basePath">The current content directory.</param>
         /// <param name="folders">All other content directories.</param>
         /// <returns>The path to the .wag file.</returns>
-        public static string GetPath(this ITrainWagon wagon, string basePath, IDictionary<string, string> folders) =>
-            Path.ChangeExtension(Path.Combine(wagon.ResolveBasePath(basePath, folders), "trains", "trainset", wagon.Wagon), ".wag");
+        public static string GetPath(this ITrainWagon wagon, string basePath, IDictionary<string, string> folders)
+        {
+            var folderSplit = wagon.Wagon.Split(Path.DirectorySeparatorChar);
+            var subFolders = new ArraySegment<string>(folderSplit, 0, folderSplit.Length - 1);
+            var filename = folderSplit.Last();
+            return TrainFileUtilities.ResolveWagonFile(wagon.ResolveBasePath(basePath, folders), subFolders, filename);
+        }
 
         /// <summary>
         /// Get the engine specification file for an <see cref="ITrainEngine"/>.
@@ -304,8 +309,13 @@ namespace Orts.Formats.OR
         /// <param name="basePath">The current content directory.</param>
         /// <param name="folders">All other content directories.</param>
         /// <returns>The path to the .eng file</returns>
-        public static string GetPath(this ITrainEngine engine, string basePath, IDictionary<string, string> folders) =>
-            Path.ChangeExtension(Path.Combine(engine.ResolveBasePath(basePath, folders), "trains", "trainset", engine.Engine), ".eng");
+        public static string GetPath(this ITrainEngine engine, string basePath, IDictionary<string, string> folders)
+        {
+            var folderSplit = engine.Engine.Split(Path.DirectorySeparatorChar);
+            var subFolders = new ArraySegment<string>(folderSplit, 0, folderSplit.Length - 1);
+            var filename = folderSplit.Last();
+            return TrainFileUtilities.ResolveEngineFile(engine.ResolveBasePath(basePath, folders), subFolders, filename);
+        }
 
         /// <summary>
         /// Get the content directory for an <see cref="ITrainListItem"/> that may or may not reside in the current content directory.

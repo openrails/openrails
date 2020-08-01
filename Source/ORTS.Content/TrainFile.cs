@@ -186,7 +186,7 @@ namespace ORTS.Content
         /// <param name="subFolders">The wagon's subfolder(s) relative to the TRAINSET folder.</param>
         /// <param name="filename">The wagon's filename, minus its extension.</param>
         /// <returns>The full path to the wagon file.</returns>
-        public static string ResolveWagonFile(string basePath, string[] subFolders, string filename)
+        public static string ResolveWagonFile(string basePath, IEnumerable<string> subFolders, string filename)
         {
             var path = new List<string>()
             {
@@ -206,7 +206,7 @@ namespace ORTS.Content
         /// <param name="subFolders">The engine's subfolder(s) relative to the TRAINSET folder.</param>
         /// <param name="filename">The engine's filename, minus its extension.</param>
         /// <returns>The full path to the engine file.</returns>
-        public static string ResolveEngineFile(string basePath, string[] subFolders, string filename)
+        public static string ResolveEngineFile(string basePath, IEnumerable<string> subFolders, string filename)
         {
             var path = new List<string>()
             {
