@@ -1341,7 +1341,7 @@ msgstr "Темп.подш"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:916
 msgid "DISPATCHER INFORMATION   active trains   "
-msgstr "ДИСПЕТЧЕР  активные поезда "
+msgstr "ДИСПЕТЧЕР - активные поезда "
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:919
 msgid "Train"
@@ -2299,12 +2299,12 @@ msgstr "Закрыто"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
 msgid "Blocked"
-msgstr ""
+msgstr "Заблокир"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:630
 msgid "On"
-msgstr ""
+msgstr "Вкл"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:330
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:503
