@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2009-12-28 00:25:16+0300\n"
-"PO-Revision-Date: 2020-07-31 05:17+0300\n"
+"POT-Creation-Date: 2020-08-01 20:50:29+0300\n"
+"PO-Revision-Date: 2020-08-02 16:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -819,22 +819,22 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:142
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1089
 msgid "Render process"
-msgstr ""
+msgstr "Обр.графики"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:143
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1090
 msgid "Updater process"
-msgstr ""
+msgstr "Обр. обновления"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:144
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1091
 msgid "Loader process"
-msgstr ""
+msgstr "Обр. вывода"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:145
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1092
 msgid "Sound process"
-msgstr ""
+msgstr "Обр. звука"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:422
 msgid "Version"
@@ -867,7 +867,7 @@ msgstr "Уклон"
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
 msgid "Direction"
-msgstr "Направл"
+msgstr "Направление"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:436
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:595
@@ -1560,7 +1560,7 @@ msgstr "А"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:557
 msgctxt "Cab"
 msgid "D"
-msgstr ""
+msgstr "Да"
 
 #. Context: Steam
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:594
@@ -1954,17 +1954,13 @@ msgid "Sprtr"
 msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:298
-#, fuzzy
-#| msgid "Projected:"
 msgid "Projected"
-msgstr "Ожидается:"
+msgstr "Ожидается"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:305
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:362
-#, fuzzy
-#| msgid "Limit:"
 msgid "Limit"
-msgstr "Ограничение:"
+msgstr "Ограничение"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
@@ -2002,7 +1998,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:81
 msgid "AUTO"
-msgstr ""
+msgstr "АВТО"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:517
@@ -2014,7 +2010,7 @@ msgstr "Давление"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
 msgid "PRES"
-msgstr ""
+msgstr "ДАВЛ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
 msgid "Boiler water glass"
@@ -2030,7 +2026,7 @@ msgstr "Уровень воды в котле"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
 msgid "LEVL"
-msgstr ""
+msgstr "УРОВ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
 msgid "Circuit breaker"
@@ -2055,7 +2051,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
 msgid "DOOR"
-msgstr ""
+msgstr "ДВЕРИ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
 msgid "BDYN"
@@ -2096,16 +2092,16 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:540
 msgid "Fuel levels"
-msgstr ""
+msgstr "Уровни топлива"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
 msgid "FUEL"
-msgstr ""
+msgstr "ТОПЛ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:548
 msgid "Gear"
-msgstr ""
+msgstr "Передача"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
 msgid "GRAD"
@@ -2125,11 +2121,11 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:572
 msgid "Pantographs"
-msgstr ""
+msgstr "Токосъёмники"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
 msgid "PANT"
-msgstr ""
+msgstr "ПАНТ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
 msgid "POWR"
@@ -2161,15 +2157,15 @@ msgstr "Пескоподача включена"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
 msgid "SAND"
-msgstr ""
+msgstr "ПЕСОК"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
 msgid "SPED"
-msgstr ""
+msgstr "СКОР"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
 msgid "Steam usage"
-msgstr ""
+msgstr "Расход пара"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
 msgid "STEM"
@@ -2181,7 +2177,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
 msgid "TIME"
-msgstr ""
+msgstr "ВРЕМ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
 msgid "BTRN"
@@ -2255,7 +2251,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
 msgid "safe range"
-msgstr ""
+msgstr "в допуске"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
 msgid "safe"
@@ -2264,11 +2260,11 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:684
 msgid "skid"
-msgstr ""
+msgstr "юз"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
 msgid "Skid"
-msgstr ""
+msgstr "Юз"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:676
@@ -2284,11 +2280,11 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:668
 msgid "slip"
-msgstr ""
+msgstr "бокс"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
 msgid "Slip"
-msgstr ""
+msgstr "Бокс"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
 msgid "w"
