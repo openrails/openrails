@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2009-12-28 00:25:12+0300\n"
-"PO-Revision-Date: 2020-07-31 05:07+0300\n"
+"POT-Creation-Date: 2020-08-01 20:50:21+0300\n"
+"PO-Revision-Date: 2020-08-02 00:56+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -388,7 +388,7 @@ msgstr "предупреждение"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:180
 msgid "Power"
-msgstr "Мощн"
+msgstr "Силовые цепи"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:180
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:189
@@ -407,7 +407,7 @@ msgstr "Мощн"
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:233
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:253
 msgid "off"
-msgstr "откл"
+msgstr "обесточены"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:180
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:189
@@ -421,7 +421,7 @@ msgstr "откл"
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:233
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:253
 msgid "on"
-msgstr "вкл"
+msgstr "запитаны"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:181
 msgid "Pantograph 1"
