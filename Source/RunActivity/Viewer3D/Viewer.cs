@@ -685,8 +685,7 @@ namespace Orts.Viewer3D
         [CallOnThread("Updater")]
         internal void UpdateAdapterInformation(GraphicsAdapter graphicsAdapter)
         {
-            // FIXME: MonoGame fails with the following:
-            //adapterDescription = graphicsAdapter.Description;
+            adapterDescription = graphicsAdapter.Description;
             try
             {
                 // Note that we might find multiple adapters with the same

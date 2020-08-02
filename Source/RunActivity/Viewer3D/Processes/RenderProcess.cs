@@ -112,15 +112,15 @@ namespace Orts.Viewer3D.Processes
             // This enables NVIDIA PerfHud to be run on Open Rails.
             foreach (var adapter in GraphicsAdapter.Adapters)
             {
-                // FIXME: MonoGame fails with the following:
-                /*if (adapter.Description.Contains("PerfHUD"))
+                if (adapter.Description.Contains("PerfHUD"))
                 {
+                    e.GraphicsDeviceInformation.Adapter = adapter;
                     GraphicsAdapter.UseReferenceDevice = true;
                     break;
-                }*/
-                e.GraphicsDeviceInformation.GraphicsProfile = GraphicsProfile.HiDef;
+                }
             }
 
+            e.GraphicsDeviceInformation.GraphicsProfile = GraphicsProfile.HiDef;
             // This stops ResolveBackBuffer() clearing the back buffer.
             e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
             e.GraphicsDeviceInformation.PresentationParameters.DepthStencilFormat = DepthFormat.Depth24Stencil8;

@@ -200,12 +200,11 @@ namespace ORTS.Common
 
         static void WriteGraphicsAdapter(TextWriter output)
         {
-            var adapters = GraphicsAdapter.Adapters;
-            for (var i = 0; i < adapters.Count; i++)
+            foreach (var adapter in GraphicsAdapter.Adapters)
             {
                 try
                 {
-                    output.WriteLine("Adapter    = {0} ({1} x {2}{3})", i, adapters[i].CurrentDisplayMode.Width, adapters[i].CurrentDisplayMode.Height, adapters[i] == GraphicsAdapter.DefaultAdapter ? ", default" : "");
+                    output.WriteLine("{0} = {1}", adapter.DeviceName, adapter.Description);
                 }
                 catch (Exception error) { }
             }
