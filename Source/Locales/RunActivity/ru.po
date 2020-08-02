@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2020-08-01 20:50:29+0300\n"
-"PO-Revision-Date: 2020-08-02 16:55+0300\n"
+"PO-Revision-Date: 2020-08-02 18:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -708,7 +708,7 @@ msgstr "Наряды:"
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:453
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:850
 msgid "Assemble Train At Location"
-msgstr ""
+msgstr "Сформировать поезд в"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:514
 msgid "- Tasks: "
@@ -824,17 +824,17 @@ msgstr "Обр.графики"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:143
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1090
 msgid "Updater process"
-msgstr "Обр. обновления"
+msgstr "Обр.обновления"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:144
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1091
 msgid "Loader process"
-msgstr "Обр. вывода"
+msgstr "Обр.вывода"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:145
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1092
 msgid "Sound process"
-msgstr "Обр. звука"
+msgstr "Обр.звука"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:422
 msgid "Version"
@@ -1138,7 +1138,7 @@ msgstr "Вакуумный насос"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:681
 msgid "Brake Sys Vol"
-msgstr ""
+msgstr "Объём торм.сист"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:682
 msgid "Train Pipe"
@@ -1174,7 +1174,7 @@ msgstr "ТМ"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:725
 msgid "VacRes"
-msgstr ""
+msgstr "Вак.Рез"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:727
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:756
@@ -1240,7 +1240,7 @@ msgstr "Касат.Сила"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:794
 msgid "Static Force"
-msgstr ""
+msgstr "Статическая сила"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
 msgid "Conditions"
@@ -1437,11 +1437,11 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1085
 msgid "Shadow primitives"
-msgstr ""
+msgstr "Фигур тени"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1088
 msgid "Render primitives"
-msgstr ""
+msgstr "Отрисовано фигур"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1089
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1090
@@ -2018,7 +2018,7 @@ msgstr "Водомерное стекло"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
 msgid "WATR"
-msgstr ""
+msgstr "ВОДА"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
 msgid "Boiler water level"
@@ -2043,7 +2043,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
 msgid "CCOK"
-msgstr ""
+msgstr "КЛЦИЛ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
 msgid "DIRC"
@@ -2055,11 +2055,11 @@ msgstr "ДВЕРИ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
 msgid "BDYN"
-msgstr ""
+msgstr "ЭДТОРМ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
 msgid "BLOC"
-msgstr ""
+msgstr "ВСТОРМ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:594
@@ -2145,7 +2145,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
 msgid "REVR"
-msgstr ""
+msgstr "РЕВЕРС"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:319
@@ -2181,7 +2181,7 @@ msgstr "ВРЕМ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
 msgid "BTRN"
-msgstr ""
+msgstr "АТОРМ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:667
@@ -2195,7 +2195,7 @@ msgstr "Кол.формула"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
 msgid "WHEL"
-msgstr ""
+msgstr "БОКС"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
 msgid "apply Service"
@@ -2227,11 +2227,11 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:119
 msgid "Emergency Braking Push Button"
-msgstr ""
+msgstr "Кнопка аварийного останова"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:119
 msgid "EmerBPB"
-msgstr ""
+msgstr "КнАвОст"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:120
 msgid "Lap Self"
@@ -2268,10 +2268,8 @@ msgstr "Юз"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:676
-#, fuzzy
-#| msgid "Wheel slip warning"
 msgid "slip warning"
-msgstr "На грани боксования"
+msgstr "на грани боксования"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
 msgid "Warning"
@@ -2296,10 +2294,8 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:300
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:718
-#, fuzzy
-#| msgid "Close box"
 msgid "Closed"
-msgstr "Закрыть окно"
+msgstr "Закрыто"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
 msgid "Blocked"
@@ -2313,10 +2309,8 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:330
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:503
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:630
-#, fuzzy
-#| msgid "off"
 msgid "Off"
-msgstr "откл"
+msgstr "Откл"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:345
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:360
