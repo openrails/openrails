@@ -2,12 +2,12 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2009-12-28 00:25:07+0300\n"
-"PO-Revision-Date: 2020-07-31 05:18+0300\n"
+"PO-Revision-Date: 2020-08-02 22:11+0300\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.4\n"
 "Last-Translator: \n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
@@ -1475,7 +1475,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
 msgid "_File"
-msgstr ""
+msgstr "_Файл"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:8
 msgid "(Re)load route (ctrl-R)"
@@ -1483,11 +1483,11 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:10
 msgid "Select install folder"
-msgstr ""
+msgstr "Выбор сборки"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:11
 msgid "Select route"
-msgstr ""
+msgstr "Выбор полигона"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:13
 msgid "Search by index"
@@ -1511,27 +1511,27 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:20
 msgid "Quit (Q)"
-msgstr ""
+msgstr "Выйти (Q)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:22
 msgid "_View"
-msgstr ""
+msgstr "_Показ"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:23
 msgid "Center around station"
-msgstr ""
+msgstr "Центрировать по станции"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:26
 msgid "Center around platform"
-msgstr ""
+msgstr "Центрировать по платформе"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:29
 msgid "Center around siding"
-msgstr ""
+msgstr "Центрировать по пути"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:33
 msgid "Paths"
-msgstr ""
+msgstr "Маршруты"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:34
 msgid "Show path (F11)"
@@ -1767,23 +1767,23 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:111
 msgid "Show platform/station names"
-msgstr ""
+msgstr "Отображать платформы станции"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:114
 msgid "_Preferences"
-msgstr ""
+msgstr "_Настройки"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:115
 msgid "Zooming is centered on mouse (M)"
-msgstr ""
+msgstr "Фокус масштабирования центрируется мышью (M)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:117
 msgid "Use miles i.s.o. meters"
-msgstr ""
+msgstr "Использовать мили вместо метров"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:118
 msgid "Select language"
-msgstr ""
+msgstr "Выбрать язык"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:123
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:150
@@ -1793,7 +1793,7 @@ msgstr ""
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:124
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:151
 msgid "Enable editing"
-msgstr ""
+msgstr "Разрешить редактирование"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:125
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:152
@@ -1807,124 +1807,124 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:129
 msgid "Path-_Editor"
-msgstr ""
+msgstr "Path-_Editor"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:130
 msgid "==Supporting MSTS paths only=="
-msgstr ""
+msgstr "==Поддерживаются только маршруты MSTS=="
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:131
 msgid "Load path"
-msgstr ""
+msgstr "Загрузить маршрут"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:135
 msgid "Show other paths"
-msgstr ""
+msgstr "Показать другие маршруты"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:137
 msgid "Save path"
-msgstr ""
+msgstr "Сохранить маршрут"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:138
 msgid "Save visited stations"
-msgstr ""
+msgstr "Сгенерировать список станций"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:139
 msgid "Show chart"
-msgstr ""
+msgstr "Показать план и профиль"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:141
 msgid "New path"
-msgstr ""
+msgstr "Новый маршрут"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:143
 msgid "Extend with other path"
-msgstr ""
+msgstr "Объединить с другим маршрутом"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:147
 msgid "Edit path metadata"
-msgstr ""
+msgstr "Редактировать метаданные маршрута"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:148
 msgid "Reverse path"
-msgstr ""
+msgstr "Обратить маршрут"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:155
 msgid "Auto-fix all broken nodes"
-msgstr ""
+msgstr "Авто-исправление всех \"битых\" узлов"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:156
 msgid "Auto-fix all broken paths"
-msgstr ""
+msgstr "Авто-исправление всех \"битых\" маршрутов"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:158
 msgid "_Terrain"
-msgstr ""
+msgstr "_Ландшафт"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:159
 msgid "Show terrain textures (F6)"
-msgstr ""
+msgstr "Отображать текстуры земли (F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:160
 msgid "Show DM terrain textures (ctrl-F6)"
-msgstr ""
+msgstr "Отображать DM текстуры земли (ctrl-F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:161
 msgid "Show patch lines (shift-F6)"
-msgstr ""
+msgstr "Отображать линии сшивки (shift-F6)"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:163
 msgid "Memory reduction options"
-msgstr ""
+msgstr "Варианты экономии памяти"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:164
 msgid "No reduction"
-msgstr ""
+msgstr "Без ограничения"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:165
 msgid "Automatic reduction"
-msgstr ""
+msgstr "Автоматически"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:166
 msgid "Reduce by linear factor 2"
-msgstr ""
+msgstr "Уменьшить на линейный коэффициент 2"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:167
 msgid "Reduce by linear factor 4"
-msgstr ""
+msgstr "Уменьшить на линейный коэффициент 4"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:168
 msgid "Reduce by linear factor 8"
-msgstr ""
+msgstr "Уменьшить на линейный коэффициент 8"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:169
 msgid "Reduce by linear factor 16"
-msgstr ""
+msgstr "Уменьшить на линейный коэффициент 16"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:172
 msgid "_Help"
-msgstr ""
+msgstr "_Инфо"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:173
 msgid "Shortcuts"
-msgstr ""
+msgstr "Горячие клавиши"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:175
 msgid "About"
-msgstr ""
+msgstr "О программе"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:8
 msgid "Select paths to draw"
-msgstr ""
+msgstr "Выберите маршруты для отображения"
 
 #: ../../Contrib/TrackViewer/UserInterface/OtherPathsWindow.xaml:12
 msgid "Clear all"
-msgstr ""
+msgstr "Скрыть всё"
 
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:4
 #: ../../Contrib/TrackViewer/UserInterface/SearchControl.xaml:13
 msgid "Search"
-msgstr ""
+msgstr "Поиск"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:33
 msgid "Shows tileX and tileZ of the world location at the mouse pointer"
@@ -1945,12 +1945,12 @@ msgstr ""
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:60
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:79
 msgid "Index in the Track DataBase (.tdb) file"
-msgstr ""
+msgstr "Номер в базе путей (*.tdb-файле)"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:66
 msgid "Item"
-msgstr ""
+msgstr "Элемент"
 
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
-msgstr ""
+msgstr "Прочая информация. Выберите через меню строки состояния"
