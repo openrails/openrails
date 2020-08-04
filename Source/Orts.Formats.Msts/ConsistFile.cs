@@ -27,7 +27,7 @@ namespace Orts.Formats.Msts
     /// <summary>
     /// Work with consist files
     /// </summary>
-    public class ConsistFile : ITrainFile
+    public class ConsistFile : IVehicleList
     {
         public string Name; // from the Name field or label field of the consist file
         public Train_Config Train;
@@ -45,7 +45,7 @@ namespace Orts.Formats.Msts
                 .Contains("tilted");
         }
 
-        string ITrainFile.DisplayName => Train.TrainCfg.Name;
+        string IVehicleList.DisplayName => Train.TrainCfg.Name;
 
         public float? MaxVelocityMpS
         {
@@ -111,16 +111,16 @@ namespace Orts.Formats.Msts
         private static string EnginePath(string basePath, Wagon engine)
         {
             Debug.Assert(engine.IsEngine);
-            return TrainFileUtilities.ResolveEngineFile(basePath, engine.Folder.Split(new char[] { '/', '\\' }), engine.Name);
+            return VehicleListUtilities.ResolveEngineFile(basePath, engine.Folder.Split(new char[] { '/', '\\' }), engine.Name);
         }
 
         private static string EngineOrWagonPath(string basePath, Wagon wagon)
         {
             var subFolders = wagon.Folder.Split(new char[] { '/', '\\' });
             if (wagon.IsEngine)
-                return TrainFileUtilities.ResolveEngineFile(basePath, subFolders, wagon.Name);
+                return VehicleListUtilities.ResolveEngineFile(basePath, subFolders, wagon.Name);
             else
-                return TrainFileUtilities.ResolveWagonFile(basePath, subFolders, wagon.Name);
+                return VehicleListUtilities.ResolveWagonFile(basePath, subFolders, wagon.Name);
         }
 
         public override string ToString() => Name;

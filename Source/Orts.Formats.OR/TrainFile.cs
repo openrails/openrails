@@ -32,7 +32,7 @@ namespace Orts.Formats.OR
     /// <summary>
     /// A native Open Rails JSON train.
     /// </summary>
-    public class TrainFile : ITrainFile
+    public class TrainFile : IVehicleList
     {
         public string DisplayName { get; set; } = "Loose train.";
         public float? MaxVelocityMpS { get; set; }
@@ -299,7 +299,7 @@ namespace Orts.Formats.OR
             var folderSplit = wagon.Wagon.Split(Path.DirectorySeparatorChar);
             var subFolders = new ArraySegment<string>(folderSplit, 0, folderSplit.Length - 1);
             var filename = folderSplit.Last();
-            return TrainFileUtilities.ResolveWagonFile(wagon.ResolveBasePath(basePath, folders), subFolders, filename);
+            return VehicleListUtilities.ResolveWagonFile(wagon.ResolveBasePath(basePath, folders), subFolders, filename);
         }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace Orts.Formats.OR
             var folderSplit = engine.Engine.Split(Path.DirectorySeparatorChar);
             var subFolders = new ArraySegment<string>(folderSplit, 0, folderSplit.Length - 1);
             var filename = folderSplit.Last();
-            return TrainFileUtilities.ResolveEngineFile(engine.ResolveBasePath(basePath, folders), subFolders, filename);
+            return VehicleListUtilities.ResolveEngineFile(engine.ResolveBasePath(basePath, folders), subFolders, filename);
         }
 
         /// <summary>
@@ -761,7 +761,7 @@ namespace Orts.Formats.OR
         /// <returns>The loaded train and a new <see cref="TrainFileStore"/> handle.</returns>
         public (TrainFile, TrainFileStore) CreateSubTrain(string basePath, string filename)
         {
-            string filePath = TrainFileUtilities.ResolveOrtsTrainFile(basePath, filename);
+            string filePath = VehicleListUtilities.ResolveOrtsTrainFile(basePath, filename);
             if (Visited.Contains(filePath))
                 throw new RecursiveTrainException($"train loads itself: {filePath}");
 
@@ -785,7 +785,7 @@ namespace Orts.Formats.OR
         /// <returns>The loaded train and a new <see cref="TrainFileStore"/> handle.</returns>
         public ConsistFile CreateSubConsist(string basePath, string filename)
         {
-            string filePath = TrainFileUtilities.ResolveMstsConsist(basePath, filename);
+            string filePath = VehicleListUtilities.ResolveMstsConsist(basePath, filename);
             ConsistFile consist;
             if (Consists.TryGetValue(filePath, out ConsistFile cached))
             {
@@ -887,7 +887,7 @@ namespace Orts.Formats.OR
             }
             else if (item is ITrainReference list)
             {
-                (ITrainFile subList, TrainFileStore subStore) = Store.CreateSubTrain(basePath, list.Train);
+                (IVehicleList subList, TrainFileStore subStore) = Store.CreateSubTrain(basePath, list.Train);
                 if (subList is TrainFile ortsList)
                     // ORTS trains can reference other trains, and hence need a TrainFileStore to guard against recursion.
                     return ortsList.GetLeadLocomotiveChoices(new LocomotiveChoiceMemoizer(this, basePath, subStore));
@@ -929,7 +929,7 @@ namespace Orts.Formats.OR
             }
             else if (item is ITrainReference list)
             {
-                (ITrainFile subList, TrainFileStore subStore) = Store.CreateSubTrain(basePath, list.Train);
+                (IVehicleList subList, TrainFileStore subStore) = Store.CreateSubTrain(basePath, list.Train);
                 if (subList is TrainFile ortsList)
                     // ORTS trains can reference other trains, and hence need a TrainFileStore to guard against recursion.
                     return ortsList.GetReverseLocomotiveChoices(new LocomotiveChoiceMemoizer(this, basePath, subStore));

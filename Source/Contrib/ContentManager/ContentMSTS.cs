@@ -79,7 +79,7 @@ namespace ORTS.ContentManager
             }
             else if (type == ContentType.Consist)
             {
-                foreach (var item in TrainFileUtilities.AllTrainFiles(PathName))
+                foreach (var item in VehicleListUtilities.AllVehicleLists(PathName))
                 {
                     switch (Path.GetExtension(item).ToLowerInvariant())
                     {

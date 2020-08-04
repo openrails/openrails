@@ -2310,12 +2310,12 @@ namespace Orts.Simulation.Timetables
                 {
                     bool consistReverse = consistDetails.reversed;
 
-                    ITrainFile trainFile = null;
+                    IVehicleList trainFile = null;
 
                     // try to load config file, exit if failed
                     try
                     {
-                        trainFile = GenericTrain.LoadFile(simulator.BasePath, consistDetails.consistFile);
+                        trainFile = VehicleListLoader.LoadFile(simulator.BasePath, consistDetails.consistFile);
                     }
                     catch (Exception e)
                     {
