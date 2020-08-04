@@ -37,7 +37,7 @@ namespace Orts.Simulation.Simulation
         {
             string filePath = VehicleListUtilities.ResolveVehicleList(basePath, name);
             if (!File.Exists(filePath))
-                throw new FileNotFoundException($"Could not locate train: {name}");
+                throw new FileNotFoundException($"Could not locate vehicle list: {name}");
             return LoadFile(filePath);
         }
 
@@ -55,7 +55,7 @@ namespace Orts.Simulation.Simulation
                 case ".con":
                     return new Formats.Msts.ConsistFile(filePath);
                 default:
-                    throw new InvalidDataException("Unknown train format");
+                    throw new InvalidDataException("Unknown vehicle list format");
             }
         }
 
