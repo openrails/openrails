@@ -36,9 +36,11 @@ namespace Orts.Formats.Msts
         public ConsistFile(string filePath)
         {
             using (var stf = new STFReader(filePath, false))
+            {
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
                 });
+            }
             Name = Train.TrainCfg.Name;
             IsTilting = Path.GetFileNameWithoutExtension(filePath)
                 .ToLowerInvariant()
