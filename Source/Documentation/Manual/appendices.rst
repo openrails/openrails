@@ -3,7 +3,6 @@
 **********
 Appendices
 **********
-
 .. _appendices-units-of-measure:
 
 Units of Measure
@@ -101,3 +100,46 @@ Angular Speed           rad/s                       --          rad/s
 Other                                               --          lb/hp/h         e.g. CoalBurnage
 ======================= =============== =========== =========== =============== ==============================
 
+
+.. _appendices-signal-functions:
+
+Signal Functions
+================
+
+This is an overview of the functions available in OR for use in signal scripts, known as SIGSCRIPT functions.
+
+Original MSTS Functions
+-----------------------
+The following are basic MSTS functions:
+
+| BLOCK_STATE
+| ROUTE_SET
+| NEXT_SIG_LR
+| NEXT_SIG_MR
+| THIS_SIG_LR
+| THIS_SIG_MR
+| OPP_SIG_LR
+| OPP_SIG_MR
+| DIST_MULTI_SIG_MR
+| SIG_FEATURE
+| DEF_DRAW_STATE
+
+
+Extended MSTS Functions
+-----------------------
+The following are extensions of basic MSTS functions.
+
+| **NEXT_NSIG_LR(SIGFN_TYPE, N)**
+| Extension of NEXT_SIG_LR
+| Returns state of Nth signal of type SIGFN_TYPE.
+  Note that state SIGASP_STOP is returned if any intermediate signal of type SIGFN_TYPE is set to that
+  state.
+
+| **DIST_MULTI_SIG_MR_OF_LR(SIGFN_TYPE, SIGFN_ENDTYPE)**
+| Extension of DIST_MULTI_SIG_MR
+| The original DIST_MULTI_SIG_MR excluded any heads for which the link (route_set) was not valid.
+  However, when signals are routed through route-definition signals rather than through links, this
+  exclusion fails and therefor the function does not return the correct state.
+  This extended function checks all required heads on each signal, and uses the least restricted aspect on
+  this signal as state for this signal. It returns the most restrictive state of the states determined in this
+  manner for each intermediate signal until a signal of type SIGFN_ENDTYPE is found.
