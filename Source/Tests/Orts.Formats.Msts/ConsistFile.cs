@@ -28,16 +28,16 @@ namespace Tests.Orts.Formats.Msts
         private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
 
         [Fact]
-        public static void ReadAbstractedTrainProperties()
+        public static void ReadAbstractedVehicleListProperties()
         {
-            ITrainFile train;
+            IVehicleList list;
             using (var content = new TestContent())
-                train = new ConsistFile(MakeDrivableTestFile(content));
+                list = new ConsistFile(MakeDrivableTestFile(content));
 
-            Assert.Equal("Test consist", train.DisplayName);
-            Assert.Equal(36.65728f, train.MaxVelocityMpS);
-            Assert.Equal(0.5f, train.Durability);
-            Assert.True(train.PlayerDrivable);
+            Assert.Equal("Test consist", list.DisplayName);
+            Assert.Equal(36.65728f, list.MaxVelocityMpS);
+            Assert.Equal(0.5f, list.Durability);
+            Assert.True(list.PlayerDrivable);
         }
 
         [Fact]

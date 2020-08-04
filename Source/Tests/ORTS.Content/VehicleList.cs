@@ -26,7 +26,7 @@ using Xunit;
 
 namespace Tests.ORTS.Content
 {
-    public class TrainFileTests
+    public class VehicleListTests
     {
         [Fact]
         public static void CompareSimilarWagonReferences() => AssertAllEqual(
@@ -67,7 +67,7 @@ namespace Tests.ORTS.Content
                     .Prepend(content.TrainsetPath)
                     .Append($"{filename}.wag")
                     .ToArray();
-                AssertPathsEqual(Path.Combine(expected), TrainFileUtilities.ResolveWagonFile(content.Path, subFolders, filename));
+                AssertPathsEqual(Path.Combine(expected), VehicleListUtilities.ResolveWagonFile(content.Path, subFolders, filename));
             }
         }
 
@@ -82,7 +82,7 @@ namespace Tests.ORTS.Content
                     .Prepend(content.TrainsetPath)
                     .Append($"{filename}.eng")
                     .ToArray();
-                AssertPathsEqual(Path.Combine(expected), TrainFileUtilities.ResolveEngineFile(content.Path, subFolders, filename));
+                AssertPathsEqual(Path.Combine(expected), VehicleListUtilities.ResolveEngineFile(content.Path, subFolders, filename));
             }
         }
 
@@ -107,20 +107,20 @@ namespace Tests.ORTS.Content
         private static void ResolveConsist(string filename)
         {
             using (var content = new TestContent())
-                AssertPathsEqual(MakeMstsConsistFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename));
+                AssertPathsEqual(MakeMstsConsistFile(content, filename), VehicleListUtilities.ResolveVehicleList(content.Path, filename));
         }
 
         private static void ResolveTrain(string filename)
         {
             using (var content = new TestContent())
-                AssertPathsEqual(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename));
+                AssertPathsEqual(MakeOrtsTrainFile(content, filename), VehicleListUtilities.ResolveVehicleList(content.Path, filename));
         }
         private static void ResolveTrainThatShadowsConsist(string filename)
         {
             using (var content = new TestContent())
             {
                 MakeMstsConsistFile(content, filename);
-                AssertPathsEqual(MakeOrtsTrainFile(content, filename), TrainFileUtilities.ResolveTrainFile(content.Path, filename));
+                AssertPathsEqual(MakeOrtsTrainFile(content, filename), VehicleListUtilities.ResolveVehicleList(content.Path, filename));
             }
         }
 
@@ -185,7 +185,7 @@ namespace Tests.ORTS.Content
                 expected.UnionWith(trains
                     .Select((string filename) => Path.GetFullPath(Path.Combine(content.ConsistsPath, $"{filename}.train-or"))));
 
-                foreach (var trainFile in TrainFileUtilities.AllTrainFiles(content.Path))
+                foreach (var trainFile in VehicleListUtilities.AllVehicleLists(content.Path))
                     Assert.Contains(trainFile, expected);
             }
         }

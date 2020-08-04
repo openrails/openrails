@@ -25,7 +25,7 @@ using Xunit;
 
 namespace Tests.Orts.Formats.OR
 {
-    public class TrainFileTests
+    public class VehicleListTests
     {
         private static readonly IDictionary<string, string> Folders = new Dictionary<string, string>();
 
