@@ -849,7 +849,7 @@ namespace Orts.Simulation.AIs
         {
             // read consist file
 
-            var trainFile = GenericTrain.LoadFile(Simulator.BasePath, srvFile.Train_Config);
+            var trainFile = VehicleListLoader.LoadFile(Simulator.BasePath, srvFile.Train_Config);
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
             // Patch Placingproblem - JeroenP

@@ -1149,10 +1149,10 @@ namespace Orts.Viewer3D.Processes
 
         string GetTrainName(string path)
         {
-            ITrainFile train = null;
+            IVehicleList train = null;
             try
             {
-                train = GenericTrain.LoadFile(path);
+                train = VehicleListLoader.LoadFile(path);
             }
             catch { }
             return train?.DisplayName;

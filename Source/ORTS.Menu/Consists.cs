@@ -63,7 +63,7 @@ namespace ORTS.Menu
             FilePath = filePath;
         }
 
-        private static ITrainFile LoadConsist(string filePath)
+        private static IVehicleList LoadConsist(string filePath)
         {
             switch (System.IO.Path.GetExtension(filePath).ToLowerInvariant())
             {
@@ -84,7 +84,7 @@ namespace ORTS.Menu
         public static List<Consist> GetConsists(Folder folder, IList<Folder> allFolders)
         {
             var consists = new List<Consist>();
-            foreach (var consist in TrainFileUtilities.AllTrainFiles(folder.Path))
+            foreach (var consist in VehicleListUtilities.AllVehicleLists(folder.Path))
             {
                 Consist loaded;
                 try
@@ -105,7 +105,7 @@ namespace ORTS.Menu
         public static Consist GetConsist(Folder folder, IList<Folder> allFolders, string name, bool reverseConsist)
         {
             Consist consist = null;
-            var file = TrainFileUtilities.ResolveTrainFile(folder.Path, name);
+            var file = VehicleListUtilities.ResolveVehicleList(folder.Path, name);
 
             try
             {
@@ -116,7 +116,7 @@ namespace ORTS.Menu
             return consist;
         }
 
-        static ISet<Locomotive> GetLocomotives(ITrainFile conFile, Folder folder, IList<Folder> allFolders)
+        static ISet<Locomotive> GetLocomotives(IVehicleList conFile, Folder folder, IList<Folder> allFolders)
         {
             var foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
             var choices = conFile.GetLeadLocomotiveChoices(folder.Path, foldersDict);
@@ -127,7 +127,7 @@ namespace ORTS.Menu
                 .ToHashSet();
         }
 
-        static ISet<Locomotive> GetLocomotivesReverse(ITrainFile conFile, Folder folder, IList<Folder> allFolders)
+        static ISet<Locomotive> GetLocomotivesReverse(IVehicleList conFile, Folder folder, IList<Folder> allFolders)
         {
             var foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
             var choices = conFile.GetReverseLocomotiveChoices(folder.Path, foldersDict);

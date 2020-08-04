@@ -70,7 +70,7 @@ namespace ORTS.Menu
                         Weather = actFile.Tr_Activity.Tr_Activity_Header.Weather;
                         Difficulty = actFile.Tr_Activity.Tr_Activity_Header.Difficulty;
                         Duration = actFile.Tr_Activity.Tr_Activity_Header.Duration;
-                        Consist = new Consist(TrainFileUtilities.ResolveTrainFile(folder.Path, srvFile.Train_Config), folder, allFolders);
+                        Consist = new Consist(VehicleListUtilities.ResolveVehicleList(folder.Path, srvFile.Train_Config), folder, allFolders);
                         Path = new Path(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "PATHS"), srvFile.PathID + ".pat"));
                         if (!Path.IsPlayerPath)
                         {

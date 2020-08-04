@@ -638,7 +638,7 @@ namespace Orts.Simulation
         {
             var PlayerServiceFileName = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Name;
             var srvFile = new ServiceFile(RoutePath + @"\SERVICES\" + PlayerServiceFileName + ".SRV");
-            trainFileName = TrainFileUtilities.ResolveTrainFile(BasePath, srvFile.Train_Config);
+            trainFileName = VehicleListUtilities.ResolveVehicleList(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
         }
 
@@ -1112,7 +1112,7 @@ namespace Orts.Simulation
             srvFile.Name = playerServiceFileName;
             srvFile.Train_Config = playerServiceFileName;
             srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
-            trainFileName = TrainFileUtilities.ResolveTrainFile(BasePath, srvFile.Train_Config);
+            trainFileName = VehicleListUtilities.ResolveVehicleList(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             OriginalPlayerTrain = train;
 
@@ -1131,7 +1131,7 @@ namespace Orts.Simulation
             // place rear of train on starting location of aiPath.
             train.RearTDBTraveller = new Traveller(TSectionDat, TDB.TrackDB.TrackNodes, aiPath);
 
-            var trainFile = GenericTrain.LoadFile(trainFileName);
+            var trainFile = VehicleListLoader.LoadFile(trainFileName);
             CurveDurability = trainFile.Durability;   // Finds curve durability of consist based upon the value in consist file
 
             // add wagons
@@ -1204,7 +1204,7 @@ namespace Orts.Simulation
                 srvFile.Train_Config = playerServiceFileName;
                 srvFile.PathID = Path.GetFileNameWithoutExtension(ExplorePathFile);
             }
-            trainFileName = TrainFileUtilities.ResolveTrainFile(BasePath, srvFile.Train_Config);
+            trainFileName = VehicleListUtilities.ResolveVehicleList(BasePath, srvFile.Train_Config);
             patFileName = RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);

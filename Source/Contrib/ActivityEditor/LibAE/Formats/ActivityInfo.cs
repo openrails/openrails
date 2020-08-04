@@ -95,9 +95,9 @@ namespace LibAE.Formats
                     }
                 }
                 var basePath = Path.GetDirectoryName(routeParent);
-                foreach (var fullPathConsist in TrainFileUtilities.AllTrainFiles(basePath))
+                foreach (var fullPathConsist in VehicleListUtilities.AllVehicleLists(basePath))
                 {
-                    ITrainFile consistFile;
+                    IVehicleList consistFile;
                     switch (Path.GetExtension(fullPathConsist).ToLowerInvariant())
                     {
                         case ".train-or":
