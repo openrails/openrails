@@ -8366,7 +8366,7 @@ namespace Orts.Simulation.Signalling
 
         public int SignalNumClearAhead_MSTS = -2;    // Overall maximum SignalNumClearAhead over all heads (MSTS calculation)
         public int SignalNumClearAhead_ORTS = -2;    // Overall maximum SignalNumClearAhead over all heads (ORTS calculation)
-        public int SignalNumClearAheadActive = -2;   // Active SignalNumClearAhead (for ORST calculation only, as set by script)
+        public int SignalNumClearAheadActive = -2;   // Active SignalNumClearAhead (for ORTS calculation only, as set by script)
         public int SignalNumNormalHeads;             // no. of normal signal heads in signal
         public int ReqNumClearAhead;                 // Passed on value for SignalNumClearAhead
 
