@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ORTS.Common\n"
-"POT-Creation-Date: 2020-05-21 18:19:30+0200\n"
-"PO-Revision-Date: 2020-05-21 18:33+0200\n"
+"POT-Creation-Date: 2020-08-06 23:50:28+0200\n"
+"PO-Revision-Date: 2020-08-06 23:57+0200\n"
 "Last-Translator: GNIEWEK Cédric <gniewek.cedric@free.fr>\n"
 "Language-Team: Open Rails Dev Team\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.4\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../../ORTS.Common/Conversions.cs:524
@@ -443,8 +443,8 @@ msgid "Camera Change Passenger Viewpoint"
 msgstr "Caméra Changer le point de vue du passager"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:76
-msgid "Camera 3D Cab"
-msgstr "Caméra Vue cabine 3D"
+msgid "Camera Toggle 3D Cab"
+msgstr "Caméra Activer/désactiver la cabine 3D"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:77
 msgid "Camera Toggle Show Cab"
@@ -863,61 +863,76 @@ msgid "Control Cylinder Cocks"
 msgstr "Contrôle Purge des cylindres"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:182
+msgid "Control Large Ejector Increase"
+msgstr "Contrôle Augmentation du grand éjecteur"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:183
+msgid "Control Large Ejector Decrease"
+msgstr "Contrôle Diminution du grand éjecteur"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:184
 msgid "Control Small Ejector Increase"
 msgstr "Contrôle Augmentation du petit éjecteur"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:183
+#: ../../ORTS.Common/Input/UserCommand.cs:185
 msgid "Control Small Ejector Decrease"
 msgstr "Contrôle Diminution du petit éjecteur"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:184
+#: ../../ORTS.Common/Input/UserCommand.cs:186
+msgid "Control Vacuum Exhauster"
+msgstr "Contrôle Pompe à vide"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:187
 msgid "Control Cylinder Compound"
 msgstr "Contrôle Cylindre composé"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:185
+#: ../../ORTS.Common/Input/UserCommand.cs:188
 msgid "Control Firing"
 msgstr "Contrôle Activation/désactivation du chauffage automatique"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:186
+#: ../../ORTS.Common/Input/UserCommand.cs:189
 msgid "Control Refill"
 msgstr "Contrôle Rechargement"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:187
+#: ../../ORTS.Common/Input/UserCommand.cs:190
 msgid "Control Water Scoop"
 msgstr "Contrôle Ecope"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:188
+#: ../../ORTS.Common/Input/UserCommand.cs:191
 msgid "Control ImmediateRefill"
 msgstr "Contrôle Rechargement immédiat"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:189
+#: ../../ORTS.Common/Input/UserCommand.cs:192
 msgid "Control Turntable Clockwise"
 msgstr "Contrôle Tourner la plaque tournante dans le sens horaire"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:190
+#: ../../ORTS.Common/Input/UserCommand.cs:193
 msgid "Control Turntable Counterclockwise"
 msgstr "Contrôle Tourner la plaque tournante dans le sens antihoraire"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:191
+#: ../../ORTS.Common/Input/UserCommand.cs:194
 msgid "Control Generic 1"
 msgstr "Contrôle Générique 1"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:192
+#: ../../ORTS.Common/Input/UserCommand.cs:195
 msgid "Control Generic 2"
 msgstr "Contrôle Générique 2"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:193
+#: ../../ORTS.Common/Input/UserCommand.cs:196
 msgid "Control Cab Radio"
 msgstr "Contrôle Radio Sol Train"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:194
+#: ../../ORTS.Common/Input/UserCommand.cs:197
 msgid "Control AI Fire On"
 msgstr "Contrôle Activer le chauffeur IA"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:195
+#: ../../ORTS.Common/Input/UserCommand.cs:198
 msgid "Control AI Fire Off"
 msgstr "Contrôle Désactiver le chauffeur IA"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:196
+#: ../../ORTS.Common/Input/UserCommand.cs:199
 msgid "Control AI Fire Reset"
 msgstr "Contrôle Réinitialiser le chauffeur IA"
+
+#~ msgid "Camera 3D Cab"
+#~ msgstr "Caméra Vue cabine 3D"
