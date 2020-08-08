@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2009-12-28 00:25:09+0300\n"
-"PO-Revision-Date: 2020-08-08 10:06+0300\n"
+"PO-Revision-Date: 2020-08-08 15:23+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1207,7 +1207,7 @@ msgid ""
 "saved from older versions if they fail to restore.\n"
 msgstr ""
 "Во избежание сбоев и артефактов, сохранения из прежних версий помечены как "
-"устаревшие, если нельзя их не восстановить.\n"
+"устаревшие, если их не восстановить.\n"
 
 #: ../../Menu/ResumeForm.cs:231
 #, csharp-format
