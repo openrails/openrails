@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2020-08-01 20:50:29+0300\n"
-"PO-Revision-Date: 2020-08-02 18:55+0300\n"
+"PO-Revision-Date: 2020-08-02 20:07+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -92,7 +92,7 @@ msgstr "Чтобы сразу выйти из мультиплеереа, наж
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:926
 msgid "Automatic platform and siding labels visible."
-msgstr "Отображены названия входящих в маршрут платформ и путей ."
+msgstr "Отображены названия используемых поездом платформ и путей ."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:929
 msgid "Platform and siding labels visible."
@@ -233,7 +233,7 @@ msgstr "Показ аватаров"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:210
 msgid "MSG to Selected"
-msgstr "Сообщ.выбранным"
+msgstr "Сообщ. выбранным"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:237
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
@@ -740,15 +740,15 @@ msgstr "Отчёт составлен:"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
 msgid "Diesel."
-msgstr "Тепловоз"
+msgstr "Тепловоз."
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
 msgid "Steam."
-msgstr "Паровоз"
+msgstr "Паровоз."
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
 msgid "Electric."
-msgstr "Электровоз"
+msgstr "Электровоз."
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:1049
 msgid "Procedures"
@@ -867,7 +867,7 @@ msgstr "Уклон"
 #: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
 msgid "Direction"
-msgstr "Направл"
+msgstr "Направление"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:436
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:595
@@ -1340,7 +1340,7 @@ msgid "Bear Temp"
 msgstr "Темп.подш"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:916
-msgid "DISPATCHER INFORMATION   active trains   "
+msgid "DISPATCHER INFORMATION : active trains : "
 msgstr "ДИСПЕТЧЕР - активные поезда "
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:919
@@ -2169,11 +2169,11 @@ msgstr "Расход пара"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
 msgid "STEM"
-msgstr "ПАР"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
 msgid "THRO"
-msgstr "КОНТР"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
 msgid "TIME"
@@ -2299,12 +2299,12 @@ msgstr "Закрыто"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
 msgid "Blocked"
-msgstr "Заблокир"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:630
 msgid "On"
-msgstr "Вкл"
+msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:330
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:503
