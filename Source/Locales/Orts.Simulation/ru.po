@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2020-08-01 20:50:21+0300\n"
-"PO-Revision-Date: 2020-08-02 00:56+0300\n"
+"PO-Revision-Date: 2009-12-28 01:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.4\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
@@ -388,7 +388,7 @@ msgstr "предупреждение"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:180
 msgid "Power"
-msgstr "Силовые цепи"
+msgstr "Мощность"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:180
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:189
@@ -407,7 +407,7 @@ msgstr "Силовые цепи"
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:233
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:253
 msgid "off"
-msgstr "обесточены"
+msgstr "снято"
 
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:180
 #: ../../Orts.Simulation/Simulation/Confirmer.cs:189
