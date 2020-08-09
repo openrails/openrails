@@ -34,7 +34,7 @@ namespace Orts.Common.Scripting
     {
         readonly Simulator Simulator;
         readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
-        static readonly ProviderOptions ProviderOptions = new ProviderOptions("roslyn/csc.exe", 10);
+        static readonly ProviderOptions ProviderOptions = new ProviderOptions(Path.Combine(new Uri(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase)).LocalPath, "roslyn", "csc.exe"), 10);
         static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(ProviderOptions);
 
         static CompilerParameters GetCompilerParameters()
