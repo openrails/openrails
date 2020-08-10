@@ -51,7 +51,7 @@ namespace Orts.MultiPlayer
         public static Server Server;
         public static ClientComm Client;
 
-        public int version = 15;
+        public int version = 16;
         double lastMoveTime;
         public double lastSwitchTime;
         public double lastSyncTime = 0;
