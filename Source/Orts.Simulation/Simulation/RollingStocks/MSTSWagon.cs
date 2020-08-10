@@ -471,7 +471,6 @@ namespace Orts.Simulation.RollingStocks
             MaxHandbrakeForceN = InitialMaxHandbrakeForceN;
             MaxBrakeForceN = InitialMaxBrakeForceN;
             CentreOfGravityM = InitialCentreOfGravityM;
-            IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0; // test to see if OR thinks that Davis Values have been entered in WG file.
 
             if (FreightAnimations != null)
             {
@@ -819,6 +818,9 @@ namespace Orts.Simulation.RollingStocks
 #endif
 
             }
+
+            // Determine whether or not to use the Davis friction model. Must come after freight animations are initialized.
+            IsDavisFriction = DavisAN != 0 && DavisBNSpM != 0 && DavisCNSSpMM != 0;
 
             if (BrakeSystem == null)
                 BrakeSystem = MSTSBrakeSystem.Create(CarBrakeSystemType, this);
