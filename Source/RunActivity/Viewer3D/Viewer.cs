@@ -1002,13 +1002,17 @@ namespace Orts.Viewer3D
             }
             if (UserInput.IsPressed(UserCommand.CameraToggleThreeDimensionalCab))
             {
-                if (CabCamera.IsAvailable && ThreeDimCabCamera.IsAvailable)
+                if (!CabCamera.IsAvailable)
                 {
-                    new ToggleThreeDimensionalCabCameraCommand(Log);
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("This car doesn't have a 2D cab"));
+                }
+                else if (!ThreeDimCabCamera.IsAvailable)
+                {
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("This car doesn't have a 3D cab"));
                 }
                 else
                 {
-                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("This car doesn't have both a 2D cab and a 3D cab"));
+                    new ToggleThreeDimensionalCabCameraCommand(Log);
                 }
             }
             if (UserInput.IsPressed(UserCommand.CameraOutsideFront))

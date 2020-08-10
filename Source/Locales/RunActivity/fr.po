@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-08-07 00:22:47+0200\n"
-"PO-Revision-Date: 2020-08-07 00:31+0200\n"
+"POT-Creation-Date: 2020-08-10 21:34:15+0200\n"
+"PO-Revision-Date: 2020-08-10 21:37+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 2.4.1\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:600
@@ -32,19 +32,19 @@ msgstr "Freineur"
 msgid "Passenger"
 msgstr "Passager"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1837
+#: ../../RunActivity/Viewer3D/Cameras.cs:1838
 msgid "3D Cab"
 msgstr "Cabine 3D"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1933
+#: ../../RunActivity/Viewer3D/Cameras.cs:1934
 msgid "Head out"
 msgstr "Côté Cabine"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1977
+#: ../../RunActivity/Viewer3D/Cameras.cs:1978
 msgid "Cab"
 msgstr "Cabine"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:2228
+#: ../../RunActivity/Viewer3D/Cameras.cs:2229
 msgid "Trackside"
 msgstr "Sur la voie"
 
@@ -76,74 +76,78 @@ msgid_plural "{0:F0} tiles"
 msgstr[0] "{0:F0} tuile"
 msgstr[1] "{0:F0} tuiles"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:811
-#: ../../RunActivity/Viewer3D/Viewer.cs:996
+#: ../../RunActivity/Viewer3D/Viewer.cs:815
+#: ../../RunActivity/Viewer3D/Viewer.cs:1000
 msgid "Cab view not available"
 msgstr "Vue cabine indisponible"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:895
+#: ../../RunActivity/Viewer3D/Viewer.cs:899
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "En mode multijoueur, utilisez Alt-F4 pour quitter directement"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:926
+#: ../../RunActivity/Viewer3D/Viewer.cs:930
 msgid "Automatic platform and siding labels visible."
 msgstr ""
 "Libellés des quais et voies de service parcourus par le train affichés."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:929
+#: ../../RunActivity/Viewer3D/Viewer.cs:933
 msgid "Platform and siding labels visible."
 msgstr "Libellés des quais et voies de service affichés."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:932
+#: ../../RunActivity/Viewer3D/Viewer.cs:936
 msgid "Platform labels visible."
 msgstr "Libellés des quais affichés."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:935
+#: ../../RunActivity/Viewer3D/Viewer.cs:939
 msgid "Siding labels visible."
 msgstr "Libellés des voies de service affichés."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:941
+#: ../../RunActivity/Viewer3D/Viewer.cs:945
 msgid "Platform and siding labels hidden."
 msgstr "Libellés des quais et voies de service cachés."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:952
+#: ../../RunActivity/Viewer3D/Viewer.cs:956
 msgid "Train labels visible."
 msgstr "Libellés des trains affichés."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:955
+#: ../../RunActivity/Viewer3D/Viewer.cs:959
 msgid "Car labels visible."
 msgstr "Libellés des véhicules affichés."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:961
+#: ../../RunActivity/Viewer3D/Viewer.cs:965
 msgid "Train and car labels hidden."
 msgstr "Libellés des trains et véhicules cachés."
 
 #: ../../RunActivity/Viewer3D/Viewer.cs:1007
-msgid "This car doesn't have both a 2D cab and a 3D cab"
-msgstr "Ce véhicule n'a pas à la fois de cabine 2D et 3D"
+msgid "This car doesn't have a 2D cab"
+msgstr "Ce véhicule n'a pas de cabine 2D"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1034
+#: ../../RunActivity/Viewer3D/Viewer.cs:1011
+msgid "This car doesn't have a 3D cab"
+msgstr "Ce véhicule n'a pas de cabine 3D"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:1042
 msgid "Confirmations suppressed"
 msgstr "Confirmations cachées"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1036
+#: ../../RunActivity/Viewer3D/Viewer.cs:1044
 msgid "Confirmations visible"
 msgstr "Confirmations affichées"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1184
+#: ../../RunActivity/Viewer3D/Viewer.cs:1192
 msgid "Switched to player control"
 msgstr "Train contrôlé par le joueur"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1191
+#: ../../RunActivity/Viewer3D/Viewer.cs:1199
 msgid "You can't switch from manual to autopilot mode"
 msgstr ""
 "Vous ne pouvez pas passer du mode manuel au mode de pilotage automatique"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1197
+#: ../../RunActivity/Viewer3D/Viewer.cs:1205
 msgid "Switched to autopilot"
 msgstr "Train contrôlé par le pilote automatique"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1802
+#: ../../RunActivity/Viewer3D/Viewer.cs:1810
 msgid "Game saved"
 msgstr "Activité sauvegardée"
 
@@ -152,22 +156,22 @@ msgstr "Activité sauvegardée"
 msgid "Allowed speed raised to {0}"
 msgstr "Vitesse limite augmentée à {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1025
+#: ../../RunActivity/Viewer3D/Viewer.cs:1033
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Vibration niveau {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1215
+#: ../../RunActivity/Viewer3D/Viewer.cs:1223
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr "Liste des affectations du clavier enregistrée dans '{0}'."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1219
+#: ../../RunActivity/Viewer3D/Viewer.cs:1227
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr "Image des affectations du clavier enregistrée dans '{0}'."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1072
+#: ../../RunActivity/Viewer3D/Viewer.cs:1080
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
