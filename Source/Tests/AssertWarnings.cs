@@ -71,7 +71,7 @@ namespace Tests
         /// </summary>
         /// <param name="pattern">Pattern to match the warning against; if there is no match, the test fails.</param>
         /// <param name="code">Code which is expected to generate a matching warning.</param>
-        public static void Matching(string pattern, Assert.ThrowsDelegate code)
+        public static void Matching(string pattern, Action code)
         {
             Initialize();
             Listener.InternalMatching(pattern, code);
@@ -92,7 +92,7 @@ namespace Tests
             LastWarning = null;
         }
 
-        void InternalMatching(string pattern, Assert.ThrowsDelegate callback)
+        void InternalMatching(string pattern, Action callback)
         {
             Set(true);
             LastWarning = null;
