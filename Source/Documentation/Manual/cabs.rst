@@ -359,9 +359,9 @@ Rotation may be applied, with the same syntax, also to DigitalClock cab controls
 3D cabs
 =======
 
-The key to enter into a 3D cab (if the player locomotive has one) is 
-``<Alt+1>``, in case locomotive has both 2D and 3D cabs provided. 
-Key ``<1>`` can also be used to enter to 3D-cab-only locomotives.
+If the locomotive has a 3D cab, it will be selected by default by the simulator.
+You can press key ``<1>`` to enter the cab. In case locomotive has both 2D and 3D cabs
+provided, the key ``<Alt+1>`` can be used in order to switch between 2D and 3D cabs.
 
 Development Rules
 -----------------

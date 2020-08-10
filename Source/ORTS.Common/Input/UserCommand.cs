@@ -73,7 +73,7 @@
 
         [GetString("Camera Cab")] CameraCab,
         [GetString("Camera Change Passenger Viewpoint")] CameraChangePassengerViewPoint,
-        [GetString("Camera 3D Cab")] CameraThreeDimensionalCab,
+        [GetString("Camera Toggle 3D Cab")] CameraToggleThreeDimensionalCab,
         [GetString("Camera Toggle Show Cab")] CameraToggleShowCab,
         [GetString("Camera Toggle Letterbox Cab")] CameraToggleLetterboxCab,
         [GetString("Camera Head Out Forward")] CameraHeadOutForward,

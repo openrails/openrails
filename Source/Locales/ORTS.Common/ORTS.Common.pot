@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-08-08 10:08:26+0300\n"
-"PO-Revision-Date: 2020-08-08 10:08:26+0300\n"
+"POT-Creation-Date: 2020-08-07 00:22:45+0200\n"
+"PO-Revision-Date: 2020-08-07 00:22:45+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -442,7 +442,7 @@ msgid "Camera Change Passenger Viewpoint"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:76
-msgid "Camera 3D Cab"
+msgid "Camera Toggle 3D Cab"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:77
