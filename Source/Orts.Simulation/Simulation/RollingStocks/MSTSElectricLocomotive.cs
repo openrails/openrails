@@ -52,7 +52,7 @@ namespace Orts.Simulation.RollingStocks
     /// </summary>
     public class MSTSElectricLocomotive : MSTSLocomotive
     {
-        public ScriptedElectricPowerSupply PowerSupply;
+        public ScriptedElectricPowerSupply ElectricPowerSupply => PowerSupply as ScriptedElectricPowerSupply;
 
         public MSTSElectricLocomotive(Simulator simulator, string wagFile) :
             base(simulator, wagFile)
@@ -72,7 +72,13 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortspowersupply":
                 case "engine(ortscircuitbreaker":
                 case "engine(ortscircuitbreakerclosingdelay":
-                    PowerSupply.Parse(lowercasetoken, stf);
+                case "engine(ortsbattery(mode":
+                case "engine(ortsbattery(delay":
+                case "engine(ortsmasterkey(mode":
+                case "engine(ortsmasterkey(delayoff":
+                case "engine(ortsmasterkey(headlightcontrol":
+                case "engine(ortselectrictrainsupply(mode":
+                    LocomotivePowerSupply.Parse(lowercasetoken, stf);
                     break;
 
                 default:
@@ -82,30 +88,11 @@ namespace Orts.Simulation.RollingStocks
         }
 
         /// <summary>
-        /// This initializer is called when we are making a new copy of a car already
-        /// loaded in memory.  We use this one to speed up loading by eliminating the
-        /// need to parse the wag file multiple times.
-        /// NOTE:  you must initialize all the same variables as you parsed above
-        /// </summary>
-        public override void Copy(MSTSWagon copy)
-        {
-            base.Copy(copy);  // each derived level initializes its own variables
-
-            // for example
-            //CabSoundFileName = locoCopy.CabSoundFileName;
-            //CVFFileName = locoCopy.CVFFileName;
-            MSTSElectricLocomotive locoCopy = (MSTSElectricLocomotive)copy;
-
-            PowerSupply.Copy(locoCopy.PowerSupply);
-        }
-
-        /// <summary>
         /// We are saving the game.  Save anything that we'll need to restore the 
         /// status later.
         /// </summary>
         public override void Save(BinaryWriter outf)
         {
-            PowerSupply.Save(outf);
             outf.Write(CurrentLocomotiveSteamHeatBoilerWaterCapacityL);
             base.Save(outf);
         }
@@ -116,17 +103,14 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Restore(BinaryReader inf)
         {
-            PowerSupply.Restore(inf);
             CurrentLocomotiveSteamHeatBoilerWaterCapacityL = inf.ReadSingle();
             base.Restore(inf);
         }
 
         public override void Initialize()
         {
-            if (!PowerSupply.RouteElectrified)
+            if (!ElectricPowerSupply.RouteElectrified)
                 Trace.WriteLine("Warning: The route is not electrified. Electric driven trains will not run!");
-
-            PowerSupply.Initialize();
 
             base.Initialize();
 
@@ -164,15 +148,6 @@ namespace Orts.Simulation.RollingStocks
             ThrottleController.SetValue(Train.MUThrottlePercent / 100);
 
             Pantographs.InitializeMoving();
-            PowerSupply.InitializeMoving();
-        }
-
-        /// <summary>
-        /// This function updates periodically the states and physical variables of the locomotive's power supply.
-        /// </summary>
-        protected override void UpdatePowerSupply(float elapsedClockSeconds)
-        {
-            PowerSupply.Update(elapsedClockSeconds);
         }
 
         /// <summary>
@@ -245,94 +220,18 @@ namespace Orts.Simulation.RollingStocks
                 Variable3 = 0;
         }
 
-        /// <summary>
-        /// Used when someone want to notify us of an event
-        /// </summary>
-        public override void SignalEvent(Event evt)
-        {
-            base.SignalEvent(evt);
-        }
-
         public override void SignalEvent(PowerSupplyEvent evt)
         {
-            if (Simulator.Confirmer != null && Simulator.PlayerLocomotive == this)
-            {
-                switch (evt)
-                {
-                    case PowerSupplyEvent.RaisePantograph:
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.On);
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.On);
-                        break;
-
-                    case PowerSupplyEvent.LowerPantograph:
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.Off);
-                        Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.Off);
-                        break;
-                }
-            }
-
-            switch (evt)
-            {
-                case PowerSupplyEvent.CloseCircuitBreaker:
-                case PowerSupplyEvent.OpenCircuitBreaker:
-                case PowerSupplyEvent.CloseCircuitBreakerButtonPressed:
-                case PowerSupplyEvent.CloseCircuitBreakerButtonReleased:
-                case PowerSupplyEvent.OpenCircuitBreakerButtonPressed:
-                case PowerSupplyEvent.OpenCircuitBreakerButtonReleased:
-                case PowerSupplyEvent.GiveCircuitBreakerClosingAuthorization:
-                case PowerSupplyEvent.RemoveCircuitBreakerClosingAuthorization:
-                    PowerSupply.HandleEvent(evt);
-                    break;
-            }
+            LocomotivePowerSupply.HandleEvent(evt);
 
             base.SignalEvent(evt);
         }
 
         public override void SignalEvent(PowerSupplyEvent evt, int id)
         {
-            if (Simulator.Confirmer != null && Simulator.PlayerLocomotive == this)
-            {
-                switch (evt)
-                {
-                    case PowerSupplyEvent.RaisePantograph:
-                        if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.On);
-                        if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.On);
-                        if (id == 3) Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.On);
-                        if (id == 4) Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.On);
-
-                        if (!Simulator.TRK.Tr_RouteFile.Electrified)
-                            Simulator.Confirmer.Warning(Simulator.Catalog.GetString("No power line!"));
-                        if (Simulator.Settings.OverrideNonElectrifiedRoutes)
-                            Simulator.Confirmer.Information(Simulator.Catalog.GetString("Power line condition overridden."));
-                        break;
-
-                    case PowerSupplyEvent.LowerPantograph:
-                        if (id == 1) Simulator.Confirmer.Confirm(CabControl.Pantograph1, CabSetting.Off);
-                        if (id == 2) Simulator.Confirmer.Confirm(CabControl.Pantograph2, CabSetting.Off);
-                        if (id == 3) Simulator.Confirmer.Confirm(CabControl.Pantograph3, CabSetting.Off);
-                        if (id == 4) Simulator.Confirmer.Confirm(CabControl.Pantograph4, CabSetting.Off);
-                        break;
-                }
-            }
+            LocomotivePowerSupply.HandleEvent(evt, id);
 
             base.SignalEvent(evt, id);
-        }
-
-        public override void SetPower(bool ToState)
-        {
-            if (Train != null)
-            {
-                if (!ToState)
-                    SignalEvent(PowerSupplyEvent.LowerPantograph);
-                else
-                    SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
-            }
-
-            base.SetPower(ToState);
         }
 
         public override float GetDataOf(CabViewControl cvc)
@@ -342,7 +241,7 @@ namespace Orts.Simulation.RollingStocks
             switch (cvc.ControlType)
             {
                 case CABViewControlTypes.LINE_VOLTAGE:
-                    data = PowerSupply.PantographVoltageV;
+                    data = ElectricPowerSupply.PantographVoltageV;
                     if (cvc.Units == CABViewControlUnits.KILOVOLTS)
                         data /= 1000;
                     break;
@@ -391,19 +290,19 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_ORDER:
-                    data = PowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0;
+                    data = ElectricPowerSupply.CircuitBreaker.DriverClosingOrder ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_OPENING_ORDER:
-                    data = PowerSupply.CircuitBreaker.DriverOpeningOrder ? 1 : 0;
+                    data = ElectricPowerSupply.CircuitBreaker.DriverOpeningOrder ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_DRIVER_CLOSING_AUTHORIZATION:
-                    data = PowerSupply.CircuitBreaker.DriverClosingAuthorization ? 1 : 0;
+                    data = ElectricPowerSupply.CircuitBreaker.DriverClosingAuthorization ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_STATE:
-                    switch (PowerSupply.CircuitBreaker.State)
+                    switch (ElectricPowerSupply.CircuitBreaker.State)
                     {
                         case CircuitBreakerState.Open:
                             data = 0;
@@ -418,7 +317,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_CLOSED:
-                    switch (PowerSupply.CircuitBreaker.State)
+                    switch (ElectricPowerSupply.CircuitBreaker.State)
                     {
                         case CircuitBreakerState.Open:
                         case CircuitBreakerState.Closing:
@@ -431,7 +330,7 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN:
-                    switch (PowerSupply.CircuitBreaker.State)
+                    switch (ElectricPowerSupply.CircuitBreaker.State)
                     {
                         case CircuitBreakerState.Open:
                         case CircuitBreakerState.Closing:
@@ -444,11 +343,11 @@ namespace Orts.Simulation.RollingStocks
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_AUTHORIZED:
-                    data = PowerSupply.CircuitBreaker.ClosingAuthorization ? 1 : 0;
+                    data = ElectricPowerSupply.CircuitBreaker.ClosingAuthorization ? 1 : 0;
                     break;
 
                 case CABViewControlTypes.ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED:
-                    data = (PowerSupply.CircuitBreaker.State < CircuitBreakerState.Closed && PowerSupply.CircuitBreaker.ClosingAuthorization) ? 1 : 0;
+                    data = (ElectricPowerSupply.CircuitBreaker.State < CircuitBreakerState.Closed && ElectricPowerSupply.CircuitBreaker.ClosingAuthorization) ? 1 : 0;
                     break;
 
                 default:
@@ -472,23 +371,32 @@ namespace Orts.Simulation.RollingStocks
             foreach (var pantograph in Pantographs.List)
                 status.AppendFormat("{0} ", Simulator.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName(pantograph.State)));
             status.AppendLine();
-            status.AppendFormat("{0} = {1}",
+            status.AppendFormat("{0} = {1}\n",
+                Simulator.Catalog.GetString("Battery switch"),
+                LocomotivePowerSupply.BatterySwitch.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+            status.AppendFormat("{0} = {1}\n",
+                Simulator.Catalog.GetString("Master key"),
+                LocomotivePowerSupply.MasterKey.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
+            status.AppendFormat("{0} = {1}\n",
                 Simulator.Catalog.GetString("Circuit breaker"),
-                Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
+                Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(ElectricPowerSupply.CircuitBreaker.State)));
+            status.AppendFormat("{0} = {1}\n",
+                Simulator.Catalog.GetString("Electric train supply"),
+                LocomotivePowerSupply.ElectricTrainSupplySwitch.On ? Simulator.Catalog.GetString("On") : Simulator.Catalog.GetString("Off"));
             status.AppendLine();
             status.AppendFormat("{0} = {1}",
                 Simulator.Catalog.GetParticularString("PowerSupply", "Power"),
-                Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.State)));
+                Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(LocomotivePowerSupply.MainPowerSupplyState)));
             return status.ToString();
         }
 
         public override string GetDebugStatus()
         {
             var status = new StringBuilder(base.GetDebugStatus());
-            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Circuit breaker"), Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(PowerSupply.CircuitBreaker.State)));
-            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("TCS"), PowerSupply.CircuitBreaker.TCSClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("Driver"), PowerSupply.CircuitBreaker.DriverClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
-            status.AppendFormat("\t{0}\t\t{1}\n", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(PowerSupply.AuxiliaryState)));
+            status.AppendFormat("\t{0}\t\t{1}", Simulator.Catalog.GetString("Circuit breaker"), Simulator.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(ElectricPowerSupply.CircuitBreaker.State)));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("TCS"), ElectricPowerSupply.CircuitBreaker.TCSClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t{1}", Simulator.Catalog.GetString("Driver"), ElectricPowerSupply.CircuitBreaker.DriverClosingAuthorization ? Simulator.Catalog.GetString("OK") : Simulator.Catalog.GetString("NOT OK"));
+            status.AppendFormat("\t{0}\t\t{1}\n", Simulator.Catalog.GetString("Auxiliary power"), Simulator.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(LocomotivePowerSupply.AuxiliaryPowerSupplyState)));
 
             if (IsSteamHeatFitted && Train.PassengerCarsNumber > 0 && this.IsLeadLocomotive() && Train.CarSteamHeatOn)
             {
@@ -509,11 +417,11 @@ namespace Orts.Simulation.RollingStocks
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                    Simulator.Catalog.GetString("Temp"),
-                   FormatStrings.FormatTemperature(Train.LastCar.CarCurrentCarriageHeatTempC, IsMetric, false),
+                   FormatStrings.FormatTemperature(Train.LastCar.CarInsideTempC, IsMetric, false),
                    Simulator.Catalog.GetString("OutTemp"),
-                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
+                   FormatStrings.FormatTemperature(CarOutsideTempC, IsMetric, false),
                    Simulator.Catalog.GetString("NetHt"),
-                   Train.LastCar.DisplayTrainNetSteamHeatLossWpTime);
+                   Train.LastCar.CarNetHeatFlowRateW);
             }
 
             return status.ToString();
