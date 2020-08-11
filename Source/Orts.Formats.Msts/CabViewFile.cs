@@ -160,6 +160,14 @@ namespace Orts.Formats.Msts
         ORTS_CIRCUIT_BREAKER_OPEN,
         ORTS_CIRCUIT_BREAKER_AUTHORIZED,
         ORTS_CIRCUIT_BREAKER_OPEN_AND_AUTHORIZED,
+        ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_ORDER,
+        ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_OPENING_ORDER,
+        ORTS_TRACTION_CUT_OFF_RELAY_DRIVER_CLOSING_AUTHORIZATION,
+        ORTS_TRACTION_CUT_OFF_RELAY_STATE,
+        ORTS_TRACTION_CUT_OFF_RELAY_CLOSED,
+        ORTS_TRACTION_CUT_OFF_RELAY_OPEN,
+        ORTS_TRACTION_CUT_OFF_RELAY_AUTHORIZED,
+        ORTS_TRACTION_CUT_OFF_RELAY_OPEN_AND_AUTHORIZED,
         ORTS_PLAYER_DIESEL_ENGINE,
         ORTS_HELPERS_DIESEL_ENGINES,
         ORTS_PLAYER_DIESEL_ENGINE_STATE,
@@ -176,13 +184,22 @@ namespace Orts.Formats.Msts
         ORTS_HOURDIAL,
         ORTS_MINUTEDIAL,
         ORTS_SECONDDIAL,
-		ORTS_SIGNED_TRACTION_BRAKING,
+        ORTS_SIGNED_TRACTION_BRAKING,
         ORTS_SIGNED_TRACTION_TOTAL_BRAKING,
         ORTS_BAILOFF,
         ORTS_QUICKRELEASE,
         ORTS_OVERCHARGE,
-        ORTS_BATTERY,
-        ORTS_POWERKEY,
+        ORTS_BATTERY_SWITCH_COMMAND_SWITCH,
+        ORTS_BATTERY_SWITCH_COMMAND_BUTTON_CLOSE,
+        ORTS_BATTERY_SWITCH_COMMAND_BUTTON_OPEN,
+        ORTS_BATTERY_SWITCH_ON,
+        ORTS_MASTER_KEY,
+        ORTS_CURRENT_CAB_IN_USE,
+        ORTS_OTHER_CAB_IN_USE,
+        ORTS_SERVICE_RETENTION_BUTTON,
+        ORTS_SERVICE_RETENTION_CANCELLATION_BUTTON,
+        ORTS_ELECTRIC_TRAIN_SUPPLY_COMMAND_SWITCH,
+        ORTS_ELECTRIC_TRAIN_SUPPLY_ON,
         ORTS_2DEXTERNALWIPERS,
 
         // TCS Controls
@@ -357,6 +374,9 @@ namespace Orts.Formats.Msts
         public CABViewControlStyles ControlStyle = CABViewControlStyles.NONE;
         public CABViewControlUnits Units = CABViewControlUnits.NONE;
 
+        public bool DisabledIfLowVoltagePowerSupplyOff = false;
+        public bool DisabledIfCabPowerSupplyOff = false;
+
         protected void ParseType(STFReader stf)
         {
             stf.MustMatch("(");
@@ -439,6 +459,14 @@ namespace Orts.Formats.Msts
             }
             stf.SkipRestOfBlock();
         }
+        protected void ParseDisabledIfLowVoltagePowerSupplyOff(STFReader stf)
+        {
+            DisabledIfLowVoltagePowerSupplyOff = stf.ReadBoolBlock(false);
+        }
+        protected void ParseDisabledIfCabPowerSupplyOff(STFReader stf)
+        {
+            DisabledIfCabPowerSupplyOff = stf.ReadBoolBlock(false);
+        }
         // Used by subclasses CVCGauge and CVCDigital
         protected virtual color ParseControlColor( STFReader stf )
         {
@@ -501,6 +529,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
 
                 new STFReader.TokenProcessor("pivot", ()=>{ Center = stf.ReadFloatBlock(STFReader.UNITS.None, null); }),
                 new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
@@ -545,6 +575,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
 
                 new STFReader.TokenProcessor("zeropos", ()=>{ ZeroPos = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(null); }),
@@ -674,6 +706,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("leadingzeros", ()=>{ ParseLeadingZeros(stf); }),
                 new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
                 new STFReader.TokenProcessor("accuracyswitch", ()=>{ ParseAccuracySwitch(stf); }), 
@@ -770,6 +804,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
                 new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
                 new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
+                new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
                 new STFReader.TokenProcessor("accuracy", ()=>{ ParseAccuracy(stf); }), 
                 new STFReader.TokenProcessor("controlcolour", ()=>{ PositiveColor = ParseControlColor(stf); }),
                 new STFReader.TokenProcessor("ortsfont", ()=>{ParseFont(stf); }),
@@ -822,6 +858,8 @@ namespace Orts.Formats.Msts
                     new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                     new STFReader.TokenProcessor("style", ()=>{ ParseStyle(stf); }),
                     new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                    new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
+                    new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
                     new STFReader.TokenProcessor("mousecontrol", ()=>{ MouseControl = stf.ReadBoolBlock(false); }),
                     new STFReader.TokenProcessor("orientation", ()=>{ Orientation = stf.ReadIntBlock(null); }),
                     new STFReader.TokenProcessor("dirincrease", ()=>{ Direction = stf.ReadIntBlock(null); }),
@@ -1139,6 +1177,8 @@ namespace Orts.Formats.Msts
                 new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
                 new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
                 new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                new STFReader.TokenProcessor("disablediflowvoltagepowersupplyoff", ()=>{ ParseDisabledIfLowVoltagePowerSupplyOff(stf); }),
+                new STFReader.TokenProcessor("disabledifcabpowersupplyoff", ()=>{ ParseDisabledIfCabPowerSupplyOff(stf); }),
 
                 new STFReader.TokenProcessor("states", ()=>{
                     stf.MustMatch("(");

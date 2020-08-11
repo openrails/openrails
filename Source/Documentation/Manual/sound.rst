@@ -280,13 +280,24 @@ Trigger       Function
 174           HotBoxBearingOff
 175           BoilerBlowdownOn
 176           BoilerBlowdownOff
-177           BatteryOn
-178           BatteryOff
-179           PowerKeyOn
-180           PowerKeyOff
 =========     =====================================
 
+Triggers from 189 to 198 are activated when the driver moves the following buttons or switches in the cab (related to power supplies):
 
+=========     =====================================
+Trigger       Function
+=========     =====================================
+189           BatterySwitchOn
+190           BatterySwitchOff
+191           BatterySwitchCommandOn
+192           BatterySwitchCommandOff
+193           MasterKeyOn
+194           MasterKeyOff
+195           ServiceRetentionButtonOn
+196           ServiceRetentionButtonOff
+197           ServiceRetentionCancellationButtonOn
+198           ServiceRetentionCancellationButtonOff
+=========     =====================================
 
 The following triggers are used to activate the gear positions:
 
@@ -315,6 +326,66 @@ Trigger       Function
 213           SmallEjectorOff
 =========     =====================================
 
+Triggers from 214 to 222 are used for the traction cut-off relay sounds of Diesel locomotives.
+
+The following triggers are activated when the state of the traction cut-off relay changes:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+214           TractionCutOffRelayOpen
+215           TractionCutOffRelayClosing
+216           TractionCutOffRelayClosed
+=========     =====================================
+
+The following triggers are activated when the driver moves the buttons or switches in the cab:
+
+=========     ==========================================
+Trigger       Function
+=========     ==========================================
+217           TractionCutOffRelayClosingOrderOn
+218           TractionCutOffRelayClosingOrderOff
+219           TractionCutOffRelayOpeningOrderOn
+220           TractionCutOffRelayOpeningOrderOff
+221           TractionCutOffRelayClosingAuthorizationOn
+222           TractionCutOffRelayClosingAuthorizationOff
+=========     ==========================================
+
+Triggers from 223 to 226 are used for the electric train supply sounds.
+
+The following triggers are activated when the state of the electric train supply changes:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+223           ElectricTrainSupplyOn
+224           ElectricTrainSupplyOff
+=========     =====================================
+
+The following triggers are activated when the driver moves the buttons or switches in the cab:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+225           ElectricTrainSupplyCommandOn
+226           ElectricTrainSupplyCommandOff
+=========     =====================================
+
+Triggers from 227 to 235 are activated for passenger cars (and locomotives when custom power supply scripts are used):
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+227           PowerConverterOn
+228           PowerConverterOff
+229           VentilationHigh
+230           VentilationLow
+231           VentilationOff
+232           HeatingOn
+233           HeatingOff
+234           AirConditioningOn
+235           AirConditioningOff
+=========     =====================================
 
 Variable Triggers
 -----------------

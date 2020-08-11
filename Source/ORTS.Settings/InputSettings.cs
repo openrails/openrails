@@ -15,6 +15,11 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using GNU.Gettext;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using ORTS.Common;
+using ORTS.Common.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,12 +28,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using GNU.Gettext;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using ORTS.Common;
-using ORTS.Common.Input;
 
 namespace ORTS.Settings
 {
@@ -345,7 +344,8 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlAlerter] = new UserCommandKeyInput(0x2C);
             Commands[(int)UserCommand.ControlBackwards] = new UserCommandKeyInput(0x1F);
             Commands[(int)UserCommand.ControlBailOff] = new UserCommandKeyInput(0x35);
-            Commands[(int)UserCommand.ControlBattery] = new UserCommandKeyInput(0x30, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlBatterySwitchClose] = new UserCommandKeyInput(0x52);
+            Commands[(int)UserCommand.ControlBatterySwitchOpen] = new UserCommandKeyInput(0x52, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlBell] = new UserCommandKeyInput(0x30);
             Commands[(int)UserCommand.ControlBellToggle] = new UserCommandKeyInput(0x30, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlBlowerDecrease] = new UserCommandKeyInput(0x31, KeyModifiers.Shift);
@@ -373,6 +373,7 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlDoorRight] = new UserCommandKeyInput(0x10, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlDynamicBrakeDecrease] = new UserCommandKeyInput(0x33);
             Commands[(int)UserCommand.ControlDynamicBrakeIncrease] = new UserCommandKeyInput(0x34);
+            Commands[(int)UserCommand.ControlElectricTrainSupply] = new UserCommandKeyInput(0x30, KeyModifiers.Alt);
             Commands[(int)UserCommand.ControlEmergencyPushButton] = new UserCommandKeyInput(0x0E);
             Commands[(int)UserCommand.ControlEngineBrakeDecrease] = new UserCommandKeyInput(0x1A);
             Commands[(int)UserCommand.ControlEngineBrakeIncrease] = new UserCommandKeyInput(0x1B);
@@ -404,12 +405,12 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlInjector2Increase] = new UserCommandKeyInput(0x26);
             Commands[(int)UserCommand.ControlBlowdownValve] = new UserCommandKeyInput(0x2E, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlLight] = new UserCommandKeyInput(0x26);
+            Commands[(int)UserCommand.ControlMasterKey] = new UserCommandKeyInput(0x1C);
             Commands[(int)UserCommand.ControlMirror] = new UserCommandKeyInput(0x2F, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlPantograph1] = new UserCommandKeyInput(0x19);
             Commands[(int)UserCommand.ControlPantograph2] = new UserCommandKeyInput(0x19, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlPantograph3] = new UserCommandKeyInput(0x19, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlPantograph4] = new UserCommandKeyInput(0x19, KeyModifiers.Shift | KeyModifiers.Control);
-            Commands[(int)UserCommand.ControlPowerKey] = new UserCommandKeyInput(0x25, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlOdoMeterShowHide] = new UserCommandKeyInput(0x2C, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlOdoMeterReset] = new UserCommandKeyInput(0x2C, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlOdoMeterDirection] = new UserCommandKeyInput(0x2C, KeyModifiers.Control | KeyModifiers.Shift);
@@ -418,9 +419,14 @@ namespace ORTS.Settings
             Commands[(int)UserCommand.ControlRetainersOn] = new UserCommandKeyInput(0x1B, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlSander] = new UserCommandKeyInput(0x2D);
             Commands[(int)UserCommand.ControlSanderToggle] = new UserCommandKeyInput(0x2D, KeyModifiers.Shift);
+            Commands[(int)UserCommand.ControlServiceRetention] = new UserCommandKeyInput(0x53);
+            Commands[(int)UserCommand.ControlServiceRetentionCancellation] = new UserCommandKeyInput(0x53, KeyModifiers.Control);
             Commands[(int)UserCommand.ControlThrottleDecrease] = new UserCommandKeyInput(0x1E);
             Commands[(int)UserCommand.ControlThrottleIncrease] = new UserCommandKeyInput(0x20);
             Commands[(int)UserCommand.ControlThrottleZero] = new UserCommandKeyInput(0x1E, KeyModifiers.Control);
+            Commands[(int)UserCommand.ControlTractionCutOffRelayClosingOrder] = new UserCommandKeyInput(0x18);
+            Commands[(int)UserCommand.ControlTractionCutOffRelayOpeningOrder] = new UserCommandKeyInput(0x17);
+            Commands[(int)UserCommand.ControlTractionCutOffRelayClosingAuthorization] = new UserCommandKeyInput(0x18, KeyModifiers.Shift);
             Commands[(int)UserCommand.ControlTrainBrakeDecrease] = new UserCommandKeyInput(0x27);
             Commands[(int)UserCommand.ControlTrainBrakeIncrease] = new UserCommandKeyInput(0x28);
             Commands[(int)UserCommand.ControlTrainBrakeZero] = new UserCommandKeyInput(0x27, KeyModifiers.Control);

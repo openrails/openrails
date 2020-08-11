@@ -37,7 +37,7 @@ namespace Orts.Viewer3D.RollingStock
             ElectricLocomotive = car;
             if (ElectricLocomotive.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
                 ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
-                (car.Train.MUDirection != Direction.N && ElectricLocomotive.PowerOn))))
+                (car.Train.MUDirection != Direction.N && ElectricLocomotive.LocomotivePowerSupply.MainPowerSupplyOn))))
                 // following reactivates the sound triggers related to certain states
                 // for pantos the sound trigger related to the raised panto must be reactivated, else SignalEvent() would raise also another panto
             {
@@ -77,15 +77,30 @@ namespace Orts.Viewer3D.RollingStock
 
         public override void InitializeUserInputCommands()
         {
+            UserInputCommands.Add(UserCommand.ControlBatterySwitchClose, new Action[] {
+                () => new BatterySwitchCloseButtonCommand(Viewer.Log, false),
+                () => {
+                    new BatterySwitchCloseButtonCommand(Viewer.Log, true);
+                    new BatterySwitchCommand(Viewer.Log, !ElectricLocomotive.LocomotivePowerSupply.BatterySwitch.CommandSwitch);
+                }
+            });
+            UserInputCommands.Add(UserCommand.ControlBatterySwitchOpen, new Action[] {
+                () => new BatterySwitchOpenButtonCommand(Viewer.Log, false),
+                () => new BatterySwitchOpenButtonCommand(Viewer.Log, true)
+            });
+            UserInputCommands.Add(UserCommand.ControlMasterKey, new Action[] { Noop, () => new ToggleMasterKeyCommand(Viewer.Log, !ElectricLocomotive.LocomotivePowerSupply.MasterKey.CommandSwitch) });
+            UserInputCommands.Add(UserCommand.ControlServiceRetention, new Action[] { () => new ServiceRetentionButtonCommand(Viewer.Log, false), () => new ServiceRetentionButtonCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlServiceRetentionCancellation, new Action[] { () => new ServiceRetentionCancellationButtonCommand(Viewer.Log, false), () => new ServiceRetentionButtonCommand(Viewer.Log, true) });
+            UserInputCommands.Add(UserCommand.ControlElectricTrainSupply, new Action[] { Noop, () => new ElectricTrainSupplyCommand(Viewer.Log, !ElectricLocomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.CommandSwitch) });
             UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingOrder, new Action[] {
                 () => new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, false),
                 () => {
-                    new CircuitBreakerClosingOrderCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingOrder);
+                    new CircuitBreakerClosingOrderCommand(Viewer.Log, !ElectricLocomotive.ElectricPowerSupply.CircuitBreaker.DriverClosingOrder);
                     new CircuitBreakerClosingOrderButtonCommand(Viewer.Log, true);
                 }
             });
             UserInputCommands.Add(UserCommand.ControlCircuitBreakerOpeningOrder, new Action[] { () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, false), () => new CircuitBreakerOpeningOrderButtonCommand(Viewer.Log, true)});
-            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.PowerSupply.CircuitBreaker.DriverClosingAuthorization) });
+            UserInputCommands.Add(UserCommand.ControlCircuitBreakerClosingAuthorization, new Action[] { Noop, () => new CircuitBreakerClosingAuthorizationCommand(Viewer.Log, !ElectricLocomotive.ElectricPowerSupply.CircuitBreaker.DriverClosingAuthorization) });
             base.InitializeUserInputCommands();
         }
 

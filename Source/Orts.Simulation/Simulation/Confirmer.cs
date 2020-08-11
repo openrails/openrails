@@ -51,6 +51,7 @@ namespace Orts.Simulation
       , HelperDiesel
       , DieselFuel
       , SteamHeatBoilerWater
+      , TractionCutOffRelayClosingOrder
       // Steam power
       , SteamLocomotiveReverser
       , Regulator
@@ -98,7 +99,7 @@ namespace Orts.Simulation
       , ChangeCab
       , Odometer
       , Battery
-      , PowerKey
+      , MasterKey
       // Train Devices
       , DoorsLeft
       , DoorsRight
@@ -195,6 +196,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("Helper Diesel Power"), GetString("off"), null, GetString("on") }
                 , new string [] { GetString("Diesel Tank"), null, null, GetString("re-fueled"), null, GetString("level") }
                 , new string [] { GetString("Boiler Water Tank"), null, null, GetString("re-fueled"), null, GetString("level") }
+                , new string [] { GetString("Traction cut-off relay"), GetString("open"), null, GetString("close") }
                 // Steam power
                 , new string [] { GetParticularString("Steam", "Reverser"), GetString("reverse"), GetString("neutral"), GetString("forward"), null, null, GetString("locked. Close throttle, stop train then re-try.") } 
                 , new string [] { GetString("Regulator"), null, null, null, GetString("close"), GetString("open") }    // Throttle for steam locomotives
@@ -242,7 +244,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("Cab"), null, null, GetParticularString("Cab", "change"), null, null, GetString("changing is not available"), GetString("changing disabled. Close throttle, set reverser to neutral, stop train then re-try.") } 
                 , new string [] { GetString("Odometer"), null, null, GetParticularString("Odometer", "reset"), GetParticularString("Odometer", "counting down"), GetParticularString("Odometer", "counting up") }
                 , new string [] { GetString("Battery"), GetString("off"), null, GetString("on") }
-                , new string [] { GetString("PowerKey"), GetString("off"), null, GetString("on")}
+                , new string [] { GetString("Master key"), GetString("off"), null, GetString("on") }
                 // Train Devices
                 , new string [] { GetString("Doors Left"), GetString("close"), null, GetString("open") } 
                 , new string [] { GetString("Doors Right"), GetString("close"), null, GetString("open") } 
