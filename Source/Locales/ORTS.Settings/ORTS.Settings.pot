@@ -11,22 +11,22 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 
-#: ../../ORTS.Settings/InputSettings.cs:518
+#: ../../ORTS.Settings/InputSettings.cs:524
 #, csharp-format
 msgid "{0} requires and is modified by Shift"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:520
+#: ../../ORTS.Settings/InputSettings.cs:526
 #, csharp-format
 msgid "{0} requires and is modified by Control"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:522
+#: ../../ORTS.Settings/InputSettings.cs:528
 #, csharp-format
 msgid "{0} requires and is modified by Alt"
 msgstr ""
 
-#: ../../ORTS.Settings/InputSettings.cs:553
+#: ../../ORTS.Settings/InputSettings.cs:559
 #, csharp-format
 msgid "{0} and {1} both match {2}"
 msgstr ""
