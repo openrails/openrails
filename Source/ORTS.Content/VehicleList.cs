@@ -84,7 +84,7 @@ namespace ORTS.Content
         IEnumerable<WagonReference> GetReverseWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null);
 
         /// <summary>
-        /// Get the head-end locomotives that this vehicle list can spawn with.
+        /// Get the head-end locomotives that this train can spawn with.
         /// </summary>
         /// <remarks>
         /// trains without locomotives should return <see cref="PreferredLocomotive.NoLocomotiveSet"/>.
@@ -95,7 +95,7 @@ namespace ORTS.Content
         ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders);
 
         /// <summary>
-        /// Get the head-end locomotives that this vehicle list can spawn with if reversed.
+        /// Get the head-end locomotives that this train can spawn with if reversed.
         /// </summary>
         /// <remarks>
         /// trains without locomotives should return <see cref="PreferredLocomotive.NoLocomotiveSet"/>.
@@ -144,17 +144,17 @@ namespace ORTS.Content
     public static class VehicleListUtilities
     {
         /// <summary>
-        /// Locate a train or consist by filename. Prioritize the native (.train-or) train format if available.
+        /// Locate a vehicle list by filename. Prioritize the native (.train-or) train format if available.
         /// </summary>
         /// <param name="basePath">The current content directory.</param>
         /// <param name="filename">The filename of the vehicle list.</param>
         /// <returns>The vehicle list path with the preferred extension, or null if no matching file is found.</returns>
         public static string ResolveVehicleList(string basePath, string filename)
         {
-            string ortsList = ResolveOrtsTrainFile(basePath, filename);
+            string ortsTrain = ResolveOrtsTrainFile(basePath, filename);
             string mstsConsist = ResolveMstsConsist(basePath, filename);
-            if (File.Exists(ortsList))
-                return ortsList;
+            if (File.Exists(ortsTrain))
+                return ortsTrain;
             else if (File.Exists(mstsConsist))
                 return mstsConsist;
             else
@@ -220,10 +220,10 @@ namespace ORTS.Content
         }
 
         /// <summary>
-        /// Enumerate all vehicle list files in a content directory. Native (.train-or) files will shadow legacy (.con) ones.
+        /// Enumerate all vehicle lists in a content directory. Native (.train-or) files will shadow legacy (.con) ones.
         /// </summary>
         /// <param name="basePath">The current content directory.</param>
-        /// <returns>All files with known vehicle list file extensions.</returns>
+        /// <returns>All files with known train or consist file extensions.</returns>
         public static IEnumerable<string> AllVehicleLists(string basePath)
         {
             ISet<string> BaseNames(string directory, string pattern)
