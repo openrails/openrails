@@ -85,6 +85,7 @@
     <Compile Include="Simulation\AIs\AIPath.cs" />
     <Compile Include="Simulation\AIs\AITrain.cs" />
     <Compile Include="Simulation\Confirmer.cs" />
+    <Compile Include="Simulation\VehicleListLoader.cs" />
     <Compile Include="Simulation\FuelPickup.cs" />
     <Compile Include="Simulation\Hazzard.cs" />
     <Compile Include="Simulation\LevelCrossing.cs" />

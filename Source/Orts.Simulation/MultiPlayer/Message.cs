@@ -287,7 +287,7 @@ namespace Orts.MultiPlayer
         public MSGPlayer() { }
         public MSGPlayer(string m)
         {
-            // To preserve backwards compatibility with the public server at tsimserver.com, it is important not to change the format of this message.
+            // To preserve backwards compatibility with the public server at tsimserver.com, it is important not to change the beginning of this message.
             string[] areas = m.Split('\r');
             if (areas.Length <= 6)
             {
@@ -339,7 +339,7 @@ namespace Orts.MultiPlayer
                     }
                 }
 
-                // Extra fields not present in the original MP system.
+                // We can introduce new fields beyond this point.
                 if (version >= 16)
                 {
                     if (areas.Length >= 11)
@@ -433,7 +433,7 @@ namespace Orts.MultiPlayer
         }
         public override string ToString()
         {
-            // To preserve backwards compatibility with the public server at tsimserver.com, it is important not to change the format of this message.
+            // To preserve backwards compatibility with the public server at tsimserver.com, it is important not to change the beginning of this message.
             string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
                 + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + trainmaxspeed.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + pantothird + " " + pantofourth + " " + frontorrearcab + " " + headlight + " \r" +
                 leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
@@ -451,7 +451,7 @@ namespace Orts.MultiPlayer
 
             tmp += "\r" + MPManager.Instance().version + "\r" + MD5;
 
-            // We can introduce more fields beyond this point.
+            // We can introduce new fields beyond this point.
             tmp += $"\r{string.Join("\r", Tilting)}";
 
             return " " + tmp.Length + ": " + tmp;
