@@ -106,6 +106,24 @@ On the Visual Studio menu,
     </div>
   </li>
   <li>
+    <a href=# id="tests">
+      <h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Running the Test Suite</h2>
+    </a>
+    <div class="accordion_body">
+      <p>
+        The Open Rails source tree includes a number of unit and integration tests, primarily for portions of the code that deal with data processing. All code changes must pass these tests. Developers are also encouraged to write their own tests for any code that lends itself to testing.
+      </p>
+      <p>
+        After opening the solution in Visual Studio,
+      </p>
+      <ol>
+        <li>Select <em>Test > Test Explorer</em></li>
+        <li>Wait for the tests to populate in the <em>Test Explorer</em> pane</li>
+        <li>In the top-left corner of this pane, select "Run All Tests," or press Ctrl-R, then A.</li>
+      </ol>
+    </div>
+  </li>
+  <li>
     <a href=# id="code_policy"><h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Policy for Code Changes</h2></a>
     <div class="accordion_body">
       <p>
