@@ -26,7 +26,7 @@ using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
-    public class Pantographs
+    public class Pantographs : ISubSystem<Pantographs>
     {
         public static readonly int MinPantoID = 1; // minimum value of PantoID, applies to Pantograph 1
         public static readonly int MaxPantoID = 4; // maximum value of PantoID, applies to Pantograph 4
@@ -187,9 +187,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         }
     }
 
-    public class Pantograph
+    public class Pantograph : ISubSystem<Pantograph>
     {
         readonly MSTSWagon Wagon;
+        protected Simulator Simulator => Wagon.Simulator;
 
         public PantographState State { get; private set; }
         public float DelayS { get; private set; }
@@ -314,18 +315,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             default:
                             case 1:
                                 soundEvent = Event.Pantograph1Down;
+                                Confirm(CabControl.Pantograph1, CabSetting.Off);
                                 break;
 
                             case 2:
                                 soundEvent = Event.Pantograph2Down;
+                                Confirm(CabControl.Pantograph2, CabSetting.Off);
                                 break;
 
                             case 3:
                                 soundEvent = Event.Pantograph3Down;
+                                Confirm(CabControl.Pantograph3, CabSetting.Off);
                                 break;
 
                             case 4:
                                 soundEvent = Event.Pantograph4Down;
+                                Confirm(CabControl.Pantograph4, CabSetting.Off);
                                 break;
                         }
                     }
@@ -342,20 +347,30 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             default:
                             case 1:
                                 soundEvent = Event.Pantograph1Up;
+                                Confirm(CabControl.Pantograph4, CabSetting.On);
                                 break;
 
                             case 2:
                                 soundEvent = Event.Pantograph2Up;
+                                Confirm(CabControl.Pantograph2, CabSetting.On);
                                 break;
 
                             case 3:
                                 soundEvent = Event.Pantograph3Up;
+                                Confirm(CabControl.Pantograph3, CabSetting.On);
                                 break;
 
                             case 4:
                                 soundEvent = Event.Pantograph4Up;
+                                Confirm(CabControl.Pantograph4, CabSetting.On);
                                 break;
                         }
+
+
+                        if (!Simulator.TRK.Tr_RouteFile.Electrified)
+                            Simulator.Confirmer.Warning(Simulator.Catalog.GetString("No power line!"));
+                        if (Simulator.Settings.OverrideNonElectrifiedRoutes)
+                            Simulator.Confirmer.Information(Simulator.Catalog.GetString("Power line condition overridden."));
                     }
                     break;
             }
@@ -381,6 +396,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             outf.Write(State.ToString());
             outf.Write(DelayS);
             outf.Write(TimeS);
+        }
+
+        protected void Confirm(CabControl control, CabSetting setting)
+        {
+            if (Wagon == Simulator.PlayerLocomotive)
+            {
+                Simulator.Confirmer?.Confirm(control, setting);
+            }
         }
     }
 }
