@@ -12130,6 +12130,7 @@ namespace Orts.Simulation.Signalling
             }
 
             // signal is not first signal for train
+            var nextSignal = enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex];
 
             if (!allowAdvancedSignal &&
                 enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
@@ -15199,4 +15200,3 @@ namespace Orts.Simulation.Signalling
     }
 
 }
-
