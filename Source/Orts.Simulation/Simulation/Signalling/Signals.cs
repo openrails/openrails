@@ -12133,8 +12133,7 @@ namespace Orts.Simulation.Signalling
             var nextSignal = enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex];
 
             if (!allowAdvancedSignal &&
-                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
-                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+               nextSignal != null && nextSignal.thisRef != thisRef)
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
