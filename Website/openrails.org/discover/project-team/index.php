@@ -11,15 +11,25 @@
         <h1>Discover > Project Team</h1>
       </div>
     </div>
+    <div class="row">
+			<div class="col-md-3"></div>
+			<div class="col-md-6">
+        <h2>Meeting the Team</h2>
+        <p>
+The Project Team meets on <a href="http://www.elvastower.com">the Elvas Tower bulletin board</a> where Dave Nelson has encouraged us from the very beginning.
+He provides <a href="http://www.elvastower.com/forums/index.php?/forum/190-open-rails-simulator-project/">hosting for our public discussions</a> and private threads so, although we hang out on other boards too, this is the one to follow.
+        </p>
+			</div>
+		</div>
 		<div class="row">
 			<div class="col-md-3"></div>
 			<div class="col-md-6">
-<h2>Roles and Focus</h2>
-<p>
+        <h2>Roles and Focus</h2>
+        <p>
 Most of the team has a focus even if we help out with several roles. Here is the currently active team but it's difficult to keep track of everyone, so please get in touch if your name is missing or you would like it removed.
-</p><p>
+        </p><p>
 (The names listed are those used on <a href="http://www.elvastower.com">the Elvas Tower forum</a>.)
-</p>
+        </p>
 			</div>
 		</div>
 		<div class="row">
@@ -53,8 +63,11 @@ Less frequently, they get to add something entirely new and then stand ready to 
           <table>
           <tr><td>JTang</td></tr>
           <tr><td>Matej Pacha</td></tr>
-          <tr><td>Rob Roeterdink (roeter)</td></tr>
+          <tr><td>Mauricio (mbm_OR)</td></tr>
+          <tr><td>PerpetualKid</td></tr>
           <tr><td>rdamurphy</td></tr>
+          <tr><td>Rob Roeterdink (roeter)</td></tr>
+          <tr><td>Ryan Young (YoRyan)</td></tr>
           <tr><td>steamer_ctn</td></tr>
           <tr><td>Stefan PAITONI</td></tr>
           <tr><td>wacampbell</td></tr>
