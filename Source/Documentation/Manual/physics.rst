@@ -1176,11 +1176,11 @@ OR models the heat loss from a boiler with some standard default settings,
 however the model can be customised to suit the locomotive by adjusting the 
 following settings.
 
-- ``ORTSBoilerSurfaceArea`` - Surface area of the boiler / fire box that impacts heat loss. Default UoM - ft^2
+- ``ORTSBoilerSurfaceArea`` - Surface area of the boiler / fire box that impacts heat loss. Default UoM - (ft\ :sup:`2`)
 
 - ``ORTSFractionBoilerInsulated`` - Fraction of boiler surface area covered by insulation (less then 1)
 
-- ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. Default UoM - (BTU / ((sq. ft.) / hr.)) / (1 (in. / F)) 
+- ``ORTSHeatCoefficientInsulation`` - Thermal conduction coefficient. Default UoM - (BTU / (ft\ :sup:`2` / hr.) / (1 (in. / F)) 
 
 Steam Boiler Blowdown
 '''''''''''''''''''''
@@ -2844,7 +2844,7 @@ where
 
 .. math::
 
-    A=\frac{0.00003318\cdot rho\cdot F_t}{(1-F_{tr}/F_t)^2},
+    A=\frac{0.00003318\cdot\rho\cdot F_t}{(1-F_{tr}/F_t)^2},
 
     B=174.419(1-F_{tr}/F_t)^2,
 
@@ -2853,7 +2853,7 @@ where
 +-----------------------------------------------------------+-----------------------------------------------------------+
 |F\ :sub:`t` -- tunnel cross-sectional area (m\ :sup:`2`\ ) |F\ :sub:`tr` -- train cross-sectional area (m\ :sup:`2`\ ) |
 +-----------------------------------------------------------+-----------------------------------------------------------+
-|\rho -- density of air ( = 1.2 kg/m\ :sup:`3`\ )           |R\ :sub:`t` -- tunnel perimeter (m)                        |
+|:math:`\rho` -- density of air ( = 1.2 kg/m\ :sup:`3`\ )   |R\ :sub:`t` -- tunnel perimeter (m)                        |
 +-----------------------------------------------------------+-----------------------------------------------------------+
 |L\ :sub:`tr` -- length of train (m)                        |L\ :sub:`t` -- length of tunnel (m)                        |
 +-----------------------------------------------------------+-----------------------------------------------------------+
