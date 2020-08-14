@@ -288,8 +288,9 @@ ORTS
 ^^^^
 
 The sound objects attached to a vehicle (wagon or loco) can respond in volume and frequency to changes in the vehicle's properties.
-There are 7 properties:		
-- distance squared from a sound source (m^2)
+There are 7 properties:
+
+- distance squared from a sound source (m\ :sup:`2`)
 
 - speed (m/s)	
 
