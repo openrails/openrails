@@ -45,6 +45,7 @@ Revisions are kept in <a href="https://github.com/openrails/openrails">a public 
 From your PC, you can simply view the repository from a web browser. 
 GitHub.com provides the GitHub Desktop program to interface between GitHub.com and your PC (for 64-bit Windows only).
 Other Windows programs are SourceTree and TortoiseGit and also Visual Studio includes a Git tool.
+See our <a href="https://onedrive.live.com/view.aspx?resid=7F0F05E28F47C189!295694&ithint=file%2cdocx&authkey=!ABYL6qOsIy85Bdc">step-by-step instructions for starting to work with Git</a>.
       </p><p>
 The main folders in the repository are:
     </p>
@@ -102,6 +103,24 @@ On the Visual Studio menu,
         </li>
         <li>Below this, check the checkbox for "Enable native code debugging"</li>
         <li>Press F5 to run RunActivity.exe using your activity.</li>
+      </ol>
+    </div>
+  </li>
+  <li>
+    <a href=# id="tests">
+      <h2 class="accordion_head"><span class="glyphicon glyphicon-play btn-xs"></span> Running the Test Suite</h2>
+    </a>
+    <div class="accordion_body">
+      <p>
+        The Open Rails source tree includes a number of unit and integration tests, primarily for portions of the code that deal with data processing. All code changes must pass these tests. Developers are also encouraged to write their own tests for any code that lends itself to testing.
+      </p>
+      <p>
+        After opening the solution in Visual Studio,
+      </p>
+      <ol>
+        <li>Select <em>Test > Test Explorer</em></li>
+        <li>Wait for the tests to populate in the <em>Test Explorer</em> pane</li>
+        <li>In the top-left corner of this pane, select "Run All Tests," or press Ctrl-R, then A.</li>
       </ol>
     </div>
   </li>
