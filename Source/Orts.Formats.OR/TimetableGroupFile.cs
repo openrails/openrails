@@ -134,7 +134,7 @@ namespace Orts.Formats.OR
         /// </summary>
         /// <param name="directory">The directory where the MultiTTfile is located, to prepend to all filenames.</param>
         /// <param name="scrStream">The MultiTTfile stream reader.</param>
-        /// <returns></returns>
+        /// <returns>The description (null if not present) and the list of file paths.</returns>
         public static (string, IEnumerable<string>) ReadMultiTTFiles(string directory, StreamReader scrStream)
         {
             string description = null;
