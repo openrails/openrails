@@ -109,8 +109,8 @@ If you select ``+ Explore in activity mode +`` (second entry under
 ``Activity:``, you will have to select same items as with Explore route, but 
 in this case the game will automatically generate an activity (with the 
 player train only) and will execute it. By exploring the route in this mode 
-you will able to switch to autopilot mode if you like, and you will have access 
-to some other activity features 
+you will able to switch to autopilot mode if you like ( see :ref:`here 
+<driving-autopilot>` ) and you will have access to some other activity features 
 like :ref:`randomized weather <options-actweather-randomization>` if selected.
 
 To select the consist you have two possibilities: either you click under 
