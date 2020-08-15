@@ -233,14 +233,13 @@ namespace ORTS
                 if (Directory.Exists(path))
                 {
                     // Load English documents
-                    LoadDocuments(docs, path, null);
+                    LoadDocuments(docs, path);
 
                     // Find any non-English documents by looking in \Documentation\<language code>\, e.g. \Documentation\es\
                     foreach (var codePath in Directory.GetDirectories(path))
                     {
                         // Extract the last folder in the path - the language code, e.g. "es"
-                        var i = codePath.LastIndexOf(@"\");
-                        var code = codePath.Substring(i + 1);
+                        var code = System.IO.Path.GetFileName(codePath);
 
                         // include any non-English documents that match the chosen language
                         if (code == Settings.Language)
@@ -263,19 +262,17 @@ namespace ORTS
             }
         }
 
-        private void LoadDocuments(List<ToolStripItem> docs, string folderPath, string code)
+        private void LoadDocuments(List<ToolStripItem> docs, string folderPath, string code = null)
         {
             foreach (var filePath in Directory.GetFiles(folderPath))
             {
                 var ext = System.IO.Path.GetExtension(filePath);
                 var name = System.IO.Path.GetFileNameWithoutExtension(filePath);
-                // These are the following formats that can be selected.
-                if (".pdf .doc .docx .pptx .txt".Contains(ext))
+                // These are the formats that can be selected.
+                if (new[] { ".pdf", ".doc", ".docx", ".pptx", ".txt" }.Contains(ext.ToLowerInvariant()))
                 {
-                    var codeLabel = "";
-                    if (code != null)
-                        codeLabel = $" [{code}]";
-                    docs.Add(new ToolStripMenuItem($"{name}{ext}{codeLabel}", null, (Object sender2, EventArgs e2) =>
+                    var codeLabel = string.IsNullOrEmpty(code) ? "" : $" [{code}]";
+                    docs.Add(new ToolStripMenuItem($"{name}{ext}{codeLabel}", null, (object sender2, EventArgs e2) =>
                     {
                         var docPath = (sender2 as ToolStripItem).Tag as string;
                         Process.Start(docPath);
