@@ -320,3 +320,318 @@ Repeated calls of these functions will not lead to invalid or absurd values for 
 
 | **RESET_SIGNALNUMCLEARAHEAD()**
 | Reset the value of SNCA to the default value.
+
+Local signal variables
+----------------------
+Originally, the only means of interfacing between signals, or between signal heads within a signal, is
+through the signal aspect states. This sets a severe restriction of the amount of information that can be
+passed between signals or signal heads.
+
+In OR, local signal variables have been introduced. These variables are specific for a signal. The variables
+are persistent, that is they do retain their value from one update to the next. Because the variables are
+assigned per signal, they are available to all signalheads which are part of that signal. The variables can
+also be accessed by other signals.
+
+Each signalhead which is part of a signal can access the variables for both reading and writing.
+
+Each signalhead from other signals can access the variables for reading only.
+
+Each variable is identified by an integer number. The variables can contain integer values only.
+
+| **STORE_LVAR(IDENT, VALUE)**
+| Sets the variable as identified by IDENT to VALUE. The function has no return value.
+
+| **THIS_SIG_LVAR(IDENT)**
+| Returns the value of the variable identified by IDENT of this signal.
+
+| **NEXT_SIG_LVAR(SIGFN_TYPE, IDENT)**
+| Returns the value of the variable identified by IDENT of the first signal ahead of type SIGFN_TYPE.
+| If no such signal is found, the function returns value 0.
+
+| **ID_SIG_LVAR(SIGID, IDENT)**
+| Returns the value of the variable identified by IDENT of the signal identified by the signal ident SIGID.
+
+Functions for Normal Head Subtype
+---------------------------------
+Although there can be different types of signal, and OR allows the definition and additional of any
+number of type, only signals of type NORMAL will affect the trains.
+
+Certain signal systems, however, have different types of signals, e.g. main and shunt signals, which
+require different behaviour or different response. In order to be able to distinguish between such signals,
+OR has introduced a Subtype which can be set for a NORMAL signal.
+
+The subtype can be defined for any signal in the sigcfg.dat file, in the same way as the signal type.
+A number of functions is available to query a signal to identify its subtype.
+
+| **THIS_SIG_HASNORMALSUBTYPE(SIGSUBTYPE)**
+| Returns value 1 (true) if this signal has any head of type NORMAL with the required subtype.
+
+| **NEXT_SIG_HASNORMALSUBTYPE(SIGSUBTYPE)**
+| Returns value 1 (true) if next signal with any head of type NORMAL has any head with the required
+  subtype.
+
+| **ID_SIG_HASNORMALSUBTYPE(SIGIDENT, SIGSUBTYPE)**
+| Returns value 1 (true) if signal identified by SIFIDENT has any head of type NORMAL with the required
+  subtype.
+
+Functions to verify full or partial route clearing
+--------------------------------------------------
+As mentioned, some signal systems differentiate between main and shunt signals (e.g. in Germany, UK).
+This may affect the clearing of a signal in locations where both such types occur on the same route.
+If a train requires the full route from a main signal to the next main signal, in locations where there are
+shunt signals inbetween, the first main signal may not clear until the full route to the next main signal is
+available, and will then clear to a main aspect. If, however, the train only requires a partial route (e.g. for
+shunting), the signal may clear as soon as (part of) this route is available, and will generally then clear
+only to a restricted or auxiliary aspect (shunt aspect).
+
+The original MSTS signal functions could not support such a situation, as the signal would always clear as
+soon as the first part of the route became available, because it was not possible to distinguish between
+the different types of signal.
+
+Due to the introduction of the Normal Subtype as detailed above, such a setup is not possible. A number
+of functions have been introduced to support this.
+
+Use of these functions is, however, fairly complicated, and only a brief description of these functions is
+provided in this document.
+
+| **TRAIN_REQUIRES_NEXT_SIGNAL(SIGIDENT, REQPOSITION)**
+| Returns value 1 (true) if train requires the full route to the signal as identified by SIGIDENT.
+| If REQPOSITION is set to 0, the route is checked up to and including the last section ahead of the relevant
+  signal.
+| If REQPOSITION is set to 1, the route is checked up to and including the first section immediately behind
+  the relevant signal.
+
+| **FIND_REQ_NORMAL_SIGNAL(SIGSUBTYPE)**
+| Returns the Signal Ident of the first NORMAL signal which has a head with the required SIGSUBTYPE,
+  or -1 if such a signal cannot be found.
+
+| **ROUTE_CLEARED_TO_SIGNAL(SIGIDENT)**
+| Returns value 1 (true) if the route as required is clear and available.
+
+| **ROUTE_CLEARED_TO_SIGNAL_CALLON(SIGIDENT)**
+| As ROUTE_CLEARED_TO_SIGNAL, but will also return value 1 (true) if the route is available because the
+  train is allowed to call-on.
+
+Miscellaneous functions
+-----------------------
+A number of miscellaneous functions which are not part of any of the groups detailed above.
+
+| **ALLOW_CLEAR_TO_PARTIAL_ROUTE(SETTING)**
+| If the route of a train passing a signal stops short of the next signal (no further NORMAL signal is found
+  on that route), the relevant signal will only clear if the train is approaching that signal, i.e. it is the first
+  signal in the train’s path.
+| This setting can be overruled by this function.
+| If SETTING is set to 1, the signal will clear if required and the route is available, even if no further
+  NORMAL signal is found.
+| If SETTING is set to 0, the normal working is restored.
+
+| **THIS_SIG_NOUPDATE()**
+| After the signal has been processed once, it will not be updated anymore. This is useful for fixed signals,
+  e.g. at end of track like bufferstop lights, but also for fixed signals like route control or route information
+  signals. Calling this function in the script for such signals excludes these signals from the normal updates
+  which will save processing time. 
+| Note that the signals are always processed once, so the script will be
+  executed once to set the signal to the required fixed state.
+
+| **SWITCHSTAND(ASPECT_STATE_0, ASPECT_STATE _1)**
+| Special functions for signals used as switchstand. A direct link is set between the switch and the signal,
+  such that the signal is immediately updated as and when the state of the switch is changed.
+| The signal will be set to ASPECT_STATE_0 when the switch is set to route 0, and to ASPET_STATE_1 when
+  the switch is set to route 1. Linking the signal to the switch routes is not necessary.
+| Using this function for switchstands eliminates the delay which normally can occur between the change
+  of the switch state and the state of the signal, due to the independent processing of the signal.
+| Note that the signal can be excluded from the normal update process as it will be updated through the
+  direct link with the switch.
+
+OR-specific additions to SIGCFG files
+=====================================
+Detailed below are OR-specific additions which can be set in the SIGCFG file to set specific characteristics
+or enhance the functionality of the signal types.
+
+General definitions
+-------------------
+The following are general definitions which must be set before the definitions of the signal types,
+immediately following the lighttextures and lightstab definitions.
+
+ORTSSignalFunctions
+-------------------
+Additional signal types can be defined in OR, over and above the standard MSTS signal types.
+The additional types must be predefined in the sigcfg.dat file using the ORTSSignalFunctions definition.
+
+The defined ORTS signal types can be set in the signal type definition and used in signal script functions
+in the same way as the default MSTS types.
+
+Note that SPEED is a fixed signal type which is available in OR without explicit definition (see below for
+details on SPEED type signals). Also note that any type definition starting with “OR_” is not valid, these
+names are reserved for future default types in OR.
+
+Syntax:
+
+| ORTSSignalFunctions ( n
+|   ORTSSignalFunctionType ( “signaltype” )
+|   . . . 
+| )
+| 
+| The value **n** indicates the total number of definitions.
+| The value **signaltype** is the name of the additional type.
+
+ORTSNormalSubtypes
+------------------
+As detailed above, subtypes can be defined for NORMAL type signals which allows to distinguish
+different use of NORMAL type signals.
+
+The Normal Subtype must be predefined in the sigcfg.dat file using the ORTSNormalSubtypes definition.
+
+The Subtype can be set in the type definition for NORMAL type signals using the ORTSNormalSubtype
+statement, see below.
+
+The subtype can be used in specific signal script functions as detailed above.
+
+Syntax:
+
+| ORTSNormalSubtypes ( n
+|   ORTSNormalSubtype ( " subtype " )
+|    . . . 
+| )
+| 
+| The value **n** indicates the total number of definitions.
+| The value **subtype** is the name of the subtype.
+
+Signal Type definitions
+-----------------------
+The following section details OR specific additions to the signal type definition.
+
+Glow settings
+'''''''''''''
+Signal Glow is a feature in OR to improve the visibility of signals at larger distances.
+The required glow setting can de set per signal type in the signal definition.
+The value is a real number, and sets the intensity of the glow. Value 0.0 defines that there is no glow
+effect.
+
+Default program values for glow are:
+
+| Day value = 3.0;
+| Night value = 5.0;
+
+Notes :
+
+- For signal types which have “Semaphore” flag set, the Day value = 0.0.
+- For signals of type INFO and SHUNTING, both Day and Night value are set to 0.0 (no glow).
+
+Syntax:
+
+| ORTSDayGlow ( d )
+| ORTSNightGlow ( n )
+
+The values d and n are the day and night glow values, as real numbers.
+
+Light switch
+------------
+There were many signalling systems where semaphore signals did not show lights during daytime. This
+effect can be simulated using the ORTSDayLight setting.
+
+Syntax:
+
+| ORTSDayLight( l )
+
+The value l is a logical value, if set to false, the signal will not show lights during daytime.
+
+Script Function
+---------------
+Normally, each signal type must have a linked signal script, with the same name as defined for the signal
+type. However, often there are a series of signal types which may differ in definition, e.g. due to
+differences in the position of the lights, but which have the same logic scripts.
+
+In OR, a signal type can have a definition which references a particular script which this signal type must
+use. Different signal types which have the same logic can therefor all use the same script.
+This script may be defined using the name of one of these signal types, or it may have a generic name
+not linked to any existing signal type.
+
+Syntax:
+
+
+| ORTSScript( name )
+
+The value **name** is the name of the signal script as defined in the sigscr.dat file.
+
+Normal Subtype
+--------------
+As detailed above, a signal type of type NORMAL may have an additional subtype definition.
+
+Syntax:
+
+| ORTSNormalSubtype( subtype )
+
+The value **subtype** is the subtype name and must match one of the names defined in
+ORTSNormalSubtypes.
+
+Approach Control Settings
+-------------------------
+The required values for approach control functions for a particular signal type can be defined in the
+signal type definition. These values can be referenced in the signal script as defined for the approach
+control functions.
+
+Syntax:
+
+| ApproachControlSettings (
+|   PositionDefinition ( position )
+|   SpeedDefinition ( speed )
+| )
+
+Possible position definitions
+'''''''''''''''''''''''''''''
+
+| Positionkm
+| Positionmiles
+| Positionm
+| Positionyd
+
+Possible speed definitions
+''''''''''''''''''''''''''
+
+| Speedkph
+| Speedmph
+
+The value position is the required position value in dimension as set by the relevant parameter.
+The value speed is the required speed value in dimension as set by the relevant parameter.
+Inclusion of speed definition is optional and need not be set if only approach control position functions
+are used.
+
+Signal aspect parameters
+------------------------
+The following parameters can be included in signal aspect definitions.
+
+| **or_speedreset**
+
+Can be used in combination with a speed setting.
+Its function, combined with the speed setting, is as follows.
+
+| In activity mode :
+
+- If set, the speed as set applies until overruled by a speedpost or next signal setting a higher speed value;
+- If not set, speed as set applies until the next signal and will not be overruled by a speedpost.
+
+| In timetable mode :
+
+- Speed as set always applies until overruled by a speedpost or next signal setting a higher speed value, this flag has no effect in timetable mode.
+
+| **or_nospeedreduction**
+
+For signal aspects “STOP_AND_PROCEED” and “RESTRICTING”, trains will reduce speed to a low value on
+approach of the signal.
+If this flag is set, trains are allowed to pass the signal at normal linespeed.
+
+SPEED Signal
+------------
+A new standard signaltype, “SPEED”, has been added to OR.
+
+Signals defined as type “SPEED” are processed as speedposts and not as signals.
+The required speed limit can be set using the speed setting of the signal aspect definition.
+
+The advantages of using “SPEED” signals over speedposts are :
+
+- “SPEED” signals can be scripted, and can therefor be conditional, e.g. a speed restrictions in only set on approach to a junction if a restricted route is set through that junction.
+- “SPEED” signals can set a state according to their setting, and this state can be seen by a preceeding signal. This can be used to set up variable speed warning signs.
+
+A “SPEED” signalhead can be part of a signal which also contains other heads, but for clarity of operation
+this is not advisable.
