@@ -105,10 +105,6 @@ namespace Orts.Viewer3D
 			RenderPrimitiveSequence.OverlayOpaque,
 		};
 
-        protected static VertexBuffer DummyVertexBuffer;
-        protected static readonly VertexDeclaration DummyVertexDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
-        protected static readonly Matrix[] DummyVertexData = new Matrix[] { Matrix.Identity };
-
         /// <summary>
         /// This is an adjustment for the depth buffer calculation which may be used to reduce the chance of co-planar primitives from fighting each other.
         /// </summary>
@@ -127,6 +123,19 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="graphicsDevice"></param>
         public abstract void Draw(GraphicsDevice graphicsDevice);
+
+        // We are required to provide all necessary data for the shader code. To avoid needing to split it up into instanced and non-instanced versions, we provide this dummy vertex buffer instead of the instance buffer where needed.
+        static VertexBuffer DummyVertexBuffer;
+        static internal VertexBuffer GetDummyVertexBuffer(GraphicsDevice graphicsDevice)
+        {
+            if (DummyVertexBuffer == null)
+            {
+                var vertexBuffer = new VertexBuffer(graphicsDevice, new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements), 1, BufferUsage.WriteOnly);
+                vertexBuffer.SetData(new Matrix[] { Matrix.Identity });
+                DummyVertexBuffer = vertexBuffer;
+            }
+            return DummyVertexBuffer;
+        }
     }
 
     [DebuggerDisplay("{Material} {RenderPrimitive} {Flags}")]

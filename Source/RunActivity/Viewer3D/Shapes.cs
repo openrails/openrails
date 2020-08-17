@@ -1220,7 +1220,8 @@ namespace Orts.Viewer3D
         protected internal int MinVertexIndex;
         protected internal int NumVerticies;
         protected internal int PrimitiveCount;
-        protected internal VertexBufferBinding[] VertexBufferBindings;
+
+        readonly VertexBufferBinding[] VertexBufferBindings;
 
         public ShapePrimitive()
         {
@@ -1237,9 +1238,7 @@ namespace Orts.Viewer3D
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
 
-            DummyVertexBuffer = new VertexBuffer(material.Viewer.GraphicsDevice, DummyVertexDeclaration, 1, BufferUsage.WriteOnly);
-            DummyVertexBuffer.SetData(DummyVertexData);
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(DummyVertexBuffer) };
+            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) };
         }
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, List<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
@@ -1302,7 +1301,8 @@ namespace Orts.Viewer3D
         protected VertexDeclaration InstanceDeclaration;
         protected int InstanceBufferStride;
         protected int InstanceCount;
-        protected VertexBufferBinding[] VertexBufferBindings;
+
+        readonly VertexBufferBinding[] VertexBufferBindings;
 
         internal ShapePrimitiveInstances(GraphicsDevice graphicsDevice, ShapePrimitive shapePrimitive, Matrix[] positions, int subObjectIndex)
         {

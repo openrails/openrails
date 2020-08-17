@@ -245,9 +245,7 @@ namespace Orts.Viewer3D
             Tile = null;
             Patch = null;
 
-            DummyVertexBuffer = new VertexBuffer(viewer.GraphicsDevice, DummyVertexDeclaration, 1, BufferUsage.WriteOnly);
-            DummyVertexBuffer.SetData(DummyVertexData);
-            VertexBufferBindings = new[] { new VertexBufferBinding(PatchVertexBuffer), new VertexBufferBinding(DummyVertexBuffer) };
+            VertexBufferBindings = new[] { new VertexBufferBinding(PatchVertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(viewer.GraphicsDevice)) };
         }
 
         [CallOnThread("Updater")]
