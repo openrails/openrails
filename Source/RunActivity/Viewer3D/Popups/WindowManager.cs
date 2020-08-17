@@ -60,6 +60,7 @@ namespace Orts.Viewer3D.Popups
 
         readonly Material WindowManagerMaterial;
         readonly PopupWindowMaterial PopupWindowMaterial;
+        readonly SpriteBatchMaterial SpriteBatchMaterial;
         readonly List<Window> Windows = new List<Window>();
         Window[] WindowsZOrder = new Window[0];
         SpriteBatch SpriteBatch;
@@ -74,6 +75,7 @@ namespace Orts.Viewer3D.Popups
             Viewer = viewer;
             WindowManagerMaterial = new BasicBlendedMaterial(viewer, "WindowManager");
             PopupWindowMaterial = (PopupWindowMaterial)Viewer.MaterialManager.Load("PopupWindow");
+            SpriteBatchMaterial = (SpriteBatchMaterial)Viewer.MaterialManager.Load("SpriteBatch");
             TextManager = new WindowTextManager();
             TextFontDefault = TextManager.GetScaled("Arial", 10, System.Drawing.FontStyle.Regular);
             TextFontDefaultOutlined = TextManager.GetScaled("Arial", 10, System.Drawing.FontStyle.Regular, 1);
@@ -222,7 +224,6 @@ namespace Orts.Viewer3D.Popups
 			// Construct a view where (0, 0) is the top-left and (width, height) is
 			// bottom-right, so that popups can act more like normal window things.
 			XNAView = Matrix.CreateTranslation(-ScreenSize.X / 2, -ScreenSize.Y / 2, 0) *
-				Matrix.CreateTranslation(-0.5f, -0.5f, 0) *
 				Matrix.CreateScale(1, -1, 1);
 			// Project into a flat view of the same size as the viewport.
 			XNAProjection = Matrix.CreateOrthographic(ScreenSize.X, ScreenSize.Y, 0, 100);
@@ -231,15 +232,30 @@ namespace Orts.Viewer3D.Popups
 			{
 				var xnaWorld = window.XNAWorld;
 
-                // FIXME: MonoGame cannot read backbuffer
-                //if (Screen != null)
-                //    graphicsDevice.ResolveBackBuffer(Screen);
-                PopupWindowMaterial.SetState(graphicsDevice, Screen);
+                var oldTargets = graphicsDevice.GetRenderTargets();
+                if (Viewer.Settings.WindowGlass)
+                {
+                    graphicsDevice.SetRenderTarget(Screen);
+                    graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                    PopupWindowMaterial.SetState(graphicsDevice, oldTargets[0].RenderTarget as RenderTarget2D);
+                }
+                else
+                {
+                    PopupWindowMaterial.SetState(graphicsDevice, null);
+                }
                 PopupWindowMaterial.Render(graphicsDevice, window, ref xnaWorld, ref XNAView, ref XNAProjection);
                 PopupWindowMaterial.ResetState(graphicsDevice);
                 SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.NonPremultiplied);
                 window.Draw(SpriteBatch);
                 SpriteBatch.End();
+                if (Viewer.Settings.WindowGlass)
+                {
+                    graphicsDevice.SetRenderTargets(oldTargets);
+                    SpriteBatchMaterial.SetState(graphicsDevice, null);
+                    SpriteBatchMaterial.SpriteBatch.Draw(Screen, Vector2.Zero, Color.White);
+                    SpriteBatchMaterial.ResetState(graphicsDevice);
+                }
+
             }
             // For performance, we call SpriteBatch.Begin() with SaveStateMode.None above, but we now need to restore
             // the state ourselves.

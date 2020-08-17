@@ -637,15 +637,23 @@ namespace Orts.Viewer3D
     {
         public readonly SpriteBatch SpriteBatch;
 
+        readonly BlendState BlendState = BlendState.NonPremultiplied;
+
         public SpriteBatchMaterial(Viewer viewer)
             : base(viewer, null)
         {
             SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
         }
 
+        public SpriteBatchMaterial(Viewer viewer, BlendState blendState)
+            : this(viewer)
+        {
+            BlendState = blendState;
+        }
+
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState);
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
@@ -1119,8 +1127,7 @@ namespace Orts.Viewer3D
             if (ShaderPassesPopupWindow == null) ShaderPassesPopupWindow = shader.Techniques["PopupWindow"].Passes.GetEnumerator();
             if (ShaderPassesPopupWindowGlass == null) ShaderPassesPopupWindowGlass = shader.Techniques["PopupWindowGlass"].Passes.GetEnumerator();
             ShaderPasses = screen == null ? ShaderPassesPopupWindow : ShaderPassesPopupWindowGlass;
-            // FIXME: MonoGame cannot read backbuffer contents
-            //shader.Screen = screen;
+            shader.Screen = screen;
             shader.GlassColor = Color.Black;
 
 			graphicsDevice.BlendState = BlendState.NonPremultiplied;

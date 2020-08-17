@@ -387,6 +387,9 @@ namespace Orts.Viewer3D
         Vector3 ShadowMapY;
         Vector3[] ShadowMapCenter;
 
+        internal RenderTarget2D RenderSurface;
+        SpriteBatchMaterial RenderSurfaceMaterial;
+
         readonly Material DummyBlendedMaterial;
 		readonly Dictionary<Material, RenderItemCollection>[] RenderItems = new Dictionary<Material, RenderItemCollection>[(int)RenderPrimitiveSequence.Sentinel];
         readonly RenderItemCollection[] RenderShadowSceneryItems;
@@ -444,6 +447,22 @@ namespace Orts.Viewer3D
 
             XNACameraView = Matrix.Identity;
             XNACameraProjection = Matrix.CreateOrthographic(game.RenderProcess.DisplaySize.X, game.RenderProcess.DisplaySize.Y, 1, 100);
+
+            ScreenChanged();
+        }
+
+        void ScreenChanged()
+        {
+            RenderSurface = new RenderTarget2D(
+                Game.RenderProcess.GraphicsDevice,
+                Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferWidth,
+                Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferHeight,
+                false,
+                Game.RenderProcess.GraphicsDevice.PresentationParameters.BackBufferFormat,
+                Game.RenderProcess.GraphicsDevice.PresentationParameters.DepthStencilFormat,
+                Game.RenderProcess.GraphicsDevice.PresentationParameters.MultiSampleCount,
+                RenderTargetUsage.PreserveContents
+            );
         }
 
         public void Clear()
@@ -480,6 +499,9 @@ namespace Orts.Viewer3D
 
         public void PrepareFrame(Viewer viewer)
         {
+            if (RenderSurfaceMaterial == null)
+                RenderSurfaceMaterial = new SpriteBatchMaterial(viewer, BlendState.Opaque);
+
             if (viewer.Settings.UseMSTSEnv == false)
                 SolarDirection = viewer.World.Sky.solarDirection;
             else
@@ -688,6 +710,9 @@ namespace Orts.Viewer3D
         [CallOnThread("Render")]
         public void Draw(GraphicsDevice graphicsDevice)
         {
+            if (RenderSurface.Width != graphicsDevice.PresentationParameters.BackBufferWidth || RenderSurface.Height != graphicsDevice.PresentationParameters.BackBufferHeight)
+                ScreenChanged();
+
 #if DEBUG_RENDER_STATE
             DebugRenderState(graphicsDevice, "RenderFrame.Draw");
 #endif
@@ -789,6 +814,11 @@ namespace Orts.Viewer3D
         /// <param name="logging"></param>
         void DrawSimple(GraphicsDevice graphicsDevice, bool logging)
         {
+            if (RenderSurfaceMaterial != null)
+            {
+                graphicsDevice.SetRenderTarget(RenderSurface);
+            }
+
             if (Game.Settings.DistantMountains)
             {
                 if (logging) Console.WriteLine("  DrawSimple (Distant Mountains) {");
@@ -806,6 +836,15 @@ namespace Orts.Viewer3D
                 graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
                 DrawSequences(graphicsDevice, logging);
                 if (logging) Console.WriteLine("  }");
+            }
+
+            if (RenderSurfaceMaterial != null)
+            {
+                graphicsDevice.SetRenderTarget(null);
+                graphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer | ClearOptions.Stencil, Color.Transparent, 1, 0);
+                RenderSurfaceMaterial.SetState(graphicsDevice, null);
+                RenderSurfaceMaterial.SpriteBatch.Draw(RenderSurface, Vector2.Zero, Color.White);
+                RenderSurfaceMaterial.ResetState(graphicsDevice);
             }
         }
 
