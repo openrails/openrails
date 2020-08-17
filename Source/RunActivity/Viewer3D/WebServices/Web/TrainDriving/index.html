@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<!--
+COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+
+This file is part of Open Rails.
+
+Open Rails is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Open Rails is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><!-- adds zooming for mobiles -->
+  <title>OR: Train Driving API</title>
+  <link rel="shortcut icon" type="image/png" href="/or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
+  <link rel="stylesheet" type="text/css" href="/index.css"><!-- share styles with home page -->
+	<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+
+<body id="body" onload="setInterval (ApiTrainDriving, 500)">
+  <div id=menu><a href="/">Back to Menu</a></div>
+  <div>
+    <br/>
+    <button class="button" onclick="changePageColor()" id="buttonDN">Day</button>
+    <table class="border" style="background-color:black;" id="TrainDriving"></table>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>

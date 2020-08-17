@@ -101,8 +101,8 @@ namespace Orts.Parsers.Msts
     // (constant or block) will not be processed.
     //  
     // NB!!! If a comment/skip/#*/_* is the last {item} in a block, rather than being totally consumed a dummy 
-    // "#\u00b6" is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be 
-    // ignored).
+    // {STFReader.EndBlockCommentSentinel}, is returned, so if EndOFBlock() returns false, you always get an
+    // {item} (which can then just be ignored).
     // 
     // Here are two examples which use different techniques to read the same STF file:
     // Example 1:
@@ -163,6 +163,11 @@ namespace Orts.Parsers.Msts
     /// </exception>
     public class STFReader : IDisposable
     {
+        /// <summary>
+        /// Returned in lieu of an item for a comment that is the last item in a block.
+        /// </summary>
+        public const string EndBlockCommentSentinel = "#\u00b6";
+
         /// <summary>Open a file, reader the header line, and prepare for STF parsing
         /// </summary>
         /// <param name="filename">Filename of the STF file to be opened and parsed.</param>
@@ -272,7 +277,7 @@ namespace Orts.Parsers.Msts
         /// <summary>Returns the next whitespace delimited {item} from the STF file skipping comments, etc.
         /// </summary>
         /// <remarks>
-        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy <see cref="EndBlockCommentSentinel"/> is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
         /// </remarks>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
         public string ReadItem()
@@ -283,7 +288,7 @@ namespace Orts.Parsers.Msts
         /// <summary>This is an internal function in STFReader, it returns the next whitespace delimited {item} from the STF file.
         /// </summary>
         /// <remarks>
-        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy '#' is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
+        /// <alert class="important">If a comment/skip/#*/_* ignore block is the last {item} in a block, rather than being totally consumed a dummy <see cref="EndBlockCommentSentinel"/> is returned, so if EndOFBlock() returns false, you always get an {item} (which can then just be ignored).</alert>
         /// </remarks>
         /// <param name="string_mode">When true normal comment processing is disabled.</param>
         /// <returns>The next {item} from the STF file, any surrounding quotations will be not be returned.</returns>
@@ -529,6 +534,8 @@ namespace Orts.Parsers.Msts
                 return defaultValue.Value;
             }
 
+            if (item.Length == 0)
+                return 0x0;
             uint val;
             if (uint.TryParse(item, parseHex, parseNFI, out val)) return val;
             STFException.TraceWarning(this, "Cannot parse the constant hex string " + item);
@@ -1148,7 +1155,7 @@ namespace Orts.Parsers.Msts
                     return (defaultValue != null) ? defaultValue : "";
                 }
                 SkipRestOfBlock(); // <CJComment> This call seems poor practice as it discards any tokens _including mistakes_ up to the matching ")". </CJComment>  
-                if (result == "#\u00b6")
+                if (result == EndBlockCommentSentinel)
                 {
                     STFException.TraceWarning(this, "Found a comment when an {constant item} was expected.");
                     return (defaultValue != null) ? defaultValue : result;
@@ -1679,9 +1686,7 @@ namespace Orts.Parsers.Msts
                 //this correctly when using 'tree'
                 int c2 = PeekPastWhitespace();
                 if (c2 == ')')
-                {
-                    return "#\u00b6";
-                }
+                    return EndBlockCommentSentinel;
                 string item = ReadItem(skip_mode, string_mode);
                 return item; // Now move on to the next token after the commented area
             }
@@ -1797,9 +1802,7 @@ namespace Orts.Parsers.Msts
                             //this correctly when using 'tree'
                             int c2 = PeekPastWhitespace();
                             if (c2 == ')')
-                            {
-                                return "#\u00b6";
-                            }
+                                return EndBlockCommentSentinel;
                             string item = ReadItem(skip_mode, string_mode);
                             return item; // Now move on to the next token after the commented area
                         }

@@ -913,7 +913,7 @@ namespace Orts.Viewer3D.Popups
                 }
             }
 
-            TextPageHeading(table, Viewer.Catalog.GetString("DISPATCHER INFORMATION : active trains : " + totalactive));
+            TextPageHeading(table, $"{Viewer.Catalog.GetString("DISPATCHER INFORMATION : active trains : ")}{totalactive}");
 
             TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Train"),

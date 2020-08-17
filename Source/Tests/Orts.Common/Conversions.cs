@@ -246,7 +246,7 @@ namespace Tests.Orts.Common
             Assert.Equal(inhgResult, FormatStrings.FormatPressure(KPa.ToKgfpCm2(KPa.FromInHg(1.2f)), PressureUnit.KgfpCm2, PressureUnit.InHg, true));
             Assert.Equal(inhgResult, FormatStrings.FormatPressure(KPa.ToPSI(KPa.FromInHg(1.2f)), PressureUnit.PSI, PressureUnit.InHg, true));
 
-            var kgfResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F1} kgf/cm^2", 1.2f);
+            var kgfResult = string.Format(System.Globalization.CultureInfo.CurrentCulture, "{0:F1} kgf/cm²", 1.2f);
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.FromKgfpCm2(1.2f), PressureUnit.KPa, PressureUnit.KgfpCm2, true));
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.ToBar(KPa.FromKgfpCm2(1.2f)), PressureUnit.Bar, PressureUnit.KgfpCm2, true));
             Assert.Equal(kgfResult, FormatStrings.FormatPressure(KPa.ToInHg(KPa.FromKgfpCm2(1.2f)), PressureUnit.InHg, PressureUnit.KgfpCm2, true));

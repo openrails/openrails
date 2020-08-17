@@ -1,40 +1,32 @@
-# Open Rails
+# ![](Source/Documentation/Manual/images/or_logo.png) Open Rails
 
-## Builds and downloads
+Open Rails is a free train simulator supporting the world's largest range of digital content.
+
+## Getting started
+
+* [Download the Stable Version](http://www.openrails.org/download/program/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [Download some content](http://www.openrails.org/download/content/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+
+## Documentation
+
+* [Read the FAQ](http://www.openrails.org/learn/faq/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [Read the manual online](https://open-rails.readthedocs.io/en/1.3.1/) or the PDF included with the program, found in the main menu under "Documents"
+* [Get additional materials, including tutorials, from our website](http://www.openrails.org/learn/manual-and-tutorials/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [Read more about the project on our website](http://www.openrails.org/discover/open-rails/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+
+## Contributing
+
+* [Join the community](http://www.openrails.org/share/community/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [Report bugs or offer suggestions](http://www.openrails.org/contribute/reporting-bugs/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [Create content](http://www.openrails.org/contribute/building-models/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [Write code](http://www.openrails.org/contribute/developing-code/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+* [Join the team](http://www.openrails.org/contribute/joining-the-team/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
+
+## Build status
 
 Type | Version  | Status | Downloads
 -- | -- | -- | --
-Official website and in-app updates | Stable   | - | [Downloads](http://www.openrails.org/download/program/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
 Official website and in-app updates | Testing  | [![Build status](https://james-ross.co.uk/projects/or/testing/ci_status.svg)](https://james-ross.co.uk/projects/or/testing/ci_log.txt) | [Downloads](http://www.openrails.org/download/program/?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
 Official website and in-app updates | Unstable | [![Build status](https://james-ross.co.uk/projects/or/ci_status.svg)](https://james-ross.co.uk/projects/or/ci_log.txt) | [Downloads](https://james-ross.co.uk/projects/or/builds?utm_campaign=documentation&utm_source=readme&utm_medium=referral)
-Code verification | Stable   | - | -
 Code verification | Testing  | [![Build status](https://ci.appveyor.com/api/projects/status/37hhwwna5809xyhl/branch/master?svg=true)](https://ci.appveyor.com/project/openrails/openrails/branch/master) | [Downloads](https://ci.appveyor.com/project/openrails/openrails/branch/master/artifacts)
 Code verification | Unstable | [![Build status](https://ci.appveyor.com/api/projects/status/37hhwwna5809xyhl/branch/unstable?svg=true)](https://ci.appveyor.com/project/openrails/openrails/branch/unstable) | [Downloads](https://ci.appveyor.com/project/openrails/openrails/branch/unstable/artifacts)
-
-## Open Rails and Microsoft Train Simulator
-
-Our project provides a train simulator for the largest collection of digital content in the world - routes, rolling stock and activities - initially developed for Microsoft's Train Simulator product.
-
-Microsoft Train Simulator, which was launched in 2001, was very successful but Microsoft had several false starts at developing it further and these came to an end in 2009. However, Microsoft Train Simulator was an open platform and a host of content both free and commercial has been developed for it.
-
-Open Rails is a successor to Microsoft Train Simulator and runs the trains on routes built for Microsoft Train Simulator. However, there are some differences worth discussing.
-
-Open Rails uses more recent technology so it can take advantage of modern graphics processors. This leads to higher frame rates, more colors and detail, larger displays and smoother motion.
-
-## Open Nature of Open Rails
-
-Open Rails is open, as the name suggests. It is a project launched, developed, maintained and nurtured by a team of volunteers. Our team is working to provide a sound future for the communities' content and to create the best possible train simulator.
-
-Our use of the GPL (or Free Software) license means that anyone can read the software, find out how it works and create a modified version. In practice, the project benefits dramatically from this openness with contributions both large and small and, of course, an overflowing wish list.
-
-New, untested, versions of the product are freely and immediately available, so we have many users who quickly find any issues with a new version and maintain quality at a very high level. From its inception, Open Rails has proved much more robust and crash-proof than Microsoft Train Simulator managed.
-
-While the simplest bugs are fixed at once, we maintain a bug tracker to record more complex bugs and monitor their progress through the stages New, Confirmed, Triaged, Assigned, Fixed.
-
-## An Exciting Future
-
-Started late in 2009, the project is now reaching a most exciting stage as we achieve the goal of replacing Microsoft Train Simulator and move on with plans to do much better than Microsoft Train Simulator in both realism and facilities such as multi-user, timetables and editors for creating content.
-
-## Read more
-
-Read more about this project on [our website](http://openrails.org/).

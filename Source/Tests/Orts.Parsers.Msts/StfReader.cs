@@ -76,7 +76,7 @@ namespace Tests.Orts.Parsers.Msts
                 Assert.True(reader.EndOfBlock(), "STFReader.EndOfBlock()");
                 Assert.Equal("EmptyFile.stf", reader.FileName);
                 Assert.Equal(1, reader.LineNumber);
-                Assert.Equal(null, reader.SimisSignature);
+                Assert.Null(reader.SimisSignature);
                 // Note, the Debug.Assert() in reader.Tree is already captured by AssertWarnings.Expected.
                 // For the rest, we do not care which exception is being thrown.
                 var exception = Record.Exception(() => reader.Tree);
@@ -87,7 +87,7 @@ namespace Tests.Orts.Parsers.Msts
                 reader.ParseBlock(new STFReader.TokenProcessor[0]);
                 reader.ParseFile(new STFReader.TokenProcessor[0]);
                 Assert.Equal(-1, reader.PeekPastWhitespace());
-                Assert.Equal(false, reader.ReadBoolBlock(false));
+                Assert.False(reader.ReadBoolBlock(false));
                 Assert.Equal(0, reader.ReadDouble(null));
                 Assert.Equal(0, reader.ReadDoubleBlock(null));
                 Assert.Equal(0, reader.ReadFloat(STFReader.UNITS.None, null));
@@ -98,7 +98,7 @@ namespace Tests.Orts.Parsers.Msts
                 Assert.Equal(0, reader.ReadIntBlock(null));
                 Assert.Equal("", reader.ReadItem());
                 Assert.Equal("", reader.ReadString());
-                Assert.Equal(null, reader.ReadStringBlock(null));
+                Assert.Null(reader.ReadStringBlock(null));
                 Assert.Equal(0U, reader.ReadUInt(null));
                 Assert.Equal(0U, reader.ReadUIntBlock(null));
                 Assert.Equal(Vector3.Zero, reader.ReadVector3Block(STFReader.UNITS.None, Vector3.Zero));
@@ -131,7 +131,7 @@ namespace Tests.Orts.Parsers.Msts
                 Assert.False(reader.EndOfBlock(), "STFReader.EndOfBlock()");
                 Assert.Equal("EmptyBlock.stf", reader.FileName);
                 Assert.Equal(1, reader.LineNumber);
-                Assert.Equal(null, reader.SimisSignature);
+                Assert.Null(reader.SimisSignature);
                 Assert.Throws<STFException>(() => reader.MustMatch("Something Else"));
                 // We can't rewind the STFReader and it has advanced forward now. :(
             }
@@ -224,8 +224,8 @@ namespace Tests.Orts.Parsers.Msts
         {
             using (var reader = new STFReader(new MemoryStream(Encoding.Unicode.GetBytes("(true ignored) (false ignored) (1.123456789 ignored) (1e9 ignored) (1.1e9 ignored) (2.123456 ignored) (2e9 ignored) (2.1e9 ignored) (00ABCDEF ignored) (123456 ignored) (-123456 ignored) (234567 ignored)")), "", Encoding.Unicode, false))
             {
-                Assert.Equal(true, reader.ReadBoolBlock(false));
-                Assert.Equal(false, reader.ReadBoolBlock(true));
+                Assert.True(reader.ReadBoolBlock(false));
+                Assert.False(reader.ReadBoolBlock(true));
                 Assert.Equal(1.123456789, reader.ReadDoubleBlock(null));
                 Assert.Equal(1e9, reader.ReadDoubleBlock(null));
                 Assert.Equal(1.1e9, reader.ReadDoubleBlock(null));
@@ -697,7 +697,8 @@ namespace Tests.Orts.Parsers.Msts
                 reader.SkipRestOfBlock();
                 Assert.Equal("wagon(lights()", reader.Tree.ToLower());
 
-                reader.ReadItem();
+                if (reader.ReadItem() == STFReader.EndBlockCommentSentinel)
+                    reader.ReadItem();
                 reader.ReadItem();
                 Assert.Equal("wagon(sound", reader.Tree.ToLower());
                 Assert.Equal("test.sms", reader.ReadStringBlock(""));
@@ -723,7 +724,7 @@ namespace Tests.Orts.Parsers.Msts.StfException
         public static void BeConstructableFromStfReader()
         {
             var reader = Tests.Orts.Parsers.Msts.StfReader.Create.Reader("sometoken");
-            Assert.DoesNotThrow(() => new STFException(reader, "some message"));
+            new STFException(reader, "some message");
         }
 
 #if NEW_READER
@@ -817,7 +818,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             AssertWarnings.NotExpected();
             string firstToken = "firsttoken";
             var reader = Create.Reader(firstToken);
-            Assert.Equal(null, reader.SimisSignature);
+            Assert.Null(reader.SimisSignature);
         }
 
 #if NEW_READER
@@ -1017,21 +1018,6 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
 
         [Fact]
-        public static void AtFinalWhiteSpaceBeAtEOF()
-        {
-            AssertWarnings.NotExpected();
-            var inputStrings = new string[] { " ", "\n  \n\t" };
-            foreach (string inputString in inputStrings)
-            {
-                var reader = Create.Reader("sometoken" + inputString);
-                {
-                    reader.ReadItem();
-                    Assert.True(reader.Eof);
-                }
-            }
-        }
-
-        [Fact]
         public static void AtEOFKeepBeingAtEOF()
         {
             AssertWarnings.NotExpected();
@@ -1059,12 +1045,14 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         public static void StoreSourceLineNumberOfLastReadToken()
         {
             //AssertWarnings.Activate();
-            List<TokenTester> tokenTesters = new List<TokenTester>();
-            //tokenTesters.Add(new TokenTester("a b", new int[] { 1, 1 }));
-            tokenTesters.Add(new TokenTester("a\nb", new int[] { 1, 2 }));
-            //tokenTesters.Add(new TokenTester("a\nb\nc", new int[] { 1, 2, 3 }));
-            //tokenTesters.Add(new TokenTester("a b\n\nc", new int[] { 1, 1, 3 }));
-            //tokenTesters.Add(new TokenTester("a(b(\nc)\nc)", new int[] { 1, 1, 1, 1, 2, 2, 3, 3 }));
+            var tokenTesters = new TokenTester[]
+            {
+                new TokenTester("a b", new int[] { 1, 1 }),
+                new TokenTester("a \nb", new int[] { 1, 2 }),
+                new TokenTester("a \nb \nc", new int[] { 1, 2, 3 }),
+                new TokenTester("a b \n\nc", new int[] { 1, 1, 3 }),
+                new TokenTester("a(b(\nc)\nc)", new int[] { 1, 1, 1, 1, 2, 2, 3, 3 })
+            };
 
             foreach (var tokenTester in tokenTesters)
             {
@@ -1455,16 +1443,12 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
         
         [Fact]
-        public static void WarnOnMissingBlockAfterComment()
+        public static void DontWarnOnMissingBlockAfterComment()
         {
-            // todo: old stf reader would simply return 'b'. Throwing an exception is perhaps harsh
             AssertWarnings.NotExpected();
             string someFollowingToken = "b";
-            AssertStfException.Throws(() => 
-            {
-                var reader = Create.Reader("comment a " + someFollowingToken);
-                Assert.Equal(someFollowingToken, reader.ReadItem());
-            }, "expected.*open");
+            STFReader reader = Create.Reader("comment a " + someFollowingToken);
+            Assert.Equal(someFollowingToken, reader.ReadItem());
         }
 
         [Fact]
@@ -1486,16 +1470,12 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
 
         [Fact]
-        public static void WarnOnMissingBlockAfterSkip()
+        public static void DontWarnOnMissingBlockAfterSkip()
         {
-            // todo: old stf reader would simply return 'b'. Throwing an exception is perhaps harsh
             AssertWarnings.NotExpected();
             string someFollowingToken = "b";
-            AssertStfException.Throws(() =>
-            {
-                var reader = Create.Reader("skip a " + someFollowingToken);
-                Assert.Equal(someFollowingToken, reader.ReadItem());
-            }, "expected.*open");
+            STFReader reader = Create.Reader("skip a " + someFollowingToken);
+            Assert.Equal(someFollowingToken, reader.ReadItem());
         }
 
         [Fact]
@@ -1927,7 +1907,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         }
 
         [Fact]
-        public static void SkipValueStartingWithUnderscore()
+        public static void DontSkipValueStartingWithUnderscore()
         {
             AssertWarnings.NotExpected();
             string underscoreToken = "_underscore";
@@ -1935,9 +1915,8 @@ namespace Tests.Orts.Parsers.Msts.StfReader
             string followingToken = "followingtoken";
             string inputString = underscoreToken + " " + toBeSkippedToken + " " + followingToken;
             var reader = Create.Reader(inputString);
-            // todo spec change?: old STF reader would return _underscore and tobeskippedtoken"
-            //Assert.Equal(underscoreToken, reader.ReadString());
-            //Assert.Equal(toBeSkippedToken, reader.ReadString());
+            Assert.Equal(underscoreToken, reader.ReadString());
+            Assert.Equal(toBeSkippedToken, reader.ReadString());
             Assert.Equal(followingToken, reader.ReadString());
 
         }
@@ -2060,6 +2039,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
                 (SOMEDEFAULT, SOMEDEFAULT, (reader, x) => reader.ReadIntBlock(x));
         }
 
+        [Fact]
         public static void ReturnValueInBlock()
         {
             StfTokenReaderCommon.ReturnValueInBlock<int>(SOMEDEFAULTS, reader => reader.ReadIntBlock(null));
@@ -2423,6 +2403,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
                 (SOMEDEFAULT, SOMEDEFAULT, (reader, x) => reader.ReadDoubleBlock(x));
         }
 
+        [Fact]
         public static void ReturnValueInBlock()
         {
             StfTokenReaderCommon.ReturnValueInBlock<double>(SOMEDEFAULTS, reader => reader.ReadDoubleBlock(null));
@@ -2505,6 +2486,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
                 (SOMEDEFAULT, SOMEDEFAULT, (reader, x) => reader.ReadFloatBlock(STFReader.UNITS.None, x));
         }
 
+        [Fact]
         public static void ReturnValueInBlock()
         {
             StfTokenReaderCommon.ReturnValueInBlock<float>
@@ -2850,7 +2832,7 @@ namespace Tests.Orts.Parsers.Msts.StfReader
         /// </summary>
         /// <param name="testCode">Code that will be executed</param>
         /// <param name="pattern">The pattern that the exception message should match</param>
-        public static void Throws(Assert.ThrowsDelegate testCode, string pattern)
+        public static void Throws(Action testCode, string pattern)
         {
             var exception = Record.Exception(testCode);
             Assert.NotNull(exception);
