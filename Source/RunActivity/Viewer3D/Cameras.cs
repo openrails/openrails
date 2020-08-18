@@ -1825,12 +1825,14 @@ namespace Orts.Viewer3D
     public class ThreeDimCabCamera : InsideThreeDimCamera
     {
         public override Styles Style { get { return Styles.ThreeDimCab; } }
+        public bool Enabled { get; set; }
         public override bool IsAvailable
         {
             get
             {
                 return Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
-                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null;
+                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null &&
+                    (Viewer.PlayerLocomotive.HasFront3DCab || Viewer.PlayerLocomotive.HasRear3DCab);
             }
         }
         public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }

@@ -18,8 +18,8 @@ Entering the Simulation
 =======================
 
 At the end of the loading phase, you are in the cab of the train you will 
-drive.(Note: some newer locomotives have experimental 3D cabs - if no cab 
-interior display appears, then type ``<Alt+1>`` to display the cab interior.) 
+drive.(Note: some newer locomotives have 3D cabs - if no cab 
+interior display appears, then type ``<Alt+1>`` to switch between 2D and 3D cabs.) 
 Depending on the configuration of the activity (in case of activity mode), 
 your train will be in motion or stopped. To look around in the simulation, you 
 can select different views using the keyboard, as described in 
@@ -1210,24 +1210,26 @@ depressed.
 
 The commands for each of the views are described below.
 
-- Key ``<1>`` opens the 2D driver's view from the interior of the controlling 
-  cab of the player locomotive. The 2D view can be cycled between the fixed 
-  left, front, and right views with the ``<Left>`` and ``<Right>`` arrow keys. 
-  The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
-  constructed from three 2D images, so the actual camera position can only be 
-  modified by editing the contents of the .cvf file.) If there is a mismatch 
-  between the aspect ratio of the (optionally stretched) cab and the aspect 
-  ratio of the monitor, OR will clip the cab and show only the portion that fits 
-  within the display, as described in 
-  :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
-  to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
-  and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
-  which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
-  without a clip and cover the remaining space with black bars.
-- Key ``<Alt+1>`` opens the 3D driver's view (if the locomotive has a 3D 
-  cabview file) from the interior of the controlling cab of the player 
-  locomotive. The camera position and view direction are fully player 
-  controllable.
+* Key ``<1>`` opens the driver's view from the interior of the controlling 
+  cab of the player locomotive.
+
+  - In case the 2D view is selected, the 2D view can be cycled between the fixed 
+    left, front, and right views with the ``<Left>`` and ``<Right>`` arrow keys. 
+    The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
+    constructed from three 2D images, so the actual camera position can only be 
+    modified by editing the contents of the .cvf file.) If there is a mismatch 
+    between the aspect ratio of the (optionally stretched) cab and the aspect 
+    ratio of the monitor, OR will clip the cab and show only the portion that fits 
+    within the display, as described in 
+    :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
+    to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
+    and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
+    which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
+    without a clip and cover the remaining space with black bars.
+  - In case the 3D view is selected, the camera position and view direction are fully player 
+    controllable.
+
+- Key ``<Alt+1>`` switches between 2D and 3D cabs if both are available.
 - The entire cab view can be moved to other cabs (if available) in the player 
   train by successive presses of ``<Ctrl+E>``; the train must be stopped and the 
   direction switch in Neutral.
