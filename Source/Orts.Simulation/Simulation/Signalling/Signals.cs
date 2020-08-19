@@ -3171,7 +3171,6 @@ namespace Orts.Simulation.Signalling
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
             int routeIndex = -1;
-            float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
 
             int lastReserved = thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex];
             int endListIndex = -1;
@@ -3276,7 +3275,7 @@ namespace Orts.Simulation.Signalling
                 routeIndex = endListIndex;
                 clearedDistanceM = thisTrain.Train.GetDistanceToTrain(lastReserved, 0.0f);
 
-                if (clearedDistanceM > maxDistance)
+                if (clearedDistanceM > thisTrain.Train.CheckDistanceM)
                 {
                     endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
                     furthestRouteCleared = true;
@@ -3538,8 +3537,7 @@ namespace Orts.Simulation.Signalling
                                 }
                             }
 
-                            if (clearedDistanceM > thisTrain.Train.minCheckDistanceM &&
-                                            clearedDistanceM > (thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS))
+                            if (clearedDistanceM > thisTrain.Train.CheckDistanceM)
                             {
                                 endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
                                 furthestRouteCleared = true;
@@ -8368,7 +8366,7 @@ namespace Orts.Simulation.Signalling
 
         public int SignalNumClearAhead_MSTS = -2;    // Overall maximum SignalNumClearAhead over all heads (MSTS calculation)
         public int SignalNumClearAhead_ORTS = -2;    // Overall maximum SignalNumClearAhead over all heads (ORTS calculation)
-        public int SignalNumClearAheadActive = -2;   // Active SignalNumClearAhead (for ORST calculation only, as set by script)
+        public int SignalNumClearAheadActive = -2;   // Active SignalNumClearAhead (for ORTS calculation only, as set by script)
         public int SignalNumNormalHeads;             // no. of normal signal heads in signal
         public int ReqNumClearAhead;                 // Passed on value for SignalNumClearAhead
 
@@ -10377,7 +10375,7 @@ namespace Orts.Simulation.Signalling
                     if (nextSignalIndex >= 0)
                     {
                         SignalObject nextSignal = signalObjects[nextSignalIndex];
-                        newRoute = nextSignal.requestClearSignalExplorer(newRoute, thisTrain.Train.minCheckDistanceM, thisTrain, true, ReqNumClearAhead);
+                        newRoute = nextSignal.requestClearSignalExplorer(newRoute, thisTrain.Train.CheckDistanceM, thisTrain, true, ReqNumClearAhead);
                     }
                 }
             }
@@ -12116,7 +12114,7 @@ namespace Orts.Simulation.Signalling
         /// Test if train has call-on set
         /// </summary>
 
-        public bool TrainHasCallOn(bool allowOnNonePlatform, string dumpfile)
+        public bool TrainHasCallOn(bool allowOnNonePlatform, bool allowAdvancedSignal, string dumpfile)
         {
             // no train approaching
             if (enabledTrain == null)
@@ -12130,8 +12128,10 @@ namespace Orts.Simulation.Signalling
             }
 
             // signal is not first signal for train
-            if (enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex] != null &&
-                enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex].thisRef != thisRef)
+            var nextSignal = enabledTrain.Train.NextSignalObject[enabledTrain.TrainRouteDirectionIndex];
+
+            if (!allowAdvancedSignal &&
+               nextSignal != null && nextSignal.thisRef != thisRef)
             {
                 if (!String.IsNullOrEmpty(dumpfile))
                 {
@@ -15197,4 +15197,3 @@ namespace Orts.Simulation.Signalling
     }
 
 }
-

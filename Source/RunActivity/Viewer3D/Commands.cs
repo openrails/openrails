@@ -292,16 +292,22 @@ namespace Orts.Viewer3D
 
         public override void Redo()
         {
-            Receiver.CabCamera.Activate();
-            // Report();
+            if (Receiver.ThreeDimCabCamera.Enabled)
+            {
+                Receiver.ThreeDimCabCamera.Activate();
+            }
+            else
+            {
+                Receiver.CabCamera.Activate();
+            }
         }
     }
 
 	[Serializable()]
-	public sealed class Use3DCabCameraCommand : UseCameraCommand
+	public sealed class ToggleThreeDimensionalCabCameraCommand : UseCameraCommand
 	{
 
-		public Use3DCabCameraCommand(CommandLog log)
+		public ToggleThreeDimensionalCabCameraCommand(CommandLog log)
 			: base(log)
 		{
 			Redo();
@@ -309,9 +315,17 @@ namespace Orts.Viewer3D
 
 		public override void Redo()
 		{
-			Receiver.ThreeDimCabCamera.Activate();
-			// Report();
-		}
+            Receiver.ThreeDimCabCamera.Enabled = !Receiver.ThreeDimCabCamera.Enabled;
+
+            if (Receiver.ThreeDimCabCamera.Enabled && Receiver.Camera == Receiver.CabCamera)
+            {
+                Receiver.ThreeDimCabCamera.Activate();
+            }
+            else if (!Receiver.ThreeDimCabCamera.Enabled && Receiver.Camera == Receiver.ThreeDimCabCamera)
+            {
+                Receiver.CabCamera.Activate();
+            }
+        }
 	}
 	
 	[Serializable()]

@@ -231,21 +231,18 @@ namespace ORTS
                 var path = dir + @"\Documentation\";
                 if (Directory.Exists(path))
                 {
-                    foreach (string entry in Directory.GetFiles(path))
+                    // Load English documents
+                    LoadDocuments(docs, path);
+
+                    // Find any non-English documents by looking in \Documentation\<language code>\, e.g. \Documentation\es\
+                    foreach (var codePath in Directory.GetDirectories(path))
                     {
-                        // These are the following formats that can be selected.
-                        if (entry.Contains(".pdf") || entry.Contains(".doc") || entry.Contains(".docx") || entry.Contains(".pptx") || entry.Contains(".txt"))
-                        {
-                            var i = entry.LastIndexOf("\\");
-                            docs.Add(new ToolStripMenuItem(entry.Substring(i + 1), null, (Object sender2, EventArgs e2) =>
-                            {
-                                var docPath = (sender2 as ToolStripItem).Tag as string;
-                                Process.Start(docPath);
-                             }) { Tag = entry });
-                        }
-                        contextMenuStripDocuments.Items.AddRange((from tool in docs
-                                                                  orderby tool.Text
-                                                                  select tool).ToArray());
+                        // Extract the last folder in the path - the language code, e.g. "es"
+                        var code = System.IO.Path.GetFileName(codePath);
+
+                        // include any non-English documents that match the chosen language
+                        if (code == Settings.Language)
+                            LoadDocuments(docs, codePath, code);
                     }
                 }
                 else
@@ -261,6 +258,29 @@ namespace ORTS
             {
                 LoadFolderList();
                 Initialized = true;
+            }
+        }
+
+        private void LoadDocuments(List<ToolStripItem> docs, string folderPath, string code = null)
+        {
+            foreach (var filePath in Directory.GetFiles(folderPath))
+            {
+                var ext = System.IO.Path.GetExtension(filePath);
+                var name = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                // These are the formats that can be selected.
+                if (new[] { ".pdf", ".doc", ".docx", ".pptx", ".txt" }.Contains(ext.ToLowerInvariant()))
+                {
+                    var codeLabel = string.IsNullOrEmpty(code) ? "" : $" [{code}]";
+                    docs.Add(new ToolStripMenuItem($"{name}{ext}{codeLabel}", null, (object sender2, EventArgs e2) =>
+                    {
+                        var docPath = (sender2 as ToolStripItem).Tag as string;
+                        Process.Start(docPath);
+                    })
+                    { Tag = filePath });
+                }
+                contextMenuStripDocuments.Items.AddRange((from tool in docs
+                                                          orderby tool.Text
+                                                          select tool).ToArray());
             }
         }
 

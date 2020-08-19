@@ -1,0 +1,126 @@
+#table {
+	/*border-collapse: collapse;*/
+	padding: 20px;
+	border: 2px;
+	border-spacing: 2px;
+	/*border-spacing: 0;*/
+}
+
+table td{
+	color :	white;
+}
+
+/* Apply rounded border */
+.border{
+	border-spacing: 0;
+	border: gray 2px solid;
+	border-radius: 20px;
+}
+
+.button{
+	border: gray 1px solid;
+	border-radius: 20px;
+	text-align: center;
+	width: 50px;
+	margin: 4px 2px;
+}
+
+#traindrivingdiv {
+	position: absolute;
+	z-index: 9;
+	touch-action: none;
+}
+
+#traindrivingheader {
+	cursor: move;
+	z-index: 10;
+}
+
+#traindrivingdiv:hover {
+	cursor: pointer;
+	border-width: 20px;
+	border-radius: 20px;
+}
+
+/* Allows to apply image color */
+img[ColorCode= "%%$"]{/*lightgreen*/
+	filter: brightness(0.5) sepia(1) hue-rotate(50deg) saturate(1000%);
+}
+img[ColorCode= "!!?"]{/*orange*/
+	filter: brightness(0.8) sepia(1) hue-rotate(300deg) saturate(1000%);
+}
+img[ColorCode= "!!?"]{/*orangered*/
+	filter: brightness(0.5) sepia(1) hue-rotate(0deg) saturate(10000%);
+}
+img[ColorCode= "!!?"]{/*yellow*/
+	filter: brightness(0.8) sepia(1) hue-rotate(0deg) saturate(1000%);
+}
+
+/* Allows to apply text color */
+td[ColorCode= "???"]{
+	background-color:black;
+	color:yellow;
+}
+td[ColorCode= "??!"]{
+	background-color:black;
+	color:Green;
+}
+td[ColorCode= "?!?"]{
+	background-color:black;
+	color:Black;
+}
+td[ColorCode= "?!!"]{
+	background-color:black;
+	color:PaleGreen;
+}
+td[ColorCode= "!??"]{
+	background-color:black;
+	color:White;
+}
+td[ColorCode= "!!?"]{
+	background-color:black;
+	color:Orange;
+}
+td[ColorCode= "!!!"]{
+	background-color:black;
+	color:OrangeRed;
+}
+td[ColorCode= "%%%"]{
+	background-color:black;
+	color:Cyan;
+}
+td[ColorCode= "%$$"]{
+	background-color: black;
+	color:brown;
+}
+td[ColorCode= "%%$"]{
+	background-color: black;
+	color:lightgreen;
+}
+td[ColorCode= "$%$"]{
+	background-color: black;
+	color:blue;
+}
+td[ColorCode= "$$$"]{
+	background-color:black;
+	color:LightSkyBlue;
+}
+
+/* Separator between diferent info area*/
+.separator{
+	border-bottom: 1px solid gray;
+}
+.separatorred{
+	border-bottom: 1px solid red;
+}
+.separatordarkgray{
+	border-bottom: 1px solid darkgray;
+}
+
+/* Developper: Used as help for cells alignement*/
+td{
+	/*border: black 1px solid;*/
+	border-spacing: 0;
+	border-radius: 7px;
+	padding: 0;
+}

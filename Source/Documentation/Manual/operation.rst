@@ -1488,13 +1488,18 @@ This function uses approach control for the 'lower' route.::
     // Get draw state
     draw_state = def_draw_state (state);
 
-TrainHasCallOn Function
------------------------
+TrainHasCallOn, TrainHasCallOn_Advanced Functions
+-------------------------------------------------
 
 This function is intended specifically to allow trains to 'call on' in 
 Timetable mode when allowed to do so as defined in the timetable. The use of 
 this function allows a train to 'call on' into a platform in Timetable mode 
 without jeopardizing the functionality in normal Activity mode.
+
+The Function TrainHasCallOn will open the Signal only if the train has arrived 
+on the block before the Signal. If the Signal shall open earlier, use the 
+TrainHasCallOn_Advanced Function instead, the opening of the Signal will then 
+follow the rules of the Sigcfg.dat-Parameter SignalNumClearAhead().
 
 It is a Boolean function and returns state as follows:
 
@@ -1556,12 +1561,22 @@ Example (part of script only)::
         }
     }
 
-TrainHasCallOn_Restricted Function
-----------------------------------
+TrainHasCallOn_Restricted, TrainHasCallOn_Restricted_Advanced Functions
+-----------------------------------------------------------------------
 
 This function has been introduced because signals with call-on aspects can be 
 used not only as entrance signals for stations, but also on 'free line' 
 sections, that is, away from stations.
+
+The Function TrainHasCallOn_Restricted will open the Signal only if the train 
+has arrived on the block before the Signal. If the Signal shall open earlier, 
+use the TrainHasCallOn_Restricted_Advanced Function instead. the opening of 
+the Signal will then follow the rules of the Sigcfg.dat Parameter 
+SignalNumClearAhead().
+
+In next lines, where ``TrainHasCallOn`` appears, ``TrainHasCallOn`` and 
+``TrainHasCallOn_Advanced`` is meant; analogously, when ``TrainHasCallOn_Restricted`` 
+appears, ``TrainHasCallOn_Restricted`` and ``TrainHasCallOn_Restricted_Advanced`` is meant.
 
 ``TrainHasCallOn`` always allows call-on if the signal is on a 'free-line' 
 section. This is to allow proper working for USA-type permissive signals.
