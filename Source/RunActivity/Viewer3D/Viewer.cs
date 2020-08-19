@@ -1764,7 +1764,7 @@ namespace Orts.Viewer3D
             if (frame.IsScreenChanged)
             {
                 WindowManager.ScreenChanged();
-                AdjustCabHeight(RenderProcess.GraphicsDeviceManager.PreferredBackBufferWidth, RenderProcess.GraphicsDeviceManager.PreferredBackBufferHeight);
+                AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
             }
 
             MaterialManager.UpdateShaders();

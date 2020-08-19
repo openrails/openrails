@@ -97,14 +97,11 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync;
             GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
-            GraphicsDeviceManager.IsFullScreen = false;
+            GraphicsDeviceManager.IsFullScreen = Game.Settings.FullScreen;
             GraphicsDeviceManager.PreferMultiSampling = true;
+            GraphicsDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
+            GraphicsDeviceManager.HardwareModeSwitch = !Game.Settings.FastFullScreenAltTab;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
-
-            if (Game.Settings.FullScreen)
-                ToggleFullScreen();
-
-            SynchronizeGraphicsDeviceManager();
         }
 
         void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
@@ -120,10 +117,17 @@ namespace Orts.Viewer3D.Processes
                 }
             }
 
-            e.GraphicsDeviceInformation.GraphicsProfile = GraphicsProfile.HiDef;
-            // This stops ResolveBackBuffer() clearing the back buffer.
-            e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-            e.GraphicsDeviceInformation.PresentationParameters.DepthStencilFormat = DepthFormat.Depth24Stencil8;
+            if (e.GraphicsDeviceInformation.PresentationParameters.IsFullScreen)
+            {
+                var screen = Screen.FromControl(GameForm);
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferWidth = screen.Bounds.Width;
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferHeight = screen.Bounds.Height;
+            }
+            else
+            {
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferWidth = GameWindowSize.X;
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferHeight = GameWindowSize.Y;
+            }
         }
 
         internal void Start()
@@ -234,7 +238,7 @@ namespace Orts.Viewer3D.Processes
 
             if (ToggleFullScreenRequested)
             {
-                SynchronizeGraphicsDeviceManager();
+                GraphicsDeviceManager.ToggleFullScreen();
                 ToggleFullScreenRequested = false;
                 Viewer.DefaultViewport = GraphicsDevice.Viewport;
             }
@@ -249,30 +253,6 @@ namespace Orts.Viewer3D.Processes
                 // Swap frames and start the next update (non-threaded updater does the whole update).
                 SwapFrames(ref CurrentFrame, ref NextFrame);
                 Game.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalGameTime.TotalSeconds);
-            }
-        }
-
-        void SynchronizeGraphicsDeviceManager()
-        {
-            if (IsFullScreen)
-            {
-                var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
-                GraphicsDeviceManager.PreferredBackBufferWidth = screen.Bounds.Width;
-                GraphicsDeviceManager.PreferredBackBufferHeight = screen.Bounds.Height;
-            }
-            else
-            {
-                GraphicsDeviceManager.PreferredBackBufferWidth = GameWindowSize.X;
-                GraphicsDeviceManager.PreferredBackBufferHeight = GameWindowSize.Y;
-            }
-            if (Game.Settings.FastFullScreenAltTab)
-            {
-                GameForm.FormBorderStyle = IsFullScreen ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.FixedSingle;
-                GraphicsDeviceManager.ApplyChanges();
-            }
-            else if (GraphicsDeviceManager.IsFullScreen != IsFullScreen)
-            {
-                GraphicsDeviceManager.ToggleFullScreen();
             }
         }
 
@@ -353,12 +333,10 @@ namespace Orts.Viewer3D.Processes
             frame2 = temp;
         }
 
-        bool IsFullScreen;
         bool ToggleFullScreenRequested;
         [CallOnThread("Updater")]
         public void ToggleFullScreen()
         {
-            IsFullScreen = !IsFullScreen;
             ToggleFullScreenRequested = true;
         }
 
