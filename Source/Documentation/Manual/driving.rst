@@ -1878,7 +1878,7 @@ A detailed explanation of the various columns follows:
 
     - SIGN (signal)
     - NODE
-    - MAN: train is in manual mode (only player train, see here)
+    - MAN: train is in manual mode (only player train, see :ref:`here <operation-manual-mode>`)
     - OOC: train is out of control
     - EXPL: train is in explorer mode (only player train)
       When relevant, this field also shows delay (in minutes), e.g. S+05 
