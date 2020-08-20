@@ -21,6 +21,7 @@ using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using GNU.Gettext;
 using GNU.Gettext.WinForms;
@@ -461,7 +462,7 @@ namespace ORTS
             Settings.DistantMountainsViewingDistance = (int)numericDistantMountainsViewingDistance.Value * 1000;
             Settings.ViewingFOV = (int)numericViewingFOV.Value;
             Settings.WorldObjectDensity = (int)numericWorldObjectDensity.Value;
-            Settings.WindowSize = GetValidWindowSize(comboWindowSize);
+            Settings.WindowSize = GetValidWindowSize(comboWindowSize.Text);
 
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
@@ -541,14 +542,13 @@ namespace ORTS
         /// <summary>
         /// Returns user's [width]x[height] if expression is valid and values are sane, else returns previous value of setting.
         /// </summary>
-        private string GetValidWindowSize(ComboBox comboWindowSize)
+        private string GetValidWindowSize(string text)
         {
-            // "1024X780" instead of "1024x780" then "Start" resulted in an immediate return to the Menu with no OpenRailsLog.txt and a baffled user.
-            var sizeArray = comboWindowSize.Text.ToLower().Replace(" ", "").Split('x');
-            if (sizeArray.Count() == 2)
-                if (int.TryParse(sizeArray[0], out int width) && int.TryParse(sizeArray[1], out int height))
-                    if ((100 < width && width < 10000) && (100 < height && height < 100000)) // sanity check
-                        return $"{width}x{height}";
+            var match = Regex.Match(text, @"^\s*([1-9]\d{2,3})\s*[Xx]\s*([1-]\d{2,3})\s*$");//capturing 2 groups of 3-4digits, separated by X or x, ignoring whitespace in beginning/end and in between
+            if (match.Success)
+            {
+                return $"{match.Groups[1]}x{match.Groups[2]}";
+            }
             return Settings.WindowSize; // i.e. no change or message. Just ignore non-numeric entries
         }
 
