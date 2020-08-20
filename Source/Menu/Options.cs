@@ -544,7 +544,7 @@ namespace ORTS
         /// </summary>
         private string GetValidWindowSize(string text)
         {
-            var match = Regex.Match(text, @"^\s*([1-9]\d{2,3})\s*[Xx]\s*([1-]\d{2,3})\s*$");//capturing 2 groups of 3-4digits, separated by X or x, ignoring whitespace in beginning/end and in between
+                var match = Regex.Match(text, @"^\s*([1-9]\d{2,3})\s*[Xx]\s*([1-9]\d{2,3})\s*$");//capturing 2 groups of 3-4digits, separated by X or x, ignoring whitespace in beginning/end and in between
             if (match.Success)
             {
                 return $"{match.Groups[1]}x{match.Groups[2]}";
