@@ -1815,18 +1815,11 @@ namespace Orts.Viewer3D
             if (graphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
                 return;
 
-            int w = graphicsDevice.PresentationParameters.BackBufferWidth;
-            int h = graphicsDevice.PresentationParameters.BackBufferHeight;
-            var screenshot = new RenderTarget2D(graphicsDevice, w, h, false, graphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.None);
-            int[] backBuffer = new int[w * h];
+            var width = graphicsDevice.PresentationParameters.BackBufferWidth;
+            var height = graphicsDevice.PresentationParameters.BackBufferHeight;
+            var data = new uint[width * height];
 
-            //FIXME: MonoGame has it unimplemented:
-            //graphicsDevice.GetBackBufferData(backBuffer);
-            //screenshot.SetData(backBuffer);
-            graphicsDevice.SetRenderTarget(screenshot);
-            RenderProcess.Draw();
-            graphicsDevice.Present();
-            graphicsDevice.SetRenderTarget(null);
+            graphicsDevice.GetBackBufferData(data);
 
             new Thread(() =>
             {
@@ -1835,18 +1828,19 @@ namespace Orts.Viewer3D
                     // Unfortunately, the back buffer includes an alpha channel. Although saving this might seem okay,
                     // it actually ruins the picture - nothing in the back buffer is seen on-screen according to its
                     // alpha, it's only used for blending (if at all). We'll remove the alpha here.
-                    var data = new uint[screenshot.Width * screenshot.Height];
-                    screenshot.GetData(data);
                     for (var i = 0; i < data.Length; i++)
                         data[i] |= 0xFF000000;
-                    screenshot.SetData(data);
 
-                    // Now save the modified image.
-                    using (var stream = File.OpenWrite(fileName))
+                    using (var screenshot = new Texture2D(graphicsDevice, width, height))
                     {
-                        screenshot.SaveAsPng(stream, w, h);
+                        screenshot.SetData(data);
+
+                        // Now save the modified image.
+                        using (var stream = File.OpenWrite(fileName))
+                        {
+                            screenshot.SaveAsPng(stream, width, height);
+                        }
                     }
-                    screenshot.Dispose();
 
                     if (!silent)
                         MessagesWindow.AddMessage(String.Format("Saving screenshot to '{0}'.", fileName), 10);
