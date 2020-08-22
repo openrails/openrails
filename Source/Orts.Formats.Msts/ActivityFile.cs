@@ -450,11 +450,17 @@ namespace Orts.Formats.Msts
     public class Duration {
         int Hour;
         int Minute;
-        int Second;
+        private int Second; // private as currently never assigned to
 
         public Duration(int h, int m) {
             Hour = h;
             Minute = m;
+        }
+
+        public Duration(int h, int m, int s) {
+            Hour = h;
+            Minute = m;
+            Second = s;
         }
 
         public Duration(STFReader stf) {

@@ -219,7 +219,7 @@ namespace ORTS.Common
                     output.WriteLine("    Pixel Shader   = {0} ({1} slots)", caps.PixelShaderVersion, caps.MaxPixelShader30InstructionSlots);
                     output.WriteLine("    Clip Planes    = {0}", caps.MaxUserClipPlanes);
                 }
-                catch (Exception error) { }
+                catch (Exception) { }
             }
         }
 
