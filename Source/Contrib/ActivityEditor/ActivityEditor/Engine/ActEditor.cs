@@ -14,32 +14,26 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using ActivityEditor.Engine;
+using AEWizard;
+using LibAE.Formats;
+using Orts.Formats.OR;
+using ORTS.Common;
 /// This module ...
 /// 
 /// Author: Stéfan Paitoni
 /// Updates : 
 /// 
 
-
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
+using System.IO;
 using System.Windows.Forms;
-using AEWizard;
-using ActivityEditor.Engine;
-using LibAE;
-using LibAE.Formats;
-using ORTS.Common;
-using Orts.Formats.OR;
 
 namespace ActivityEditor
 {
-    public enum ToolClicked
+    public enum ToolClicks // Changed from ToolClicked as led to compiler warnings
     {
         NO_TOOL = 0,
         TAG = 1,
@@ -66,13 +60,16 @@ namespace ActivityEditor
         public List<Viewer2D> viewer2ds;
         public Viewer2D selectedViewer;
         
+        private bool focusOnViewer = false;
+
+        // Commented out as never used
         //public List<AEActivity> aeActivity;
         //public AEActivity selectedActivity;
-        private bool focusOnViewer = false;
-        private ToolClicked ToolClicked = ToolClicked.NO_TOOL;
+        private ToolClicks ToolClicked = ToolClicks.NO_TOOL;
+        // private WorldPosition worldPos;
+
         public Image ToolToUse = null;
         public Cursor CursorToUse = Cursors.Default;
-        // private WorldPosition worldPos;
         public ActEditor()
         {
             InitializeComponent();
@@ -87,10 +84,7 @@ namespace ActivityEditor
                     selectedViewer.reduit = new Cursor(ms);
                 }
             }
-
-            //this.ActivityTool.Visible = false;
         }
-
 
         private void StatusEditor_Click(object sender, EventArgs e)
         {
@@ -259,13 +253,13 @@ namespace ActivityEditor
         private void AddTag_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Tag");
-            selectedViewer.SetToolClicked(ToolClicked.TAG);
+            selectedViewer.SetToolClicked(ToolClicks.TAG);
         }
 
         private void AddStation_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Station");
-            selectedViewer.SetToolClicked(ToolClicked.STATION);
+            selectedViewer.SetToolClicked(ToolClicks.STATION);
         }
 
         #region Activity    
@@ -273,7 +267,7 @@ namespace ActivityEditor
         private void AddActivityStart_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Start Activity");
-            ToolClicked = ToolClicked.START;
+            ToolClicked = ToolClicks.START;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_start;
 
         }
@@ -281,7 +275,7 @@ namespace ActivityEditor
         private void AddActivityStop_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Stop Activity");
-            ToolClicked = ToolClicked.STOP;
+            ToolClicked = ToolClicks.STOP;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_stop;
 
         }
@@ -289,7 +283,7 @@ namespace ActivityEditor
         private void AddActivityWait_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Wait Point Activity");
-            ToolClicked = ToolClicked.WAIT;
+            ToolClicked = ToolClicks.WAIT;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_wait;
 
         }
@@ -297,7 +291,7 @@ namespace ActivityEditor
         private void AddActivityAction_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Action Point Activity");
-            ToolClicked = ToolClicked.ACTION;
+            ToolClicked = ToolClicks.ACTION;
             ToolToUse = global::ActivityEditor.Properties.Resources.Action;
 
         }
@@ -305,7 +299,7 @@ namespace ActivityEditor
         private void AddActivityEval_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Evaluation Point Activity");
-            ToolClicked = ToolClicked.CHECK;
+            ToolClicked = ToolClicks.CHECK;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_check;
 
         }
@@ -314,19 +308,19 @@ namespace ActivityEditor
         private void MoveSelected_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Move Tool");
-            selectedViewer.SetToolClicked(ToolClicked.MOVE);
+            selectedViewer.SetToolClicked(ToolClicks.MOVE);
         }
 
         private void RotateSelected_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Place Rotate Tool");
-            selectedViewer.SetToolClicked(ToolClicked.ROTATE);
+            selectedViewer.SetToolClicked(ToolClicks.ROTATE);
         }
 
         public void UnsetToolClick()
         {
             DisplayStatusMessage("Wait Action Form");
-            ToolClicked = ToolClicked.NO_TOOL;
+            ToolClicked = ToolClicks.NO_TOOL;
             ToolToUse = null;
             this.Cursor = Cursors.Default;
             CursorToUse = Cursors.Default;
@@ -335,7 +329,7 @@ namespace ActivityEditor
         private void AddArea_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Add Station Area");
-            selectedViewer.SetToolClicked(ToolClicked.AREA);
+            selectedViewer.SetToolClicked(ToolClicks.AREA);
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -500,7 +494,7 @@ namespace ActivityEditor
         private void editMetaSegment(object sender, EventArgs e)
         {
             DisplayStatusMessage("Edit Metadata for Segment");
-            selectedViewer.SetToolClicked(ToolClicked.METASEGMENT);
+            selectedViewer.SetToolClicked(ToolClicks.METASEGMENT);
         }
 
         private void routeData_Leave(object sender, EventArgs e)

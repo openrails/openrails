@@ -66,6 +66,9 @@ namespace Orts.Viewer3D.Popups
         List<TabData> Tabs = new List<TabData>();
         int ActiveTab;
 
+        private enum FuelTypes { Coal, DieselOil, Kwhr }
+        private FuelTypes FuelType;
+
         public void LogSeparator(int nCols)
         {
             if (!lDebriefEvalFile) wDbfEval.WriteLine(new String('-', nCols));
@@ -725,9 +728,6 @@ namespace Orts.Viewer3D.Popups
                             float nDieselburned = 0, nCoalburned = 0;
                             float nCoalBurnedPerc = 0, nWaterBurnedPerc = 0;
                             List<string> cEnginetype = new List<string>();
-                            bool lDiesel = false;
-                            bool lSteam = false;
-                            bool lElectric = false;
                             foreach (var item in cars)//Consist engines
                             {
                                 if (item.EngineType == TrainCar.EngineTypes.Diesel)
@@ -736,7 +736,7 @@ namespace Orts.Viewer3D.Popups
                                     nDiesellevel = nDiesellevel + (item as MSTSDieselLocomotive).DieselLevelL;
                                     nDieselburned = nDieselvolume - nDiesellevel;
                                     cEnginetype.Add("Diesel");
-                                    lDiesel = true;
+                                    FuelType = FuelTypes.DieselOil;
                                 }
 
                                 if (item.EngineType == TrainCar.EngineTypes.Steam && item.AuxWagonType == "Engine")
@@ -748,12 +748,12 @@ namespace Orts.Viewer3D.Popups
                                     cEnginetype.Add("Steam");
 
                                     nWaterBurnedPerc = 1 - ((item as MSTSSteamLocomotive).CombinedTenderWaterVolumeUKG / (item as MSTSSteamLocomotive).MaxTotalCombinedWaterVolumeUKG);
-                                    lSteam = true;
+                                    FuelType = FuelTypes.Coal;
                                 }
                                 if (item.EngineType == TrainCar.EngineTypes.Electric)
                                 {
                                     cEnginetype.Add("Electric");
-                                    lElectric = true;
+                                    FuelType = FuelTypes.Kwhr;
                                 }
                             }
                             //Consist engine type  
@@ -763,13 +763,13 @@ namespace Orts.Viewer3D.Popups
                             labeltext = "  Consist engine=" + (ncountdiesel > 0 ? ncountdiesel + " " + Viewer.Catalog.GetString("Diesel.") + " " : "") + (ncountsteam > 0 ? ncountsteam + " " + Viewer.Catalog.GetString("Steam.") + " " : "") + (ncountelectric > 0 ? ncountelectric + " " + Viewer.Catalog.GetString("Electric.") : "");
                             outmesssage(labeltext, colWidth * 3, true, 0);
 
-                            if (lDiesel)//Fuel Diesel
+                            if (FuelType == FuelTypes.DieselOil)
                             {
                                 labeltext = "  Burned Diesel=" + FormatStrings.FormatFuelVolume(nDieselburned, ismetric, isuk);
                                 outmesssage(labeltext, colWidth * 3, true, 0);
                             }
 
-                            if (lSteam)//Fuel Steam
+                            if (FuelType == FuelTypes.Coal)
                             {
                                 labeltext = "  Burned Coal=" + FormatStrings.FormatMass(nCoalburned, ismetric) + " (" + nCoalBurnedPerc.ToString("0.##%") + ")";
                                 outmesssage(labeltext, colWidth * 3, true, 0);

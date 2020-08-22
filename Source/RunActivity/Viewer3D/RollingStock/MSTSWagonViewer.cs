@@ -88,7 +88,7 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> DieselLocoGenerator = new List<ParticleEmitterViewer>();
 
         bool HasFirstPanto;
-        int numBogie1, numBogie2, numBogie, bogie1Axles, bogie2Axles = 0;
+        int numBogie1, numBogie2, bogie1Axles, bogie2Axles = 0;
         int bogieMatrix1, bogieMatrix2 = 0;
         FreightAnimationsViewer FreightAnimations;
 
