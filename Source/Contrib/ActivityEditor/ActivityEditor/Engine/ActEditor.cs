@@ -33,7 +33,7 @@ using System.Windows.Forms;
 
 namespace ActivityEditor
 {
-    public enum ToolClicks
+    public enum ToolClicks // Changed from ToolClicked as led to compiler warnings
     {
         NO_TOOL = 0,
         TAG = 1,
@@ -253,13 +253,13 @@ namespace ActivityEditor
         private void AddTag_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Tag");
-            selectedViewer.SetToolClicked(ToolClicks..TAG);
+            selectedViewer.SetToolClicked(ToolClicks.TAG);
         }
 
         private void AddStation_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Station");
-            selectedViewer.SetToolClicked(ToolClicks..STATION);
+            selectedViewer.SetToolClicked(ToolClicks.STATION);
         }
 
         #region Activity    
