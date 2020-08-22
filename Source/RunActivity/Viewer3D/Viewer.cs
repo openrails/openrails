@@ -439,7 +439,11 @@ namespace Orts.Viewer3D
             };
             Simulator.Confirmer.DisplayMessage += (s, e) => MessagesWindow.AddMessage(e.Key, e.Text, e.Duration);
 
-            if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab) ThreeDimCabCamera.Activate();
+            if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab)
+            {
+                ThreeDimCabCamera.Enabled = true;
+                ThreeDimCabCamera.Activate();
+            }
             else if (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) CabCamera.Activate();
             else CameraActivate();
 
@@ -987,28 +991,28 @@ namespace Orts.Viewer3D
 
             if (UserInput.IsPressed(UserCommand.CameraCab))
             {
-                if (CabCamera.IsAvailable)
+                if (CabCamera.IsAvailable || ThreeDimCabCamera.IsAvailable)
                 {
                     new UseCabCameraCommand(Log);
-                }
-                else if (ThreeDimCabCamera.IsAvailable)
-                {
-                    new Use3DCabCameraCommand(Log);
                 }
                 else
                 {
                     Simulator.Confirmer.Warning(Viewer.Catalog.GetString("Cab view not available"));
                 }
             }
-            if (UserInput.IsPressed(UserCommand.CameraThreeDimensionalCab))
+            if (UserInput.IsPressed(UserCommand.CameraToggleThreeDimensionalCab))
             {
-                if (ThreeDimCabCamera.IsAvailable)
+                if (!CabCamera.IsAvailable)
                 {
-                    new Use3DCabCameraCommand(Log);
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("This car doesn't have a 2D cab"));
+                }
+                else if (!ThreeDimCabCamera.IsAvailable)
+                {
+                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("This car doesn't have a 3D cab"));
                 }
                 else
                 {
-                    Simulator.Confirmer.Warning(Viewer.Catalog.GetString("3D Cab view not available"));
+                    new ToggleThreeDimensionalCabCameraCommand(Log);
                 }
             }
             if (UserInput.IsPressed(UserCommand.CameraOutsideFront))
@@ -1551,7 +1555,9 @@ namespace Orts.Viewer3D
             PlayerLocomotiveViewer = World.Trains.GetViewer(Simulator.PlayerLocomotive);
             if (PlayerLocomotiveViewer is MSTSLocomotiveViewer && (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._hasCabRenderer)
                 AdjustCabHeight(DisplaySize.X, DisplaySize.Y);
-            Camera.Activate(); // If you need anything else here the cameras should check for it.        
+            if (!Simulator.PlayerLocomotive.HasFront3DCab && !Simulator.PlayerLocomotive.HasRear3DCab)
+                CabCamera.Activate(); // If you need anything else here the cameras should check for it.
+            else ThreeDimCabCamera.Activate();
             SetCommandReceivers();
             ThreeDimCabCamera.ChangeCab(Simulator.PlayerLocomotive);
             HeadOutForwardCamera.ChangeCab(Simulator.PlayerLocomotive);
