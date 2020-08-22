@@ -103,7 +103,7 @@ namespace Orts.Viewer3D.Popups
             if (NoticeTexture == null)
             {
                 var size = 256;
-                var background = Color.Black * 0.5f;
+                var background = new Color(Color.Black, 0.5f);
                 var borderRadius = size / 7;
                 var data = new Color[size * size * 2];
 

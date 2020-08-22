@@ -1269,7 +1269,7 @@ namespace Orts.Viewer3D.Popups
             VertexBuffer = new DynamicVertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), VertexCount, BufferUsage.WriteOnly);
             BorderVertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionColor), 10, BufferUsage.WriteOnly);
             var borderOffset = new Vector2(1f / SampleCount, 1f / height);
-            var borderColor = new Color(1f, 1f, 1f, 0f);
+            var borderColor = new Color(Color.White, 0);
             BorderVertexBuffer.SetData(new[] {
                 // Bottom left
                 new VertexPositionColor(new Vector3(0 - borderOffset.X, 0 - borderOffset.Y, 1), borderColor),
