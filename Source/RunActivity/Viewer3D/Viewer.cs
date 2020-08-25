@@ -473,6 +473,7 @@ namespace Orts.Viewer3D
             ContinuousThrottleCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             TrainBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             EngineBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
+            BrakemanBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             DynamicBrakeCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;
             InitializeBrakesCommand.Receiver = PlayerLocomotive.Train;
             EmergencyPushButtonCommand.Receiver = (MSTSLocomotive)PlayerLocomotive;

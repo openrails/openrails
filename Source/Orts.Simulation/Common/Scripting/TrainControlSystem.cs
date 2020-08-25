@@ -495,6 +495,10 @@ namespace ORTS.Scripting.Api
         /// Internal reset request by the engine brake controller.
         /// </summary>
         EngineBrakeChanged,
+         /// <summary>
+        /// Internal reset request by the brakeman brake controller.
+        /// </summary>
+        BrakemanBrakeChanged,
         /// <summary>
         /// Internal reset request by the dynamic brake controller.
         /// </summary>
