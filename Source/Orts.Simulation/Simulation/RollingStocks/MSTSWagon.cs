@@ -223,6 +223,11 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public int RetainerPositions;
 
+         /// <summary>
+        /// Indicates whether a brake is present or not when Manual Braking is selected.
+        /// </summary>
+        public bool ManualBrakePresent;
+
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
         /// </summary>
@@ -1005,6 +1010,7 @@ namespace Orts.Simulation.RollingStocks
                             case "graduated_release_triple_valve": DistributorPresent = true; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
+                            case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
                         }
@@ -1305,6 +1311,7 @@ namespace Orts.Simulation.RollingStocks
             EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
             DistributorPresent = copy.DistributorPresent;
             HandBrakePresent = copy.HandBrakePresent;
+            ManualBrakePresent = copy.ManualBrakePresent;
             RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;

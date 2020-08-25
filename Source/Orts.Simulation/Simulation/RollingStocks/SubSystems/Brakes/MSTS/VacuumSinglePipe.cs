@@ -373,6 +373,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
                 Car.Train.HUDLocomotiveBrakeCylinderPSI = CylPressurePSIA;
+                Car.Train.HUDWagonBrakeCylinderPSI = Car.Train.HUDLocomotiveBrakeCylinderPSI;  // Initially set Wagon value same as locomotive, will be overwritten if a wagon is attached
             }
             else
             {

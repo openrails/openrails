@@ -413,6 +413,7 @@ namespace Orts.Viewer3D.Popups
             var showMUReverser = Math.Abs(playerTrain.MUReverserPercent) != 100;
             var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
             var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
+            var brakemanBrakeStatus = Viewer.PlayerLocomotive.GetBrakemanBrakeStatus();
             var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
             var locomotiveStatus = Viewer.PlayerLocomotive.GetStatus();
             var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
@@ -434,11 +435,14 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Gradient"), "{0:F1}%", -Viewer.PlayerLocomotive.CurrentElevationPercent);
             TableAddLabelValue(table, Viewer.Catalog.GetString("Direction"), showMUReverser ? "{1:F0} {0}" : "{0}", FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Viewer.PlayerLocomotive.Direction)), Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetString("Regulator") : Viewer.Catalog.GetString("Throttle"), "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeFitted)
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Retainers"), "{0}% {1}", playerTrain.RetainerPercent, Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(playerTrain.RetainerSetting)));
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeFitted) // ideally this test should be using "engineBrakeStatus != null", but this currently does not work, as a controller is defined by default
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Engine brake"), "{0}", engineBrakeStatus);
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakemanBrakeFitted)
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Brakemen brake"), "{0}", brakemanBrakeStatus);
             if (dynamicBrakeStatus != null)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Dynamic brake"), "{0}", dynamicBrakeStatus);
             if (locomotiveStatus != null)
