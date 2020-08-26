@@ -139,7 +139,7 @@ The following are extensions of basic MSTS functions.
 | Extension of DIST_MULTI_SIG_MR
 | The original DIST_MULTI_SIG_MR excluded any heads for which the link (route_set) was not valid.
   However, when signals are routed through route-definition signals rather than through links, this
-  exclusion fails and therefor the function does not return the correct state.
+  exclusion fails and therefore the function does not return the correct state.
   This extended function checks all required heads on each signal, and uses the least restricted aspect on
   this signal as state for this signal. It returns the most restrictive state of the states determined in this
   manner for each intermediate signal until a signal of type SIGFN_ENDTYPE is found.
