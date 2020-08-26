@@ -237,7 +237,7 @@ values defined in this way can be retrieved using the pre-defined variables **Ap
 | Sometimes, a signal may have approach control but the signal may be held at danger if the next signal is
   not cleared. Normally, if a signal is held for approach control, it will not propagate the signal request,
   meaning that the next signal will never clear. This could lead to a signal lockup, with the first signal held
-  for approach control and therefor the next signal cannot clear.
+  for approach control and therefore the next signal cannot clear.
   This function is specifically intended for that situation. It will allow propagation of the clear request even
   if the signal is held at danger for approach control, thus allowing the next signal to clear.
   The working of this function is similar to APPROACH_CONTROL_SPEED.
