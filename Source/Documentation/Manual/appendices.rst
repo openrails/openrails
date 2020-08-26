@@ -292,7 +292,7 @@ Available functions
 | **TRAINHASCALLON()**
 | **TRAINHASCALLON_RESTRICTED()**
 | These functions are similar, except that TRAINHASCALLON will always allow CallOn if the route does not
-  lead into a platform, and therefor acts like a ‘permissive’ signal in that situation.
+  lead into a platform, and therefore acts like a ‘permissive’ signal in that situation.
   The function TRAINHASCALLON_RESTRICTED will only allow CallOn when one of the criteria is
   met as detailed above.
 
