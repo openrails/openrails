@@ -281,10 +281,23 @@ namespace Orts.Simulation.Physics
                 float sectionStart = -offset;
 
                 // Get all track circuit sections in front of the train
-                List<int> sectionIndexes = signalRef.ScanRoute(this, position.TCSectionIndex, position.TCOffset,
-                        position.TCDirection, true, -1, true, false,
-                        false, false, true, false, false, false, false, IsFreight);
+                #region fix
+                // Carlo's temporary fix for TCSectionIndex == -1
+                //List<int> sectionIndexes = signalRef.ScanRoute(this, position.TCSectionIndex, position.TCOffset,
+                //        position.TCDirection, true, -1, true, false,
+                //        false, false, true, false, false, false, false, IsFreight);
+                //List<TrackCircuitSection> sections = new List<TrackCircuitSection>();
+
+                List<int> sectionIndexes = new List<int>();
                 List<TrackCircuitSection> sections = new List<TrackCircuitSection>();
+                if (position.TCSectionIndex >= 0)
+                {
+                    // Get all track circuit sections in front of the train
+                    sectionIndexes = signalRef.ScanRoute(this, position.TCSectionIndex, position.TCOffset,
+                            position.TCDirection, true, -1, true, false,
+                            false, false, true, false, false, false, false, IsFreight);
+                }
+                #endregion fix
 
                 if (sectionIndexes.Count > 0)
                 {
