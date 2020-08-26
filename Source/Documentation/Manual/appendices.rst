@@ -630,7 +630,7 @@ The required speed limit can be set using the speed setting of the signal aspect
 
 The advantages of using “SPEED” signals over speedposts are :
 
-- “SPEED” signals can be scripted, and can therefor be conditional, e.g. a speed restrictions in only set on approach to a junction if a restricted route is set through that junction.
+- “SPEED” signals can be scripted, and can therefore be conditional, e.g. a speed restrictions in only set on approach to a junction if a restricted route is set through that junction.
 - “SPEED” signals can set a state according to their setting, and this state can be seen by a preceeding signal. This can be used to set up variable speed warning signs.
 
 A “SPEED” signalhead can be part of a signal which also contains other heads, but for clarity of operation
