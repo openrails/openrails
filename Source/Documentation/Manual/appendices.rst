@@ -148,7 +148,7 @@ SIGNAL IDENT Functions
 ----------------------
 When a function is called which requires information from a next signal, a search is performed along the
 train’s route to locate the required signal. If multiple information is required from that signal, and
-therefor multiple functions are called requiring that next signal, such a search is performed for each
+therefore multiple functions are called requiring that next signal, such a search is performed for each
 function call.
 
 This process can be made much more efficient by using the signal ident of the required signal. Each
