@@ -139,7 +139,7 @@ The following are extensions of basic MSTS functions.
 | Extension of DIST_MULTI_SIG_MR
 | The original DIST_MULTI_SIG_MR excluded any heads for which the link (route_set) was not valid.
   However, when signals are routed through route-definition signals rather than through links, this
-  exclusion fails and therefor the function does not return the correct state.
+  exclusion fails and therefore the function does not return the correct state.
   This extended function checks all required heads on each signal, and uses the least restricted aspect on
   this signal as state for this signal. It returns the most restrictive state of the states determined in this
   manner for each intermediate signal until a signal of type SIGFN_ENDTYPE is found.
@@ -148,7 +148,7 @@ SIGNAL IDENT Functions
 ----------------------
 When a function is called which requires information from a next signal, a search is performed along the
 train’s route to locate the required signal. If multiple information is required from that signal, and
-therefor multiple functions are called requiring that next signal, such a search is performed for each
+therefore multiple functions are called requiring that next signal, such a search is performed for each
 function call.
 
 This process can be made much more efficient by using the signal ident of the required signal. Each
@@ -237,7 +237,7 @@ values defined in this way can be retrieved using the pre-defined variables **Ap
 | Sometimes, a signal may have approach control but the signal may be held at danger if the next signal is
   not cleared. Normally, if a signal is held for approach control, it will not propagate the signal request,
   meaning that the next signal will never clear. This could lead to a signal lockup, with the first signal held
-  for approach control and therefor the next signal cannot clear.
+  for approach control and therefore the next signal cannot clear.
   This function is specifically intended for that situation. It will allow propagation of the clear request even
   if the signal is held at danger for approach control, thus allowing the next signal to clear.
   The working of this function is similar to APPROACH_CONTROL_SPEED.
@@ -292,7 +292,7 @@ Available functions
 | **TRAINHASCALLON()**
 | **TRAINHASCALLON_RESTRICTED()**
 | These functions are similar, except that TRAINHASCALLON will always allow CallOn if the route does not
-  lead into a platform, and therefor acts like a ‘permissive’ signal in that situation.
+  lead into a platform, and therefore acts like a ‘permissive’ signal in that situation.
   The function TRAINHASCALLON_RESTRICTED will only allow CallOn when one of the criteria is
   met as detailed above.
 
@@ -543,7 +543,7 @@ type. However, often there are a series of signal types which may differ in defi
 differences in the position of the lights, but which have the same logic scripts.
 
 In OR, a signal type can have a definition which references a particular script which this signal type must
-use. Different signal types which have the same logic can therefor all use the same script.
+use. Different signal types which have the same logic can therefore all use the same script.
 This script may be defined using the name of one of these signal types, or it may have a generic name
 not linked to any existing signal type.
 
@@ -630,7 +630,7 @@ The required speed limit can be set using the speed setting of the signal aspect
 
 The advantages of using “SPEED” signals over speedposts are :
 
-- “SPEED” signals can be scripted, and can therefor be conditional, e.g. a speed restrictions in only set on approach to a junction if a restricted route is set through that junction.
+- “SPEED” signals can be scripted, and can therefore be conditional, e.g. a speed restrictions in only set on approach to a junction if a restricted route is set through that junction.
 - “SPEED” signals can set a state according to their setting, and this state can be seen by a preceeding signal. This can be used to set up variable speed warning signs.
 
 A “SPEED” signalhead can be part of a signal which also contains other heads, but for clarity of operation
