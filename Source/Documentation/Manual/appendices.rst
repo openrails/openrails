@@ -543,7 +543,7 @@ type. However, often there are a series of signal types which may differ in defi
 differences in the position of the lights, but which have the same logic scripts.
 
 In OR, a signal type can have a definition which references a particular script which this signal type must
-use. Different signal types which have the same logic can therefor all use the same script.
+use. Different signal types which have the same logic can therefore all use the same script.
 This script may be defined using the name of one of these signal types, or it may have a generic name
 not linked to any existing signal type.
 
