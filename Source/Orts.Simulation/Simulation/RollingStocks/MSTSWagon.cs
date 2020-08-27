@@ -1527,6 +1527,14 @@ namespace Orts.Simulation.RollingStocks
             AuxPowerOn = true;
         }
 
+        /// <summary>
+        /// Read the coupler state(s) from a save stream.
+        /// </summary>
+        /// <remarks>
+        /// Has no side effects besides advancing the save stream, thus avoiding any shared-state pitfalls.
+        /// </remarks>
+        /// <param name="inf">The save stream.</param>
+        /// <returns>A list of newly restored <see cref="MSTSCoupling"/> instances.</returns>
         private static IEnumerable<MSTSCoupling> ReadCouplersFromSave(BinaryReader inf)
         {
             var n = inf.ReadInt32();
