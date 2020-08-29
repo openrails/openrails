@@ -50,19 +50,19 @@ Data definition
 
 The timetable data is defined in a Spreadsheet, and saved as a \*.csv file 
 (character separated file) in Unicode format. As the separation character, 
-either ',' (comma) or ';' (semi-colon) must be used.
+either ',' (comma), ';' (semi-colon) or the tab character must be used.
 
-Do not select space or tab as the separation character.
+Do not select space as the separation character.
 
-As ';' or ',' are possible separation characters, these symbols must not be used 
-anywhere within the actual data. Enclosure of text by quotes (either single or 
-double) has no effect. Also, the character '#' should not be used in train 
-names, since it is the prefix for reserved words in the Timetable.
+As ';', ',', or tab are possible separation characters, these symbols must not 
+be used anywhere within the actual data. Enclosure of text by quotes (either 
+single or double) has no effect. Also, the character '#' should not be used in 
+train names, since it is the prefix for reserved words in the Timetable.
 
 File structure
 --------------
 
-The saved ``*.csv`` files must be renamed with the extension ``*.timetable_or``. 
+The saved ``*.csv`` files must be renamed with the extension ``*.timetable-or``. 
 The timetable files must be placed in a subdirectory named ``OpenRails`` created 
 in the route's ``Activities`` directory.
 
