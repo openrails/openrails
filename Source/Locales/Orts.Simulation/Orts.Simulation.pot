@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-08-10 21:45:12+0200\n"
-"PO-Revision-Date: 2020-08-10 21:45:13+0200\n"
+"POT-Creation-Date: 2020-08-29 03:09:39+0300\n"
+"PO-Revision-Date: 2020-08-29 03:09:43+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -1100,96 +1100,96 @@ msgid ""
 "service {3}"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1754
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1827
 msgid "Coupler broken!"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1757
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1830
 msgid "Coupler overloaded!"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2350
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2423
 msgid ""
 "The steam usage has exceeded the capacity of the steam boiler. Steam boiler "
 "locked out."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6743
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6748
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6810
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6815
 msgid "Other train is blocking path"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7610
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7677
 msgid "Stopped due to errors in route setting"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8325
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9468
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8391
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9534
 msgid "No signal in train's path"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8333
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8399
 msgid "Next signal already allocated to other train"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8394
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8460
 msgid "Request to clear signal cannot be processed"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8502
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9588
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8568
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9654
 msgid "No switch found"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9948
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10013
 msgid "You cannot enter manual mode when autopiloted"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9953
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10018
 msgid "You cannot use this command for pathless trains"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9965
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10030
 msgid "Train is not back on original route"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9974
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10039
 msgid ""
 "Original route is reverse from present direction, stop train before switching"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9994
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10059
 msgid "Cannot change to Manual Mode while in Explorer Mode"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10081
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10146
 msgid "Reversal required and rear of train not on required route"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10353
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10418
 msgid "Cannot clear signal behind train while in AUTO mode"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:15953
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16018
 msgid "Car "
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16027
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16032
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16092
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16097
 msgid "Locomotive "
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2296
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2369
 #, csharp-format
 msgid "Carriage {0} temperature is too cold, the passengers are freezing."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2300
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2373
 #, csharp-format
 msgid "Car {0} temperature is too cold for the freight."
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10836
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10901
 #, csharp-format
 msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
@@ -2212,19 +2212,19 @@ msgctxt "HUD"
 msgid "Power"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1663
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1678
 msgid "Starting unload"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3563
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3578
 msgid "Incompatible data"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3577
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3592
 msgid "Starting refill"
 msgstr ""
 
-#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3586
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3601
 msgid "Preparing for unload"
 msgstr ""
 
