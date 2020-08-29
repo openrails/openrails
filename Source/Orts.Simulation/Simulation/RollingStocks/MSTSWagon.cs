@@ -50,6 +50,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Event = Orts.Common.Event;
 
 namespace Orts.Simulation.RollingStocks
@@ -1504,12 +1505,7 @@ namespace Orts.Simulation.RollingStocks
             MassKG = inf.ReadSingle();
             MaxBrakeForceN = inf.ReadSingle();
             MaxHandbrakeForceN = inf.ReadSingle();
-            int n = inf.ReadInt32();
-            for (int i = 0; i < n; i++)
-            {
-                Couplers.Add(new MSTSCoupling());
-                Couplers[i].Restore(inf);
-            }
+            Couplers = ReadCouplersFromSave(inf).ToList();
             Pantographs.Restore(inf);
             if (FreightAnimations != null)
             {
@@ -1529,6 +1525,25 @@ namespace Orts.Simulation.RollingStocks
 
             // always set aux power on due to error in PowerSupplyClass
             AuxPowerOn = true;
+        }
+
+        /// <summary>
+        /// Read the coupler state(s) from a save stream.
+        /// </summary>
+        /// <remarks>
+        /// Has no side effects besides advancing the save stream, thus avoiding any shared-state pitfalls.
+        /// </remarks>
+        /// <param name="inf">The save stream.</param>
+        /// <returns>A list of newly restored <see cref="MSTSCoupling"/> instances.</returns>
+        private static IEnumerable<MSTSCoupling> ReadCouplersFromSave(BinaryReader inf)
+        {
+            var n = inf.ReadInt32();
+            foreach (int _ in Enumerable.Range(0, n))
+            {
+                var coupler = new MSTSCoupling();
+                coupler.Restore(inf);
+                yield return coupler;
+            }
         }
 
         public override void Update(float elapsedClockSeconds)
