@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2009-12-28 00:25:09+0300\n"
-"PO-Revision-Date: 2020-08-08 15:23+0300\n"
+"PO-Revision-Date: 2009-12-28 06:05+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -439,7 +439,7 @@ msgstr "фунт/дюйм²"
 
 #: ../../Menu/Options.cs:114
 msgid "inHg"
-msgstr "мм рт.ст"
+msgstr "дюйм рт.ст"
 
 #: ../../Menu/Options.cs:115
 msgid "kgf/cm²"
@@ -542,14 +542,14 @@ msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
-"Периодически обновлять до официальных проверенных версий. Рекомендовано "
-"большинству пользователей."
+"Нечасто выходящие официальные, проверенные версии. Рекомендовано большинству "
+"пользователей."
 
 #: ../../Menu/Options.cs:276
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
-"Еженедельные обновления могут содержать значительные изъяны. Для энтузиастов "
+"Еженедельные обновления могут содержать существенные изъяны. Для энтузиастов "
 "проекта."
 
 #: ../../Menu/Options.cs:277
@@ -1062,7 +1062,7 @@ msgstr "Предельная частота кадров"
 
 #: ../../Menu/Options.Designer.cs:2133
 msgid "Automatically tune settings to keep performance level"
-msgstr "Автонастройка для требуемой производительности"
+msgstr "Автонастройка под требуемую производительность"
 
 #: ../../Menu/Options.Designer.cs:2144
 msgid "Extend object maximum viewing distance to horizon"
