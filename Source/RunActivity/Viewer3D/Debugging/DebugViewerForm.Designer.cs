@@ -148,7 +148,7 @@
             // 
             this.rmvButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.rmvButton.Location = new System.Drawing.Point(766, 132);
-            this.rmvButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
             this.rmvButton.Name = "rmvButton";
             this.rmvButton.Size = new System.Drawing.Size(72, 24);
             this.rmvButton.TabIndex = 15;
@@ -201,7 +201,7 @@
             // 
             this.msgSelected.Enabled = false;
             this.msgSelected.Location = new System.Drawing.Point(590, 61);
-            this.msgSelected.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.msgSelected.Margin = new System.Windows.Forms.Padding(2);
             this.msgSelected.MaximumSize = new System.Drawing.Size(200, 24);
             this.msgSelected.MinimumSize = new System.Drawing.Size(104, 24);
             this.msgSelected.Name = "msgSelected";
@@ -215,7 +215,7 @@
             // 
             this.msgAll.Enabled = false;
             this.msgAll.Location = new System.Drawing.Point(590, 32);
-            this.msgAll.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.msgAll.Margin = new System.Windows.Forms.Padding(2);
             this.msgAll.MaximumSize = new System.Drawing.Size(200, 24);
             this.msgAll.MinimumSize = new System.Drawing.Size(104, 24);
             this.msgAll.Name = "msgAll";
