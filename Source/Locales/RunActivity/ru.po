@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2020-08-29 03:09:44+0300\n"
-"PO-Revision-Date: 2020-08-30 04:27+0300\n"
+"PO-Revision-Date: 2020-08-30 13:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -1260,7 +1260,7 @@ msgstr "Торм.сила на ободе"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:804
 msgid "Number of substeps"
-msgstr "Промежуточн.ступерей"
+msgstr "Промежут.ступеней"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:806
 msgid "Solver"
