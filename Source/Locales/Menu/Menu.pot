@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-08-07 00:22:44+0200\n"
-"PO-Revision-Date: 2020-08-07 00:22:45+0200\n"
+"POT-Creation-Date: 2020-08-29 03:09:34+0300\n"
+"PO-Revision-Date: 2020-08-29 03:09:34+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -154,26 +154,26 @@ msgstr ""
 msgid "Sunday"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:305
+#: ../../Menu/MainForm.cs:325
 msgid "Update check failed"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:500
+#: ../../Menu/MainForm.cs:520
 msgid ""
 "User name must be 4-10 characters long, cannot contain space, ', \" or - and "
 "must not start with a digit."
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1128
+#: ../../Menu/MainForm.cs:1148
 msgid "Activity Briefing"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:307
+#: ../../Menu/MainForm.cs:327
 #, csharp-format
 msgid "Update to {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:513
+#: ../../Menu/MainForm.cs:533
 #, csharp-format
 msgid ""
 "The update check failed due to an error:\n"
@@ -181,7 +181,7 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:521
+#: ../../Menu/MainForm.cs:541
 #, csharp-format
 msgid ""
 "The update failed due to an error:\n"
@@ -189,54 +189,54 @@ msgid ""
 "{0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1117
+#: ../../Menu/MainForm.cs:1137
 #, csharp-format
 msgid "Route: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1123
-#: ../../Menu/MainForm.cs:1156
+#: ../../Menu/MainForm.cs:1143
+#: ../../Menu/MainForm.cs:1176
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1127
+#: ../../Menu/MainForm.cs:1147
 #, csharp-format
 msgid "Activity: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1132
-#: ../../Menu/MainForm.cs:1161
+#: ../../Menu/MainForm.cs:1152
+#: ../../Menu/MainForm.cs:1181
 #, csharp-format
 msgid "Path: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1133
+#: ../../Menu/MainForm.cs:1153
 #, csharp-format
 msgid "Starting at: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1134
+#: ../../Menu/MainForm.cs:1154
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1142
+#: ../../Menu/MainForm.cs:1162
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1146
+#: ../../Menu/MainForm.cs:1166
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1150
+#: ../../Menu/MainForm.cs:1170
 #, csharp-format
 msgid "Train: {0}"
 msgstr ""
 
-#: ../../Menu/MainForm.cs:1153
+#: ../../Menu/MainForm.cs:1173
 #, csharp-format
 msgid "Consist: {0}"
 msgstr ""
@@ -395,7 +395,7 @@ msgid "Timetable set:"
 msgstr ""
 
 #: ../../Menu/MainForm.Designer.cs:900
-#: ../../Menu/Options.cs:270
+#: ../../Menu/Options.cs:271
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
 msgstr ""
@@ -404,164 +404,164 @@ msgstr ""
 msgid "What's new?"
 msgstr ""
 
-#: ../../Menu/Options.cs:100
+#: ../../Menu/Options.cs:101
 #: ../../Menu/TestingForm.Designer.cs:184
 msgid "Route"
 msgstr ""
 
-#: ../../Menu/Options.cs:101
+#: ../../Menu/Options.cs:102
 msgid "Player's location"
 msgstr ""
 
-#: ../../Menu/Options.cs:102
+#: ../../Menu/Options.cs:103
 msgid "Metric"
 msgstr ""
 
-#: ../../Menu/Options.cs:103
+#: ../../Menu/Options.cs:104
 msgid "Imperial US"
 msgstr ""
 
-#: ../../Menu/Options.cs:104
+#: ../../Menu/Options.cs:105
 msgid "Imperial UK"
 msgstr ""
 
-#: ../../Menu/Options.cs:111
+#: ../../Menu/Options.cs:112
 msgid "Automatic"
 msgstr ""
 
-#: ../../Menu/Options.cs:112
+#: ../../Menu/Options.cs:113
 msgid "bar"
 msgstr ""
 
-#: ../../Menu/Options.cs:113
+#: ../../Menu/Options.cs:114
 msgid "psi"
 msgstr ""
 
-#: ../../Menu/Options.cs:114
+#: ../../Menu/Options.cs:115
 msgid "inHg"
 msgstr ""
 
-#: ../../Menu/Options.cs:115
+#: ../../Menu/Options.cs:116
 msgid "kgf/cm²"
 msgstr ""
 
-#: ../../Menu/Options.cs:204
+#: ../../Menu/Options.cs:205
 msgid "comma"
 msgstr ""
 
-#: ../../Menu/Options.cs:205
+#: ../../Menu/Options.cs:206
 msgid "semicolon"
 msgstr ""
 
-#: ../../Menu/Options.cs:206
+#: ../../Menu/Options.cs:207
 msgid "tab"
 msgstr ""
 
-#: ../../Menu/Options.cs:207
+#: ../../Menu/Options.cs:208
 msgid "space"
 msgstr ""
 
-#: ../../Menu/Options.cs:213
+#: ../../Menu/Options.cs:214
 msgid "route"
 msgstr ""
 
-#: ../../Menu/Options.cs:214
+#: ../../Menu/Options.cs:215
 msgid "m/s"
 msgstr ""
 
-#: ../../Menu/Options.cs:215
+#: ../../Menu/Options.cs:216
 msgid "km/h"
 msgstr ""
 
-#: ../../Menu/Options.cs:216
+#: ../../Menu/Options.cs:217
 msgid "mph"
 msgstr ""
 
-#: ../../Menu/Options.cs:235
+#: ../../Menu/Options.cs:236
 #: ../../Menu/ResumeForm.Designer.cs:398
 msgid "Time"
 msgstr ""
 
-#: ../../Menu/Options.cs:236
+#: ../../Menu/Options.cs:237
 msgid "Train Speed"
 msgstr ""
 
-#: ../../Menu/Options.cs:237
+#: ../../Menu/Options.cs:238
 msgid "Max. Speed"
 msgstr ""
 
-#: ../../Menu/Options.cs:238
+#: ../../Menu/Options.cs:239
 msgid "Signal State"
 msgstr ""
 
-#: ../../Menu/Options.cs:239
+#: ../../Menu/Options.cs:240
 msgid "Track Elevation"
 msgstr ""
 
-#: ../../Menu/Options.cs:240
+#: ../../Menu/Options.cs:241
 msgid "Direction"
 msgstr ""
 
-#: ../../Menu/Options.cs:241
+#: ../../Menu/Options.cs:242
 msgid "Control Mode"
 msgstr ""
 
-#: ../../Menu/Options.cs:242
+#: ../../Menu/Options.cs:243
 msgid "Distance Travelled"
 msgstr ""
 
-#: ../../Menu/Options.cs:243
+#: ../../Menu/Options.cs:244
 msgid "Throttle %"
 msgstr ""
 
-#: ../../Menu/Options.cs:244
+#: ../../Menu/Options.cs:245
 msgid "Brake Cyl Press"
 msgstr ""
 
-#: ../../Menu/Options.cs:245
+#: ../../Menu/Options.cs:246
 msgid "Dyn Brake %"
 msgstr ""
 
-#: ../../Menu/Options.cs:246
+#: ../../Menu/Options.cs:247
 msgid "Gear Setting"
 msgstr ""
 
-#: ../../Menu/Options.cs:269
+#: ../../Menu/Options.cs:270
 msgid "Stable (recommended)"
 msgstr ""
 
-#: ../../Menu/Options.cs:271
+#: ../../Menu/Options.cs:272
 msgid "Unstable"
 msgstr ""
 
-#: ../../Menu/Options.cs:272
+#: ../../Menu/Options.cs:273
 msgid "None"
 msgstr ""
 
-#: ../../Menu/Options.cs:275
+#: ../../Menu/Options.cs:276
 msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
 
-#: ../../Menu/Options.cs:276
+#: ../../Menu/Options.cs:277
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
 
-#: ../../Menu/Options.cs:277
+#: ../../Menu/Options.cs:278
 msgid "Daily updates which may contain serious defects. For developers only."
 msgstr ""
 
-#: ../../Menu/Options.cs:278
+#: ../../Menu/Options.cs:279
 msgid "No updates."
 msgstr ""
 
-#: ../../Menu/Options.cs:405
+#: ../../Menu/Options.cs:406
 msgid "Click to change this key"
 msgstr ""
 
-#: ../../Menu/Options.cs:421
+#: ../../Menu/Options.cs:422
 msgid ""
 "Continue with conflicting key assignments?\n"
 "\n"
