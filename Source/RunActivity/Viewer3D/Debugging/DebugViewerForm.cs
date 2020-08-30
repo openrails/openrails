@@ -31,6 +31,7 @@ using System.Net;
 using System.Windows.Forms;
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
@@ -86,11 +87,12 @@ namespace Orts.Viewer3D.Debugging
       public double signalPickedTime;
 	  public bool DrawPath = true; //draw train path
       ImageList imageList1;
-      public List<Train> selectedTrainList;
-	  /// <summary>
-	  /// contains the last position of the mouse
-	  /// </summary>
-	  private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
+		//public List<Train> selectedTrainList;
+		public List<Train> selectedTrainList = new List<Train>(); // initialise to an empty list
+		/// <summary>
+		/// contains the last position of the mouse
+		/// </summary>
+		private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
 	Pen redPen = new Pen(Color.Red);
 	Pen greenPen = new Pen(Color.Green);
 	Pen orangePen = new Pen(Color.Orange);
@@ -128,30 +130,27 @@ namespace Orts.Viewer3D.Debugging
         /// /// <param name="viewer"></param>
         public DispatchViewer(Simulator simulator, Viewer viewer)
         {
-            InitializeComponent();
+			InitializeComponent();
 
             if (simulator == null)
-            {
                 throw new ArgumentNullException("simulator", "Simulator object cannot be null.");
-            }
 
             this.simulator = simulator;
             this.Viewer = viewer;
 
-            nodes = simulator.TDB.TrackDB.TrackNodes;
+			nodes = simulator.TDB.TrackDB.TrackNodes;
 
-            trainFont = new Font("Arial", 14, FontStyle.Bold);
+			// initialise the timer used to handle user input
+			UITimer = new Timer();
+			UITimer.Interval = 100;
+			UITimer.Tick += new System.EventHandler(UITimer_Tick);
+			UITimer.Start();
+
+			trainFont = new Font("Arial", 14, FontStyle.Bold);
             sidingFont = new Font("Arial", 12, FontStyle.Bold);
 
             trainBrush = new SolidBrush(Color.Red);
             sidingBrush = new SolidBrush(Color.Blue);
-
-
-            // initialise the timer used to handle user input
-            UITimer = new Timer();
-            UITimer.Interval = 100;
-            UITimer.Tick += new System.EventHandler(UITimer_Tick);
-            UITimer.Start();
 
             ViewWindow = new RectangleF(0, 0, 5000f, 5000f);
             windowSizeUpDown.Accelerations.Add(new NumericUpDownAcceleration(1, 100));
@@ -163,10 +162,10 @@ namespace Orts.Viewer3D.Debugging
             selectedTrainList = new List<Train>();
             if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
 
-
             InitData();
             InitImage();
-            chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
+
+			chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
             if (!MultiPlayer.MPManager.IsMultiPlayer())//single player mode, make those unnecessary removed
             {
                 msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
@@ -176,15 +175,24 @@ namespace Orts.Viewer3D.Debugging
                 refreshButton.Text = "View Self";
             }
 
-            /*
-          if (MultiPlayer.MPManager.IsMultiPlayer())
-          {
-              MessageViewer = new MessageViewer();
-              MessageViewer.Show();
-              MessageViewer.Visible = false;
-          }*/
+			//CJ Debug
+			simulator.TimetableMode = true;
+			
+			if (simulator.TimetableMode)
+			{
+				lblShow.Visible = simulator.TimetableMode;
+				new TimetableDebug(this, simulator, viewer, nodes);
+				return;
+			}
+			/*
+			if (MultiPlayer.MPManager.IsMultiPlayer())
+			{
+				MessageViewer = new MessageViewer();
+				MessageViewer.Show();
+				MessageViewer.Visible = false;
+			}*/
 
-            MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
+			MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
             {
                 firstShow = true;
             };
@@ -201,12 +209,17 @@ namespace Orts.Viewer3D.Debugging
         }
 
 
-      public int RedrawCount;
-	  private Font trainFont;
-	  private Font sidingFont;
-	  private SolidBrush trainBrush;
-	  private SolidBrush sidingBrush;
-      private double lastUpdateTime;
+		public int RedrawCount;
+		//private Font trainFont;
+		//private Font sidingFont;
+		public Font trainFont;
+		public Font sidingFont;
+
+		//private SolidBrush trainBrush;
+		// private SolidBrush sidingBrush;
+		public SolidBrush trainBrush;
+		public SolidBrush sidingBrush;
+		private double lastUpdateTime;
 
       /// <summary>
       /// When the user holds down the  "L", "R", "U", "D" buttons,
@@ -227,9 +240,10 @@ namespace Orts.Viewer3D.Debugging
 	  }
 
 	  #region initData
-	  private void InitData()
-	  {
-		  if (!loaded)
+	  //private void InitData()
+	  public void InitData()
+		{
+			if (!loaded)
 		  {
 			  // do this only once
 			  loaded = true;

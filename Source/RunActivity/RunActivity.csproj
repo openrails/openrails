@@ -110,6 +110,7 @@
     <Compile Include="Viewer3D\Debugging\SoundDebugForm.Designer.cs">
       <DependentUpon>SoundDebugForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Viewer3D\Debugging\TimetableDebug.cs" />
     <Compile Include="Viewer3D\DriverMachineInterface.cs" />
     <Compile Include="Viewer3D\DynamicTrack.cs" />
     <Compile Include="Viewer3D\Forest.cs" />
