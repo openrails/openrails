@@ -394,7 +394,7 @@ Special rows
   
 - ``#note`` row
 
-  The ``#note`` row can be used to defined control commands which are not 
+  The ``#note`` row can be used to define control commands which are not 
   location related but apply to the full run of the train. It can also be used 
   to set commands for trains which do not stop at or pass through any defined 
   location. This row is optional.
@@ -451,8 +451,10 @@ Special rows
 
   The user can also see it in-game in the Briefing tab of the Help Window (F1).
 
-  The timetable-or file does not allow the briefing field to contain line-breaks
-  but if HTML breaks "<br>" are inserted, these will be converted to line-breaks.
+  A similar entry in the ``#comment`` column provides text which describes the entire timetable.
+
+  The timetable-or file does not allow the fields to contain line-breaks
+  but if HTML breaks "<br>" are inserted into the ``#briefing`` field, these will be converted to line-breaks.
    
 
 Control commands
