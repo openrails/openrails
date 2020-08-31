@@ -148,7 +148,7 @@
             // 
             this.rmvButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.rmvButton.Location = new System.Drawing.Point(766, 132);
-            this.rmvButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
             this.rmvButton.Name = "rmvButton";
             this.rmvButton.Size = new System.Drawing.Size(72, 24);
             this.rmvButton.TabIndex = 15;
@@ -201,7 +201,7 @@
             // 
             this.msgSelected.Enabled = false;
             this.msgSelected.Location = new System.Drawing.Point(590, 61);
-            this.msgSelected.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.msgSelected.Margin = new System.Windows.Forms.Padding(2);
             this.msgSelected.MaximumSize = new System.Drawing.Size(200, 24);
             this.msgSelected.MinimumSize = new System.Drawing.Size(104, 24);
             this.msgSelected.Name = "msgSelected";
@@ -215,7 +215,7 @@
             // 
             this.msgAll.Enabled = false;
             this.msgAll.Location = new System.Drawing.Point(590, 32);
-            this.msgAll.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.msgAll.Margin = new System.Windows.Forms.Padding(2);
             this.msgAll.MaximumSize = new System.Drawing.Size(200, 24);
             this.msgAll.MinimumSize = new System.Drawing.Size(104, 24);
             this.msgAll.Name = "msgAll";
@@ -228,7 +228,7 @@
             // composeMSG
             // 
             this.composeMSG.Location = new System.Drawing.Point(590, 3);
-            this.composeMSG.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.composeMSG.Margin = new System.Windows.Forms.Padding(2);
             this.composeMSG.MaximumSize = new System.Drawing.Size(200, 24);
             this.composeMSG.MinimumSize = new System.Drawing.Size(104, 24);
             this.composeMSG.Name = "composeMSG";
@@ -252,7 +252,7 @@
             // 
             this.reply2Selected.Enabled = false;
             this.reply2Selected.Location = new System.Drawing.Point(590, 90);
-            this.reply2Selected.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.reply2Selected.Margin = new System.Windows.Forms.Padding(2);
             this.reply2Selected.MaximumSize = new System.Drawing.Size(200, 24);
             this.reply2Selected.MinimumSize = new System.Drawing.Size(104, 24);
             this.reply2Selected.Name = "reply2Selected";
@@ -364,7 +364,7 @@
             // 
             this.btnAssist.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAssist.Location = new System.Drawing.Point(697, 104);
-            this.btnAssist.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnAssist.Margin = new System.Windows.Forms.Padding(2);
             this.btnAssist.Name = "btnAssist";
             this.btnAssist.Size = new System.Drawing.Size(48, 24);
             this.btnAssist.TabIndex = 30;
@@ -376,7 +376,7 @@
             // 
             this.btnNormal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnNormal.Location = new System.Drawing.Point(755, 104);
-            this.btnNormal.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnNormal.Margin = new System.Windows.Forms.Padding(2);
             this.btnNormal.Name = "btnNormal";
             this.btnNormal.Size = new System.Drawing.Size(58, 24);
             this.btnNormal.TabIndex = 31;
@@ -472,7 +472,7 @@
             this.Controls.Add(this.pictureBox1);
             this.Name = "DispatchViewer";
             this.Text = "DispatchViewer";
-            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
+            this.WindowState = System.Windows.Forms.FormWindowState.Normal;
             this.Leave += new System.EventHandler(this.DispatcherLeave);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).EndInit();
