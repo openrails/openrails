@@ -1160,17 +1160,15 @@ namespace ORTS
             {
                 if (SelectedTimetableSet != null)
                     ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
-                // Description not shown as no description is available for a timetable set.
+                    // Description not shown as no description is available for a timetable set.
 
                 if (SelectedTimetable != null)
-                    ShowDetail(catalog.GetStringFmt($"Timetable: {SelectedTimetable}"), SelectedTimetable.Briefing.Split('\n'));
+                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
 
                 if (SelectedTimetableTrain != null)
                 {
-                    var selectedTimetableTrainDescription = new string[2];
-                    selectedTimetableTrainDescription[0] = SelectedTimetableTrain.Briefing;
+                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
 
-                    ShowDetail(catalog.GetStringFmt($"Train: {SelectedTimetableTrain}"), selectedTimetableTrainDescription);
                     if (SelectedTimetableConsist != null)
                     {
                         ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
@@ -1184,6 +1182,24 @@ namespace ORTS
 
             FlowDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Change
+        ///     "Start time: 10:30$$create=00:04/ahead=0040ElghLE70F363U"
+        /// to
+        ///     "Start time: 10:30"
+        /// for higher-level presentation
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private string[] HideStartParameters(string [] info)
+        {
+            var fullStartTime = info[0].TrimStart();
+            var startTimeArray = fullStartTime.Split('$');
+            var shortStartTime = startTimeArray[0];
+            info[0] = shortStartTime;
+            return info;
         }
 
         List<Detail> Details = new List<Detail>();

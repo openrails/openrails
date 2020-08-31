@@ -289,11 +289,16 @@ namespace Orts.Formats.OR
 
             public string[] ToInfo()
             {
-                string[] infoString = new string[] {
-                    Catalog.GetStringFmt("Start time: {0}", StartTime),
-                };
+                //string[] infoString = new string[] {
+                //    Catalog.GetStringFmt("Start time: {0}", StartTime),
+                //};
 
-                return (infoString);
+                //return (infoString);
+                if (string.IsNullOrEmpty(Briefing))
+                    return new[] { Catalog.GetStringFmt("Start time: {0}", StartTime) };
+                else
+                    return new[] { Catalog.GetStringFmt("Start time: {0}", StartTime), "", Briefing };
+
             }
         }
     }
