@@ -216,7 +216,6 @@ namespace ORTS.Scripting.Api
         TCSFullServ,        // TCS Full Service Braking
         VacContServ,         // TrainBrakesControllerVacuumContinuousServiceStart
         VacApplyContServ,    // TrainBrakesControllerVacuumApplyContinuousServiceStart
-        ManualBraking,        // BrakemanBrakesControllerManualBraking
         BrakeNotch           // EngineBrakesControllerBrakeNotchStart
     };
 
@@ -249,7 +248,6 @@ namespace ORTS.Scripting.Api
             {ControllerState.TCSFullServ, Catalog.GetString("TCS Full Service Braking")},
             {ControllerState.VacContServ, Catalog.GetString("Vac. Cont. Service")},
             {ControllerState.VacApplyContServ, Catalog.GetString("Vac. Apply Cont. Service")},
-            {ControllerState.ManualBraking, Catalog.GetString("Manual Braking")},
             {ControllerState.BrakeNotch, Catalog.GetString("Notch")}
         };
     }

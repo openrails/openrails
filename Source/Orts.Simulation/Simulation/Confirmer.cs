@@ -76,7 +76,6 @@ namespace Orts.Simulation
       // Braking
       , TrainBrake
       , EngineBrake
-      , BrakemanBrake
       , DynamicBrake
       , EmergencyBrake
       , BailOff
@@ -215,8 +214,7 @@ namespace Orts.Simulation
                 , new string [] { GetString("Water Scoop"), GetString("up"), null, GetString("down") }
                 // Braking
                 , new string [] { GetString("Train Brake"), null, null, null, GetString("release"), GetString("apply") } 
-                , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") }
-                , new string [] { GetString("Brakeman Brake"), null, null, null, GetString("release"), GetString("apply") }
+                , new string [] { GetString("Engine Brake"), null, null, null, GetString("release"), GetString("apply") } 
                 , new string [] { GetString("Dynamic Brake"), GetString("off"), null, GetString("setup"), GetString("decrease"), GetString("increase") }
                 , new string [] { GetString("Emergency Brake"), GetString("release"), null, GetString("apply") } 
                 , new string [] { GetString("Bail Off"), GetString("disengage"), null, GetString("engage") } 
