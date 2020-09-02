@@ -134,7 +134,6 @@
     <Compile Include="Simulation\Transfertables.cs" />
     <Compile Include="Simulation\Traveller.cs" />
     <Compile Include="Simulation\Turntables.cs" />
-    <Compile Include="Simulation\VehicleListLoader.cs" />
     <Compile Include="Simulation\Weather.cs" />
   </ItemGroup>
   <ItemGroup>

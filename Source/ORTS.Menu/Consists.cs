@@ -15,45 +15,38 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using GNU.Gettext;
 using Orts.Formats.Msts;
-using Orts.Formats.OR;
-using ORTS.Content;
+using ORTS.Settings;
 
 namespace ORTS.Menu
 {
     public class Consist
     {
-        public string Name { get; }
-        public ISet<Locomotive> Locomotives { get; } = new HashSet<Locomotive>() { new Locomotive("unknown") };
-        public string FilePath { get; }
-        public bool PlayerDrivable { get; }
+        public readonly string Name;
+        public readonly Locomotive Locomotive = new Locomotive("unknown");
+        public readonly string FilePath;
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
-        internal Consist(string filePath, Folder folder, IList<Folder> allFolders) : this(filePath, folder, allFolders, false) { }
-
-        internal Consist(string filePath, Folder folder, IList<Folder> allFolders, bool reverseConsist)
+        internal Consist(string filePath, Folder folder)
         {
             if (File.Exists(filePath))
             {
                 try
                 {
-                    var conFile = LoadConsist(filePath);
-                    Name = conFile.DisplayName.Trim();
-                    Locomotives = reverseConsist ? GetLocomotivesReverse(conFile, folder, allFolders) : GetLocomotives(conFile, folder, allFolders);
-                    PlayerDrivable = conFile.PlayerDrivable;
+                    var conFile = new ConsistFile(filePath);
+                    Name = conFile.Name.Trim();
+                    Locomotive = GetLocomotive(conFile, folder);
                 }
                 catch
                 {
                     Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
                 }
-                if (Locomotives.Count <= 0)
-                    throw new InvalidDataException($"Consist '{filePath}' is excluded.");
+                if (Locomotive == null) throw new InvalidDataException("Consist '" + filePath + "' is excluded.");
                 if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
             else
@@ -63,17 +56,28 @@ namespace ORTS.Menu
             FilePath = filePath;
         }
 
-        private static IVehicleList LoadConsist(string filePath)
+        internal Consist(string filePath, Folder folder, bool reverseConsist)
         {
-            switch (System.IO.Path.GetExtension(filePath).ToLowerInvariant())
+            if (File.Exists(filePath))
             {
-                case ".train-or":
-                    return TrainFile.LoadFrom(filePath);
-                case ".con":
-                    return new ConsistFile(filePath);
-                default:
-                    throw new InvalidDataException("Unknown train format");
+                try
+                {
+                    var conFile = new ConsistFile(filePath);
+                    Name = conFile.Name.Trim();
+                    Locomotive = reverseConsist ? GetLocomotiveReverse(conFile, folder) : GetLocomotive(conFile, folder);
+                }
+                catch
+                {
+                    Name = "<" + catalog.GetString("load error:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+                }
+                if (Locomotive == null) throw new InvalidDataException("Consist '" + filePath + "' is excluded.");
+                if (string.IsNullOrEmpty(Name)) Name = "<" + catalog.GetString("unnamed:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
             }
+            else
+            {
+                Name = "<" + catalog.GetString("missing:") + " " + System.IO.Path.GetFileNameWithoutExtension(filePath) + ">";
+            }
+            FilePath = filePath;
         }
 
         public override string ToString()
@@ -81,80 +85,87 @@ namespace ORTS.Menu
             return Name;
         }
 
-        public static List<Consist> GetConsists(Folder folder, IList<Folder> allFolders)
+        public static List<Consist> GetConsists(Folder folder)
         {
             var consists = new List<Consist>();
-            foreach (var consist in VehicleListUtilities.AllVehicleLists(folder.Path))
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
+            if (Directory.Exists(directory))
             {
-                Consist loaded;
-                try
+                foreach (var consist in Directory.GetFiles(directory, "*.con"))
                 {
-                    loaded = new Consist(consist, folder, allFolders);
+                    try
+                    {
+                        consists.Add(new Consist(consist, folder));
+                    }
+                    catch { }
                 }
-                catch
-                {
-                    continue;
-                }
-                consists.Add(loaded);
             }
             return consists;
         }
 
-        public static Consist GetConsist(Folder folder, IList<Folder> allFolders, string name) => GetConsist(folder, allFolders, name, false);
-
-        public static Consist GetConsist(Folder folder, IList<Folder> allFolders, string name, bool reverseConsist)
+        public static Consist GetConsist(Folder folder, string name)
         {
             Consist consist = null;
-            var file = VehicleListUtilities.ResolveVehicleList(folder.Path, name);
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
+            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
 
             try
             {
-                consist = new Consist(file, folder, allFolders, reverseConsist);
+                consist = new Consist(file, folder);
             }
             catch { }
 
             return consist;
         }
 
-        static ISet<Locomotive> GetLocomotives(IVehicleList conFile, Folder folder, IList<Folder> allFolders)
+        public static Consist GetConsist(Folder folder, string name, bool reverseConsist)
         {
-            var foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
-            var choices = conFile.GetLeadLocomotiveChoices(folder.Path, foldersDict);
-            return choices
-                .Where((PreferredLocomotive pl) => !pl.Equals(PreferredLocomotive.NoLocomotive))
-                .Select((PreferredLocomotive pl) => LoadLocomotive(pl))
-                .Where((Locomotive loco) => loco != null)
-                .ToHashSet();
-        }
+            Consist consist = null;
+            var directory = System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS");
+            var file = System.IO.Path.Combine(directory, System.IO.Path.ChangeExtension(name, "con"));
 
-        static ISet<Locomotive> GetLocomotivesReverse(IVehicleList conFile, Folder folder, IList<Folder> allFolders)
-        {
-            var foldersDict = allFolders.ToDictionary((Folder f) => f.Name, (Folder f) => f.Path);
-            var choices = conFile.GetReverseLocomotiveChoices(folder.Path, foldersDict);
-            return choices
-                .Where((PreferredLocomotive pl) => !pl.Equals(PreferredLocomotive.NoLocomotive))
-                .Select((PreferredLocomotive pl) => LoadLocomotive(pl))
-                .Where((Locomotive loco) => loco != null)
-                .ToHashSet();
-        }
-
-        private static Locomotive LoadLocomotive(PreferredLocomotive locoSpec)
-        {
-            Locomotive loaded;
             try
             {
-                loaded = new Locomotive(locoSpec.FilePath);
+                consist = new Consist(file, folder, reverseConsist);
             }
-            catch
+            catch { }
+
+            return consist;
+        }
+
+        static Locomotive GetLocomotive(ConsistFile conFile, Folder folder)
+        {
+            foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
             {
-                loaded = null;
+                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
+                try
+                {
+                    return new Locomotive(filePath);
+                }
+                catch { }
             }
-            return loaded;
+            return null;
+        }
+
+        static Locomotive GetLocomotiveReverse(ConsistFile conFile, Folder folder)
+        {
+            Locomotive newLocomotive = null;
+
+            foreach (var wagon in conFile.Train.TrainCfg.WagonList.Where(w => w.IsEngine))
+            {
+                var filePath = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "TRAINSET"), wagon.Folder), wagon.Name + ".eng");
+                try
+                {
+                    newLocomotive = new Locomotive(filePath);
+                }
+                catch { }
+            }
+            return (newLocomotive);
         }
 
     }
 
-    public class Locomotive : IComparable<Locomotive>
+    public class Locomotive
     {
         public readonly string Name;
         public readonly string Description;
@@ -220,7 +231,5 @@ namespace ORTS.Menu
         {
             return Name.GetHashCode();
         }
-
-        public int CompareTo(Locomotive other) => string.Compare(Name, other.Name);
     }
 }

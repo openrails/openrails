@@ -15,116 +15,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
-using System.Diagnostics;
+using System;
+using System.Collections;
 using System.IO;
-using System.Linq;
 using Orts.Parsers.Msts;
-using ORTS.Content;
 
 namespace Orts.Formats.Msts
 {
     /// <summary>
     /// Work with consist files
     /// </summary>
-    public class ConsistFile : IVehicleList
+    public class ConsistFile
     {
         public string Name; // from the Name field or label field of the consist file
         public Train_Config Train;
-        public bool IsTilting { get; }
 
         public ConsistFile(string filePath)
         {
             using (var stf = new STFReader(filePath, false))
-            {
                 stf.ParseFile(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("train", ()=>{ Train = new Train_Config(stf); }),
                 });
-            }
             Name = Train.TrainCfg.Name;
-            IsTilting = Path.GetFileNameWithoutExtension(filePath)
-                .ToLowerInvariant()
-                .Contains("tilted");
         }
 
-        string IVehicleList.DisplayName => Train.TrainCfg.Name;
-
-        public float? MaxVelocityMpS
+        public override string ToString()
         {
-            get
-            {
-                var a = Train.TrainCfg.MaxVelocity?.A ?? 0f;
-                if (a <= 0f || a == 40f)
-                    return null;
-                else
-                    return a;
-            }
+            return Name;
         }
-
-        public float Durability => Train.TrainCfg.Durability;
-
-        public bool PlayerDrivable => true;
-
-        public ISet<PreferredLocomotive> GetLeadLocomotiveChoices(string basePath, IDictionary<string, string> folders)
-        {
-            if (Train.TrainCfg.WagonList.Count == 0)
-                return new HashSet<PreferredLocomotive>();
-
-            var firstEngine = Train.TrainCfg.WagonList
-                .Where((Wagon wagon) => wagon.IsEngine)
-                .FirstOrDefault();
-            if (firstEngine == null)
-                return PreferredLocomotive.NoLocomotiveSet;
-            else
-                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(EnginePath(basePath, firstEngine)) };
-        }
-
-        public ISet<PreferredLocomotive> GetReverseLocomotiveChoices(string basePath, IDictionary<string, string> folders)
-        {
-            if (Train.TrainCfg.WagonList.Count == 0)
-                return new HashSet<PreferredLocomotive>();
-
-            var lastEngine = Train.TrainCfg.WagonList
-                .Where((Wagon wagon) => wagon.IsEngine)
-                .LastOrDefault();
-            if (lastEngine == null)
-                return PreferredLocomotive.NoLocomotiveSet;
-            else
-                return new HashSet<PreferredLocomotive>() { new PreferredLocomotive(EnginePath(basePath, lastEngine)) };
-        }
-
-        public IEnumerable<WagonReference> GetForwardWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
-        {
-            if (preference != null && !GetLeadLocomotiveChoices(basePath, folders).Contains(preference))
-                return new WagonReference[0] { };
-            return Train.TrainCfg.WagonList
-                .Select((Wagon wagon) => new WagonReference(EngineOrWagonPath(basePath, wagon), wagon.Flip, wagon.UiD));
-        }
-
-        public IEnumerable<WagonReference> GetReverseWagonList(string basePath, IDictionary<string, string> folders, PreferredLocomotive preference = null)
-        {
-            if (preference != null && !GetReverseLocomotiveChoices(basePath, folders).Contains(preference))
-                return new WagonReference[0] { };
-            return Train.TrainCfg.WagonList
-                .Select((Wagon wagon) => new WagonReference(EngineOrWagonPath(basePath, wagon), !wagon.Flip, wagon.UiD))
-                .Reverse();
-        }
-
-        private static string EnginePath(string basePath, Wagon engine)
-        {
-            Debug.Assert(engine.IsEngine);
-            return VehicleListUtilities.ResolveEngineFile(basePath, engine.Folder.Split(new char[] { '/', '\\' }), engine.Name);
-        }
-
-        private static string EngineOrWagonPath(string basePath, Wagon wagon)
-        {
-            var subFolders = wagon.Folder.Split(new char[] { '/', '\\' });
-            if (wagon.IsEngine)
-                return VehicleListUtilities.ResolveEngineFile(basePath, subFolders, wagon.Name);
-            else
-                return VehicleListUtilities.ResolveWagonFile(basePath, subFolders, wagon.Name);
-        }
-
-        public override string ToString() => Name;
     }
 }

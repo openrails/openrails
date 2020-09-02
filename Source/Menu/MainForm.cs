@@ -31,6 +31,7 @@ using System.IO;
 using System.Linq;
 using System.Resources;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Path = ORTS.Menu.Path;
 
@@ -83,7 +84,7 @@ namespace ORTS
                 return programNormal;
             }
         }
-        
+
         // Base items
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
@@ -91,7 +92,6 @@ namespace ORTS
         // Activity mode items
         public Activity SelectedActivity { get { return (Activity)comboBoxActivity.SelectedItem; } }
         public Consist SelectedConsist { get { return (Consist)comboBoxConsist.SelectedItem; } }
-        public Locomotive SelectedLocomotive => (Locomotive)comboBoxLocomotive.SelectedItem;
         public Path SelectedPath { get { return (Path)comboBoxHeadTo.SelectedItem; } }
         public string SelectedStartTime { get { return comboBoxStartTime.Text; } }
 
@@ -100,7 +100,6 @@ namespace ORTS
         public TimetableFileLite SelectedTimetable { get { return (TimetableFileLite)comboBoxTimetable.SelectedItem; } }
         public TimetableFileLite.TrainInformation SelectedTimetableTrain { get { return (TimetableFileLite.TrainInformation)comboBoxTimetableTrain.SelectedItem; } }
         public int SelectedTimetableDay { get { return (comboBoxTimetableDay.SelectedItem as KeyedComboBoxItem).Key; } }
-        public Locomotive SelectedTimetableLocomotive => (Locomotive)comboBoxTimetableLocomotive.SelectedItem;
         public WeatherFileInfo SelectedWeatherFile { get { return (WeatherFileInfo)comboBoxTimetableWeatherFile.SelectedItem; } }
         public Consist SelectedTimetableConsist;
         public Path SelectedTimetablePath;
@@ -217,7 +216,8 @@ namespace ORTS
                             Process.Start("cmd", "/k \"" + toolPath + "\"");
                         else
                             Process.Start(toolPath);
-                    }) { Tag = executable });
+                    })
+                    { Tag = executable });
                 }
                 // Add all the tools in alphabetical order.
                 contextMenuStripTools.Items.AddRange((from tool in tools
@@ -479,9 +479,8 @@ namespace ORTS
         void comboBoxTimetableTrain_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedTrain = comboBoxTimetableTrain.SelectedItem as TimetableFileLite.TrainInformation;
-            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, Folders, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
+            SelectedTimetableConsist = Consist.GetConsist(SelectedFolder, selectedTrain.LeadingConsist, selectedTrain.ReverseConsist);
             SelectedTimetablePath = Path.GetPath(SelectedRoute, selectedTrain.Path, false);
-            ShowTimetableConsist();
             ShowDetails();
         }
         #endregion
@@ -615,7 +614,7 @@ namespace ORTS
             OpenResumeForm(true);
         }
 
-        void OpenResumeForm (bool multiplayer)
+        void OpenResumeForm(bool multiplayer)
         {
             if (radioButtonModeTimetable.Checked)
             {
@@ -654,7 +653,7 @@ namespace ORTS
         {
             if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
-            SelectedAction = radioButtonMPClient.Checked? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
+            SelectedAction = radioButtonMPClient.Checked ? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
 
@@ -715,10 +714,10 @@ namespace ORTS
                     SelectedTimetableTrain != null ? SelectedTimetableTrain.Column.ToString() : "",
                 radioButtonModeActivity.Checked ?
                     SelectedActivity is ExploreActivity && SelectedPath != null ? SelectedPath.FilePath : "" :
-                    SelectedTimetableLocomotive?.FilePath ?? "",
+                    SelectedTimetableDay.ToString(),
                 radioButtonModeActivity.Checked ?
                     SelectedActivity is ExploreActivity ? SelectedStartTime : "" :
-                    SelectedTimetableDay.ToString(),
+                    "",
                 // Shared items
                 radioButtonModeActivity.Checked ?
                     SelectedActivity is ExploreActivity ? SelectedStartSeason.ToString() : "" :
@@ -737,7 +736,7 @@ namespace ORTS
             comboBoxFolder.Enabled = comboBoxFolder.Items.Count > 0;
             comboBoxRoute.Enabled = comboBoxRoute.Items.Count > 0;
             comboBoxActivity.Enabled = comboBoxActivity.Items.Count > 0;
-            comboBoxLocomotive.Enabled = comboBoxLocomotive.Items.Count > 0 && (SelectedActivity is ExploreActivity || comboBoxLocomotive.Items.Count > 1);
+            comboBoxLocomotive.Enabled = comboBoxLocomotive.Items.Count > 0 && SelectedActivity is ExploreActivity;
             comboBoxConsist.Enabled = comboBoxConsist.Items.Count > 0 && SelectedActivity is ExploreActivity;
             comboBoxStartAt.Enabled = comboBoxStartAt.Items.Count > 0 && SelectedActivity is ExploreActivity;
             comboBoxHeadTo.Enabled = comboBoxHeadTo.Items.Count > 0 && SelectedActivity is ExploreActivity;
@@ -745,8 +744,6 @@ namespace ORTS
             comboBoxStartTime.DropDownStyle = SelectedActivity is ExploreActivity ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
             comboBoxTimetable.Enabled = comboBoxTimetableSet.Items.Count > 0;
             comboBoxTimetableTrain.Enabled = comboBoxTimetable.Items.Count > 0;
-            comboBoxTimetableConsist.Enabled = false;
-            comboBoxTimetableLocomotive.Enabled = comboBoxTimetableLocomotive.Items.Count > 1;
             comboBoxTimetableWeatherFile.Enabled = comboBoxTimetableWeatherFile.Items.Count > 0;
             //Avoid to Start with a non valid Activity/Locomotive/Consist.
             buttonResume.Enabled = buttonStart.Enabled = radioButtonModeActivity.Checked && !comboBoxActivity.Text.StartsWith("<") && !comboBoxLocomotive.Text.StartsWith("<") ?
@@ -850,7 +847,7 @@ namespace ORTS
 
             var selectedFolder = SelectedFolder;
             var selectedRoute = SelectedRoute;
-            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, Folders, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
+            ActivityLoader = new Task<List<Activity>>(this, () => Activity.GetActivities(selectedFolder, selectedRoute).OrderBy(a => a.ToString()).ToList(), (activities) =>
             {
                 Activities = activities;
                 ShowActivityList();
@@ -891,7 +888,7 @@ namespace ORTS
             ShowConsistList();
 
             var selectedFolder = SelectedFolder;
-            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder, Folders).OrderBy(a => a.ToString()).ToList(), (consists) =>
+            ConsistLoader = new Task<List<Consist>>(this, () => Consist.GetConsists(selectedFolder).OrderBy(a => a.ToString()).ToList(), (consists) =>
             {
                 Consists = consists;
                 if (SelectedActivity == null || SelectedActivity is ExploreActivity)
@@ -905,17 +902,8 @@ namespace ORTS
             {
                 comboBoxLocomotive.Items.Clear();
                 comboBoxLocomotive.Items.Add(new Locomotive());
-                var allLocomotives = Consists
-                    .Select((Consist c) => c.Locomotives)
-                    .Aggregate(new HashSet<Locomotive>(), (ISet<Locomotive> accum, ISet<Locomotive> choices) =>
-                    {
-                        accum.UnionWith(choices);
-                        return accum;
-                    });
-                comboBoxLocomotive.Items.AddRange(allLocomotives
-                    .Distinct()
-                    .OrderBy((Locomotive l) => l.ToString())
-                    .ToArray());
+                foreach (var loco in Consists.Where(c => c.Locomotive != null).Select(c => c.Locomotive).Distinct().OrderBy(l => l.ToString()))
+                    comboBoxLocomotive.Items.Add(loco);
                 if (comboBoxLocomotive.Items.Count == 1)
                     comboBoxLocomotive.Items.Clear();
                 UpdateFromMenuSelection<Locomotive>(comboBoxLocomotive, UserSettings.Menu_SelectionIndex.Locomotive, l => l.FilePath);
@@ -924,7 +912,7 @@ namespace ORTS
             {
                 var consist = SelectedActivity.Consist;
                 comboBoxLocomotive.Items.Clear();
-                comboBoxLocomotive.Items.AddRange(consist.Locomotives.ToArray());
+                comboBoxLocomotive.Items.Add(consist.Locomotive);
                 comboBoxLocomotive.SelectedIndex = 0;
                 comboBoxConsist.Items.Clear();
                 comboBoxConsist.Items.Add(consist);
@@ -938,11 +926,8 @@ namespace ORTS
             if (SelectedActivity == null || SelectedActivity is ExploreActivity)
             {
                 comboBoxConsist.Items.Clear();
-                comboBoxConsist.Items.AddRange(Consists
-                    .Where((Consist c) => c.Locomotives.Contains(comboBoxLocomotive.SelectedItem))
-                    .Where((Consist c) => c.PlayerDrivable)
-                    .OrderBy((Consist c) => c.Name)
-                    .ToArray());
+                foreach (var consist in Consists.Where(c => comboBoxLocomotive.SelectedItem.Equals(c.Locomotive)).OrderBy(c => c.Name))
+                    comboBoxConsist.Items.Add(consist);
                 UpdateFromMenuSelection<Consist>(comboBoxConsist, UserSettings.Menu_SelectionIndex.Consist, c => c.FilePath);
             }
             UpdateEnabled();
@@ -1131,36 +1116,6 @@ namespace ORTS
                     comboBoxTimetableTrain.Items.Add(train);
                 UpdateFromMenuSelection<TimetableFileLite.TrainInformation>(comboBoxTimetableTrain, UserSettings.Menu_SelectionIndex.Train, t => t.Column.ToString());
             }
-            ShowTimetableConsist();
-            UpdateEnabled();
-        }
-        #endregion
-
-        #region Timetable consist
-        void ShowTimetableConsist()
-        {
-            comboBoxTimetableConsist.Items.Clear();
-            if (SelectedTimetableConsist != null)
-            {
-                comboBoxTimetableConsist.Items.Add(SelectedTimetableConsist.Name);
-                comboBoxTimetableConsist.SelectedIndex = 0;
-            }
-            ShowTimetableLocomotive();
-        }
-        #endregion
-
-        #region Timetable locomotive
-        void ShowTimetableLocomotive()
-        {
-            comboBoxTimetableLocomotive.Items.Clear();
-            if (SelectedTimetableConsist != null)
-            {
-                var locomotives = SelectedTimetableConsist.Locomotives
-                    .ToArray();
-                Array.Sort(locomotives);
-                comboBoxTimetableLocomotive.Items.AddRange(locomotives);
-                UpdateFromMenuSelection(comboBoxTimetableLocomotive, UserSettings.Menu_SelectionIndex.TimetableLocomotive, (Locomotive loco) => loco.FilePath);
-            }
             UpdateEnabled();
         }
         #endregion
@@ -1184,8 +1139,10 @@ namespace ORTS
 
             if (radioButtonModeActivity.Checked)
             {
-                if (SelectedConsist != null && SelectedLocomotive != null)
-                    ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedLocomotive?.Name ?? ""), (SelectedLocomotive?.Description ?? "").Split('\n'));
+                if (SelectedConsist != null && SelectedConsist.Locomotive != null && SelectedConsist.Locomotive.Description != null)
+                {
+                    ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedConsist.Locomotive.Name), SelectedConsist.Locomotive.Description.Split('\n'));
+                }
                 if (SelectedActivity != null && SelectedActivity.Description != null)
                 {
                     ShowDetail(catalog.GetStringFmt("Activity: {0}", SelectedActivity.Name), SelectedActivity.Description.Split('\n'));
@@ -1202,34 +1159,47 @@ namespace ORTS
             if (radioButtonModeTimetable.Checked)
             {
                 if (SelectedTimetableSet != null)
-                {
                     ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
-                }
+                    // Description not shown as no description is available for a timetable set.
+
                 if (SelectedTimetable != null)
-                {
-                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), new string[0]);
-                }
+                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
+
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), SelectedTimetableTrain.ToInfo());
+                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
+
                     if (SelectedTimetableConsist != null)
                     {
                         ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
-                        if (SelectedTimetableConsist.Locomotives.Count == 1)
-                        {
-                            var loco = SelectedTimetableConsist.Locomotives.First();
-                            ShowDetail(catalog.GetStringFmt("Locomotive: {0}", loco.Name ?? ""), (loco.Description ?? "").Split('\n'));
-                        }
+                        if (SelectedTimetableConsist.Locomotive != null && SelectedTimetableConsist.Locomotive.Description != null)
+                            ShowDetail(catalog.GetStringFmt("Locomotive: {0}", SelectedTimetableConsist.Locomotive.Name), SelectedTimetableConsist.Locomotive.Description.Split('\n'));
                     }
                     if (SelectedTimetablePath != null)
-                    {
                         ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
-                    }
                 }
             }
 
             FlowDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Change
+        ///     "Start time: 10:30$$create=00:04/ahead=0040ElghLE70F363U"
+        /// to
+        ///     "Start time: 10:30"
+        /// for higher-level presentation
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private string[] HideStartParameters(string [] info)
+        {
+            var fullStartTime = info[0].TrimStart();
+            var startTimeArray = fullStartTime.Split('$');
+            var shortStartTime = startTimeArray[0];
+            info[0] = shortStartTime;
+            return info;
         }
 
         List<Detail> Details = new List<Detail>();

@@ -17,10 +17,8 @@
 
 using Orts.Formats.Msts;
 using System;
-using Orts.Formats.OR;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -30,128 +28,38 @@ namespace ORTS.ContentManager.Models
     {
         public readonly string Name;
 
-        public readonly IEnumerable<Item> Items;
+        public readonly IEnumerable<Car> Cars;
 
         public Consist(Content content)
         {
             Debug.Assert(content.Type == ContentType.Consist);
-            switch (System.IO.Path.GetExtension(content.PathName).ToLowerInvariant())
+            if (System.IO.Path.GetExtension(content.PathName).Equals(".con", StringComparison.OrdinalIgnoreCase))
             {
-                case ".train-or":
-                    var ortsConsist = TrainFile.LoadFrom(content.PathName);
-                    Name = ortsConsist.DisplayName;
-                    Items = GetOrtsItems(ortsConsist);
-                    break;
-                case ".con":
-                    var mstsConsist = new ConsistFile(content.PathName);
-                    Name = mstsConsist.Name;
-                    Items = GetMstsItems(mstsConsist);
-                    break;
-                default:
-                    throw new InvalidDataException("Unknown consist format");
+                var file = new ConsistFile(content.PathName);
+                Name = file.Name;
+
+                Cars = from car in file.Train.TrainCfg.WagonList
+                           select new Car(car);
             }
         }
-
-        /// <summary>
-        /// Enumerate <see cref="Item"/>s for a JSON Open Rails consist.
-        /// </summary>
-        /// <param name="file">The consist structure to query.</param>
-        /// <returns>An iterator of items.</returns>
-        private static IEnumerable<Item> GetOrtsItems(TrainFile file)
-        {
-            var items = new List<Item>();
-            int n = 0;
-            if (file is ListTrainFile listFile)
-            {
-                foreach (ListTrainItem item in listFile.List)
-                    items.Add(CreateOrtsItem(item, n++));
-            }
-            return items.Where((Item item) => item != null);
-        }
-
-        /// <summary>
-        /// Enumerate <see cref="Item"/>s for a legacy MSTS consist.
-        /// </summary>
-        /// <param name="file">The consist structure to query.</param>
-        /// <returns>An iterator of items.</returns>
-        private static IEnumerable<Item> GetMstsItems(ConsistFile file) => file.Train.TrainCfg.WagonList
-            .Select((Wagon wagon) => new MstsCar(wagon));
 
         public enum Direction{
             Forwards,
             Backwards,
         }
 
-        public enum ItemType
+        public class Car
         {
-            Wagon,
-            Engine,
-            Consist,
-        }
+            public readonly string ID;
+            public readonly string Name;
+            public readonly Direction Direction;
 
-        /// <summary>
-        /// Generic consist item that can represent a wagon, engine, or consist reference.
-        /// </summary>
-        public class Item
-        {
-            public string ID { get; }
-            public string Name { get; }
-            public Direction Direction { get; }
-            public ItemType Type { get; }
-
-            internal Item(string id, string name, Direction direction, ItemType type)
+            internal Car(Wagon car)
             {
-                ID = id;
-                Name = name;
-                Direction = direction;
-                Type = type;
+                ID = car.UiD.ToString();
+                Name = car.Folder + "/" + car.Name;
+                Direction = car.Flip ? Consist.Direction.Backwards : Consist.Direction.Forwards;
             }
-        }
-
-        /// <summary>
-        /// An ORTS wagon or engine.
-        /// </summary>
-        internal class OrtsCar : Item
-        {
-            internal OrtsCar(ListTrainWagon wagon, int n) : base(
-                id: n.ToString(),
-                name: wagon.Wagon,
-                direction: wagon.Flip ? Direction.Backwards : Direction.Forwards,
-                type: ItemType.Wagon) { }
-
-            internal OrtsCar(ListTrainEngine engine, int n) : base(
-                id: n.ToString(),
-                name: engine.Engine,
-                direction: engine.Flip ? Direction.Backwards : Direction.Forwards,
-                type: ItemType.Engine) { }
-        }
-
-        /// <summary>
-        /// Factory method to create ORTS <see cref="Item"/>s.
-        /// </summary>
-        /// <param name="item">The <see cref="ListTrainItem"/> or <see cref="RandomTrainItem"/>.</param>
-        /// <param name="n">The ID of the new item.</param>
-        /// <returns>The newly created item.</returns>
-        internal static Item CreateOrtsItem(ITrainListItem item, int n)
-        {
-            if (item is ListTrainWagon listWagonItem)
-                return new OrtsCar(listWagonItem, n);
-            else if (item is ListTrainEngine listEngineItem)
-                return new OrtsCar(listEngineItem, n);
-            else
-                return null;
-        }
-
-        /// <summary>
-        /// An MSTS wagon or engine.
-        /// </summary>
-        internal class MstsCar : Item
-        {
-            internal MstsCar(Wagon car) : base(
-                id: car.UiD.ToString(),
-                name: $"{car.Folder}/{car.Name}",
-                direction: car.Flip ? Direction.Backwards : Direction.Forwards,
-                type: car.IsEngine ? ItemType.Engine : ItemType.Wagon) { }
         }
     }
 }

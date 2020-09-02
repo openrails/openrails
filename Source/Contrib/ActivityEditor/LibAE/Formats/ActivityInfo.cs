@@ -30,7 +30,7 @@ using Newtonsoft.Json.Linq;
 using MSTS;
 using Orts.Formats.Msts;
 using Orts.Parsers.Msts;
-using ORTS.Content;
+using ORTS.Common;
 using Orts.Formats.OR;
 
 namespace LibAE.Formats
@@ -94,23 +94,13 @@ namespace LibAE.Formats
                         routePaths.Add(route);
                     }
                 }
-                var basePath = Path.GetDirectoryName(routeParent);
-                foreach (var fullPathConsist in VehicleListUtilities.AllVehicleLists(basePath))
+                string consistPath = Path.Combine(routeParent, "../TRAINS/CONSISTS");
+                subdirectoryEntries = Directory.GetFileSystemEntries(consistPath, "*.con");
+                foreach (string consist in subdirectoryEntries)
                 {
-                    IVehicleList consistFile;
-                    switch (Path.GetExtension(fullPathConsist).ToLowerInvariant())
-                    {
-                        case ".train-or":
-                            consistFile = TrainFile.LoadFrom(fullPathConsist);
-                            break;
-                        case ".con":
-                            consistFile = new ConsistFile(fullPathConsist);
-                            break;
-                        default:
-                            consistFile = null;
-                            break;
-                    }
-                    var conInfo = new ConsistInfo(consistFile.DisplayName, fullPathConsist);
+                    string fullPathConsist = Path.GetFullPath(consist);
+                    ConsistFile consistName = new ConsistFile(fullPathConsist);
+                    ConsistInfo conInfo = new ConsistInfo(consistName.ToString(), fullPathConsist);
                     trainConsists.Add(conInfo); 
                 }
             }

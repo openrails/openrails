@@ -83,8 +83,7 @@ namespace ORTS.Settings
             TimetableSet = 2,
             Timetable = 3,
             Train = 4,
-            TimetableLocomotive = 5,
-            Day = 6,
+            Day = 5,
             // Shared items
             Season = 7,
             Weather = 8,
