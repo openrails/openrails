@@ -85,6 +85,7 @@ namespace Orts.Formats.Msts
         TRAIN_BRAKE,
         FRICTION_BRAKE,
         ENGINE_BRAKE,
+        BRAKEMAN_BRAKE,
         DYNAMIC_BRAKE,
         DYNAMIC_BRAKE_DISPLAY,
         SANDERS,
