@@ -65,7 +65,7 @@ namespace ActivityEditor
         // Commented out as never used
         //public List<AEActivity> aeActivity;
         //public AEActivity selectedActivity;
-        private ToolClicks ToolClicked = ToolClicks.NO_TOOL;
+        //private ToolClicks ToolClicked = ToolClicks.NO_TOOL;
         // private WorldPosition worldPos;
 
         public Image ToolToUse = null;
@@ -267,7 +267,7 @@ namespace ActivityEditor
         private void AddActivityStart_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Start Activity");
-            ToolClicked = ToolClicks.START;
+            //ToolClicked = ToolClicks.START;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_start;
 
         }
@@ -275,7 +275,7 @@ namespace ActivityEditor
         private void AddActivityStop_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Stop Activity");
-            ToolClicked = ToolClicks.STOP;
+            //ToolClicked = ToolClicks.STOP;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_stop;
 
         }
@@ -283,7 +283,7 @@ namespace ActivityEditor
         private void AddActivityWait_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Wait Point Activity");
-            ToolClicked = ToolClicks.WAIT;
+            //ToolClicked = ToolClicks.WAIT;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_wait;
 
         }
@@ -291,7 +291,7 @@ namespace ActivityEditor
         private void AddActivityAction_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Action Point Activity");
-            ToolClicked = ToolClicks.ACTION;
+            //ToolClicked = ToolClicks.ACTION;
             ToolToUse = global::ActivityEditor.Properties.Resources.Action;
 
         }
@@ -299,7 +299,7 @@ namespace ActivityEditor
         private void AddActivityEval_Click(object sender, EventArgs e)
         {
             DisplayStatusMessage("Please, Place Evaluation Point Activity");
-            ToolClicked = ToolClicks.CHECK;
+            //ToolClicked = ToolClicks.CHECK;
             ToolToUse = global::ActivityEditor.Properties.Resources.Activity_check;
 
         }
@@ -320,7 +320,7 @@ namespace ActivityEditor
         public void UnsetToolClick()
         {
             DisplayStatusMessage("Wait Action Form");
-            ToolClicked = ToolClicks.NO_TOOL;
+            //ToolClicked = ToolClicks.NO_TOOL;
             ToolToUse = null;
             this.Cursor = Cursors.Default;
             CursorToUse = Cursors.Default;
