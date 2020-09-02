@@ -379,7 +379,7 @@ namespace Orts.Viewer3D.Popups
                             //Station stops remaining
                             foreach (var item in DbfEvalActArrive)
                             {
-                              if (item.Value == "")
+                                if (item.Value == "")
                                     dbfstationstopsremaining++;
                             }
                             if (!actualStatusVisible)
@@ -1046,18 +1046,29 @@ namespace Orts.Viewer3D.Popups
                         }
                     }
                 }));
-                Tabs.Add(new TabData(Tab.LocomotiveProcedures, Viewer.Catalog.GetString("Procedures"), (cl) =>
+            }
+            if (owner.Viewer.Simulator.TimetableMode)
+            {
+                Tabs.Add(new TabData(Tab.TimetableBriefing, Viewer.Catalog.GetString("Briefing"), (cl) =>
                 {
+                    var tTTrain = owner.Viewer.SelectedTrain as Orts.Simulation.Timetables.TTTrain;
                     var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
-                    if (owner.Viewer.Simulator.PlayerLocomotive != null &&
-                        owner.Viewer.Simulator.PlayerLocomotive is MSTSLocomotive &&
-                        ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures != null &&
-                        ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
-                    {
-                        scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
-                    }
+                    var briefing = tTTrain?.Briefing ?? "";
+                    var textFlow = new TextFlow(scrollbox.RemainingWidth, briefing);
+                    scrollbox.Add(textFlow);
                 }));
             }
+            Tabs.Add(new TabData(Tab.LocomotiveProcedures, Viewer.Catalog.GetString("Procedures"), (cl) =>
+            {
+                var scrollbox = cl.AddLayoutScrollboxVertical(cl.RemainingWidth);
+                if (owner.Viewer.Simulator.PlayerLocomotive != null &&
+                    owner.Viewer.Simulator.PlayerLocomotive is MSTSLocomotive &&
+                    ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures != null &&
+                    ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures.Length > 0)
+                {
+                    scrollbox.Add(new TextFlow(scrollbox.RemainingWidth, ((MSTSLocomotive)owner.Viewer.Simulator.PlayerLocomotive).EngineOperatingProcedures));
+                }
+            }));
         }
 
         private void status_Click(Control arg1, Point arg2)
@@ -1205,6 +1216,7 @@ namespace Orts.Viewer3D.Popups
             ActivityTimetable,
             ActivityWorkOrders,
             ActivityEvaluation,
+            TimetableBriefing,
             LocomotiveProcedures,
         }
 

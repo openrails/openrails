@@ -137,6 +137,7 @@ Special columns can be defined using the following syntax :
     - ``#start``:   defines time when train is started
     - ``#note``:    defines general notes for this train
     - ``#dispose``: defines how train is handled after it has terminated
+    - ``#briefing``: row contains briefing text for each train and is ignored when reading the timetable
 
 Timing details
 --------------
@@ -218,7 +219,7 @@ once, the train must be 'split' into separate train entries.
 Special Columns
 ---------------
 
-- ``#Comment`` column. 
+- ``#comment`` column. 
   
   A column with the #comment definition in the first row is a comment column and 
   is ignored when reading the timetable, except for the cell at the intersection 
@@ -235,7 +236,7 @@ Special Columns
 Special rows
 ------------
 
-- ``#Comment`` row. 
+- ``#comment`` row. 
   
   A row with the #comment definition in the first column is a comment row and is 
   ignored when reading the timetable, except for the cell at the intersection of 
@@ -246,7 +247,7 @@ Special rows
   A row with a blank (empty) cell in the first column is taken as a continuation 
   of the preceding row.
   
-- ``#Path`` row. 
+- ``#path`` row. 
   
   The #path row defines the path of that train. The path must be a \*.pat file as 
   defined by the MSTS Activity Editor or by Trackviewer, and must be located
@@ -277,7 +278,7 @@ Special rows
     - If a path is edited, the binary version must be deleted manually, otherwise the program will still use this older version.
     - If a route is edited, such that the .tdb might have been changed, all binary paths must be deleted.
 
-- ``#Consist`` row 
+- ``#consist`` row 
   
   The ``#consist`` row defines the consist used for that train. This field is 
   compulsory.
@@ -342,7 +343,7 @@ Special rows
 
   ``<loco+wagon>+<$loco+wagon>$reverse``
 
-- ``#Start`` row
+- ``#start`` row
 
   The ``#start`` row defines the time at which the train is started. It must be 
   defined as HH:mm, and the 24 hour clock must be used. This field is compulsory.
@@ -391,9 +392,9 @@ Special rows
   Note that a train referenced in an ``/ahead`` parameter must be created before 
   or at the same time as the train which uses that reference.
   
-- ``#Note`` row
+- ``#note`` row
 
-  The ``#note`` row can be used to defined control commands which are not 
+  The ``#note`` row can be used to define control commands which are not 
   location related but apply to the full run of the train. It can also be used 
   to set commands for trains which do not stop at or pass through any defined 
   location. This row is optional.
@@ -428,7 +429,7 @@ Special rows
 
   A typical value for modern stock for the ``$dec`` command is 2 or 3.
   
-- ``#Dispose`` row
+- ``#dispose`` row
 
   The ``#dispose`` row defines what happens to an AI train when it has reached 
   the end of its run, i.e. it has reached the end of the defined path. The 
@@ -441,6 +442,20 @@ Special rows
   train is removed from the activity after it has terminated.
 
   *The #dispose row presently does not affect the end of the run for the player train*. 
+  
+- ``#briefing`` row
+
+  The ``#briefing`` row is optional and contains text which describes the train
+  operation for the user. This text appears in the Open Rails main window along
+  with description of the route and the loco.
+
+  The user can also see it in-game in the Briefing tab of the Help Window (F1).
+
+  A similar entry in the ``#comment`` column provides text which describes the entire timetable.
+
+  The timetable-or file does not allow the fields to contain line-breaks
+  but if HTML breaks "<br>" are inserted into the ``#briefing`` field, these will be converted to line-breaks.
+   
 
 Control commands
 ----------------
