@@ -4026,7 +4026,7 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
-        /// Connect brakes
+        /// Connect brake hoses when train is initialised
         /// <\summary>
 
         public void ConnectBrakeHoses()
@@ -4036,6 +4036,15 @@ namespace Orts.Simulation.Physics
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = i > 0;
                 Cars[i].BrakeSystem.AngleCockAOpen = i > 0;
                 Cars[i].BrakeSystem.AngleCockBOpen = i < Cars.Count - 1;
+                // If end of train is not reached yet, then test the attached following car. If it is a manual braked car then set the brake cock on this car to closed.
+                // Hence automatic brakes will operate to this point in the train.
+                if (i < Cars.Count - 1)
+                {
+                    if (Cars[i + 1].CarBrakeSystemType == "manual_braking")
+                    {
+                        Cars[i].BrakeSystem.AngleCockBOpen = false;
+                    }
+                }
                 Cars[i].BrakeSystem.BleedOffValveOpen = false;
             }
         }
@@ -5304,8 +5313,9 @@ namespace Orts.Simulation.Physics
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
-                    // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
-                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
+                    // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
+                    // These type of cars do not have any brake force to hold them still
+                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
                     }
@@ -5316,8 +5326,9 @@ namespace Orts.Simulation.Physics
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
-                    // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
-                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
+                    // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
+                    // These type of cars do not have any brake force to hold them still
+                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
                     }
@@ -5376,9 +5387,9 @@ namespace Orts.Simulation.Physics
                     {
 
                         
-                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k-1].SpeedMpS == 0.0)
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && FirstCar.SpeedMpS > 0 && Cars[k-1].SpeedMpS == 0.0)
                         {
-                            // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
+                            // If is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                             Cars[k].SpeedMpS = 0.0f;
                         }
                         else
@@ -5432,9 +5443,9 @@ namespace Orts.Simulation.Physics
                     for (int k = j; k <= i; k++)
                     {
                         
-                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k - 1].SpeedMpS == 0.0)
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && FirstCar.SpeedMpS > 0 && Cars[k - 1].SpeedMpS == 0.0)
                         {
-                            // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
+                            // If is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                             Cars[k].SpeedMpS = 0.0f;
                         }
                         else

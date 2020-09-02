@@ -227,6 +227,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
                 case "engine(enginecontrollers(brake_train":
                 case "engine(enginecontrollers(brake_engine":
+                case "engine(enginecontrollers(brake_brakeman":
                     stf.MustMatch("(");
                     MinimumValue = stf.ReadFloat(STFReader.UNITS.None, null);
                     MaximumValue = stf.ReadFloat(STFReader.UNITS.None, null);
