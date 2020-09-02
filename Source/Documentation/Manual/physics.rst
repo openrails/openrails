@@ -2201,7 +2201,36 @@ If it is not desired to operate the large ejector, a simplified brake operation 
 Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted 
 to air braked locomotives.
 
+.. _physics-manual:
 
+Manual Brakes
+-------------
+
+Manual braking is provided in OR to facilitate cars with no brakes fitted (for example Stephenson's Rocket locomotive 
+initially had no brakes fitted). Alternatively some trains used manually operated brakes controlled by a brakeman. 
+This feature allows for the creation of braking on selected cars along the train that are operated by a brakeman (for 
+example some trains had brakes only on the locomotive and the brakevans (caboose) which would be operated to control the 
+stopping of the train.
+
+An additional engine controller has been added to facilitate the operation of all brakeman (manual braked) controlled cars.
+
+The controller can be added to an ENG file in a similar fashion to an air brake or vacuum controller by using the following 
+brake controller parameter: ``TrainBrakesControllerManualBrakingStart``
+
+To configure a car with manual braking then in the car brake section configure the fllowing two parameters:
+
+``BrakeSystemType ( "Manual_Braking" )``
+``BrakeEquipmentType( "Manual_brake, Handbrake" )``
+
+If the BrakeEquipmentType is left out, OR will assume that no braking is fitted to the car.
+
+The following values, in the wagon section of the file need to be set for a manually braked car:
+
+- ``MaxBrakeForce``
+- ``MaxReleaseRate``
+- ``MaxApplicationRate``
+
+The manual brake can be increased by pressing Alt+], and decreased by pressing Alt+[.
 
 Dynamically Evolving Tractive Force
 ===================================
