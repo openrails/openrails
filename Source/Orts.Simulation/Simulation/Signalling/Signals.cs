@@ -10287,7 +10287,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
 
         public Train.TCSubpathRoute requestClearSignalExplorer(Train.TCSubpathRoute thisRoute,
-            float reqDistance, Train.TrainRouted thisTrain, bool propagated, int signalNumClearAhead)
+            Train.TrainRouted thisTrain, bool propagated, int signalNumClearAhead)
         {
             // build output route from input route
             Train.TCSubpathRoute newRoute = new Train.TCSubpathRoute(thisRoute);
@@ -10301,7 +10301,7 @@ namespace Orts.Simulation.Signalling
             // build route from signal, upto next signal or max distance, take into account manual switch settings
             else
             {
-                List<int> nextRoute = signalRef.ScanRoute(thisTrain.Train, TCNextTC, 0.0f, TCNextDirection, true, reqDistance, true, true, true, false,
+                List<int> nextRoute = signalRef.ScanRoute(thisTrain.Train, TCNextTC, 0.0f, TCNextDirection, true, -1, true, true, true, false,
                 true, false, false, false, false, thisTrain.Train.IsFreight);
 
                 signalRoute = new Train.TCSubpathRoute();
@@ -10377,7 +10377,7 @@ namespace Orts.Simulation.Signalling
                     if (nextSignalIndex >= 0)
                     {
                         SignalObject nextSignal = signalObjects[nextSignalIndex];
-                        newRoute = nextSignal.requestClearSignalExplorer(newRoute, thisTrain.Train.minCheckDistanceM, thisTrain, true, ReqNumClearAhead);
+                        newRoute = nextSignal.requestClearSignalExplorer(newRoute, thisTrain, true, ReqNumClearAhead);
                     }
                 }
             }
