@@ -65,8 +65,24 @@
             this.chkBoxPenalty = new System.Windows.Forms.CheckBox();
             this.chkPreferGreen = new System.Windows.Forms.CheckBox();
             this.btnSeeInGame = new System.Windows.Forms.Button();
+            this.lblSimulationTimeText = new System.Windows.Forms.Label();
+            this.lblSimulationTime = new System.Windows.Forms.Label();
+            this.lblShow = new System.Windows.Forms.Label();
+            this.cbPlatforms = new System.Windows.Forms.CheckBox();
+            this.cbSidings = new System.Windows.Forms.CheckBox();
+            this.cbSignals = new System.Windows.Forms.CheckBox();
+            this.cbSignalState = new System.Windows.Forms.CheckBox();
+            this.gbTrains = new System.Windows.Forms.GroupBox();
+            this.rbActiveTrains = new System.Windows.Forms.RadioButton();
+            this.rbAllTrains = new System.Windows.Forms.RadioButton();
+            this.nudDaylightOffsetHrs = new System.Windows.Forms.NumericUpDown();
+            this.lblDayLightOffsetHrs = new System.Windows.Forms.Label();
+            this.cdBackground = new System.Windows.Forms.ColorDialog();
+            this.bBackgroundColor = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
+            this.gbTrains.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDaylightOffsetHrs)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -148,7 +164,7 @@
             // 
             this.rmvButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.rmvButton.Location = new System.Drawing.Point(766, 132);
-            this.rmvButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.rmvButton.Margin = new System.Windows.Forms.Padding(2);
             this.rmvButton.Name = "rmvButton";
             this.rmvButton.Size = new System.Drawing.Size(72, 24);
             this.rmvButton.TabIndex = 15;
@@ -201,7 +217,7 @@
             // 
             this.msgSelected.Enabled = false;
             this.msgSelected.Location = new System.Drawing.Point(590, 61);
-            this.msgSelected.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.msgSelected.Margin = new System.Windows.Forms.Padding(2);
             this.msgSelected.MaximumSize = new System.Drawing.Size(200, 24);
             this.msgSelected.MinimumSize = new System.Drawing.Size(104, 24);
             this.msgSelected.Name = "msgSelected";
@@ -215,7 +231,7 @@
             // 
             this.msgAll.Enabled = false;
             this.msgAll.Location = new System.Drawing.Point(590, 32);
-            this.msgAll.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.msgAll.Margin = new System.Windows.Forms.Padding(2);
             this.msgAll.MaximumSize = new System.Drawing.Size(200, 24);
             this.msgAll.MinimumSize = new System.Drawing.Size(104, 24);
             this.msgAll.Name = "msgAll";
@@ -228,7 +244,7 @@
             // composeMSG
             // 
             this.composeMSG.Location = new System.Drawing.Point(590, 3);
-            this.composeMSG.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.composeMSG.Margin = new System.Windows.Forms.Padding(2);
             this.composeMSG.MaximumSize = new System.Drawing.Size(200, 24);
             this.composeMSG.MinimumSize = new System.Drawing.Size(104, 24);
             this.composeMSG.Name = "composeMSG";
@@ -252,7 +268,7 @@
             // 
             this.reply2Selected.Enabled = false;
             this.reply2Selected.Location = new System.Drawing.Point(590, 90);
-            this.reply2Selected.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.reply2Selected.Margin = new System.Windows.Forms.Padding(2);
             this.reply2Selected.MaximumSize = new System.Drawing.Size(200, 24);
             this.reply2Selected.MinimumSize = new System.Drawing.Size(104, 24);
             this.reply2Selected.Name = "reply2Selected";
@@ -364,7 +380,7 @@
             // 
             this.btnAssist.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnAssist.Location = new System.Drawing.Point(697, 104);
-            this.btnAssist.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnAssist.Margin = new System.Windows.Forms.Padding(2);
             this.btnAssist.Name = "btnAssist";
             this.btnAssist.Size = new System.Drawing.Size(48, 24);
             this.btnAssist.TabIndex = 30;
@@ -376,7 +392,7 @@
             // 
             this.btnNormal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnNormal.Location = new System.Drawing.Point(755, 104);
-            this.btnNormal.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btnNormal.Margin = new System.Windows.Forms.Padding(2);
             this.btnNormal.Name = "btnNormal";
             this.btnNormal.Size = new System.Drawing.Size(58, 24);
             this.btnNormal.TabIndex = 31;
@@ -437,12 +453,188 @@
             this.btnSeeInGame.UseVisualStyleBackColor = true;
             this.btnSeeInGame.Click += new System.EventHandler(this.btnSeeInGameClick);
             // 
+            // lblSimulationTimeText
+            // 
+            this.lblSimulationTimeText.AutoSize = true;
+            this.lblSimulationTimeText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSimulationTimeText.Location = new System.Drawing.Point(5, 8);
+            this.lblSimulationTimeText.Name = "lblSimulationTimeText";
+            this.lblSimulationTimeText.Size = new System.Drawing.Size(104, 16);
+            this.lblSimulationTimeText.TabIndex = 36;
+            this.lblSimulationTimeText.Text = "Simulation Time";
+            this.lblSimulationTimeText.Visible = false;
+            // 
+            // lblSimulationTime
+            // 
+            this.lblSimulationTime.AutoSize = true;
+            this.lblSimulationTime.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblSimulationTime.Location = new System.Drawing.Point(115, 8);
+            this.lblSimulationTime.Name = "lblSimulationTime";
+            this.lblSimulationTime.Size = new System.Drawing.Size(101, 16);
+            this.lblSimulationTime.TabIndex = 37;
+            this.lblSimulationTime.Text = "SimulationTime";
+            this.lblSimulationTime.Visible = false;
+            // 
+            // lblShow
+            // 
+            this.lblShow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblShow.AutoSize = true;
+            this.lblShow.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblShow.Location = new System.Drawing.Point(780, 225);
+            this.lblShow.Name = "lblShow";
+            this.lblShow.Size = new System.Drawing.Size(41, 15);
+            this.lblShow.TabIndex = 38;
+            this.lblShow.Text = "Show:";
+            this.lblShow.Visible = false;
+            // 
+            // cbPlatforms
+            // 
+            this.cbPlatforms.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbPlatforms.AutoSize = true;
+            this.cbPlatforms.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbPlatforms.Location = new System.Drawing.Point(780, 245);
+            this.cbPlatforms.Name = "cbPlatforms";
+            this.cbPlatforms.Size = new System.Drawing.Size(78, 19);
+            this.cbPlatforms.TabIndex = 39;
+            this.cbPlatforms.Text = "Platforms";
+            this.cbPlatforms.UseVisualStyleBackColor = true;
+            this.cbPlatforms.Visible = false;
+            // 
+            // cbSidings
+            // 
+            this.cbSidings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbSidings.AutoSize = true;
+            this.cbSidings.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbSidings.Location = new System.Drawing.Point(780, 265);
+            this.cbSidings.Name = "cbSidings";
+            this.cbSidings.Size = new System.Drawing.Size(67, 19);
+            this.cbSidings.TabIndex = 40;
+            this.cbSidings.Text = "Sidings";
+            this.cbSidings.UseVisualStyleBackColor = true;
+            this.cbSidings.Visible = false;
+            // 
+            // cbSignals
+            // 
+            this.cbSignals.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbSignals.AutoSize = true;
+            this.cbSignals.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbSignals.Location = new System.Drawing.Point(780, 285);
+            this.cbSignals.Name = "cbSignals";
+            this.cbSignals.Size = new System.Drawing.Size(67, 19);
+            this.cbSignals.TabIndex = 41;
+            this.cbSignals.Text = "Signals";
+            this.cbSignals.UseVisualStyleBackColor = true;
+            this.cbSignals.Visible = false;
+            // 
+            // cbSignalState
+            // 
+            this.cbSignalState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbSignalState.AutoSize = true;
+            this.cbSignalState.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbSignalState.Location = new System.Drawing.Point(780, 305);
+            this.cbSignalState.Name = "cbSignalState";
+            this.cbSignalState.Size = new System.Drawing.Size(92, 19);
+            this.cbSignalState.TabIndex = 42;
+            this.cbSignalState.Text = "Signal State";
+            this.cbSignalState.UseVisualStyleBackColor = true;
+            this.cbSignalState.Visible = false;
+            // 
+            // gbTrains
+            // 
+            this.gbTrains.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbTrains.Controls.Add(this.rbActiveTrains);
+            this.gbTrains.Controls.Add(this.rbAllTrains);
+            this.gbTrains.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gbTrains.Location = new System.Drawing.Point(780, 330);
+            this.gbTrains.Name = "gbTrains";
+            this.gbTrains.Size = new System.Drawing.Size(120, 71);
+            this.gbTrains.TabIndex = 43;
+            this.gbTrains.TabStop = false;
+            this.gbTrains.Text = "Trains";
+            this.gbTrains.Visible = false;
+            // 
+            // rbActiveTrains
+            // 
+            this.rbActiveTrains.AutoSize = true;
+            this.rbActiveTrains.Location = new System.Drawing.Point(13, 20);
+            this.rbActiveTrains.Name = "rbActiveTrains";
+            this.rbActiveTrains.Size = new System.Drawing.Size(93, 19);
+            this.rbActiveTrains.TabIndex = 1;
+            this.rbActiveTrains.TabStop = true;
+            this.rbActiveTrains.Text = "Active Trains";
+            this.rbActiveTrains.UseVisualStyleBackColor = true;
+            this.rbActiveTrains.Visible = false;
+            // 
+            // rbAllTrains
+            // 
+            this.rbAllTrains.AutoSize = true;
+            this.rbAllTrains.Location = new System.Drawing.Point(13, 40);
+            this.rbAllTrains.Name = "rbAllTrains";
+            this.rbAllTrains.Size = new System.Drawing.Size(75, 19);
+            this.rbAllTrains.TabIndex = 0;
+            this.rbAllTrains.TabStop = true;
+            this.rbAllTrains.Text = "All Trains";
+            this.rbAllTrains.UseVisualStyleBackColor = true;
+            this.rbAllTrains.Visible = false;
+            // 
+            // nudDaylightOffsetHrs
+            // 
+            this.nudDaylightOffsetHrs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nudDaylightOffsetHrs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.nudDaylightOffsetHrs.Location = new System.Drawing.Point(818, 439);
+            this.nudDaylightOffsetHrs.Name = "nudDaylightOffsetHrs";
+            this.nudDaylightOffsetHrs.Size = new System.Drawing.Size(40, 21);
+            this.nudDaylightOffsetHrs.TabIndex = 44;
+            this.nudDaylightOffsetHrs.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.nudDaylightOffsetHrs.Visible = false;
+            // 
+            // lblDayLightOffsetHrs
+            // 
+            this.lblDayLightOffsetHrs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblDayLightOffsetHrs.AutoSize = true;
+            this.lblDayLightOffsetHrs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblDayLightOffsetHrs.Location = new System.Drawing.Point(780, 417);
+            this.lblDayLightOffsetHrs.Name = "lblDayLightOffsetHrs";
+            this.lblDayLightOffsetHrs.Size = new System.Drawing.Size(113, 15);
+            this.lblDayLightOffsetHrs.TabIndex = 45;
+            this.lblDayLightOffsetHrs.Text = "Daylight Offset (hrs)";
+            this.lblDayLightOffsetHrs.Visible = false;
+            // 
+            // cdBackground
+            // 
+            this.cdBackground.AnyColor = true;
+            this.cdBackground.ShowHelp = true;
+            // 
+            // bBackgroundColor
+            // 
+            this.bBackgroundColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bBackgroundColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bBackgroundColor.Location = new System.Drawing.Point(780, 478);
+            this.bBackgroundColor.Name = "bBackgroundColor";
+            this.bBackgroundColor.Size = new System.Drawing.Size(107, 23);
+            this.bBackgroundColor.TabIndex = 46;
+            this.bBackgroundColor.Text = "Background Color";
+            this.bBackgroundColor.UseVisualStyleBackColor = true;
+            this.bBackgroundColor.Visible = false;
+            this.bBackgroundColor.Click += new System.EventHandler(this.bBackgroundColor_Click);
+            // 
             // DispatchViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(923, 768);
+            this.Controls.Add(this.bBackgroundColor);
+            this.Controls.Add(this.lblDayLightOffsetHrs);
+            this.Controls.Add(this.nudDaylightOffsetHrs);
+            this.Controls.Add(this.gbTrains);
+            this.Controls.Add(this.cbSignalState);
+            this.Controls.Add(this.cbSignals);
+            this.Controls.Add(this.cbSidings);
+            this.Controls.Add(this.cbPlatforms);
+            this.Controls.Add(this.lblShow);
+            this.Controls.Add(this.lblSimulationTime);
+            this.Controls.Add(this.lblSimulationTimeText);
             this.Controls.Add(this.btnSeeInGame);
             this.Controls.Add(this.chkPreferGreen);
             this.Controls.Add(this.chkBoxPenalty);
@@ -471,11 +663,14 @@
             this.Controls.Add(this.refreshButton);
             this.Controls.Add(this.pictureBox1);
             this.Name = "DispatchViewer";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "DispatchViewer";
-            this.WindowState = System.Windows.Forms.FormWindowState.Minimized;
             this.Leave += new System.EventHandler(this.DispatcherLeave);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).EndInit();
+            this.gbTrains.ResumeLayout(false);
+            this.gbTrains.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudDaylightOffsetHrs)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -510,5 +705,19 @@
 	  private System.Windows.Forms.CheckBox chkBoxPenalty;
 	  private System.Windows.Forms.CheckBox chkPreferGreen;
 	  private System.Windows.Forms.Button btnSeeInGame;
-   }
+        private System.Windows.Forms.Label lblSimulationTimeText;
+        private System.Windows.Forms.Label lblSimulationTime;
+        private System.Windows.Forms.Label lblShow;
+        private System.Windows.Forms.CheckBox cbPlatforms;
+        private System.Windows.Forms.CheckBox cbSidings;
+        private System.Windows.Forms.CheckBox cbSignals;
+        private System.Windows.Forms.CheckBox cbSignalState;
+        private System.Windows.Forms.GroupBox gbTrains;
+        private System.Windows.Forms.RadioButton rbActiveTrains;
+        private System.Windows.Forms.RadioButton rbAllTrains;
+        private System.Windows.Forms.NumericUpDown nudDaylightOffsetHrs;
+        private System.Windows.Forms.Label lblDayLightOffsetHrs;
+        private System.Windows.Forms.ColorDialog cdBackground;
+        private System.Windows.Forms.Button bBackgroundColor;
+    }
 }

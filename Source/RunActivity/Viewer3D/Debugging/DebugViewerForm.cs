@@ -176,7 +176,7 @@ namespace Orts.Viewer3D.Debugging
                 refreshButton.Text = "View Self";
             }
 
-            /*
+			/*
           if (MultiPlayer.MPManager.IsMultiPlayer())
           {
               MessageViewer = new MessageViewer();
@@ -184,21 +184,28 @@ namespace Orts.Viewer3D.Debugging
               MessageViewer.Visible = false;
           }*/
 
-            MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
+			if (simulator.TimetableMode)
             {
-                firstShow = true;
-            };
+				RevealTimetableControls();
+            }
+            else
+            {
+				MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
+				{
+					firstShow = true;
+				};
 
-            MultiPlayer.MPManager.Instance().AvatarUpdated += (sender, e) =>
-            {
-                AddAvatar(e.User, e.URL);
-            };
+				MultiPlayer.MPManager.Instance().AvatarUpdated += (sender, e) =>
+				{
+					AddAvatar(e.User, e.URL);
+				};
 
-            MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
-            {
-                AddNewMessage(e.Time, e.Message);
-            };
-        }
+				MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
+				{
+					AddNewMessage(e.Time, e.Message);
+				};
+			}
+		}
 
 
       public int RedrawCount;
@@ -2050,7 +2057,12 @@ namespace Orts.Viewer3D.Debugging
 		  else ClickedTrain = false;
 	  }
 
-      private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
+        private void bBackgroundColor_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
       {
           int diffX = x -pictureBox1.Width/2;
           int diffY = y -pictureBox1.Height/2;
@@ -2060,7 +2072,46 @@ namespace Orts.Viewer3D.Debugging
           windowSizeUpDown.Value = scale;
           GenerateView();
       }
-   }
+
+		private void RevealTimetableControls()
+        {
+			lblSimulationTimeText.Visible = true;
+			lblSimulationTime.Visible = true;
+			lblShow.Visible = true;
+			cbPlatforms.Visible = true;
+			cbSidings.Visible = true;
+			cbSignals.Visible = true;
+			cbSignalState.Visible = true;
+			gbTrains.Visible = true;
+			rbActiveTrains.Visible = true;
+			rbAllTrains.Visible = true;
+			lblDayLightOffsetHrs.Visible = true;
+			nudDaylightOffsetHrs.Visible = true;
+			bBackgroundColor.Visible = true;
+
+			MSG.Visible = false;
+			messages.Visible = false;
+			composeMSG.Visible = false;
+			msgAll.Visible = false;
+			msgSelected.Visible = false;
+			reply2Selected.Visible = false;
+			chkAllowNew.Visible = false;
+			chkShowAvatars.Visible = false;
+			chkAllowUserSwitch.Visible = false;
+			chkBoxPenalty.Visible = false;
+			chkPreferGreen.Visible = false;
+			chkDrawPath.Visible = false;
+			chkPickSignals.Visible = false;
+			chkPickSwitches.Visible = false;
+			btnSeeInGame.Visible = false;
+			btnAssist.Visible = false;
+			btnNormal.Visible = false;
+			refreshButton.Visible = false;
+			rmvButton.Visible = false;
+			btnFollow.Visible = false;
+			AvatarView.Visible = false;
+		}
+	}
 
    #region SignalWidget
    /// <summary>
