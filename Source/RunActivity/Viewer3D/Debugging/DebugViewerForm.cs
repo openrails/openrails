@@ -172,7 +172,7 @@ namespace Orts.Viewer3D.Debugging
                 msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
                 AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
                 chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false;
-                pictureBox1.Location = new System.Drawing.Point(pictureBox1.Location.X, label1.Location.Y + 18);
+                pbCanvas.Location = new System.Drawing.Point(pbCanvas.Location.X, label1.Location.Y + 18);
                 refreshButton.Text = "View Self";
             }
 
@@ -230,7 +230,10 @@ namespace Orts.Viewer3D.Debugging
 		 if (Program.Simulator.GameTime - lastUpdateTime < 1) return;
 		 lastUpdateTime = Program.Simulator.GameTime;
 
-            GenerateView();
+			if (simulator.TimetableMode)
+				GenerateTimetableView();
+			else
+				GenerateView();
 	  }
 
 	  #region initData
@@ -356,15 +359,15 @@ namespace Orts.Viewer3D.Debugging
       /// </summary>
       public void InitImage()
       {
-         pictureBox1.Width = IM_Width;
-         pictureBox1.Height = IM_Height;
+         pbCanvas.Width = IM_Width;
+         pbCanvas.Height = IM_Height;
 
-         if (pictureBox1.Image != null)
+         if (pbCanvas.Image != null)
          {
-            pictureBox1.Image.Dispose();
+            pbCanvas.Image.Dispose();
          }
 
-         pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+         pbCanvas.Image = new Bitmap(pbCanvas.Width, pbCanvas.Height);
 		 imageList1 = new ImageList();
 		 this.AvatarView.View = View.LargeIcon;
 		 imageList1.ImageSize = new Size(64, 64);
@@ -549,15 +552,16 @@ namespace Orts.Viewer3D.Debugging
           {
               oldWidth = label1.Left; oldHeight = this.Height;
               IM_Width = label1.Left - 20;
-              IM_Height = this.Height - pictureBox1.Top;
-              pictureBox1.Width = IM_Width;
-              pictureBox1.Height = IM_Height;
-              if (pictureBox1.Image != null)
+              IM_Height = this.Height - pbCanvas.Top;
+              pbCanvas.Width = IM_Width;
+				//pictureBox1.Height = IM_Height;
+				pbCanvas.Height = this.Height - pbCanvas.Top - 40;
+				if (pbCanvas.Image != null)
               {
-                  pictureBox1.Image.Dispose();
+                  pbCanvas.Image.Dispose();
               }
 
-              pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+              pbCanvas.Image = new Bitmap(pbCanvas.Width, pbCanvas.Height);
 
               if (btnAssist.Left - 10 < composeMSG.Right)
               {
@@ -568,6 +572,7 @@ namespace Orts.Viewer3D.Debugging
               firstShow = true;
           }
       }
+
       /// <summary>
       /// Regenerates the 2D view. At the moment, examines the track network
       /// each time the view is drawn. Later, the traversal and drawing can be separated.
@@ -578,7 +583,7 @@ namespace Orts.Viewer3D.Debugging
 
 		  if (!Inited) return;
 
-		  if (pictureBox1.Image == null) InitImage();
+		  if (pbCanvas.Image == null) InitImage();
           DetermineLocations();
 
 		  if (firstShow)
@@ -627,13 +632,13 @@ namespace Orts.Viewer3D.Debugging
 			  CheckAvatar();
 		  }
 		  catch {  } //errors for avatar, just ignore
-         using(Graphics g = Graphics.FromImage(pictureBox1.Image))
+         using(Graphics g = Graphics.FromImage(pbCanvas.Image))
          {
 			 subX = minX + ViewWindow.X; subY = minY + ViewWindow.Y;
             g.Clear(Color.White);
             
-            xScale = pictureBox1.Width / ViewWindow.Width;
-            yScale = pictureBox1.Height/ ViewWindow.Height;
+            xScale = pbCanvas.Width / ViewWindow.Width;
+            yScale = pbCanvas.Height/ ViewWindow.Height;
 
 			PointF[] points = new PointF[3];
 			Pen p = grayPen;
@@ -654,8 +659,8 @@ namespace Orts.Viewer3D.Debugging
 			foreach (var line in segments)
             {
 
-                scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale; scaledA.Y = pictureBox1.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
-                scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale; scaledB.Y = pictureBox1.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
+                scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale; scaledA.Y = pbCanvas.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
+                scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale; scaledB.Y = pbCanvas.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
 
 
 				if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
@@ -671,7 +676,7 @@ namespace Orts.Viewer3D.Debugging
 
 			   if (line.isCurved == true)
 			   {
-				   scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = pictureBox1.Height - ((float)line.C.Z - subY) * yScale;
+				   scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = pbCanvas.Height - ((float)line.C.Z - subY) * yScale;
 				   points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
 				   g.DrawCurve(p, points);
 			   }
@@ -692,7 +697,7 @@ namespace Orts.Viewer3D.Debugging
 			 {
 				 SwitchWidget sw = switches[i];
 
-				 x = (sw.Location.X - subX) * xScale; y = pictureBox1.Height - (sw.Location.Y - subY) * yScale;
+				 x = (sw.Location.X - subX) * xScale; y = pbCanvas.Height - (sw.Location.Y - subY) * yScale;
 
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 
@@ -719,7 +724,7 @@ namespace Orts.Viewer3D.Debugging
 			 foreach (var s in signals)
 			 {
                  if (float.IsNaN(s.Location.X) || float.IsNaN(s.Location.Y)) continue;
-				 x = (s.Location.X - subX) * xScale; y = pictureBox1.Height - (s.Location.Y - subY) * yScale;
+				 x = (s.Location.X - subX) * xScale; y = pbCanvas.Height - (s.Location.Y - subY) * yScale;
 				 if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
 				 scaledItem.X = x; scaledItem.Y = y;
 				 s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
@@ -745,7 +750,7 @@ namespace Orts.Viewer3D.Debugging
 					 signalItemsDrawn.Add(s);
 					 if (s.hasDir)
 					 {
-						 scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (s.Dir.Y - subY) * yScale;
+						 scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = pbCanvas.Height - (s.Dir.Y - subY) * yScale;
 						 g.DrawLine(pen, scaledItem, scaledB);
 					 }
 				 }
@@ -758,7 +763,7 @@ namespace Orts.Viewer3D.Debugging
 				foreach (var s in sidings)
 				{
 					scaledItem.X = (s.Location.X - subX) * xScale;
-					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pictureBox1.Height - (s.Location.Y - subY) * yScale, s.Name);
+					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
 					if (scaledItem.Y >= 0f) //if we need to draw the siding names
 					{
 
@@ -832,7 +837,7 @@ namespace Orts.Viewer3D.Debugging
 					{
 						worldPos = firstCar.WorldPosition;
 						scaledItem.X = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
-						scaledItem.Y = pictureBox1.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+						scaledItem.Y = pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
 						if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
 						if (drawRed > ValidTrain) g.FillRectangle(Brushes.Gray, GetRect(scaledItem, 15f));
 						else
@@ -846,7 +851,7 @@ namespace Orts.Viewer3D.Debugging
 						continue;
 					}
 					var loc = t.FrontTDBTraveller.WorldLocation;
-					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pictureBox1.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
+					x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pbCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
 					if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
 					
 					//train quit will not draw path, others will draw it
@@ -861,14 +866,14 @@ namespace Orts.Viewer3D.Debugging
 						if (dist > 0)
 						{
 							t1.Move(dist - 1 + car.CarLengthM / 2);
-							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pictureBox1.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
 							//x = (worldPos.TileX * 2048 + worldPos.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - minY - ViewWindow.Y) * yScale;
 							if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
 
 							scaledItem.X = x; scaledItem.Y = y;
 
 							t1.Move(-car.CarLengthM);
-							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pictureBox1.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
 							if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
 
 							scaledA.X = x; scaledA.Y = y;
@@ -883,7 +888,7 @@ namespace Orts.Viewer3D.Debugging
 					}
 					worldPos = firstCar.WorldPosition;
 					scaledItem.X = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
-					scaledItem.Y = -25 + pictureBox1.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+					scaledItem.Y = -25 + pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
 
 					g.DrawString(name, trainFont, trainBrush, scaledItem);
 
@@ -929,10 +934,340 @@ namespace Orts.Viewer3D.Debugging
 
          }
 
-         pictureBox1.Invalidate();
+         pbCanvas.Invalidate();
       }
 
-	  private Vector2[][] alignedTextY;
+		private void AdjustControlLocations()
+		{
+			if (this.Height < 600 || this.Width < 800) return;
+
+			if (oldHeight != this.Height || oldWidth != label1.Left) //use the label "Res" as anchor point to determine the picture size
+			{
+				oldWidth = label1.Left; oldHeight = this.Height;
+
+				pbCanvas.Width = label1.Left - 25;						// 20 pixels found by trial and error
+				pbCanvas.Height = this.Height - pbCanvas.Top - 45; // 40 pixels found by trial and error
+
+				if (pbCanvas.Image != null)
+					pbCanvas.Image.Dispose();
+				pbCanvas.Image = new Bitmap(pbCanvas.Width, pbCanvas.Height);
+
+				firstShow = true;
+			}
+		}
+		public void GenerateTimetableView()
+		{
+			if (pbCanvas.Image == null) 
+				InitImage();
+			
+			AdjustControlLocations();
+
+			using (Graphics g = Graphics.FromImage(pbCanvas.Image))
+			{
+				subX = minX + ViewWindow.X; subY = minY + ViewWindow.Y;
+				g.Clear(Color.White);
+
+				xScale = pbCanvas.Width / ViewWindow.Width;
+				yScale = pbCanvas.Height / ViewWindow.Height;
+
+				PointF[] points = new PointF[3];
+				Pen p = grayPen;
+
+				p.Width = (int)xScale;
+				if (p.Width < 1) p.Width = 1;
+				else if (p.Width > 3) p.Width = 3;
+				greenPen.Width = orangePen.Width = redPen.Width = p.Width; pathPen.Width = 2 * p.Width;
+				trainPen.Width = p.Width * 6;
+				var forwardDist = 100 / xScale; if (forwardDist < 5) forwardDist = 5;
+				//if (xScale > 3) p.Width = 3f;
+				//else if (xScale > 2) p.Width = 2f;
+				//else p.Width = 1f;
+				PointF scaledA = new PointF(0, 0);
+				PointF scaledB = new PointF(0, 0);
+				PointF scaledC = new PointF(0, 0);
+
+				foreach (var line in segments)
+				{
+
+					scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale; scaledA.Y = pbCanvas.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
+					scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale; scaledB.Y = pbCanvas.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
+
+
+					if ((scaledA.X < 0 && scaledB.X < 0) || (scaledA.X > IM_Width && scaledB.X > IM_Width) || (scaledA.Y > IM_Height && scaledB.Y > IM_Height) || (scaledA.Y < 0 && scaledB.Y < 0)) continue;
+
+
+					//if (highlightTrackSections.Checked)
+					//{
+					//   if (line.Section != null && line.Section.InterlockingTrack == trackSections.SelectedValue)
+					//   {
+					//      p.Width = 5f;
+					//   }
+					//}
+
+					if (line.isCurved == true)
+					{
+						scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = pbCanvas.Height - ((float)line.C.Z - subY) * yScale;
+						points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
+						g.DrawCurve(p, points);
+					}
+					else g.DrawLine(p, scaledA, scaledB);
+
+					/*if (line.MySection != null)
+					{
+						g.DrawString(""+line.MySection.StartElev+" "+line.MySection.EndElev, sidingFont, sidingBrush, scaledB);
+					}*/
+				}
+
+				switchItemsDrawn.Clear();
+				signalItemsDrawn.Clear();
+				float x, y;
+				PointF scaledItem = new PointF(0f, 0f);
+				var width = 6f * p.Width; if (width > 15) width = 15;//not to make it too large
+				for (var i = 0; i < switches.Count; i++)
+				{
+					SwitchWidget sw = switches[i];
+
+					x = (sw.Location.X - subX) * xScale; y = pbCanvas.Height - (sw.Location.Y - subY) * yScale;
+
+					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+
+					scaledItem.X = x; scaledItem.Y = y;
+
+
+					if (sw.Item.TrJunctionNode.SelectedRoute == sw.main) g.FillEllipse(Brushes.Black, GetRect(scaledItem, width));
+					else g.FillEllipse(Brushes.Gray, GetRect(scaledItem, width));
+
+					//g.DrawString("" + sw.Item.TrJunctionNode.SelectedRoute, trainFont, trainBrush, scaledItem);
+
+					sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
+#if false
+				 if (sw.main == sw.Item.TrJunctionNode.SelectedRoute)
+				 {
+					 scaledA.X = ((float)sw.mainEnd.X - minX - ViewWindow.X) * xScale; scaledA.Y = pictureBox1.Height - ((float)sw.mainEnd.Y - minY - ViewWindow.Y) * yScale;
+					 g.DrawLine(redPen, scaledA, scaledItem);
+
+				 }
+#endif
+					switchItemsDrawn.Add(sw);
+				}
+
+				foreach (var s in signals)
+				{
+					if (float.IsNaN(s.Location.X) || float.IsNaN(s.Location.Y)) continue;
+					x = (s.Location.X - subX) * xScale; y = pbCanvas.Height - (s.Location.Y - subY) * yScale;
+					if (x < 0 || x > IM_Width || y > IM_Height || y < 0) continue;
+					scaledItem.X = x; scaledItem.Y = y;
+					s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
+					if (s.Signal.isSignalNormal())//only show nor
+					{
+						var color = Brushes.Green;
+						var pen = greenPen;
+						if (s.IsProceed == 0)
+						{
+						}
+						else if (s.IsProceed == 1)
+						{
+							color = Brushes.Orange;
+							pen = orangePen;
+						}
+						else
+						{
+							color = Brushes.Red;
+							pen = redPen;
+						}
+						g.FillEllipse(color, GetRect(scaledItem, width));
+						//if (s.Signal.enabledTrain != null) g.DrawString(""+s.Signal.enabledTrain.Train.Number, trainFont, Brushes.Black, scaledItem);
+						signalItemsDrawn.Add(s);
+						if (s.hasDir)
+						{
+							scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = pbCanvas.Height - (s.Dir.Y - subY) * yScale;
+							g.DrawLine(pen, scaledItem, scaledB);
+						}
+					}
+				}
+
+				if (true/*showPlayerTrain.Checked*/)
+				{
+
+					CleanVerticalCells();//clean the drawing area for text of sidings
+					foreach (var s in sidings)
+					{
+						scaledItem.X = (s.Location.X - subX) * xScale;
+						scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+						if (scaledItem.Y >= 0f) //if we need to draw the siding names
+						{
+
+							g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
+						}
+					}
+					var margin = 30 * xScale;//margins to determine if we want to draw a train
+					var margin2 = 5000 * xScale;
+
+					//variable for drawing train path
+					var mDist = 5000f; var pDist = 50; //segment length when draw path
+
+					selectedTrainList.Clear();
+					foreach (var t in simulator.Trains) selectedTrainList.Add(t);
+
+					var redTrain = selectedTrainList.Count;
+
+					//choosen trains will be drawn later using blue, so it will overlap on the red lines
+					var chosen = AvatarView.SelectedItems;
+					if (chosen.Count > 0)
+					{
+						for (var i = 0; i < chosen.Count; i++)
+						{
+							var name = chosen[i].Text.Split(' ')[0].Trim(); //filter out (H) in the text
+							var train = MultiPlayer.MPManager.OnlineTrains.findTrain(name);
+							if (train != null) { selectedTrainList.Remove(train); selectedTrainList.Add(train); redTrain--; }
+							//if selected include myself, will show it as blue
+							if (MultiPlayer.MPManager.GetUserName() == name && Program.Simulator.PlayerLocomotive != null)
+							{
+								selectedTrainList.Remove(Program.Simulator.PlayerLocomotive.Train); selectedTrainList.Add(Program.Simulator.PlayerLocomotive.Train);
+								redTrain--;
+							}
+
+						}
+					}
+
+					//trains selected in the avatar view list will be drawn in blue, others will be drawn in red
+					pathPen.Color = Color.Red;
+					var drawRed = 0;
+					int ValidTrain = selectedTrainList.Count();
+					//add trains quit into the end, will draw them in gray
+					var quitTrains = MultiPlayer.MPManager.Instance().lostPlayer.Values
+						.Select((MultiPlayer.OnlinePlayer lost) => lost?.Train)
+						.Where((Train t) => t != null)
+						.Where((Train t) => !selectedTrainList.Contains(t));
+					selectedTrainList.AddRange(quitTrains);
+					foreach (Train t in selectedTrainList)
+					{
+						drawRed++;//how many red has been drawn
+						if (drawRed > redTrain) pathPen.Color = Color.Blue; //more than the red should be drawn, thus draw in blue
+
+						name = "";
+						TrainCar firstCar = null;
+						if (t.LeadLocomotive != null)
+						{
+							worldPos = t.LeadLocomotive.WorldPosition;
+							name = t.GetTrainName(t.LeadLocomotive.CarID);
+							firstCar = t.LeadLocomotive;
+						}
+						else if (t.Cars != null && t.Cars.Count > 0)
+						{
+							worldPos = t.Cars[0].WorldPosition;
+							name = t.GetTrainName(t.Cars[0].CarID);
+							if (t.TrainType == Train.TRAINTYPE.AI)
+								name = t.Number.ToString() + ":" + t.Name;
+							firstCar = t.Cars[0];
+						}
+						else continue;
+
+						if (xScale < 0.3 || t.FrontTDBTraveller == null || t.RearTDBTraveller == null)
+						{
+							worldPos = firstCar.WorldPosition;
+							scaledItem.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
+							scaledItem.Y = pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+							if (scaledItem.X < -margin2 || scaledItem.X > IM_Width + margin2 || scaledItem.Y > IM_Height + margin2 || scaledItem.Y < -margin2) continue;
+							if (drawRed > ValidTrain) g.FillRectangle(Brushes.Gray, GetRect(scaledItem, 15f));
+							else
+							{
+								if (t == PickedTrain) g.FillRectangle(Brushes.Red, GetRect(scaledItem, 15f));
+								else g.FillRectangle(Brushes.DarkGreen, GetRect(scaledItem, 15f));
+								scaledItem.Y -= 25;
+								DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
+							}
+							g.DrawString(name, trainFont, trainBrush, scaledItem);
+							continue;
+						}
+						var loc = t.FrontTDBTraveller.WorldLocation;
+						x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale; y = pbCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
+						if (x < -margin2 || x > IM_Width + margin2 || y > IM_Height + margin2 || y < -margin2) continue;
+
+						//train quit will not draw path, others will draw it
+						if (drawRed <= ValidTrain) DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
+
+						trainPen.Color = Color.DarkGreen;
+						foreach (var car in t.Cars)
+						{
+							Traveller t1 = new Traveller(t.RearTDBTraveller);
+							worldPos = car.WorldPosition;
+							var dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
+							if (dist > 0)
+							{
+								t1.Move(dist - 1 + car.CarLengthM / 2);
+								x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+								//x = (worldPos.TileX * 2048 + worldPos.Location.X - minX - ViewWindow.X) * xScale; y = pictureBox1.Height - (worldPos.TileZ * 2048 + worldPos.Location.Z - minY - ViewWindow.Y) * yScale;
+								if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
+
+								scaledItem.X = x; scaledItem.Y = y;
+
+								t1.Move(-car.CarLengthM);
+								x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+								if (x < -margin || x > IM_Width + margin || y > IM_Height + margin || y < -margin) continue;
+
+								scaledA.X = x; scaledA.Y = y;
+
+								//if the train has quit, will draw in gray, if the train is selected by left click of the mouse, will draw it in red
+								if (drawRed > ValidTrain) trainPen.Color = Color.Gray;
+								else if (t == PickedTrain) trainPen.Color = Color.Red;
+								g.DrawLine(trainPen, scaledA, scaledItem);
+
+								//g.FillEllipse(Brushes.DarkGreen, GetRect(scaledItem, car.Length * xScale));
+							}
+						}
+						worldPos = firstCar.WorldPosition;
+						scaledItem.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
+						scaledItem.Y = -25 + pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
+
+						g.DrawString(name, trainFont, trainBrush, scaledItem);
+
+					}
+					if (switchPickedItemHandled) switchPickedItem = null;
+					if (signalPickedItemHandled) signalPickedItem = null;
+
+#if false
+				if (switchPickedItem != null /*&& switchPickedItemChanged == true*/ && !switchPickedItemHandled && simulator.GameTime - switchPickedTime < 5)
+				{
+					switchPickedLocation.X = switchPickedItem.Location2D.X + 150; switchPickedLocation.Y = switchPickedItem.Location2D.Y;
+					//g.FillRectangle(Brushes.LightGray, GetRect(switchPickedLocation, 400f, 64f));
+
+					switchPickedLocation.X -= 180; switchPickedLocation.Y += 10;
+					var node = switchPickedItem.Item.TrJunctionNode;
+					if (node.SelectedRoute == switchPickedItem.main) g.DrawString("Current Route: Main Route", trainFont, trainBrush, switchPickedLocation);
+					else g.DrawString("Current Route: Side Route", trainFont, trainBrush, switchPickedLocation);
+					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
+					{
+						switchPickedLocation.Y -= 22;
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSwitchPicked] + " to throw the switch", trainFont, trainBrush, switchPickedLocation);
+						switchPickedLocation.Y += 8;
+					}
+					switchPickedLocation.Y -= 30;
+					g.DrawString(InputSettings.Commands[(int)UserCommand.CameraJumpSeeSwitch] + " to see the switch", trainFont, trainBrush, switchPickedLocation);
+				}
+				if (signalPickedItem != null /*&& signalPickedItemChanged == true*/ && !signalPickedItemHandled && simulator.GameTime - signalPickedTime < 5)
+				{
+					signalPickedLocation.X = signalPickedItem.Location2D.X + 150; signalPickedLocation.Y = signalPickedItem.Location2D.Y;
+					//g.FillRectangle(Brushes.LightGray, GetRect(signalPickedLocation, 400f, 64f));
+					signalPickedLocation.X -= 180; signalPickedLocation.Y -= 2;
+					if (signalPickedItem.IsProceed == 0) g.DrawString("Current Signal: Proceed", trainFont, trainBrush, signalPickedLocation);
+					else if (signalPickedItem.IsProceed == 1) g.DrawString("Current Signal: Approach", trainFont, trainBrush, signalPickedLocation);
+					else g.DrawString("Current Signal: Stop", trainFont, trainBrush, signalPickedLocation);
+					if (!MultiPlayer.MPManager.IsMultiPlayer() || MultiPlayer.MPManager.IsServer())
+					{
+						signalPickedLocation.Y -= 24;
+						g.DrawString(InputSettings.Commands[(int)UserCommand.GameSignalPicked] + " to change signal", trainFont, trainBrush, signalPickedLocation);
+					}
+				}
+#endif
+				}
+
+			}
+
+			pbCanvas.Invalidate();
+		}
+
+		private Vector2[][] alignedTextY;
 	  private int[] alignedTextNum;
 	  private int spacing = 12;
 	  private void CleanVerticalCells()
@@ -1138,8 +1473,8 @@ namespace Orts.Viewer3D.Debugging
 						if (stepDistance + stepLength >= initialNodeOffset && stepDistance <= initialNodeOffset + DisplayDistance)
 						{
 							var currentLocation = currentPosition.WorldLocation;
-							scaledA.X = (previousLocation.TileX * 2048 + previousLocation.Location.X - subX) * xScale; scaledA.Y = pictureBox1.Height - (previousLocation.TileZ * 2048 + previousLocation.Location.Z - subY) * yScale;
-							scaledB.X = (currentLocation.TileX * 2048 + currentLocation.Location.X - subX) * xScale; scaledB.Y = pictureBox1.Height - (currentPosition.TileZ * 2048 + currentPosition.Location.Z - subY) * yScale;
+							scaledA.X = (previousLocation.TileX * 2048 + previousLocation.Location.X - subX) * xScale; scaledA.Y = pbCanvas.Height - (previousLocation.TileZ * 2048 + previousLocation.Location.Z - subY) * yScale;
+							scaledB.X = (currentLocation.TileX * 2048 + currentLocation.Location.X - subX) * xScale; scaledB.Y = pbCanvas.Height - (currentPosition.TileZ * 2048 + currentPosition.Location.Z - subY) * yScale;
 							g.DrawLine(pathPen, scaledA, scaledB);
 						}
 					}
@@ -1513,7 +1848,7 @@ namespace Orts.Viewer3D.Debugging
 		  if (signalPickedItem == null) return;
 		  var y = LastCursorPosition.Y;
 		  if (LastCursorPosition.Y < 100) y = 100;
-		  if (LastCursorPosition.Y > pictureBox1.Size.Height - 100) y = pictureBox1.Size.Height - 100;
+		  if (LastCursorPosition.Y > pbCanvas.Size.Height - 100) y = pbCanvas.Size.Height - 100;
 		  boxSetSignal.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
 		  boxSetSignal.Enabled = true;
 		  boxSetSignal.Focus();
@@ -1530,7 +1865,7 @@ namespace Orts.Viewer3D.Debugging
 		  if (switchPickedItem == null) return;
 		  var y = LastCursorPosition.Y + 100;
 		  if (y < 140) y = 140;
-		  if (y > pictureBox1.Size.Height + 100) y = pictureBox1.Size.Height + 100;
+		  if (y > pbCanvas.Size.Height + 100) y = pbCanvas.Size.Height + 100;
 		  boxSetSwitch.Location = new System.Drawing.Point(LastCursorPosition.X + 2, y);
 		  boxSetSwitch.Enabled = true;
 		  boxSetSwitch.Focus();
@@ -1608,7 +1943,7 @@ namespace Orts.Viewer3D.Debugging
 
 			  worldPos = firstCar.WorldPosition;
 			  tX = (worldPos.TileX * 2048 -subX + worldPos.Location.X) * xScale; 
-			  tY = pictureBox1.Height - (worldPos.TileZ * 2048 -subY + worldPos.Location.Z) * yScale;
+			  tY = pbCanvas.Height - (worldPos.TileZ * 2048 -subY + worldPos.Location.Z) * yScale;
               float xSpeedCorr = Math.Abs(t.SpeedMpS) * xScale * 1.5f;
               float ySpeedCorr = Math.Abs(t.SpeedMpS) * yScale * 1.5f;
 
@@ -2064,8 +2399,8 @@ namespace Orts.Viewer3D.Debugging
 
         private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
       {
-          int diffX = x -pictureBox1.Width/2;
-          int diffY = y -pictureBox1.Height/2;
+          int diffX = x -pbCanvas.Width/2;
+          int diffY = y -pbCanvas.Height/2;
           ViewWindow.Offset(diffX / xScale, -diffY/yScale);
           if (scale < windowSizeUpDown.Minimum) scale = windowSizeUpDown.Minimum;
           if (scale > windowSizeUpDown.Maximum) scale = windowSizeUpDown.Maximum;

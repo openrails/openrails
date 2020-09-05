@@ -38,7 +38,7 @@
       /// </summary>
       private void InitializeComponent()
       {
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.pbCanvas = new System.Windows.Forms.PictureBox();
             this.refreshButton = new System.Windows.Forms.Button();
             this.windowSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.resLabel = new System.Windows.Forms.Label();
@@ -79,22 +79,22 @@
             this.lblDayLightOffsetHrs = new System.Windows.Forms.Label();
             this.cdBackground = new System.Windows.Forms.ColorDialog();
             this.bBackgroundColor = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCanvas)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
             this.gbTrains.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudDaylightOffsetHrs)).BeginInit();
             this.SuspendLayout();
             // 
-            // pictureBox1
+            // pbCanvas
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(3, 131);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(754, 626);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseDown);
-            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseMove);
-            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseUp);
+            this.pbCanvas.Location = new System.Drawing.Point(5, 131);
+            this.pbCanvas.Name = "pbCanvas";
+            this.pbCanvas.Size = new System.Drawing.Size(754, 626);
+            this.pbCanvas.TabIndex = 0;
+            this.pbCanvas.TabStop = false;
+            this.pbCanvas.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseDown);
+            this.pbCanvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseMove);
+            this.pbCanvas.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseUp);
             // 
             // refreshButton
             // 
@@ -661,12 +661,12 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.windowSizeUpDown);
             this.Controls.Add(this.refreshButton);
-            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.pbCanvas);
             this.Name = "DispatchViewer";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.Text = "DispatchViewer";
             this.Leave += new System.EventHandler(this.DispatcherLeave);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbCanvas)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).EndInit();
             this.gbTrains.ResumeLayout(false);
             this.gbTrains.PerformLayout();
@@ -678,7 +678,7 @@
 
       #endregion
 
-      private System.Windows.Forms.PictureBox pictureBox1;
+      private System.Windows.Forms.PictureBox pbCanvas;
 	  private System.Windows.Forms.Button refreshButton;
 	  private System.Windows.Forms.NumericUpDown windowSizeUpDown;
 	  private System.Windows.Forms.Label resLabel;
