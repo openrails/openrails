@@ -213,10 +213,11 @@ namespace Orts.Viewer3D.Debugging
       public int RedrawCount;
 		private Font trainFont;
 		private Font sidingFont;
+		private Font PlatformFont;
 		private SolidBrush trainBrush;
 		private SolidBrush sidingBrush;
-		private SolidBrush InactiveTrainBrush;
 		private SolidBrush PlatformBrush;
+		private SolidBrush InactiveTrainBrush;
 
 		private double lastUpdateTime;
 
@@ -344,11 +345,15 @@ namespace Orts.Viewer3D.Debugging
 				  }
 
 			  }
-			  if (item.ItemType == TrItem.trItemType.trSIDING || item.ItemType == TrItem.trItemType.trPLATFORM)
+			  if (item.ItemType == TrItem.trItemType.trSIDING)
 			  {
 				  sidings.Add(new SidingWidget(item));
 			  }
-		  }
+				if (item.ItemType == TrItem.trItemType.trPLATFORM)
+				{
+					platforms.Add(new PlatformWidget(item));
+				}
+			}
           return;
 	  }
 
@@ -358,11 +363,12 @@ namespace Orts.Viewer3D.Debugging
 	  //List<PointF> buffers = new List<PointF>();
 	  List<SignalWidget> signals = new List<SignalWidget>();
 	  List<SidingWidget> sidings = new List<SidingWidget>();
+		List<PlatformWidget> platforms = new List<PlatformWidget>();
 
-	   /// <summary>
-      /// Initialises the picturebox and the image it contains. 
-      /// </summary>
-      public void InitImage()
+		/// <summary>
+		/// Initialises the picturebox and the image it contains. 
+		/// </summary>
+		public void InitImage()
       {
          pbCanvas.Width = IM_Width;
          pbCanvas.Height = IM_Height;
@@ -946,6 +952,7 @@ namespace Orts.Viewer3D.Debugging
         {
 			trainFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+			PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			InactiveTrainBrush = new SolidBrush(Color.LightPink);
 			PlatformBrush = new SolidBrush(Color.Blue);
 		}
@@ -974,10 +981,15 @@ namespace Orts.Viewer3D.Debugging
 				firstShow = false;
 			}
 
-			// Sufficient to accommodate the whole route
+			//// Sufficient to accommodate the whole route
+			//var xRange = maxX - minX;
+			//var yRange = maxY - minY;
+			//var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 1.15); // Add 15% to provide a bit extra for labels that extend beyond the track ends.
+			// Sufficient to accommodate the whole route twice over.
+			// This is so a user can zoom out and then back in without changing the location at the centre.
 			var xRange = maxX - minX;
 			var yRange = maxY - minY;
-			var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 1.15); // Add 15% to provide a bit extra for labels that extend beyond the track ends.
+			var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 2);
 			windowSizeUpDown.Maximum = (decimal)maxSize;
 		}
 
@@ -987,6 +999,9 @@ namespace Orts.Viewer3D.Debugging
 				InitImage();
 			
 			AdjustControlLocations();
+
+			var ct = TimeSpan.FromSeconds(Program.Simulator.ClockTime);
+			lblSimulationTime.Text = $"{ct:hh}:{ct:mm}:{ct:ss}";
 
 			using (Graphics g = Graphics.FromImage(pbCanvas.Image))
 			{
@@ -1104,13 +1119,23 @@ namespace Orts.Viewer3D.Debugging
 
 				// Draw sidings
 				CleanVerticalCells();//clean the drawing area for text of sidings
-				foreach (var s in sidings)
-				{
-					scaledItem.X = (s.Location.X - subX) * xScale;
-					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
-					if (scaledItem.Y >= 0f) //if we need to draw the siding names
-						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
-				}
+				if (cbSidings.CheckState == System.Windows.Forms.CheckState.Checked)
+					foreach (var s in sidings)
+					{
+						scaledItem.X = (s.Location.X - subX) * xScale;
+						scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+						if (scaledItem.Y >= 0f) //if we need to draw the siding names
+							g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
+					}
+
+				if (cbPlatforms.CheckState == System.Windows.Forms.CheckState.Checked)
+					foreach (var s in platforms)
+					{
+						scaledItem.X = (s.Location.X - subX) * xScale;
+						scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+						if (scaledItem.Y >= 0f) //if we need to draw the platform names
+							g.DrawString(s.Name, PlatformFont, PlatformBrush, scaledItem);
+					}
 
 				// Draw trains
 				var margin = 30 * xScale;//margins to determine if we want to draw a train
@@ -2676,28 +2701,54 @@ namespace Orts.Viewer3D.Debugging
    {
 	   public PointF Location;
 	   public string Name;
+
 	   /// <summary>
 	   /// The underlying track item.
 	   /// </summary>
 	   private TrItem Item;
 
-	   /// <summary>
-	   /// 
-	   /// </summary>
-	   /// <param name="item"></param>
-	   /// <param name="signal"></param>
-	   public SidingWidget(TrItem item)
-	   {
-		   Item = item;
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="item"></param>
+		/// <param name="signal"></param>
+		public SidingWidget(TrItem item)
+		{
+			Item = item;
+			Name = item.ItemName;
+			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+		}
+	}
 
-		   Name = item.ItemName;
+#endregion
 
-		   Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-	   }
-   }
-   #endregion
+	/// <summary>
+	/// Defines a platform name being drawn in a 2D view.
+	/// </summary>
+	public struct PlatformWidget
+	{
+		public PointF Location;
+		public string Name;
 
-   public class dVector
+		/// <summary>
+		/// The underlying track item.
+		/// </summary>
+		private TrItem Item;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="item"></param>
+		/// <param name="signal"></param>
+		public PlatformWidget(TrItem item)
+		{
+			Item = item;
+			Name = item.ItemName;
+			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+		}
+	}
+
+	public class dVector
    {
        public int TileX, TileZ;
 	   public double X, Z;
