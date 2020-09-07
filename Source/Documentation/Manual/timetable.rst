@@ -438,7 +438,7 @@ Special Rows
   but if HTML breaks "<br>" are inserted into the ``#briefing`` field, these will be converted to line-breaks.
    
 
-Control commands
+Control Commands
 ----------------
 
 General
