@@ -136,14 +136,10 @@ Timing details
 --------------
 
 Each cell which is at an intersection of a train column and a location row, can 
-contain timing details for that train at that location.
-
-*Presently, only train stop details can be defined. Later on, passing times will 
-also be defined; these passing times can be used to determine a train's delay.*
-
-:ref:`Timing commands <timetable-timing>` can be set at locations where the 
-train stops, but can also be set for locations where no timing is inserted as 
-the train passes through that location without stopping.
+contain timing details for that train at that location. :ref:`Timing commands 
+<timetable-timing>` can be set at locations where the train stops, but can also 
+be set for locations where no timing is inserted as the train passes through 
+that location without stopping.
 
 Timetable Data Details
 ======================
@@ -1090,6 +1086,8 @@ Start Commands
     turntable can be set using the direction qualifier. If not set, the train 
     will reverse.
 
+.. _timetable-cmd-next:
+
 ``$next``
 
     Start time is after 00:00 at the end of the timetable. May be used to start 
@@ -1245,7 +1243,7 @@ Delay Commands
 ''''''''''''''
 
 All delay commands, except for the ``$reverse`` 
-:ref:`command <timetable-cmd-reverse>` are in the form of 
+:ref:`command <timetable-cmd-reverse>`, are in the form of 
 ``$command [/fix=<f>] [/var=<v>]``, where <f> represents the fixed component of 
 the time delay and <v> represents the variable component of the time delay, both 
 in seconds.
@@ -1654,11 +1652,9 @@ close enough to another train to couple to this train. It is this logic which
 allows the player train to couple to any static train.
 
 However, this logic contains some actions which do not match the processing of 
-timetable trains.
-*Therefore this has now been disabled for timetable mode*. 
-*Presently, therefore, coupling of trains is not possible in timetable mode except for runround commands in dispose options*.
-
-*Also uncoupling through the F9 window could be disabled in the near future for timetable mode*. *In due course, new attach/detach functions will be included in the timetable concept to replace the existing functions*.
+timetable trains. Therefore, coupling of trains is not possible in timetable 
+mode except for maneuvers specified explicitly with commands, such as 
+``$attach`` and ``$detach``.
 
 .. _timetable-shunting:
 
@@ -1827,7 +1823,8 @@ The following rules apply for the player train:
   started if the incoming train is delayed and as a result the start time is 
   moved after midnight. In this situation, the activity is aborted.
 - Trains booked to start after midnight will instead be started at the 
-  beginning of the day.
+  beginning of the day, unless the ``$next`` :ref:`command <timetable-cmd-next>` 
+  is used.
 
 The following rules apply for AI trains :
 
@@ -1837,10 +1834,8 @@ The following rules apply for AI trains :
   started if the incoming train is delayed and as a result the start time is 
   moved after midnight.
 - Trains booked to start after midnight will instead be started at the 
-  beginning of the day.
-
-As a result of these rules, it is not really possible to run an activity around 
-or through midnight with all required AI trains included.
+  beginning of the day, unless the ``$next`` :ref:`command <timetable-cmd-next>` 
+  is used.
 
 Viewing the Other Active Trains in the Timetable
 ''''''''''''''''''''''''''''''''''''''''''''''''
