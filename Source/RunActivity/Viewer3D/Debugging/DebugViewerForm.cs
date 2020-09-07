@@ -2566,45 +2566,48 @@ namespace Orts.Viewer3D.Debugging
 			}
 		}
 
+		// The canvas is split into equally pitched rows. 
+		// Each row has an array of 5 StartX, EndX positions and a count of how many slots have been filled.
 		private void CleanTextCells()
 		{
 			if (alignedTextY == null || alignedTextY.Length != pbCanvas.Height / spacing) //first time to put text, or the text height has changed
 			{
 				alignedTextY = new Vector2[pbCanvas.Height / spacing][];
 				alignedTextNum = new int[pbCanvas.Height / spacing];
-				for (var i = 0; i < pbCanvas.Height / spacing; i++) alignedTextY[i] = new Vector2[5]; //each line has at most 5 slots
+				for (var i = 0; i < pbCanvas.Height / spacing; i++)
+					alignedTextY[i] = new Vector2[5]; //each line has at most 5 slots
 			}
-			for (var i = 0; i < pbCanvas.Height / spacing; i++) { alignedTextNum[i] = 0; }
-
+			for (var i = 0; i < pbCanvas.Height / spacing; i++) 
+				alignedTextNum[i] = 0;
 		}
 
-
+		// Returns a vertical position for the text that doesn't clash or returns -1
 		private float DetermineTextLocation(float startX, float wantY, string name)
 		{
 			//out of drawing area
 			if (startX < -64 || wantY < -spacing) 
 				return -1f;
 
-			var position = (int)(wantY / spacing);	//the cell of the text it wants in
-			if (position > alignedTextY.Length) 
-				return wantY;	//position is larger than the number of cells
+			var desiredPositionY = (int)(wantY / spacing);	// The positionY of the ideal row for the text.
+			if (desiredPositionY > alignedTextY.Length) 
+				return wantY;	// positionY drops off bottom of canvas
 
 			var endX = startX + name.Length * trainFont.Size;
-			int desiredPosition = position;
-			while (position < alignedTextY.Length && position >= 0)
+			int positionY = desiredPositionY;
+			while (positionY < alignedTextY.Length && positionY >= 0)
 			{
 				//if the line contains no text yet, put it there
-				if (alignedTextNum[position] == 0)
+				if (alignedTextNum[positionY] == 0)
 				{
-					alignedTextY[position][alignedTextNum[position]].X = startX;
-					alignedTextY[position][alignedTextNum[position]].Y = endX;	//add info for the text (i.e. start and end location)
-					alignedTextNum[position]++;
-					return position * spacing;
+					alignedTextY[positionY][alignedTextNum[positionY]].X = startX;
+					alignedTextY[positionY][alignedTextNum[positionY]].Y = endX;	//add info for the text (i.e. start and end location)
+					alignedTextNum[positionY]++;
+					return positionY * spacing;
 				}
 
 				bool conflict = false;
 				//check if it is intersect any one in the cell
-				foreach (Vector2 v in alignedTextY[position])
+				foreach (Vector2 v in alignedTextY[positionY])
 				{
 					//check conflict with a text, v.x is the start of the text, v.y is the end of the text
 					if ((startX > v.X && startX < v.Y) || (endX > v.X && endX < v.Y) || (v.X > startX && v.X < endX) || (v.Y > startX && v.Y < endX))
@@ -2615,24 +2618,26 @@ namespace Orts.Viewer3D.Debugging
 				}
 				if (conflict == false) //no conflict
 				{
-					if (alignedTextNum[position] >= alignedTextY[position].Length) 
+					if (alignedTextNum[positionY] >= alignedTextY[positionY].Length) 
 						return -1f;
-					alignedTextY[position][alignedTextNum[position]].X = startX;
-					alignedTextY[position][alignedTextNum[position]].Y = endX;	//add info for the text (i.e. start and end location)
-					alignedTextNum[position]++;
-					return position * spacing;
+					alignedTextY[positionY][alignedTextNum[positionY]].X = startX;
+					alignedTextY[positionY][alignedTextNum[positionY]].Y = endX;	//add info for the text (i.e. start and end location)
+					alignedTextNum[positionY]++;
+					return positionY * spacing;
 				}
-				position--;
-				//cannot move up, then try to move it down
-				if (position - desiredPosition < -1)
+				positionY--;
+				// Tried 0, -1, -2
+				// Cannot move up (-ve Y), then try to move it down (+ve Y)
+				if (positionY - desiredPositionY < -1)
 				{
-					position = desiredPosition + 2;
+					// Try +2 then +1
+					positionY = desiredPositionY + 2;
 				}
-				//could not find any position up or down, just return negative
-				if (position == desiredPosition) 
+				//could not find any positionY up or down, just return negative
+				if (positionY == desiredPositionY) 
 					return -1f;
 			}
-			return position * spacing;
+			return positionY * spacing;
 		}
 		#endregion
 	}
