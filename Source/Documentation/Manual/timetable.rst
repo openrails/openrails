@@ -55,11 +55,30 @@ The saved ``*.csv`` files must be renamed with the extension ``*.timetable-or``.
 The timetable files must be placed in a subdirectory named ``OpenRails`` created 
 in the route's ``Activities`` directory.
 
+Timetable groups
+----------------
+
+Multiple timetables can be loaded simultaneously using timetable group files.
+A group file is a plain text file, also located in the ``OpenRails`` subdirectory 
+of the route's ``Activities`` directory, that contains the filenames of one or 
+more timetable files listed on each line. The first line may also start with a
+``#`` symbol, in which case the text that follows will be used as the timetable 
+group's display name in the Open Rails menu.
+
+Here is an example of a timetable group file::
+
+    #All Northeast Corridor Services - Fri Aug 2018
+    Amtrak - Fri Aug 2018.timetable-or
+    MARC Camden Line - Fri Aug 2018.timetable-or
+    MARC Penn Line - Fri Aug 2018.timetable-or
+    SEPTA Wilmington-Newark - Fri Aug 2018.timetable-or
+
 File and train selection
 ------------------------
 
 When starting a timetable run, the mode *Timetable* is selected in the menu. The 
-desired timetable file must then be selected in the *Timetable set* display.
+desired timetable file or timetable group file must then be selected in the 
+*Timetable set* display.
 
 After selecting the required timetable, a list of all trains contained in that 
 timetable is displayed and the required train can be selected.
