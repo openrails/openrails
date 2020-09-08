@@ -1880,6 +1880,317 @@ Known Problems
   the Paths directory does not exist, the program will not be able to load any 
   paths.
 
+Storing Trains with Pools
+=========================
+
+Pools can be used to store trains before or in between active duties, or when 
+all duties have been performed. Trains can be defined to be placed in a pool at 
+the start of the timetable. When required, the train can be extracted from the 
+pool. When the duty has terminated, the train can be returned to the pool.
+There is no need to define the exact storage of the train, nor is there need to 
+sort out the various duties so as to avoid trains being locked in by other 
+trains which are only required at a later time. When using pools, the system 
+will take care of actual storage location and will select the first available 
+train when a train is required.
+
+A pool will consist of one or more tracks which are used to stable the trains. 
+Access tracks must also be defined. (For details, see below.) A special type of 
+pool is the turntable pool. In a turntable pool, all storage tracks are 
+connected to a turntable. The access paths are also connected to the turntable. 
+When extracting or storing a train, the train will run unto the turntable and 
+the turntable, with the train on it, will be turned to the required position.
+
+Pools can be used for both AI and player trains. When a train which is extracted 
+from a pool is selected as the player train, the first available train will be 
+selected and set as player train. When a train which is the player train is send 
+to a pool, the train will terminate in the pool. The player can remain with the 
+train until its next duty, but there is no way to tell what or when that duty 
+will be, as that depends on other actions set up for that pool.
+
+Additional Notes
+----------------
+
+A pool can only contain trains which are equivalent in usage. The trains need 
+not all be same type, but their use must be exchangeable. It is not possible to 
+select a specific type of train from a pool.
+
+Attach, detach or transfer is not possible for trains stored in a pool. Only 
+fixed formations (single or multiple engines, or MU’s) can be extracted from or 
+send to a pool. If multiple units are required, these must be extracted 
+separately and coupled together after exiting from the pool. If multiple units 
+are to be sent to a pool these must be detached before send to the pool. As 
+attach, detach or transfers are not possible, pools can only be used by engines 
+and MU’s, i.e. for units which can move on their own. Pools can not be used for 
+coaches and wagons or trains without power.
+
+Pool "overflow" can occur when a train is send to a pool but the storage area is 
+full to capacity. In this situation, the train will terminate at the access 
+point to the pool, and will be removed.
+
+.. _pool-underflow:
+
+Pool "underflow" can occur when a train is requested from a pool but the storage 
+area is empty and no units are available. In this situation, if the flag "force 
+creation" is set for this pool, the train will be created and will start at the 
+access point. If this flag is not set, the train is cancelled. A warning is 
+issued to the logfile in case of pool underflow.
+
+Pool Definition
+===============
+
+Pools are defined in a file similar to a timetable file, i.e. a csv spreadsheet 
+saved as a unicode text file. The files must be stored in the same directory as 
+the timetable files (``<route>\Activities\OpenRails``).
+
+The layout of a pool file is considerably different compared to that of a 
+timetable file. All parameters are located in the first column, and only one 
+value may be defined per row. The very first row is ignored.
+
+The file extension for normal pools is ``.pool-or``; for turntable pools it is 
+``.turntable-or``.
+
+A file can repeat parameters to define multiple pools, which need not be related 
+in any way.
+
+Note that there are some key differences between non-turntable pools and 
+turntable pools:
+
+* For non-turntable pools, each storage path must have at least one access 
+  path; for turntable pools, access paths are independent of the storage paths.
+
+* For non-turntable pools, storage paths are defined in the outbound direction; 
+  for turntable pools, storage paths are defined as leading away from the 
+  turntable, i.e. in the inbound direction.
+
+Non-Turntable Pools
+-------------------
+
+Parameters for non-turntable pools:
+
+``#comment``
+
+    Comment only, value is ignored.
+
+``#name``
+
+    Name of the pool. This is the name which must be used in the timetable 
+    ``$pool`` commands for creating, extracting or storing trains for this pool. 
+    This field is compulsory, and *must precede all other parameters*.
+
+``#storage``
+
+    A path that defines a storage track. At least one storage track must be 
+    defined for a pool.
+    
+    The path must be defined in the *outbound* direction, that is, the direction 
+    of the train when it leaves the pool.
+    
+    A storage path can only be a single section; it cannot pass over switches 
+    or crossings.
+
+``#access``
+
+    A path that defines access to a storage track. Each storage track 
+    definition must be followed by one or more access path definitions.
+    
+    The path must be defined in the *outbound direction*, that is, the 
+    direction of the train when it leaves the pool.
+    
+    An access path can pass over switches or crossings but can not contain any 
+    reversal points.
+
+``#maxunits``
+
+    For each storage track, the maximum number of units which can be stored on 
+    that track can be defined. This field is optional.
+    
+    Note that this defines only the maximum number of units. The effective 
+    number may be less if the length of the storage track is not sufficient to 
+    hold this number of units.
+
+.. _pool-cmd-settings:
+
+``#settings``
+
+    Contains special flags for pool usage. Currently, only one value is 
+    allowed: ``force creation``, which forces trains to spawn on the access 
+    point if the pool is :ref:`underflowing <pool-underflow>`.
+
+Additional Notes
+''''''''''''''''
+
+It is not possible to define "run-through" storage areas. Access paths to 
+storage tracks can only be defined at one end of the storage track, and trains 
+will always enter and exit the pool at the same end.
+
+Although each storage path has its own access path(s), it is advisable that all 
+access paths end at the same point, such that all storage tracks are accessible 
+from that location. It is possible to have multiple access points but then it 
+is still advisable that all storage paths can be reached from all points.
+
+If only part of the storage paths can be accessed from an access point, there 
+is a risk that the trains can not be spread adequately over the full storage 
+area. Worst case, if all trains are always send to one access point and always 
+extracted from another access point and these points do not access all storage 
+tracks, there may be a continuous series of pool "overflow" and "underflow" as 
+the engines send to the pool can not be extracted.
+
+Turntable Pools
+---------------
+
+Parameters for turntable pools:
+
+``#comment``
+
+    Comment only, value is ignored.
+
+``#name``
+
+    Name of the pool. This is the name which must be used in the timetable 
+    ``$pool`` commands for creating, extracting or storing trains for this pool. 
+    This field is compulsory, and *must precede all other parameters*.
+
+``#worldfile``
+
+    The filename of the world file in which the turntable is located.
+
+``#uid``
+
+    The uid of the turntable in the worldfile. Together with #worldfile, this 
+    defines the turntable on which the pool is based.
+    
+    The ``#worldfile`` and ``#uid`` values must be the same as the related 
+    values in the turntable.dat file which defines the working timetables.
+
+``#storage``
+
+    A path that defines a storage track. This path must be defined in the 
+    direction *leading away from the turntable*. At least one storage track 
+    must be defined.
+    
+    The start position of the path must be outside the turntable area. A 
+    storage path can only be a single section; it cannot pass over switches or 
+    crossings.
+
+``#access``
+
+    A path that defines access to a storage track. This path must be defined 
+    in the direction *leading away from the turntable*. At least one access 
+    path must be defined. The access path is not linked to a specific storage 
+    track but applies to all storage tracks as these are always accessed via 
+    the turntable.
+    
+    The start position of the path must be outside the turntable area. The path 
+    can pass over switches or crossings but can not contain any reversal points.
+
+``#maxunits``
+
+    For each storage track, the maximum number of units which can be stored on 
+    that track can be defined. This field is optional.
+    
+    Note that this defines only the maximum number of units. The effective 
+    number may be less if the length of the storage track is not sufficient to 
+    hold this number of units.
+
+``#speedmph`` and ``#speedkph``
+
+    These parameters define the maximum speed of train when accessing the 
+    turntable, in mph or kph. This speed will also apply to the storage tracks.
+    
+    On exiting on the turntable on access paths, the train will automatically 
+    revert to the maximum speed which applied on the approach to the turntable.
+    
+    With these commands, there is no need to place speedposts in the route to 
+    limit the speed on the turntable.
+
+``#framerate``
+
+    This parameter defines the frame rate for turning the turntable. See 
+    :ref:`pool-turntable-framerate` for details.
+
+``#settings``
+
+    Equivalent to the non-turntable pool :ref:`command <pool-cmd-settings>` of 
+    the same name.
+
+Using the Turntable
+'''''''''''''''''''
+
+**Do not at any time move the turntable using manual controls.**
+
+When the player train is extracted from the pool, the turntable will turn to 
+the required position. The player train can either wait or move slowly toward 
+the turntable. When the player train approaches the turntable on an access path 
+and the turntable is not in the required position, stop just short of the 
+turntable and wait until the table is in position. There will be a screen 
+notification when the turntable is ready.
+
+When moving onto the turntable, proceed until the engine is fully positioned on 
+the turntable. There will be a screen notification when the engine is correctly 
+positioned.
+
+When the engine is positioned, set the throttle to 0% and set the reverser to 
+neutral (or 0% for steam engines). The turntable will start to move when both 
+conditions are met. Do not move the engine while the table is turning.
+
+When the turntable is in the required position, the train can be moved off the 
+table.
+
+AI Turntable Behavior
+'''''''''''''''''''''
+
+The turntable will always move to the required position over the shortest angle.
+
+When a train requests the turntable but the turntable is already activated or 
+occupied by another train, the request is queued. The turntable is released when 
+the occupying engine moves off the turntable and is a short distance clear of 
+it. If no other requests are queued, the turntable will remain in that position 
+until the next request.
+
+When an AI train approaches the turntable on an access path and the turntable 
+is not in the required position, the train will stop just short of the 
+turntable and will request the turntable to move to that position.
+
+When an AI train is requested to exit from a storage track and the turntable is 
+not in that position, it will request the turntable to move but will not start 
+to move toward the turntable until the turntable is in position.
+
+Turntable Paths
+'''''''''''''''
+
+The Track Viewer will show paths leading through the turntable. Turntable paths, 
+however, must not pass through the actual turntable itself, but rather start 
+outside the turntable area, as shown in this image:
+
+.. image:: images/turntable-paths.jpg
+
+It is advisable to have separate access paths for extracting trains from the 
+pool and sending trains to the pool, especially if the turntable is shared by 
+multiple pools. Otherwise, if a train is send to the turntable at approximately 
+the same time as another is extracted, there is a risk of a deadlock situation. 
+The program cannot resolve this, as it cannot see that both trains are bound to 
+proceed onto the same track while the train that is being extracted is still 
+waiting for the turntable or is being turned.
+
+.. _pool-turntable-framerate:
+
+Turntables and Frame Rate
+'''''''''''''''''''''''''
+
+Normally, the turntable frame rate (speed at which the table rotates) is taken 
+from the shape file of the turntable.
+
+However, as AI trains can use a turntable anywhere on a route, it may be that 
+the shape file of a particular turntable which is not in view has not been 
+loaded, and therefor the frame rate can not be derived in that way. The value 
+as defined for the pool is used as substitute.
+
+If at any time the turntable is used when its shape file is loaded, this 
+substitute value is replaced by the value as defined in the shape file. 
+One frame per second relates to a rotation speed of 0.1 degrees per second. 
+This parameter is optional. If not defined, a default value of 30 frames per 
+second is used, which gives a default rotation speed of 3 degrees per second.
+
 Example of a Timetable File
 ===========================
 
