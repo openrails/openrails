@@ -38,8 +38,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         TrainCar Car;
         float HandbrakePercent;
         float CylPressurePSIA;
-        float BrakeCutOffPSIA;
-        float BrakeRestorePSIA; 
+        // Commented out as never used
+        //float BrakeCutOffPSIA;
+        //float BrakeRestorePSIA; 
         float VacResPressurePSIA;  // vacuum reservior pressure with piston in released position
         // defaults based on information in http://www.lmsca.org.uk/lms-coaches/LMSRAVB.pdf
         public int NumBrakeCylinders = 2;

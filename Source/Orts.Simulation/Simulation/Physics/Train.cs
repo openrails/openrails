@@ -4912,8 +4912,6 @@ namespace Orts.Simulation.Physics
 
                     if (car.SmoothedCouplerForceUN < 0) // Tension
                     {
-                        int Loop = 0;
-
                         if (!IsRigidCoupler)
                         {
 
@@ -4926,10 +4924,7 @@ namespace Orts.Simulation.Physics
                                 {
                                     car.CouplerSlackM = car.PreviousCouplerSlackM - TempDiff;
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 1;
                                 }
-
-//                                Trace.TraceInformation("Tension Slack -ve : CarID {0} Force {1} Slack {2} PrevSlack {3} TempDiff {4}", car.CarID, car. , car.CouplerSlackM, car.PreviousCouplerSlackM, TempDiff);
                             }
                             else if (FirstCar.SpeedMpS < 0 && LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && LastCar.SpeedMpS <= LastCarZeroSpeedMpS && LeadLocomotive.Direction == Direction.Reverse)
                             {
@@ -4939,13 +4934,11 @@ namespace Orts.Simulation.Physics
                                     car.CouplerSlackM = car.PreviousCouplerSlackM;
                                     car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, car.CouplerSlackM, 0);
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 2;
                                 }
                                 else if (IndividualCouplerSlackM < MaxZ1CompressionM)
                                 {
                                     car.CouplerSlackM = MaxZ1CompressionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 3;
                                 }
                             }
 
@@ -4969,39 +4962,28 @@ namespace Orts.Simulation.Physics
                                             // Train is starting, don't allow coupler slack to decrease untill complete train is moving
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 4;
                                         }
                                         else if (ComputedZone2SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
                                             // Allow coupler slack to slowly increase
-                                            // Increase slack value
                                             car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
                                             car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                             car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 5;
                                         }
                                     }
-                                 //   else if (ComputedZone2SlackM < IndividualCouplerSlackM)
                                     else if (ComputedZone2SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                     {
                                         // Once train is moving then allow gradual reduction in coupler slack
-                                    //    car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
-                                                  car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
+                                        car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 7;
                                     }
                                     else
-                             //       else if (ComputedZone2SlackM > IndividualCouplerSlackM)
                                     {
                                         // If train moving then allow coupler slack to increase depending upon the caclulated slack
-                                    //    car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 8;
                                     }
-
-                                 //   Trace.TraceInformation("Zone 2 Tension - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ2 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM, MaxZ2TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                 }
                                 else
                                 {
@@ -5018,7 +5000,6 @@ namespace Orts.Simulation.Physics
                                         {
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 9;
                                         }
                                         else if (ComputedZone3SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
@@ -5028,31 +5009,22 @@ namespace Orts.Simulation.Physics
                                                     car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
                                                     car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                                    Loop = 10;
-    
                                         }
                                     }
-                                   // else if (ComputedZone3SlackM < IndividualCouplerSlackM)
                                     else if (ComputedZone3SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                     {
                                         // Decrease coupler slack - moving
                                         // car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 12;
                                     }
                                     else
-                               //     else if (ComputedZone3SlackM > IndividualCouplerSlackM)
                                     {
                                         // Allow coupler slack to be increased - moving
                                         car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
-                                    //    car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 13;
                                     }
-
-                                 //   Trace.TraceInformation("Zone 3 Tension - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ3 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM, MaxZ3TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                 }
                             }
                             else if (IndividualCouplerSlackM > MaxZ3TensionM)  // Make sure that a new computed slack value does not take slack into the next zone.
@@ -5062,7 +5034,6 @@ namespace Orts.Simulation.Physics
                                 {
                                     car.CouplerSlackM = MaxZ3TensionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 17;
                                 }
                                 else
                                 {
@@ -5078,31 +5049,25 @@ namespace Orts.Simulation.Physics
                                         car.CouplerSlackM = ComputedZone4SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 14;
                                     }
                                     else if (ComputedZone4SlackM > MaxZ3TensionM)
                                     {
                                         car.CouplerSlackM = MaxZ3TensionM * AdvancedCouplerDuplicationFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 15;
                                     }
                                     else if (ComputedZone4SlackM < MaxZ3TensionM && ComputedZone4SlackM < car.PreviousCouplerSlackM / AdvancedCouplerDuplicationFactor)
                                     {
                                         // Decrease coupler slack
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 16;
                                     }
                                 }
                             }
- //                          Trace.TraceInformation("Zone Tension - ID {0} SmoothForce {1} CouplerForceN {2} Slack {3} Speed {4} Loop {5}", car.CarID, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, car.SpeedMpS, Loop);
                         }
                     }
 
                     else if (car.SmoothedCouplerForceUN == 0) // In this instance the coupler slack must be greater then the Z1 limit, as no coupler force is generated, and train will not move.
                     {
-                        int Loop = 0;
-
                         if (car.SpeedMpS == 0)
                         {
                             // In this instance the coupler slack must be greater then the Z1 limit, otherwise no coupler force is generated, and train will not move.
@@ -5115,7 +5080,6 @@ namespace Orts.Simulation.Physics
                                 car.CouplerSlackM = car.PreviousCouplerSlackM;
                                 // Make sure that coupler slack never goes negative when train starting and moving forward and starting
                                 car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, car.CouplerSlackM);
-                                Loop = 1;
                             }
                             else if (car.CouplerSlackM > 0 && LastCar.SpeedMpS <= 0 && LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && FirstCar.SpeedMpS < 0)
                             {
@@ -5123,17 +5087,11 @@ namespace Orts.Simulation.Physics
                                 car.CouplerSlackM = car.PreviousCouplerSlackM;
                                 // Make sure that coupler slack never goes positive when train starting and moving reverse and starting
                                 car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, car.CouplerSlackM, 0);
-                                Loop = 2;
                             }
                         }
-
-//                        if (car.SpeedMpS != 0)
-//                            Trace.TraceInformation("Advanced - Zero coupler force - CarID {0} Slack {1} Loop {2} Speed {3} Previous {4}", car.CarID, car.CouplerSlackM, Loop, car.SpeedMpS, car.PreviousCouplerSlackM);
                     }
                     else   // Compression
                     {
-                        int Loop = 0;
-
                         if (!IsRigidCoupler)
                         {
                             if (IndividualCouplerSlackM > 0 && FirstCar.SpeedMpS < 0 && LastCar.SpeedMpS <= LastCarZeroSpeedMpS && LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && LeadLocomotive.Direction == Direction.Reverse)
@@ -5144,7 +5102,6 @@ namespace Orts.Simulation.Physics
                                 {
                                     car.CouplerSlackM = -1.0f * Math.Abs(car.PreviousCouplerSlackM) - TempDiff;
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 1;
                                 }
                             }
                             else if (FirstCar.SpeedMpS > 0 && LastCar.SpeedMpS >= LastCarZeroSpeedMpS && LastCar.SpeedMpS < LastCarTensionMoveSpeedMpS && LeadLocomotive.Direction == Direction.Forward)
@@ -5155,18 +5112,15 @@ namespace Orts.Simulation.Physics
                                     car.CouplerSlackM = car.PreviousCouplerSlackM;
                                     car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, car.CouplerSlackM);
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 2;
                                 }
                                 else if (IndividualCouplerSlackM > MaxZ1TensionM)
                                 {
                                     car.CouplerSlackM = MaxZ1TensionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 3;
                                 }
                             }
                             else if (MaxZ3CompressionM < IndividualCouplerSlackM && IndividualCouplerSlackM <= MaxZ1CompressionM)
                             {
-
                                 // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
                                 //These values are set to "lock" the coupler at this maximum slack length
 
@@ -5178,23 +5132,18 @@ namespace Orts.Simulation.Physics
 
                                     if (LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && LastCar.SpeedMpS <= LastCarZeroSpeedMpS)
                                     {
-
                                         if (ComputedZone2SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                         {
                                             // Train is starting, don't allow coupler slack to decrease until complete train is moving
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 4;
                                         }
                                         else if (ComputedZone2SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
-                                            // Allow coupler slack to slowly increase
-    
-                                                    // Increase coupler slack slowly
-                                                    car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
-                                                    car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
-                                                    car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                                    Loop = 5;                                                
+                                            // Increase coupler slack slowly
+                                            car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
+                                            car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
+                                            car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
                                         }
                                     }
                                     else if (ComputedZone2SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
@@ -5202,19 +5151,14 @@ namespace Orts.Simulation.Physics
                                         // Once train is moving then allow gradual reduction in coupler slack
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 7;
                                     }
                                     else
-      //                              else if (ComputedZone2SlackM > Math.Abs(IndividualCouplerSlackM))
                                     {
                                         // If train moving then allow coupler slack to increase slowly depending upon the caclulated slack
                                         car.CouplerSlackM = -1.0f * ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 8;
                                     }
-
-                              //   Trace.TraceInformation("Zone 2 Compression - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ2 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM, MaxZ2TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                 }
                                 else
                                 {
@@ -5231,7 +5175,6 @@ namespace Orts.Simulation.Physics
                                         {
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 9;
                                         }
                                         else if (ComputedZone3SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
@@ -5239,25 +5182,20 @@ namespace Orts.Simulation.Physics
                                             car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
                                             car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                             car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 10;
                                         }
-                                    //   Trace.TraceInformation("Zone 3 Compression - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ2 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM, MaxZ2TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                     }
                                     else if (ComputedZone3SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                     {
                                         // Train moving - Decrease slack if Computed Slack is less then the previous slack value
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 12;
                                     }
                                     else
-                    //                else if (ComputedZone3SlackM > IndividualCouplerSlackM)
                                     {
                                         // Train moving - Allow coupler slack to be slowly increased if it is not the same as the computed value
                                         car.CouplerSlackM = -1.0f * ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 13;
                                     }
                                 }
                             }
@@ -5270,11 +5208,9 @@ namespace Orts.Simulation.Physics
                                     // Train starting - limit slack to maximum
                                     car.CouplerSlackM = MaxZ3CompressionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 17;
                                 }
                                 else
                                 {
-
                                     // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
                                     //These values are set to "lock" the coupler at this maximum slack length
                                     float SlackDiff = Math.Abs(MaxZ3CompressionM - MaxZ2CompressionM);
@@ -5286,29 +5222,22 @@ namespace Orts.Simulation.Physics
                                         car.CouplerSlackM = -1.0f * ComputedZone4SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 14;
                                     }
                                     else if (ComputedZone4SlackM > Math.Abs(MaxZ3CompressionM))
                                     {
                                         car.CouplerSlackM = MaxZ3CompressionM * AdvancedCouplerDuplicationFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 15;
                                     }
                                     else if (ComputedZone4SlackM < Math.Abs(MaxZ3CompressionM) && ComputedZone4SlackM < Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                     {
                                         // Decrease coupler slack
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 16;
                                     }
                                 }
                             }
-
-//                        if (car.SpeedMpS < 0)
-//                            Trace.TraceInformation("Zone Compression - ID {0} SmoothForce {1} CouplerForceN {2} Slack {3} Speed {4} Loop {5} ", car.CarID, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, car.SpeedMpS, Loop);
                         }
                     }
-
                 }
                 else  // Update couplerslack2m which acts as an upper limit in slack calculations for the simple coupler
                 {
@@ -5333,7 +5262,6 @@ namespace Orts.Simulation.Physics
                             car.CouplerSlack2M = maxs;
                     }
                 }
-
                 car.PreviousCouplerSlackM = car.CouplerSlackM;
             }
         }

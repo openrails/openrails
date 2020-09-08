@@ -478,11 +478,12 @@ namespace Orts.Simulation.RollingStocks
         public float LogSteamChestPressurePSI;
 
         // Values for Steam Cylinder events
-        float ValveTravel = 10.8268f;
-        float ValveLead = 0.275591f;
-        float ValveExhLap = 0.708661f;
-        float ValveSteamLap;
-        double ValveAdvanceAngleDeg;
+        // Commented out as never used
+        //float ValveTravel = 10.8268f;
+        //float ValveLead = 0.275591f;
+        //float ValveExhLap = 0.708661f;
+        //float ValveSteamLap;
+        //double ValveAdvanceAngleDeg;
 
         public float LogLPInitialPressurePSI;
         public float LogLPCutoffPressurePSI;

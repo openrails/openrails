@@ -201,10 +201,11 @@ namespace Orts.Simulation.RollingStocks
         public float CalculatedCarHeaterSteamUsageLBpS;
 
         // Adhesion Debug
-        bool DebugSpeedReached;
-        float DebugSpeedIncrement = 5.0f; // Speed increment for debug display - in mph
-        float DebugSpeed = 5.0f; // Initialise at 5 mph
-        float DebugTimer = 0.0f;
+        // Commented out as never used
+        //bool DebugSpeedReached;
+        //float DebugSpeedIncrement = 5.0f; // Speed increment for debug display - in mph
+        //float DebugSpeed = 5.0f; // Initialise at 5 mph
+        //float DebugTimer = 0.0f;
 
         // Adhesion parameters
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
