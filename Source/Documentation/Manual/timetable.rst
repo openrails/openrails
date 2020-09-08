@@ -2108,6 +2108,20 @@ Parameters for turntable pools:
     This parameter defines the frame rate for turning the turntable. See 
     :ref:`pool-turntable-framerate` for details.
 
+``#approachclearance``
+
+    This parameter sets the distance, in meters, at which the engine will stop 
+    in front of the turntable when it approaches the turntable but has to wait 
+    for turntable to align. It is also the distance at which the restricted 
+    turntable speed is applied.
+
+``#releaseclearance``
+
+    This parameter sets the distance, in meters, at which the turntable will be 
+    released after the engine has moved off of the turntable. This is also the 
+    distance at which the turntable speed restriction will be lifted if the 
+    engine is leaving the pool.
+
 ``#settings``
 
     Equivalent to the non-turntable pool :ref:`command <pool-cmd-settings>` of 
