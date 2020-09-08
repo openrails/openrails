@@ -82,6 +82,7 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> WagonSmoke = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> HeatingSteamBoiler = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> BearingHotBox = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SteamBrake = new List<ParticleEmitterViewer>();
 
         // Create viewers for special steam effects on car
         List<ParticleEmitterViewer> WagonGenerator = new List<ParticleEmitterViewer>();
@@ -210,6 +211,14 @@ namespace Orts.Viewer3D.RollingStock
                     TenderWaterOverflow.AddRange(emitter.Value);
 
                 foreach (var drawer in TenderWaterOverflow)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                if (emitter.Key.ToLowerInvariant() == "steambrakefx")
+                    SteamBrake.AddRange(emitter.Value);
+
+                foreach (var drawer in SteamBrake)
                 {
                     drawer.Initialize(steamTexture);
                 }
@@ -624,6 +633,12 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in BearingHotBox)
             {
                 drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
+            }
+
+            // Steam Brake effects
+            foreach (var drawer in SteamBrake)
+            {
+                drawer.SetOutput(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksVolumeM3pS, car.SteamBrakeLeaksDurationS);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)

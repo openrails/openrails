@@ -44,6 +44,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         float ManualMaxApplicationRateValuepS;
         float ManualBrakingDesiredFraction;
         float ManualBrakingCurrentFraction;
+        float SteamBrakeCompensation;
 
         public override bool GetHandbrakeStatus()
         {
@@ -91,7 +92,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float BrakemanBrakeSettingValue = 0;
             float EngineBrakeSettingValue = 0;
             ManualBrakingDesiredFraction = 0;
-            float SteamBrakeCompensation = 1.0f;
+            SteamBrakeCompensation = 1.0f;
 
             if (Car.WagonType == MSTSWagon.WagonTypes.Freight || Car.WagonType == MSTSWagon.WagonTypes.Passenger) // Car brakes
             {
@@ -198,7 +199,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 return new string[] {
                 DebugType,
-                string.Format("{0:F0} %", ManualBrakingCurrentFraction),
+                string.Format("{0:F0} %", ManualBrakingCurrentFraction * SteamBrakeCompensation),
                 string.Empty,
                 string.Empty,
                 string.Empty,
