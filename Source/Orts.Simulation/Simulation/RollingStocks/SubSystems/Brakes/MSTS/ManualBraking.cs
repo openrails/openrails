@@ -84,6 +84,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 DebugType = "M";
             else
                 DebugType = "-";
+
+            // Changes brake type if locomotive fitted with steam brakes
+            if (Car is MSTSSteamLocomotive)
+            {
+                var locoident = Car as MSTSSteamLocomotive;
+                if (locoident.SteamEngineBrakeFitted)
+                {
+                    DebugType = "S";
+                }
+            }
+
         }
 
         public override void Update(float elapsedClockSeconds)
