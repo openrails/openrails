@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2020-08-29 03:09:44+0300\n"
-"PO-Revision-Date: 2020-08-29 03:58+0300\n"
+"PO-Revision-Date: 2020-08-30 13:55+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -949,7 +949,7 @@ msgstr "Двери открыты"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:496
 msgid "MultiPlayerStatus: "
-msgstr "Состояние мультиплеера: "
+msgstr "Роль в мультиплеере: "
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:497
 msgid "Dispatcher"
@@ -1260,7 +1260,7 @@ msgstr "Торм.сила на ободе"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:804
 msgid "Number of substeps"
-msgstr "Промежуточн.ступерей"
+msgstr "Промежут.ступеней"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:806
 msgid "Solver"
@@ -2064,10 +2064,8 @@ msgstr "ВСТОРМ"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:594
-#, fuzzy
-#| msgid "Engine brake"
 msgid "Engine"
-msgstr "Независ. тормоз"
+msgstr "Мотор"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
 msgid "ENGN"
@@ -2151,10 +2149,8 @@ msgstr "РЕВЕРС"
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:319
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:329
-#, fuzzy
-#| msgid "Sander on"
 msgid "Sander"
-msgstr "Пескоподача включена"
+msgstr "Песочница"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
 msgid "SAND"
@@ -2189,10 +2185,8 @@ msgstr "АТОРМ"
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:675
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:683
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:691
-#, fuzzy
-#| msgid "Wheels"
 msgid "Wheel"
-msgstr "Кол.формула"
+msgstr "Колесо"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
 msgid "WHEL"
