@@ -752,7 +752,7 @@ namespace Orts.Viewer3D.Popups
                 TableSetCells(table, 0,
                 Viewer.Catalog.GetString("Car"),
                 Viewer.Catalog.GetString("Type"),
-                Viewer.Catalog.GetString("Brk%"),
+                Viewer.Catalog.GetString("Brk"),
                 Viewer.Catalog.GetString(""),
                 Viewer.Catalog.GetString(""),
                 Viewer.Catalog.GetString(""),
