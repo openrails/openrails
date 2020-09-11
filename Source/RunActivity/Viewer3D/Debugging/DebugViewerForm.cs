@@ -102,10 +102,34 @@ namespace Orts.Viewer3D.Debugging
 	   //the train selected by leftclicking the mouse
 	public Train PickedTrain;
 
-      /// <summary>
-      /// Defines the area to view, in meters. The left edge is meters from the leftmost extent of the route.
-      /// </summary>
-      private RectangleF ViewWindow;
+		// Note +ve pixels draw down from top, but +ve metres draw up from the bottom
+		//
+		// |-------- subX ---------->|           ViewWindow                
+		//                           +--------------------------------+             
+		//                           |                                |      
+		//                           |                                |           
+		//                           |                                |         
+		//                           |                                |       
+		//                  ==========                                |             ----   
+		//                  ===========\         Track Extent         |               ^
+		//                  ====================================================      |
+		//                           |                       \        |               |
+		//                           |                        ==================   -  |
+		//                           |                                |            ^  |
+		//                           |                                |            |   
+		//                           |                                |            | maxY
+		//                           +--------------------------------+              
+		//                                                                       minY |
+		// |----- minX --->|<- VW.X->|<------------ VW.Width -------->|               |
+		//                                                                         |  |
+		// |------------------------------ maxX -------------------------------->| |  |
+		//                                                                         |  |
+		// + 0,0 World origin                                                     ------
+
+		/// <summary>
+		/// Defines the area to view, in meters. The left edge is meters from the leftmost extent of the route.
+		/// </summary>
+		private RectangleF ViewWindow;
 
       /// <summary>
       /// Used to periodically check if we should shift the view when the
@@ -618,13 +642,13 @@ namespace Orts.Viewer3D.Debugging
       /// Regenerates the 2D view. At the moment, examines the track network
       /// each time the view is drawn. Later, the traversal and drawing can be separated.
       /// </summary>
-      public void GenerateView()
+      public void GenerateView(bool dragging = false)
       {
 		  if (!Inited) return;
 
 			if (simulator.TimetableMode)
 			{
-				GenerateTimetableView();
+				GenerateTimetableView(dragging);
 				return;
 			}
 
@@ -1419,13 +1443,14 @@ namespace Orts.Viewer3D.Debugging
          PointF center = new PointF(ViewWindow.X + ViewWindow.Width / 2f, ViewWindow.Y + ViewWindow.Height / 2f);
 
 
-         float newSize = (float)windowSizeUpDown.Value;
+         float newSizeH = (float)windowSizeUpDown.Value;
+			float verticalByHorizontal = ViewWindow.Height / ViewWindow.Width;
+			float newSizeV = newSizeH * verticalByHorizontal;
 
-         ViewWindow = new RectangleF(center.X - newSize / 2f, center.Y - newSize / 2f, newSize, newSize);
+		 ViewWindow = new RectangleF(center.X - newSizeH / 2f, center.Y - newSizeV / 2f, newSizeH, newSizeV);
 
 
          GenerateView();
-
       }
 
 
@@ -1676,29 +1701,34 @@ namespace Orts.Viewer3D.Debugging
 
 	  private void pictureBoxMouseMove(object sender, MouseEventArgs e)
 	  {
-		  if (Dragging&&!Zooming)
-		  {
-			  int diffX = LastCursorPosition.X - e.X;
-			  int diffY = LastCursorPosition.Y - e.Y;
+			if (simulator.TimetableMode)
+				TimetableDrag(sender, e);
+            else
+            {
+				if (Dragging && !Zooming)
+				{
+					int diffX = LastCursorPosition.X - e.X;
+					int diffY = LastCursorPosition.Y - e.Y;
 
-			  ViewWindow.Offset(diffX * ScrollSpeedX/10, -diffY * ScrollSpeedX/10);
-			  GenerateView();
-		  }
-		  else if (Zooming)
-		  {
-			  decimal tempValue = windowSizeUpDown.Value;
-			  if (LastCursorPosition.Y - e.Y < 0) tempValue /= 0.95m;
-			  else if (LastCursorPosition.Y - e.Y > 0) tempValue *= 0.95m;
+					ViewWindow.Offset(diffX * ScrollSpeedX / 10, -diffY * ScrollSpeedX / 10);
+					GenerateView();
+				}
+				else if (Zooming)
+				{
+					decimal tempValue = windowSizeUpDown.Value;
+					if (LastCursorPosition.Y - e.Y < 0) tempValue /= 0.95m;
+					else if (LastCursorPosition.Y - e.Y > 0) tempValue *= 0.95m;
 
-			  if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
-			  if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
-			  windowSizeUpDown.Value = tempValue;
-			  GenerateView();
+					if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
+					if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
+					windowSizeUpDown.Value = tempValue;
+					GenerateView();
 
-		  }
-		  LastCursorPosition.X = e.X;
-		  LastCursorPosition.Y = e.Y;
-	  }
+				}
+				LastCursorPosition.X = e.X;
+				LastCursorPosition.Y = e.Y;
+			}
+		}
 
 	  public bool AddNewMessage(double _, string msg)
 	  {
@@ -2212,13 +2242,14 @@ namespace Orts.Viewer3D.Debugging
 			windowSizeUpDown.Maximum = (decimal)maxSize;
 		}
 
-		public void GenerateTimetableView()
+		public void GenerateTimetableView(bool dragging = false)
         {
             AdjustControlLocations();
             ShowSimulationTime();
 
 			if (pbCanvas.Image == null)
 				InitImage();
+
 			using (Graphics g = Graphics.FromImage(pbCanvas.Image))
             {
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
@@ -2247,24 +2278,27 @@ namespace Orts.Viewer3D.Debugging
                 PointF scaledA, scaledB;
                 ShowTrack(g, p, out scaledA, out scaledB);
 
-                // Keep widgetWidth <= 15 pixels
-                var widgetWidth = Math.Min(penWidth * 6, 15);
+				if (dragging == false)
+				{
+					// Keep widgetWidth <= 15 pixels
+					var widgetWidth = Math.Min(penWidth * 6, 15);
 
-                // Draw switches
-                switchItemsDrawn.Clear();
-                ShowSwitches(g, widgetWidth);
+					// Draw switches
+					switchItemsDrawn.Clear();
+					ShowSwitches(g, widgetWidth);
 
-				// Draw sidings and platforms
-				CleanTextCells(); //clean the drawing area for text of sidings platforms and signal states
-                ShowSidings(g);
-                ShowPlatforms(g);
+					// Draw sidings and platforms
+					CleanTextCells(); //clean the drawing area for text of sidings platforms and signal states
+					ShowSidings(g);
+					ShowPlatforms(g);
 
-				// Draw signals
-				signalItemsDrawn.Clear();
-				ShowSignals(g, scaledB, widgetWidth);
+					// Draw signals
+					signalItemsDrawn.Clear();
+					ShowSignals(g, scaledB, widgetWidth);
 
-				// Draw trains
-				ShowTrains(g, scaledA, scaledB);
+					// Draw trains
+					ShowTrains(g, scaledA, scaledB);
+				}
             }
             pbCanvas.Invalidate(); // Triggers a re-paint
         }
@@ -2567,7 +2601,8 @@ namespace Orts.Viewer3D.Debugging
 		}
 
 		// The canvas is split into equally pitched rows. 
-		// Each row has an array of 5 StartX, EndX positions and a count of how many slots have been filled.
+		// Each row has an array of 4 slots with StartX, EndX positions and a count of how many slots have been filled.
+		// Arrays are used instead of lists to avoid delays for memory management.
 		private void CleanTextCells()
 		{
 			if (alignedTextY == null || alignedTextY.Length != pbCanvas.Height / spacing) //first time to put text, or the text height has changed
@@ -2582,6 +2617,7 @@ namespace Orts.Viewer3D.Debugging
 		}
 
 		// Returns a vertical position for the text that doesn't clash or returns -1
+		// If the preferred space for text is occupied, then the slot above (-ve Y) is tested, then 2 sltos above, then 1 below.
 		private float DetermineTextLocation(float startX, float wantY, string name)
 		{
 			//out of drawing area
@@ -2639,8 +2675,67 @@ namespace Orts.Viewer3D.Debugging
 			}
 			return positionY * spacing;
 		}
-		#endregion
-	}
+
+		private void TimetableDrag(object sender, MouseEventArgs e)
+		{
+			if (Dragging && !Zooming)
+            {
+                int diffX = e.X - LastCursorPosition.X;
+                int diffY = e.Y - LastCursorPosition.Y;
+
+                ClipDrag(diffX, diffY);
+                GenerateView(true);
+            }
+            else if (Zooming)
+			{
+				decimal tempValue = windowSizeUpDown.Value;
+				if (LastCursorPosition.Y - e.Y < 0) tempValue /= 0.95m;
+				else if (LastCursorPosition.Y - e.Y > 0) tempValue *= 0.95m;
+
+				if (tempValue < windowSizeUpDown.Minimum) tempValue = windowSizeUpDown.Minimum;
+				if (tempValue > windowSizeUpDown.Maximum) tempValue = windowSizeUpDown.Maximum;
+				windowSizeUpDown.Value = tempValue;
+				GenerateView(true);
+			}
+			LastCursorPosition.X = e.X;
+			LastCursorPosition.Y = e.Y;
+		}
+
+		/// <summary>
+		/// Provides a clip zone to stop user from pushing track fully out of window
+		/// </summary>
+		/// <param name="diffX"></param>
+		/// <param name="diffY"></param>
+		private void ClipDrag(int diffX, int diffY)
+        {
+			// Moving the mouse right means moving the ViewWindow left.
+            var changeXm = -(float)(diffX / xScale);
+			// Moving the mouse up means moving the ViewWindow up.
+			var changeYm = +(float)(diffY / yScale);
+
+            
+            const int clipPixels = 100;
+            var viewWindowLeftM = minX + ViewWindow.X;
+            var viewWindowRightM = minX + ViewWindow.X + ViewWindow.Width;
+            var bufferXm = clipPixels / xScale;
+            var viewWindowTopM = minY + ViewWindow.Y;
+            var viewWindowBottomM = minY + ViewWindow.Y + ViewWindow.Height;
+            var bufferYm = clipPixels / yScale;
+
+            if (viewWindowRightM + changeXm < minX + bufferXm) // drag right => -ve changeX
+                changeXm = +(minX + bufferXm - viewWindowRightM);
+            else if (viewWindowLeftM + changeXm > maxX - bufferXm)
+                changeXm = +(maxX - bufferXm - viewWindowLeftM);
+
+            if (viewWindowBottomM + changeYm < minY + bufferYm)
+                changeYm = minY + bufferYm - viewWindowBottomM;
+            else if (viewWindowTopM + changeYm > maxY - bufferYm)
+                changeYm = maxY - bufferYm - viewWindowTopM;
+
+            ViewWindow.Offset(changeXm, changeYm);
+        }
+        #endregion
+    }
 
 	#region SignalWidget
 	/// <summary>
