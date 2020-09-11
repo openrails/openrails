@@ -1073,6 +1073,15 @@ namespace Orts.Simulation.RollingStocks
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
 
+            // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
+            if (MassKG < Kg.FromTUS(20)) 
+            {
+                const float reductionfactor = 0.3f;
+                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
+                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
+                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
+            }
+
             #region Initialise additional steam properties
 
             WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
