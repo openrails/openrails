@@ -155,6 +155,9 @@ namespace Orts.Viewer3D.Debugging
         /// /// <param name="viewer"></param>
         public DispatchViewer(Simulator simulator, Viewer viewer)
         {
+			//CJ DEBUG
+			simulator.TimetableMode = true;
+
             InitializeComponent();
 
             if (simulator == null)
@@ -2108,8 +2111,22 @@ namespace Orts.Viewer3D.Debugging
 
         private void bBackgroundColor_Click(object sender, EventArgs e)
         {
+			// Can't just do this as the watchdog time trips and returns OR back to the Menu.exe.
+			//if (cdBackground.ShowDialog() == DialogResult.OK)
+			//{
+			//	pbCanvas.BackColor = cdBackground.Color;
+			//}
 
-        }
+			// As an alternative, cycle through 3 pale colours
+			if (pbCanvas.BackColor == Color.White)
+					pbCanvas.BackColor = Color.FromArgb(250, 240, 230);
+				else if (pbCanvas.BackColor == Color.FromArgb(250, 240, 230))
+					pbCanvas.BackColor = Color.FromArgb(252, 244, 238);
+				else if (pbCanvas.BackColor == Color.FromArgb(252, 244, 238))
+					pbCanvas.BackColor = Color.FromArgb(254, 248, 246);
+				else if (pbCanvas.BackColor == Color.FromArgb(254, 248, 246))
+					pbCanvas.BackColor = Color.White;
+		}
 
         private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
       {
@@ -2251,6 +2268,7 @@ namespace Orts.Viewer3D.Debugging
 			sidingBrush = new SolidBrush(Color.Blue);
 			PlatformBrush = new SolidBrush(Color.DarkBlue);
 			SignalBrush = new SolidBrush(Color.DarkRed);
+			pbCanvas.BackColor = Color.FromArgb(250, 240, 230);
 		}
 
 		private void AdjustControlLocations()
@@ -2300,7 +2318,7 @@ namespace Orts.Viewer3D.Debugging
 			using (Graphics g = Graphics.FromImage(pbCanvas.Image))
 			{
 				g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-				g.Clear(Color.White);
+				g.Clear(pbCanvas.BackColor);
 
 				// Set scales. subX & subY give top-left location in meters from world origin.
 				subX = minX + ViewWindow.X;
@@ -2604,8 +2622,9 @@ namespace Orts.Viewer3D.Debugging
 						if (x < -margin || y < -margin) 
 							continue;
 						scaledA.X = x; scaledA.Y = y;
-						
-						g.DrawLine(trainPen, scaledA, scaledTrain);
+
+						trainPen.Color = (car == firstCar) ? Color.FromArgb(0, 180, 0) : Color.DarkGreen;
+						g.DrawLine(trainPen, scaledA, scaledTrain);						
 					}
 				}
 				worldPos = firstCar.WorldPosition;
