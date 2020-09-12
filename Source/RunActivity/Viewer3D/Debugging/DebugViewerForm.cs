@@ -98,6 +98,7 @@ namespace Orts.Viewer3D.Debugging
 		Pen trainPen = new Pen(Color.DarkGreen);
 		Pen pathPen = new Pen(Color.DeepPink);
 		Pen grayPen = new Pen(Color.Gray);
+		Pen PlatformPen = new Pen(Color.Blue);
 
 	   //the train selected by leftclicking the mouse
 	public Train PickedTrain;
@@ -354,61 +355,29 @@ namespace Orts.Viewer3D.Debugging
 
 			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
 			{
-				switch (item.ItemType)
-				{
-					case TrItem.trItemType.trSIGNAL:
-						if (item is SignalItem)
-						{
-							SignalItem si = item as SignalItem;
-
-							if (si.SigObj >= 0 && si.SigObj < simulator.Signals.SignalObjects.Length)
-							{
-								SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
-								if (s != null && s.isSignal && s.isSignalNormal())
-									signals.Add(new SignalWidget(si, s));
-							}
-						}
-						break;
-
-					case TrItem.trItemType.trSIDING:
-						// Sidings have 2 ends. When 2nd one is found, then average the location.
-						var sidingFound = sidings.Find(r => r.Name == item.ItemName);
-						if (sidingFound.Name == null)
-							sidings.Add(new SidingWidget(item));
-						else
-							sidingFound.Location = GetMidPoint(sidingFound.Location, (int)(item.TileX * 2048 + item.X), (int)(item.TileZ * 2048 + item.Z));
-						break;
-
-					case TrItem.trItemType.trPLATFORM:
-						// Platforms have 2 ends. When 2nd one is found, then average the location.
-						var platformFound = platforms.Find(r => r.Name == item.ItemName);
-						if (platformFound.Name == null)
-							platforms.Add(new PlatformWidget(item));
-						else
-							platformFound.Location = GetMidPoint(platformFound.Location, (int)(item.TileX * 2048 + item.X), (int)(item.TileZ * 2048 + item.Z));
-						break;
-
-					default:
-						break;
-				}
-			}
-          return;
+				if (simulator.TimetableMode)
+					BuildTimetableListsOfItems(item);
+				else
+					BuildListsOfItems(item);
+            }
 	  }
 
-		/// <summary>
-		/// Returns the mid-point between one location and the coordinates for a second
-		/// </summary>
-		/// <param name="location"></param>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
-		private PointF GetMidPoint(PointF location, int x, int y)
-        {
-			return new PointF()
-				{ X = (location.X + x) / 2
-				, Y = (location.Y + y) / 2
-				};
-        }
+		private void BuildListsOfItems(TrItem item)
+		{
+			if (item.ItemType == TrItem.trItemType.trSIGNAL)
+				if (item is SignalItem)
+				{
+					SignalItem si = item as SignalItem;
+
+					if (si.SigObj >= 0 && si.SigObj < simulator.Signals.SignalObjects.Length)
+					{
+						SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
+						if (s != null && s.isSignal && s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
+					}
+				}
+			if (item.ItemType == TrItem.trItemType.trSIDING || item.ItemType == TrItem.trItemType.trPLATFORM)
+				sidings.Add(new SidingWidget(item));
+		}
 
       bool Inited;
 	  List<LineSegment> segments = new List<LineSegment>();
@@ -2154,6 +2123,84 @@ namespace Orts.Viewer3D.Debugging
       }
 
 		#region Timetable
+		private void BuildTimetableListsOfItems(TrItem item)
+		{
+			switch (item.ItemType)
+			{
+				case TrItem.trItemType.trSIGNAL:
+					if (item is SignalItem)
+					{
+						SignalItem si = item as SignalItem;
+
+						if (si.SigObj >= 0 && si.SigObj < simulator.Signals.SignalObjects.Length)
+						{
+							SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
+							if (s != null && s.isSignal && s.isSignalNormal())
+								signals.Add(new SignalWidget(si, s));
+						}
+					}
+					break;
+
+				case TrItem.trItemType.trSIDING:
+					// Sidings have 2 ends. When 2nd one is found, then average the location for a single label.
+					var sidingFound = sidings.Find(r => r.Name == item.ItemName);
+					if (sidingFound.Name == null)
+						sidings.Add(new SidingWidget(item));
+					else
+					{
+						var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+						sidingFound.Location = GetMidPoint(sidingFound.Location, newLocation);
+					}
+					break;
+
+				case TrItem.trItemType.trPLATFORM:
+					// Platforms have 2 ends. When 2nd one is found, then average the location for a single label.
+					var index = platforms.FindIndex(r => r.Name == item.ItemName);
+					if (index < 0)
+						platforms.Add(new PlatformWidget(item));
+					else
+					{
+						var oldLocation = platforms[index].Location;
+						var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+
+						// Because these are structs, not classes, compiler won't let you overwrite them.
+						// Instead create a single item which replaces the 2 platform items.
+						var replacementPlatform = new PlatformWidget(item);
+
+						// Give it the mid-point location
+						replacementPlatform.Location = GetMidPoint(oldLocation, newLocation);
+
+						// Save the original 2 locations of the platform
+						replacementPlatform.Extent1 = oldLocation;
+						replacementPlatform.Extent2 = newLocation;
+
+						// Replace the first platform item with the replacement
+						platforms.RemoveAt(index);
+						platforms.Add(replacementPlatform);
+					}
+					break;
+
+				default:
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Returns the mid-point between two locations
+		/// </summary>
+		/// <param name="location"></param>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <returns></returns>
+		private PointF GetMidPoint(PointF location1, PointF location2)
+		{
+			return new PointF()
+			{
+				X = (location1.X + location2.X) / 2
+				,
+				Y = (location1.Y + location2.Y) / 2
+			};
+		}
 		private void RevealTimetableControls()
         {
 			lblSimulationTimeText.Visible = true;
@@ -2251,31 +2298,34 @@ namespace Orts.Viewer3D.Debugging
 				InitImage();
 
 			using (Graphics g = Graphics.FromImage(pbCanvas.Image))
-            {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                g.Clear(Color.White);
+			{
+				g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+				g.Clear(Color.White);
 
-                // Set scales. subX & subY give top-left location in meters from world origin.
-                subX = minX + ViewWindow.X;
-                subY = minY + ViewWindow.Y;
+				// Set scales. subX & subY give top-left location in meters from world origin.
+				subX = minX + ViewWindow.X;
+				subY = minY + ViewWindow.Y;
 
-                // Get scale in pixels/meter
-                xScale = pbCanvas.Width / ViewWindow.Width;
-                yScale = pbCanvas.Height / ViewWindow.Height;
-                xScale = yScale = Math.Max(pbCanvas.Width / ViewWindow.Width, pbCanvas.Height / ViewWindow.Height);
+				// Get scale in pixels/meter
+				xScale = pbCanvas.Width / ViewWindow.Width;
+				yScale = pbCanvas.Height / ViewWindow.Height;
+				xScale = yScale = Math.Max(pbCanvas.Width / ViewWindow.Width, pbCanvas.Height / ViewWindow.Height);
 
-                // Set the default pen to represent 1 meter.
-                var scale = (float)Math.Round((double)xScale);  // Round to nearest pixels/meter
-                var penWidth = (int)MathHelper.Clamp(scale, 1, 3);  // Keep 1 <= width <= 3 pixels
+				// Set the default pen to represent 1 meter.
+				var scale = (float)Math.Round((double)xScale);  // Round to nearest pixels/meter
+				var penWidth = (int)MathHelper.Clamp(scale, 1, 3);  // Keep 1 <= width <= 3 pixels
 
-                // Choose pens
-                Pen p = grayPen;
-                grayPen.Width = greenPen.Width = orangePen.Width = redPen.Width = penWidth;
-                pathPen.Width = penWidth * 2;
-                trainPen.Width = penWidth * 6;
+				// Choose pens
+				Pen p = grayPen;
+				grayPen.Width = greenPen.Width = orangePen.Width = redPen.Width = penWidth;
+				pathPen.Width = penWidth * 2;
+				trainPen.Width = penWidth * 6;
 
-                // Draw track
-                PointF scaledA, scaledB;
+				// First so track is drawn over the thicker platform line
+				DrawPlatforms(g);
+
+				// Draw track
+				PointF scaledA, scaledB;
                 ShowTrack(g, p, out scaledA, out scaledB);
 
 				if (dragging == false)
@@ -2287,13 +2337,13 @@ namespace Orts.Viewer3D.Debugging
 					switchItemsDrawn.Clear();
 					ShowSwitches(g, widgetWidth);
 
-					// Draw sidings and platforms
-					CleanTextCells(); //clean the drawing area for text of sidings platforms and signal states
-					ShowSidings(g);
-					ShowPlatforms(g);
+                    // Draw labels for sidings and platforms
+                    CleanTextCells(); //clean the drawing area for text of sidings platforms and signal states
+                    ShowSidings(g);
+                    ShowPlatforms(g);
 
-					// Draw signals
-					signalItemsDrawn.Clear();
+                    // Draw signals
+                    signalItemsDrawn.Clear();
 					ShowSignals(g, scaledB, widgetWidth);
 
 					// Draw trains
@@ -2307,6 +2357,17 @@ namespace Orts.Viewer3D.Debugging
 		{
 			var ct = TimeSpan.FromSeconds(Program.Simulator.ClockTime);
 			lblSimulationTime.Text = $"{ct:hh}:{ct:mm}:{ct:ss}";
+		}
+
+		private void DrawPlatforms(Graphics g)
+		{
+			PlatformPen.Width = grayPen.Width * 3;
+			foreach (var p in platforms)
+			{
+				var scaledA = new PointF((p.Extent1.X - subX) * xScale, pbCanvas.Height - (p.Extent1.Y - subY) * yScale);
+				var scaledB = new PointF((p.Extent2.X - subX) * xScale, pbCanvas.Height - (p.Extent2.Y - subY) * yScale);
+				g.DrawLine(PlatformPen, scaledA, scaledB);
+			}
 		}
 
 		private void ShowTrack(Graphics g, Pen p, out PointF scaledA, out PointF scaledB)
@@ -2443,13 +2504,13 @@ namespace Orts.Viewer3D.Debugging
 		private void ShowPlatforms(Graphics g)
 		{
 			if (cbShowPlatforms.CheckState == System.Windows.Forms.CheckState.Checked)
-				foreach (var s in platforms)
+				foreach (var p in platforms)
 				{
 					var scaledItem = new PointF();
-					scaledItem.X = (s.Location.X - subX) * xScale;
-					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+					scaledItem.X = (p.Location.X - subX) * xScale;
+					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (p.Location.Y - subY) * yScale, p.Name);
 					if (scaledItem.Y >= 0f) //if we need to draw the platform names
-						g.DrawString(s.Name, PlatformFont, PlatformBrush, scaledItem);
+						g.DrawString(p.Name, PlatformFont, PlatformBrush, scaledItem);
 				}
 		}
 
@@ -2566,6 +2627,8 @@ namespace Orts.Viewer3D.Debugging
 
 		private bool IsActiveTrain(Simulation.AIs.AITrain t)
 		{
+			if (t == null)
+				return false;
 			return (t.MovementState != Orts.Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
 						&& !(t.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !t.IncorporatingTrain.IsPathless)
 					)
@@ -2699,6 +2762,21 @@ namespace Orts.Viewer3D.Debugging
 			}
 			LastCursorPosition.X = e.X;
 			LastCursorPosition.Y = e.Y;
+		}
+
+        private void pbCanvas_SizeChanged(object sender, EventArgs e)
+        {
+			var oldSizePxX = ViewWindow.Width * xScale;
+			var oldSizePxY = ViewWindow.Height * yScale;
+			var newSizePxX = pbCanvas.Width;
+			var newSizePxY = pbCanvas.Height;
+			var sizeIncreaseX = newSizePxX / oldSizePxX;
+			var sizeIncreaseY = newSizePxY / oldSizePxY;
+
+			// Could be clever and keep all the previous view still in view and centred at the same point.
+			// Instead use the simplest solution:
+			ViewWindow.Width *= sizeIncreaseX;
+			ViewWindow.Height *= sizeIncreaseY;
 		}
 
 		/// <summary>
@@ -3021,6 +3099,8 @@ namespace Orts.Viewer3D.Debugging
 	{
 		public PointF Location;
 		public string Name;
+		public PointF Extent1;
+		public PointF Extent2;
 
 		/// <summary>
 		/// The underlying track item.
@@ -3037,6 +3117,8 @@ namespace Orts.Viewer3D.Debugging
 			Item = item;
 			Name = item.ItemName;
 			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+			Extent1 = new PointF(0, 0);
+			Extent2 = new PointF(0, 0);
 		}
 	}
 

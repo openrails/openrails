@@ -93,6 +93,7 @@
             this.pbCanvas.Size = new System.Drawing.Size(754, 626);
             this.pbCanvas.TabIndex = 0;
             this.pbCanvas.TabStop = false;
+            this.pbCanvas.SizeChanged += new System.EventHandler(this.pbCanvas_SizeChanged);
             this.pbCanvas.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseDown);
             this.pbCanvas.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseMove);
             this.pbCanvas.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBoxMouseUp);
