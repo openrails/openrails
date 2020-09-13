@@ -156,32 +156,33 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (lead != null)
                 {
                     EngineBrakeSettingValue = lead.EngineBrakeController.CurrentValue;
-                    if(lead.SteamEngineBrakeFitted)
+                    if (lead.SteamEngineBrakeFitted)
                     {
                         LocomotiveSteamBrakeFitted = true;
                         SteamBrakeCompensation = lead.BoilerPressurePSI / lead.MaxBoilerPressurePSI;
                         SteamBrakePressurePSI = EngineBrakeSettingValue * SteamBrakeCompensation * lead.MaxBoilerPressurePSI;
                         SteamBrakeCylinderPressurePSI = SteamBrakePressurePSI;
                     }
-                }
 
-                ManualBrakingDesiredFraction = EngineBrakeSettingValue * ManualMaxBrakeValue;
 
-                if (ManualBrakingCurrentFraction < ManualBrakingDesiredFraction)
-                {
-                    ManualBrakingCurrentFraction += ManualMaxApplicationRateValuepS;
-                    if (ManualBrakingCurrentFraction > ManualBrakingDesiredFraction)
+                    ManualBrakingDesiredFraction = EngineBrakeSettingValue * ManualMaxBrakeValue;
+
+                    if (ManualBrakingCurrentFraction < ManualBrakingDesiredFraction)
                     {
-                        ManualBrakingCurrentFraction = ManualBrakingDesiredFraction;
+                        ManualBrakingCurrentFraction += lead.EngineBrakeApplyRatePSIpS;
+                        if (ManualBrakingCurrentFraction > ManualBrakingDesiredFraction)
+                        {
+                            ManualBrakingCurrentFraction = ManualBrakingDesiredFraction;
+                        }
+
                     }
-
-                }
-                else if (ManualBrakingCurrentFraction > ManualBrakingDesiredFraction)
-                {
-                    ManualBrakingCurrentFraction -= ManualReleaseRateValuepS;
-                    if (ManualBrakingCurrentFraction < 0)
+                    else if (ManualBrakingCurrentFraction > ManualBrakingDesiredFraction)
                     {
-                        ManualBrakingCurrentFraction = 0;
+                        ManualBrakingCurrentFraction -= lead.EngineBrakeReleaseRatePSIpS;
+                        if (ManualBrakingCurrentFraction < 0)
+                        {
+                            ManualBrakingCurrentFraction = 0;
+                        }
                     }
                 }
             }
