@@ -1764,6 +1764,9 @@ lines within such EventCategory block must be present in the extension .act file
 No Halt by Activity Message Box
 -------------------------------
 
+.. index::
+   single: ORTSContinue
+
 MSTS activities may contain instructions to display a message box when the 
 player train reaches a specific location in the activity, or at a specific 
 time. Normally the simulation is halted when the message box is displayed until 
@@ -1823,6 +1826,10 @@ points within the paths with either the MSTS AE or through TrackViewer.
 AI Horn Blow at Level Crossings
 -------------------------------
 
+.. index::
+   single: ORTSAIHornAtCrossings
+   single: NextActivityObjectUID
+
 If the line::
 
     ORTSAIHornAtCrossings ( 1 )
@@ -1849,6 +1856,9 @@ the end of the horn blow.
 Location Event triggered by AI Train
 ------------------------------------
 
+.. index::
+   single: ORTSTriggeringTrain
+
 Under MSTS location events may only be triggered when the player train reaches 
 them. OR provides also location events that are triggered by AI trains.
 In this case a line like following one must be added within the
@@ -1871,6 +1881,11 @@ This feature is not yet managed by TSRE5.
 
 Location Event and Time Event Sound File
 ----------------------------------------
+
+.. index::
+   single: ORTSActivitySound
+   single: ORTSActSoundFile
+   single: ORTSSoundLocation
 
 An activity file can be modified so that a sound file is played when the train 
 reaches a location specified in an EventTypeLocation event in the .act file, 
@@ -1904,6 +1919,18 @@ to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
 
 Note: Parameter ORTSSoundLocation is needed only when *Soundtype* is ``Location``.
 
+.. index::
+   single: EventCategoryLocation
+   single: EventCategoryTime
+   single: EventTypeLocation
+   single: Activation_Level
+   single: Outcomes
+   single: DisplayMessage
+   single: Name
+   single: Location
+   single: TriggerOnStop
+   single: ORTSContinue
+
 For example::
 
     EventCategoryLocation (
@@ -1933,6 +1960,21 @@ This feature is not yet managed by TSRE5 in this format.
 
 Weather Change Activity Event 
 -----------------------------
+
+.. index::
+   single: ORTSWeatherChange
+   single: ORTSOvercast
+   single: final_overcastFactor
+   single: overcast_transitionTime
+   single: ORTSFog
+   single: final_fogDistance
+   single: fog_transitionTime
+   single: ORTSPrecipitationIntensity
+   single: final_precipitationIntensity
+   single: precipitationIntensity_transitionTime
+   single: ORTSPrecipitationLiquidity
+   single: final_precipitationLiquidity
+   single: precipitationLiquidity_transitionTime
 
 An activity can be modified so that the weather changes when running the 
 activity in ORTS. MSTS operation is not affected by these WeatherChange events. 
@@ -1982,6 +2024,9 @@ to pass from the initial weather feature value (overcastFactor, fogDistance
 and so on) to the final weather feature value. If such xx_transitionTime is 
 set to 0, the weather feature takes immediately the final value. This is 
 useful to start activities with weather features in intermediate states.
+
+.. index::
+   single: ORTSContinue
 
 The event can also include an ORTSContinue ( 0 ) line, therefore not displaying 
 messages and not suspending activity execution.
@@ -2044,6 +2089,19 @@ Syntax of the feature
 '''''''''''''''''''''
 To make use of this feature it is suggested to generate an :ref:`Extension activity 
 file <operation-extension-activity-file>` .
+
+.. index::
+   single: Tr_Activity
+   single: Tr_Activity_File
+   single: Events
+   single: EventCategoryLocation
+   single: ORTSContinue
+   single: Outcomes
+   single: ORTSRestartWaitingTrain
+   single: ORTSWaitingTrainToRestart
+   single: ORTSDelayToRestart
+   single: ORTSMatchingWPDelay
+
 Here is an example of an extension activity file using such feature::
 
   SIMISA@@@@@@@@@@JINX0a0t______
@@ -2102,6 +2160,10 @@ Old formats
 
 Following alternate formats are accepted by OR for Event Sound Files and 
 Weather Change. These formats are not recommended for new activities.
+
+.. index::
+   single: ORTSActSoundFile
+   single: ORTSWeatherChange
 
 Event Sound Files: The sound file may be defined by a single line::
 
