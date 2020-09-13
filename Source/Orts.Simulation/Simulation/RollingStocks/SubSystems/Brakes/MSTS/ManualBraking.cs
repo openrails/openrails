@@ -169,7 +169,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     if (ManualBrakingCurrentFraction < ManualBrakingDesiredFraction)
                     {
-                        ManualBrakingCurrentFraction += lead.EngineBrakeApplyRatePSIpS;
+                        ManualBrakingCurrentFraction += lead.EngineBrakeController.ApplyRatePSIpS;
                         if (ManualBrakingCurrentFraction > ManualBrakingDesiredFraction)
                         {
                             ManualBrakingCurrentFraction = ManualBrakingDesiredFraction;
@@ -178,7 +178,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     else if (ManualBrakingCurrentFraction > ManualBrakingDesiredFraction)
                     {
-                        ManualBrakingCurrentFraction -= lead.EngineBrakeReleaseRatePSIpS;
+                        ManualBrakingCurrentFraction -= lead.EngineBrakeController.ReleaseRatePSIpS;
                         if (ManualBrakingCurrentFraction < 0)
                         {
                             ManualBrakingCurrentFraction = 0;
