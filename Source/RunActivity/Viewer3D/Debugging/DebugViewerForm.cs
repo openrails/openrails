@@ -1447,18 +1447,22 @@ namespace Orts.Viewer3D.Debugging
 		  if (e.Button == MouseButtons.Left) LeftClick = true;
 		  if (e.Button == MouseButtons.Right) RightClick = true;
 
-		  if (LeftClick == true && RightClick == false)
-		  {
-			  if (Dragging == false) Dragging = true;
-		  }
-		  else if (LeftClick == true && RightClick == true)
-		  {
-			  if (Zooming == false) Zooming = true;
-		  }
+			if (LeftClick == true && RightClick == false)
+			{
+				if (Dragging == false)
+				{
+					Dragging = true;
+				}
+			}
+			else if (LeftClick == true && RightClick == true)
+			{
+				if (Zooming == false) Zooming = true;
+			}
 		  LastCursorPosition.X = e.X;
 		  LastCursorPosition.Y = e.Y;
 		  //MSG.Enabled = false;
 		  MultiPlayer.MPManager.Instance().ComposingText = false;
+			lblInstruction.Visible = true;
 	  }
 
 	  private void pictureBoxMouseUp(object sender, MouseEventArgs e)
@@ -1470,7 +1474,7 @@ namespace Orts.Viewer3D.Debugging
 		  {
 			  Dragging = false;
 			  Zooming = false;
-		  }
+			}
 
           if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
           {
@@ -1509,8 +1513,9 @@ namespace Orts.Viewer3D.Debugging
               }
 
           }
+			lblInstruction.Visible = false;
 
-	  }
+		}
 #if false
 	  void switchMainClick(object sender, EventArgs e)
 	  {
@@ -2171,7 +2176,7 @@ namespace Orts.Viewer3D.Debugging
 					break;
 
 				case TrItem.trItemType.trPLATFORM:
-					// Platforms have 2 ends. When 2nd one is found, then average the location for a single label.
+					// Platforms have 2 ends. When 2nd one is found, then find the right-hand one as the location for a single label.
 					var index = platforms.FindIndex(r => r.Name == item.ItemName);
 					if (index < 0)
 						platforms.Add(new PlatformWidget(item));
@@ -2184,8 +2189,8 @@ namespace Orts.Viewer3D.Debugging
 						// Instead create a single item which replaces the 2 platform items.
 						var replacementPlatform = new PlatformWidget(item);
 
-						// Give it the mid-point location
-						replacementPlatform.Location = GetMidPoint(oldLocation, newLocation);
+						// Give it the right-hand location
+						replacementPlatform.Location = GetRightHandPoint(oldLocation, newLocation);
 
 						// Save the original 2 locations of the platform
 						replacementPlatform.Extent1 = oldLocation;
@@ -2212,12 +2217,16 @@ namespace Orts.Viewer3D.Debugging
 		private PointF GetMidPoint(PointF location1, PointF location2)
 		{
 			return new PointF()
-			{
-				X = (location1.X + location2.X) / 2
-				,
-				Y = (location1.Y + location2.Y) / 2
-			};
+				{ X = (location1.X + location2.X) / 2
+				, Y = (location1.Y + location2.Y) / 2
+				};
 		}
+
+		private PointF GetRightHandPoint(PointF location1, PointF location2)
+		{
+			return (location1.X > location2.X) ? location1 : location2;
+		}
+
 		private void RevealTimetableControls()
         {
 			lblSimulationTimeText.Visible = true;
@@ -2228,6 +2237,7 @@ namespace Orts.Viewer3D.Debugging
 			cbShowSwitches.Visible = true;
 			cbShowSignals.Visible = true;
 			cbShowSignalState.Visible = true;
+			cbShowTrainLabels.Visible = true;
 			gbTrains.Visible = true;
 			rbShowActiveTrains.Visible = true;
 			rbShowAllTrains.Visible = true;
@@ -2256,6 +2266,9 @@ namespace Orts.Viewer3D.Debugging
 			rmvButton.Visible = false;
 			btnFollow.Visible = false;
 			AvatarView.Visible = false;
+			windowSizeUpDown.Visible = false;
+			label1.Visible = false;
+			resLabel.Visible = false;
 		}
 
 		private void SetTimetableMedia()
@@ -2303,7 +2316,7 @@ namespace Orts.Viewer3D.Debugging
 			// This is so a user can zoom out and then back in without changing the location at the centre.
 			var xRange = maxX - minX;
 			var yRange = maxY - minY;
-			var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 2);
+			var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 1.5);
 			windowSizeUpDown.Maximum = (decimal)maxSize;
 		}
 
@@ -2316,62 +2329,79 @@ namespace Orts.Viewer3D.Debugging
 				InitImage();
 
 			using (Graphics g = Graphics.FromImage(pbCanvas.Image))
-			{
-				g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-				g.Clear(pbCanvas.BackColor);
+            {
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.Clear(pbCanvas.BackColor);
 
-				// Set scales. subX & subY give top-left location in meters from world origin.
-				subX = minX + ViewWindow.X;
-				subY = minY + ViewWindow.Y;
+                // Set scales. subX & subY give top-left location in meters from world origin.
+                subX = minX + ViewWindow.X;
+                subY = minY + ViewWindow.Y;
 
-				// Get scale in pixels/meter
-				xScale = pbCanvas.Width / ViewWindow.Width;
-				yScale = pbCanvas.Height / ViewWindow.Height;
-				xScale = yScale = Math.Max(pbCanvas.Width / ViewWindow.Width, pbCanvas.Height / ViewWindow.Height);
+                // Get scale in pixels/meter
+                xScale = pbCanvas.Width / ViewWindow.Width;
+                yScale = pbCanvas.Height / ViewWindow.Height;
+                xScale = yScale = Math.Max(pbCanvas.Width / ViewWindow.Width, pbCanvas.Height / ViewWindow.Height);
 
-				// Set the default pen to represent 1 meter.
-				var scale = (float)Math.Round((double)xScale);  // Round to nearest pixels/meter
-				var penWidth = (int)MathHelper.Clamp(scale, 1, 3);  // Keep 1 <= width <= 3 pixels
+                // Set the default pen to represent 1 meter.
+                var scale = (float)Math.Round((double)xScale);  // Round to nearest pixels/meter
+                var penWidth = (int)MathHelper.Clamp(scale, 1, 3);  // Keep 1 <= width <= 3 pixels
 
-				// Choose pens
-				Pen p = grayPen;
-				grayPen.Width = greenPen.Width = orangePen.Width = redPen.Width = penWidth;
-				pathPen.Width = penWidth * 2;
-				trainPen.Width = penWidth * 6;
+                // Choose pens
+                Pen p = grayPen;
+                grayPen.Width = greenPen.Width = orangePen.Width = redPen.Width = penWidth;
+                pathPen.Width = penWidth * 2;
+                trainPen.Width = penWidth * 6;
 
-				// First so track is drawn over the thicker platform line
-				DrawPlatforms(g);
+                // First so track is drawn over the thicker platform line
+                DrawPlatforms(g);
 
-				// Draw track
-				PointF scaledA, scaledB;
-                ShowTrack(g, p, out scaledA, out scaledB);
+                // Draw track
+                PointF scaledA, scaledB;
+                DrawTrack(g, p, out scaledA, out scaledB);
 
-				if (dragging == false)
-				{
-					// Keep widgetWidth <= 15 pixels
-					var widgetWidth = Math.Min(penWidth * 6, 15);
+                if (dragging == false)
+                {
+                    // Keep widgetWidth <= 15 pixels
+                    var widgetWidth = Math.Min(penWidth * 6, 15);
 
-					// Draw switches
-					switchItemsDrawn.Clear();
-					ShowSwitches(g, widgetWidth);
+                    // Draw switches
+                    switchItemsDrawn.Clear();
+                    ShowSwitches(g, widgetWidth);
 
                     // Draw labels for sidings and platforms
                     CleanTextCells(); //clean the drawing area for text of sidings platforms and signal states
-                    ShowSidings(g);
-                    ShowPlatforms(g);
+                    ShowSidingLabels(g);
+                    ShowPlatformLabels(g);
 
                     // Draw signals
                     signalItemsDrawn.Clear();
-					ShowSignals(g, scaledB, widgetWidth);
+                    ShowSignals(g, scaledB, widgetWidth);
 
-					// Draw trains
-					ShowTrains(g, scaledA, scaledB);
-				}
+                    // Draw trains
+                    DrawTrains(g, scaledA, scaledB);
+                }
+
+                DrawZoomTarget(g);
+
             }
             pbCanvas.Invalidate(); // Triggers a re-paint
         }
+		/// <summary>
+		/// Indicates the location around which the image is zoomed
+		/// </summary>
+		/// <param name="g"></param>
+        private void DrawZoomTarget(Graphics g)
+        {
+            if (Dragging)
+            {
+                const int size = 25;
+                var top = pbCanvas.Top + pbCanvas.Height/2 - size;
+                var left = pbCanvas.Left + pbCanvas.Width/2 - size;
+                g.DrawRectangle(grayPen, top, left, size, size);
+            }
+        }
 
-		private void ShowSimulationTime()
+        private void ShowSimulationTime()
 		{
 			var ct = TimeSpan.FromSeconds(Program.Simulator.ClockTime);
 			lblSimulationTime.Text = $"{ct:hh}:{ct:mm}:{ct:ss}";
@@ -2388,7 +2418,7 @@ namespace Orts.Viewer3D.Debugging
 			}
 		}
 
-		private void ShowTrack(Graphics g, Pen p, out PointF scaledA, out PointF scaledB)
+		private void DrawTrack(Graphics g, Pen p, out PointF scaledA, out PointF scaledB)
         {
             PointF[] points = new PointF[3];
             scaledA = new PointF(0, 0);
@@ -2505,7 +2535,7 @@ namespace Orts.Viewer3D.Debugging
 			}
 		}
 
-		private void ShowSidings(Graphics g)
+		private void ShowSidingLabels(Graphics g)
 		{
 			if (cbShowSidings.CheckState == System.Windows.Forms.CheckState.Checked)
 				foreach (var s in sidings)
@@ -2519,20 +2549,29 @@ namespace Orts.Viewer3D.Debugging
 				}
 		}
 
-		private void ShowPlatforms(Graphics g)
+		private void ShowPlatformLabels(Graphics g)
 		{
+			var platformMarginPxX = 5;
+
 			if (cbShowPlatforms.CheckState == System.Windows.Forms.CheckState.Checked)
 				foreach (var p in platforms)
 				{
 					var scaledItem = new PointF();
-					scaledItem.X = (p.Location.X - subX) * xScale;
+					scaledItem.X = (p.Location.X - subX) * xScale + platformMarginPxX;
+					var yPixels = pbCanvas.Height - (p.Location.Y - subY) * yScale;
+
+					// If track is close to horizontal, then start label search 1 row down to minimise overwriting platform line.
+					if (p.Extent1.X != p.Extent2.X
+						&& Math.Abs((p.Extent1.Y - p.Extent2.Y)/ (p.Extent1.X - p.Extent2.X)) < 0.1)
+						yPixels += spacing;
+					
 					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (p.Location.Y - subY) * yScale, p.Name);
 					if (scaledItem.Y >= 0f) //if we need to draw the platform names
 						g.DrawString(p.Name, PlatformFont, PlatformBrush, scaledItem);
 				}
 		}
 
-		private void ShowTrains(Graphics g, PointF scaledA, PointF scaledB)
+		private void DrawTrains(Graphics g, PointF scaledA, PointF scaledB)
 		{
 			var margin = 30 * xScale;   //margins to determine if we want to draw a train
 			var margin2 = 5000 * xScale;
@@ -2569,28 +2608,8 @@ namespace Orts.Viewer3D.Debugging
 				}
 				else
 					continue;
-
-
-				// If zoomed out, then draw the train as a box, with its path and name
-				var scaledTrain = new PointF();
-				if (xScale < 0.3 || t.FrontTDBTraveller == null || t.RearTDBTraveller == null)
-				{
-					worldPos = firstCar.WorldPosition;
-					scaledTrain.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
-					scaledTrain.Y = pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
-					if (scaledTrain.X < -margin2
-						|| scaledTrain.Y < -margin2)
-						continue;
-
-					g.FillRectangle(Brushes.DarkGreen, GetRect(scaledTrain, 15f));
-					scaledTrain.Y -= 25;
-					DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
-
-					ShowTrainNameWithSuffix(g, scaledTrain, t);
-					continue;
-				}
-
-				// Else draw the path, then each car of the train, then the name
+											
+				// Draw the path, then each car of the train, then maybe the name
 				var loc = t.FrontTDBTraveller.WorldLocation;
 				float x, y;
 				x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale;
@@ -2601,22 +2620,88 @@ namespace Orts.Viewer3D.Debugging
 
 				DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
 
-				trainPen.Color = Color.DarkGreen;
+				// If zoomed out, so train occupies less than minTrainPx pixels, then draw the train as 2 boxes.
+				const int minTrainPx = 24;
+				trainPen.Width = grayPen.Width * 6;
+				var trainLengthM = 0f;
+				var minTrainLengthM = minTrainPx / xScale; // If train is shorter than 24 pixels, draw the ends only and at a fixed length
+				var drawWholeTrain = false;
+				foreach (var car in t.Cars)
+                {
+					trainLengthM += car.CarLengthM;
+					if (trainLengthM > minTrainLengthM)
+                    {
+						drawWholeTrain = true;
+						break;
+					}
+				}
+
+				var scaledTrain = new PointF();
 				foreach (var car in t.Cars)
 				{
+					if (drawWholeTrain == false)
+						// Skip the intermediate cars
+						if (car != t.Cars.First() && car != t.Cars.Last())
+							continue;
+
 					Traveller t1 = new Traveller(t.RearTDBTraveller);
 					worldPos = car.WorldPosition;
 					var dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-					if (dist > 0)
+					if (dist > -1)
 					{
-						t1.Move(dist - 1 + car.CarLengthM / 2);
-						x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; 
-						y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-						if (x < -margin || y < -margin) 
-							continue;
-						scaledTrain.X = x; scaledTrain.Y = y;
-						
-						t1.Move(-car.CarLengthM);
+						if (drawWholeTrain)
+                        {
+							t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
+							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale;
+							y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+							if (x < -margin || y < -margin)
+								continue;
+							scaledTrain.X = x; scaledTrain.Y = y;
+							t1.Move(-car.CarLengthM);
+						}
+						else    // Draw the train as 2 boxes of fixed size
+						{
+							trainPen.Width = minTrainPx / 2;
+							if (car == t.Cars.First())
+							{
+								// Draw first half a train back from the front of the first car as abox
+								t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
+								x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale;
+								y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+								if (x < -margin || y < -margin)
+									continue;
+								t1.Move(-minTrainPx / xScale / 2);
+							}
+							else // car == t.Cars.Last()
+							{
+								// Draw half a train back from the rear of the first box
+								worldPos = t.Cars.First().WorldPosition;
+								dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
+								t1.Move(dist - 1 + t.Cars.First().CarLengthM / 2 - minTrainPx / xScale / 2); // Not sure purpose of "- 1"
+								x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale;
+								y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+								if (x < -margin || y < -margin)
+									continue;
+								t1.Move(-minTrainPx / xScale / 2);
+							}
+							scaledTrain.X = x; scaledTrain.Y = y;
+						}
+						//t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
+						//x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; 
+						//y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
+						//if (x < -margin || y < -margin) 
+						//	continue;
+						//scaledTrain.X = x; scaledTrain.Y = y;
+
+						//if (drawWholeTrain == false)
+						//// Draw the train as 2 boxes of fixed size
+						//{
+						//	trainPen.Width = minTrainPx / 2;
+						//	t1.Move(-minTrainLengthM / 2); // For front and rear cars, draw from front of car back 12 pixels
+						//}
+						//else
+						//	t1.Move(-car.CarLengthM);
+
 						x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; 
 						y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
 						if (x < -margin || y < -margin) 
@@ -2630,7 +2715,8 @@ namespace Orts.Viewer3D.Debugging
 				worldPos = firstCar.WorldPosition;
 				scaledTrain.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
 				scaledTrain.Y = -25 + pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
-				ShowTrainNameWithSuffix(g, scaledTrain, t);
+				if (cbShowTrainLabels.Checked)
+					ShowTrainNameWithSuffix(g, scaledTrain, t);
 			}
 		}
 
@@ -2765,7 +2851,7 @@ namespace Orts.Viewer3D.Debugging
                 int diffX = e.X - LastCursorPosition.X;
                 int diffY = e.Y - LastCursorPosition.Y;
 
-                ClipDrag(diffX, diffY);
+				ClipDrag(diffX, diffY);
                 GenerateView(true);
             }
             else if (Zooming)
