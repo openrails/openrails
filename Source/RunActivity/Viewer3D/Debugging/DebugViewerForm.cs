@@ -2144,7 +2144,10 @@ namespace Orts.Viewer3D.Debugging
           GenerateView();
       }
 
+
 		#region Timetable
+		public int DaylightOffsetHrs { get; set; } = 0;
+
 		private void BuildTimetableListsOfItems(TrItem item)
 		{
 			switch (item.ItemType)
@@ -2884,12 +2887,17 @@ namespace Orts.Viewer3D.Debugging
 			ViewWindow.Height *= sizeIncreaseY;
 		}
 
-		/// <summary>
-		/// Provides a clip zone to stop user from pushing track fully out of window
-		/// </summary>
-		/// <param name="diffX"></param>
-		/// <param name="diffY"></param>
-		private void ClipDrag(int diffX, int diffY)
+        private void nudDaylightOffsetHrs_ValueChanged(object sender, EventArgs e)
+        {
+			DaylightOffsetHrs = (int)nudDaylightOffsetHrs.Value;
+		}
+
+        /// <summary>
+        /// Provides a clip zone to stop user from pushing track fully out of window
+        /// </summary>
+        /// <param name="diffX"></param>
+        /// <param name="diffY"></param>
+        private void ClipDrag(int diffX, int diffY)
         {
 			// Moving the mouse right means moving the ViewWindow left.
             var changeXm = -(float)(diffX / xScale);

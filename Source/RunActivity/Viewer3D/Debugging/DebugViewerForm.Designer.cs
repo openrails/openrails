@@ -587,11 +587,22 @@
             this.nudDaylightOffsetHrs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.nudDaylightOffsetHrs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.nudDaylightOffsetHrs.Location = new System.Drawing.Point(818, 468);
+            this.nudDaylightOffsetHrs.Maximum = new decimal(new int[] {
+            12,
+            0,
+            0,
+            0});
+            this.nudDaylightOffsetHrs.Minimum = new decimal(new int[] {
+            12,
+            0,
+            0,
+            -2147483648});
             this.nudDaylightOffsetHrs.Name = "nudDaylightOffsetHrs";
             this.nudDaylightOffsetHrs.Size = new System.Drawing.Size(40, 21);
             this.nudDaylightOffsetHrs.TabIndex = 44;
             this.nudDaylightOffsetHrs.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.nudDaylightOffsetHrs.Visible = false;
+            this.nudDaylightOffsetHrs.ValueChanged += new System.EventHandler(this.nudDaylightOffsetHrs_ValueChanged);
             // 
             // lblDayLightOffsetHrs
             // 
