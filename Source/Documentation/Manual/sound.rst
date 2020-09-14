@@ -412,6 +412,12 @@ To enable this feature steps here below must be followed:
      TrackType ( "Squeal Curve" "DemoAutoSound/curvesquealtrackin.sms" "DemoAutoSound/curvesquealtrackex.sms"   )
      TrackType ( "Squeal Switch" "DemoAutoSound/curveswitchtrackin.sms" "DemoAutoSound/curveswitchtrackex.sms"   )
 
+.. index::
+   single: ORTSSwitchSMSNumber
+   single: ORTSCurveSMSNumber
+   single: ORTSCurveSwitchSMSNumber
+   single: ORTSDefaultTurntableSMS
+
 3. For every route you must tell OR which of the ttype sound files are those related to 
    automatic sounds. This is done by inserting following line in the route's ``.trk`` file::
      
@@ -448,6 +454,10 @@ Override % of external sound heard internally for a specific trainset
 External sounds are reproduced at a lower volume when heard within a cab or 
 passenger view. The % of external sound heard internally is defined in the 
 ``Audio Options`` menu window.
+
+.. index::
+   single: ORTSExternalSoundPassedThroughPercent
+
 This percentage may be overridden for any trainset inserting in the Wagon 
 section of any .eng or .wag file (or in their "include" file as explained 
 :ref:`here <physics-inclusions>`) following line::

@@ -30,6 +30,9 @@ The keyboard keys to switch on and off diesel engines are following ones:
   
 Following cabview controls are available:
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE
+
 ORTS_PLAYER_DIESEL_ENGINE: the first frame is displayed when the diesel engine 
 of the player locomotive is in states stopped or stopping, while the second 
 frame is displayed when it is in states running or started. The control may 
@@ -49,6 +52,9 @@ Example::
                 )
 
 
+
+.. index::
+   single: ORTS_HELPERS_DIESEL_ENGINES
 
 ORTS_HELPERS_DIESEL_ENGINES: the first frame is displayed when further diesel 
 engines of the player locomotive and/or the diesel engines of the helper 
@@ -71,6 +77,8 @@ Example::
                 )
 
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE_STATE
 
 ORTS_PLAYER_DIESEL_ENGINE_STATE: this control respectively selects frames 0, 
 1, 2, 3 for the player locomotive engine states Stopped, Starting, Running and 
@@ -90,6 +98,8 @@ Example::
                 )
 
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE_STARTER
 
 ORTS_PLAYER_DIESEL_ENGINE_STARTER: it displays the second frame when the 
 player diesel engine is in starting status, and the first one in all other 
@@ -110,6 +120,8 @@ Example::
                 )
 
 
+.. index::
+   single: ORTS_PLAYER_DIESEL_ENGINE_STOPPER
 
 ORTS_PLAYER_DIESEL_ENGINE_STOPPER: it displays the second frame when the 
 player diesel engine is in stopping status, and the second one in all other 
@@ -135,6 +147,9 @@ Example::
 Cab radio
 ---------
 
+.. index::
+   single: CAB_RADIO
+
 OR supports the cab radio cabview control.
 Pressing keys Alt+R switches on and off the cab radio.
 Switching on and off the cab radio enables discrete sound triggers 162 and 
@@ -153,6 +168,9 @@ Here is an example of a cab radio control block within the .cvf file::
 
 Cab light
 ---------
+
+.. index::
+   single: ORTS_CABLIGHT
 
 OR supports the cab light cabview control.
 Pressing key L switches on and off the cab light under the same conditions 
@@ -173,6 +191,10 @@ Here is an example of a cab light control block within the .cvf file::
 
 Signed Traction Braking control
 -------------------------------
+
+.. index::
+   single: ORTS_SIGNED_TRACTION_BRAKING
+   single: TRACTION_BRAKING
 
 This cabview control shows the signed value of the force (+ve or -ve, that is 
 tractive or due to dynamic braking) as displayed 
@@ -197,6 +219,9 @@ Here is an example of a cab light control block within the .cvf file::
 Signed Traction Total Braking control
 -------------------------------------
 
+.. index::
+   single: ORTS_SIGNED_TRACTION_TOTAL_BRAKING
+
 ORTS_SIGNED_TRACTION_TOTAL_BRAKING control behaves and is defined like 
 ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking 
 force does include also the train brake force in addition to the dynamic 
@@ -207,6 +232,11 @@ Further OR cab controls
 
 OR supports the cabview control to open/close the left doors, the right doors 
 and the mirrors.
+
+.. index::
+   single: ORTS_LEFTDOOR
+   single: ORTS_RIGHTDOOR
+   single: ORTS_MIRRORS
 
 The control blocks are like the one shown for the cab light. The Type strings 
 are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
@@ -242,6 +272,9 @@ vertical position. In the ``Dial`` type the last 2 numbers are the size of the
 needle texture. The last number (50 in the example) controls the scaling of 
 the needle texture, i.e. changing this changes the size of the needle that OR 
 displays.
+
+.. index::
+   single: SPEEDOMETER
 
 ::
 
@@ -311,6 +344,9 @@ OR supports a configurable font family, with font size selection, and a
 choice of regular or bold style. More than one font or size can be used in 
 the same cabview. This does not affect the display in MSTS.
 
+.. index::
+   single: ORTSfont
+   
 An optional line of the form ``ORTSfont ( fontsize  fontstyle  "fontfamily" )`` 
 must be inserted into the .cvf block of the digital control or digital clock, 
 where *fontsize* is a float (default value 10), *fontstyle* an integer having 
@@ -318,6 +354,9 @@ the value 0 (default) for regular and 1 for bold, and *fontfamily* is a
 string with the font family name (ex. "Times New Roman"). The default is 
 "Courier New". A convenient font, if available, is "Quartz MS" or "Quartz", 
 which models a 7-segment display.
+
+.. index::
+   single: DIGITAL_CLOCK
 
 Here is an example that displays the digital clock with a 12 pt. bold font 
 using the Sans Serif font family::
@@ -339,6 +378,9 @@ lines when the file is saved.
 
 Rotation of Digital controls
 ----------------------------
+
+.. index::
+   single: ORTSAngle
 
 One of the drawbacks of rendering a cabview in 2D is that some parts of it 
 are not shown with a frontal, horizontal, view. Displaying a horizontal digital 
@@ -366,6 +408,11 @@ provided, the key ``<Alt+1>`` can be used in order to switch between 2D and 3D c
 Development Rules
 -----------------
 
+.. index::
+   single: CABVIEW3D
+   single: SPEEDOMETER
+   single: TRAIN_BRAKE
+
 - The 3D cab is described by an .s file, the associated .ace or .dds files, 
   and a .cvf file having the same name as the .s file. All these files reside 
   in a folder named ``CABVIEW3D`` created within the main folder of the 
@@ -388,6 +435,14 @@ Development Rules
   in future OR releases. The important information for a digital device is 
   its location, thus it can be defined as an object with a small single face 
   in the 3D model.
+
+.. index::
+   single: ORTS3DCab
+   single: ORTS3DCabFile
+   single: ORTS3DCabHeadPos
+   single: RotationLimit
+   single: StartDirection
+
 - Animation ranges must be in agreement with the .cvf file 
 - Within the Wagon section of the .eng file a block like the following one 
   has to be generated::
@@ -398,6 +453,17 @@ Development Rules
         RotationLimit ( 40 60 0 )
         StartDirection ( 12 0 0 )
     )
+
+.. index::
+   single: EXTERNALWIPERS
+   single: AMMETER
+   single: CLOCK
+   single: CABVIEW3D
+   single: LEFTDOOR
+   single: RIGHTDOOR
+   single: MIRRORS
+   single: NIGHT
+   single: ESD_Alternative_Texture
 
 - It is also possible to animate the wipers, by inserting into the .s file an 
   animation named ``EXTERNALWIPERS:0:0``
@@ -423,6 +489,7 @@ Development Rules
 
 A demo trainset with a 3Dcab, that may be useful for developers, can be 
 downloaded from: `<http://www.tsimserver.com/Download/Df11G3DCab.zip>`_.  
+v
 
 A Practical Development Example For a Digital Speedometer
 ---------------------------------------------------------
@@ -476,12 +543,14 @@ Now, open OR and test your speedometer.
 FUEL_GAUGE for steam locomotives
 --------------------------------
 
+.. index::
+   single: FUEL_GAUGE
+
 The FUEL_GAUGE dial is available also for steam locomotives. It may be used 
 both to display a fuel level for oil burning steam locomotives (also in 2D cabs), 
 and to animate the coal level in a tank loco. Default unit of measure is Kg; 
-alternate unit of 
-measure may be LBS.
-Here below an example of an entry for a 3D cab::
+alternate unit of measure may be LBS.
+Here below is an example of an entry for a 3D cab::
 
   Dial (
   Type ( FUEL_GAUGE DIAL )
