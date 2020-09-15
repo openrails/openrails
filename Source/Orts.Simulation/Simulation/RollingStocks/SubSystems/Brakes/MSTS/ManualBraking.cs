@@ -175,7 +175,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                     if (EngineBrakingCurrentFraction < EngineBrakeDesiredFraction)
                     {
-                   //     Trace.TraceInformation("SteamBrake - CarID {0} ApplyRate {1} Desired {2} Current {3} MaxBrake {4} SteamCyl {5}", Car.CarID, lead.EngineBrakeController.ApplyRatePSIpS, EngineBrakeDesiredFraction, EngineBrakingCurrentFraction, ManualMaxBrakeValue, SteamBrakeCylinderPressurePSI);
 
                         EngineBrakingCurrentFraction += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS;
                         if (EngineBrakingCurrentFraction > EngineBrakeDesiredFraction)

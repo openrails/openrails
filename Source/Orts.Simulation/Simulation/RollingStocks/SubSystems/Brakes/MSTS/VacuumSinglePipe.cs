@@ -58,7 +58,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         int SoundTriggerCounter = 0;
         float prevCylPressurePSIA = 0f;
         float prevBrakePipePressurePSI = 0f;
-        
+        bool LocomotiveSteamBrakeFitted = false;
+        float SteamBrakeCylinderPressurePSI = 0;
+        float SteamBrakeCompensation;
+
         public VacuumSinglePipe(TrainCar car)
         {
             Car = car;
@@ -132,21 +135,54 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override string[] GetDebugStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)  // status for each car in the train
         {
-            return new string[] {
+            if (LocomotiveSteamBrakeFitted)
+            {
+                return new string[] {
+                "S",
+                string.Format("{0:F0}", FormatStrings.FormatPressure(SteamBrakeCylinderPressurePSI, PressureUnit.PSI,  PressureUnit.PSI, true)),
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty, // Spacer because the state above needs 2 columns.
+                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                FrontBrakeHoseConnected ? "I" : "T",
+                string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
+                };
+            }
+            else
+            {
+
+                return new string[] {
                 "1V",
                 FormatStrings.FormatPressure(Vac.FromPress(CylPressurePSIA), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true),
                 FormatStrings.FormatPressure(Vac.FromPress(VacResPressureAdjPSIA()), PressureUnit.InHg, PressureUnit.InHg, true),
                 string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
                 HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected ? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen ? "+" : "-", AngleCockBOpen ? "+" : "-"),
-            };
+                };
+            }
         }
 
         public override float GetCylPressurePSI()
         {
-            return KPa.ToPSI(KPa.FromInHg(Vac.FromPress(CylPressurePSIA)));
+            if (LocomotiveSteamBrakeFitted)
+            {
+                return SteamBrakeCylinderPressurePSI;
+            }
+            else
+            {
+                return KPa.ToPSI(KPa.FromInHg(Vac.FromPress(CylPressurePSIA)));
+            }
+                        
         }
 
         public override float GetCylVolumeM3()
@@ -267,6 +303,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 if (lead.EngineBrakeFitted)
                 {
                     EngineBrake = true;  // set to overcome potential null errors with lead var.
+                }
+
+                if (lead.SteamEngineBrakeFitted && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender))
+                {
+                    LocomotiveSteamBrakeFitted = true;
+                    SteamBrakeCompensation = lead.BoilerPressurePSI / lead.MaxBoilerPressurePSI;
+                    
+                    // Calculate steam brake "cylinder" pressure - for display purposes
+                    // uses infromation from vacuum engine brake, but converts it to steam pressure values for display purposes
+                    float MaximumVacuumPressureValue = Vac.ToPress(lead.TrainBrakeController.MaxPressurePSI); // As model uses air pressure this equates to minimum vacuum pressure
+                    float MinimumVacuumPressureValue = Vac.ToPress(0); // As model uses air pressure this equates to maximum vacuum pressure
+                    float BrakePipeFraction = (BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+                    SteamBrakeCylinderPressurePSI = BrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
                 }
 
                 // Brake cuts power
