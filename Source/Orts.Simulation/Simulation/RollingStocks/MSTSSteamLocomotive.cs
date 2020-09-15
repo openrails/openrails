@@ -1076,7 +1076,16 @@ namespace Orts.Simulation.RollingStocks
                 BoilerVolumeFT3 = 1;
 
             // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
-            if (MassKG < Kg.FromTUS(20)) 
+            // It is not believed that the weight reduction on the connecting rods is linear with the weight of the locmotive. However this requires futher research, and this section is a 
+            // work around until any further research is undertaken
+            if (MassKG < Kg.FromTUS(10))
+            {
+                const float reductionfactor = 0.2f;
+                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
+                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
+                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
+            }
+            else if (MassKG < Kg.FromTUS(20)) 
             {
                 const float reductionfactor = 0.3f;
                 ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
