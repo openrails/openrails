@@ -313,8 +313,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // uses infromation from vacuum engine brake, but converts it to steam pressure values for display purposes
                     float MaximumVacuumPressureValue = Vac.ToPress(lead.TrainBrakeController.MaxPressurePSI); // As model uses air pressure this equates to minimum vacuum pressure
                     float MinimumVacuumPressureValue = Vac.ToPress(0); // As model uses air pressure this equates to maximum vacuum pressure
-                    float BrakePipeFraction = (BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
-                    SteamBrakeCylinderPressurePSI = BrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
+                    float EngineBrakePipeFraction = (BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+                    float TrainBrakePipeFraction = (BrakeLine1PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+                    // Determine the steam brake pessure to be shown on the HuD, and in the cab pressure gauge
+                    if (BrakeLine1PressurePSI > BrakeLine3PressurePSI)
+                    {
+                        SteamBrakeCylinderPressurePSI = TrainBrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
+                    }
+                    else
+                    {
+                        SteamBrakeCylinderPressurePSI = EngineBrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
+                    }                    
                 }
 
                 // Brake cuts power
