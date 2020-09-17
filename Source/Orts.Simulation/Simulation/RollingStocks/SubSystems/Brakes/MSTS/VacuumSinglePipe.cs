@@ -61,6 +61,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         bool LocomotiveSteamBrakeFitted = false;
         float SteamBrakeCylinderPressurePSI = 0;
         float SteamBrakeCompensation;
+        float SteamBrakingCurrentFraction;
 
         public VacuumSinglePipe(TrainCar car)
         {
@@ -307,24 +308,69 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                 if (lead.SteamEngineBrakeFitted && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender))
                 {
+                    // The steam brake uses the existing code for the train brake and engine brake. It models a Greasham and Craven MkIV steam brake valve.
+                    // Engine brake moves in association with Engine Brake Controller, and uses the apply and release delays for steam brake force movement
+                    // Train brake also moves the steam brake, and again brake is delayed by the engine brake delay values.
+
                     LocomotiveSteamBrakeFitted = true;
+
+                    // Steam brake operation is impacted by boiler pressure, a drop in boile rpressure will reduce the force applied
                     SteamBrakeCompensation = lead.BoilerPressurePSI / lead.MaxBoilerPressurePSI;
-                    
-                    // Calculate steam brake "cylinder" pressure - for display purposes
-                    // uses infromation from vacuum engine brake, but converts it to steam pressure values for display purposes
+
+                    float SteamBrakeDesiredFraction;
                     float MaximumVacuumPressureValue = Vac.ToPress(lead.TrainBrakeController.MaxPressurePSI); // As model uses air pressure this equates to minimum vacuum pressure
                     float MinimumVacuumPressureValue = Vac.ToPress(0); // As model uses air pressure this equates to maximum vacuum pressure
                     float EngineBrakePipeFraction = (BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
                     float TrainBrakePipeFraction = (BrakeLine1PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
-                    // Determine the steam brake pessure to be shown on the HuD, and in the cab pressure gauge
-                    if (BrakeLine1PressurePSI > BrakeLine3PressurePSI)
+
+                    // Calculate the steam brake application and release rates for different brake scenarios, ie engine or train, etc
+                    if (TrainBrakePipeFraction >= EngineBrakePipeFraction) // Train brake is primary control
                     {
-                        SteamBrakeCylinderPressurePSI = TrainBrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
+                        SteamBrakeDesiredFraction = TrainBrakePipeFraction;
+                        if (SteamBrakingCurrentFraction < SteamBrakeDesiredFraction) // Brake application, increase steam brake pressure to max value as appropriate
+                        {
+
+                            SteamBrakingCurrentFraction += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS;
+                            if (SteamBrakingCurrentFraction > SteamBrakeDesiredFraction)
+                            {
+                                SteamBrakingCurrentFraction = SteamBrakeDesiredFraction;
+                            }
+
+                        }
+                        else if (SteamBrakingCurrentFraction > SteamBrakeDesiredFraction) // Brake release, decrease steam brake pressure to min value as appropriate
+                        {
+                            SteamBrakingCurrentFraction -= elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
+
+                            if (SteamBrakingCurrentFraction < 0)
+                            {
+                                SteamBrakingCurrentFraction = 0;
+                            }
+                        }
+
+                        SteamBrakeCylinderPressurePSI = SteamBrakingCurrentFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
                     }
-                    else
+                    else if (EngineBrakePipeFraction > TrainBrakePipeFraction)
                     {
-                        SteamBrakeCylinderPressurePSI = EngineBrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
-                    }                    
+                        // Engine only brake applied
+                        SteamBrakeCylinderPressurePSI = EngineBrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI;
+                    }
+
+                    // Forces steam brake pressure and force to zero if both brakes are off
+                    if (lead.EngineBrakeController.CurrentValue == 0 && lead.TrainBrakeController.CurrentValue == 0)
+                    {
+                        SteamBrakeDesiredFraction = 0;
+                        if (SteamBrakingCurrentFraction > SteamBrakeDesiredFraction)
+                        {
+                            SteamBrakingCurrentFraction -= elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
+
+                            if (SteamBrakingCurrentFraction < 0)
+                            {
+                                SteamBrakingCurrentFraction = 0;
+                            }
+                        }
+
+                        SteamBrakeCylinderPressurePSI = SteamBrakingCurrentFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI;
+                    }
                 }
 
                 // Brake cuts power
@@ -455,7 +501,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float f;
             if (!Car.BrakesStuck)
             {
-                f = CylPressurePSIA <= vrp ? 0 : Car.MaxBrakeForceN * Math.Min((CylPressurePSIA - vrp) / MaxForcePressurePSI, 1);
+                // depending upon whether steam brake fitted or not, calculate brake force to be applied
+                if (LocomotiveSteamBrakeFitted && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender))
+                {
+                    f = Car.MaxBrakeForceN * Math.Min(SteamBrakeCylinderPressurePSI / lead.MaxBoilerPressurePSI, 1); 
+                }
+                else
+                {
+                    f = CylPressurePSIA <= vrp ? 0 : Car.MaxBrakeForceN * Math.Min((CylPressurePSIA - vrp) / MaxForcePressurePSI, 1);
+                }
                 if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
                     f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
             }
