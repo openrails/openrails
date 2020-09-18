@@ -471,6 +471,8 @@ namespace Orts.Simulation.RollingStocks
         }
         public BrakeSystem BrakeSystem;
 
+        public float PreviousSteamBrakeCylinderPressurePSI;
+
         // TrainCar.Update() must set these variables
         public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car - 
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
