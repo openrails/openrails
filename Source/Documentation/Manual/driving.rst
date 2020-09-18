@@ -179,6 +179,19 @@ how OR behaves. They are listed in the
 
 The following information is displayed in the basic display:
 
+.. index::
+   single: version
+   single: time
+   single: speed
+   single: gradient
+   single: direction
+   single: throttle
+   single: train brake
+   single: engine brake
+   single: dynamic brake
+   single: fps
+
+
 - Version = The version of the Open Rails software you are running
 - Time = Game time of the Activity
 - Speed = the speed in Miles/Hr. or Kilometers/Hr.
@@ -1369,6 +1382,9 @@ Modifying the Game Environment
 Time of Day
 -----------
 
+.. index::
+   single: StartTime
+
 In activity mode Open Rails software reads the StartTime from the MSTS 
 .act file to determine what the game time is for the activity. In 
 combination with the longitude and latitude of the route and the season, 
@@ -2012,6 +2028,9 @@ A wide variety of parameters is shown, from frame wait and render speeds
 in milliseconds, to number of primitives, Process Thread resource 
 utilization and number of Logical CPUs from the system's bios. They are 
 very useful in case of OR stuttering, to find out where the bottleneck is.
+
+.. index::
+   single: tile
 
 The values in the ``Camera`` line refer to the two tile coordinates and to 
 the three coordinates within the tile.
