@@ -89,6 +89,9 @@ not sufficient compute resources for the UpdaterProcess to prepare the next
 frame for the RenderProcess, the software reduces the frame rate until it can 
 *catch up*.
 
+.. index::
+   single: tile
+
 Initial testing indicates that *stutters* are significantly reduced because 
 the process (LoaderProcess) associated with loading shapes and textures when 
 crossing tile boundaries do not compete with the main rendering loop 

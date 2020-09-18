@@ -2195,7 +2195,17 @@ The default values are used in place of MSTS braking parameters; however,
 two MSTS parameters are used for the release state:
 MaxAuxilaryChargingRate and EmergencyResChargingRate.
 
-- ``wagon(brakepipevolume`` -- Volume of car's brake pipe in cubic feet
+.. index::
+   single: BrakePipeVolume
+   single: ORTSMainResChargingRate
+   single: ORTSEngineBrakeReleaseRate
+   single: ORTSEngineBrakeApplicationRate
+   single: ORTSBrakePipeChargingRate
+   single: ORTSBrakeServiceTimeFactor
+   single: ORTSBrakeEmergencyTimeFactor
+   single: ORTSBrakePipeTimeFactor
+
+- ``Wagon(BrakePipeVolume`` -- Volume of car's brake pipe in cubic feet
   (default .5).
   This is dependent on the train length calculated from the ENG to the
   last car in the train. This aggregate factor is used to approximate the
@@ -2207,22 +2217,22 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   brake servicetimefactor instead, but the Open Rails Development team
   doesn't believe this is worth the effort by the user for the added
   realism.
-- ``engine(mainreschargingrate`` -- Rate of main reservoir pressure change
+- ``Engine(ORTSMainResChargingRate`` -- Rate of main reservoir pressure change
   in psi per second when the compressor is on (default .4).
-- ``engine(enginebrakereleaserate`` -- Rate of engine brake pressure
+- ``Engine(ORTSEngineBrakeReleaseRate`` -- Rate of engine brake pressure
   decrease in psi per second
   (default 12.5).
-- ``engine(enginebrakeapplicationrate`` -- Rate of engine brake pressure
+- ``Engine(ORTSEngineBrakeApplicationRate`` -- Rate of engine brake pressure
   increase in psi per second
   (default 12.5).
-- ``engine(brakepipechargingrate`` -- Rate of lead engine brake pipe
+- ``Engine(ORTSBrakePipeChargingRate`` -- Rate of lead engine brake pipe
   pressure increase in PSI per second (default 21).
-- ``engine(brakeservicetimefactor`` -- Time in seconds for lead engine
+- ``Engine(ORTSBrakeServiceTimeFactor`` -- Time in seconds for lead engine
   brake pipe pressure to drop to about 1/3 for service application
   (default 1.009).
-- ``engine(brakeemergencytimefactor`` -- Time in seconds for lead engine
+- ``Engine(ORTSBrakeEmergencyTimeFactor`` -- Time in seconds for lead engine
   brake pipe pressure to drop to about 1/3 in emergency (default .1).
-- ``engine(brakepipetimefactor`` -- Time in seconds for a difference in
+- ``Engine(ORTSBrakePipeTimeFactor`` -- Time in seconds for a difference in
   pipe pressure between adjacent cars to equalize to about 1/3
   (default .003).
 

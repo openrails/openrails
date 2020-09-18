@@ -737,3 +737,8 @@ Parameters Not Yet Described In This Manual
 | season
 | sidingitem
 | skipcount
+
+| **T**
+| texttodisplayoncompletionifnotrriggered
+| texttodisplayoncompletionifnottriggered
+| texttodisplayoncompletioniftriggered
