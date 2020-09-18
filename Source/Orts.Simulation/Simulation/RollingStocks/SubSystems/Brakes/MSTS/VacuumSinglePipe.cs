@@ -174,7 +174,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override float GetCylPressurePSI()
         {
-            if (LocomotiveSteamBrakeFitted)
+            if (LocomotiveSteamBrakeFitted && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender))
             {
                 return SteamBrakeCylinderPressurePSI;
             }
@@ -319,45 +319,63 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float SteamBrakeDesiredFraction;
                     float MaximumVacuumPressureValue = Vac.ToPress(lead.TrainBrakeController.MaxPressurePSI); // As model uses air pressure this equates to minimum vacuum pressure
                     float MinimumVacuumPressureValue = Vac.ToPress(0); // As model uses air pressure this equates to maximum vacuum pressure
-                    float EngineBrakePipeFraction = (BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
-                    float TrainBrakePipeFraction = (BrakeLine1PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+                    float EngineBrakePipeFraction = (lead.BrakeSystem.BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+                    float TrainBrakePipeFraction = (lead.BrakeSystem.BrakeLine1PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+
+                    float conversionFactor = (MinimumVacuumPressureValue - MaximumVacuumPressureValue); // factor to scale application and release values to match pressure values in engine brake nethod
 
                     // Calculate the steam brake application and release rates for different brake scenarios, ie engine or train, etc
-                    if (TrainBrakePipeFraction >= EngineBrakePipeFraction) // Train brake is primary control
+                    if (TrainBrakePipeFraction > EngineBrakePipeFraction) // Train brake is primary control
                     {
                         SteamBrakeDesiredFraction = TrainBrakePipeFraction;
                         if (SteamBrakingCurrentFraction < SteamBrakeDesiredFraction) // Brake application, increase steam brake pressure to max value as appropriate
                         {
 
-                            SteamBrakingCurrentFraction += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS;
-                            if (SteamBrakingCurrentFraction > SteamBrakeDesiredFraction)
+                            SteamBrakingCurrentFraction += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS / conversionFactor;
+                            if (SteamBrakingCurrentFraction > 1.0f)
                             {
-                                SteamBrakingCurrentFraction = SteamBrakeDesiredFraction;
+                                SteamBrakingCurrentFraction = 1.0f;
                             }
 
                         }
                         else if (SteamBrakingCurrentFraction > SteamBrakeDesiredFraction) // Brake release, decrease steam brake pressure to min value as appropriate
                         {
-                            SteamBrakingCurrentFraction -= elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
+                            SteamBrakingCurrentFraction -= elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS / conversionFactor;
 
                             if (SteamBrakingCurrentFraction < 0)
                             {
                                 SteamBrakingCurrentFraction = 0;
                             }
+
                         }
 
                         SteamBrakeCylinderPressurePSI = SteamBrakingCurrentFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI; // For display purposes
+                        Car.PreviousSteamBrakeCylinderPressurePSI = SteamBrakeCylinderPressurePSI;
                     }
-                    else if (EngineBrakePipeFraction > TrainBrakePipeFraction)
+                    else // Engine brake is primary control
                     {
+                        // Allow smooth change over if train brake has been in use, and engine brake is on
+                        if (lead.EngineBrakeController.CurrentValue > 0 && Car.PreviousSteamBrakeCylinderPressurePSI >= SteamBrakeCylinderPressurePSI)
+                        {
+
+                            float equivalentEngineBrakePipeFraction = SteamBrakeCylinderPressurePSI / (SteamBrakeCompensation * lead.MaxBoilerPressurePSI);
+                            float equivalentBrakeLine3PressurePSI = equivalentEngineBrakePipeFraction * (MinimumVacuumPressureValue - MaximumVacuumPressureValue) + MaximumVacuumPressureValue;
+
+                            lead.BrakeSystem.BrakeLine3PressurePSI = equivalentBrakeLine3PressurePSI; // If engine brake on, then don't allow engine brake pressure to drop when reducing train brake pressure
+                            EngineBrakePipeFraction = SteamBrakingCurrentFraction;  
+                            Car.PreviousSteamBrakeCylinderPressurePSI = 0; // set to zero so that this loop is not executed again until train brake is activated
+                        }
+
                         // Engine only brake applied
                         SteamBrakeCylinderPressurePSI = EngineBrakePipeFraction * SteamBrakeCompensation * lead.MaxBoilerPressurePSI;
+                        SteamBrakingCurrentFraction = EngineBrakePipeFraction; // keep track of fraction.
                     }
 
                     // Forces steam brake pressure and force to zero if both brakes are off
                     if (lead.EngineBrakeController.CurrentValue == 0 && lead.TrainBrakeController.CurrentValue == 0)
                     {
                         SteamBrakeDesiredFraction = 0;
+
                         if (SteamBrakingCurrentFraction > SteamBrakeDesiredFraction)
                         {
                             SteamBrakingCurrentFraction -= elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
@@ -405,14 +423,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             // Brake information is updated for each vehicle
 
-            if (EngineBrake) // Only apples when an engine brake is in place, otherwise processed by next loop
+            if (EngineBrake && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)) // Only apples when an engine brake is in place, otherwise processed by next loop
             {
                 // The engine brake can only be applied when the train brake is released or partially released. It cannot be released whilever the train brake is applied.
-                if (BrakeLine1PressurePSI < 4.2 && BrakeLine3PressurePSI > 4.2) // If train brake is completely released & Engine brake is applied
+                if (lead.TrainBrakeController.CurrentValue == 0 && lead.EngineBrakeController.CurrentValue > 0 ) // If train brake is completely released & Engine brake is applied
                 {
                     CylPressurePSIA = BrakeLine3PressurePSI;
                 }
-                else if (BrakeLine1PressurePSI > 4.2) // if train brake is applied, then set engine brake to the higher of either the train brake or engine brake
+                else if (lead.TrainBrakeController.CurrentValue > 0) // if train brake is applied, then set engine brake to the higher of either the train brake or engine brake
                 {
                     if (BrakeLine3PressurePSI > BrakeLine1PressurePSI)
                     {
@@ -1328,14 +1346,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 {
                                     // Vacuum Pipe is > Desired value - decrease brake pipe value pressure - PSI goes from 14.5 to 4.189 - releasing brakes
                                     float EnginePipePressureDiffPSI = elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
-                                    if (brakeSystem.BrakeLine3PressurePSI - EnginePipePressureDiffPSI < EngineDesiredPipeVacuum)
-                                    {
-                                        EnginePipePressureDiffPSI = brakeSystem.BrakeLine3PressurePSI - EngineDesiredPipeVacuum;
-                                    }
 
                                     brakeSystem.BrakeLine3PressurePSI -= EnginePipePressureDiffPSI;
+
                                     if (brakeSystem.BrakeLine3PressurePSI < OneAtmospherePSI - MaxVacuumPipeLevelPSI)
                                         brakeSystem.BrakeLine3PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
+
                                 }
                             }
 
