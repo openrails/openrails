@@ -1812,9 +1812,6 @@ namespace Orts.Viewer3D
         [CallOnThread("Render")]
         void SaveScreenshotToFile(GraphicsDevice graphicsDevice, string fileName, bool silent)
         {
-            if (graphicsDevice.GraphicsProfile != GraphicsProfile.HiDef)
-                return;
-
             var width = graphicsDevice.PresentationParameters.BackBufferWidth;
             var height = graphicsDevice.PresentationParameters.BackBufferHeight;
             var data = new uint[width * height];

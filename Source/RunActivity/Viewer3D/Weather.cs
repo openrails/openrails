@@ -195,7 +195,7 @@ namespace Orts.Viewer3D
 
         void UpdateVolume()
         {
-            if (Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+            if (PrecipitationViewer.IndexesAre32bit)
             {
                 foreach (var soundSource in RainSound) soundSource.Volume = Weather.PricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
                 foreach (var soundSource in SnowSound) soundSource.Volume = Weather.PricipitationIntensityPPSPM2 / PrecipitationViewer.MaxIntensityPPSPM2;
@@ -651,7 +651,7 @@ namespace Orts.Viewer3D
                     precipitationIntensityTimer = (float)ORTSPrecipitationIntensityTransitionTimeS;
                     // Pricipitation ranges from 0 to max PrecipitationViewer.MaxIntensityPPSPM2 if 32bit.
                     // 16bit uses PrecipitationViewer.MaxIntensityPPSPM2_16
-                    if (weatherControl.Viewer.GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+                    if (PrecipitationViewer.IndexesAre32bit)
                         precipitationIntensityChangeRate = precipitationIntensityTimer > 0 ? (MathHelper.Clamp(ORTSPrecipitationIntensity, 0, PrecipitationViewer.MaxIntensityPPSPM2)
                             - weatherControl.Weather.PricipitationIntensityPPSPM2) / ORTSPrecipitationIntensityTransitionTimeS : 0;
                     else

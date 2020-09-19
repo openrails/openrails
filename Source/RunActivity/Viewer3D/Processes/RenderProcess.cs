@@ -99,7 +99,6 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             GraphicsDeviceManager.IsFullScreen = Game.Settings.FullScreen;
             GraphicsDeviceManager.PreferMultiSampling = true;
-            GraphicsDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
             GraphicsDeviceManager.HardwareModeSwitch = !Game.Settings.FastFullScreenAltTab;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
         }
@@ -116,6 +115,8 @@ namespace Orts.Viewer3D.Processes
                     break;
                 }
             }
+
+            e.GraphicsDeviceInformation.GraphicsProfile = e.GraphicsDeviceInformation.Adapter.IsProfileSupported(GraphicsProfile.HiDef) ? GraphicsProfile.HiDef : GraphicsProfile.Reach;
 
             if (e.GraphicsDeviceInformation.PresentationParameters.IsFullScreen)
             {
@@ -136,17 +137,24 @@ namespace Orts.Viewer3D.Processes
 
             DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-            if (Game.Settings.ShaderModel == 0)
+            try
             {
-                if (GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
-                    Game.Settings.ShaderModel = 3;
-                else if (GraphicsDevice.GraphicsProfile == GraphicsProfile.Reach)
-                    Game.Settings.ShaderModel = 2;
+                // Validate that the DirectX feature level is one we understand
+                Enum.Parse(typeof(ORTS.Settings.UserSettings.DirectXFeature), "Level" + Game.Settings.DirectXFeatureLevel);
             }
-            else if (Game.Settings.ShaderModel < 2)
-                Game.Settings.ShaderModel = 2;
-            else if (Game.Settings.ShaderModel > 3)
-                Game.Settings.ShaderModel = 3;
+            catch (Exception)
+            {
+                Game.Settings.DirectXFeatureLevel = "";
+            }
+
+            if (Game.Settings.DirectXFeatureLevel == "")
+            {
+                // Choose default feature level based on profile
+                if (GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+                    Game.Settings.DirectXFeatureLevel = "10_0";
+                else
+                    Game.Settings.DirectXFeatureLevel = "9_1";
+            }
 
             if (Game.Settings.ShadowMapDistance == 0)
                 Game.Settings.ShadowMapDistance = Game.Settings.ViewingDistance / 2;
@@ -154,7 +162,7 @@ namespace Orts.Viewer3D.Processes
             ShadowMapCount = Game.Settings.ShadowMapCount;
             if (!Game.Settings.DynamicShadows)
                 ShadowMapCount = 0;
-            else if ((ShadowMapCount > 1) && (Game.Settings.ShaderModel < 3))
+            else if ((ShadowMapCount > 1) && !Game.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3))
                 ShadowMapCount = 1;
             else if (ShadowMapCount < 0)
                 ShadowMapCount = 0;
