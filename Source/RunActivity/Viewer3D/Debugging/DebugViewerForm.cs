@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -32,6 +33,7 @@ using System.Windows.Forms;
 using GNU.Gettext.WinForms;
 using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
+using Orts.MultiPlayer;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
@@ -94,7 +96,6 @@ namespace Orts.Viewer3D.Debugging
 		Pen redPen = new Pen(Color.Red);
 		Pen greenPen = new Pen(Color.Green);
 		Pen orangePen = new Pen(Color.Orange);
-		Pen yellowPen = new Pen(Color.Yellow);
 		Pen trainPen = new Pen(Color.DarkGreen);
 		Pen pathPen = new Pen(Color.DeepPink);
 		Pen grayPen = new Pen(Color.Gray);
@@ -155,9 +156,6 @@ namespace Orts.Viewer3D.Debugging
         /// /// <param name="viewer"></param>
         public DispatchViewer(Simulator simulator, Viewer viewer)
         {
-			//CJ DEBUG
-			simulator.TimetableMode = true;
-
             InitializeComponent();
 
             if (simulator == null)
@@ -167,13 +165,6 @@ namespace Orts.Viewer3D.Debugging
             this.Viewer = viewer;
 
             nodes = simulator.TDB.TrackDB.TrackNodes;
-
-            trainFont = new Font("Arial", 14, FontStyle.Bold);
-            sidingFont = new Font("Arial", 12, FontStyle.Bold);
-
-            trainBrush = new SolidBrush(Color.Red);
-            sidingBrush = new SolidBrush(Color.Blue);
-
 
             // initialise the timer used to handle user input
             UITimer = new Timer();
@@ -191,18 +182,8 @@ namespace Orts.Viewer3D.Debugging
             selectedTrainList = new List<Train>();
             if (MultiPlayer.MPManager.IsMultiPlayer()) { MultiPlayer.MPManager.AllowedManualSwitch = false; }
 
-
             InitData();
             InitImage();
-            chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
-            if (!MultiPlayer.MPManager.IsMultiPlayer())//single player mode, make those unnecessary removed
-            {
-                msgAll.Visible = false; msgSelected.Visible = false; composeMSG.Visible = false; MSG.Visible = false; messages.Visible = false;
-                AvatarView.Visible = false; composeMSG.Visible = false; reply2Selected.Visible = false; chkShowAvatars.Visible = false; chkAllowNew.Visible = false;
-                chkBoxPenalty.Visible = false; chkPreferGreen.Visible = false;
-                pbCanvas.Location = new System.Drawing.Point(pbCanvas.Location.X, label1.Location.Y + 18);
-                refreshButton.Text = "View Self";
-            }
 
 			/*
           if (MultiPlayer.MPManager.IsMultiPlayer())
@@ -211,33 +192,85 @@ namespace Orts.Viewer3D.Debugging
               MessageViewer.Show();
               MessageViewer.Visible = false;
           }*/
+			MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
+			{
+				firstShow = true;
+			};
 
-			if (simulator.TimetableMode)
+			MultiPlayer.MPManager.Instance().AvatarUpdated += (sender, e) =>
+			{
+				AddAvatar(e.User, e.URL);
+			};
+
+			MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
+			{
+				AddNewMessage(e.Time, e.Message);
+			};
+
+			tWindow.SelectedIndex = (MPManager.IsMultiPlayer()) ? 0 : 1;
+
+			SetControls();
+
+            //if (simulator.TimetableMode == true && DispatchWindowWanted == false)
+            //         {
+            //	ShowTimetableControls(true);
+            //	SetTimetableMedia();
+            //         }
+            //         else
             {
-				RevealTimetableControls();
-				SetTimetableMedia();
+
             }
-            else
-            {
-				MultiPlayer.MPManager.Instance().ServerChanged += (sender, e) =>
-				{
-					firstShow = true;
-				};
+        }
 
-				MultiPlayer.MPManager.Instance().AvatarUpdated += (sender, e) =>
-				{
-					AddAvatar(e.User, e.URL);
-				};
+        private void ShowDispatchControls(bool dispatchView)
+        {
+			var multiPlayer = MPManager.IsMultiPlayer() && dispatchView;
+			msgAll.Visible = multiPlayer; 
+			msgSelected.Visible = multiPlayer; 
+			composeMSG.Visible = multiPlayer; 
+			MSG.Visible = multiPlayer; 
+			messages.Visible = multiPlayer;
+			AvatarView.Visible = multiPlayer; 
+			composeMSG.Visible = multiPlayer; 
+			reply2Selected.Visible = multiPlayer; 
+			chkShowAvatars.Visible = multiPlayer;
+			chkAllowUserSwitch.Visible = multiPlayer;
+			chkAllowNew.Visible = multiPlayer;
+			chkBoxPenalty.Visible = multiPlayer; 
+			chkPreferGreen.Visible = multiPlayer;
 
-				MultiPlayer.MPManager.Instance().MessageReceived += (sender, e) =>
-				{
-					AddNewMessage(e.Time, e.Message);
-				};
+			if (multiPlayer)
+			{
+				chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
+				pbCanvas.Location = new System.Drawing.Point(pbCanvas.Location.X, label1.Location.Y + 18);
+				refreshButton.Text = "View Self";
 			}
+
+			chkDrawPath.Visible = dispatchView;
+			chkPickSignals.Visible = dispatchView;
+			chkPickSwitches.Visible = dispatchView;
+			btnSeeInGame.Visible = dispatchView;
+			btnAssist.Visible = dispatchView;
+			btnNormal.Visible = dispatchView;
+			refreshButton.Visible = dispatchView;
+			rmvButton.Visible = dispatchView;
+			btnFollow.Visible = dispatchView;
+			AvatarView.Visible = dispatchView;
+			windowSizeUpDown.Visible = dispatchView;
+			label1.Visible = dispatchView;
+			resLabel.Visible = dispatchView;
+		}
+		private void SetDispatchMedia()
+		{
+			this.Name = "Dispatch Window";
+			trainFont = new Font("Arial", 14, FontStyle.Bold);
+			sidingFont = new Font("Arial", 12, FontStyle.Bold);
+			trainBrush = new SolidBrush(Color.Red);
+			sidingBrush = new SolidBrush(Color.Blue);
+			pbCanvas.BackColor = Color.White;
 		}
 
-
-      public int RedrawCount;
+		public int RedrawCount;
 		private Font trainFont;
 		private Font sidingFont;
 		private Font PlatformFont;
@@ -357,13 +390,27 @@ namespace Orts.Viewer3D.Debugging
 				return;
 
 			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
+            {
+				if (item.ItemType == TrItem.trItemType.trSIDING)
+					Console.WriteLine($"Siding {item.ItemName}");
+			}
+			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
 			{
-				if (simulator.TimetableMode)
-					BuildTimetableListsOfItems(item);
-				else
-					BuildListsOfItems(item);
+				if (item.ItemType == TrItem.trItemType.trPLATFORM)
+					Console.WriteLine($"Platform {item.ItemName}");
+			}
+			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
+            {
+                //if (simulator.TimetableMode == true && DispatchWindowWanted == false)
+                AddToTimetableItemList(item);
+                //else
+                //    BuildListsOfItems(item);
             }
-	  }
+			foreach(var s in sidings)
+            {
+				Console.WriteLine($"Siding b {s.Name}");
+            }
+        }
 
 		private void BuildListsOfItems(TrItem item)
 		{
@@ -618,11 +665,21 @@ namespace Orts.Viewer3D.Debugging
       {
 		  if (!Inited) return;
 
-			if (simulator.TimetableMode)
-			{
-				GenerateTimetableView(dragging);
-				return;
+			//if (simulator.TimetableMode == true && DispatchWindowWanted == false)
+			//{
+			//	GenerateTimetableView(dragging);
+			//	return;
+			//}
+
+			if (tWindow.SelectedIndex == 1)
+            {
+                GenerateTimetableView(dragging);
+                return;
+            }
+			else
+            {
 			}
+
 
 		  if (pbCanvas.Image == null) InitImage();
           DetermineLocations();
@@ -1678,7 +1735,7 @@ namespace Orts.Viewer3D.Debugging
 
 	  private void pictureBoxMouseMove(object sender, MouseEventArgs e)
 	  {
-			if (simulator.TimetableMode)
+			if (tWindow.SelectedIndex == 1)
 				TimetableDrag(sender, e);
             else
             {
@@ -2146,9 +2203,10 @@ namespace Orts.Viewer3D.Debugging
 
 
 		#region Timetable
+		//public bool DispatchWindowWanted { get; set; } = false;
 		public int DaylightOffsetHrs { get; set; } = 0;
 
-		private void BuildTimetableListsOfItems(TrItem item)
+		private void AddToTimetableItemList(TrItem item)
 		{
 			switch (item.ItemType)
 			{
@@ -2170,7 +2228,10 @@ namespace Orts.Viewer3D.Debugging
 					// Sidings have 2 ends. When 2nd one is found, then average the location for a single label.
 					var sidingFound = sidings.Find(r => r.Name == item.ItemName);
 					if (sidingFound.Name == null)
+                    {
+						Console.WriteLine($"added {item.ItemName}");
 						sidings.Add(new SidingWidget(item));
+					}
 					else
 					{
 						var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
@@ -2230,52 +2291,55 @@ namespace Orts.Viewer3D.Debugging
 			return (location1.X > location2.X) ? location1 : location2;
 		}
 
-		private void RevealTimetableControls()
-        {
-			lblSimulationTimeText.Visible = true;
-			lblSimulationTime.Visible = true;
-			lblShow.Visible = true;
-			cbShowPlatforms.Visible = true;
-			cbShowSidings.Visible = true;
-			cbShowSwitches.Visible = true;
-			cbShowSignals.Visible = true;
-			cbShowSignalState.Visible = true;
-			cbShowTrainLabels.Visible = true;
-			gbTrains.Visible = true;
-			rbShowActiveTrains.Visible = true;
-			rbShowAllTrains.Visible = true;
-			lblDayLightOffsetHrs.Visible = true;
-			nudDaylightOffsetHrs.Visible = true;
-			bBackgroundColor.Visible = true;
+		private void ShowTimetableControls(bool timetableView)
+		{
+			lblSimulationTimeText.Visible = timetableView;
+			lblSimulationTime.Visible = timetableView;
+			lblShow.Visible = timetableView;
+			cbShowPlatforms.Visible = timetableView;
+			cbShowSidings.Visible = timetableView;
+			cbShowSwitches.Visible = timetableView;
+			cbShowSignals.Visible = timetableView;
+			cbShowSignalState.Visible = timetableView;
+			cbShowTrainLabels.Visible = timetableView;
+			gbTrains.Visible = timetableView;
+			rbShowActiveTrains.Visible = timetableView;
+			rbShowAllTrains.Visible = timetableView;
+			lblDayLightOffsetHrs.Visible = timetableView;
+			nudDaylightOffsetHrs.Visible = timetableView;
+			bBackgroundColor.Visible = timetableView;
 
-			MSG.Visible = false;
-			messages.Visible = false;
-			composeMSG.Visible = false;
-			msgAll.Visible = false;
-			msgSelected.Visible = false;
-			reply2Selected.Visible = false;
-			chkAllowNew.Visible = false;
-			chkShowAvatars.Visible = false;
-			chkAllowUserSwitch.Visible = false;
-			chkBoxPenalty.Visible = false;
-			chkPreferGreen.Visible = false;
-			chkDrawPath.Visible = false;
-			chkPickSignals.Visible = false;
-			chkPickSwitches.Visible = false;
-			btnSeeInGame.Visible = false;
-			btnAssist.Visible = false;
-			btnNormal.Visible = false;
-			refreshButton.Visible = false;
-			rmvButton.Visible = false;
-			btnFollow.Visible = false;
-			AvatarView.Visible = false;
-			windowSizeUpDown.Visible = false;
-			label1.Visible = false;
-			resLabel.Visible = false;
+			//var DispatchView = !timetableView;
+
+			//MSG.Visible = DispatchView;
+			//messages.Visible = DispatchView;
+			//composeMSG.Visible = DispatchView;
+			//msgAll.Visible = DispatchView;
+			//msgSelected.Visible = DispatchView;
+			//reply2Selected.Visible = DispatchView;
+			//chkAllowNew.Visible = DispatchView;
+			//chkShowAvatars.Visible = DispatchView;
+			//chkAllowUserSwitch.Visible = DispatchView;
+			//chkBoxPenalty.Visible = DispatchView;
+			//chkPreferGreen.Visible = DispatchView;
+			//chkDrawPath.Visible = DispatchView;
+			//chkPickSignals.Visible = DispatchView;
+			//chkPickSwitches.Visible = DispatchView;
+			//btnSeeInGame.Visible = DispatchView;
+			//btnAssist.Visible = DispatchView;
+			//btnNormal.Visible = DispatchView;
+			//refreshButton.Visible = DispatchView;
+			//rmvButton.Visible = DispatchView;
+			//btnFollow.Visible = DispatchView;
+			//AvatarView.Visible = DispatchView;
+			//windowSizeUpDown.Visible = DispatchView;
+			//label1.Visible = DispatchView;
+			//resLabel.Visible = DispatchView;
 		}
 
 		private void SetTimetableMedia()
 		{
+			this.Name = "Timetable Window";
 			trainFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
@@ -2295,6 +2359,7 @@ namespace Orts.Viewer3D.Debugging
 			{
 				oldWidth = label1.Left; oldHeight = this.Height;
 
+				pbCanvas.Top = 50;
 				pbCanvas.Width = label1.Left - 25;					// 25 pixels found by trial and error
 				pbCanvas.Height = this.Height - pbCanvas.Top - 45;	// 45 pixels found by trial and error
 
@@ -2398,8 +2463,8 @@ namespace Orts.Viewer3D.Debugging
             if (Dragging)
             {
                 const int size = 25;
-                var top = pbCanvas.Top + pbCanvas.Height/2 - size;
-                var left = pbCanvas.Left + pbCanvas.Width/2 - size;
+                var top = pbCanvas.Top + pbCanvas.Height/2 - size - 8;
+                var left = (int)(pbCanvas.Left + pbCanvas.Width/2 - size);
                 g.DrawRectangle(grayPen, top, left, size, size);
             }
         }
@@ -2547,7 +2612,7 @@ namespace Orts.Viewer3D.Debugging
 
 					scaledItem.X = (s.Location.X - subX) * xScale;
 					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
-					if (scaledItem.Y >= 0f) //if we need to draw the siding names
+					if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
 						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
 				}
 		}
@@ -2569,7 +2634,7 @@ namespace Orts.Viewer3D.Debugging
 						yPixels += spacing;
 					
 					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (p.Location.Y - subY) * yScale, p.Name);
-					if (scaledItem.Y >= 0f) //if we need to draw the platform names
+					if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
 						g.DrawString(p.Name, PlatformFont, PlatformBrush, scaledItem);
 				}
 		}
@@ -2585,7 +2650,8 @@ namespace Orts.Viewer3D.Debugging
 			selectedTrainList.Clear();
 
 			// Add the player's train
-			BuildSelectedTrainList(simulator.PlayerLocomotive.Train as Orts.Simulation.AIs.AITrain);
+			if (simulator.PlayerLocomotive.Train is Orts.Simulation.AIs.AITrain)
+				BuildSelectedTrainList(simulator.PlayerLocomotive.Train as Orts.Simulation.AIs.AITrain);
 
 			// and all the other trains
 			foreach (var t in Viewer.Simulator.AI.AITrains)
@@ -2689,22 +2755,6 @@ namespace Orts.Viewer3D.Debugging
 							}
 							scaledTrain.X = x; scaledTrain.Y = y;
 						}
-						//t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
-						//x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; 
-						//y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-						//if (x < -margin || y < -margin) 
-						//	continue;
-						//scaledTrain.X = x; scaledTrain.Y = y;
-
-						//if (drawWholeTrain == false)
-						//// Draw the train as 2 boxes of fixed size
-						//{
-						//	trainPen.Width = minTrainPx / 2;
-						//	t1.Move(-minTrainLengthM / 2); // For front and rear cars, draw from front of car back 12 pixels
-						//}
-						//else
-						//	t1.Move(-car.CarLengthM);
-
 						x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; 
 						y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
 						if (x < -margin || y < -margin) 
@@ -2791,63 +2841,68 @@ namespace Orts.Viewer3D.Debugging
 		// If the preferred space for text is occupied, then the slot above (-ve Y) is tested, then 2 sltos above, then 1 below.
 		private float DetermineTextLocation(float startX, float wantY, string name)
 		{
-			//out of drawing area
-			if (startX < -64 || wantY < -spacing) 
-				return -1f;
+			const float noFreeSlotFound = -1f;
 
-			var desiredPositionY = (int)(wantY / spacing);	// The positionY of the ideal row for the text.
-			if (desiredPositionY > alignedTextY.Length) 
-				return wantY;	// positionY drops off bottom of canvas
-
+			var desiredPositionY = (int)(wantY / spacing);  // The positionY of the ideal row for the text.
 			var endX = startX + name.Length * trainFont.Size;
+			//out of drawing area
+			if (endX < 0) 
+				return noFreeSlotFound;
+
 			int positionY = desiredPositionY;
-			while (positionY < alignedTextY.Length && positionY >= 0)
+			while (positionY >= 0 && positionY < alignedTextY.Length)
 			{
 				//if the line contains no text yet, put it there
 				if (alignedTextNum[positionY] == 0)
-				{
-					alignedTextY[positionY][alignedTextNum[positionY]].X = startX;
-					alignedTextY[positionY][alignedTextNum[positionY]].Y = endX;	//add info for the text (i.e. start and end location)
-					alignedTextNum[positionY]++;
-					return positionY * spacing;
-				}
+                    return SaveLabelLocation(startX, endX, positionY);
 
-				bool conflict = false;
-				//check if it is intersect any one in the cell
-				foreach (Vector2 v in alignedTextY[positionY])
+                bool conflict = false;
+
+				//check if it intersects with any labels already in this row
+				for (var col = 0; col < alignedTextNum[positionY]; col++)
 				{
-					//check conflict with a text, v.x is the start of the text, v.y is the end of the text
-					if ((startX > v.X && startX < v.Y) || (endX > v.X && endX < v.Y) || (v.X > startX && v.X < endX) || (v.Y > startX && v.Y < endX))
+					var v = alignedTextY[positionY][col];
+					//check conflict with a text, v.X is the start of the text, v.Y is the end of the text
+					if ((endX >= v.X && startX <= v.Y))
 					{
 						conflict = true;
 						break;
 					}
 				}
-				if (conflict == false) //no conflict
-				{
-					if (alignedTextNum[positionY] >= alignedTextY[positionY].Length) 
-						return -1f;
-					alignedTextY[positionY][alignedTextNum[positionY]].X = startX;
-					alignedTextY[positionY][alignedTextNum[positionY]].Y = endX;	//add info for the text (i.e. start and end location)
-					alignedTextNum[positionY]++;
-					return positionY * spacing;
+
+				if (conflict)
+                {
+					positionY--; // Try a different row: -1, -2, +2, +1
+
+					if (positionY - desiredPositionY <= -2)	// Cannot move up (-ve Y), so try to move it down (+ve Y)
+						positionY = desiredPositionY + 2;	// Try +2 then +1
+
+					if (positionY == desiredPositionY) // Back to original position again
+						return noFreeSlotFound;
 				}
-				positionY--;
-				// Tried 0, -1, -2
-				// Cannot move up (-ve Y), then try to move it down (+ve Y)
-				if (positionY - desiredPositionY < -1)
+                else 
 				{
-					// Try +2 then +1
-					positionY = desiredPositionY + 2;
+					// Check that row has an unused column in its fixed size array
+					if (alignedTextNum[positionY] >= alignedTextY[positionY].Length)
+						return noFreeSlotFound;
+
+					return SaveLabelLocation(startX, endX, positionY);
 				}
-				//could not find any positionY up or down, just return negative
-				if (positionY == desiredPositionY) 
-					return -1f;
 			}
-			return positionY * spacing;
+			return noFreeSlotFound;
 		}
 
-		private void TimetableDrag(object sender, MouseEventArgs e)
+        private float SaveLabelLocation(float startX, float endX, int positionY)
+        {
+			// add start and end location for the new label
+			alignedTextY[positionY][alignedTextNum[positionY]] = new Vector2 { X = startX, Y = endX };
+
+			alignedTextNum[positionY]++;
+
+			return positionY * spacing;
+        }
+
+        private void TimetableDrag(object sender, MouseEventArgs e)
 		{
 			if (Dragging && !Zooming)
             {
@@ -2891,6 +2946,44 @@ namespace Orts.Viewer3D.Debugging
         {
 			DaylightOffsetHrs = (int)nudDaylightOffsetHrs.Value;
 		}
+
+  //      private void bSwitchWindow_Click(object sender, EventArgs e)
+  //      {
+		//	DispatchWindowWanted = true;
+		//	ShowTimetableControls(false);
+		//	RestoreDispatchMedia();
+		//}
+
+		//private void RestoreDispatchMedia()
+  //      {
+		//	this.Name = "Dispatch Window";
+		//	trainFont = new Font("Arial", 14, FontStyle.Bold);
+		//	sidingFont = new Font("Arial", 12, FontStyle.Bold);
+		//	trainBrush = new SolidBrush(Color.Red);
+		//	sidingBrush = new SolidBrush(Color.Blue);
+		//	pbCanvas.BackColor = Color.White;
+		//}
+
+        private void tWindow_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetControls();
+        }
+
+        private void SetControls()
+        {
+            if (tWindow.SelectedIndex == 1) // 0 for Dispatch Window, 1 for Timetable Window
+            {
+                ShowTimetableControls(true);
+                ShowDispatchControls(false);
+                SetTimetableMedia();
+            }
+            else
+            {
+                ShowTimetableControls(false);
+                ShowDispatchControls(true);
+                SetDispatchMedia();
+            }
+        }
 
         /// <summary>
         /// Provides a clip zone to stop user from pushing track fully out of window
@@ -3185,10 +3278,10 @@ namespace Orts.Viewer3D.Debugging
 	   public PointF Location;
 	   public string Name;
 
-	   /// <summary>
-	   /// The underlying track item.
-	   /// </summary>
-	   private TrItem Item;
+		/// <summary>
+		/// The underlying track item.
+		/// </summary>
+		private TrItem Item;
 
 		/// <summary>
 		/// 
