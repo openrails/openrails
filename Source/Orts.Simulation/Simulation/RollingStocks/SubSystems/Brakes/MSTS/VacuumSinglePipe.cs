@@ -354,8 +354,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     else // Engine brake is primary control
                     {
-                        // Allow smooth change over if train brake has been in use, and engine brake is on
-                        if (lead.EngineBrakeController.CurrentValue > 0 && Car.PreviousSteamBrakeCylinderPressurePSI >= SteamBrakeCylinderPressurePSI)
+                        // Allow smooth change over if train brake has been applied and then released, but engine brake is also applied to a ceratin value
+                        if (lead.EngineBrakeController.CurrentValue > 0 && Car.PreviousSteamBrakeCylinderPressurePSI >= SteamBrakeCylinderPressurePSI && SteamBrakeCylinderPressurePSI > 0)
                         {
 
                             float equivalentEngineBrakePipeFraction = SteamBrakeCylinderPressurePSI / (SteamBrakeCompensation * lead.MaxBoilerPressurePSI);
