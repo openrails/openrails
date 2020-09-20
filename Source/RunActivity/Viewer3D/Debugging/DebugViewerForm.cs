@@ -210,16 +210,6 @@ namespace Orts.Viewer3D.Debugging
 			tWindow.SelectedIndex = (MPManager.IsMultiPlayer()) ? 0 : 1;
 
 			SetControls();
-
-            //if (simulator.TimetableMode == true && DispatchWindowWanted == false)
-            //         {
-            //	ShowTimetableControls(true);
-            //	SetTimetableMedia();
-            //         }
-            //         else
-            {
-
-            }
         }
 
         private void ShowDispatchControls(bool dispatchView)
@@ -390,26 +380,7 @@ namespace Orts.Viewer3D.Debugging
 				return;
 
 			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
-            {
-				if (item.ItemType == TrItem.trItemType.trSIDING)
-					Console.WriteLine($"Siding {item.ItemName}");
-			}
-			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
-			{
-				if (item.ItemType == TrItem.trItemType.trPLATFORM)
-					Console.WriteLine($"Platform {item.ItemName}");
-			}
-			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
-            {
-                //if (simulator.TimetableMode == true && DispatchWindowWanted == false)
                 AddToTimetableItemList(item);
-                //else
-                //    BuildListsOfItems(item);
-            }
-			foreach(var s in sidings)
-            {
-				Console.WriteLine($"Siding b {s.Name}");
-            }
         }
 
 		private void BuildListsOfItems(TrItem item)
@@ -2202,8 +2173,7 @@ namespace Orts.Viewer3D.Debugging
       }
 
 
-		#region Timetable
-		//public bool DispatchWindowWanted { get; set; } = false;
+		#region Timetable =============================================================
 		public int DaylightOffsetHrs { get; set; } = 0;
 
 		private void AddToTimetableItemList(TrItem item)
@@ -2308,33 +2278,6 @@ namespace Orts.Viewer3D.Debugging
 			lblDayLightOffsetHrs.Visible = timetableView;
 			nudDaylightOffsetHrs.Visible = timetableView;
 			bBackgroundColor.Visible = timetableView;
-
-			//var DispatchView = !timetableView;
-
-			//MSG.Visible = DispatchView;
-			//messages.Visible = DispatchView;
-			//composeMSG.Visible = DispatchView;
-			//msgAll.Visible = DispatchView;
-			//msgSelected.Visible = DispatchView;
-			//reply2Selected.Visible = DispatchView;
-			//chkAllowNew.Visible = DispatchView;
-			//chkShowAvatars.Visible = DispatchView;
-			//chkAllowUserSwitch.Visible = DispatchView;
-			//chkBoxPenalty.Visible = DispatchView;
-			//chkPreferGreen.Visible = DispatchView;
-			//chkDrawPath.Visible = DispatchView;
-			//chkPickSignals.Visible = DispatchView;
-			//chkPickSwitches.Visible = DispatchView;
-			//btnSeeInGame.Visible = DispatchView;
-			//btnAssist.Visible = DispatchView;
-			//btnNormal.Visible = DispatchView;
-			//refreshButton.Visible = DispatchView;
-			//rmvButton.Visible = DispatchView;
-			//btnFollow.Visible = DispatchView;
-			//AvatarView.Visible = DispatchView;
-			//windowSizeUpDown.Visible = DispatchView;
-			//label1.Visible = DispatchView;
-			//resLabel.Visible = DispatchView;
 		}
 
 		private void SetTimetableMedia()
@@ -2376,13 +2319,8 @@ namespace Orts.Viewer3D.Debugging
 				firstShow = false;
 			}
 
-			//// Sufficient to accommodate the whole route
-			//var xRange = maxX - minX;
-			//var yRange = maxY - minY;
-			//var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 1.15); // Add 15% to provide a bit extra for labels that extend beyond the track ends.
-			// Sufficient to accommodate the whole route twice over.
-			// This is so a user can zoom out and then back in without changing the location at the centre.
-			var xRange = maxX - minX;
+            // Sufficient to accommodate the whole route plus 50%
+            var xRange = maxX - minX;
 			var yRange = maxY - minY;
 			var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 1.5);
 			windowSizeUpDown.Maximum = (decimal)maxSize;
@@ -2437,12 +2375,12 @@ namespace Orts.Viewer3D.Debugging
                     ShowSwitches(g, widgetWidth);
 
                     // Draw labels for sidings and platforms
-                    CleanTextCells(); //clean the drawing area for text of sidings platforms and signal states
-                    ShowSidingLabels(g);
-                    ShowPlatformLabels(g);
+                    CleanTextCells();  // Empty the listing of labels ready for adding labels again
+                    ShowPlatformLabels(g); // Platforms take priority over sidings and signal states
+					ShowSidingLabels(g);
 
-                    // Draw signals
-                    signalItemsDrawn.Clear();
+					// Draw signals
+					signalItemsDrawn.Clear();
                     ShowSignals(g, scaledB, widgetWidth);
 
                     // Draw trains
@@ -2455,19 +2393,20 @@ namespace Orts.Viewer3D.Debugging
             pbCanvas.Invalidate(); // Triggers a re-paint
         }
 		/// <summary>
-		/// Indicates the location around which the image is zoomed
+		/// Indicates the location around which the image is zoomed.
+		/// If user drags an item of interest into this target box and zooms in, the item will remain in view.
 		/// </summary>
 		/// <param name="g"></param>
-        private void DrawZoomTarget(Graphics g)
+		private void DrawZoomTarget(Graphics g)
         {
             if (Dragging)
             {
-                const int size = 25;
-                var top = pbCanvas.Top + pbCanvas.Height/2 - size - 8;
-                var left = (int)(pbCanvas.Left + pbCanvas.Width/2 - size);
-                g.DrawRectangle(grayPen, top, left, size, size);
-            }
-        }
+				const int size = 24;
+				var top = pbCanvas.Height / 2 - size / 2;
+				var left = (int)(pbCanvas.Width / 2 - size / 2);
+				g.DrawRectangle(grayPen, left, top, size, size);
+			}
+		}
 
         private void ShowSimulationTime()
 		{
@@ -2942,7 +2881,12 @@ namespace Orts.Viewer3D.Debugging
 			ViewWindow.Height *= sizeIncreaseY;
 		}
 
-        private void nudDaylightOffsetHrs_ValueChanged(object sender, EventArgs e)
+		/// <summary>
+		/// Add or subtract hours of daylight to more easily observe activity during the night.
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+		private void nudDaylightOffsetHrs_ValueChanged(object sender, EventArgs e)
         {
 			DaylightOffsetHrs = (int)nudDaylightOffsetHrs.Value;
 		}
