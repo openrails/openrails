@@ -62,23 +62,24 @@ namespace Orts.Viewer3D.Debugging
       /// <summary>
       /// Reference to the main simulator object.
       /// </summary>
-      private readonly Simulator simulator;
+      public readonly Simulator simulator;
+		private TimetableWindow TimetableWindow;
 
 
       private int IM_Width = 720;
       private int IM_Height = 720;
 
-	  /// <summary>
-	  /// True when the user is dragging the route view
-	  /// </summary>
-      private bool Dragging;
+		/// <summary>
+		/// True when the user is dragging the route view
+		/// </summary>
+		public bool Dragging;
 	  private WorldPosition worldPos;
-      float xScale = 1; 
-      float yScale = 1; 
+      public float xScale = 1; 
+      public float yScale = 1; 
 
 	  string name = "";
-	  List<SwitchWidget> switchItemsDrawn;
-	  List<SignalWidget> signalItemsDrawn;
+	  public List<SwitchWidget> switchItemsDrawn;
+	  public List<SignalWidget> signalItemsDrawn;
 
       public SwitchWidget switchPickedItem;
       public SignalWidget signalPickedItem;
@@ -93,13 +94,13 @@ namespace Orts.Viewer3D.Debugging
 	  /// contains the last position of the mouse
 	  /// </summary>
 	  private System.Drawing.Point LastCursorPosition = new System.Drawing.Point();
-		Pen redPen = new Pen(Color.Red);
-		Pen greenPen = new Pen(Color.Green);
-		Pen orangePen = new Pen(Color.Orange);
-		Pen trainPen = new Pen(Color.DarkGreen);
-		Pen pathPen = new Pen(Color.DeepPink);
-		Pen grayPen = new Pen(Color.Gray);
-		Pen PlatformPen = new Pen(Color.Blue);
+		public Pen redPen = new Pen(Color.Red);
+		public Pen greenPen = new Pen(Color.Green);
+		public Pen orangePen = new Pen(Color.Orange);
+		public Pen trainPen = new Pen(Color.DarkGreen);
+		public Pen pathPen = new Pen(Color.DeepPink);
+		public Pen grayPen = new Pen(Color.Gray);
+		public Pen PlatformPen = new Pen(Color.Blue);
 
 	   //the train selected by leftclicking the mouse
 	public Train PickedTrain;
@@ -112,26 +113,26 @@ namespace Orts.Viewer3D.Debugging
 		//                           |                                |           
 		//                           |                                |         
 		//                           |                                |       
-		//                  ==========                                |             ----   
-		//                  ===========\         Track Extent         |               ^
-		//                  ====================================================      |
-		//                           |                       \        |               |
-		//                           |                        ==================   -  |
-		//                           |                                |            ^  |
-		//                           |                                |            |   
-		//                           |                                |            | maxY
-		//                           +--------------------------------+              
-		//                                                                       minY |
-		// |----- minX --->|<- VW.X->|<------------ VW.Width -------->|               |
-		//                                                                         |  |
-		// |------------------------------ maxX -------------------------------->| |  |
-		//                                                                         |  |
-		// + 0,0 World origin                                                     ------
+		//                  ==========                                |                -----   
+		//                  ===========\         Track Extent         |                   ^
+		//                  ====================================================          |
+		//                           |                       \        |                   |
+		//                           |                        ==================   ----   |
+		//                           |                                |               ^   |
+		//                           |                                |               |
+		//                           |                                |               | maxY
+		//                           +--------------------------------+                
+		//                                                                           minY |
+		// |----- minX --->|<- VW.X->|<------------ VW.Width -------->|                   |
+		//                                                                            |   |
+		// |------------------------------ maxX ------------------------------->|     |   |
+		//                                                                            |   |
+		// + 0,0 World origin                                                     ----------
 
 		/// <summary>
 		/// Defines the area to view, in meters. The left edge is meters from the leftmost extent of the route.
 		/// </summary>
-		private RectangleF ViewWindow;
+		public RectangleF ViewWindow;
 
       /// <summary>
       /// Used to periodically check if we should shift the view when the
@@ -143,10 +144,10 @@ namespace Orts.Viewer3D.Debugging
 	  TrackNode[] nodes;
 
 		// Extents of the route in meters measured from the World origin
-		float minX = float.MaxValue;
-		float minY = float.MaxValue;
-		float maxX = float.MinValue;
-		float maxY = float.MinValue;
+		public float minX = float.MaxValue;
+		public float minY = float.MaxValue;
+		public float maxX = float.MinValue;
+		public float maxY = float.MinValue;
 
 	  Viewer Viewer;
         /// <summary>
@@ -163,8 +164,9 @@ namespace Orts.Viewer3D.Debugging
 
             this.simulator = simulator;
             this.Viewer = viewer;
+			TimetableWindow = new TimetableWindow(this);
 
-            nodes = simulator.TDB.TrackDB.TrackNodes;
+			nodes = simulator.TDB.TrackDB.TrackNodes;
 
             // initialise the timer used to handle user input
             UITimer = new Timer();
@@ -208,67 +210,19 @@ namespace Orts.Viewer3D.Debugging
 			};
 
 			tWindow.SelectedIndex = (MPManager.IsMultiPlayer()) ? 0 : 1;
-
-			SetControls();
-        }
-
-        private void ShowDispatchControls(bool dispatchView)
-        {
-			var multiPlayer = MPManager.IsMultiPlayer() && dispatchView;
-			msgAll.Visible = multiPlayer; 
-			msgSelected.Visible = multiPlayer; 
-			composeMSG.Visible = multiPlayer; 
-			MSG.Visible = multiPlayer; 
-			messages.Visible = multiPlayer;
-			AvatarView.Visible = multiPlayer; 
-			composeMSG.Visible = multiPlayer; 
-			reply2Selected.Visible = multiPlayer; 
-			chkShowAvatars.Visible = multiPlayer;
-			chkAllowUserSwitch.Visible = multiPlayer;
-			chkAllowNew.Visible = multiPlayer;
-			chkBoxPenalty.Visible = multiPlayer; 
-			chkPreferGreen.Visible = multiPlayer;
-			btnAssist.Visible = multiPlayer;
-			btnNormal.Visible = multiPlayer;
-			rmvButton.Visible = multiPlayer;
-
-			if (multiPlayer)
-			{
-				chkShowAvatars.Checked = Program.Simulator.Settings.ShowAvatar;
-				pbCanvas.Location = new System.Drawing.Point(pbCanvas.Location.X, label1.Location.Y + 18);
-				refreshButton.Text = "View Self";
-			}
-
-			chkDrawPath.Visible = dispatchView;
-			chkPickSignals.Visible = dispatchView;
-			chkPickSwitches.Visible = dispatchView;
-			btnSeeInGame.Visible = dispatchView;
-			btnFollow.Visible = dispatchView;
-			windowSizeUpDown.Visible = dispatchView;
-			label1.Visible = dispatchView;
-			resLabel.Visible = dispatchView;
-			refreshButton.Visible = dispatchView;
-		}
-		private void SetDispatchMedia()
-		{
-			this.Name = "Map Window";
-			trainFont = new Font("Arial", 14, FontStyle.Bold);
-			sidingFont = new Font("Arial", 12, FontStyle.Bold);
-			trainBrush = new SolidBrush(Color.Red);
-			sidingBrush = new SolidBrush(Color.Blue);
-			pbCanvas.BackColor = Color.White;
+			TimetableWindow.SetControls();
 		}
 
 		public int RedrawCount;
-		private Font trainFont;
-		private Font sidingFont;
-		private Font PlatformFont;
-		private Font SignalFont;
-		private SolidBrush trainBrush;
-		private SolidBrush sidingBrush;
-		private SolidBrush PlatformBrush;
-		private SolidBrush SignalBrush;
-		private SolidBrush InactiveTrainBrush;
+		public Font trainFont;
+		public Font sidingFont;
+		public Font PlatformFont;
+		public Font SignalFont;
+		public SolidBrush trainBrush;
+		public SolidBrush sidingBrush;
+		public SolidBrush PlatformBrush;
+		public SolidBrush SignalBrush;
+		public SolidBrush InactiveTrainBrush;
 
 		private double lastUpdateTime;
 
@@ -379,16 +333,16 @@ namespace Orts.Viewer3D.Debugging
 				return;
 
 			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
-                AddToTimetableItemList(item);
+                TimetableWindow.AddToTimetableItemList(item);
         }
 
       bool Inited;
-	  List<LineSegment> segments = new List<LineSegment>();
-	  List<SwitchWidget> switches;
+		public List<LineSegment> segments = new List<LineSegment>();
+		public List<SwitchWidget> switches;
 	  //List<PointF> buffers = new List<PointF>();
-	  List<SignalWidget> signals = new List<SignalWidget>();
-	  List<SidingWidget> sidings = new List<SidingWidget>();
-		List<PlatformWidget> platforms = new List<PlatformWidget>();
+	  public List<SignalWidget> signals = new List<SignalWidget>();
+		public List<SidingWidget> sidings = new List<SidingWidget>();
+		public List<PlatformWidget> platforms = new List<PlatformWidget>();
 
 		/// <summary>
 		/// Initialises the picturebox and the image it contains. 
@@ -576,10 +530,10 @@ namespace Orts.Viewer3D.Debugging
 
 	  #region Draw
 	  public bool firstShow = true;
-      public bool followTrain;
-	  float subX, subY;
-      float oldWidth;
-      float oldHeight;
+		public bool followTrain;
+		public float subX, subY;
+      public float oldWidth;
+      public float oldHeight;
 
        //determine locations of buttons and boxes
       void DetermineLocations()
@@ -618,21 +572,11 @@ namespace Orts.Viewer3D.Debugging
       {
 		  if (!Inited) return;
 
-			//if (simulator.TimetableMode == true && DispatchWindowWanted == false)
-			//{
-			//	GenerateTimetableView(dragging);
-			//	return;
-			//}
-
 			if (tWindow.SelectedIndex == 1)
             {
-                GenerateTimetableView(dragging);
+				TimetableWindow.GenerateTimetableView(dragging);
                 return;
             }
-			else
-            {
-			}
-
 
 		  if (pbCanvas.Image == null) InitImage();
           DetermineLocations();
@@ -988,9 +932,9 @@ namespace Orts.Viewer3D.Debugging
          pbCanvas.Invalidate();
       }
 
-		private Vector2[][] alignedTextY;
-	  private int[] alignedTextNum;
-	  private int spacing = 12;
+		public Vector2[][] alignedTextY;
+	  public int[] alignedTextNum;
+		public const int spacing = 12;
 	  private void CleanVerticalCells()
 	  {
 		  if (alignedTextY == null || alignedTextY.Length != IM_Height / spacing) //first time to put text, or the text height has changed
@@ -1267,7 +1211,7 @@ namespace Orts.Viewer3D.Debugging
       /// <param name="p">Center point of the dot, in pixels.</param>
       /// <param name="size">Size of the dot's diameter, in pixels</param>
       /// <returns></returns>
-      static RectangleF GetRect(PointF p, float size)
+      static public RectangleF GetRect(PointF p, float size)
       {
          return new RectangleF(p.X - size / 2f, p.Y - size / 2f, size, size);
       }
@@ -2134,13 +2078,13 @@ namespace Orts.Viewer3D.Debugging
 
 			// As an alternative, cycle through 3 pale colours
 			if (pbCanvas.BackColor == Color.White)
-					pbCanvas.BackColor = Color.FromArgb(250, 240, 230);
-				else if (pbCanvas.BackColor == Color.FromArgb(250, 240, 230))
-					pbCanvas.BackColor = Color.FromArgb(252, 244, 238);
-				else if (pbCanvas.BackColor == Color.FromArgb(252, 244, 238))
-					pbCanvas.BackColor = Color.FromArgb(254, 248, 246);
-				else if (pbCanvas.BackColor == Color.FromArgb(254, 248, 246))
-					pbCanvas.BackColor = Color.White;
+				pbCanvas.BackColor = Color.FromArgb(250, 234, 209);
+			else if (pbCanvas.BackColor == Color.FromArgb(250, 234, 209))
+				pbCanvas.BackColor = Color.FromArgb(250, 240, 230);
+			else if (pbCanvas.BackColor == Color.FromArgb(250, 240, 230)) // Windows color "linen"
+				pbCanvas.BackColor = Color.FromArgb(250, 249, 242);
+			else if (pbCanvas.BackColor == Color.FromArgb(250, 249, 242))
+				pbCanvas.BackColor = Color.White;
 		}
 
         private void PictureMoveAndZoomInOut(int x, int y, decimal scale)
@@ -2157,671 +2101,6 @@ namespace Orts.Viewer3D.Debugging
 
 		#region Timetable =============================================================
 		public int DaylightOffsetHrs { get; set; } = 0;
-
-		private void AddToTimetableItemList(TrItem item)
-		{
-			switch (item.ItemType)
-			{
-				case TrItem.trItemType.trSIGNAL:
-					if (item is SignalItem)
-					{
-						SignalItem si = item as SignalItem;
-
-						if (si.SigObj >= 0 && si.SigObj < simulator.Signals.SignalObjects.Length)
-						{
-							SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
-							if (s != null && s.isSignal && s.isSignalNormal())
-								signals.Add(new SignalWidget(si, s));
-						}
-					}
-					break;
-
-				case TrItem.trItemType.trSIDING:
-					// Sidings have 2 ends. When 2nd one is found, then average the location for a single label.
-					var sidingFound = sidings.Find(r => r.Name == item.ItemName);
-					if (sidingFound.Name == null)
-                    {
-						Console.WriteLine($"added {item.ItemName}");
-						sidings.Add(new SidingWidget(item));
-					}
-					else
-					{
-						var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-						sidingFound.Location = GetMidPoint(sidingFound.Location, newLocation);
-					}
-					break;
-
-				case TrItem.trItemType.trPLATFORM:
-					// Platforms have 2 ends. When 2nd one is found, then find the right-hand one as the location for a single label.
-					var index = platforms.FindIndex(r => r.Name == item.ItemName);
-					if (index < 0)
-						platforms.Add(new PlatformWidget(item));
-					else
-					{
-						var oldLocation = platforms[index].Location;
-						var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-
-						// Because these are structs, not classes, compiler won't let you overwrite them.
-						// Instead create a single item which replaces the 2 platform items.
-						var replacementPlatform = new PlatformWidget(item);
-
-						// Give it the right-hand location
-						replacementPlatform.Location = GetRightHandPoint(oldLocation, newLocation);
-
-						// Save the original 2 locations of the platform
-						replacementPlatform.Extent1 = oldLocation;
-						replacementPlatform.Extent2 = newLocation;
-
-						// Replace the first platform item with the replacement
-						platforms.RemoveAt(index);
-						platforms.Add(replacementPlatform);
-					}
-					break;
-
-				default:
-					break;
-			}
-		}
-
-		/// <summary>
-		/// Returns the mid-point between two locations
-		/// </summary>
-		/// <param name="location"></param>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
-		private PointF GetMidPoint(PointF location1, PointF location2)
-		{
-			return new PointF()
-				{ X = (location1.X + location2.X) / 2
-				, Y = (location1.Y + location2.Y) / 2
-				};
-		}
-
-		private PointF GetRightHandPoint(PointF location1, PointF location2)
-		{
-			return (location1.X > location2.X) ? location1 : location2;
-		}
-
-		private void ShowTimetableControls(bool timetableView)
-		{
-			lblSimulationTimeText.Visible = timetableView;
-			lblSimulationTime.Visible = timetableView;
-			lblShow.Visible = timetableView;
-			cbShowPlatforms.Visible = timetableView;
-			cbShowSidings.Visible = timetableView;
-			cbShowSwitches.Visible = timetableView;
-			cbShowSignals.Visible = timetableView;
-			cbShowSignalState.Visible = timetableView;
-			cbShowTrainLabels.Visible = timetableView;
-			gbTrains.Visible = timetableView;
-			rbShowActiveTrains.Visible = timetableView;
-			rbShowAllTrains.Visible = timetableView;
-			lblDayLightOffsetHrs.Visible = timetableView;
-			nudDaylightOffsetHrs.Visible = timetableView;
-			bBackgroundColor.Visible = timetableView;
-		}
-
-		private void SetTimetableMedia()
-		{
-			this.Name = "Timetable Window";
-			trainFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-			sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-			PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-			SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
-			InactiveTrainBrush = new SolidBrush(Color.LightPink);
-			sidingBrush = new SolidBrush(Color.Blue);
-			PlatformBrush = new SolidBrush(Color.DarkBlue);
-			SignalBrush = new SolidBrush(Color.DarkRed);
-			pbCanvas.BackColor = Color.FromArgb(250, 240, 230);
-		}
-
-		private void AdjustControlLocations()
-		{
-			if (this.Height < 600 || this.Width < 800) return;
-
-			if (oldHeight != this.Height || oldWidth != label1.Left) //use the label "Res" as anchor point to determine the picture size
-			{
-				oldWidth = label1.Left; oldHeight = this.Height;
-
-				pbCanvas.Top = 50;
-				pbCanvas.Width = label1.Left - 25;					// 25 pixels found by trial and error
-				pbCanvas.Height = this.Height - pbCanvas.Top - 45;	// 45 pixels found by trial and error
-
-				if (pbCanvas.Image != null)
-					pbCanvas.Image.Dispose();
-				pbCanvas.Image = new Bitmap(pbCanvas.Width, pbCanvas.Height);
-			}
-			if (firstShow)
-			{
-				// Center the view on the player's locomotive
-				var pos = Program.Simulator.PlayerLocomotive.WorldPosition;
-				var ploc = new PointF(pos.TileX * 2048 + pos.Location.X, pos.TileZ * 2048 + pos.Location.Z);
-				ViewWindow.X = ploc.X - minX - ViewWindow.Width / 2; ViewWindow.Y = ploc.Y - minY - ViewWindow.Width / 2;
-				firstShow = false;
-			}
-
-            // Sufficient to accommodate the whole route plus 50%
-            var xRange = maxX - minX;
-			var yRange = maxY - minY;
-			var maxSize = (int)(((xRange > yRange) ? xRange : yRange) * 1.5);
-			windowSizeUpDown.Maximum = (decimal)maxSize;
-		}
-
-		public void GenerateTimetableView(bool dragging = false)
-        {
-            AdjustControlLocations();
-            ShowSimulationTime();
-
-			if (pbCanvas.Image == null)
-				InitImage();
-
-			using (Graphics g = Graphics.FromImage(pbCanvas.Image))
-            {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                g.Clear(pbCanvas.BackColor);
-
-                // Set scales. subX & subY give top-left location in meters from world origin.
-                subX = minX + ViewWindow.X;
-                subY = minY + ViewWindow.Y;
-
-                // Get scale in pixels/meter
-                xScale = pbCanvas.Width / ViewWindow.Width;
-                yScale = pbCanvas.Height / ViewWindow.Height;
-                xScale = yScale = Math.Max(pbCanvas.Width / ViewWindow.Width, pbCanvas.Height / ViewWindow.Height);
-
-                // Set the default pen to represent 1 meter.
-                var scale = (float)Math.Round((double)xScale);  // Round to nearest pixels/meter
-                var penWidth = (int)MathHelper.Clamp(scale, 1, 3);  // Keep 1 <= width <= 3 pixels
-
-                // Choose pens
-                Pen p = grayPen;
-                grayPen.Width = greenPen.Width = orangePen.Width = redPen.Width = penWidth;
-                pathPen.Width = penWidth * 2;
-                trainPen.Width = penWidth * 6;
-
-                // First so track is drawn over the thicker platform line
-                DrawPlatforms(g);
-
-                // Draw track
-                PointF scaledA, scaledB;
-                DrawTrack(g, p, out scaledA, out scaledB);
-
-                if (dragging == false)
-                {
-                    // Keep widgetWidth <= 15 pixels
-                    var widgetWidth = Math.Min(penWidth * 6, 15);
-
-                    // Draw switches
-                    switchItemsDrawn.Clear();
-                    ShowSwitches(g, widgetWidth);
-
-                    // Draw labels for sidings and platforms
-                    CleanTextCells();  // Empty the listing of labels ready for adding labels again
-                    ShowPlatformLabels(g); // Platforms take priority over sidings and signal states
-					ShowSidingLabels(g);
-
-					// Draw signals
-					signalItemsDrawn.Clear();
-                    ShowSignals(g, scaledB, widgetWidth);
-
-                    // Draw trains
-                    DrawTrains(g, scaledA, scaledB);
-                }
-
-                DrawZoomTarget(g);
-
-            }
-            pbCanvas.Invalidate(); // Triggers a re-paint
-        }
-		/// <summary>
-		/// Indicates the location around which the image is zoomed.
-		/// If user drags an item of interest into this target box and zooms in, the item will remain in view.
-		/// </summary>
-		/// <param name="g"></param>
-		private void DrawZoomTarget(Graphics g)
-        {
-            if (Dragging)
-            {
-				const int size = 24;
-				var top = pbCanvas.Height / 2 - size / 2;
-				var left = (int)(pbCanvas.Width / 2 - size / 2);
-				g.DrawRectangle(grayPen, left, top, size, size);
-			}
-		}
-
-        private void ShowSimulationTime()
-		{
-			var ct = TimeSpan.FromSeconds(Program.Simulator.ClockTime);
-			lblSimulationTime.Text = $"{ct:hh}:{ct:mm}:{ct:ss}";
-		}
-
-		private void DrawPlatforms(Graphics g)
-		{
-			PlatformPen.Width = grayPen.Width * 3;
-			foreach (var p in platforms)
-			{
-				var scaledA = new PointF((p.Extent1.X - subX) * xScale, pbCanvas.Height - (p.Extent1.Y - subY) * yScale);
-				var scaledB = new PointF((p.Extent2.X - subX) * xScale, pbCanvas.Height - (p.Extent2.Y - subY) * yScale);
-				g.DrawLine(PlatformPen, scaledA, scaledB);
-			}
-		}
-
-		private void DrawTrack(Graphics g, Pen p, out PointF scaledA, out PointF scaledB)
-        {
-            PointF[] points = new PointF[3];
-            scaledA = new PointF(0, 0);
-            scaledB = new PointF(0, 0);
-            PointF scaledC = new PointF(0, 0);
-            foreach (var line in segments)
-            {
-                scaledA.X = (line.A.TileX * 2048 - subX + (float)line.A.X) * xScale;
-                scaledA.Y = pbCanvas.Height - (line.A.TileZ * 2048 - subY + (float)line.A.Z) * yScale;
-                scaledB.X = (line.B.TileX * 2048 - subX + (float)line.B.X) * xScale;
-                scaledB.Y = pbCanvas.Height - (line.B.TileZ * 2048 - subY + (float)line.B.Z) * yScale;
-
-                if ((scaledA.X < 0 && scaledB.X < 0)
-                    || (scaledA.Y < 0 && scaledB.Y < 0))
-                    continue;
-
-                if (line.isCurved == true)
-                {
-                    scaledC.X = ((float)line.C.X - subX) * xScale; scaledC.Y = pbCanvas.Height - ((float)line.C.Z - subY) * yScale;
-                    points[0] = scaledA; points[1] = scaledC; points[2] = scaledB;
-                    g.DrawCurve(p, points);
-                }
-                else g.DrawLine(p, scaledA, scaledB);
-            }
-        }
-
-        private void ShowSwitches(Graphics g, float width)
-		{
-			if (cbShowSwitches.Checked)
-				for (var i = 0; i < switches.Count; i++)
-				{
-					SwitchWidget sw = switches[i];
-
-					var x = (sw.Location.X - subX) * xScale;
-					var y = pbCanvas.Height - (sw.Location.Y - subY) * yScale;
-					if (x < 0 || y < 0)
-						continue;
-
-					var scaledItem = new PointF() { X = x, Y = y };
-
-					if (sw.Item.TrJunctionNode.SelectedRoute == sw.main)
-						g.FillEllipse(Brushes.Black, GetRect(scaledItem, width));
-					else
-						g.FillEllipse(Brushes.Gray, GetRect(scaledItem, width));
-
-					sw.Location2D.X = scaledItem.X; sw.Location2D.Y = scaledItem.Y;
-					switchItemsDrawn.Add(sw);
-				}
-		}
-
-		private void ShowSignals(Graphics g, PointF scaledB, float width)
-		{
-			if (cbShowSignals.Checked)
-				foreach (var s in signals)
-				{
-					if (float.IsNaN(s.Location.X) || float.IsNaN(s.Location.Y))
-						continue;
-					var x = (s.Location.X - subX) * xScale;
-					var y = pbCanvas.Height - (s.Location.Y - subY) * yScale;
-					if (x < 0 || y < 0)
-						continue;
-
-					var scaledItem = new PointF() { X = x, Y = y };
-					s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
-					if (s.Signal.isSignalNormal())
-					{
-						var color = Brushes.Green;
-						var pen = greenPen;
-						if (s.IsProceed == 0)
-						{
-						}
-						else if (s.IsProceed == 1)
-						{
-							color = Brushes.Orange;
-							pen = orangePen;
-						}
-						else
-						{
-							color = Brushes.Red;
-							pen = redPen;
-						}
-						g.FillEllipse(color, GetRect(scaledItem, width));
-						signalItemsDrawn.Add(s);
-						if (s.hasDir)
-						{
-							scaledB.X = (s.Dir.X - subX) * xScale; scaledB.Y = pbCanvas.Height - (s.Dir.Y - subY) * yScale;
-							g.DrawLine(pen, scaledItem, scaledB);
-						}
-						ShowSignalState(g, scaledItem, s);
-					}
-				}
-		}
-
-		private void ShowSignalState(Graphics g, PointF scaledItem, SignalWidget sw)
-		{
-			if (cbShowSignalState.Checked)
-			{
-				var item = sw.Item as SignalItem;
-				var trainNumber = sw.Signal?.enabledTrain?.Train?.Number;
-				var trainString = (trainNumber == null) ? "" : $" train: {trainNumber}";
-				var offset = 0;
-				var position = scaledItem;
-				foreach (var signalHead in sw.Signal.SignalHeads)
-				{
-					//g.DrawString($"  {item?.SigObj} {signalHead.SignalTypeName} {signalHead.state} {trainString}", sidingFont, Brushes.Sienna, position);
-					offset++;
-					position.X += offset * 10;
-					position.Y += offset * 15;
-					var text = $"  {item?.SigObj} {signalHead.SignalTypeName} {signalHead.state} {trainString}";
-					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (sw.Location.Y - subY) * yScale, text);
-					if (scaledItem.Y >= 0f) //if we need to draw the siding names
-						g.DrawString(text, SignalFont, SignalBrush, scaledItem);
-				}
-			}
-		}
-
-		private void ShowSidingLabels(Graphics g)
-		{
-			if (cbShowSidings.CheckState == System.Windows.Forms.CheckState.Checked)
-				foreach (var s in sidings)
-				{
-					var scaledItem = new PointF();
-
-					scaledItem.X = (s.Location.X - subX) * xScale;
-					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
-					if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
-						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
-				}
-		}
-
-		private void ShowPlatformLabels(Graphics g)
-		{
-			var platformMarginPxX = 5;
-
-			if (cbShowPlatforms.CheckState == System.Windows.Forms.CheckState.Checked)
-				foreach (var p in platforms)
-				{
-					var scaledItem = new PointF();
-					scaledItem.X = (p.Location.X - subX) * xScale + platformMarginPxX;
-					var yPixels = pbCanvas.Height - (p.Location.Y - subY) * yScale;
-
-					// If track is close to horizontal, then start label search 1 row down to minimise overwriting platform line.
-					if (p.Extent1.X != p.Extent2.X
-						&& Math.Abs((p.Extent1.Y - p.Extent2.Y)/ (p.Extent1.X - p.Extent2.X)) < 0.1)
-						yPixels += spacing;
-					
-					scaledItem.Y = DetermineTextLocation(scaledItem.X, pbCanvas.Height - (p.Location.Y - subY) * yScale, p.Name);
-					if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
-						g.DrawString(p.Name, PlatformFont, PlatformBrush, scaledItem);
-				}
-		}
-
-		private void DrawTrains(Graphics g, PointF scaledA, PointF scaledB)
-		{
-			var margin = 30 * xScale;   //margins to determine if we want to draw a train
-			var margin2 = 5000 * xScale;
-
-			//variable for drawing train path
-			var mDist = 5000f; var pDist = 50; //segment length when draw path
-
-			selectedTrainList.Clear();
-
-			// Add the player's train
-			if (simulator.PlayerLocomotive.Train is Orts.Simulation.AIs.AITrain)
-				BuildSelectedTrainList(simulator.PlayerLocomotive.Train as Orts.Simulation.AIs.AITrain);
-
-			// and all the other trains
-			foreach (var t in Viewer.Simulator.AI.AITrains)
-				BuildSelectedTrainList(t);
-
-			foreach (Train t in selectedTrainList)
-			{
-				name = "";
-				TrainCar firstCar = null;
-				if (t.LeadLocomotive != null)
-				{
-					worldPos = t.LeadLocomotive.WorldPosition;
-					name = t.GetTrainName(t.LeadLocomotive.CarID);
-					firstCar = t.LeadLocomotive;
-				}
-				else if (t.Cars != null && t.Cars.Count > 0)
-				{
-					worldPos = t.Cars[0].WorldPosition;
-					name = t.GetTrainName(t.Cars[0].CarID);
-					if (t.TrainType == Train.TRAINTYPE.AI)
-						name = t.Number.ToString() + ":" + t.Name;
-					firstCar = t.Cars[0];
-				}
-				else
-					continue;
-											
-				// Draw the path, then each car of the train, then maybe the name
-				var loc = t.FrontTDBTraveller.WorldLocation;
-				float x, y;
-				x = (loc.TileX * 2048 + loc.Location.X - subX) * xScale;
-				y = pbCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - subY) * yScale;
-				if (x < -margin2
-					|| y < -margin2)
-					continue;
-
-				DrawTrainPath(t, subX, subY, pathPen, g, scaledA, scaledB, pDist, mDist);
-
-				// If zoomed out, so train occupies less than minTrainPx pixels, then draw the train as 2 boxes.
-				const int minTrainPx = 24;
-				trainPen.Width = grayPen.Width * 6;
-				var trainLengthM = 0f;
-				var minTrainLengthM = minTrainPx / xScale; // If train is shorter than 24 pixels, draw the ends only and at a fixed length
-				var drawWholeTrain = false;
-				foreach (var car in t.Cars)
-                {
-					trainLengthM += car.CarLengthM;
-					if (trainLengthM > minTrainLengthM)
-                    {
-						drawWholeTrain = true;
-						break;
-					}
-				}
-
-				var scaledTrain = new PointF();
-				foreach (var car in t.Cars)
-				{
-					if (drawWholeTrain == false)
-						// Skip the intermediate cars
-						if (car != t.Cars.First() && car != t.Cars.Last())
-							continue;
-
-					Traveller t1 = new Traveller(t.RearTDBTraveller);
-					worldPos = car.WorldPosition;
-					var dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-					if (dist > -1)
-					{
-						if (drawWholeTrain)
-                        {
-							t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
-							x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale;
-							y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-							if (x < -margin || y < -margin)
-								continue;
-							scaledTrain.X = x; scaledTrain.Y = y;
-							t1.Move(-car.CarLengthM);
-						}
-						else    // Draw the train as 2 boxes of fixed size
-						{
-							trainPen.Width = minTrainPx / 2;
-							if (car == t.Cars.First())
-							{
-								// Draw first half a train back from the front of the first car as abox
-								t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
-								x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale;
-								y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-								if (x < -margin || y < -margin)
-									continue;
-								t1.Move(-minTrainPx / xScale / 2);
-							}
-							else // car == t.Cars.Last()
-							{
-								// Draw half a train back from the rear of the first box
-								worldPos = t.Cars.First().WorldPosition;
-								dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-								t1.Move(dist - 1 + t.Cars.First().CarLengthM / 2 - minTrainPx / xScale / 2); // Not sure purpose of "- 1"
-								x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale;
-								y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-								if (x < -margin || y < -margin)
-									continue;
-								t1.Move(-minTrainPx / xScale / 2);
-							}
-							scaledTrain.X = x; scaledTrain.Y = y;
-						}
-						x = (t1.TileX * 2048 + t1.Location.X - subX) * xScale; 
-						y = pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - subY) * yScale;
-						if (x < -margin || y < -margin) 
-							continue;
-						scaledA.X = x; scaledA.Y = y;
-
-						trainPen.Color = (car == firstCar) ? Color.FromArgb(0, 180, 0) : Color.DarkGreen;
-						g.DrawLine(trainPen, scaledA, scaledTrain);						
-					}
-				}
-				worldPos = firstCar.WorldPosition;
-				scaledTrain.X = (worldPos.TileX * 2048 - subX + worldPos.Location.X) * xScale;
-				scaledTrain.Y = -25 + pbCanvas.Height - (worldPos.TileZ * 2048 - subY + worldPos.Location.Z) * yScale;
-				if (cbShowTrainLabels.Checked)
-					ShowTrainNameWithSuffix(g, scaledTrain, t);
-			}
-		}
-
-		private void BuildSelectedTrainList(Simulation.AIs.AITrain t)
-		{
-			if (rbShowAllTrains.Checked)
-				selectedTrainList.Add(t);
-
-			if (rbShowActiveTrains.Checked)
-				if (IsActiveTrain(t))
-					selectedTrainList.Add(t);
-		}
-
-		private bool IsActiveTrain(Simulation.AIs.AITrain t)
-		{
-			if (t == null)
-				return false;
-			return (t.MovementState != Orts.Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC
-						&& !(t.TrainType == Train.TRAINTYPE.AI_INCORPORATED && !t.IncorporatingTrain.IsPathless)
-					)
-					|| t.TrainType == Train.TRAINTYPE.PLAYER;
-		}
-
-		private void ShowTrainNameWithSuffix(Graphics g, PointF scaledItem, Train t)
-		{
-			var tTTrain = t as Orts.Simulation.Timetables.TTTrain;
-			if (tTTrain != null)
-			{
-				// Remove name of timetable, e.g.: ":SCE"
-				var lastPos = name.LastIndexOf(":");
-				var shortName = (lastPos > 0) ? name.Substring(0, lastPos) : name;
-
-				if (IsActiveTrain(tTTrain))
-				{
-					// Append the authority to proceed
-					var auth = "";
-					foreach (var endAuth in tTTrain.EndAuthorityType)
-					{
-						if (endAuth != Train.END_AUTHORITY.NO_PATH_RESERVED) // Hide this one as not useful
-							auth += $" {endAuth}";
-					}
-
-					var suffix = $" {tTTrain.MovementState} {tTTrain.ControlMode}{auth}";
-					var capitalisedSuffix = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(suffix.ToLower());
-					g.DrawString($"{shortName} {capitalisedSuffix}", trainFont, trainBrush, scaledItem);
-				}
-				else
-					g.DrawString($"{shortName}", trainFont, InactiveTrainBrush, scaledItem);
-			}
-		}
-
-		// The canvas is split into equally pitched rows. 
-		// Each row has an array of 4 slots with StartX, EndX positions and a count of how many slots have been filled.
-		// Arrays are used instead of lists to avoid delays for memory management.
-		private void CleanTextCells()
-		{
-			if (alignedTextY == null || alignedTextY.Length != pbCanvas.Height / spacing) //first time to put text, or the text height has changed
-			{
-				alignedTextY = new Vector2[pbCanvas.Height / spacing][];
-				alignedTextNum = new int[pbCanvas.Height / spacing];
-				for (var i = 0; i < pbCanvas.Height / spacing; i++)
-					alignedTextY[i] = new Vector2[5]; //each line has at most 5 slots
-			}
-			for (var i = 0; i < pbCanvas.Height / spacing; i++) 
-				alignedTextNum[i] = 0;
-		}
-
-		// Returns a vertical position for the text that doesn't clash or returns -1
-		// If the preferred space for text is occupied, then the slot above (-ve Y) is tested, then 2 sltos above, then 1 below.
-		private float DetermineTextLocation(float startX, float wantY, string name)
-		{
-			const float noFreeSlotFound = -1f;
-
-			var desiredPositionY = (int)(wantY / spacing);  // The positionY of the ideal row for the text.
-			var endX = startX + name.Length * trainFont.Size;
-			//out of drawing area
-			if (endX < 0) 
-				return noFreeSlotFound;
-
-			int positionY = desiredPositionY;
-			while (positionY >= 0 && positionY < alignedTextY.Length)
-			{
-				//if the line contains no text yet, put it there
-				if (alignedTextNum[positionY] == 0)
-                    return SaveLabelLocation(startX, endX, positionY);
-
-                bool conflict = false;
-
-				//check if it intersects with any labels already in this row
-				for (var col = 0; col < alignedTextNum[positionY]; col++)
-				{
-					var v = alignedTextY[positionY][col];
-					//check conflict with a text, v.X is the start of the text, v.Y is the end of the text
-					if ((endX >= v.X && startX <= v.Y))
-					{
-						conflict = true;
-						break;
-					}
-				}
-
-				if (conflict)
-                {
-					positionY--; // Try a different row: -1, -2, +2, +1
-
-					if (positionY - desiredPositionY <= -2)	// Cannot move up (-ve Y), so try to move it down (+ve Y)
-						positionY = desiredPositionY + 2;	// Try +2 then +1
-
-					if (positionY == desiredPositionY) // Back to original position again
-						return noFreeSlotFound;
-				}
-                else 
-				{
-					// Check that row has an unused column in its fixed size array
-					if (alignedTextNum[positionY] >= alignedTextY[positionY].Length)
-						return noFreeSlotFound;
-
-					return SaveLabelLocation(startX, endX, positionY);
-				}
-			}
-			return noFreeSlotFound;
-		}
-
-        private float SaveLabelLocation(float startX, float endX, int positionY)
-        {
-			// add start and end location for the new label
-			alignedTextY[positionY][alignedTextNum[positionY]] = new Vector2 { X = startX, Y = endX };
-
-			alignedTextNum[positionY]++;
-
-			return positionY * spacing;
-        }
 
         private void TimetableDrag(object sender, MouseEventArgs e)
 		{
@@ -2892,23 +2171,7 @@ namespace Orts.Viewer3D.Debugging
 
         private void tWindow_SelectedIndexChanged(object sender, EventArgs e)
         {
-            SetControls();
-        }
-
-        private void SetControls()
-        {
-            if (tWindow.SelectedIndex == 1) // 0 for Dispatch Window, 1 for Timetable Window
-            {
-                ShowTimetableControls(true);
-                ShowDispatchControls(false);
-                SetTimetableMedia();
-            }
-            else
-            {
-                ShowTimetableControls(false);
-                ShowDispatchControls(true);
-                SetDispatchMedia();
-            }
+            TimetableWindow.SetControls();
         }
 
         /// <summary>

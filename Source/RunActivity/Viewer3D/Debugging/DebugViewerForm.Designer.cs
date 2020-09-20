@@ -660,10 +660,10 @@
             this.lblInstruction.Location = new System.Drawing.Point(8, 722);
             this.lblInstruction.Name = "lblInstruction";
             this.lblInstruction.Padding = new System.Windows.Forms.Padding(3);
-            this.lblInstruction.Size = new System.Drawing.Size(208, 32);
+            this.lblInstruction.Size = new System.Drawing.Size(312, 32);
             this.lblInstruction.TabIndex = 48;
-            this.lblInstruction.Text = "To pan, drag with left mouse.                      To zoom, drag with left and ri" +
-    "ght mouse.";
+            this.lblInstruction.Text = "To pan, drag with left mouse.                                                  To" +
+    " zoom, drag with left and right mouse or scroll mouse wheel.";
             this.lblInstruction.Visible = false;
             // 
             // cbShowTrainLabels
@@ -776,53 +776,52 @@
       }
 
       #endregion
-
-      private System.Windows.Forms.PictureBox pbCanvas;
-	  private System.Windows.Forms.Button refreshButton;
-	  private System.Windows.Forms.NumericUpDown windowSizeUpDown;
-	  private System.Windows.Forms.Label resLabel;
-	  private System.Windows.Forms.ListView AvatarView;
-	  private System.Windows.Forms.Button rmvButton;
-	  private System.Windows.Forms.CheckBox chkAllowUserSwitch;
-	  private System.Windows.Forms.CheckBox chkShowAvatars;
-	  private System.Windows.Forms.TextBox MSG;
-	  private System.Windows.Forms.Button msgSelected;
-	  private System.Windows.Forms.Button msgAll;
-	  private System.Windows.Forms.Button composeMSG;
-	  private System.Windows.Forms.Label label1;
-	  private System.Windows.Forms.Button reply2Selected;
-	  private System.Windows.Forms.CheckBox chkDrawPath;
 	  private System.Windows.Forms.ListBox boxSetSignal;
 	  private System.Windows.Forms.ListBox boxSetSwitch;
-	  private System.Windows.Forms.CheckBox chkPickSignals;
-	  private System.Windows.Forms.CheckBox chkPickSwitches;
-	  private System.Windows.Forms.CheckBox chkAllowNew;
-	  private System.Windows.Forms.ListBox messages;
-	  private System.Windows.Forms.Button btnAssist;
-	  private System.Windows.Forms.Button btnNormal;
-	  private System.Windows.Forms.Button btnFollow;
-	  private System.Windows.Forms.CheckBox chkBoxPenalty;
-	  private System.Windows.Forms.CheckBox chkPreferGreen;
-	  private System.Windows.Forms.Button btnSeeInGame;
-        private System.Windows.Forms.Label lblSimulationTimeText;
-        private System.Windows.Forms.Label lblSimulationTime;
-        private System.Windows.Forms.Label lblShow;
-        private System.Windows.Forms.CheckBox cbShowPlatforms;
-        private System.Windows.Forms.CheckBox cbShowSidings;
-        private System.Windows.Forms.CheckBox cbShowSignals;
-        private System.Windows.Forms.CheckBox cbShowSignalState;
-        private System.Windows.Forms.GroupBox gbTrains;
-        private System.Windows.Forms.RadioButton rbShowActiveTrains;
-        private System.Windows.Forms.RadioButton rbShowAllTrains;
-        private System.Windows.Forms.NumericUpDown nudDaylightOffsetHrs;
-        private System.Windows.Forms.Label lblDayLightOffsetHrs;
         private System.Windows.Forms.ColorDialog cdBackground;
-        private System.Windows.Forms.Button bBackgroundColor;
-        private System.Windows.Forms.CheckBox cbShowSwitches;
         private System.Windows.Forms.Label lblInstruction;
-        private System.Windows.Forms.CheckBox cbShowTrainLabels;
-        private System.Windows.Forms.TabControl tWindow;
         private System.Windows.Forms.TabPage tDispatch;
         private System.Windows.Forms.TabPage tTimetable;
+        public System.Windows.Forms.Button refreshButton;
+        public System.Windows.Forms.NumericUpDown windowSizeUpDown;
+        public System.Windows.Forms.Label resLabel;
+        public System.Windows.Forms.ListView AvatarView;
+        public System.Windows.Forms.Button rmvButton;
+        public System.Windows.Forms.CheckBox chkAllowUserSwitch;
+        public System.Windows.Forms.CheckBox chkShowAvatars;
+        public System.Windows.Forms.TextBox MSG;
+        public System.Windows.Forms.Button msgSelected;
+        public System.Windows.Forms.Button msgAll;
+        public System.Windows.Forms.Button composeMSG;
+        public System.Windows.Forms.Label label1;
+        public System.Windows.Forms.Button reply2Selected;
+        public System.Windows.Forms.CheckBox chkDrawPath;
+        public System.Windows.Forms.CheckBox chkPickSignals;
+        public System.Windows.Forms.CheckBox chkPickSwitches;
+        public System.Windows.Forms.CheckBox chkAllowNew;
+        public System.Windows.Forms.ListBox messages;
+        public System.Windows.Forms.Button btnAssist;
+        public System.Windows.Forms.Button btnNormal;
+        public System.Windows.Forms.Button btnFollow;
+        public System.Windows.Forms.CheckBox chkBoxPenalty;
+        public System.Windows.Forms.CheckBox chkPreferGreen;
+        public System.Windows.Forms.Button btnSeeInGame;
+        public System.Windows.Forms.Label lblSimulationTimeText;
+        public System.Windows.Forms.Label lblSimulationTime;
+        public System.Windows.Forms.Label lblShow;
+        public System.Windows.Forms.CheckBox cbShowPlatforms;
+        public System.Windows.Forms.CheckBox cbShowSidings;
+        public System.Windows.Forms.CheckBox cbShowSignals;
+        public System.Windows.Forms.CheckBox cbShowSignalState;
+        public System.Windows.Forms.GroupBox gbTrains;
+        public System.Windows.Forms.RadioButton rbShowActiveTrains;
+        public System.Windows.Forms.RadioButton rbShowAllTrains;
+        public System.Windows.Forms.NumericUpDown nudDaylightOffsetHrs;
+        public System.Windows.Forms.Label lblDayLightOffsetHrs;
+        public System.Windows.Forms.Button bBackgroundColor;
+        public System.Windows.Forms.CheckBox cbShowSwitches;
+        public System.Windows.Forms.CheckBox cbShowTrainLabels;
+        public System.Windows.Forms.PictureBox pbCanvas;
+        public System.Windows.Forms.TabControl tWindow;
     }
 }
