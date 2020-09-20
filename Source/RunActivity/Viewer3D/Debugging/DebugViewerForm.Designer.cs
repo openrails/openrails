@@ -698,7 +698,7 @@
             this.tDispatch.Padding = new System.Windows.Forms.Padding(3);
             this.tDispatch.Size = new System.Drawing.Size(915, 6);
             this.tDispatch.TabIndex = 0;
-            this.tDispatch.Text = "Dispatch Window";
+            this.tDispatch.Text = "Dispatch";
             this.tDispatch.UseVisualStyleBackColor = true;
             // 
             // tTimetable
@@ -709,7 +709,7 @@
             this.tTimetable.Padding = new System.Windows.Forms.Padding(3);
             this.tTimetable.Size = new System.Drawing.Size(915, 6);
             this.tTimetable.TabIndex = 1;
-            this.tTimetable.Text = "Timetable Window";
+            this.tTimetable.Text = "Timetable";
             this.tTimetable.UseVisualStyleBackColor = true;
             // 
             // DispatchViewer
@@ -762,7 +762,7 @@
             this.Controls.Add(this.tWindow);
             this.Name = "DispatchViewer";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
-            this.Text = "DispatchViewer";
+            this.Text = "Map Window";
             this.Leave += new System.EventHandler(this.DispatcherLeave);
             ((System.ComponentModel.ISupportInitialize)(this.pbCanvas)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).EndInit();

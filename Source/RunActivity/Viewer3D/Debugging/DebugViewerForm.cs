@@ -228,6 +228,9 @@ namespace Orts.Viewer3D.Debugging
 			chkAllowNew.Visible = multiPlayer;
 			chkBoxPenalty.Visible = multiPlayer; 
 			chkPreferGreen.Visible = multiPlayer;
+			btnAssist.Visible = multiPlayer;
+			btnNormal.Visible = multiPlayer;
+			rmvButton.Visible = multiPlayer;
 
 			if (multiPlayer)
 			{
@@ -240,19 +243,15 @@ namespace Orts.Viewer3D.Debugging
 			chkPickSignals.Visible = dispatchView;
 			chkPickSwitches.Visible = dispatchView;
 			btnSeeInGame.Visible = dispatchView;
-			btnAssist.Visible = dispatchView;
-			btnNormal.Visible = dispatchView;
-			refreshButton.Visible = dispatchView;
-			rmvButton.Visible = dispatchView;
 			btnFollow.Visible = dispatchView;
-			AvatarView.Visible = dispatchView;
 			windowSizeUpDown.Visible = dispatchView;
 			label1.Visible = dispatchView;
 			resLabel.Visible = dispatchView;
+			refreshButton.Visible = dispatchView;
 		}
 		private void SetDispatchMedia()
 		{
-			this.Name = "Dispatch Window";
+			this.Name = "Map Window";
 			trainFont = new Font("Arial", 14, FontStyle.Bold);
 			sidingFont = new Font("Arial", 12, FontStyle.Bold);
 			trainBrush = new SolidBrush(Color.Red);
@@ -382,23 +381,6 @@ namespace Orts.Viewer3D.Debugging
 			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
                 AddToTimetableItemList(item);
         }
-
-		private void BuildListsOfItems(TrItem item)
-		{
-			if (item.ItemType == TrItem.trItemType.trSIGNAL)
-				if (item is SignalItem)
-				{
-					SignalItem si = item as SignalItem;
-
-					if (si.SigObj >= 0 && si.SigObj < simulator.Signals.SignalObjects.Length)
-					{
-						SignalObject s = simulator.Signals.SignalObjects[si.SigObj];
-						if (s != null && s.isSignal && s.isSignalNormal()) signals.Add(new SignalWidget(si, s));
-					}
-				}
-			if (item.ItemType == TrItem.trItemType.trSIDING || item.ItemType == TrItem.trItemType.trPLATFORM)
-				sidings.Add(new SidingWidget(item));
-		}
 
       bool Inited;
 	  List<LineSegment> segments = new List<LineSegment>();
