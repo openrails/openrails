@@ -2477,6 +2477,20 @@ The following values, in the wagon section of the file need to be set for a manu
 
 The manual brake can be increased by pressing Alt+], and decreased by pressing Alt+[.
 
+.. _physics-steam:
+
+Steam Brakes
+------------
+
+Steam brakes can be applied to a locomotive, and its corresponding tender, by adding the following parameter to the ENG file:
+
+``BrakesEngineBrakeType ( "Steam_brake" )``
+
+The brake can be applied by pressing ], and released by pressing the [ keys.
+
+To control the application and release rates on the brake use the ``EngineBrakesControllerMaxApplicationRate`` and 
+``EngineBrakesControllerMaxReleaseRate`` parameters.
+
 Dynamically Evolving Tractive Force
 ===================================
 
