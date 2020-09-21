@@ -308,7 +308,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                 if (lead.SteamEngineBrakeFitted && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender))
                 {
-                    // The steam brake uses the existing code for the train brake and engine brake. It models a Greasham and Craven MkIV steam brake valve.
+                    // The steam brake uses the existing code for the train brake and engine brake. It models a Gresham and Craven MkIV steam brake valve.
                     // Engine brake moves in association with Engine Brake Controller, and uses the apply and release delays for steam brake force movement
                     // Train brake also moves the steam brake, and again brake is delayed by the engine brake delay values.
 
@@ -596,7 +596,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected static void PropagateBrakeLinePressures(float elapsedClockSeconds, TrainCar trainCar, bool twoPipes)
         {
             // Called by train update physics
-            // Brake pressures are calculated on the lead locomotive first, and then propogated along each vehicle in the consist.
+            // Brake pressures are calculated on the lead locomotive first, and then propagated along each vehicle in the consist.
 
             var train = trainCar.Train;
             var lead = trainCar as MSTSLocomotive;
@@ -674,7 +674,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             train.TotalTrainBrakeSystemVolumeM3 = TempTotalTrainBrakePipeVolumeM3 + TempTotalTrainBrakeCylinderVolumeM3;
             train.TotalCurrentTrainBrakeSystemVolumeM3 = TempCurrentBrakeCylinderVolumeM3 + TempCurrentBrakePipeVolumeM3;
 
-            // This section sets up the nimber of iterative steps that the proagation process goes through. nSteps is tied to the volume ratio so that instability is not introduced
+            // This section sets up the number of iterative steps that the propagation process goes through. nSteps is tied to the volume ratio so that instability is not introduced
             // If nSteps is small and BrakeServiceTimeFactorS is small then instability will be introduced, and BP will fluctuate to different values
             int nSteps;
             float nStepsFraction;
@@ -1034,7 +1034,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     // This section calculates the current brake system volumes on each vehicle
                     // These volumes are converted to a fraction which then is used to proportion the change in vacuum to each car along the train
                     // If the vehicle has a brake cylinder fitted then calculate the car brake system volume ( brake cylinder and BP). 
-                    //This value is used later to average the pressure during propogation along the train.
+                    //This value is used later to average the pressure during propagation along the train.
 
                     Car0BrakeSytemVolumeM30 = Car0brakePipeVolumeM3 / (Car0brakePipeVolumeM3 + car.BrakeSystem.BrakePipeVolumeM3);
 
