@@ -2491,6 +2491,9 @@ The brake can be applied by pressing ], and released by pressing the [ keys.
 To control the application and release rates on the brake use the ``EngineBrakesControllerMaxApplicationRate`` and 
 ``EngineBrakesControllerMaxReleaseRate`` parameters.
 
+A steam effect can be added by adding the following special effects to the wagon ``SteamBrakeFX``. This special effect will 
+turn on and off with the brake operation and can be used to model steam leakage of the steam brake cylinder, etc.
+
 Dynamically Evolving Tractive Force
 ===================================
 
