@@ -721,7 +721,7 @@ namespace Orts.Viewer3D.Popups
                 }
                 TableAddLine(table);
             }
-            // Different display depending upon whether vacuum braked or air braked
+            // Different display depending upon whether vacuum braked, manual braked or air braked
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
             {
                 TableSetCells(table, 0,
@@ -730,6 +730,10 @@ namespace Orts.Viewer3D.Popups
                                 Viewer.Catalog.GetString("BrkCyl"),
                                 Viewer.Catalog.GetString("BrkPipe"),
                                 Viewer.Catalog.GetString("VacRes"),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString(""),
                                 Viewer.Catalog.GetString(""),
                                 Viewer.Catalog.GetString("Handbrk"),
                                 Viewer.Catalog.GetString("Conn"),
@@ -745,6 +749,36 @@ namespace Orts.Viewer3D.Popups
                     TableSetCell(table, 0, "{0}", car.CarID);
                     TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
                     TableAddLine(table);
+                }
+            }
+            else if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is ManualBraking)
+            {
+                TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Car"),
+                Viewer.Catalog.GetString("Type"),
+                Viewer.Catalog.GetString("Brk"),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString("Handbrk"),
+                Viewer.Catalog.GetString(" "),
+                Viewer.Catalog.GetString("")
+                );
+                TableAddLine(table);
+
+                var n = train.Cars.Count; // Number of lines to show
+                for (var i = 0; i < n; i++)
+                {
+                    var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
+                    var car = train.Cars[j];
+                    TableSetCell(table, 0, "{0}", car.CarID);
+                    TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
+                    TableAddLine(table);
+
                 }
             }
             else  // default air braked

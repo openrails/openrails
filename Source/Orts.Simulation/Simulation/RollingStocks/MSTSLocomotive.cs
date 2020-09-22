@@ -182,6 +182,9 @@ namespace Orts.Simulation.RollingStocks
         }
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
 
+        public float BoilerPressurePSI;     // Steam Gauge pressure - what the engineer sees.
+        public float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
+
         // Vacuum Reservoir and Exhauster Settings
 
         // Steam heating Flags
@@ -248,6 +251,7 @@ namespace Orts.Simulation.RollingStocks
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public bool VacuumBrakeCutoffActivated = false;
 
+        public bool SteamEngineBrakeFitted = false;
         public bool TrainBrakeFitted = false;
         public bool EngineBrakeFitted = false;
         public bool BrakemanBrakeFitted = false;
@@ -871,6 +875,20 @@ namespace Orts.Simulation.RollingStocks
                             }
                     }
                     break;
+
+                case "engine(brakesenginebraketype":
+                    foreach (var brakesenginebraketype in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
+                    {
+                        switch (brakesenginebraketype)
+                        {
+                            case "steam_brake":
+                                SteamEngineBrakeFitted = true;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdynamicblendingforcematch": DynamicBrakeBlendingForceMatch = stf.ReadBoolBlock(false); break;
                 case "engine(vacuumbrakeshasvacuumpump": VacuumPumpFitted = stf.ReadBoolBlock(false); break;
@@ -979,6 +997,7 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveName = locoCopy.LocomotiveName;
             MaxVaccuumMaxPressurePSI = locoCopy.MaxVaccuumMaxPressurePSI;
             VacuumBrakeEQFitted = locoCopy.VacuumBrakeEQFitted;
+            SteamEngineBrakeFitted = locoCopy.SteamEngineBrakeFitted;
             HasWaterScoop = locoCopy.HasWaterScoop;
             WaterScoopFillElevationM = locoCopy.WaterScoopFillElevationM;
             WaterScoopDepthM = locoCopy.WaterScoopDepthM;
@@ -3383,17 +3402,25 @@ namespace Orts.Simulation.RollingStocks
             if (EngineBrakeController == null)
                 return null;
             // If brake type is only a state, and no numerical fraction application is displayed in the HUD, then display Brake Cylinder (BC) pressure
-                if (String.IsNullOrEmpty(EngineBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application, if no fraction display BC pressure
+            if (String.IsNullOrEmpty(EngineBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application, if no fraction display BC pressure
             {
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    return string.Format("{0} BC {1}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Vac.FromPress(Train.HUDLocomotiveBrakeCylinderPSI), PressureUnit.InHg, PressureUnit.InHg, true));
+                    if (SteamEngineBrakeFitted)
+                    {
+                        const float percentageConversion = 100;
+                        return string.Format("{0} {1}%", EngineBrakeController.GetStatus(), percentageConversion * EngineBrakeController.CurrentValue);  // Display for steam brake
+                    }
+                    else
+                    {
+                        return string.Format("{0} BC {1}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Vac.FromPress(Train.HUDLocomotiveBrakeCylinderPSI), PressureUnit.InHg, PressureUnit.InHg, true)); // display for vacuum brakes
+                    }
                 }
                 else
                 {
                     return string.Format("{0} BC {1} {2}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Train.HUDLocomotiveBrakeCylinderPSI, PressureUnit.PSI, MainPressureUnit, true), BailOff ? " BailOff" : "");
                 }
-                    
+
                 // Fraction not found so display BC                
             }
             else

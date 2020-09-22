@@ -198,7 +198,6 @@ namespace Orts.Simulation.RollingStocks
         public float CylinderSteamUsageLBpS;
         public float NewCylinderSteamUsageLBpS;
         public float BlowerSteamUsageLBpS;
-        public float BoilerPressurePSI;     // Gauge pressure - what the engineer sees.
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;     // Ratio of actual firemass to ideal firemass
@@ -212,7 +211,6 @@ namespace Orts.Simulation.RollingStocks
 
         // eng file configuration parameters
 
-        float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
         int NumCylinders = 2;       // Number of Cylinders
         float CylinderStrokeM;      // High pressure cylinders
@@ -1432,7 +1430,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
             }
-            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 30.0f); // Clamp BoilerEvap Rate to between 10 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
             TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
 
             float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.

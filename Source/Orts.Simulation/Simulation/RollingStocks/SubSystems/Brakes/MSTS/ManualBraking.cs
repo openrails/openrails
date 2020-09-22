@@ -43,8 +43,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         float ManualReleaseRateValuepS;
         float ManualMaxApplicationRateValuepS;
         float ManualBrakingDesiredFraction;
+        float EngineBrakeDesiredFraction;
         float ManualBrakingCurrentFraction;
-        float ManualMaxBrakeForceN;
+        float EngineBrakingCurrentFraction;
+        float SteamBrakeCompensation;
+        bool LocomotiveSteamBrakeFitted = false;
+        float SteamBrakePressurePSI = 0;
+        float SteamBrakeCylinderPressurePSI = 0;
+        float BrakeForceFraction;
 
         public override bool GetHandbrakeStatus()
         {
@@ -84,12 +90,48 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 DebugType = "M";
             else
                 DebugType = "-";
+
+            // Changes brake type if locomotive fitted with steam brakes
+            if (Car is MSTSSteamLocomotive)
+            {
+                var locoident = Car as MSTSSteamLocomotive;
+                if (locoident.SteamEngineBrakeFitted)
+                {
+                    DebugType = "S";
+                }
+            }
+
+            // Changes brake type if tender fitted with steam brakes
+            if (Car.WagonType == MSTSWagon.WagonTypes.Tender) 
+            {
+                var wagonid = Car as MSTSWagon;
+                // Find the associated steam locomotive for this tender
+                if (wagonid.TendersSteamLocomotive == null) wagonid.FindTendersSteamLocomotive();
+
+                if (wagonid.TendersSteamLocomotive != null)
+                {
+                    if (wagonid.TendersSteamLocomotive.SteamEngineBrakeFitted) // if steam brakes are fitted to the associated locomotive, then add steam brakes here.
+                    {
+                        DebugType = "S";
+                    }
+                }
+            }
         }
 
         public override void Update(float elapsedClockSeconds)
         {
             MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
-            float BrakemanBrakeSettingValue = lead.BrakemanBrakeController.CurrentValue;
+            float BrakemanBrakeSettingValue = 0;
+            float EngineBrakeSettingValue = 0;
+            ManualBrakingDesiredFraction = 0;
+
+            SteamBrakeCompensation = 1.0f;
+
+            // Process manual braking on all cars
+            if (lead != null)
+            {
+                BrakemanBrakeSettingValue = lead.BrakemanBrakeController.CurrentValue;
+            }
 
             ManualBrakingDesiredFraction = BrakemanBrakeSettingValue * ManualMaxBrakeValue;
 
@@ -112,12 +154,62 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             }
 
-            // Trace.TraceInformation("Manual Braking - CarId {0} BrakeSetting {1} MaxBrakeValue {2} DesiredFraction {3} CurrentFraction {4} MaxBrakeForce {5}", Car.CarID, ManualBrakeSettingValue, ManualMaxBrakeValue, ManualBrakingDesiredFraction, ManualBrakingCurrentFraction, Car.MaxBrakeForceN);
+            BrakeForceFraction = ManualBrakingCurrentFraction / ManualMaxBrakeValue;
+          
+            // If car is a locomotive or tender, then process engine brake
+            if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender) // Engine brake
+            {
+                if (lead != null)
+                {
+                    EngineBrakeSettingValue = lead.EngineBrakeController.CurrentValue;
+                    if (lead.SteamEngineBrakeFitted)
+                    {
+                        LocomotiveSteamBrakeFitted = true;
+                        EngineBrakeDesiredFraction = EngineBrakeSettingValue * lead.MaxBoilerPressurePSI;
+                    }
+                    else
+                    {
+                        EngineBrakeDesiredFraction = EngineBrakeSettingValue * ManualMaxBrakeValue;
+                    }
+              
 
-            float f;
+                    if (EngineBrakingCurrentFraction < EngineBrakeDesiredFraction)
+                    {
+
+                        EngineBrakingCurrentFraction += elapsedClockSeconds * lead.EngineBrakeController.ApplyRatePSIpS;
+                        if (EngineBrakingCurrentFraction > EngineBrakeDesiredFraction)
+                        {
+                            EngineBrakingCurrentFraction = EngineBrakeDesiredFraction;
+                        }
+
+                    }
+                    else if (EngineBrakingCurrentFraction > EngineBrakeDesiredFraction)
+                    {
+                        EngineBrakingCurrentFraction -= elapsedClockSeconds * lead.EngineBrakeController.ReleaseRatePSIpS;
+                        if (EngineBrakingCurrentFraction < 0)
+                        {
+                            EngineBrakingCurrentFraction = 0;
+                        }
+                    }
+
+                    if (lead.SteamEngineBrakeFitted)
+                    {
+                        SteamBrakeCompensation = lead.BoilerPressurePSI / lead.MaxBoilerPressurePSI;
+                        SteamBrakePressurePSI = EngineBrakeSettingValue * SteamBrakeCompensation * lead.MaxBoilerPressurePSI;
+                        SteamBrakeCylinderPressurePSI = EngineBrakingCurrentFraction * SteamBrakeCompensation; // For display purposes
+                        BrakeForceFraction = EngineBrakingCurrentFraction / lead.MaxBoilerPressurePSI; // Manual braking value overwritten by engine calculated value
+                    }
+                    else
+                    {
+                        BrakeForceFraction = EngineBrakingCurrentFraction / ManualMaxBrakeValue;
+                    }
+                }
+            }
+
+                float f;
             if (!Car.BrakesStuck)
             {
-                f = Car.MaxBrakeForceN * Math.Min(ManualBrakingCurrentFraction / ManualMaxBrakeValue, 1);
+                f = Car.MaxBrakeForceN * Math.Min(BrakeForceFraction, 1);
                 if (f < Car.MaxHandbrakeForceN * HandbrakePercent / 100)
                     f = Car.MaxHandbrakeForceN * HandbrakePercent / 100;
             }
@@ -155,7 +247,25 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             // display differently depending upon whether manual brake is present or not
 
-            if ((Car as MSTSWagon).ManualBrakePresent)
+            if ((Car as MSTSWagon).ManualBrakePresent && LocomotiveSteamBrakeFitted)
+            {
+                return new string[] {
+                DebugType,
+                string.Format("{0:F0}", FormatStrings.FormatPressure(SteamBrakeCylinderPressurePSI, PressureUnit.PSI,  PressureUnit.PSI, true)),
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty, // Spacer because the state above needs 2 columns.
+                (Car as MSTSWagon).HandBrakePresent ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                };
+            }
+            else if ((Car as MSTSWagon).ManualBrakePresent) // Just manual brakes fitted
             {
                 return new string[] {
                 DebugType,
@@ -195,10 +305,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         }
 
-
-
-
-
         // Required to override BrakeSystem
         public override void AISetPercent(float percent)
         {
@@ -221,7 +327,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override float GetCylPressurePSI()
         {
-            return ManualBrakingCurrentFraction;
+            if (LocomotiveSteamBrakeFitted)
+            {
+                return SteamBrakeCylinderPressurePSI;
+            }
+            else
+            {
+                return ManualBrakingCurrentFraction;
+            }
         }
 
         public override float GetCylVolumeM3()
