@@ -12,6 +12,7 @@
 /Source/Contrib/TimetableEditor/backup
 /Source/Contrib/TimetableEditor/lib
 /Source/Documentation/**/_build
+/Source/Documentation/**/version.py
 /Source/Help
 /Source/Locales/**/*.bak
 
