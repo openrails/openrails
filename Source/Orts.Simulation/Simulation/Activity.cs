@@ -1388,7 +1388,6 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                //bool lEngine = false;
                 int nCars = 0;//all cars other than WagonIdList.
                 int nWagonListCars = 0;//individual wagon drop.
                 foreach (var item in trainItem.Cars)
