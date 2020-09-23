@@ -1321,9 +1321,8 @@ namespace Orts.Simulation
                 case EventType.AssembleTrainAtLocation:
                     if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        consistTrain = null;
                         consistTrain = matchesConsist(ChangeWagonIdList);
-                        triggered = (consistTrain != null ? true : false);
+                        triggered = consistTrain != null;
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
@@ -1332,7 +1331,6 @@ namespace Orts.Simulation
                     // To recognize the dropping off of the cars before the event is activated, this method is used.
                     if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        consistTrain = null;
                         consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
                         triggered = consistTrain != null;
                     }
