@@ -1334,7 +1334,7 @@ namespace Orts.Simulation
                     {
                         consistTrain = null;
                         consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
-                        triggered = (consistTrain != null ? true : false);
+                        triggered = consistTrain != null;
                     }
                     break;
                 case EventType.PickUpPassengers:
@@ -1434,19 +1434,11 @@ namespace Orts.Simulation
         /// <returns>True if all listed wagons are not part of the given train.</returns>
         static bool excludesWagons(Train train, List<string> wagonIdList)
         {
-            bool lNotFound = true;
             // The Cars list is a global list that includes STATIC cars.  We need to make sure that the active train/car is processed only.
-            for (int i = 0; i < train.Cars.Count; i++)
-            {
-                var car = train.Cars[i];
-                if (car.Train.TrainType == Train.TRAINTYPE.STATIC)
-                {
-                    lNotFound = true;
-                    return lNotFound;
-                }
+            if (train.TrainType == Train.TRAINTYPE.STATIC)
+                return true;
 
-            }
-
+            bool lNotFound = false;
             foreach (var item in wagonIdList)
             {
                 //take in count each item in wagonIdList 
