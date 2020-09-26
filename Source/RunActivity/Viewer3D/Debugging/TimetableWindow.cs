@@ -110,6 +110,7 @@ namespace Orts.Viewer3D.Debugging
 			F.cbShowSignals.Visible = timetableView;
 			F.cbShowSignalState.Visible = timetableView;
 			F.cbShowTrainLabels.Visible = timetableView;
+			F.cbShowTrainState.Visible = timetableView;
 			F.gbTrains.Visible = timetableView;
 			F.rbShowActiveTrains.Visible = timetableView;
 			F.rbShowAllTrains.Visible = timetableView;
@@ -125,6 +126,7 @@ namespace Orts.Viewer3D.Debugging
 			F.sidingFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			F.PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			F.SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
+			F.trainBrush = new SolidBrush(Color.Red);
 			F.InactiveTrainBrush = new SolidBrush(Color.LightPink);
 			F.sidingBrush = new SolidBrush(Color.Blue);
 			F.PlatformBrush = new SolidBrush(Color.DarkBlue);
@@ -314,7 +316,6 @@ namespace Orts.Viewer3D.Debugging
 				}
 
 				DrawZoomTarget(g);
-
 			}
 			F.pbCanvas.Invalidate(); // Triggers a re-paint
 		}
@@ -456,13 +457,12 @@ namespace Orts.Viewer3D.Debugging
 				var position = scaledItem;
 				foreach (var signalHead in sw.Signal.SignalHeads)
 				{
-					//g.DrawString($"  {item?.SigObj} {signalHead.SignalTypeName} {signalHead.state} {trainString}", sidingFont, Brushes.Sienna, position);
 					offset++;
 					position.X += offset * 10;
 					position.Y += offset * 15;
 					var text = $"  {item?.SigObj} {signalHead.SignalTypeName} {signalHead.state} {trainString}";
 					scaledItem.Y = GetUnusedYLocation(scaledItem.X, F.pbCanvas.Height - (sw.Location.Y - F.subY) * F.yScale, text);
-					if (scaledItem.Y >= 0f) //if we need to draw the siding names
+					if (scaledItem.Y >= 0f) // -1 indicates no free slot to draw label
 						g.DrawString(text, F.SignalFont, F.SignalBrush, scaledItem);
 				}
 			}
@@ -635,7 +635,7 @@ namespace Orts.Viewer3D.Debugging
 				scaledTrain.X = (worldPos.TileX * 2048 - F.subX + worldPos.Location.X) * F.xScale;
 				scaledTrain.Y = -25 + F.pbCanvas.Height - (worldPos.TileZ * 2048 - F.subY + worldPos.Location.Z) * F.yScale;
 				if (F.cbShowTrainLabels.Checked)
-					ShowTrainNameWithSuffix(g, scaledTrain, t, trainName);
+					ShowTrainNameAndState(g, scaledTrain, t, trainName);
 			}
 		}
 
@@ -659,7 +659,7 @@ namespace Orts.Viewer3D.Debugging
 					|| t.TrainType == Train.TRAINTYPE.PLAYER;
 		}
 
-		private void ShowTrainNameWithSuffix(Graphics g, PointF scaledItem, Train t, string trainName)
+		private void ShowTrainNameAndState(Graphics g, PointF scaledItem, Train t, string trainName)
 		{
 			var tTTrain = t as Orts.Simulation.Timetables.TTTrain;
 			if (tTTrain != null)
@@ -670,21 +670,45 @@ namespace Orts.Viewer3D.Debugging
 
 				if (IsActiveTrain(tTTrain))
 				{
-					// Append the authority to proceed
-					var auth = "";
-					foreach (var endAuth in tTTrain.EndAuthorityType)
+					if (F.cbShowTrainState.Checked)
 					{
-						if (endAuth != Train.END_AUTHORITY.NO_PATH_RESERVED) // Hide this one as not useful
-							auth += $" {endAuth}";
-					}
+						// 4:AI mode, 6:Mode, 7:Auth, 9:Signal, 12:Path
+						var status = tTTrain.GetStatus(F.Viewer.MilepostUnitsMetric);
 
-					var suffix = $" {tTTrain.MovementState} {tTTrain.ControlMode}{auth}";
-					var capitalisedSuffix = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(suffix.ToLower());
-					g.DrawString($"{shortName} {capitalisedSuffix}", F.trainFont, F.trainBrush, scaledItem);
+						// Add in fields 4 and 7
+						status = tTTrain.AddMovementState(status, F.Viewer.MilepostUnitsMetric);
+
+						var statuses = $"{status[4]} {status[6]} {status[7]} {status[9]}";
+						
+						// Add path if it contains any deadlock information
+						if (ContainsDeadlockIndicators(status[12]))
+							statuses += status[12];
+						
+						g.DrawString($"{shortName} {statuses}", F.trainFont, F.trainBrush, scaledItem);
+					}
+					else
+						g.DrawString($"{shortName}", F.trainFont, F.trainBrush, scaledItem);
 				}
 				else
 					g.DrawString($"{shortName}", F.trainFont, F.InactiveTrainBrush, scaledItem);
 			}
+		}
+
+		/*
+		 * # section is claimed by a train which is waiting for a signal.
+		 * & section is occupied by more than one train.
+		 * deadlock info (always linked to a switch node):
+		 * · * possible deadlock location - start of a single track section shared with a train running in opposite direction.
+		 * · ^ active deadlock - train from opposite direction is occupying or has reserved at least part of the common
+		 *     single track section. Train will be stopped at this location – generally at the last signal ahead of this node.
+		 * · ~ active deadlock at that location for other train - can be significant as this other train can block this
+		 *     train’s path.
+		*/
+		private static readonly char[] DeadlockIndicators = "#&*^~".ToCharArray();
+
+		public static bool ContainsDeadlockIndicators(string text)
+		{
+			return text.IndexOfAny(DeadlockIndicators) >= 0;
 		}
 
 		// The canvas is split into equally pitched rows. 

@@ -80,11 +80,15 @@
             this.cdBackground = new System.Windows.Forms.ColorDialog();
             this.bBackgroundColor = new System.Windows.Forms.Button();
             this.cbShowSwitches = new System.Windows.Forms.CheckBox();
-            this.lblInstruction = new System.Windows.Forms.Label();
+            this.lblInstruction1 = new System.Windows.Forms.Label();
             this.cbShowTrainLabels = new System.Windows.Forms.CheckBox();
             this.tWindow = new System.Windows.Forms.TabControl();
             this.tDispatch = new System.Windows.Forms.TabPage();
             this.tTimetable = new System.Windows.Forms.TabPage();
+            this.cbShowTrainState = new System.Windows.Forms.CheckBox();
+            this.lblInstruction2 = new System.Windows.Forms.Label();
+            this.lblInstruction3 = new System.Windows.Forms.Label();
+            this.lblInstruction4 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pbCanvas)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
             this.gbTrains.SuspendLayout();
@@ -557,7 +561,7 @@
             this.gbTrains.Controls.Add(this.rbShowActiveTrains);
             this.gbTrains.Controls.Add(this.rbShowAllTrains);
             this.gbTrains.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gbTrains.Location = new System.Drawing.Point(780, 344);
+            this.gbTrains.Location = new System.Drawing.Point(779, 371);
             this.gbTrains.Name = "gbTrains";
             this.gbTrains.Size = new System.Drawing.Size(120, 82);
             this.gbTrains.TabIndex = 43;
@@ -593,7 +597,7 @@
             // 
             this.nudDaylightOffsetHrs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.nudDaylightOffsetHrs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudDaylightOffsetHrs.Location = new System.Drawing.Point(818, 468);
+            this.nudDaylightOffsetHrs.Location = new System.Drawing.Point(817, 495);
             this.nudDaylightOffsetHrs.Maximum = new decimal(new int[] {
             12,
             0,
@@ -616,7 +620,7 @@
             this.lblDayLightOffsetHrs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDayLightOffsetHrs.AutoSize = true;
             this.lblDayLightOffsetHrs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDayLightOffsetHrs.Location = new System.Drawing.Point(780, 446);
+            this.lblDayLightOffsetHrs.Location = new System.Drawing.Point(779, 473);
             this.lblDayLightOffsetHrs.Name = "lblDayLightOffsetHrs";
             this.lblDayLightOffsetHrs.Size = new System.Drawing.Size(111, 15);
             this.lblDayLightOffsetHrs.TabIndex = 45;
@@ -632,7 +636,7 @@
             // 
             this.bBackgroundColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bBackgroundColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.bBackgroundColor.Location = new System.Drawing.Point(780, 502);
+            this.bBackgroundColor.Location = new System.Drawing.Point(779, 529);
             this.bBackgroundColor.Name = "bBackgroundColor";
             this.bBackgroundColor.Size = new System.Drawing.Size(131, 23);
             this.bBackgroundColor.TabIndex = 46;
@@ -654,17 +658,16 @@
             this.cbShowSwitches.UseVisualStyleBackColor = true;
             this.cbShowSwitches.Visible = false;
             // 
-            // lblInstruction
+            // lblInstruction1
             // 
-            this.lblInstruction.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblInstruction.Location = new System.Drawing.Point(8, 722);
-            this.lblInstruction.Name = "lblInstruction";
-            this.lblInstruction.Padding = new System.Windows.Forms.Padding(3);
-            this.lblInstruction.Size = new System.Drawing.Size(312, 32);
-            this.lblInstruction.TabIndex = 48;
-            this.lblInstruction.Text = "To pan, drag with left mouse.                                                  To" +
-    " zoom, drag with left and right mouse or scroll mouse wheel.";
-            this.lblInstruction.Visible = false;
+            this.lblInstruction1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblInstruction1.Location = new System.Drawing.Point(8, 672);
+            this.lblInstruction1.Name = "lblInstruction1";
+            this.lblInstruction1.Padding = new System.Windows.Forms.Padding(3);
+            this.lblInstruction1.Size = new System.Drawing.Size(327, 22);
+            this.lblInstruction1.TabIndex = 48;
+            this.lblInstruction1.Text = "To pan, drag with left mouse.";
+            this.lblInstruction1.Visible = false;
             // 
             // cbShowTrainLabels
             // 
@@ -712,14 +715,64 @@
             this.tTimetable.Text = "Timetable";
             this.tTimetable.UseVisualStyleBackColor = true;
             // 
+            // cbShowTrainState
+            // 
+            this.cbShowTrainState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbShowTrainState.AutoSize = true;
+            this.cbShowTrainState.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbShowTrainState.Location = new System.Drawing.Point(800, 340);
+            this.cbShowTrainState.Name = "cbShowTrainState";
+            this.cbShowTrainState.Size = new System.Drawing.Size(85, 19);
+            this.cbShowTrainState.TabIndex = 52;
+            this.cbShowTrainState.Text = "Train State";
+            this.cbShowTrainState.UseVisualStyleBackColor = true;
+            this.cbShowTrainState.Visible = false;
+            // 
+            // lblInstruction2
+            // 
+            this.lblInstruction2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblInstruction2.Location = new System.Drawing.Point(8, 693);
+            this.lblInstruction2.Name = "lblInstruction2";
+            this.lblInstruction2.Padding = new System.Windows.Forms.Padding(3);
+            this.lblInstruction2.Size = new System.Drawing.Size(327, 21);
+            this.lblInstruction2.TabIndex = 53;
+            this.lblInstruction2.Text = "To zoom, drag with left and right mouse or scroll mouse wheel.";
+            this.lblInstruction2.Visible = false;
+            // 
+            // lblInstruction3
+            // 
+            this.lblInstruction3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblInstruction3.Location = new System.Drawing.Point(8, 714);
+            this.lblInstruction3.Name = "lblInstruction3";
+            this.lblInstruction3.Padding = new System.Windows.Forms.Padding(3);
+            this.lblInstruction3.Size = new System.Drawing.Size(327, 21);
+            this.lblInstruction3.TabIndex = 54;
+            this.lblInstruction3.Text = "To zoom in to a location, press Shift and click the left mouse.";
+            this.lblInstruction3.Visible = false;
+            // 
+            // lblInstruction4
+            // 
+            this.lblInstruction4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblInstruction4.Location = new System.Drawing.Point(8, 735);
+            this.lblInstruction4.Name = "lblInstruction4";
+            this.lblInstruction4.Padding = new System.Windows.Forms.Padding(3);
+            this.lblInstruction4.Size = new System.Drawing.Size(327, 21);
+            this.lblInstruction4.TabIndex = 55;
+            this.lblInstruction4.Text = "To zoom out of a location, press Alt and click the left mouse.";
+            this.lblInstruction4.Visible = false;
+            // 
             // DispatchViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(923, 768);
+            this.Controls.Add(this.lblInstruction4);
+            this.Controls.Add(this.lblInstruction3);
+            this.Controls.Add(this.lblInstruction2);
+            this.Controls.Add(this.cbShowTrainState);
             this.Controls.Add(this.cbShowTrainLabels);
-            this.Controls.Add(this.lblInstruction);
+            this.Controls.Add(this.lblInstruction1);
             this.Controls.Add(this.cbShowSwitches);
             this.Controls.Add(this.bBackgroundColor);
             this.Controls.Add(this.lblDayLightOffsetHrs);
@@ -779,7 +832,7 @@
 	  private System.Windows.Forms.ListBox boxSetSignal;
 	  private System.Windows.Forms.ListBox boxSetSwitch;
         private System.Windows.Forms.ColorDialog cdBackground;
-        private System.Windows.Forms.Label lblInstruction;
+        private System.Windows.Forms.Label lblInstruction1;
         private System.Windows.Forms.TabPage tDispatch;
         private System.Windows.Forms.TabPage tTimetable;
         public System.Windows.Forms.Button refreshButton;
@@ -823,5 +876,9 @@
         public System.Windows.Forms.CheckBox cbShowTrainLabels;
         public System.Windows.Forms.PictureBox pbCanvas;
         public System.Windows.Forms.TabControl tWindow;
+        public System.Windows.Forms.CheckBox cbShowTrainState;
+        private System.Windows.Forms.Label lblInstruction2;
+        private System.Windows.Forms.Label lblInstruction3;
+        private System.Windows.Forms.Label lblInstruction4;
     }
 }
