@@ -488,8 +488,9 @@ Development Rules
 - How to control the view in a 3D cab is described :ref:`here <driving-changing-view>`.
 
 A demo trainset with a 3Dcab, that may be useful for developers, can be 
-downloaded from: `<http://www.tsimserver.com/Download/Df11G3DCab.zip>`_.  
-v
+downloaded from: `http://www.tsimserver.com/Download/Df11G3DCab.zip`_
+
+.. _http://www.tsimserver.com/Download/Df11G3DCab.zip: http://www.tsimserver.com/Download/Df11G3DCab.zip
 
 A Practical Development Example For a Digital Speedometer
 ---------------------------------------------------------
