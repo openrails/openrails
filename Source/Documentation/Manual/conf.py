@@ -25,8 +25,11 @@ author = 'Open Rails Team'
 version = ''
 revision = ''
 
-# Load current version and revision information
-exec(open("./version.py").read())
+# Load current version and revision information (ignoring errors)
+try:
+    exec(open("./version.py").read())
+except:
+    pass
 
 
 # -- General configuration ---------------------------------------------------
