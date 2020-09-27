@@ -819,8 +819,9 @@ As shown below, the basic red train label identifies the train.
 
 .. image:: images/timetable_tab1.png
 
-The "Active & static" selection shows both the trains currently active in the timetable
-and those which do not move during the timetable.
+The "All" selection shows inactive and static trains too with labels in gray.
+Inactive trains that have arrived at their destination and been formed into departures
+but their start time has not arrived, see Processing of #dispose comment for player train.
 
 When you select the "Train state" checkbox, the train labels extend to provide key information matching 
 that from the :ref:`HUD <driving-hud-dispatcher>` as shown below:

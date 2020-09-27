@@ -587,9 +587,9 @@
             this.rbShowAllTrains.AutoSize = true;
             this.rbShowAllTrains.Location = new System.Drawing.Point(14, 50);
             this.rbShowAllTrains.Name = "rbShowAllTrains";
-            this.rbShowAllTrains.Size = new System.Drawing.Size(98, 19);
+            this.rbShowAllTrains.Size = new System.Drawing.Size(38, 19);
             this.rbShowAllTrains.TabIndex = 0;
-            this.rbShowAllTrains.Text = "Active && static";
+            this.rbShowAllTrains.Text = "All";
             this.rbShowAllTrains.UseVisualStyleBackColor = true;
             this.rbShowAllTrains.Visible = false;
             // 
