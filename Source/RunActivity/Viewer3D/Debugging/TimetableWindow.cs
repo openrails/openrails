@@ -127,7 +127,7 @@ namespace Orts.Viewer3D.Debugging
 			F.PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			F.SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			F.trainBrush = new SolidBrush(Color.Red);
-			F.InactiveTrainBrush = new SolidBrush(Color.LightPink);
+			F.InactiveTrainBrush = new SolidBrush(Color.Gray);
 			F.sidingBrush = new SolidBrush(Color.Blue);
 			F.PlatformBrush = new SolidBrush(Color.DarkBlue);
 			F.SignalBrush = new SolidBrush(Color.DarkRed);

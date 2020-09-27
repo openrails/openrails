@@ -547,11 +547,11 @@
             this.cbShowSignalState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShowSignalState.AutoSize = true;
             this.cbShowSignalState.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbShowSignalState.Location = new System.Drawing.Point(800, 300);
+            this.cbShowSignalState.Location = new System.Drawing.Point(802, 300);
             this.cbShowSignalState.Name = "cbShowSignalState";
-            this.cbShowSignalState.Size = new System.Drawing.Size(92, 19);
+            this.cbShowSignalState.Size = new System.Drawing.Size(90, 19);
             this.cbShowSignalState.TabIndex = 42;
-            this.cbShowSignalState.Text = "Signal State";
+            this.cbShowSignalState.Text = "Signal state";
             this.cbShowSignalState.UseVisualStyleBackColor = true;
             this.cbShowSignalState.Visible = false;
             // 
@@ -575,10 +575,10 @@
             this.rbShowActiveTrains.Checked = true;
             this.rbShowActiveTrains.Location = new System.Drawing.Point(13, 25);
             this.rbShowActiveTrains.Name = "rbShowActiveTrains";
-            this.rbShowActiveTrains.Size = new System.Drawing.Size(93, 19);
+            this.rbShowActiveTrains.Size = new System.Drawing.Size(81, 19);
             this.rbShowActiveTrains.TabIndex = 1;
             this.rbShowActiveTrains.TabStop = true;
-            this.rbShowActiveTrains.Text = "Active Trains";
+            this.rbShowActiveTrains.Text = "Active only";
             this.rbShowActiveTrains.UseVisualStyleBackColor = true;
             this.rbShowActiveTrains.Visible = false;
             // 
@@ -587,9 +587,9 @@
             this.rbShowAllTrains.AutoSize = true;
             this.rbShowAllTrains.Location = new System.Drawing.Point(14, 50);
             this.rbShowAllTrains.Name = "rbShowAllTrains";
-            this.rbShowAllTrains.Size = new System.Drawing.Size(75, 19);
+            this.rbShowAllTrains.Size = new System.Drawing.Size(98, 19);
             this.rbShowAllTrains.TabIndex = 0;
-            this.rbShowAllTrains.Text = "All Trains";
+            this.rbShowAllTrains.Text = "Active && static";
             this.rbShowAllTrains.UseVisualStyleBackColor = true;
             this.rbShowAllTrains.Visible = false;
             // 
@@ -720,11 +720,11 @@
             this.cbShowTrainState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShowTrainState.AutoSize = true;
             this.cbShowTrainState.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbShowTrainState.Location = new System.Drawing.Point(800, 340);
+            this.cbShowTrainState.Location = new System.Drawing.Point(802, 340);
             this.cbShowTrainState.Name = "cbShowTrainState";
-            this.cbShowTrainState.Size = new System.Drawing.Size(85, 19);
+            this.cbShowTrainState.Size = new System.Drawing.Size(83, 19);
             this.cbShowTrainState.TabIndex = 52;
-            this.cbShowTrainState.Text = "Train State";
+            this.cbShowTrainState.Text = "Train state";
             this.cbShowTrainState.UseVisualStyleBackColor = true;
             this.cbShowTrainState.Visible = false;
             // 

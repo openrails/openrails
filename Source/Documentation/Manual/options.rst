@@ -32,9 +32,9 @@ sometimes use a view other than the cabview to follow the train, and
 therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
-.. _options-dispatcher:
+.. _options-map-window:
 
-Dispatcher window
+Map window
 -----------------
 
 It is suggested to always select this option. When this option is selected,
@@ -45,7 +45,7 @@ option :ref:`Fast fullscreen Alt+Tab <options-fullscreen>`.
 
 Through this window you can monitor train movements and also influence
 them, by setting signals and switches. A complete description of the
-dispatcher window can be found :ref:`here <driving-dispatcher>`.
+dispatcher tab can be found :ref:`here <driving-dispatcher>`.
 
 .. image:: images/options-dispatcher.png
 
