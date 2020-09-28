@@ -736,6 +736,8 @@ The commands ``$hold`` and ``$nosignalwait`` can also be set as location command
 Dispose Commands
 ----------------
 
+.. _dispose-commands:
+
 Dispose commands can be set in the ``#dispose`` row to define what is to be done 
 with the train after it has terminated. See special notes below on the behaviour 
 of the player train when it is formed out of another train by a dispose command, 

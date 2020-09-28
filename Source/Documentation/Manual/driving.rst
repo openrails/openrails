@@ -820,13 +820,21 @@ As shown below, the basic red train label identifies the train.
 .. image:: images/timetable_tab1.png
 
 The "All" selection shows inactive and static trains too with labels in gray.
-Inactive trains that have arrived at their destination and been formed into departures
-but their start time has not arrived, see Processing of #dispose comment for player train.
+Inactive trains are those that have arrived at their destination and been formed into departures
+but their start time has not arrived - see :ref:`#dispose commands<dispose-commands>`.
+
+.. raw:: latex
+
+   \clearpage
 
 When you select the "Train state" checkbox, the train labels extend to provide key information matching 
 that from the :ref:`HUD <driving-hud-dispatcher>` as shown below:
 
 .. image:: images/timetable_tab2.png
+
+.. raw:: latex
+
+   \clearpage
 
 The path element of the train state can be very lengthy, so this is only shown where the path
 contains the characters # & * ^ ~ which indicate :ref:`a track section that is in contention <driving-hud-section-state>`.
@@ -834,6 +842,10 @@ contains the characters # & * ^ ~ which indicate :ref:`a track section that is i
 In the image below, train 192 crosses the path of train 117.
 
 .. image:: images/timetable_tab3.png
+
+.. raw:: latex
+
+   \clearpage
 
 The "Signal state" checkbox reveals the aspect of each signals and also indicates the id number 
 of the train that is approaching. In this image, signal 462 is showing an APPROACH_1 aspect for train 114.

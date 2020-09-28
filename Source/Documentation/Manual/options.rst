@@ -252,11 +252,13 @@ Fast full-screen Alt+Tab
 
 When this option is selected, and OR is running full-screen, pressing
 Alt+Tab leaves OR full-screen and running, and allows the
-:ref:`Dispatcher Window <driving-dispatcher>` to be shown in front of it. If this option is not selected, OR is
-minimized. The Dispatcher Window :ref:`option <options-dispatcher>` must also be selected and the
-Dispatcher Window started with Ctrl+9 to display the Dispatcher Window.
-Each successive press of Alt+Tab will toggle between the Dispatcher window
+:ref:`Dispatcher Window <driving-dispatcher>` to be shown in front of it. 
+If this option is not selected, OR is minimized. 
+Each successive press of Alt+Tab will toggle between the map window
 and the OR window.
+
+Note: To display the Map Window, the :ref:`Map window option <options-map-window>` 
+must also be selected and the Map Window started with Ctrl+9.
 
 Glass on in-game windows
 ------------------------
