@@ -413,6 +413,7 @@ namespace Orts.Viewer3D.Popups
             var showMUReverser = Math.Abs(playerTrain.MUReverserPercent) != 100;
             var showRetainers = playerTrain.RetainerSetting != RetainerSetting.Exhaust;
             var engineBrakeStatus = Viewer.PlayerLocomotive.GetEngineBrakeStatus();
+            var brakemanBrakeStatus = Viewer.PlayerLocomotive.GetBrakemanBrakeStatus();
             var dynamicBrakeStatus = Viewer.PlayerLocomotive.GetDynamicBrakeStatus();
             var locomotiveStatus = Viewer.PlayerLocomotive.GetStatus();
             var stretched = playerTrain.Cars.Count > 1 && playerTrain.NPull == playerTrain.Cars.Count - 1;
@@ -434,11 +435,14 @@ namespace Orts.Viewer3D.Popups
             TableAddLabelValue(table, Viewer.Catalog.GetString("Gradient"), "{0:F1}%", -Viewer.PlayerLocomotive.CurrentElevationPercent);
             TableAddLabelValue(table, Viewer.Catalog.GetString("Direction"), showMUReverser ? "{1:F0} {0}" : "{0}", FormatStrings.Catalog.GetParticularString("Reverser", GetStringAttribute.GetPrettyName(Viewer.PlayerLocomotive.Direction)), Math.Abs(playerTrain.MUReverserPercent));
             TableAddLabelValue(table, Viewer.PlayerLocomotive is MSTSSteamLocomotive ? Viewer.Catalog.GetString("Regulator") : Viewer.Catalog.GetString("Throttle"), "{0:F0}%", Viewer.PlayerLocomotive.ThrottlePercent);
-            TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeFitted)
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Train brake"), "{0}", Viewer.PlayerLocomotive.GetTrainBrakeStatus());
             if (showRetainers)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Retainers"), "{0}% {1}", playerTrain.RetainerPercent, Viewer.Catalog.GetString(GetStringAttribute.GetPrettyName(playerTrain.RetainerSetting)));
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).EngineBrakeFitted) // ideally this test should be using "engineBrakeStatus != null", but this currently does not work, as a controller is defined by default
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Engine brake"), "{0}", engineBrakeStatus);
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakemanBrakeFitted)
+                TableAddLabelValue(table, Viewer.Catalog.GetString("Brakemen brake"), "{0}", brakemanBrakeStatus);
             if (dynamicBrakeStatus != null)
                 TableAddLabelValue(table, Viewer.Catalog.GetString("Dynamic brake"), "{0}", dynamicBrakeStatus);
             if (locomotiveStatus != null)
@@ -626,66 +630,68 @@ namespace Orts.Viewer3D.Popups
             var HUDSteamEngineType = mstsLocomotive.SteamEngineType;
             var HUDEngineType = mstsLocomotive.EngineType;
 
+            if ((Viewer.PlayerLocomotive as MSTSLocomotive).TrainBrakeFitted) // Only display the following information if a train brake is defined.
+            {
                 // If vacuum brakes are used then use this display
                 if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
                 {
 
-                        if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumBrakeEQFitted)
-                            {
-                                TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}",
-                                Viewer.Catalog.GetString("PlayerLoco"),
-                                Viewer.Catalog.GetString("Exhauster"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumExhausterIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
-                            }
+                    if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumBrakeEQFitted)
+                    {
+                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}",
+                        Viewer.Catalog.GetString("PlayerLoco"),
+                        Viewer.Catalog.GetString("Exhauster"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumExhausterIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                    }
 
-                        else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && (Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorFitted)
-                            {
-                                // Display if vacuum pump, large ejector and small ejector fitted
-                                TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}\t\t{7}\t\t{8}",
-                                Viewer.Catalog.GetString("PlayerLoco"),
-                                Viewer.Catalog.GetString("Large Ejector"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
-                                Viewer.Catalog.GetString("Small Ejector"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).SmallSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
-                                Viewer.Catalog.GetString("Pressure"),
-                                FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).SteamEjectorSmallPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
-                                Viewer.Catalog.GetString("Vacuum Pump"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpOperating ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")
-                                ));
-                            }
-                        else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && !(Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorFitted) // Change display so that small ejector is not displayed for vacuum pump operated locomotives
-                            {
-                                // Display if vacuum pump, and large ejector only fitted
-                                TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
-                                Viewer.Catalog.GetString("PlayerLoco"),
-                                Viewer.Catalog.GetString("Large Ejector"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
-                                Viewer.Catalog.GetString("Vacuum Pump"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpOperating ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
-                            }
-                        else
-                            {
-                                // Display if large ejector and small ejector only fitted
-                                TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}",
-                                Viewer.Catalog.GetString("PlayerLoco"),
-                                Viewer.Catalog.GetString("Large Ejector"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
-                                Viewer.Catalog.GetString("Small Ejector"),
-                                (Viewer.PlayerLocomotive as MSTSLocomotive).SmallSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
-                                Viewer.Catalog.GetString("Pressure"),
-                                FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).SteamEjectorSmallPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true)));
-                            }
-
-                        // Lines to show brake system volumes
-                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}",
-                        Viewer.Catalog.GetString("Brake Sys Vol"),
-                        Viewer.Catalog.GetString("Train Pipe"),
-                        FormatStrings.FormatVolume(train.TotalTrainBrakePipeVolumeM3, mstsLocomotive.IsMetric),
-                        Viewer.Catalog.GetString("Brake Cyl"),
-                        FormatStrings.FormatVolume(train.TotalTrainBrakeCylinderVolumeM3, mstsLocomotive.IsMetric),
-                        Viewer.Catalog.GetString("Air Vol"),
-                        FormatStrings.FormatVolume(train.TotalCurrentTrainBrakeSystemVolumeM3, mstsLocomotive.IsMetric)
+                    else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && (Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorFitted)
+                    {
+                        // Display if vacuum pump, large ejector and small ejector fitted
+                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}\t\t{7}\t\t{8}",
+                        Viewer.Catalog.GetString("PlayerLoco"),
+                        Viewer.Catalog.GetString("Large Ejector"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                        Viewer.Catalog.GetString("Small Ejector"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).SmallSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                        Viewer.Catalog.GetString("Pressure"),
+                        FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).SteamEjectorSmallPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
+                        Viewer.Catalog.GetString("Vacuum Pump"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpOperating ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")
                         ));
+                    }
+                    else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && !(Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorFitted) // Change display so that small ejector is not displayed for vacuum pump operated locomotives
+                    {
+                        // Display if vacuum pump, and large ejector only fitted
+                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
+                        Viewer.Catalog.GetString("PlayerLoco"),
+                        Viewer.Catalog.GetString("Large Ejector"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                        Viewer.Catalog.GetString("Vacuum Pump"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpOperating ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                    }
+                    else
+                    {
+                        // Display if large ejector and small ejector only fitted
+                        TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}",
+                        Viewer.Catalog.GetString("PlayerLoco"),
+                        Viewer.Catalog.GetString("Large Ejector"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).LargeSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                        Viewer.Catalog.GetString("Small Ejector"),
+                        (Viewer.PlayerLocomotive as MSTSLocomotive).SmallSteamEjectorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off"),
+                        Viewer.Catalog.GetString("Pressure"),
+                        FormatStrings.FormatPressure((Viewer.PlayerLocomotive as MSTSLocomotive).SteamEjectorSmallPressurePSI, PressureUnit.PSI, (Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true)));
+                    }
+
+                    // Lines to show brake system volumes
+                    TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}",
+                    Viewer.Catalog.GetString("Brake Sys Vol"),
+                    Viewer.Catalog.GetString("Train Pipe"),
+                    FormatStrings.FormatVolume(train.TotalTrainBrakePipeVolumeM3, mstsLocomotive.IsMetric),
+                    Viewer.Catalog.GetString("Brake Cyl"),
+                    FormatStrings.FormatVolume(train.TotalTrainBrakeCylinderVolumeM3, mstsLocomotive.IsMetric),
+                    Viewer.Catalog.GetString("Air Vol"),
+                    FormatStrings.FormatVolume(train.TotalCurrentTrainBrakeSystemVolumeM3, mstsLocomotive.IsMetric)
+                    ));
 
                 }
                 else  // Default to air or electronically braked, use this display
@@ -698,23 +704,24 @@ namespace Orts.Viewer3D.Popups
                         (Viewer.PlayerLocomotive as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
                 }
 
-            // Display data for other locomotives
-            for (var i = 0; i < train.Cars.Count; i++)
-            {
-                var car = train.Cars[i];
-                if (car is MSTSLocomotive && car != Viewer.PlayerLocomotive)
+                // Display data for other locomotives
+                for (var i = 0; i < train.Cars.Count; i++)
                 {
-                    TableAddLines(table, String.Format("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}",
-                        Viewer.Catalog.GetString("Loco"),
-                        car.CarID,
-                        Viewer.Catalog.GetString("Main reservoir"),
-                        FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
-                        Viewer.Catalog.GetString("Compressor"),
-                        (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                    var car = train.Cars[i];
+                    if (car is MSTSLocomotive && car != Viewer.PlayerLocomotive)
+                    {
+                        TableAddLines(table, String.Format("{0}\t{1}\t{2}\t\t{3}\t{4}\t\t{5}",
+                            Viewer.Catalog.GetString("Loco"),
+                            car.CarID,
+                            Viewer.Catalog.GetString("Main reservoir"),
+                            FormatStrings.FormatPressure((car as MSTSLocomotive).MainResPressurePSI, PressureUnit.PSI, (car as MSTSLocomotive).BrakeSystemPressureUnits[BrakeSystemComponent.MainReservoir], true),
+                            Viewer.Catalog.GetString("Compressor"),
+                            (car as MSTSLocomotive).CompressorIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
+                    }
                 }
+                TableAddLine(table);
             }
-            TableAddLine(table);
-            // Different display depending upon whether vacuum braked or air braked
+            // Different display depending upon whether vacuum braked, manual braked or air braked
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
             {
                 TableSetCells(table, 0,
@@ -723,6 +730,10 @@ namespace Orts.Viewer3D.Popups
                                 Viewer.Catalog.GetString("BrkCyl"),
                                 Viewer.Catalog.GetString("BrkPipe"),
                                 Viewer.Catalog.GetString("VacRes"),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString(""),
+                                Viewer.Catalog.GetString(""),
                                 Viewer.Catalog.GetString(""),
                                 Viewer.Catalog.GetString("Handbrk"),
                                 Viewer.Catalog.GetString("Conn"),
@@ -738,6 +749,36 @@ namespace Orts.Viewer3D.Popups
                     TableSetCell(table, 0, "{0}", car.CarID);
                     TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
                     TableAddLine(table);
+                }
+            }
+            else if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is ManualBraking)
+            {
+                TableSetCells(table, 0,
+                Viewer.Catalog.GetString("Car"),
+                Viewer.Catalog.GetString("Type"),
+                Viewer.Catalog.GetString("Brk"),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString(""),
+                Viewer.Catalog.GetString("Handbrk"),
+                Viewer.Catalog.GetString(" "),
+                Viewer.Catalog.GetString("")
+                );
+                TableAddLine(table);
+
+                var n = train.Cars.Count; // Number of lines to show
+                for (var i = 0; i < n; i++)
+                {
+                    var j = i < 2 ? i : i * (train.Cars.Count - 1) / (n - 1);
+                    var car = train.Cars[j];
+                    TableSetCell(table, 0, "{0}", car.CarID);
+                    TableSetCells(table, 1, car.BrakeSystem.GetDebugStatus((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystemPressureUnits));
+                    TableAddLine(table);
+
                 }
             }
             else  // default air braked

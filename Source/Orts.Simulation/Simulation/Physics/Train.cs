@@ -244,163 +244,9 @@ namespace Orts.Simulation.Physics
         public float allowedAbsoluteMaxSpeedSignalMpS;   // Max speed as set by signal independently from train features
         public float allowedAbsoluteMaxSpeedLimitMpS;    // Max speed as set by limit independently from train features
         public float allowedAbsoluteMaxTempSpeedLimitMpS;    // Max speed as set by temp speed limit independently from train features
+        public float maxTimeS = 120;                     // check ahead for distance covered in 2 mins.
+        public float minCheckDistanceM = 5000;           // minimum distance to check ahead
         public float minCheckDistanceManualM = 3000;     // minimum distance to check ahead in manual mode
-
-        //TEMPORARY FIX AWAITING Serana
-        //public float CheckDistanceM
-        //{
-        //    get
-        //    {
-        //        float checkDistanceM = 3000f; // Default value
-        //        int signalsFound = 0;
-        //        bool forward = MUDirection != Direction.Reverse;
-
-        //        SignalObject nextSignal;
-        //        TCPosition position;
-        //        if (forward)
-        //        {
-        //            nextSignal = NextSignalObject[0];
-
-        //            position = PresentPosition[0];
-        //        }
-        //        else
-        //        {
-        //            nextSignal = NextSignalObject[1];
-
-        //            // PresentPosition[1]'s direction must be inverted in order to make the ScanRoute function work properly
-        //            position = new TCPosition();
-        //            PresentPosition[1].CopyTo(ref position);
-        //            position.TCDirection = position.TCDirection == 0 ? 1 : 0;
-        //        }
-
-        //        int signalNumClearAhead = 0;
-        //        if (nextSignal != null)
-        //        {
-        //            signalNumClearAhead = nextSignal.SignalNumClearAheadActive > -2 ? nextSignal.SignalNumClearAheadActive : nextSignal.SignalNumClearAhead_MSTS;
-        //        }
-
-        //        float offset = position.TCOffset;
-        //        float sectionStart = -offset;
-
-        //        // Get all track circuit sections in front of the train
-        //        List<int> sectionIndexes = signalRef.ScanRoute(this, position.TCSectionIndex, position.TCOffset,
-        //                position.TCDirection, true, -1, true, false,
-        //                false, false, true, false, false, false, false, IsFreight);
-        //        List<TrackCircuitSection> sections = new List<TrackCircuitSection>();
-
-        //        if (sectionIndexes.Count > 0)
-        //        {
-        //            int prevSection = -2;    // preset to invalid
-
-        //            foreach (int sectionIndex in sectionIndexes)
-        //            {
-        //                int sectionDirection = sectionIndex > 0 ? 0 : 1;
-
-        //                TrackCircuitSection section = signalRef.TrackCircuitList[Math.Abs(sectionIndex)];
-        //                TCRouteElement element = new TCRouteElement(section, sectionDirection, signalRef, prevSection);
-        //                sections.Add(section);
-
-        //                SignalObject signal = section.EndSignals[sectionDirection];
-        //                if (signal != null && signal.isSignalNormal())
-        //                {
-        //                    checkDistanceM = sectionStart + section.Length;
-
-        //                    if (signal != nextSignal) // In order not to count the signal that we took the SNCA value from
-        //                    {
-        //                        if (++signalsFound >= signalNumClearAhead + 1) // We have to go to the signal after the nth normal signal so that the route is set for the nth signal
-        //                        {
-        //                            break;
-        //                        }
-        //                    }
-        //                }
-
-        //                sectionStart += section.Length;
-        //                prevSection = Math.Abs(sectionIndex);
-        //            }
-        //        }
-
-        //        return checkDistanceM;
-        //    }
-        //}
-
-        public float CheckDistanceM
-        {
-            get
-            {
-                float checkDistanceM = 3000f; // Default value
-                int signalsFound = 0;
-                bool forward = MUDirection != Direction.Reverse;
-
-                SignalObject nextSignal;
-                TCPosition position;
-                if (forward)
-                {
-                    nextSignal = NextSignalObject[0];
-
-                    position = PresentPosition[0];
-                }
-                else
-                {
-                    nextSignal = NextSignalObject[1];
-
-                    // PresentPosition[1]'s direction must be inverted in order to make the ScanRoute function work properly
-                    position = new TCPosition();
-                    PresentPosition[1].CopyTo(ref position);
-                    position.TCDirection = position.TCDirection == 0 ? 1 : 0;
-                }
-
-                int signalNumClearAhead = 0;
-                if (nextSignal != null)
-                {
-                    signalNumClearAhead = nextSignal.SignalNumClearAheadActive > -2 ? nextSignal.SignalNumClearAheadActive : nextSignal.SignalNumClearAhead_MSTS;
-                }
-
-                float offset = position.TCOffset;
-                float sectionStart = -offset;
-
-                if (position.TCSectionIndex > -1)
-                {               
-                    // Get all track circuit sections in front of the train
-                    List<int> sectionIndexes = signalRef.ScanRoute(this, position.TCSectionIndex, position.TCOffset,
-                            position.TCDirection, true, -1, true, false,
-                            false, false, true, false, false, false, false, IsFreight);
-                    List<TrackCircuitSection> sections = new List<TrackCircuitSection>();
-
-                    if (sectionIndexes.Count > 0)
-                    {
-                        int prevSection = -2;    // preset to invalid
-
-                        foreach (int sectionIndex in sectionIndexes)
-                        {
-                            int sectionDirection = sectionIndex > 0 ? 0 : 1;
-
-                            TrackCircuitSection section = signalRef.TrackCircuitList[Math.Abs(sectionIndex)];
-                            TCRouteElement element = new TCRouteElement(section, sectionDirection, signalRef, prevSection);
-                            sections.Add(section);
-
-                            SignalObject signal = section.EndSignals[sectionDirection];
-                            if (signal != null && signal.isSignalNormal())
-                            {
-                                checkDistanceM = sectionStart + section.Length;
-
-                                if (signal != nextSignal) // In order not to count the signal that we took the SNCA value from
-                                {
-                                    if (++signalsFound >= signalNumClearAhead + 1) // We have to go to the signal after the nth normal signal so that the route is set for the nth signal
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-
-                            sectionStart += section.Length;
-                            prevSection = Math.Abs(sectionIndex);
-                        }
-                    }
-                }
-
-                return checkDistanceM;
-            }
-        }
 
         public float standardOverlapM = 15.0f;           // standard overlap on clearing sections
         public float junctionOverlapM = 75.0f;           // standard overlap on clearing sections
@@ -3177,6 +3023,10 @@ namespace Orts.Simulation.Physics
 
             // get next items within max distance
 
+            float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
+
+            // look maxTimeS or minCheckDistance ahead
+
             ObjectItemInfo nextObject;
             ObjectItemInfo prevObject = firstObject;
 
@@ -3185,7 +3035,7 @@ namespace Orts.Simulation.Physics
             int nextIndex = routeListIndex;
 
             while (returnState == ObjectItemInfo.ObjectItemFindState.Object &&
-                distanceToLastObject < CheckDistanceM &&
+                distanceToLastObject < maxDistance &&
                 nextAspect != MstsSignalAspect.STOP)
             {
                 int foundSection = -1;
@@ -3624,13 +3474,15 @@ namespace Orts.Simulation.Physics
                 // read next items if last item within max distance
                 //
 
+                float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
+
                 int routeListIndex = PresentPosition[0].RouteListIndex;
                 int lastIndex = routeListIndex;
                 float offset = PresentPosition[0].TCOffset;
 
                 prevObject = SignalObjectItems[SignalObjectItems.Count - 1];  // last object
 
-                while (lastDistance < CheckDistanceM &&
+                while (lastDistance < maxDistance &&
                           returnState == ObjectItemInfo.ObjectItemFindState.Object &&
                           nextAspect != MstsSignalAspect.STOP)
                 {
@@ -4097,7 +3949,7 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
-        /// Connect brakes
+        /// Connect brake hoses when train is initialised
         /// <\summary>
 
         public void ConnectBrakeHoses()
@@ -4107,6 +3959,15 @@ namespace Orts.Simulation.Physics
                 Cars[i].BrakeSystem.FrontBrakeHoseConnected = i > 0;
                 Cars[i].BrakeSystem.AngleCockAOpen = i > 0;
                 Cars[i].BrakeSystem.AngleCockBOpen = i < Cars.Count - 1;
+                // If end of train is not reached yet, then test the attached following car. If it is a manual braked car then set the brake cock on this car to closed.
+                // Hence automatic brakes will operate to this point in the train.
+                if (i < Cars.Count - 1)
+                {
+                    if (Cars[i + 1].CarBrakeSystemType == "manual_braking")
+                    {
+                        Cars[i].BrakeSystem.AngleCockBOpen = false;
+                    }
+                }
                 Cars[i].BrakeSystem.BleedOffValveOpen = false;
             }
         }
@@ -4984,8 +4845,6 @@ namespace Orts.Simulation.Physics
 
                     if (car.SmoothedCouplerForceUN < 0) // Tension
                     {
-                        int Loop = 0;
-
                         if (!IsRigidCoupler)
                         {
 
@@ -4998,10 +4857,7 @@ namespace Orts.Simulation.Physics
                                 {
                                     car.CouplerSlackM = car.PreviousCouplerSlackM - TempDiff;
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 1;
                                 }
-
-//                                Trace.TraceInformation("Tension Slack -ve : CarID {0} Force {1} Slack {2} PrevSlack {3} TempDiff {4}", car.CarID, car. , car.CouplerSlackM, car.PreviousCouplerSlackM, TempDiff);
                             }
                             else if (FirstCar.SpeedMpS < 0 && LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && LastCar.SpeedMpS <= LastCarZeroSpeedMpS && LeadLocomotive.Direction == Direction.Reverse)
                             {
@@ -5011,13 +4867,11 @@ namespace Orts.Simulation.Physics
                                     car.CouplerSlackM = car.PreviousCouplerSlackM;
                                     car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, car.CouplerSlackM, 0);
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 2;
                                 }
                                 else if (IndividualCouplerSlackM < MaxZ1CompressionM)
                                 {
                                     car.CouplerSlackM = MaxZ1CompressionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 3;
                                 }
                             }
 
@@ -5041,39 +4895,28 @@ namespace Orts.Simulation.Physics
                                             // Train is starting, don't allow coupler slack to decrease untill complete train is moving
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 4;
                                         }
                                         else if (ComputedZone2SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
                                             // Allow coupler slack to slowly increase
-                                            // Increase slack value
                                             car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
                                             car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                             car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 5;
                                         }
                                     }
-                                 //   else if (ComputedZone2SlackM < IndividualCouplerSlackM)
                                     else if (ComputedZone2SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                     {
                                         // Once train is moving then allow gradual reduction in coupler slack
-                                    //    car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
-                                                  car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
+                                        car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 7;
                                     }
                                     else
-                             //       else if (ComputedZone2SlackM > IndividualCouplerSlackM)
                                     {
                                         // If train moving then allow coupler slack to increase depending upon the caclulated slack
-                                    //    car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 8;
                                     }
-
-                                 //   Trace.TraceInformation("Zone 2 Tension - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ2 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM, MaxZ2TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                 }
                                 else
                                 {
@@ -5090,7 +4933,6 @@ namespace Orts.Simulation.Physics
                                         {
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 9;
                                         }
                                         else if (ComputedZone3SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
@@ -5100,31 +4942,22 @@ namespace Orts.Simulation.Physics
                                                     car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
                                                     car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                                    Loop = 10;
-    
                                         }
                                     }
-                                   // else if (ComputedZone3SlackM < IndividualCouplerSlackM)
                                     else if (ComputedZone3SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                     {
                                         // Decrease coupler slack - moving
                                         // car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 12;
                                     }
                                     else
-                               //     else if (ComputedZone3SlackM > IndividualCouplerSlackM)
                                     {
                                         // Allow coupler slack to be increased - moving
                                         car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
-                                    //    car.CouplerSlackM = ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 13;
                                     }
-
-                                 //   Trace.TraceInformation("Zone 3 Tension - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ3 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM, MaxZ3TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                 }
                             }
                             else if (IndividualCouplerSlackM > MaxZ3TensionM)  // Make sure that a new computed slack value does not take slack into the next zone.
@@ -5134,7 +4967,6 @@ namespace Orts.Simulation.Physics
                                 {
                                     car.CouplerSlackM = MaxZ3TensionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 17;
                                 }
                                 else
                                 {
@@ -5150,31 +4982,25 @@ namespace Orts.Simulation.Physics
                                         car.CouplerSlackM = ComputedZone4SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, MaxZ3TensionM * AdvancedCouplerDuplicationFactor);
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 14;
                                     }
                                     else if (ComputedZone4SlackM > MaxZ3TensionM)
                                     {
                                         car.CouplerSlackM = MaxZ3TensionM * AdvancedCouplerDuplicationFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 15;
                                     }
                                     else if (ComputedZone4SlackM < MaxZ3TensionM && ComputedZone4SlackM < car.PreviousCouplerSlackM / AdvancedCouplerDuplicationFactor)
                                     {
                                         // Decrease coupler slack
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 16;
                                     }
                                 }
                             }
- //                          Trace.TraceInformation("Zone Tension - ID {0} SmoothForce {1} CouplerForceN {2} Slack {3} Speed {4} Loop {5}", car.CarID, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, car.SpeedMpS, Loop);
                         }
                     }
 
                     else if (car.SmoothedCouplerForceUN == 0) // In this instance the coupler slack must be greater then the Z1 limit, as no coupler force is generated, and train will not move.
                     {
-                        int Loop = 0;
-
                         if (car.SpeedMpS == 0)
                         {
                             // In this instance the coupler slack must be greater then the Z1 limit, otherwise no coupler force is generated, and train will not move.
@@ -5187,7 +5013,6 @@ namespace Orts.Simulation.Physics
                                 car.CouplerSlackM = car.PreviousCouplerSlackM;
                                 // Make sure that coupler slack never goes negative when train starting and moving forward and starting
                                 car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, car.CouplerSlackM);
-                                Loop = 1;
                             }
                             else if (car.CouplerSlackM > 0 && LastCar.SpeedMpS <= 0 && LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && FirstCar.SpeedMpS < 0)
                             {
@@ -5195,17 +5020,11 @@ namespace Orts.Simulation.Physics
                                 car.CouplerSlackM = car.PreviousCouplerSlackM;
                                 // Make sure that coupler slack never goes positive when train starting and moving reverse and starting
                                 car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, car.CouplerSlackM, 0);
-                                Loop = 2;
                             }
                         }
-
-//                        if (car.SpeedMpS != 0)
-//                            Trace.TraceInformation("Advanced - Zero coupler force - CarID {0} Slack {1} Loop {2} Speed {3} Previous {4}", car.CarID, car.CouplerSlackM, Loop, car.SpeedMpS, car.PreviousCouplerSlackM);
                     }
                     else   // Compression
                     {
-                        int Loop = 0;
-
                         if (!IsRigidCoupler)
                         {
                             if (IndividualCouplerSlackM > 0 && FirstCar.SpeedMpS < 0 && LastCar.SpeedMpS <= LastCarZeroSpeedMpS && LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && LeadLocomotive.Direction == Direction.Reverse)
@@ -5216,7 +5035,6 @@ namespace Orts.Simulation.Physics
                                 {
                                     car.CouplerSlackM = -1.0f * Math.Abs(car.PreviousCouplerSlackM) - TempDiff;
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 1;
                                 }
                             }
                             else if (FirstCar.SpeedMpS > 0 && LastCar.SpeedMpS >= LastCarZeroSpeedMpS && LastCar.SpeedMpS < LastCarTensionMoveSpeedMpS && LeadLocomotive.Direction == Direction.Forward)
@@ -5227,18 +5045,15 @@ namespace Orts.Simulation.Physics
                                     car.CouplerSlackM = car.PreviousCouplerSlackM;
                                     car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, 0, car.CouplerSlackM);
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 2;
                                 }
                                 else if (IndividualCouplerSlackM > MaxZ1TensionM)
                                 {
                                     car.CouplerSlackM = MaxZ1TensionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicTensionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 3;
                                 }
                             }
                             else if (MaxZ3CompressionM < IndividualCouplerSlackM && IndividualCouplerSlackM <= MaxZ1CompressionM)
                             {
-
                                 // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
                                 //These values are set to "lock" the coupler at this maximum slack length
 
@@ -5250,23 +5065,18 @@ namespace Orts.Simulation.Physics
 
                                     if (LastCar.SpeedMpS > LastCarCompressionMoveSpeedMpS && LastCar.SpeedMpS <= LastCarZeroSpeedMpS)
                                     {
-
                                         if (ComputedZone2SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                         {
                                             // Train is starting, don't allow coupler slack to decrease until complete train is moving
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 4;
                                         }
                                         else if (ComputedZone2SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
-                                            // Allow coupler slack to slowly increase
-    
-                                                    // Increase coupler slack slowly
-                                                    car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
-                                                    car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
-                                                    car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                                    Loop = 5;                                                
+                                            // Increase coupler slack slowly
+                                            car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
+                                            car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
+                                            car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
                                         }
                                     }
                                     else if (ComputedZone2SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
@@ -5274,19 +5084,14 @@ namespace Orts.Simulation.Physics
                                         // Once train is moving then allow gradual reduction in coupler slack
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 7;
                                     }
                                     else
-      //                              else if (ComputedZone2SlackM > Math.Abs(IndividualCouplerSlackM))
                                     {
                                         // If train moving then allow coupler slack to increase slowly depending upon the caclulated slack
                                         car.CouplerSlackM = -1.0f * ComputedZone2SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 8;
                                     }
-
-                              //   Trace.TraceInformation("Zone 2 Compression - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ2 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone2SlackM, MaxZ2TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                 }
                                 else
                                 {
@@ -5303,7 +5108,6 @@ namespace Orts.Simulation.Physics
                                         {
                                             car.CouplerSlackM = car.PreviousCouplerSlackM;
                                             car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 9;
                                         }
                                         else if (ComputedZone3SlackM > Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                         {
@@ -5311,25 +5115,20 @@ namespace Orts.Simulation.Physics
                                             car.CouplerSlackM = car.PreviousCouplerSlackM * (1.0f / CouplerChangeDampingFactor);
                                             car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                             car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                            Loop = 10;
                                         }
-                                    //   Trace.TraceInformation("Zone 3 Compression - ID {0} Diff {1} Stiff {2} SmoothForce {3} CouplerForceN {4} Slack {5} ComputedSlack {6} MaxZ2 {7} IndSlack {8} LastSpeed {9} FinalDiff {10} ChangeFactror {11}", car.CarID, SlackDiff, GradStiffness, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, ComputedZone3SlackM, MaxZ2TensionM, IndividualCouplerSlackM, LastCar.SpeedMpS, (car.CouplerSlackM - (IndividualCouplerSlackM * AdvancedCouplerDuplicationFactor)), CouplerChangeDampingFactor);
                                     }
                                     else if (ComputedZone3SlackM < (Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor))
                                     {
                                         // Train moving - Decrease slack if Computed Slack is less then the previous slack value
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 12;
                                     }
                                     else
-                    //                else if (ComputedZone3SlackM > IndividualCouplerSlackM)
                                     {
                                         // Train moving - Allow coupler slack to be slowly increased if it is not the same as the computed value
                                         car.CouplerSlackM = -1.0f * ComputedZone3SlackM * AdvancedCouplerDuplicationFactor * CouplerChangeDampingFactor;
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 13;
                                     }
                                 }
                             }
@@ -5342,11 +5141,9 @@ namespace Orts.Simulation.Physics
                                     // Train starting - limit slack to maximum
                                     car.CouplerSlackM = MaxZ3CompressionM * AdvancedCouplerDuplicationFactor;
                                     car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                    Loop = 17;
                                 }
                                 else
                                 {
-
                                     // A linear curve is assumed for coupler stiffness - this curve is then used to calculate the amount of slack that the coupler should have. 
                                     //These values are set to "lock" the coupler at this maximum slack length
                                     float SlackDiff = Math.Abs(MaxZ3CompressionM - MaxZ2CompressionM);
@@ -5358,29 +5155,22 @@ namespace Orts.Simulation.Physics
                                         car.CouplerSlackM = -1.0f * ComputedZone4SlackM * AdvancedCouplerDuplicationFactor * (1.0f / CouplerChangeDampingFactor);
                                         car.CouplerSlackM = MathHelper.Clamp(car.CouplerSlackM, MaxZ3CompressionM * AdvancedCouplerDuplicationFactor, 0);
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 14;
                                     }
                                     else if (ComputedZone4SlackM > Math.Abs(MaxZ3CompressionM))
                                     {
                                         car.CouplerSlackM = MaxZ3CompressionM * AdvancedCouplerDuplicationFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 15;
                                     }
                                     else if (ComputedZone4SlackM < Math.Abs(MaxZ3CompressionM) && ComputedZone4SlackM < Math.Abs(car.PreviousCouplerSlackM) / AdvancedCouplerDuplicationFactor)
                                     {
                                         // Decrease coupler slack
                                         car.CouplerSlackM = car.PreviousCouplerSlackM * CouplerChangeDampingFactor;
                                         car.AdvancedCouplerDynamicCompressionSlackLimitM = car.CouplerSlackM;
-                                        Loop = 16;
                                     }
                                 }
                             }
-
-//                        if (car.SpeedMpS < 0)
-//                            Trace.TraceInformation("Zone Compression - ID {0} SmoothForce {1} CouplerForceN {2} Slack {3} Speed {4} Loop {5} ", car.CarID, car.SmoothedCouplerForceUN, car.CouplerForceU, car.CouplerSlackM, car.SpeedMpS, Loop);
                         }
                     }
-
                 }
                 else  // Update couplerslack2m which acts as an upper limit in slack calculations for the simple coupler
                 {
@@ -5405,7 +5195,6 @@ namespace Orts.Simulation.Physics
                             car.CouplerSlack2M = maxs;
                     }
                 }
-
                 car.PreviousCouplerSlackM = car.CouplerSlackM;
             }
         }
@@ -5447,8 +5236,9 @@ namespace Orts.Simulation.Physics
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS < 0)
                         car.SpeedMpS = 0;
-                    // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
-                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
+                    // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
+                    // These type of cars do not have any brake force to hold them still
+                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
                     }
@@ -5459,8 +5249,9 @@ namespace Orts.Simulation.Physics
                     car.SpeedMpS += car.TotalForceN / car.MassKG * elapsedTime;
                     if (car.SpeedMpS > 0)
                         car.SpeedMpS = 0;
-                    // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
-                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
+                    // If car is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  
+                    // These type of cars do not have any brake force to hold them still
+                    if ((car.CarBrakeSystemType == "air_piped" || car.CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && (locoBehind ? n != Cars.Count - 1 && NextCarSpeedMps == 0 : n != 0 && PrevCarSpeedMps == 0))
                     {
                         car.SpeedMpS = 0;
                     }
@@ -5519,9 +5310,9 @@ namespace Orts.Simulation.Physics
                     {
 
                         
-                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k-1].SpeedMpS == 0.0)
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && FirstCar.SpeedMpS > 0 && Cars[k-1].SpeedMpS == 0.0)
                         {
-                            // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
+                            // If is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                             Cars[k].SpeedMpS = 0.0f;
                         }
                         else
@@ -5575,9 +5366,9 @@ namespace Orts.Simulation.Physics
                     for (int k = j; k <= i; k++)
                     {
                         
-                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped") && FirstCar.SpeedMpS > 0 && Cars[k - 1].SpeedMpS == 0.0)
+                        if ((Cars[k].CarBrakeSystemType == "air_piped" || Cars[k].CarBrakeSystemType == "vacuum_piped" || car.CarBrakeSystemType == "manual_braking") && FirstCar.SpeedMpS > 0 && Cars[k - 1].SpeedMpS == 0.0)
                         {
-                            // If is air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
+                            // If is manual braked, air_piped car or vacuum_piped, and preceeding car is at stop, then set speed to zero.  These type of cars do not have any brake force to hold them still
                             Cars[k].SpeedMpS = 0.0f;
                         }
                         else
@@ -7854,7 +7645,8 @@ namespace Orts.Simulation.Physics
             //            }
 
             // look maxTimeS or minCheckDistance ahead
-            if (EndAuthorityType[0] == END_AUTHORITY.MAX_DISTANCE && DistanceToEndNodeAuthorityM[0] > CheckDistanceM)
+            float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
+            if (EndAuthorityType[0] == END_AUTHORITY.MAX_DISTANCE && DistanceToEndNodeAuthorityM[0] > maxDistance)
             {
                 return;   // no update required //
             }
@@ -9218,7 +9010,7 @@ namespace Orts.Simulation.Physics
                 List<int> tempSections = new List<int>();
 
                 tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
-                        requiredPosition.TCDirection, forward, CheckDistanceM, true, false,
+                        requiredPosition.TCDirection, forward, -1, true, false,
                         false, false, true, false, false, false, false, IsFreight);
 
                 if (tempSections.Count > 0)
@@ -9253,7 +9045,6 @@ namespace Orts.Simulation.Physics
             thisSection = signalRef.TrackCircuitList[requiredPosition.TCSectionIndex];
             offsetM = direction == 0 ? requiredPosition.TCOffset : thisSection.Length - requiredPosition.TCOffset;
             bool endWithSignal = false;    // ends with signal at STOP
-            bool hasEndSignal = false;     // ends with cleared signal
             int sectionWithSignalIndex = 0;
 
             for (int iindex = 0; iindex < newRoute.Count && !endWithSignal; iindex++)
@@ -9272,7 +9063,6 @@ namespace Orts.Simulation.Physics
                 {
                     var endSignal = thisSection.EndSignals[reqDirection];
                     var thisAspect = thisSection.EndSignals[reqDirection].this_sig_lr(MstsSignalFunction.NORMAL);
-                    hasEndSignal = true;
 
                     if (thisAspect == MstsSignalAspect.STOP && endSignal.hasPermission != SignalObject.Permission.Granted)
                     {
@@ -9281,7 +9071,7 @@ namespace Orts.Simulation.Physics
                     }
                     else if (!endSignal.enabled)   // signal cleared by default only - request for proper clearing
                     {
-                        endSignal.requestClearSignalExplorer(newRoute, 0.0f, thisRouted, true, 0);  // do NOT propagate
+                        endSignal.requestClearSignalExplorer(newRoute, thisRouted, true, 0);  // do NOT propagate
                     }
 
                 }
@@ -9297,88 +9087,6 @@ namespace Orts.Simulation.Physics
                     thisSection = signalRef.TrackCircuitList[newRoute[iindex].TCSectionIndex];
                     thisSection.RemoveTrain(this, true);
                     newRoute.RemoveAt(iindex);
-                }
-            }
-
-            // if route does not end with signal and is too short, extend
-
-            if (!endWithSignal && totalLengthM < CheckDistanceM)
-            {
-
-                float extendedDistanceM = CheckDistanceM - totalLengthM;
-                TCRouteElement lastElement = newRoute[newRoute.Count - 1];
-
-                int lastSectionIndex = lastElement.TCSectionIndex;
-                TrackCircuitSection lastSection = signalRef.TrackCircuitList[lastSectionIndex];
-
-                int nextSectionIndex = lastSection.Pins[lastElement.OutPin[0], lastElement.OutPin[1]].Link;
-                int nextSectionDirection = lastSection.Pins[lastElement.OutPin[0], lastElement.OutPin[1]].Direction;
-
-                // check if last item is non-aligned switch
-
-                MisalignedSwitch[direction, 0] = -1;
-                MisalignedSwitch[direction, 1] = -1;
-
-                TrackCircuitSection nextSection = nextSectionIndex >= 0 ? signalRef.TrackCircuitList[nextSectionIndex] : null;
-                if (nextSection != null && nextSection.CircuitType == TrackCircuitSection.TrackCircuitType.Junction)
-                {
-                    if (nextSection.Pins[0, 0].Link != lastSectionIndex &&
-                        nextSection.Pins[0, 1].Link != lastSectionIndex &&
-                        nextSection.Pins[1, nextSection.JunctionLastRoute].Link != lastSectionIndex)
-                    {
-                        MisalignedSwitch[direction, 0] = nextSection.Index;
-                        MisalignedSwitch[direction, 1] = lastSectionIndex;
-                    }
-                }
-
-                List<int> tempSections = new List<int>();
-
-                if (nextSectionIndex >= 0 && MisalignedSwitch[direction, 0] < 0)
-                {
-                    bool reqAutoAlign = hasEndSignal; // auto-align switches if route is extended from signal
-
-                    tempSections = signalRef.ScanRoute(this, nextSectionIndex, 0,
-                            nextSectionDirection, forward, extendedDistanceM, true, reqAutoAlign,
-                            true, false, true, false, false, false, false, IsFreight);
-                }
-
-                if (tempSections.Count > 0)
-                {
-                    // add new sections
-
-                    int prevSection = lastElement.TCSectionIndex;
-
-                    foreach (int sectionIndex in tempSections)
-                    {
-                        thisElement = new Train.TCRouteElement(signalRef.TrackCircuitList[Math.Abs(sectionIndex)],
-                                sectionIndex > 0 ? 0 : 1, signalRef, prevSection);
-                        newRoute.Add(thisElement);
-                        prevSection = Math.Abs(sectionIndex);
-                    }
-                }
-            }
-
-            // if route is too long, remove sections at end
-
-            else if (totalLengthM > CheckDistanceM)
-            {
-                float remainingLengthM = totalLengthM - signalRef.TrackCircuitList[newRoute[0].TCSectionIndex].Length; // do not count first section
-                bool lengthExceeded = remainingLengthM > CheckDistanceM;
-
-                for (int iindex = newRoute.Count - 1; iindex > 1 && lengthExceeded; iindex--)
-                {
-                    thisElement = newRoute[iindex];
-                    thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-
-                    if ((remainingLengthM - thisSection.Length) > CheckDistanceM)
-                    {
-                        remainingLengthM -= thisSection.Length;
-                        newRoute.RemoveAt(iindex);
-                    }
-                    else
-                    {
-                        lengthExceeded = false;
-                    }
                 }
             }
 
@@ -9551,9 +9259,8 @@ namespace Orts.Simulation.Physics
                     int lastDirection = newRoute[newRoute.Count - 1].Direction;
                     if (lastSection.EndSignals[lastDirection] != null && lastSection.EndSignals[lastDirection].thisRef == nextUnclearSignalIndex)
                     {
-                        float remainingDistance = CheckDistanceM - endAuthorityDistanceM;
                         SignalObject reqSignal = signalRef.SignalObjects[nextUnclearSignalIndex];
-                        newRoute = reqSignal.requestClearSignalExplorer(newRoute, remainingDistance, forward ? routedForward : routedBackward, false, 0);
+                        newRoute = reqSignal.requestClearSignalExplorer(newRoute, forward ? routedForward : routedBackward, false, 0);
                     }
                 }
             }
@@ -9860,9 +9567,7 @@ namespace Orts.Simulation.Physics
                     signalRef.setSwitch(switchSection.OriginalIndex, switchSection.JunctionSetManual, switchSection);
 
                     // build new route - use signal request
-                    float remLength = CheckDistanceM - coveredLength;
-                    TCSubpathRoute newRoute = firstSignal.requestClearSignalExplorer(selectedRoute, remLength, thisRouted, false, 0);
-                    selectedRoute = newRoute;
+                    firstSignal.requestClearSignalExplorer(selectedRoute, thisRouted, false, 0);
                 }
                 else
                 {
@@ -10046,6 +9751,7 @@ namespace Orts.Simulation.Physics
             }
 
             // use direction forward only
+            float maxDistance = Math.Max(AllowedMaxSpeedMpS * maxTimeS, minCheckDistanceM);
             float clearedDistanceM = 0.0f;
 
             int activeSectionIndex = thisSectionIndex;
@@ -10076,7 +9782,7 @@ namespace Orts.Simulation.Physics
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[activeSectionIndex];
                     clearedDistanceM = GetDistanceToTrain(activeSectionIndex, thisSection.Length);
 
-                    if (clearedDistanceM > CheckDistanceM)
+                    if (clearedDistanceM > maxDistance)
                     {
                         EndAuthorityType[0] = END_AUTHORITY.MAX_DISTANCE;
                         LastReservedSection[0] = thisSection.Index;
@@ -12485,7 +12191,7 @@ namespace Orts.Simulation.Physics
                             thisSignalFound = true;
                         }
 
-                        if (totalDistance > CheckDistanceM) validLoop = false;
+                        if (totalDistance > minCheckDistanceM) validLoop = false;
                     }
                 }
 
@@ -12513,7 +12219,7 @@ namespace Orts.Simulation.Physics
                             otherSignalFound = true;
                         }
 
-                        if (totalDistance > CheckDistanceM) validLoop = false;
+                        if (totalDistance > minCheckDistanceM) validLoop = false;
                     }
                 }
 

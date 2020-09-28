@@ -33,9 +33,13 @@ Open Rails Manual
     acknowledgements
     appendices
 
-Indices and tables
-==================
+.. The following section is needed in HTML output but not in PDF
 
-* :ref:`genindex`
-* :ref:`search`
+.. only:: html
+
+    Indices and tables
+    ==================
+
+    * :ref:`genindex`
+    * :ref:`search`
 

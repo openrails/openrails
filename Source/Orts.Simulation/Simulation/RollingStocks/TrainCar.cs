@@ -471,6 +471,8 @@ namespace Orts.Simulation.RollingStocks
         }
         public BrakeSystem BrakeSystem;
 
+        public float PreviousSteamBrakeCylinderPressurePSI;
+
         // TrainCar.Update() must set these variables
         public float MotiveForceN;   // ie motor power in Newtons  - signed relative to direction of car - 
         public SmoothedData MotiveForceSmoothedN = new SmoothedData(0.5f);
@@ -1527,6 +1529,7 @@ namespace Orts.Simulation.RollingStocks
         }
         public virtual string GetTrainBrakeStatus() { return null; }
         public virtual string GetEngineBrakeStatus() { return null; }
+        public virtual string GetBrakemanBrakeStatus() { return null; }
         public virtual string GetDynamicBrakeStatus() { return null; }
         public virtual bool GetSanderOn() { return false; }
         protected bool WheelHasBeenSet = false; //indicating that the car shape has been loaded, thus no need to reset the wheels
