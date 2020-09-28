@@ -85,6 +85,13 @@ motors from motors to generators.
 Blended Dynamic Brake
 ---------------------
 
+.. index::
+   single: MaxApplicationRate
+   single: MaxReleaseRate
+   single: DynamicBrakesDelayTimeBeforeEngaging
+   single: OrtsDynamicBlendingOverride
+   single: OrtsDynamicBlendingForceMatch
+
 Some locomotives have blended dynamic brake, which means that the 
 trainbrake lever also controls the dynamic brake. Currently this is 
 implemented to be MSTS compatible, the dynamic brake force percentage 
@@ -104,7 +111,7 @@ command, if the dynamic brake lever is not at full release position.
 ``Engine()`` block, which makes the dynamic brake system to try to achieve 
 the same brake force as the airbrake would have (even if the airbrake is 
 bailed off), in the current train brake lever position. Example: if the 
-trainbrake has 22 kN brake force at 40% trainbrake setting, then the 
+trainbrake has 22 kN brake force at 40% train brake setting, then the 
 dynamic brake will try to achieve, and maintain 22 kN braking force, instead 
 of just setting 40% dynamic brake percentage.
 
@@ -172,6 +179,19 @@ how OR behaves. They are listed in the
 
 The following information is displayed in the basic display:
 
+.. index::
+   single: version
+   single: time
+   single: speed
+   single: gradient
+   single: direction
+   single: throttle
+   single: train brake
+   single: engine brake
+   single: dynamic brake
+   single: fps
+
+
 - Version = The version of the Open Rails software you are running
 - Time = Game time of the Activity
 - Speed = the speed in Miles/Hr. or Kilometers/Hr.
@@ -194,7 +214,7 @@ The following information is displayed in the basic display:
 - Engine = shows the running status of the engine. 
   In case of a gear-based engine, after the ``Engine`` line a ``Gear`` line 
   appears displaying the actual gear. ``N`` means no gear inserted.
-- FPS = Number of Frames rendered per second
+- FPS = Number of frames rendered per second
 
 When applicable, an additional line indicationg whether Autopilot is active or not 
 will be shown.
@@ -281,8 +301,8 @@ selected by clicking with the mouse on the desired heading:
   :align: center
   :scale: 80%
 
-``Briefing``: displays what the activity creator has entered as information 
-to be provided to the player about the activity:
+``Briefing``: displays what the activity or timetable creator has entered as information 
+to be provided to the player:
 
 .. image:: images/driving-briefing.png
   :align: center
@@ -292,7 +312,7 @@ to be provided to the player about the activity:
 and actual times of arrival and departure. During the activity the actual 
 performance will be shown on the F10 :ref:`Activity Monitor <driving-activity>`.
 
-``Work Orders``: if defined by the activity creator, lists the coupling and 
+``Work Orders``: if defined by the activity or timetable creator, lists the coupling and 
 uncoupling operations to be performed. When an operation has been 
 completed, the string ``Done`` appears in the last column:
 
@@ -1362,6 +1382,9 @@ Modifying the Game Environment
 Time of Day
 -----------
 
+.. index::
+   single: StartTime
+
 In activity mode Open Rails software reads the StartTime from the MSTS 
 .act file to determine what the game time is for the activity. In 
 combination with the longitude and latitude of the route and the season, 
@@ -2005,6 +2028,9 @@ A wide variety of parameters is shown, from frame wait and render speeds
 in milliseconds, to number of primitives, Process Thread resource 
 utilization and number of Logical CPUs from the system's bios. They are 
 very useful in case of OR stuttering, to find out where the bottleneck is.
+
+.. index::
+   single: tile
 
 The values in the ``Camera`` line refer to the two tile coordinates and to 
 the three coordinates within the tile.
