@@ -673,6 +673,8 @@
             // 
             this.cbShowTrainLabels.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShowTrainLabels.AutoSize = true;
+            this.cbShowTrainLabels.Checked = true;
+            this.cbShowTrainLabels.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbShowTrainLabels.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cbShowTrainLabels.Location = new System.Drawing.Point(780, 320);
             this.cbShowTrainLabels.Name = "cbShowTrainLabels";

@@ -821,7 +821,7 @@ As shown below, the basic red train label identifies the train.
 
 The "All" selection shows inactive and static trains too with labels in gray.
 Inactive trains are those that have arrived at their destination and been formed into departures
-but their start time has not arrived - see :ref:`#dispose commands<dispose-commands>`.
+but their start time has not arrived - see :ref:`#dispose commands<timetable-dispose>`.
 
 .. raw:: latex
 
