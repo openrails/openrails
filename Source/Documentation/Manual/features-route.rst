@@ -13,6 +13,9 @@ such as also accepting textures in .dds format.
 Modifications to .trk Files
 ===========================
 
+.. index::
+   single: ORTSUserPreferenceForestClearDistance
+
 Many of the features described in this chapter require additional parameters to be 
 added in the route's .trk file. The additional parameters can be directly added at 
 the end (just above the last parenthesis) of  
@@ -89,6 +92,9 @@ in explore mode or within activities are available in the Open Rails pack.
 Within the route's folder an OpenRails subfolder must be created, that must contain 
 2 files. The first one is following file ``turntables.dat``, which contains the data needed 
 to OR to locate and specify the turntable.
+
+.. index::
+   single: Turntable
 
 turntables.dat::
 
@@ -207,6 +213,10 @@ have been created. More can be read
 Transfertables
 --------------
 
+.. index::
+   single: Turntable
+   single: Transfertable
+
 Info for transfertables is stored in file ``turntables.dat`` too. This file may contain 
 info for transfertables and turntables together. Here is an example of such file for 
 a turntable and a transfertable::
@@ -243,6 +253,13 @@ In the standard ``tsection.dat`` there are no usable transfertables defined. The
 at least a new TrackShape block has to be created. Also in this case it is suggested 
 to define the additional block in the route's specific ``tsection.dat``.
 
+.. index::
+   single: TrackSections
+   single: TrackShapes
+   single: TrackShape
+   single: NumPaths
+   single: SectionIdx
+
 Here below is an example for a route's specific ``tsection.dat`` containing a 
 TrackShape for a transfertable::
 
@@ -273,7 +290,7 @@ The first line must be empty.
 
 The animation block for the above transfertable is as follows::
 
-		animations ( 1
+	animations ( 1
 		animation ( 3600 30
 			anim_nodes ( 2
 				anim_node BASIN (
@@ -282,9 +299,9 @@ The animation block for the above transfertable is as follows::
 				anim_node TRACKPIECE (
 					controllers ( 1
 						linear_pos ( 2
-  linear_key (	0	0	-1.92177	0	 )
-  linear_key (	3600	39.88	-1.92177	0	 )
-  						)					
+              linear_key (	0	0	-1.92177	0	 )
+              linear_key (	3600	39.88	-1.92177	0	 )
+  					)					
 					)
 				)
 			)
@@ -372,6 +389,11 @@ With this OR-specific feature it is possible to associate any car spawner to one
 additional car lists, therefore allowing e.g. to have different vehicles appearing in 
 a highway and in a small country road.
 
+.. index::
+   single: CarSpawnerList
+   single: CarSpawnerItem
+   single: ListName
+
 The additional car lists have to be defined within a file named carspawn.dat to be inserted in an ``Openrails`` subfolder within the Route's root folder.
 Such file must have the structure as in following example::
 
@@ -397,6 +419,9 @@ Such file must have the structure as in following example::
   CarSpawnerItem( "US2Pickup.s" 6 )
   CarSpawnerItem( "postbus.s" 13 )
   )
+
+.. index::
+   single: ORTSListName
 
 The first ``3`` defines the number of the additional car spawner lists.
 To associate a CarSpawner block to one of these lists, a line like this one::
@@ -425,6 +450,8 @@ vehicle does, instead they remain vertical. To enable OR to handle these car (or
 person) spawners specifically, the parameter IgnoreXRotation () has to be inserted in 
 the car spawner list, just after the number of the car spawner items.
 
+.. index::
+   single: IgnoreXRotation
 
 .. image:: images/features-carspawner.png
    :align: center
@@ -449,6 +476,15 @@ the route's Openrails subfolder ( see :ref:`here <features-route-extended-carspa
 
 Route specific TrackSections and TrackShapes
 ============================================
+
+.. index::
+   single: TrackSections
+   single: SectionSize
+   single: TrackShapes
+   single: TrackShape
+   single: NumPaths
+   single: SectionIdx
+
 It quite often occurs that for special routes also special TrackSections and TrackShapes 
 are needed. Being file tsection.dat unique for every installation, for such routes a 
 so-called mini-route installation was needed.
@@ -517,6 +553,11 @@ OR provides an :ref:`experimental function that enables the upper wire <options-
 electrified routes. The optional parameter ``ortsdoublewireenabled`` in the ``.trk`` file of the route can
 force the activation or deactivation of the option overriding the user setting in the options panel.
 
+.. index::
+   single: OrtsDoubleWireEnabled
+   single: OrtsTriphaseEnabled
+   single: OrtsDoubleWireHeight
+
 In this example the upper wire is enabled overriding the user setting::
 
   OrtsDoubleWireEnabled ( On )
@@ -560,6 +601,10 @@ is not declared) of 1 meter.
 Loading screen
 ==============
 
+.. index::
+   single: LoadingScreen
+   single: ortsloadingscreenwide
+
 In the ``.trk`` file of the route the parameter ``loadingscreen`` can be used as in this example::
 
 	LoadingScreen ( Load.ace )
@@ -579,6 +624,9 @@ loads the route on a wide (16:9) screen. This parameter is ignored when a tradit
 
 MSTS-Compatible semaphore indexing
 ==================================
+
+.. index::
+   single: SemaphorePos
 
 When a signal shape has a semaphore (moving part), and its animation definition within the 
 .s file has only two lines (e.g ``slerp_rot`` lines), MSTS interprets the ``SemaphorePos()`` lines within ``sigcfg.dat`` accordingly to following rule::
@@ -603,6 +651,9 @@ Automatic door open/close on AI trains
 
 The feature is explained :ref:`here<options-open-doors-ai>`.
 
+.. index::
+   single: ORTSOpenDoorsInAITrains
+
 To override the selection made in the 
 :ref:`Experimental Options Window<options-experimental>`, a command line must be inserted 
 in a small integration .trk file, that must be located in an Openrails subfolder within 
@@ -625,6 +676,10 @@ option within the Experimental Options Window is checked.
 
 Removing forest trees from tracks and roads
 ===========================================
+
+.. index::
+   single: ORTSUserPreferenceForestClearDistance
+   single: ORTSUserPreferenceRemoveForestTreesFromRoads
 
 OR and MSTS determine differently the position of trees in forests. 
 This may result in trees appearing on tracks or roads.
@@ -654,6 +709,10 @@ It is not possible to remove trees only from roads and not from tracks.
 
 Multiple level crossing sounds 
 ==============================
+
+.. index::
+   single: ORTSSoundFileName
+   single: ESD_ORTSSoundFileName
 
 This feature allows to have level crossing sounds different from the default one 
 for a specific level 
@@ -690,7 +749,10 @@ For the second case there is no suggestion. The file will again be searched in b
 
 Defining Curve Superelevation
 =============================
-  
+
+.. index::
+   single: ORTSTrackSuperElevation
+
 This feature allows curves within the route to be assigned a value for superelevation. It
 is inserted either in the route's root .trk file or in the "Include" .trk file.
 
@@ -722,6 +784,9 @@ texture to be used can be downloaded here ``Documentation\SampleFiles\Manual\ove
 
 Fading signal lamps
 ===================
+
+.. index::
+   single: ORTSOnOffTimeS
 
 In Open Rails, signal lamps fade on and off for a visually pleasing transition 
 effect. The fade time defaults to one-fifth of a second. It can be customized in 

@@ -168,6 +168,11 @@ namespace Orts.Simulation.RollingStocks
         public float HeatingMainPipeSteamTrapVelocityMpS;
         public float HeatingMainPipeSteamTrapVolumeM3pS;
 
+        // Steam Brake leaks
+        public float SteamBrakeLeaksDurationS;
+        public float SteamBrakeLeaksVelocityMpS;
+        public float SteamBrakeLeaksVolumeM3pS;
+
         // Water Scoop Spray
         public float WaterScoopParticleDurationS;
         public float WaterScoopWaterVelocityMpS;
@@ -222,6 +227,11 @@ namespace Orts.Simulation.RollingStocks
         /// Number of available retainer positions. (Used on freight cars, mostly.) Might be 0, 3 or 4.
         /// </summary>
         public int RetainerPositions;
+
+         /// <summary>
+        /// Indicates whether a brake is present or not when Manual Braking is selected.
+        /// </summary>
+        public bool ManualBrakePresent;
 
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
@@ -1005,6 +1015,7 @@ namespace Orts.Simulation.RollingStocks
                             case "graduated_release_triple_valve": DistributorPresent = true; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
+                            case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
                         }
@@ -1305,6 +1316,7 @@ namespace Orts.Simulation.RollingStocks
             EmergencyReservoirPresent = copy.EmergencyReservoirPresent;
             DistributorPresent = copy.DistributorPresent;
             HandBrakePresent = copy.HandBrakePresent;
+            ManualBrakePresent = copy.ManualBrakePresent;
             RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
@@ -2774,7 +2786,6 @@ namespace Orts.Simulation.RollingStocks
                 HeatingCompartmentSteamTrapVolumeM3pS = 0.0f;
             }
 
-
             // Update Water Scoop Spray Information when scoop is down and filling from trough
 
             bool ProcessWaterEffects = false; // Initialise test flag to see whether this wagon will have water sccop effects active
@@ -2871,6 +2882,50 @@ namespace Orts.Simulation.RollingStocks
                     WaterScoopWaterVelocityMpS = 0.0f;
                     WaterScoopWaterVolumeM3pS = 0.0f;
 
+                }
+
+                // Update Steam Brake leaks Information
+                if (LocomotiveIdentification.EngineBrakeFitted && LocomotiveIdentification.SteamEngineBrakeFitted && (WagonType == WagonTypes.Tender || WagonType == WagonTypes.Engine))
+                {
+                    // Find the steam leakage rate based upon valve opening and current boiler pressure
+                    float SteamBrakeLeakRate = LocomotiveIdentification.EngineBrakeController.CurrentValue * (LocomotiveIdentification.BoilerPressurePSI / LocomotiveIdentification.MaxBoilerPressurePSI);
+
+                    if (Simulator.PlayerLocomotive == this && LocomotiveIdentification.EngineBrakeController.CurrentValue > 0)
+                    {
+                        // Turn steam brake leaks on 
+                        SteamBrakeLeaksDurationS = 0.75f;
+                        SteamBrakeLeaksVelocityMpS = 15.0f;
+                        SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
+                    }
+                    else
+                    {
+                        // Turn steam brake leaks off 
+                        SteamBrakeLeaksDurationS = 0.0f;
+                        SteamBrakeLeaksVelocityMpS = 0.0f;
+                        SteamBrakeLeaksVolumeM3pS = 0.0f;
+                    }
+
+                    if (WagonType == WagonTypes.Tender)
+                    {
+                        // Find the associated steam locomotive for this tender
+                        if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
+
+                        // Turn steam brake effect on or off
+                        if (TendersSteamLocomotive == LocomotiveIdentification && LocomotiveIdentification.EngineBrakeController.CurrentValue > 0)
+                        {
+                            // Turn steam brake leaks on 
+                            SteamBrakeLeaksDurationS = 0.75f;
+                            SteamBrakeLeaksVelocityMpS = 15.0f;
+                            SteamBrakeLeaksVolumeM3pS = 4.0f * SteamBrakeLeakRate;
+                        }
+                        else
+                        {
+                            // Turn steam brake leaks off 
+                            SteamBrakeLeaksDurationS = 0.0f;
+                            SteamBrakeLeaksVelocityMpS = 0.0f;
+                            SteamBrakeLeaksVolumeM3pS = 0.0f;
+                        }
+                    }
                 }
             }
 

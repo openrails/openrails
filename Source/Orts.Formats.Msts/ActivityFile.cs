@@ -455,6 +455,7 @@ namespace Orts.Formats.Msts
         public Duration(int h, int m) {
             Hour = h;
             Minute = m;
+            Second = 0;
         }
 
         public Duration(STFReader stf) {

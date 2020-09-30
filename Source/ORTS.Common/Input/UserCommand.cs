@@ -124,6 +124,8 @@
         [GetString("Control Train Brake Zero")] ControlTrainBrakeZero,
         [GetString("Control Engine Brake Increase")] ControlEngineBrakeIncrease,
         [GetString("Control Engine Brake Decrease")] ControlEngineBrakeDecrease,
+        [GetString("Control Brakeman Brake Increase")] ControlBrakemanBrakeIncrease,
+        [GetString("Control Brakeman Brake Decrease")] ControlBrakemanBrakeDecrease,
         [GetString("Control Dynamic Brake Increase")] ControlDynamicBrakeIncrease,
         [GetString("Control Dynamic Brake Decrease")] ControlDynamicBrakeDecrease,
         [GetString("Control Bail Off")] ControlBailOff,

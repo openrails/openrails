@@ -198,7 +198,6 @@ namespace Orts.Simulation.RollingStocks
         public float CylinderSteamUsageLBpS;
         public float NewCylinderSteamUsageLBpS;
         public float BlowerSteamUsageLBpS;
-        public float BoilerPressurePSI;     // Gauge pressure - what the engineer sees.
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;     // Ratio of actual firemass to ideal firemass
@@ -212,7 +211,6 @@ namespace Orts.Simulation.RollingStocks
 
         // eng file configuration parameters
 
-        float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
         int NumCylinders = 2;       // Number of Cylinders
         float CylinderStrokeM;      // High pressure cylinders
@@ -478,11 +476,12 @@ namespace Orts.Simulation.RollingStocks
         public float LogSteamChestPressurePSI;
 
         // Values for Steam Cylinder events
-        float ValveTravel = 10.8268f;
-        float ValveLead = 0.275591f;
-        float ValveExhLap = 0.708661f;
-        float ValveSteamLap;
-        double ValveAdvanceAngleDeg;
+        // Commented out as never used
+        //float ValveTravel = 10.8268f;
+        //float ValveLead = 0.275591f;
+        //float ValveExhLap = 0.708661f;
+        //float ValveSteamLap;
+        //double ValveAdvanceAngleDeg;
 
         public float LogLPInitialPressurePSI;
         public float LogLPCutoffPressurePSI;
@@ -1074,6 +1073,25 @@ namespace Orts.Simulation.RollingStocks
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
 
+            // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
+            // It is not believed that the weight reduction on the connecting rods is linear with the weight of the locmotive. However this requires futher research, and this section is a 
+            // work around until any further research is undertaken
+            // "The following code provides a simple 2-step adjustment, as not enough information is currently available for a more flexible one."
+            if (MassKG < Kg.FromTUS(10))
+            {
+                const float reductionfactor = 0.2f;
+                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
+                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
+                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
+            }
+            else if (MassKG < Kg.FromTUS(20)) 
+            {
+                const float reductionfactor = 0.3f;
+                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
+                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
+                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
+            }
+
             #region Initialise additional steam properties
 
             WaterDensityPSItoLBpFT3 = SteamTable.WaterDensityInterpolatorPSItoLBpFT3();
@@ -1412,7 +1430,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
             }
-            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 30.0f); // Clamp BoilerEvap Rate to between 10 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
             TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
 
             float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
@@ -4583,12 +4601,12 @@ namespace Orts.Simulation.RollingStocks
 
             #region - Steam Adhesion Model Input for Steam Locomotives
 
-            // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson
+            // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson - https://archive.org/details/locomotiveoperat00hend
             // At its simplest slip occurs when the wheel tangential force exceeds the static frictional force
             // Static frictional force = weight on the locomotive driving wheels * frictional co-efficient
             // Tangential force = Effective force (Interia + Piston force) * Tangential factor (sin (crank angle) + (crank radius / connecting rod length) * sin (crank angle) * cos (crank angle))
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
-            // Thus we will only consider slip impacts at start of the locomotive
+            // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
             if (Simulator.UseAdvancedAdhesion && this == Simulator.PlayerLocomotive && this.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING) // only set advanced wheel slip when advanced adhesion and is the player locomotive, AI locomotive will not work to this model. Don't use slip model when train is in auto pilot
             {

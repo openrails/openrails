@@ -707,6 +707,9 @@ are a problem for OR, which has a more sophisticated braking model. The
 problem usually is that the train brakes require a long time to release,
 and in some times do not release at all.
 
+.. index::
+   single: AirBrakesAirCompressorPowerRating
+
 The following checks and corrections are performed if the option is
 checked (only for single-pipe brake system):
 
