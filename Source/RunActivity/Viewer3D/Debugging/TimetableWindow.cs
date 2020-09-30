@@ -127,7 +127,7 @@ namespace Orts.Viewer3D.Debugging
 			F.PlatformFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			F.SignalFont = new Font("Segoe UI Semibold", 10, FontStyle.Regular);
 			F.trainBrush = new SolidBrush(Color.Red);
-			F.InactiveTrainBrush = new SolidBrush(Color.DarkGray);
+			F.InactiveTrainBrush = new SolidBrush(Color.DarkRed);
 			F.sidingBrush = new SolidBrush(Color.Blue);
 			F.PlatformBrush = new SolidBrush(Color.DarkBlue);
 			F.SignalBrush = new SolidBrush(Color.DarkRed);
@@ -295,30 +295,30 @@ namespace Orts.Viewer3D.Debugging
 
 				if (dragging == false)
 				{
+					// Draw trains and path
+					DrawTrains(g, scaledA, scaledB);
+
 					// Keep widgetWidth <= 15 pixels
 					var widgetWidth = Math.Min(penWidth * 6, 15);
+
+					// Draw signals on top of path so they are easier to see.
+					F.signalItemsDrawn.Clear();
+					ShowSignals(g, scaledB, widgetWidth);
 
 					// Draw switches
 					F.switchItemsDrawn.Clear();
 					ShowSwitches(g, widgetWidth);
-
-					// Draw labels for sidings and platforms
+					
+					// Draw labels for sidings and platforms last so they go on top for readability
 					CleanTextCells();  // Empty the listing of labels ready for adding labels again
 					ShowPlatformLabels(g); // Platforms take priority over sidings and signal states
 					ShowSidingLabels(g);
-
-					// Draw signals
-					F.signalItemsDrawn.Clear();
-					ShowSignals(g, scaledB, widgetWidth);
-
-					// Draw trains
-					DrawTrains(g, scaledA, scaledB);
 				}
-
 				DrawZoomTarget(g);
 			}
 			F.pbCanvas.Invalidate(); // Triggers a re-paint
 		}
+
 		/// <summary>
 		/// Indicates the location around which the image is zoomed.
 		/// If user drags an item of interest into this target box and zooms in, the item will remain in view.
@@ -419,14 +419,14 @@ namespace Orts.Viewer3D.Debugging
 					s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
 					if (s.Signal.isSignalNormal())
 					{
-						var color = Brushes.Green;
+						var color = Brushes.Lime;
 						var pen = F.greenPen;
 						if (s.IsProceed == 0)
 						{
 						}
 						else if (s.IsProceed == 1)
 						{
-							color = Brushes.Orange;
+							color = Brushes.Yellow;
 							pen = F.orangePen;
 						}
 						else
@@ -645,16 +645,6 @@ namespace Orts.Viewer3D.Debugging
 			}
 		}
 
-        //private void BuildSelectedTrainList(Simulation.AIs.AITrain t)
-        //{
-        //	if (F.rbShowAllTrains.Checked)
-        //		F.selectedTrainList.Add(t);
-
-        //	if (F.rbShowActiveTrains.Checked)
-        //		if (IsActiveTrain(t))
-        //			F.selectedTrainList.Add(t);
-        //}
-
         private void BuildSelectedTrainList(Train t)
         {
             if (F.rbShowAllTrains.Checked)
@@ -683,7 +673,7 @@ namespace Orts.Viewer3D.Debugging
 				if (tTTrain != null)
 				{
 					// Remove name of timetable, e.g.: ":SCE"
-					var lastPos = t.Name.LastIndexOf(":");
+					var lastPos = trainName.LastIndexOf(":");
 					var shortName = (lastPos > 0) ? trainName.Substring(0, lastPos) : trainName;
 
 					if (IsActiveTrain(tTTrain))
@@ -705,14 +695,14 @@ namespace Orts.Viewer3D.Debugging
 							g.DrawString($"{shortName} {statuses}", F.trainFont, F.trainBrush, scaledItem);
 						}
 						else
-							g.DrawString($"{shortName}", F.trainFont, F.trainBrush, scaledItem);
+							g.DrawString(shortName, F.trainFont, F.trainBrush, scaledItem);
 					}
 					else
-						g.DrawString($"{shortName}", F.trainFont, F.InactiveTrainBrush, scaledItem);
+						g.DrawString(shortName, F.trainFont, F.InactiveTrainBrush, scaledItem);
 				}
 			}
 			else
-				g.DrawString($"{trainName}", F.trainFont, F.trainBrush, scaledItem);
+				g.DrawString(trainName, F.trainFont, F.trainBrush, scaledItem);
 		}
 
 		/*

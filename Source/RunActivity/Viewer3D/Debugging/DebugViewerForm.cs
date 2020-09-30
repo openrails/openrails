@@ -2076,20 +2076,20 @@ namespace Orts.Viewer3D.Debugging
 
         private void bBackgroundColor_Click(object sender, EventArgs e)
         {
-			// Can't just do this as the watchdog time trips and returns OR back to the Menu.exe.
+			// Can't just use a dialog as the watchdog timer trips and returns OR back to the Menu.exe.
 			//if (cdBackground.ShowDialog() == DialogResult.OK)
 			//{
 			//	pbCanvas.BackColor = cdBackground.Color;
 			//}
 
-			// As an alternative, cycle through 3 pale colours
+			// As an alternative, cycle through 3 non-white backgrounds
 			if (pbCanvas.BackColor == Color.White)
+				pbCanvas.BackColor = Color.FromArgb(64, 128, 128);
+			else if (pbCanvas.BackColor == Color.FromArgb(64, 128, 128))
 				pbCanvas.BackColor = Color.FromArgb(250, 234, 209);
 			else if (pbCanvas.BackColor == Color.FromArgb(250, 234, 209))
 				pbCanvas.BackColor = Color.FromArgb(250, 240, 230);
 			else if (pbCanvas.BackColor == Color.FromArgb(250, 240, 230)) // Windows color "linen"
-				pbCanvas.BackColor = Color.FromArgb(250, 249, 242);
-			else if (pbCanvas.BackColor == Color.FromArgb(250, 249, 242))
 				pbCanvas.BackColor = Color.White;
 		}
 
