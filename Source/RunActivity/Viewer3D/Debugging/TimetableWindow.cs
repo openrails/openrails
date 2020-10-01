@@ -419,14 +419,14 @@ namespace Orts.Viewer3D.Debugging
 					s.Location2D.X = scaledItem.X; s.Location2D.Y = scaledItem.Y;
 					if (s.Signal.isSignalNormal())
 					{
-						var color = Brushes.Lime;
+						var color = Brushes.Lime; // bright colour for readability
 						var pen = F.greenPen;
 						if (s.IsProceed == 0)
 						{
 						}
 						else if (s.IsProceed == 1)
 						{
-							color = Brushes.Yellow;
+							color = Brushes.Yellow; // bright colour for readbility
 							pen = F.orangePen;
 						}
 						else
