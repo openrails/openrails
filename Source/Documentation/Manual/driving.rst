@@ -819,9 +819,15 @@ As shown below, the basic red train label identifies the train.
 
 .. image:: images/timetable_tab1.png
 
-The "All" selection shows inactive and static trains too with labels in gray.
-Inactive trains are those that have arrived at their destination and been formed into departures
-but their start time has not arrived - see :ref:`#dispose commands<timetable-dispose>`.
+The "Active trains" selection shows trains that are currently delivering a service.
+
+The "All trains" selection also shows inactive and static trains with labels in dark red.
+
+Inactive trains are not part of a current service - i.e. their start time has not been reached or 
+they have arrived at their destination and not yet been re-formed for another service - see 
+:ref:`#dispose commands<timetable-dispose>`.
+
+Static trains do not move and are created with the $static command.
 
 .. raw:: latex
 
