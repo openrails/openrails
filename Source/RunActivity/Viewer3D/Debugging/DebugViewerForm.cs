@@ -754,17 +754,12 @@ namespace Orts.Viewer3D.Debugging
             if (true/*showPlayerTrain.Checked*/)
             {
 
-				CleanVerticalCells();//clean the drawing area for text of sidings
-				foreach (var s in sidings)
-				{
-					scaledItem.X = (s.Location.X - subX) * xScale;
-					scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
-					if (scaledItem.Y >= 0f) //if we need to draw the siding names
-					{
+				CleanVerticalCells();//clean the drawing area for text of sidings and platforms
+				foreach (var sw in sidings)
+	                scaledItem = DrawSiding(g, scaledItem, sw);
+                foreach (var pw in platforms)
+					scaledItem = DrawPlatform(g, scaledItem, pw);
 
-						g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
-					}
-				}
 				var margin = 30 * xScale;//margins to determine if we want to draw a train
 				var margin2 = 5000 * xScale;
 
@@ -931,6 +926,29 @@ namespace Orts.Viewer3D.Debugging
 
          pbCanvas.Invalidate();
       }
+
+        private PointF DrawSiding(Graphics g, PointF scaledItem, SidingWidget s)
+        {
+            scaledItem.X = (s.Location.X - subX) * xScale;
+            scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+            if (scaledItem.Y >= 0f) //if we need to draw the siding names
+            {
+
+                g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
+            }
+            return scaledItem;
+        }
+		private PointF DrawPlatform(Graphics g, PointF scaledItem, PlatformWidget s)
+		{
+			scaledItem.X = (s.Location.X - subX) * xScale;
+			scaledItem.Y = DetermineSidingLocation(scaledItem.X, pbCanvas.Height - (s.Location.Y - subY) * yScale, s.Name);
+			if (scaledItem.Y >= 0f) //if we need to draw the siding names
+			{
+
+				g.DrawString(s.Name, sidingFont, sidingBrush, scaledItem);
+			}
+			return scaledItem;
+		}
 
 		public Vector2[][] alignedTextY;
 	  public int[] alignedTextNum;
@@ -2180,12 +2198,27 @@ namespace Orts.Viewer3D.Debugging
             TimetableWindow.SetControls();
         }
 
-        /// <summary>
-        /// Provides a clip zone to stop user from pushing track fully out of window
-        /// </summary>
-        /// <param name="diffX"></param>
-        /// <param name="diffY"></param>
-        private void ClipDrag(int diffX, int diffY)
+		/// <summary>
+		/// Loads a relevant page from the manual maintained by James Ross's automatic build
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
+        private void bTrainKey_Click(object sender, EventArgs e)
+        {
+			// This method is also compatible with .NET Core 3
+			var psi = new ProcessStartInfo
+				{ FileName = "https://open-rails.readthedocs.io/en/latest/driving.html#extended-hud-for-dispatcher-information"
+				, UseShellExecute = true
+				};
+			Process.Start(psi);
+		}
+
+		/// <summary>
+		/// Provides a clip zone to stop user from pushing track fully out of window
+		/// </summary>
+		/// <param name="diffX"></param>
+		/// <param name="diffY"></param>
+		private void ClipDrag(int diffX, int diffY)
         {
 			// Moving the mouse right means moving the ViewWindow left.
             var changeXm = -(float)(diffX / xScale);

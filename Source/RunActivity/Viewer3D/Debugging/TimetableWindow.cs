@@ -105,12 +105,14 @@ namespace Orts.Viewer3D.Debugging
 			F.lblSimulationTime.Visible = timetableView;
 			F.lblShow.Visible = timetableView;
 			F.cbShowPlatforms.Visible = timetableView;
+			F.cbShowPlatformLabels.Visible = timetableView;
 			F.cbShowSidings.Visible = timetableView;
 			F.cbShowSwitches.Visible = timetableView;
 			F.cbShowSignals.Visible = timetableView;
 			F.cbShowSignalState.Visible = timetableView;
 			F.cbShowTrainLabels.Visible = timetableView;
 			F.cbShowTrainState.Visible = timetableView;
+			F.bTrainKey.Visible = timetableView;
 			F.gbTrains.Visible = timetableView;
 			F.rbShowActiveTrains.Visible = timetableView;
 			F.rbShowAllTrains.Visible = timetableView;
@@ -287,7 +289,7 @@ namespace Orts.Viewer3D.Debugging
 				F.trainPen.Width = penWidth * 6;
 
 				// First so track is drawn over the thicker platform line
-				DrawPlatforms(g);
+				DrawPlatforms(g, penWidth);
 
 				// Draw track
 				PointF scaledA, scaledB;
@@ -341,14 +343,28 @@ namespace Orts.Viewer3D.Debugging
 			F.lblSimulationTime.Text = $"{ct:hh}:{ct:mm}:{ct:ss}";
 		}
 
-		private void DrawPlatforms(Graphics g)
+		private void DrawPlatforms(Graphics g, int penWidth)
 		{
-			F.PlatformPen.Width = F.grayPen.Width * 3;
-			foreach (var p in F.platforms)
+			if (F.cbShowPlatforms.Checked)
 			{
-				var scaledA = new PointF((p.Extent1.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent1.Y - F.subY) * F.yScale);
-				var scaledB = new PointF((p.Extent2.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent2.Y - F.subY) * F.yScale);
-				g.DrawLine(F.PlatformPen, scaledA, scaledB);
+				// Platforms can be obtrusive, so draw in solid blue only when zoomed in and fade them as we zoom out
+				switch (penWidth)
+				{
+					case 1:
+						F.PlatformPen.Color = Color.FromArgb(0, 0, 255); break;
+					case 2:
+						F.PlatformPen.Color = Color.FromArgb(100, 100, 255); break;
+					default:
+						F.PlatformPen.Color = Color.FromArgb(200, 200, 255); break;
+				}
+
+				F.PlatformPen.Width = F.grayPen.Width * 3;
+				foreach (var p in F.platforms)
+				{
+					var scaledA = new PointF((p.Extent1.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent1.Y - F.subY) * F.yScale);
+					var scaledB = new PointF((p.Extent2.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent2.Y - F.subY) * F.yScale);
+					g.DrawLine(F.PlatformPen, scaledA, scaledB);
+				}
 			}
 		}
 
@@ -486,7 +502,7 @@ namespace Orts.Viewer3D.Debugging
 		{
 			var platformMarginPxX = 5;
 
-			if (F.cbShowPlatforms.CheckState == System.Windows.Forms.CheckState.Checked)
+			if (F.cbShowPlatformLabels.CheckState == System.Windows.Forms.CheckState.Checked)
 				foreach (var p in F.platforms)
 				{
 					var scaledItem = new PointF();

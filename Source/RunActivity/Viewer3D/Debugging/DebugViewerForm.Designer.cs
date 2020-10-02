@@ -68,11 +68,12 @@
             this.lblSimulationTimeText = new System.Windows.Forms.Label();
             this.lblSimulationTime = new System.Windows.Forms.Label();
             this.lblShow = new System.Windows.Forms.Label();
-            this.cbShowPlatforms = new System.Windows.Forms.CheckBox();
+            this.cbShowPlatformLabels = new System.Windows.Forms.CheckBox();
             this.cbShowSidings = new System.Windows.Forms.CheckBox();
             this.cbShowSignals = new System.Windows.Forms.CheckBox();
             this.cbShowSignalState = new System.Windows.Forms.CheckBox();
             this.gbTrains = new System.Windows.Forms.GroupBox();
+            this.bTrainKey = new System.Windows.Forms.Button();
             this.rbShowActiveTrains = new System.Windows.Forms.RadioButton();
             this.rbShowAllTrains = new System.Windows.Forms.RadioButton();
             this.nudDaylightOffsetHrs = new System.Windows.Forms.NumericUpDown();
@@ -89,6 +90,7 @@
             this.lblInstruction2 = new System.Windows.Forms.Label();
             this.lblInstruction3 = new System.Windows.Forms.Label();
             this.lblInstruction4 = new System.Windows.Forms.Label();
+            this.cbShowPlatforms = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pbCanvas)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
             this.gbTrains.SuspendLayout();
@@ -496,25 +498,25 @@
             this.lblShow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblShow.AutoSize = true;
             this.lblShow.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblShow.Location = new System.Drawing.Point(780, 200);
+            this.lblShow.Location = new System.Drawing.Point(780, 180);
             this.lblShow.Name = "lblShow";
             this.lblShow.Size = new System.Drawing.Size(41, 15);
             this.lblShow.TabIndex = 38;
             this.lblShow.Text = "Show:";
             this.lblShow.Visible = false;
             // 
-            // cbShowPlatforms
+            // cbShowPlatformLabels
             // 
-            this.cbShowPlatforms.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cbShowPlatforms.AutoSize = true;
-            this.cbShowPlatforms.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbShowPlatforms.Location = new System.Drawing.Point(780, 220);
-            this.cbShowPlatforms.Name = "cbShowPlatforms";
-            this.cbShowPlatforms.Size = new System.Drawing.Size(108, 19);
-            this.cbShowPlatforms.TabIndex = 39;
-            this.cbShowPlatforms.Text = "Platform labels";
-            this.cbShowPlatforms.UseVisualStyleBackColor = true;
-            this.cbShowPlatforms.Visible = false;
+            this.cbShowPlatformLabels.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbShowPlatformLabels.AutoSize = true;
+            this.cbShowPlatformLabels.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbShowPlatformLabels.Location = new System.Drawing.Point(780, 220);
+            this.cbShowPlatformLabels.Name = "cbShowPlatformLabels";
+            this.cbShowPlatformLabels.Size = new System.Drawing.Size(108, 19);
+            this.cbShowPlatformLabels.TabIndex = 39;
+            this.cbShowPlatformLabels.Text = "Platform labels";
+            this.cbShowPlatformLabels.UseVisualStyleBackColor = true;
+            this.cbShowPlatformLabels.Visible = false;
             // 
             // cbShowSidings
             // 
@@ -558,22 +560,36 @@
             // gbTrains
             // 
             this.gbTrains.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbTrains.Controls.Add(this.bTrainKey);
             this.gbTrains.Controls.Add(this.rbShowActiveTrains);
             this.gbTrains.Controls.Add(this.rbShowAllTrains);
             this.gbTrains.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gbTrains.Location = new System.Drawing.Point(779, 371);
+            this.gbTrains.Location = new System.Drawing.Point(779, 323);
             this.gbTrains.Name = "gbTrains";
-            this.gbTrains.Size = new System.Drawing.Size(120, 82);
+            this.gbTrains.Size = new System.Drawing.Size(120, 129);
             this.gbTrains.TabIndex = 43;
             this.gbTrains.TabStop = false;
             this.gbTrains.Text = "Trains";
             this.gbTrains.Visible = false;
             // 
+            // bTrainKey
+            // 
+            this.bTrainKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.bTrainKey.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.bTrainKey.Location = new System.Drawing.Point(71, 89);
+            this.bTrainKey.Name = "bTrainKey";
+            this.bTrainKey.Size = new System.Drawing.Size(40, 23);
+            this.bTrainKey.TabIndex = 57;
+            this.bTrainKey.Text = "Key";
+            this.bTrainKey.UseVisualStyleBackColor = true;
+            this.bTrainKey.Visible = false;
+            this.bTrainKey.Click += new System.EventHandler(this.bTrainKey_Click);
+            // 
             // rbShowActiveTrains
             // 
             this.rbShowActiveTrains.AutoSize = true;
             this.rbShowActiveTrains.Checked = true;
-            this.rbShowActiveTrains.Location = new System.Drawing.Point(13, 25);
+            this.rbShowActiveTrains.Location = new System.Drawing.Point(13, 22);
             this.rbShowActiveTrains.Name = "rbShowActiveTrains";
             this.rbShowActiveTrains.Size = new System.Drawing.Size(81, 19);
             this.rbShowActiveTrains.TabIndex = 1;
@@ -585,7 +601,7 @@
             // rbShowAllTrains
             // 
             this.rbShowAllTrains.AutoSize = true;
-            this.rbShowAllTrains.Location = new System.Drawing.Point(14, 50);
+            this.rbShowAllTrains.Location = new System.Drawing.Point(13, 44);
             this.rbShowAllTrains.Name = "rbShowAllTrains";
             this.rbShowAllTrains.Size = new System.Drawing.Size(38, 19);
             this.rbShowAllTrains.TabIndex = 0;
@@ -597,7 +613,7 @@
             // 
             this.nudDaylightOffsetHrs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.nudDaylightOffsetHrs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.nudDaylightOffsetHrs.Location = new System.Drawing.Point(817, 495);
+            this.nudDaylightOffsetHrs.Location = new System.Drawing.Point(817, 556);
             this.nudDaylightOffsetHrs.Maximum = new decimal(new int[] {
             12,
             0,
@@ -620,7 +636,7 @@
             this.lblDayLightOffsetHrs.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblDayLightOffsetHrs.AutoSize = true;
             this.lblDayLightOffsetHrs.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblDayLightOffsetHrs.Location = new System.Drawing.Point(779, 473);
+            this.lblDayLightOffsetHrs.Location = new System.Drawing.Point(779, 534);
             this.lblDayLightOffsetHrs.Name = "lblDayLightOffsetHrs";
             this.lblDayLightOffsetHrs.Size = new System.Drawing.Size(111, 15);
             this.lblDayLightOffsetHrs.TabIndex = 45;
@@ -636,7 +652,7 @@
             // 
             this.bBackgroundColor.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bBackgroundColor.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.bBackgroundColor.Location = new System.Drawing.Point(779, 529);
+            this.bBackgroundColor.Location = new System.Drawing.Point(779, 590);
             this.bBackgroundColor.Name = "bBackgroundColor";
             this.bBackgroundColor.Size = new System.Drawing.Size(131, 23);
             this.bBackgroundColor.TabIndex = 46;
@@ -676,11 +692,11 @@
             this.cbShowTrainLabels.Checked = true;
             this.cbShowTrainLabels.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbShowTrainLabels.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbShowTrainLabels.Location = new System.Drawing.Point(780, 320);
+            this.cbShowTrainLabels.Location = new System.Drawing.Point(793, 395);
             this.cbShowTrainLabels.Name = "cbShowTrainLabels";
-            this.cbShowTrainLabels.Size = new System.Drawing.Size(90, 19);
+            this.cbShowTrainLabels.Size = new System.Drawing.Size(57, 19);
             this.cbShowTrainLabels.TabIndex = 50;
-            this.cbShowTrainLabels.Text = "Train labels";
+            this.cbShowTrainLabels.Text = "Label";
             this.cbShowTrainLabels.UseVisualStyleBackColor = true;
             this.cbShowTrainLabels.Visible = false;
             // 
@@ -722,11 +738,11 @@
             this.cbShowTrainState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShowTrainState.AutoSize = true;
             this.cbShowTrainState.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbShowTrainState.Location = new System.Drawing.Point(802, 340);
+            this.cbShowTrainState.Location = new System.Drawing.Point(793, 415);
             this.cbShowTrainState.Name = "cbShowTrainState";
-            this.cbShowTrainState.Size = new System.Drawing.Size(83, 19);
+            this.cbShowTrainState.Size = new System.Drawing.Size(54, 19);
             this.cbShowTrainState.TabIndex = 52;
-            this.cbShowTrainState.Text = "Train state";
+            this.cbShowTrainState.Text = "State";
             this.cbShowTrainState.UseVisualStyleBackColor = true;
             this.cbShowTrainState.Visible = false;
             // 
@@ -763,12 +779,28 @@
             this.lblInstruction4.Text = "To zoom out of a location, press Alt and click the left mouse.";
             this.lblInstruction4.Visible = false;
             // 
+            // cbShowPlatforms
+            // 
+            this.cbShowPlatforms.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbShowPlatforms.AutoSize = true;
+            this.cbShowPlatforms.Checked = true;
+            this.cbShowPlatforms.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cbShowPlatforms.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cbShowPlatforms.Location = new System.Drawing.Point(780, 200);
+            this.cbShowPlatforms.Name = "cbShowPlatforms";
+            this.cbShowPlatforms.Size = new System.Drawing.Size(78, 19);
+            this.cbShowPlatforms.TabIndex = 56;
+            this.cbShowPlatforms.Text = "Platforms";
+            this.cbShowPlatforms.UseVisualStyleBackColor = true;
+            this.cbShowPlatforms.Visible = false;
+            // 
             // DispatchViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoScroll = true;
             this.ClientSize = new System.Drawing.Size(923, 768);
+            this.Controls.Add(this.cbShowPlatforms);
             this.Controls.Add(this.lblInstruction4);
             this.Controls.Add(this.lblInstruction3);
             this.Controls.Add(this.lblInstruction2);
@@ -783,7 +815,7 @@
             this.Controls.Add(this.cbShowSignalState);
             this.Controls.Add(this.cbShowSignals);
             this.Controls.Add(this.cbShowSidings);
-            this.Controls.Add(this.cbShowPlatforms);
+            this.Controls.Add(this.cbShowPlatformLabels);
             this.Controls.Add(this.lblShow);
             this.Controls.Add(this.lblSimulationTime);
             this.Controls.Add(this.lblSimulationTimeText);
@@ -864,7 +896,7 @@
         public System.Windows.Forms.Label lblSimulationTimeText;
         public System.Windows.Forms.Label lblSimulationTime;
         public System.Windows.Forms.Label lblShow;
-        public System.Windows.Forms.CheckBox cbShowPlatforms;
+        public System.Windows.Forms.CheckBox cbShowPlatformLabels;
         public System.Windows.Forms.CheckBox cbShowSidings;
         public System.Windows.Forms.CheckBox cbShowSignals;
         public System.Windows.Forms.CheckBox cbShowSignalState;
@@ -882,5 +914,7 @@
         private System.Windows.Forms.Label lblInstruction2;
         private System.Windows.Forms.Label lblInstruction3;
         private System.Windows.Forms.Label lblInstruction4;
+        public System.Windows.Forms.CheckBox cbShowPlatforms;
+        public System.Windows.Forms.Button bTrainKey;
     }
 }
