@@ -353,7 +353,7 @@ namespace Orts.Viewer3D.Debugging
 					case 1:
 						F.PlatformPen.Color = Color.FromArgb(0, 0, 255); break;
 					case 2:
-						F.PlatformPen.Color = Color.FromArgb(100, 100, 255); break;
+						F.PlatformPen.Color = Color.FromArgb(150, 150, 255); break;
 					default:
 						F.PlatformPen.Color = Color.FromArgb(200, 200, 255); break;
 				}
