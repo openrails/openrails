@@ -169,70 +169,97 @@ namespace Orts.Viewer3D.Debugging
 			F.windowSizeUpDown.Maximum = (decimal)maxSize;
 		}
 
-		public void AddToTimetableItemList(TrItem item)
+		public void PopulateItemLists()
 		{
-			switch (item.ItemType)
-			{
-				case TrItem.trItemType.trSIGNAL:
-					if (item is SignalItem)
-					{
-						SignalItem si = item as SignalItem;
+			var previousSidingName = "";
+			var previousPlatformName = "";
 
-						if (si.SigObj >= 0 && si.SigObj < F.simulator.Signals.SignalObjects.Length)
+			foreach (var item in F.simulator.TDB.TrackDB.TrItemTable)
+            {
+				switch (item.ItemType)
+				{
+					case TrItem.trItemType.trSIGNAL:
+						if (item is SignalItem)
 						{
-							var s = F.simulator.Signals.SignalObjects[si.SigObj];
-							if (s != null && s.isSignal && s.isSignalNormal())
-								F.signals.Add(new SignalWidget(si, s));
+							SignalItem si = item as SignalItem;
+
+							if (si.SigObj >= 0 && si.SigObj < F.simulator.Signals.SignalObjects.Length)
+							{
+								var s = F.simulator.Signals.SignalObjects[si.SigObj];
+								if (s != null && s.isSignal && s.isSignalNormal())
+									F.signals.Add(new SignalWidget(si, s));
+							}
 						}
-					}
-					break;
+						break;
 
-				case TrItem.trItemType.trSIDING:
-					// Sidings have 2 ends. When 2nd one is found, then average the location for a single label.
-					var sidingFound = F.sidings.Find(r => r.Name == item.ItemName);
-					if (sidingFound.Name == null)
-					{
-						Console.WriteLine($"added {item.ItemName}");
-						F.sidings.Add(new SidingWidget(item));
-					}
-					else
-					{
-						var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-						sidingFound.Location = GetMidPoint(sidingFound.Location, newLocation);
-					}
-					break;
+					case TrItem.trItemType.trSIDING:
+						// Sidings have 2 ends. When 2nd one is found, then average the location for a single label.
+						// There is no link between these track items, so this technique attempts to pair up the names,
+						// remebering also that names need not be unique (e.g. Bernina Bahn).
+						if (item.ItemName == previousSidingName)
+						{
+							var oldLocation = F.sidings.Last().Location;
+							var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
 
-				case TrItem.trItemType.trPLATFORM:
-					// Platforms have 2 ends. When 2nd one is found, then find the right-hand one as the location for a single label.
-					var index = F.platforms.FindIndex(r => r.Name == item.ItemName);
-					if (index < 0)
-						F.platforms.Add(new PlatformWidget(item));
-					else
-					{
-						var oldLocation = F.platforms[index].Location;
-						var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+							// Because these are structs, not classes, compiler won't let you overwrite them.
+							// Instead create a single item which replaces the 2 platform items.
+							var replacementSiding = new SidingWidget(item);
 
-						// Because these are structs, not classes, compiler won't let you overwrite them.
-						// Instead create a single item which replaces the 2 platform items.
-						var replacementPlatform = new PlatformWidget(item);
+							// Give it the right-hand location
+							replacementSiding.Location = GetMidPoint(oldLocation, newLocation);
 
-						// Give it the right-hand location
-						replacementPlatform.Location = GetRightHandPoint(oldLocation, newLocation);
+							// Replace the first platform item with the replacement
+							F.sidings.RemoveAt(F.sidings.Count() - 1);
+							F.sidings.Add(replacementSiding);
+							previousSidingName = "";
+						}
+						else
+						{
+							previousSidingName = item.ItemName;
+							F.sidings.Add(new SidingWidget(item));
+						}
+						break;
 
-						// Save the original 2 locations of the platform
-						replacementPlatform.Extent1 = oldLocation;
-						replacementPlatform.Extent2 = newLocation;
+					case TrItem.trItemType.trPLATFORM:
+						// Platforms have 2 ends. When 2nd one is found, then find the right-hand one as the location for a single label.
+						// There is no link between these track items, so this technique attempts to pair up the names,
+						// remebering also that names need not be unique (e.g. Bernina Bahn).
+						if (item.ItemName == previousPlatformName)
+						{
+                            var oldLocation = F.platforms.Last().Location;
+                            var newLocation = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
 
-						// Replace the first platform item with the replacement
-						F.platforms.RemoveAt(index);
-						F.platforms.Add(replacementPlatform);
-					}
-					break;
+                            // Because these are structs, not classes, compiler won't let you overwrite them.
+                            // Instead create a single item which replaces the 2 platform items.
+                            var replacementPlatform = new PlatformWidget(item);
 
-				default:
-					break;
+                            // Give it the right-hand location
+                            replacementPlatform.Location = GetRightHandPoint(oldLocation, newLocation);
+
+                            // Save the original 2 locations of the platform
+                            replacementPlatform.Extent1 = oldLocation;
+                            replacementPlatform.Extent2 = newLocation;
+
+                            // Replace the first platform item with the replacement
+                            F.platforms.RemoveAt(F.platforms.Count() - 1);
+                            F.platforms.Add(replacementPlatform);
+                            previousPlatformName = "";
+						}
+						else
+						{
+							previousPlatformName = item.ItemName;
+							var newPlatform = new PlatformWidget(item);
+							newPlatform.Extent1 = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
+							F.platforms.Add(newPlatform);
+						}
+						break;
+
+					default:
+						break;
+				}
 			}
 		}
+
 
 		/// <summary>
 		/// Returns the mid-point between two locations
