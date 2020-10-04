@@ -332,9 +332,8 @@ namespace Orts.Viewer3D.Debugging
 			if (simulator.TDB == null || simulator.TDB.TrackDB == null || simulator.TDB.TrackDB.TrItemTable == null) 
 				return;
 
-			foreach (var item in simulator.TDB.TrackDB.TrItemTable)
-                TimetableWindow.AddToTimetableItemList(item);
-        }
+			TimetableWindow.PopulateItemLists();
+		}
 
       bool Inited;
 		public List<LineSegment> segments = new List<LineSegment>();
@@ -2503,7 +2502,8 @@ namespace Orts.Viewer3D.Debugging
    /// </summary>
    public struct SidingWidget
    {
-	   public PointF Location;
+		public uint Id;
+		public PointF Location;
 	   public string Name;
 
 		/// <summary>
@@ -2518,6 +2518,7 @@ namespace Orts.Viewer3D.Debugging
 		/// <param name="signal"></param>
 		public SidingWidget(TrItem item)
 		{
+			Id = item.TrItemId;
 			Item = item;
 			Name = item.ItemName;
 			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
@@ -2531,6 +2532,7 @@ namespace Orts.Viewer3D.Debugging
 	/// </summary>
 	public struct PlatformWidget
 	{
+		public uint Id;
 		public PointF Location;
 		public string Name;
 		public PointF Extent1;
@@ -2539,7 +2541,7 @@ namespace Orts.Viewer3D.Debugging
 		/// <summary>
 		/// The underlying track item.
 		/// </summary>
-		private TrItem Item;
+		public TrItem Item;
 
 		/// <summary>
 		/// 
@@ -2548,6 +2550,7 @@ namespace Orts.Viewer3D.Debugging
 		/// <param name="signal"></param>
 		public PlatformWidget(TrItem item)
 		{
+			Id = item.TrItemId;
 			Item = item;
 			Name = item.ItemName;
 			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
