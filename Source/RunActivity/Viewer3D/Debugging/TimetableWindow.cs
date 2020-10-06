@@ -701,7 +701,22 @@ namespace Orts.Viewer3D.Debugging
 							continue;
 						scaledA.X = x; scaledA.Y = y;
 
-						F.trainPen.Color = (car == firstCar) ? Color.FromArgb(0, 180, 0) : Color.DarkGreen;
+						// Draw static trains as a ghost
+						if (((Simulation.AIs.AITrain)t).MovementState == Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC)
+							F.trainPen.Color = Color.LightGray;
+						else
+							// Saturation = 100/100
+							// if loco then H=50/360 else H=120/360
+							// if leading then L=45/100 else L=30/100
+
+							// leading loco: RGB 227,190,2
+							// trailing loco: RGB 153,128,0
+							// leading car: RGB 0,227,0
+							// trailing car: RGB 0,153,0
+							if (car is MSTSLocomotive)
+								F.trainPen.Color = (car == firstCar) ? Color.FromArgb(227, 190, 2) : Color.FromArgb(153, 128, 0);
+							else
+								F.trainPen.Color = (car == firstCar) ? Color.FromArgb(0, 227, 0) : Color.FromArgb(0, 153, 0);
 						g.DrawLine(F.trainPen, scaledA, scaledTrain);
 					}
 				}
