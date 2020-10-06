@@ -23,6 +23,7 @@ using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 
@@ -258,6 +259,10 @@ namespace Orts.Viewer3D.Debugging
 						break;
 				}
 			}
+
+			foreach (var p in F.platforms)
+				if (p.Extent1.IsEmpty || p.Extent2.IsEmpty)
+					Trace.TraceWarning("Platform {0} is incomplete and will not show in full in the Timetable Tab of the Map Window", p.Name);
 		}
 
 
@@ -385,17 +390,37 @@ namespace Orts.Viewer3D.Debugging
 						F.PlatformPen.Color = Color.FromArgb(200, 200, 255); break;
 				}
 
-				F.PlatformPen.Width = F.grayPen.Width * 3;
+				var width = F.grayPen.Width * 3;
+				F.PlatformPen.Width = width;
 				foreach (var p in F.platforms)
-				{
-					var scaledA = new PointF((p.Extent1.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent1.Y - F.subY) * F.yScale);
-					var scaledB = new PointF((p.Extent2.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent2.Y - F.subY) * F.yScale);
-					g.DrawLine(F.PlatformPen, scaledA, scaledB);
-				}
-			}
+                {
+                    var scaledA = new PointF((p.Extent1.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent1.Y - F.subY) * F.yScale);
+                    var scaledB = new PointF((p.Extent2.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent2.Y - F.subY) * F.yScale);
+
+                    FixForBadData(width, ref scaledA, ref scaledB);
+                    g.DrawLine(F.PlatformPen, scaledA, scaledB);
+                }
+            }
 		}
 
-		private void DrawTrack(Graphics g, Pen p, out PointF scaledA, out PointF scaledB)
+		/// <summary>
+		/// In case of missing X,Y values, just draw a blob at the non-zero end.
+		/// </summary>
+		private void FixForBadData(float width, ref PointF scaledA, ref PointF scaledB)
+        {
+            if (scaledA.X == 0 || scaledA.Y == 0)
+            {
+                scaledA.X = scaledB.X + width;
+                scaledA.Y = scaledB.Y + width;
+            }
+            else if (scaledB.X == 0 || scaledB.Y == 0)
+            {
+                scaledB.X = scaledA.X + width;
+                scaledB.Y = scaledA.Y + width;
+            }
+        }
+
+        private void DrawTrack(Graphics g, Pen p, out PointF scaledA, out PointF scaledB)
 		{
 			PointF[] points = new PointF[3];
 			scaledA = new PointF(0, 0);
