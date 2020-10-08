@@ -397,7 +397,7 @@ namespace Orts.Viewer3D.Debugging
                     var scaledA = new PointF((p.Extent1.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent1.Y - F.subY) * F.yScale);
                     var scaledB = new PointF((p.Extent2.X - F.subX) * F.xScale, F.pbCanvas.Height - (p.Extent2.Y - F.subY) * F.yScale);
 
-                    FixForBadData(width, ref scaledA, ref scaledB);
+                    FixForBadData(width, ref scaledA, ref scaledB, p.Extent1, p.Extent2);
                     g.DrawLine(F.PlatformPen, scaledA, scaledB);
                 }
             }
@@ -406,15 +406,15 @@ namespace Orts.Viewer3D.Debugging
 		/// <summary>
 		/// In case of missing X,Y values, just draw a blob at the non-zero end.
 		/// </summary>
-		private void FixForBadData(float width, ref PointF scaledA, ref PointF scaledB)
+		private void FixForBadData(float width, ref PointF scaledA, ref PointF scaledB, PointF Extent1, PointF Extent2)
         {
-            if (scaledA.X == 0 || scaledA.Y == 0)
-            {
+			if (Extent1.X == 0 || Extent1.Y == 0)
+			{
                 scaledA.X = scaledB.X + width;
                 scaledA.Y = scaledB.Y + width;
             }
-            else if (scaledB.X == 0 || scaledB.Y == 0)
-            {
+			else if (Extent2.X == 0 || Extent2.Y == 0)
+			{
                 scaledB.X = scaledA.X + width;
                 scaledB.Y = scaledA.Y + width;
             }
