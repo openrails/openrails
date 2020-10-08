@@ -2504,21 +2504,23 @@ namespace Orts.Viewer3D.Debugging
    {
 		public uint Id;
 		public PointF Location;
-	   public string Name;
+	    public string Name;
+		public uint LinkId;
 
 		/// <summary>
 		/// The underlying track item.
 		/// </summary>
-		private TrItem Item;
+		public SidingItem Item;
 
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="item"></param>
 		/// <param name="signal"></param>
-		public SidingWidget(TrItem item)
+		public SidingWidget(SidingItem item)
 		{
 			Id = item.TrItemId;
+			LinkId = item.LinkedSidingId;
 			Item = item;
 			Name = item.ItemName;
 			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
@@ -2527,9 +2529,6 @@ namespace Orts.Viewer3D.Debugging
 
 #endregion
 
-	/// <summary>
-	/// Defines a platform name being drawn in a 2D view.
-	/// </summary>
 	public struct PlatformWidget
 	{
 		public uint Id;
@@ -2537,25 +2536,29 @@ namespace Orts.Viewer3D.Debugging
 		public string Name;
 		public PointF Extent1;
 		public PointF Extent2;
+		public uint LinkId;
+		public string Station;
 
 		/// <summary>
 		/// The underlying track item.
 		/// </summary>
-		public TrItem Item;
+		public PlatformItem Item;
 
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="item"></param>
 		/// <param name="signal"></param>
-		public PlatformWidget(TrItem item)
+		public PlatformWidget(PlatformItem item)
 		{
 			Id = item.TrItemId;
+			LinkId = item.LinkedPlatformItemId;
 			Item = item;
 			Name = item.ItemName;
+			Station = item.Station;
 			Location = new PointF(item.TileX * 2048 + item.X, item.TileZ * 2048 + item.Z);
-			Extent1 = new PointF(0, 0);
-			Extent2 = new PointF(0, 0);
+			Extent1 = default(PointF);
+			Extent2 = default(PointF);
 		}
 	}
 
