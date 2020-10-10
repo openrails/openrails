@@ -846,15 +846,17 @@ As shown below, the basic red train label identifies the train.
 
 .. image:: images/timetable_tab1.png
 
-The "Active trains" selection shows trains that are currently delivering a service.
+Trains are drawn in green except that locos are drawn in brown. To indicate direction, the leading
+vehicle is draw in a lighter shade.
 
+The "Active trains" selection shows trains that are currently delivering a service.
 The "All trains" selection also shows inactive and static trains with labels in dark red.
 
 Inactive trains are not part of a current service - i.e. their start time has not been reached or 
 they have arrived at their destination and not yet been re-formed for another service - see 
 :ref:`#dispose commands<timetable-dispose>`.
 
-Static trains do not move and are created with the $static command.
+Static trains do not move and are shown in gray. They created with the $static command.
 
 .. raw:: latex
 
