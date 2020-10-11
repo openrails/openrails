@@ -1,4 +1,5 @@
 <?php 
+
 // Better to move this section above track_visits.php
 // As it is, someone with cookies disallowed gets new visitor attributes for every page visited, not just on every visit.
 require_once('set_session_save_path.php');  // To avoid error 500 on this system
