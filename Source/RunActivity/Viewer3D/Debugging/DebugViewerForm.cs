@@ -74,10 +74,10 @@ namespace Orts.Viewer3D.Debugging
 		/// </summary>
 		public bool Dragging;
 	  private WorldPosition worldPos;
-      public float xScale = 1; 
-      public float yScale = 1; 
+      public float xScale = 1; // pixels / metre
+      public float yScale = 1; // pixels / metre 
 
-	  string name = "";
+		string name = "";
 	  public List<SwitchWidget> switchItemsDrawn;
 	  public List<SignalWidget> signalItemsDrawn;
 
@@ -637,9 +637,7 @@ namespace Orts.Viewer3D.Debugging
 			PointF[] points = new PointF[3];
 			Pen p = grayPen;
 
-			p.Width = (int) xScale;
-			if (p.Width < 1) p.Width = 1;
-			else if (p.Width > 3) p.Width = 3;
+			p.Width = MathHelper.Clamp(xScale, 1, 3);
 			greenPen.Width = orangePen.Width = redPen.Width = p.Width; pathPen.Width = 2 * p.Width;
 			trainPen.Width = p.Width*6;
 			var forwardDist = 100 / xScale; if (forwardDist < 5) forwardDist = 5;
