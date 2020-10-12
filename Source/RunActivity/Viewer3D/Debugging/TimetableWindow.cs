@@ -203,7 +203,7 @@ namespace Orts.Viewer3D.Debugging
 						// Neither are their names unique (e.g. Bernina Bahn).
 						// Find whether this siding is a new one or the other end of an old one.
 						// If other end, then find the right-hand one as the location for a single label.
-						var oldSidingIndex = F.sidings.FindIndex(r => r.LinkId == item.TrItemId);
+						var oldSidingIndex = F.sidings.FindIndex(r => r.LinkId == item.TrItemId && r.Name == item.ItemName);
 						if (oldSidingIndex < 0)
 						{
 							var newSiding = new SidingWidget(item as SidingItem);
@@ -233,7 +233,7 @@ namespace Orts.Viewer3D.Debugging
 						// Neither are their names unique (e.g. Bernina Bahn).
 						// Find whether this platform is a new one or the other end of an old one.
 						// If other end, then find the right-hand one as the location for a single label.
-						var oldPlatformIndex = F.platforms.FindIndex(r => r.LinkId == item.TrItemId);
+						var oldPlatformIndex = F.platforms.FindIndex(r => r.LinkId == item.TrItemId && r.Name == item.ItemName);
 						if (oldPlatformIndex < 0)
                         {
 							var newPlatform = new PlatformWidget(item as PlatformItem)
@@ -270,7 +270,7 @@ namespace Orts.Viewer3D.Debugging
 
 			foreach (var p in F.platforms)
 				if (p.Extent1.IsEmpty || p.Extent2.IsEmpty)
-					Trace.TraceWarning("Platform '{0}' is incomplete and will not show in full in the Timetable Tab of the Map Window", p.Name);
+					Trace.TraceWarning("Platform '{0}' is incomplete as the two ends do not match. It will not show in full in the Timetable Tab of the Map Window", p.Name);
 		}
 
 
