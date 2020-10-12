@@ -137,7 +137,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Initialise water level in steam heat boiler
-            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0)
+            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0 && IsSteamHeatFitted)
             {
                 if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
                 {
