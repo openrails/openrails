@@ -581,6 +581,7 @@ namespace Orts.Simulation.RollingStocks
         float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
         float DisplayMaxIndicatedHorsePowerHP; // Display value for HUD of IHP @ max performance for the geared locomotive
+        float RetainedGearedMaxMaxIndicatedHorsePowerHP; // Retrains maximum IHP value for steam locomotives.
         float absSpeedMpS;
         float CombFrictionN;  // Temporary parameter to store combined friction values of locomotive and tender
         float CombGravityN;   // Temporary parameter to store combined Gravity values of locomotive and tender
@@ -1273,10 +1274,13 @@ namespace Orts.Simulation.RollingStocks
                     }
                     MotiveForceGearRatio = SteamGearRatioLow;
                     SteamGearRatio = SteamGearRatioLow;
+                    SteamGearPosition = 1.0f; // set starting gear position 
                     // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
                     // Max Geared speed = ((MaxPistonSpeedFt/m / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
                     LowMaxGearedSpeedMpS = pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatio * MathHelper.Pi * DriverWheelRadiusM * 2.0f);
                     MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                    DisplayMaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                     DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
                 else if (IsSelectGeared)
@@ -1299,12 +1303,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                     if (SteamGearRatioLow == 0)
                     {
-                        SteamGearRatioLow = 5.0f;
+                        SteamGearRatioLow = 9.0f;
                         Trace.TraceWarning("SteamGearRatioLow not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                     }
                     if (SteamGearRatioHigh == 0)
                     {
-                        SteamGearRatioHigh = 2.0f;
+                        SteamGearRatioHigh = 4.5f;
                         Trace.TraceWarning("SteamGearRatioHigh not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                     }
                     // Adjust resistance for neutral gearing
@@ -1322,9 +1326,11 @@ namespace Orts.Simulation.RollingStocks
                     SteamGearPosition = 1.0f; // assume in low gear as starting position 
                     // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
                     // Max Geared speed = ((MaxPistonSpeed / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
-                    LowMaxGearedSpeedMpS = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioLow))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
-                    HighMaxGearedSpeedMpS = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioHigh))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
+                    LowMaxGearedSpeedMpS = (Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioLow))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
+                    HighMaxGearedSpeedMpS = (Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioHigh))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
                     MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                    DisplayMaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                     DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
                 else
@@ -1535,12 +1541,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Calculate max velocity of the locomotive based upon above piston speed
-            if (SteamGearRatio == 0)
-            {
-                MaxLocoSpeedMpH = 0.0f;
-                DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
-            }
-            else
+            if (SteamEngineType != SteamEngineTypes.Geared)
             {
                 MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
                 DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
@@ -1746,26 +1747,30 @@ namespace Orts.Simulation.RollingStocks
 
             MaxBoilerOutputHP = MaxBoilerOutputLBpH / SteamperIHPh; // Calculate boiler output power
 
+            // if MaxIHP is set in ENG file, and is a geared (mainly selectable model) locomotive then retain a copy of the original value
+            if (MaxIndicatedHorsePowerHP != 0) 
+            {
+                RetainedGearedMaxMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+            }
+
             if (MaxIndicatedHorsePowerHP == 0) // if MaxIHP is not set in ENG file, then set a default
             {
-
                 // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
-                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
 
                 // Check to see if MaxIHP is in fact limited by the boiler
                 if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                 {
                     MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                    DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                     ISBoilerLimited = true;
                 }
                 else
                 {
                     ISBoilerLimited = false;
                 }
-
             }
+                       
+            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
 
             // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.2
 
@@ -6685,21 +6690,29 @@ public void SteamStartGearBoxIncrease()
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
-                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
-                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                            // If value set in ENG file then hold to this value, otherwise calculate the value
+                            if (RetainedGearedMaxMaxIndicatedHorsePowerHP != 0)
+                            {
+                                MaxIndicatedHorsePowerHP = RetainedGearedMaxMaxIndicatedHorsePowerHP;
+                            }
+                            else
+                            {
+                                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            }
 
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
                             {
                                 ISBoilerLimited = false;
                             }
+
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                         }
                         else if (SteamGearPosition == 2.0)
                         {
@@ -6714,20 +6727,29 @@ public void SteamStartGearBoxIncrease()
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
-                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
-                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                            // If value set in ENG file then hold to this value, otherwise calculate the value
+                            if (RetainedGearedMaxMaxIndicatedHorsePowerHP != 0)
+                            {
+                                MaxIndicatedHorsePowerHP = RetainedGearedMaxMaxIndicatedHorsePowerHP;
+                            }
+                            else
+                            {
+                                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            }
+
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
                             {
                                 ISBoilerLimited = false;
                             }
+
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                         }
                     }
                 }
@@ -6768,20 +6790,29 @@ public void SteamStartGearBoxIncrease()
                             SignalEvent(Event.SteamGearLeverToggle);
                             SignalEvent(Event.GearPosition1);
 
-                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
-                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                            // If value set in ENG file then hold to this value, otherwise calculate the value
+                            if (RetainedGearedMaxMaxIndicatedHorsePowerHP != 0)
+                            {
+                                MaxIndicatedHorsePowerHP = RetainedGearedMaxMaxIndicatedHorsePowerHP;
+                            }
+                            else
+                            {
+                                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            }
+
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
                             {
                                 ISBoilerLimited = false;
                             }
+
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
 
                         }
                         else if (SteamGearPosition == 0.0)
