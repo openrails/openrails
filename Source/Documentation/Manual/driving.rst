@@ -407,6 +407,13 @@ the texts do not overlap. As a result, only the first object is always
 shown at the correct position, all other objects are as close to their 
 position as allowed by other objects closer to the train.
 
+Pressing ``<Shift+F4>`` toggles the Track Monitor's *immersive mode*. In this 
+mode, the window conceals upcoming signal aspects and upcoming signal speed 
+limits and does not display upcoming diverging switches. However, it retains 
+the locations of signals, mileposts, permanent speed limits, sidings, and 
+stations. This level of assistance reflects the route knowledge that a train 
+driver could be expected to know by memory.
+
 F6 Siding and Platform Names
 ----------------------------
 
