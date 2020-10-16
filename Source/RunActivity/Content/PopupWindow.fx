@@ -119,14 +119,14 @@ float4 PSPopupWindowGlass(in VERTEX_OUTPUT In) : COLOR
 
 technique PopupWindow {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSPopupWindow();
-		PixelShader = compile ps_2_0 PSPopupWindow();
+		VertexShader = compile vs_4_0_level_9_1 VSPopupWindow();
+		PixelShader = compile ps_4_0_level_9_1 PSPopupWindow();
 	}
 }
 
 technique PopupWindowGlass {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSPopupWindowGlass();
-		PixelShader = compile ps_2_0 PSPopupWindowGlass();
+		VertexShader = compile vs_4_0_level_9_1 VSPopupWindowGlass();
+		PixelShader = compile ps_4_0_level_9_1 PSPopupWindowGlass();
 	}
 }

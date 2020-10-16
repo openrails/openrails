@@ -31,7 +31,6 @@ namespace Orts.Viewer3D.Processes
     public class RenderProcess
     {
         public const int ShadowMapCountMaximum = 4;
-        public const int ShadowMapMipCount = 1;
 
         public Point DisplaySize { get; private set; }
         public GraphicsDevice GraphicsDevice { get { return Game.GraphicsDevice; } }
@@ -97,15 +96,11 @@ namespace Orts.Viewer3D.Processes
             // Set up the rest of the graphics according to the settings.
             GraphicsDeviceManager.SynchronizeWithVerticalRetrace = Game.Settings.VerticalSync;
             GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
-            GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth32;
-            GraphicsDeviceManager.IsFullScreen = false;
+            GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
+            GraphicsDeviceManager.IsFullScreen = Game.Settings.FullScreen;
             GraphicsDeviceManager.PreferMultiSampling = true;
+            GraphicsDeviceManager.HardwareModeSwitch = !Game.Settings.FastFullScreenAltTab;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
-
-            if (Game.Settings.FullScreen)
-                ToggleFullScreen();
-
-            SynchronizeGraphicsDeviceManager();
         }
 
         void GDM_PreparingDeviceSettings(object sender, PreparingDeviceSettingsEventArgs e)
@@ -116,14 +111,24 @@ namespace Orts.Viewer3D.Processes
                 if (adapter.Description.Contains("PerfHUD"))
                 {
                     e.GraphicsDeviceInformation.Adapter = adapter;
-                    e.GraphicsDeviceInformation.DeviceType = DeviceType.Reference;
+                    GraphicsAdapter.UseReferenceDevice = true;
                     break;
                 }
             }
 
-            // This stops ResolveBackBuffer() clearing the back buffer.
-            e.GraphicsDeviceInformation.PresentationParameters.RenderTargetUsage = RenderTargetUsage.PreserveContents;
-            e.GraphicsDeviceInformation.PresentationParameters.AutoDepthStencilFormat = DepthFormat.Depth24Stencil8;
+            e.GraphicsDeviceInformation.GraphicsProfile = e.GraphicsDeviceInformation.Adapter.IsProfileSupported(GraphicsProfile.HiDef) ? GraphicsProfile.HiDef : GraphicsProfile.Reach;
+
+            if (e.GraphicsDeviceInformation.PresentationParameters.IsFullScreen)
+            {
+                var screen = Screen.FromControl(GameForm);
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferWidth = screen.Bounds.Width;
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferHeight = screen.Bounds.Height;
+            }
+            else
+            {
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferWidth = GameWindowSize.X;
+                e.GraphicsDeviceInformation.PresentationParameters.BackBufferHeight = GameWindowSize.Y;
+            }
         }
 
         internal void Start()
@@ -132,12 +137,24 @@ namespace Orts.Viewer3D.Processes
 
             DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-            if (Game.Settings.ShaderModel == 0)
-                Game.Settings.ShaderModel = GraphicsDevice.GraphicsDeviceCapabilities.PixelShaderVersion.Major;
-            else if (Game.Settings.ShaderModel < 2)
-                Game.Settings.ShaderModel = 2;
-            else if (Game.Settings.ShaderModel > 3)
-                Game.Settings.ShaderModel = 3;
+            try
+            {
+                // Validate that the DirectX feature level is one we understand
+                Enum.Parse(typeof(ORTS.Settings.UserSettings.DirectXFeature), "Level" + Game.Settings.DirectXFeatureLevel);
+            }
+            catch (Exception)
+            {
+                Game.Settings.DirectXFeatureLevel = "";
+            }
+
+            if (Game.Settings.DirectXFeatureLevel == "")
+            {
+                // Choose default feature level based on profile
+                if (GraphicsDevice.GraphicsProfile == GraphicsProfile.HiDef)
+                    Game.Settings.DirectXFeatureLevel = "10_0";
+                else
+                    Game.Settings.DirectXFeatureLevel = "9_1";
+            }
 
             if (Game.Settings.ShadowMapDistance == 0)
                 Game.Settings.ShadowMapDistance = Game.Settings.ViewingDistance / 2;
@@ -145,7 +162,7 @@ namespace Orts.Viewer3D.Processes
             ShadowMapCount = Game.Settings.ShadowMapCount;
             if (!Game.Settings.DynamicShadows)
                 ShadowMapCount = 0;
-            else if ((ShadowMapCount > 1) && (Game.Settings.ShaderModel < 3))
+            else if ((ShadowMapCount > 1) && !Game.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3))
                 ShadowMapCount = 1;
             else if (ShadowMapCount < 0)
                 ShadowMapCount = 0;
@@ -229,12 +246,12 @@ namespace Orts.Viewer3D.Processes
 
             if (ToggleFullScreenRequested)
             {
-                SynchronizeGraphicsDeviceManager();
+                GraphicsDeviceManager.ToggleFullScreen();
                 ToggleFullScreenRequested = false;
                 Viewer.DefaultViewport = GraphicsDevice.Viewport;
             }
 
-            if (gameTime.TotalRealTime.TotalSeconds > 0.001)
+            if (gameTime.TotalGameTime.TotalSeconds > 0.001)
             {
                 Game.UpdaterProcess.WaitTillFinished();
 
@@ -243,31 +260,7 @@ namespace Orts.Viewer3D.Processes
 
                 // Swap frames and start the next update (non-threaded updater does the whole update).
                 SwapFrames(ref CurrentFrame, ref NextFrame);
-                Game.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalRealTime.TotalSeconds);
-            }
-        }
-
-        void SynchronizeGraphicsDeviceManager()
-        {
-            if (IsFullScreen)
-            {
-                var screen = Game.Settings.FastFullScreenAltTab ? Screen.FromControl(GameForm) : Screen.PrimaryScreen;
-                GraphicsDeviceManager.PreferredBackBufferWidth = screen.Bounds.Width;
-                GraphicsDeviceManager.PreferredBackBufferHeight = screen.Bounds.Height;
-            }
-            else
-            {
-                GraphicsDeviceManager.PreferredBackBufferWidth = GameWindowSize.X;
-                GraphicsDeviceManager.PreferredBackBufferHeight = GameWindowSize.Y;
-            }
-            if (Game.Settings.FastFullScreenAltTab)
-            {
-                GameForm.FormBorderStyle = IsFullScreen ? System.Windows.Forms.FormBorderStyle.None : System.Windows.Forms.FormBorderStyle.FixedSingle;
-                GraphicsDeviceManager.ApplyChanges();
-            }
-            else if (GraphicsDeviceManager.IsFullScreen != IsFullScreen)
-            {
-                GraphicsDeviceManager.ToggleFullScreen();
+                Game.UpdaterProcess.StartUpdate(NextFrame, gameTime.TotalGameTime.TotalSeconds);
             }
         }
 
@@ -280,7 +273,7 @@ namespace Orts.Viewer3D.Processes
             WatchdogToken.Ping();
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
-            GraphicsDevice.RenderState.DepthBufferEnable = true;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             CurrentFrame.IsScreenChanged = (DisplaySize.X != GraphicsDevice.Viewport.Width) || (DisplaySize.Y != GraphicsDevice.Viewport.Height);
             if (CurrentFrame.IsScreenChanged)
@@ -331,7 +324,7 @@ namespace Orts.Viewer3D.Processes
             }
 
             // Sort-of hack to allow the NVIDIA PerfHud to display correctly.
-            GraphicsDevice.RenderState.DepthBufferEnable = false;
+            GraphicsDevice.DepthStencilState = DepthStencilState.None;
 
             Profiler.Stop();
         }
@@ -348,12 +341,10 @@ namespace Orts.Viewer3D.Processes
             frame2 = temp;
         }
 
-        bool IsFullScreen;
         bool ToggleFullScreenRequested;
         [CallOnThread("Updater")]
         public void ToggleFullScreen()
         {
-            IsFullScreen = !IsFullScreen;
             ToggleFullScreenRequested = true;
         }
 

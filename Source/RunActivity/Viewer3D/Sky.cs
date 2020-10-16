@@ -135,28 +135,15 @@ namespace Orts.Viewer3D
 
 
             // Current solar and lunar position are calculated by interpolation in the lookup arrays.
-            // The arrays have intervals of 1200 secs or 20 mins.
             // Using the Lerp() function, so need to calculate the in-between differential
-            float diff = GetCelestialDiff();
+            float diff = (float)(Viewer.Simulator.ClockTime - oldClockTime) / 1200;
             // The rest of this increments/decrements the array indices and checks for overshoot/undershoot.
             while (Viewer.Simulator.ClockTime >= (oldClockTime + 1200)) // Plus key, or normal forward in time; <CSComment> better so in case of fast forward
             {
-                //step1++;
-                //step2++;
-                //oldClockTime = oldClockTime + 1200;
-                //diff = (float)(Viewer.Simulator.ClockTime - oldClockTime) / 1200;
-                //if (step2 >= maxSteps) // Midnight.
-                //{
-                //    step2 = 0;
-                //}
-                //if (step1 >= maxSteps) // Midnight.
-                //{
-                //    step1 = 0;
-                //}
-                oldClockTime = oldClockTime + 1200;
-                diff = GetCelestialDiff();
                 step1++;
                 step2++;
+                oldClockTime = oldClockTime + 1200;
+                diff = (float)(Viewer.Simulator.ClockTime - oldClockTime) / 1200;
                 if (step2 >= maxSteps) // Midnight.
                 {
                     step2 = 0;
@@ -168,10 +155,10 @@ namespace Orts.Viewer3D
             }
             if (Viewer.Simulator.ClockTime <= (oldClockTime - 1200)) // Minus key
             {
-                oldClockTime = Viewer.Simulator.ClockTime;
-                diff = 0;
                 step1--;
                 step2--;
+                oldClockTime = Viewer.Simulator.ClockTime;
+                diff = 0;
                 if (step1 < 0) // Midnight.
                 {
                     step1 = maxSteps - 1;
@@ -189,20 +176,6 @@ namespace Orts.Viewer3D
             lunarDirection.Z = MathHelper.Lerp(lunarPosArray[step1].Z, lunarPosArray[step2].Z, diff);
 
             frame.AddPrimitive(Material, Primitive, RenderPrimitiveGroup.Sky, ref XNASkyWorldLocation);
-        }
-
-        /// <summary>
-        /// Returns the advance of time in seconds in units of 20 mins.
-        /// Allows for an offset in hours from a control in the DispatchViewer.
-        /// This is a user convenience to reveal in daylight what might be hard to see at night.
-        /// </summary>
-        /// <returns></returns>
-        private float GetCelestialDiff()
-        {
-            var diffS = (Viewer.Simulator.ClockTime - oldClockTime);
-            if (Program.DebugViewer != null)
-                diffS += (double)Program.DebugViewer?.DaylightOffsetHrs * 60 * 60;
-            return (float)diffS / 1200;
         }
 
         public void LoadPrep()
@@ -232,9 +205,7 @@ namespace Orts.Viewer3D
     public class SkyPrimitive : RenderPrimitive
     {
         private VertexBuffer SkyVertexBuffer;
-        private static VertexDeclaration SkyVertexDeclaration;
         private static IndexBuffer SkyIndexBuffer;
-        private static int SkyVertexStride;  // in bytes
         public int drawIndex;
 
         VertexPositionNormalTexture[] vertexList;
@@ -276,8 +247,7 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = SkyVertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(SkyVertexBuffer, 0, SkyVertexStride);
+            graphicsDevice.SetVertexBuffer(SkyVertexBuffer);
             graphicsDevice.Indices = SkyIndexBuffer;
 
             switch (drawIndex)
@@ -454,13 +424,8 @@ namespace Orts.Viewer3D
         /// </summary>
         private void InitializeVertexBuffers(GraphicsDevice graphicsDevice)
         {
-            if (SkyVertexDeclaration == null)
-            {
-                SkyVertexDeclaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                SkyVertexStride = VertexPositionNormalTexture.SizeInBytes;
-            }
             // Initialize the vertex and index buffers, allocating memory for each vertex and index
-            SkyVertexBuffer = new VertexBuffer(graphicsDevice, VertexPositionNormalTexture.SizeInBytes * vertexList.Length, BufferUsage.WriteOnly);
+            SkyVertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexList.Length, BufferUsage.WriteOnly);
             SkyVertexBuffer.SetData(vertexList);
             if (SkyIndexBuffer == null)
             {
@@ -529,40 +494,38 @@ namespace Orts.Viewer3D
             SkyShader.WindSpeed = Viewer.World.Sky.windSpeed;
             SkyShader.WindDirection = Viewer.World.Sky.windDirection; // Keep setting this after Time and Windspeed. Calculating displacement here.
 
+            for (var i = 0; i < 5; i++)
+                graphicsDevice.SamplerStates[i] = SamplerState.LinearWrap;
+            
             // Sky dome
-            var rs = graphicsDevice.RenderState;
-            rs.DepthBufferWriteEnable = false;
+            graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
 
             SkyShader.CurrentTechnique = SkyShader.Techniques["Sky"];
             Viewer.World.Sky.Primitive.drawIndex = 1;
 
+            graphicsDevice.BlendState = BlendState.Opaque;
+
             Matrix viewXNASkyProj = XNAViewMatrix * Camera.XNASkyProjection;
 
             SkyShader.SetViewMatrix(ref XNAViewMatrix);
-            SkyShader.Begin();
             ShaderPassesSky.Reset();
             while (ShaderPassesSky.MoveNext())
             {
-                ShaderPassesSky.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     SkyShader.SetMatrix(ref wvp);
-                    SkyShader.CommitChanges();
+                    ShaderPassesSky.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesSky.Current.End();
             }
-            SkyShader.End();
 
             // Moon
             SkyShader.CurrentTechnique = SkyShader.Techniques["Moon"];
             Viewer.World.Sky.Primitive.drawIndex = 2;
 
-            rs.AlphaBlendEnable = true;
-            rs.CullMode = CullMode.CullClockwiseFace;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.RasterizerState = RasterizerState.CullClockwise;
 
             // Send the transform matrices to the shader
             int skyRadius = Viewer.World.Sky.Primitive.skyRadius;
@@ -570,52 +533,41 @@ namespace Orts.Viewer3D
             XNAMoonMatrix = Matrix.CreateTranslation(Viewer.World.Sky.lunarDirection * (skyRadius - (cloudRadiusDiff / 2)));
             Matrix XNAMoonMatrixView = XNAMoonMatrix * XNAViewMatrix;
 
-            SkyShader.Begin();
             ShaderPassesMoon.Reset();
             while (ShaderPassesMoon.MoveNext())
             {
-                ShaderPassesMoon.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * XNAMoonMatrixView * Camera.XNASkyProjection;
                     SkyShader.SetMatrix(ref wvp);
-                    SkyShader.CommitChanges();
+                    ShaderPassesMoon.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesMoon.Current.End();
             }
-            SkyShader.End();
 
             // Clouds
             SkyShader.CurrentTechnique = SkyShader.Techniques["Clouds"];
             Viewer.World.Sky.Primitive.drawIndex = 3;
 
-            rs.CullMode = CullMode.CullCounterClockwiseFace;
+            graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
-            SkyShader.Begin();
             ShaderPassesClouds.Reset();
             while (ShaderPassesClouds.MoveNext())
             {
-                ShaderPassesClouds.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     Matrix wvp = item.XNAMatrix * viewXNASkyProj;
                     SkyShader.SetMatrix(ref wvp);
-                    SkyShader.CommitChanges();
+                    ShaderPassesClouds.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPassesClouds.Current.End();
             }
-            SkyShader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DepthBufferWriteEnable = true;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
+            graphicsDevice.DepthStencilState = DepthStencilState.Default;
         }
 
         public override bool GetBlending()

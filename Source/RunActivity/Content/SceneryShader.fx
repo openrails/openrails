@@ -71,7 +71,7 @@ sampler Overlay = sampler_state
 	MagFilter = Linear;
 	MinFilter = Linear;
 	MipFilter = Linear;
-	MipMapLodBias = 0;
+	MipLodBias = 0;
 	AddressU = Wrap;
 	AddressV = Wrap;
 };
@@ -118,11 +118,24 @@ struct VERTEX_INPUT
 	float4x4 Instance : TEXCOORD1;
 };
 
+struct VERTEX_INPUT_FOREST
+{
+	float4 Position  : POSITION;
+	float2 TexCoords : TEXCOORD0;
+	float3 Normal    : NORMAL;
+};
+
 struct VERTEX_INPUT_SIGNAL
 {
 	float4 Position  : POSITION;
 	float2 TexCoords : TEXCOORD0;
 	float4 Color     : COLOR0;
+};
+
+struct VERTEX_INPUT_TRANSFER
+{
+	float4 Position  : POSITION;
+	float2 TexCoords : TEXCOORD0;
 };
 
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
@@ -135,7 +148,7 @@ struct VERTEX_OUTPUT
 	float4 Color        : COLOR0;    // color r, g, b, a
 	float4 Normal_Light : TEXCOORD2; // normal x, y, z; light dot
 	float4 LightDir_Fog : TEXCOORD3; // light dir x, y, z; fog fade
-	float4 Shadow       : TEXCOORD4; // ps2<shadow map texture and depth x, y, z> ps3<abs position x, y, z, w>
+	float4 Shadow       : TEXCOORD4; // Level9_1<shadow map texture and depth x, y, z> Level9_3<abs position x, y, z, w>
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -178,7 +191,7 @@ void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VER
 	Out.Color = In.Color;
 }
 
-void _VSTransferProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
+void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
@@ -188,19 +201,19 @@ void _VSTransferProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 	Out.Normal_Light.w = 1;
 }
 
-void _VSLightsAndShadows(uniform bool ShaderModel3, in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
+void _VSLightsAndShadows(uniform bool ShaderModel3, in float4 InPosition, inout VERTEX_OUTPUT Out)
 {
 	// Headlight lighting
-	Out.LightDir_Fog.xyz = mul(In.Position, World) - HeadlightPosition.xyz;
+	Out.LightDir_Fog.xyz = mul(InPosition, World) - HeadlightPosition.xyz;
 
 	// Fog fading
 	Out.LightDir_Fog.w = (2.0 / (1.0 + exp(length(Out.Position.xyz) * Fog.a * -2.0))) - 1.0;
 
 	// Absolute position for shadow mapping
 	if (ShaderModel3) {
-		Out.Shadow = mul(In.Position, World);
+		Out.Shadow = mul(InPosition, World);
 	} else {
-		Out.Shadow.xyz = mul(mul(In.Position, World), LightViewProjectionShadowProjection0).xyz;
+		Out.Shadow.xyz = mul(mul(InPosition, World), LightViewProjectionShadowProjection0).xyz;
 	}
 }
 
@@ -216,7 +229,7 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	}
 
 	_VSNormalProjection(In, Out);
-	_VSLightsAndShadows(ShaderModel3, In, Out);
+	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
 	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
@@ -224,27 +237,57 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSTransfer(uniform bool ShaderModel3, in VERTEX_INPUT In)
+VERTEX_OUTPUT VSGeneral9_3(in VERTEX_INPUT In)
+{
+    return VSGeneral(true, In);
+}
+
+VERTEX_OUTPUT VSGeneral9_1(in VERTEX_INPUT In)
+{
+    return VSGeneral(false, In);
+}
+
+VERTEX_OUTPUT VSTransfer(uniform bool ShaderModel3, in VERTEX_INPUT_TRANSFER In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSTransferProjection(In, Out);
-	_VSLightsAndShadows(ShaderModel3, In, Out);
+	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
 
 	// Z-bias to reduce and eliminate z-fighting on track ballast. ZBias is 0 or 1.
 	Out.Position.z -= ZBias_Lighting.x * saturate(In.TexCoords.x) / 1000;
 
 	return Out;
+}
+
+VERTEX_OUTPUT VSTransfer3(in VERTEX_INPUT_TRANSFER In)
+{
+    return VSTransfer(true, In);
+}
+
+VERTEX_OUTPUT VSTransfer9_1(in VERTEX_INPUT_TRANSFER In)
+{
+    return VSTransfer(false, In);
 }
 
 VERTEX_OUTPUT VSTerrain(uniform bool ShaderModel3, in VERTEX_INPUT In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 	_VSNormalProjection(In, Out);
-	_VSLightsAndShadows(ShaderModel3, In, Out);
+	_VSLightsAndShadows(ShaderModel3, In.Position, Out);
 	return Out;
 }
 
-VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSTerrain9_3(in VERTEX_INPUT In)
+{
+    return VSTerrain(true, In);
+}
+
+VERTEX_OUTPUT VSTerrain9_1(in VERTEX_INPUT In)
+{
+    return VSTerrain(false, In);
+}
+
+VERTEX_OUTPUT VSForest(in VERTEX_INPUT_FOREST In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
@@ -264,15 +307,22 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT In)
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light = EyeVector;
 
-	_VSLightsAndShadows(false, In, Out);
+	_VSLightsAndShadows(false, In.Position, Out);
 
 	return Out;
 }
 
-VERTEX_OUTPUT VSSignalLight(uniform bool Glow, in VERTEX_INPUT_SIGNAL In)
+VERTEX_OUTPUT VSSignalLight(in VERTEX_INPUT_SIGNAL In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
-	_VSSignalProjection(Glow, In, Out);
+	_VSSignalProjection(false, In, Out);
+	return Out;
+}
+
+VERTEX_OUTPUT VSSignalLightGlow(in VERTEX_INPUT_SIGNAL In)
+{
+	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
+	_VSSignalProjection(true, In, Out);
 	return Out;
 }
 
@@ -292,12 +342,12 @@ float _PSGetSpecularEffect(in VERTEX_OUTPUT In)
 }
 
 // Gets the shadow effect.
-float3 _PS2GetShadowEffect(in VERTEX_OUTPUT In)
+float3 _Level9_1GetShadowEffect(in VERTEX_OUTPUT In)
 {
 	return float3(tex2D(ShadowMap0, In.Shadow.xy).xy, In.Shadow.z);
 }
 
-float3 _PS3GetShadowEffect(in VERTEX_OUTPUT In)
+float3 _Level9_3GetShadowEffect(in VERTEX_OUTPUT In)
 {
 	float depth = In.RelPosition.w;
 	float3 rv;
@@ -351,9 +401,9 @@ float _PSGetShadowEffect(uniform bool ShaderModel3, uniform bool NormalLighting,
 {
 	float3 moments;
 	if (ShaderModel3)
-		moments = _PS3GetShadowEffect(In);
+		moments = _Level9_3GetShadowEffect(In);
 	else
-		moments = _PS2GetShadowEffect(In);
+		moments = _Level9_1GetShadowEffect(In);
 
 	bool not_shadowed = moments.z - moments.x < 0.00005;
 	float E_x2 = moments.y;
@@ -435,6 +485,21 @@ float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX
 	return float4(litColor, Color.a);
 }
 
+float4 PSImage9_3(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSImage(true, false, In);
+}
+
+float4 PSImage9_3Clamp(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSImage(true, true, In);
+}
+
+float4 PSImage9_1(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSImage(false, false, In);
+}
+
 float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 {
 	float4 Color = tex2D(Image, In.TexCoords.xy);
@@ -477,6 +542,16 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	_PSSceneryFade(Color, In);
 	//if (ShaderModel3) _PSApplyShadowColor(litColor, In);
 	return float4(litColor, Color.a);
+}
+
+float4 PSTerrain9_3(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSTerrain(true, In);
+}
+
+float4 PSTerrain9_1(in VERTEX_OUTPUT In) : COLOR0
+{
+    return PSTerrain(false, In);
 }
 
 float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
@@ -561,121 +636,121 @@ float4 PSSignalLight(in VERTEX_OUTPUT In) : COLOR0
 //            and pixel shader versions within each technique/pass.           //
 ////////////////////////////////////////////////////////////////////////////////
 
-technique ImagePS2 {
+technique ImageLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral(false);
-		PixelShader = compile ps_2_0 PSImage(false, false);
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
 	}
 }
 
-technique ImagePS3 {
+technique ImageLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSGeneral(true);
-		PixelShader = compile ps_3_0 PSImage(true, false);
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSImage9_3();
 	}
 }
 
-technique TransferPS2 {
+technique TransferLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSTransfer(false);
-		PixelShader = compile ps_2_0 PSImage(false, true);
+		VertexShader = compile vs_4_0_level_9_1 VSTransfer9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSImage9_1();
 	}
 }
 
-technique TransferPS3 {
+technique TransferLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSTransfer(true);
-		PixelShader = compile ps_3_0 PSImage(true, true);
+		VertexShader = compile vs_4_0_level_9_3 VSTransfer3();
+		PixelShader = compile ps_4_0_level_9_3 PSImage9_3Clamp();
 	}
 }
 
 technique Forest {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSForest();
-		PixelShader = compile ps_2_0 PSVegetation();
+		VertexShader = compile vs_4_0_level_9_1 VSForest();
+		PixelShader = compile ps_4_0_level_9_1 PSVegetation();
 	}
 }
 
-technique VegetationPS2 {
+technique VegetationLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral(false);
-		PixelShader = compile ps_2_0 PSVegetation();
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSVegetation();
 	}
 }
 
-technique VegetationPS3 {
+technique VegetationLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSGeneral(true);
-		PixelShader = compile ps_3_0 PSVegetation();
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSVegetation();
 	}
 }
 
-technique TerrainPS2 {
+technique TerrainLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSTerrain(false);
-		PixelShader = compile ps_2_0 PSTerrain(false);
+		VertexShader = compile vs_4_0_level_9_1 VSTerrain9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSTerrain9_1();
 	}
 }
 
-technique TerrainPS3 {
+technique TerrainLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSTerrain(true);
-		PixelShader = compile ps_3_0 PSTerrain(true);
+		VertexShader = compile vs_4_0_level_9_3 VSTerrain9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSTerrain9_3();
 	}
 }
 
-technique DarkShadePS3 {
+technique DarkShadeLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSGeneral(true);
-		PixelShader = compile ps_3_0 PSDarkShade();
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSDarkShade();
 	}
 }
 
-technique DarkShadePS2 {
+technique DarkShadeLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral(false);
-		PixelShader = compile ps_2_0 PSDarkShade();
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSDarkShade();
 	}
 }
 
-technique HalfBrightPS3 {
+technique HalfBrightLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSGeneral(true);
-		PixelShader = compile ps_3_0 PSHalfBright();
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSHalfBright();
 	}
 }
 
-technique HalfBrightPS2 {
+technique HalfBrightLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral(false);
-		PixelShader = compile ps_2_0 PSHalfBright();
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSHalfBright();
 	}
 }
 
-technique FullBrightPS3 {
+technique FullBrightLevel9_1 {
 	pass Pass_0 {
-		VertexShader = compile vs_3_0 VSGeneral(true);
-		PixelShader = compile ps_3_0 PSFullBright();
+		VertexShader = compile vs_4_0_level_9_1 VSGeneral9_1();
+		PixelShader = compile ps_4_0_level_9_1 PSFullBright();
 	}
 }
 
-technique FullBrightPS2 {
+technique FullBrightLevel9_3 {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSGeneral(false);
-		PixelShader = compile ps_2_0 PSFullBright();
+		VertexShader = compile vs_4_0_level_9_3 VSGeneral9_3();
+		PixelShader = compile ps_4_0_level_9_3 PSFullBright();
 	}
 }
 
 technique SignalLight {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSSignalLight(false);
-		PixelShader = compile ps_2_0 PSSignalLight();
+		VertexShader = compile vs_4_0_level_9_1 VSSignalLight();
+		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
 	}
 }
 
 technique SignalLightGlow {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSSignalLight(true);
-		PixelShader = compile ps_2_0 PSSignalLight();
+		VertexShader = compile vs_4_0_level_9_1 VSSignalLightGlow();
+		PixelShader = compile ps_4_0_level_9_1 PSSignalLight();
 	}
 }

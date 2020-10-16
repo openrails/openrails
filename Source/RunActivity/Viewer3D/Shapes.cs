@@ -1216,12 +1216,12 @@ namespace Orts.Viewer3D
         public int HierarchyIndex { get; protected set; } // index into the hiearchy array which provides pose for this primitive
 
         protected internal VertexBuffer VertexBuffer;
-        protected internal VertexDeclaration VertexDeclaration;
-        protected internal int VertexBufferStride;
         protected internal IndexBuffer IndexBuffer;
         protected internal int MinVertexIndex;
         protected internal int NumVerticies;
         protected internal int PrimitiveCount;
+
+        readonly VertexBufferBinding[] VertexBufferBindings;
 
         public ShapePrimitive()
         {
@@ -1231,14 +1231,14 @@ namespace Orts.Viewer3D
         {
             Material = material;
             VertexBuffer = vertexBufferSet.Buffer;
-            VertexDeclaration = vertexBufferSet.Declaration;
-            VertexBufferStride = vertexBufferSet.Declaration.GetVertexStrideSize(0);
             IndexBuffer = indexBuffer;
             MinVertexIndex = minVertexIndex;
             NumVerticies = numVerticies;
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
+
+            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) };
         }
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, List<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
@@ -1253,8 +1253,7 @@ namespace Orts.Viewer3D
             if (PrimitiveCount > 0)
             {
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
-                graphicsDevice.VertexDeclaration = VertexDeclaration;
-                graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexBufferStride);
+                graphicsDevice.SetVertexBuffers(VertexBufferBindings);
                 graphicsDevice.Indices = IndexBuffer;
                 graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
             }
@@ -1274,16 +1273,13 @@ namespace Orts.Viewer3D
 #pragma warning restore 0649
 
         public static readonly VertexElement[] VertexElements = {
-            VertexPositionNormalTexture.VertexElements[0],
-            VertexPositionNormalTexture.VertexElements[1],
-            VertexPositionNormalTexture.VertexElements[2],
-            new VertexElement(1, sizeof(float) * 0, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 1),
-            new VertexElement(1, sizeof(float) * 4, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 2),
-            new VertexElement(1, sizeof(float) * 8, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 3),
-            new VertexElement(1, sizeof(float) * 12, VertexElementFormat.Vector4, VertexElementMethod.Default, VertexElementUsage.TextureCoordinate, 4),
+            new VertexElement(sizeof(float) * 0, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 1),
+            new VertexElement(sizeof(float) * 4, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 2),
+            new VertexElement(sizeof(float) * 8, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 3),
+            new VertexElement(sizeof(float) * 12, VertexElementFormat.Vector4, VertexElementUsage.TextureCoordinate, 4),
         };
 
-        public static int SizeInBytes = VertexPositionNormalTexture.SizeInBytes + sizeof(float) * 16;
+        public static int SizeInBytes = sizeof(float) * 16;
     }
 
     public class ShapePrimitiveInstances : RenderPrimitive
@@ -1306,6 +1302,8 @@ namespace Orts.Viewer3D
         protected int InstanceBufferStride;
         protected int InstanceCount;
 
+        readonly VertexBufferBinding[] VertexBufferBindings;
+
         internal ShapePrimitiveInstances(GraphicsDevice graphicsDevice, ShapePrimitive shapePrimitive, Matrix[] positions, int subObjectIndex)
         {
             Material = shapePrimitive.Material;
@@ -1313,29 +1311,25 @@ namespace Orts.Viewer3D
             HierarchyIndex = shapePrimitive.HierarchyIndex;
             SubObjectIndex = subObjectIndex;
             VertexBuffer = shapePrimitive.VertexBuffer;
-            VertexDeclaration = shapePrimitive.VertexDeclaration;
-            VertexBufferStride = shapePrimitive.VertexBufferStride;
+            VertexDeclaration = shapePrimitive.VertexBuffer.VertexDeclaration;
             IndexBuffer = shapePrimitive.IndexBuffer;
             MinVertexIndex = shapePrimitive.MinVertexIndex;
             NumVerticies = shapePrimitive.NumVerticies;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
 
-            InstanceBuffer = new VertexBuffer(graphicsDevice, typeof(ShapeInstanceData), positions.Length, BufferUsage.WriteOnly);
+            InstanceDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
+            InstanceBuffer = new VertexBuffer(graphicsDevice, InstanceDeclaration, positions.Length, BufferUsage.WriteOnly);
             InstanceBuffer.SetData(positions);
-            InstanceDeclaration = new VertexDeclaration(graphicsDevice, ShapeInstanceData.VertexElements);
-            InstanceBufferStride = InstanceDeclaration.GetVertexStrideSize(1);
             InstanceCount = positions.Length;
+
+            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(InstanceBuffer, 0, 1) };
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = InstanceDeclaration;
             graphicsDevice.Indices = IndexBuffer;
-            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexBufferStride);
-            graphicsDevice.Vertices[0].SetFrequencyOfIndexData(InstanceCount);
-            graphicsDevice.Vertices[1].SetSource(InstanceBuffer, 0, InstanceBufferStride);
-            graphicsDevice.Vertices[1].SetFrequencyOfInstanceData(1);
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
+            graphicsDevice.SetVertexBuffers(VertexBufferBindings);
+            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount, InstanceCount);
         }
     }
 
@@ -1803,8 +1797,6 @@ namespace Orts.Viewer3D
         public class VertexBufferSet
         {
             public VertexBuffer Buffer;
-            public VertexDeclaration Declaration;
-            public int VertexCount;
 
 #if DEBUG_SHAPE_NORMALS
             public VertexBuffer DebugNormalsBuffer;
@@ -1815,9 +1807,7 @@ namespace Orts.Viewer3D
 
             public VertexBufferSet(VertexPositionNormalTexture[] vertexData, GraphicsDevice graphicsDevice)
             {
-                VertexCount = vertexData.Length;
-                Declaration = new VertexDeclaration(graphicsDevice, VertexPositionNormalTexture.VertexElements);
-                Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), VertexCount, BufferUsage.WriteOnly);
+                Buffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), vertexData.Length, BufferUsage.WriteOnly);
                 Buffer.SetData(vertexData);
             }
 
