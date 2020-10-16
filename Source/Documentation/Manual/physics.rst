@@ -1544,6 +1544,7 @@ iii. `Testing Resources for Open Rails Steam Locomotives
    single: ORTSRigidWheelBase
    single: ORTSSteamGearRatio
    single: ORTSSteamMaxGearPistonRate
+   single: ORTSGearedTractiveEffortFactor
    single: ORTSBoilerEvaporationRate
    single: ORTSBurnRate
    single: ORTSCylinderEfficiencyRate
@@ -1701,6 +1702,9 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |ORTS |-| Steam |-| Gear |-| Type ( x )                     |Fixed gearing or   |Fixed,             || (Fixed)          |
 |                                                           |selectable gearing |Select             || (Select)         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Geared |-| Tractive |-| Effort |-| Factor ( x )   |Factor to include  |Fixed              || (Fixed)          |
+|                                                           | in TE calculation |                   ||                  |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |**Locomotive Performance Adjustments (Engine section -- Optional, for experienced modellers)**                         |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
