@@ -40,7 +40,7 @@ namespace Orts.Simulation
         public float OvercastFactor;
         
         // Pricipitation intensity in particles per second per meter^2 (PPSPM2).
-        public float PricipitationIntensityPPSPM2;
+        public float PrecipitationIntensityPPSPM2;
         
         // Fog/visibility distance. Ranges from 10m (can't see anything), 5km (medium), 20km (clear) to 100km (clear arctic).
         public float FogDistance;
