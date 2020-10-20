@@ -18,6 +18,7 @@
 using System;
 using System.IO;
 using ORTS.Common;
+using Orts.Common;
 using Orts.Simulation.RollingStocks;
 
 namespace ORTS.Scripting.Api
@@ -79,6 +80,11 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> DoesNextNormalSignalHaveTwoAspects;
         /// <summary>
+        /// Name of Head 0 of next normal signal.
+        /// int: position of signal in the signal sequence along the train route, starting from train front; 0 for first signal;
+        /// </summary>
+        public Func<int, string> NextNormalSignalMainHeadSignalType;
+        /// <summary>
         /// Aspect of the next DISTANCE signal.
         /// </summary>
         public Func<Aspect> NextDistanceSignalAspect;
@@ -87,17 +93,24 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> NextDistanceSignalDistanceM;
         /// <summary>
-        /// Signal type of main head of hext generic signal.
+        /// Signal type of main head of hext generic signal. Not for NORMAL signals
         /// </summary>
         public Func<string, string> NextGenericSignalMainHeadSignalType;
         /// <summary>
-        /// Aspect of the next generic signal.
+        /// Aspect of the next generic signal. Not for NORMAL signals
         /// </summary>
         public Func<string, Aspect> NextGenericSignalAspect;
         /// <summary>
-        /// Distance to next generic signal.
+        /// Distance to next generic signal. Not for NORMAL signals
         /// </summary>
         public Func<string, float> NextGenericSignalDistanceM;
+        /// <summary>
+        /// Features of next generic signal. Not for NORMAL signals
+        /// string: signal type (DISTANCE etc.)
+        /// int: position of signal in the signal sequence along the train route, starting from train front; 0 for first signal;
+        /// float: max testing distance
+        /// </summary>
+        public Func<string, int, float, SignalFeatures> NextGenericSignalFeatures;
         /// <summary>
         /// Next normal signal has a repeater head
         /// </summary>
@@ -123,21 +136,25 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> SpeedMpS;
         /// <summary>
-        /// Train's direction.
+        /// Locomotive direction.
         /// </summary>
         public Func<Direction> CurrentDirection;
         /// <summary>
-        /// True if train direction is forward.
+        /// True if locomotive direction is forward.
         /// </summary>
         public Func<bool> IsDirectionForward;
         /// <summary>
-        /// True if train direction is neutral.
+        /// True if locomotive direction is neutral.
         /// </summary>
         public Func<bool> IsDirectionNeutral;
         /// <summary>
-        /// True if train direction is reverse.
+        /// True if locomotive direction is reverse.
         /// </summary>
         public Func<bool> IsDirectionReverse;
+        /// <summary>
+        /// Train direction.
+        /// </summary>
+        public Func<Direction> CurrentTrainMUDirection;
         /// <summary>
         /// True if train brake controller is in emergency position, otherwise false.
         /// </summary>
@@ -322,6 +339,10 @@ namespace ORTS.Scripting.Api
         /// Trigger Deactivate sound event
         /// </summary>
         public Action TriggerSoundSystemDeactivate;
+        /// <summary>
+        /// Trigger generic sound event
+        /// </summary>
+        public Action<Event> TriggerGenericSound;
         /// <summary>
         /// Set ALERTER_DISPLAY cabcontrol display's alarm state on or off.
         /// </summary>
@@ -559,5 +580,12 @@ namespace ORTS.Scripting.Api
         /// Red color. Train control system intervention speed. Computer has to apply full service or emergency brake to maintain speed restriction.
         /// </summary>
         Intervention,
+    }
+
+    public struct SignalFeatures
+    {
+        public string MainHeadSignalTypeName;
+        public Aspect Aspect;
+        public float DistanceM;
     }
 }
