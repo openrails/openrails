@@ -102,6 +102,32 @@ Coupler Slack
 Slack action for couplers is introduced and calculated the same way as in
 MSTS.
 
+Hot Wheel Bearings
+------------------
+
+Open Rails (OR) has instead used a representative bearing heat model to simulate 
+the typical outcomes for bearing temperature heating or cooling effects.
+
+- Bearing heats up and cools down as the train moves and stops.
+- Bearing resistance in cold weather is significantly higher then when the bearing 
+is at its 'normal' operating temperature. Typically railway companies elected to 
+reduce loads for trains in cold conditions. The OR model will reduce the car resistance 
+as the bearing heats up, and it will increase resistance as the bearing cools down.
+- OR has a built in temperature model to determine the ambient temperature. The ambient 
+temperature is calculated based upon a world model of the average temperatures at various 
+latitudes. OR will use the latitude of the route to calculate the ambient temperature. As 
+ambient temperature also decreases with height above sea level, OR takes this into account 
+as well, and varies the temperature accordingly.
+- Depending upon the ``ActivityRandomizationLevel`` setting in the Option menu, an overheating 
+bearing (hotbox) may be randomly initialized on any trailing car in the train (locomotives 
+and tenders are excepted from overheating bearings). The Hotbox will be activated randomly 
+within the first 66% of the activity duration. So for example, in an activity with a 20 minute 
+duration, a hotbox will only be activiated in the first 12 minutes of the activity, if it has 
+been initialised.
+
+A special smoke effect,  ``BearingHotboxFX``, can be added adjacent to the wagon hot box. 
+This will be triggered if the bearing overheats.
+
 .. _physics-adhesion:
 
 Adhesion of Locomotives -- Settings Within the Wagon Section of ENG files
