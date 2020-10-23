@@ -100,7 +100,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         // Constants
         private const int TCSCabviewControlCount = 48;
-        private const int TCSCommandCount = 32;
+        private const int TCSCommandCount = 48;
 
         // Properties
         public bool VigilanceAlarm { get; set; }
