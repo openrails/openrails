@@ -2810,6 +2810,10 @@ namespace Orts.Simulation.Timetables
             // check position of train wrt tunnels
             ProcessTunnels();
 
+            // prepare train data for Train Control System
+            if (IsActualPlayerTrain)
+                UpdateTrainData();
+
             // log train details
 
             if (DatalogTrainSpeed)
