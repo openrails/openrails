@@ -55,6 +55,7 @@ using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation.AIs;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.RollingStocks.SubSystems;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes;
 using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Parsers.Msts;
@@ -1648,6 +1649,10 @@ namespace Orts.Simulation.Physics
 
             // check position of train wrt tunnels
             ProcessTunnels();
+
+            // prepare train data for Train Control System
+            if (IsActualPlayerTrain)
+                UpdateTrainData();
 
             // log train details
 
@@ -13982,6 +13987,120 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         /// <summary>
+        /// Generation of Train data useful for TCS and TrackMonitor; player train only
+        /// <\summary>
+
+        public class TrainSignal
+        {
+            public float DistanceToTrainM;
+            public SignalObject ObjectDetails;
+
+            public TrainSignal(float distanceToTrainM, SignalObject objectDetails)
+            {
+                DistanceToTrainM = distanceToTrainM;
+                ObjectDetails = objectDetails;
+            }
+        }
+
+        public List<TrainSignal>[,] TrainSignalLists; // first index 0 forward, 1 backward; second index signal type (NORMAL etc.)
+
+        //================================================================================================//
+        /// <summary>
+        /// Updates the train data for TCS and TrackMonitor
+        /// </summary>
+        /// 
+        public void UpdateTrainData()
+        {
+            UpdateSignalData(10000.0f);
+            //TODO add generation of other train data
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// Updates the signal data;
+        /// </summary>
+
+        public void UpdateSignalData(float maxDistanceM)
+        {
+            if (!((MSTSLocomotive)Simulator.PlayerLocomotive).TrainControlSystem.CustomTCSScript)
+                return;
+            if (TrainSignalLists == null)
+            {
+                TrainSignalLists = new List<TrainSignal>[2, signalRef.ORTSSignalTypeCount];
+                for (int dir = 0; dir < 2; dir++)
+                    for (int fn_type = 0; fn_type < signalRef.ORTSSignalTypeCount; fn_type++)
+                        TrainSignalLists[dir, fn_type] = new List<TrainSignal>();
+            }
+            else
+                foreach (var trainSignalList in TrainSignalLists)
+                    trainSignalList?.Clear();
+            // fill up the lists
+            for (int dir = 0; dir < 2; dir++)
+            {
+                if (ValidRoute[dir] == null || dir == 1 && PresentPosition[dir].TCSectionIndex < 0)
+                    continue;
+                int startIndex = dir == 0 ? PresentPosition[dir].RouteListIndex : ValidRoute[dir].GetRouteIndex(PresentPosition[dir].TCSectionIndex, 0);
+                if (startIndex < 0)
+                    continue;
+                for (int fn_type = 0; fn_type < signalRef.ORTSSignalTypeCount; fn_type++)
+                {
+                    int index = startIndex;
+                    // TODO: NORMAL signals management to be completed
+                    // NORMAL signals get data from a different place
+                    if (signalRef.ORTSSignalTypes[fn_type] == "NORMAL")
+                    {
+                        if (dir == 0)
+                        {
+                            // we put them all without checking with max distance
+                            foreach (var signalObjectItem in SignalObjectItems)
+                            {
+                                if (signalObjectItem.ObjectType == ObjectItemInfo.ObjectItemType.Signal)
+                                {
+                                    var trainSignal = new TrainSignal(signalObjectItem.distance_to_train, signalObjectItem.ObjectDetails);
+                                }
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                    }
+                    else
+                    {
+                        float lengthOffset = (dir == 1) ? (-PresentPosition[1].TCOffset +
+                                 signalRef.TrackCircuitList[PresentPosition[1].TCSectionIndex].Length) : PresentPosition[0].TCOffset;
+                        float totalLength = 0;
+                        var routePath = ValidRoute[dir];
+                        while (index < routePath.Count && totalLength - lengthOffset < maxDistanceM)
+                        {
+                            var thisElement = routePath[index];
+                            TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
+                            TrackCircuitSignalList thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[thisElement.Direction][fn_type];
+                            foreach (TrackCircuitSignalItem thisSignal in thisSignalList.TrackCircuitItem)
+                            {
+                                if (thisSignal.SignalLocation > lengthOffset)
+                                {
+                                    var trainSignal = new TrainSignal(thisSignal.SignalLocation - lengthOffset + totalLength, thisSignal.SignalRef);
+                                    TrainSignalLists[dir, fn_type].Add(trainSignal);
+                                }
+                            }
+                            totalLength += (thisSection.Length - lengthOffset);
+                            lengthOffset = 0;
+
+                            // terminate where route not set
+                            int setSection = thisSection.ActivePins[thisElement.OutPin[0], thisElement.OutPin[1]].Link;
+                            index++;
+                            if (setSection < 0)
+                                continue;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        //================================================================================================//
+        /// <summary>
         /// Create TrackInfoObject for information in TrackMonitor window
         /// </summary>
 
@@ -20459,7 +20578,7 @@ namespace Orts.Simulation.Physics
         //================================================================================================//
         /// <summary>
         /// Class for info to TrackMonitor display
-        /// <\summary>
+        /// </summary>
 
         public class TrainInfo
         {
