@@ -520,7 +520,7 @@ namespace Orts.Viewer3D
                 shader.precipitation_Tex.SetValue(DynamicPrecipitationTexture[precipitation_TexIndex]);
             }
 
-            graphicsDevice.BlendState = BlendState.AlphaBlend;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
             graphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         }
 
