@@ -350,7 +350,7 @@ float3 _Level9_1GetShadowEffect(in VERTEX_OUTPUT In)
 float3 _Level9_3GetShadowEffect(in VERTEX_OUTPUT In)
 {
 	float depth = In.RelPosition.w;
-	float3 rv;
+	float3 rv = 0;
 	if (depth < ShadowMapLimit.x) {
 		float3 pos0 = mul(In.Shadow, LightViewProjectionShadowProjection0).xyz;
 		rv = float3(tex2D(ShadowMap0, pos0.xy).xy, pos0.z);
