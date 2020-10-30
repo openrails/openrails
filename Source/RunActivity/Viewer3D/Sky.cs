@@ -141,18 +141,6 @@ namespace Orts.Viewer3D
             // The rest of this increments/decrements the array indices and checks for overshoot/undershoot.
             while (Viewer.Simulator.ClockTime >= (oldClockTime + 1200)) // Plus key, or normal forward in time; <CSComment> better so in case of fast forward
             {
-                //step1++;
-                //step2++;
-                //oldClockTime = oldClockTime + 1200;
-                //diff = (float)(Viewer.Simulator.ClockTime - oldClockTime) / 1200;
-                //if (step2 >= maxSteps) // Midnight.
-                //{
-                //    step2 = 0;
-                //}
-                //if (step1 >= maxSteps) // Midnight.
-                //{
-                //    step1 = 0;
-                //}
                 oldClockTime = oldClockTime + 1200;
                 diff = GetCelestialDiff();
                 step1++;
