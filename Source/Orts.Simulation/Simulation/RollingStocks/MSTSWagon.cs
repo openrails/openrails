@@ -1779,7 +1779,7 @@ namespace Orts.Simulation.RollingStocks
                     if (DieselLocomotiveIdentification != null)
                     {
 
-                        MassKG = LoadEmptyMassKg + (DieselLocomotiveIdentification.DieselLevelL * DieselLocomotiveIdentification.DieselWeightKgpL);
+                        MassKG = LoadEmptyMassKg + (DieselLocomotiveIdentification.DieselLevelL * DieselLocomotiveIdentification.DieselWeightKgpL) + DieselLocomotiveIdentification.CurrentLocomotiveSteamHeatBoilerWaterCapacityL;
                         MassKG = MathHelper.Clamp(MassKG, LoadEmptyMassKg, LoadFullMassKg); // Clamp Mass to between the empty and full wagon values  
                         // Adjust drive wheel weight
                         DieselLocomotiveIdentification.DrvWheelWeightKg = (MassKG / InitialMassKG) * DieselLocomotiveIdentification.InitialDrvWheelWeightKg;
@@ -2296,7 +2296,7 @@ namespace Orts.Simulation.RollingStocks
             // The model uses the Newton Law of Heating and cooling to model the time taken for temperature rise and fall - ie of the form T(t) = Ts + (T0 - Ts)exp(kt)
 
             // Keep track of Activity details if an activity, setup random wagon, and start time for hotbox
-            if (Simulator.ActivityRun != null)
+            if (Simulator.ActivityRun != null && IsPlayerTrain)
             {
                 if (ActivityElapsedDurationS<HotBoxStartTimeS)
                 {
