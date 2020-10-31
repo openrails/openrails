@@ -39,8 +39,8 @@ namespace Orts.Viewer3D.Debugging
             F = form;
         }
 
-		public void SetControls()
-		{
+        public void SetControls()
+        {
 			// Default is Timetable Tab, unless in Multi-Player mode
 			if (F.tWindow.SelectedIndex == 1) // 0 for Dispatch Window, 1 for Timetable Window
 			{
@@ -203,6 +203,7 @@ namespace Orts.Viewer3D.Debugging
 						// Neither are their names unique (e.g. Bernina Bahn).
 						// Find whether this siding is a new one or the other end of an old one.
 						// If other end, then find the right-hand one as the location for a single label.
+						// Note: Find() within a foreach() loop is O(n^2) but is only done at start.
 						var oldSidingIndex = F.sidings.FindIndex(r => r.LinkId == item.TrItemId && r.Name == item.ItemName);
 						if (oldSidingIndex < 0)
 						{
@@ -317,7 +318,8 @@ namespace Orts.Viewer3D.Debugging
 				// Get scale in pixels/meter
 				F.xScale = F.pbCanvas.Width / F.ViewWindow.Width;
 				F.yScale = F.pbCanvas.Height / F.ViewWindow.Height;
-				F.xScale = F.yScale = Math.Max(F.pbCanvas.Width / F.ViewWindow.Width, F.pbCanvas.Height / F.ViewWindow.Height);
+				// Make X and Y scales the same to maintain correct angles.
+				F.xScale = F.yScale = Math.Max(F.xScale, F.yScale);
 #pragma warning restore CS1690 // Accessing a member on a field of a marshal-by-reference class may cause a runtime exception
 
 				// Set the default pen to represent 1 meter.
@@ -677,13 +679,6 @@ namespace Orts.Viewer3D.Debugging
                     {
                         if (drawWholeTrain)
                         {
-                            //t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
-                            //x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
-                            //y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
-                            //if (x < -margin || y < -margin)
-                            //	continue;
-                            //scaledTrain.X = x; scaledTrain.Y = y;
-                            //t1.Move(-car.CarLengthM);
                             t1.Move(dist + car.CarLengthM / 2); // Move along from centre of car to front of car
                             x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
                             y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
@@ -698,7 +693,6 @@ namespace Orts.Viewer3D.Debugging
                             if (car == t.Cars.First())
                             {
                                 // Draw first half a train back from the front of the first car as abox
-                                //t1.Move(dist - 1 + car.CarLengthM / 2); // Not sure purpose of "- 1"
                                 t1.Move(dist + car.CarLengthM / 2);
                                 x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
                                 y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
@@ -711,7 +705,6 @@ namespace Orts.Viewer3D.Debugging
                                 // Draw half a train back from the rear of the first box
                                 worldPos = t.Cars.First().WorldPosition;
                                 dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-                                //t1.Move(dist - 1 + t.Cars.First().CarLengthM / 2 - minTrainPx / F.xScale / 2); // Not sure purpose of "- 1"
                                 t1.Move(dist + t.Cars.First().CarLengthM / 2 - minTrainPx / F.xScale / 2);
                                 x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
                                 y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;

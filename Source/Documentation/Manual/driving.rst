@@ -584,7 +584,7 @@ The stored data are used to generate a report at the end of the activity.
 
 
 ``How It Works``
-''''''''''''''''''''
+''''''''''''''''
 
 Activity evaluation is enabled only for Activity mode, and requires the 
 "Debrief evaluation" checkbox in the main menu window to be enabled.

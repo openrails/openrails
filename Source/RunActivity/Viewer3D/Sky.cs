@@ -180,7 +180,7 @@ namespace Orts.Viewer3D
         }
 
         /// <summary>
-        /// Returns the advance of time in seconds in units of 20 mins.
+        /// Returns the advance of time in seconds in units of 20 mins (1200 seconds).
         /// Allows for an offset in hours from a control in the DispatchViewer.
         /// This is a user convenience to reveal in daylight what might be hard to see at night.
         /// </summary>
@@ -188,8 +188,7 @@ namespace Orts.Viewer3D
         private float GetCelestialDiff()
         {
             var diffS = (Viewer.Simulator.ClockTime - oldClockTime);
-            if (Program.DebugViewer != null)
-                diffS += (double)Program.DebugViewer?.DaylightOffsetHrs * 60 * 60;
+            diffS += (double)(Program.DebugViewer?.DaylightOffsetHrs ?? 0) * 60 * 60;
             return (float)diffS / 1200;
         }
 
