@@ -172,7 +172,7 @@ namespace Orts.Viewer3D
             public Vector4 InitialVelocity_EndTime;
             public Vector4 TargetVelocity_TargetTime;
             public Vector4 TileXY_Vertex_ID;
-            public Vector4 Color_Random;
+            public Color Color_Random;
 
             public static readonly VertexElement[] VertexElements =
             {
@@ -362,7 +362,7 @@ namespace Orts.Viewer3D
                     var particle = (FirstFreeParticle + 1) % MaxParticles;
                     var vertex = particle * VerticiesPerParticle;
                     var texture = Viewer.Random.Next(16); // Randomizes emissions.
-                    var color_Random = new Vector4((float)ParticleColor.R / 255f, (float)ParticleColor.G / 255f, (float)ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
+                    var color_Random = new Color((float)ParticleColor.R / 255f, (float)ParticleColor.G / 255f, (float)ParticleColor.B / 255f, (float)Viewer.Random.NextDouble());
 
                     // Initial velocity varies in X and Z only.
                     var initialVelocity = globalInitialVelocity;
