@@ -118,6 +118,9 @@ namespace Orts.Viewer3D.Processes
 
             e.GraphicsDeviceInformation.GraphicsProfile = e.GraphicsDeviceInformation.Adapter.IsProfileSupported(GraphicsProfile.HiDef) ? GraphicsProfile.HiDef : GraphicsProfile.Reach;
 
+            // TODO: XNA defaults to lowest multisample anti-aliasing quality (2x), so we'll do the same here until we add a setting for it.
+            e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 2;
+
             if (e.GraphicsDeviceInformation.PresentationParameters.IsFullScreen)
             {
                 var screen = Screen.FromControl(GameForm);
