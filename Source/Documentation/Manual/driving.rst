@@ -615,8 +615,8 @@ While the activity is running relevant data are stored and displayed.
 The stored data are used to generate a report at the end of the activity.
 
 
-``How it does work``
-''''''''''''''''''''
+``How It Works``
+''''''''''''''''
 
 Activity evaluation is enabled only for Activity mode, and requires the 
 "Debrief evaluation" checkbox in the main menu window to be enabled.
@@ -668,7 +668,7 @@ Cliking **Actual status: (**\ |darr| **)**\  expanded real-time display appears.
 
    
 
-Cliking **Actual status: (**\ |uarr| **)**\  collapses all items.
+Clicking **Actual status: (**\ |uarr| **)**\  collapses all items.
 
 Once the activity has ended, the report file is created and a new window displays it.
 
@@ -704,39 +704,43 @@ In such case the activity saves will have the "Eval" checkbox checked in the res
 
 .. _driving-dispatcher:
 
-Dispatcher Window
-=================
+Map Window
+==========
 
-The dispatcher window is a very useful tool to monitor and control train 
-operation. The :ref:`Dispatcher window <options-dispatcher>` option 
-must be selected.
+Use the map window to monitor and control train operation. 
+The :ref:`Map window <options-map-window>` option must be selected prior to starting the simulation.
 
-The dispatcher window is actually created by pressing ``<Ctrl+9>``. The 
-window is created in a minimized state, so to display it in front of the OR 
-window you must click on ``<Alt+Tab>`` and select the dispatcher window 
-icon, or click on one of the OR icons in the taskbar. If you are running OR 
-in full-screen mode, you must also have the :ref:`Fast full screen Alt+Tab 
-<options-fullscreen>` option selected to have both the OR and the 
-dispatcher windows displayed at the same time. After the dispatcher window 
-has been selected with ``<Alt+Tab>``, successive Alt_Tabs will toggle 
-between the OR window and the dispatcher window.
+The map window is opened and closed by pressing ``<Ctrl+9>``. 
+After the map window  has been selected with ``<Alt+Tab>``, successive 
+Alt+Tabs will toggle between the OR window and the dispatcher window.
  
-The dispatcher window is resizable and can also be maximized, e.g. on a 
-second display. You can define the level of zoom either by changing the 
-value within the ``Res`` box or by using the mouse wheel. You can pan 
-through the route by moving the mouse while pressing the left button. You 
-can hold the shift key while clicking the mouse in a place in the map; this 
-will quickly zoom in with that place in focus. You can hold Ctrl while 
-clicking the mouse in a place in the map, which will zoom out to show the 
-whole route. Holding Alt and clicking will zoom out to show part of the 
-route.
+The map window contains 2 tabs: Dispatcher and Timetable. Both provide maps of
+the route with each train following its own path.
+
+The map window is resizable and can also be maximized, e.g. on a 
+second display. 
+
+To pan, use the left mouse button to drag the map around.
+
+To zoom, use left and right mouse buttons together and drag vertically
+or use the mouse wheel.
+
+To zoom in centred on a location, press Shift and click the left mouse button
+at that location.
+
+To zoom out from a location, press Alt and click the left mouse button.
+
+To zoom out fully, press Ctrl and click the left mouse button.
+
+Dispatcher Tab
+--------------
 
 .. image:: images/driving-dispatcher.png
 
-The dispatcher window shows the route layout and monitors the movement of 
-all trains. While the player train is identified by the ``0`` string, 
-AI trains are identified by 
-their OR number (that is also shown in the :ref:`Extended HUD for Dispatcher 
+The dispatcher window shows the route layout, monitors the movement of 
+all trains and allows you to change switches and signals.
+While the player train is identified by the ``0`` label, 
+AI trains are identified by an Id number (as shown in the :ref:`Extended HUD for Dispatcher 
 Information <driving-hud-dispatcher>`), followed by the service name. 
 Static consists are identified as in MSTS.
 
@@ -797,8 +801,8 @@ will remain centered on that train.
 
 .. _driving-dispatcher-for-ai-trains:
 
-Using dispatcher window for AI trains
--------------------------------------
+Using dispatcher tab for AI trains
+''''''''''''''''''''''''''''''''''
 
 What is described here is valid only for activity mode and explore in 
 activity mode.
@@ -812,7 +816,7 @@ re-route it without getting it back on the original route.
 It is suggested to look at this video which explains some practical case 
 https://youtu.be/-f0XVg7bSgU before continuing reading.
 
-To perform this correctly and in a way more similar to reality, some rules have to 
+To perform this correctly and in a way closer to reality, some rules have to 
 be followed.
 The concept is that switches must be manually thrown only if they aren't reserved by a train. 
 To be sure of this it is necessary to force to stop the last signal(s) between train(s) 
@@ -833,6 +837,63 @@ Station platform stops are re-assigned to adjacent platforms, if available. Even
 waiting points in the abandoned part of route will be lost.
 
 The re-routed train may be also the player train (be it autopiloted or not).
+
+Timetable Tab
+-------------
+
+This tab shows the same route and trains as the dispatch tab but, with its focus on a timetable
+of trains, is provided to assist timetable builders.
+
+In this tab, for clarity, you can use the checkboxes to hide or reveal the labels for platforms,
+sidings, switches, signals and trains. The simulation time is also on view.
+
+As shown below, the basic red train label identifies the train. 
+
+.. image:: images/timetable_tab1.png
+
+Trains are drawn in green except that locos are drawn in brown. To indicate direction, the leading
+vehicle is draw in a lighter shade.
+
+The "Active trains" selection shows trains that are currently delivering a service.
+The "All trains" selection also shows inactive and static trains with labels in dark red.
+
+Inactive trains are not part of a current service - i.e. their start time has not been reached or 
+they have arrived at their destination and not yet been re-formed for another service - see 
+:ref:`#dispose commands<timetable-dispose>`.
+
+Static trains do not move and are shown in gray. They created with the $static command.
+
+.. raw:: latex
+
+   \clearpage
+
+When you select the "Train state" checkbox, the train labels extend to provide key information matching 
+that from the :ref:`HUD <driving-hud-dispatcher>` as shown below:
+
+.. image:: images/timetable_tab2.png
+
+.. raw:: latex
+
+   \clearpage
+
+The path element of the train state can be very lengthy, so this is only shown where the path
+contains the characters # & * ^ ~ which indicate :ref:`a track section that is in contention <driving-hud-section-state>`.
+
+In the image below, train 192 crosses the path of train 117.
+
+.. image:: images/timetable_tab3.png
+
+.. raw:: latex
+
+   \clearpage
+
+The "Signal state" checkbox reveals the aspect of each signals and also indicates the id number 
+of the train that is approaching. In this image, signal 462 is showing an APPROACH_1 aspect for train 114.
+
+.. image:: images/timetable_tab4.png
+
+The adjustment for "Daylight offset (hrs)" is provided for convenience to advance the sun as it moves 
+across the sky so that night time trains can be more easily observed in daylight.
 
 Additional Train Operation Commands
 ===================================
@@ -1990,6 +2051,8 @@ A detailed explanation of the various columns follows:
     - Following each section is the section state. Numbers in this state 
       refer to the train numbers as shown at the start of each row. Below, 
       <n> indicates such a number.
+
+.. _driving-hud-section-state:      
 
         - <n> section is occupied by train <n>.
         - (<n>) section is reserved for train <n>.
