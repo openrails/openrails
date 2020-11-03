@@ -752,8 +752,10 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginecontrollers(brake_dynamic": DynamicBrakeController.Parse(stf); break;
 
                 case "engine(trainbrakescontrollermaxsystempressure":
+                case "engine(trainbrakescontrollermaxoverchargepressure":
                 case "engine(trainbrakescontrollermaxreleaserate":
                 case "engine(trainbrakescontrollermaxquickreleaserate":
+                case "engine(trainbrakescontrolleroverchargeeliminationrate":
                 case "engine(trainbrakescontrollermaxapplicationrate":
                 case "engine(trainbrakescontrolleremergencyapplicationrate":
                 case "engine(trainbrakescontrollerfullservicepressuredrop":

@@ -16,6 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using ORTS.Scripting.Api;
+using System;
 using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
@@ -104,12 +105,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     switch (notch.Type)
                     {
                         case ControllerState.Release:
-                            pressureBar += x * ReleaseRateBarpS() * elapsedClockSeconds;
+                        case ControllerState.FullQuickRelease:
+                            if (pressureBar <= MaxPressureBar())
+                                IncreasePressure(ref pressureBar, MaxPressureBar(), notch.Type == ControllerState.FullQuickRelease ? QuickReleaseRateBarpS() : ReleaseRateBarpS(), elapsedClockSeconds);
+                            else
+                                DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
                             epState = -1;
                             break;
-                        case ControllerState.FullQuickRelease:
-                            pressureBar += x * QuickReleaseRateBarpS() * elapsedClockSeconds;
-                            epState = -1;
+                        case ControllerState.Overcharge:
+                            IncreasePressure(ref pressureBar, Math.Min(MaxOverchargePressureBar(), MainReservoirPressureBar()), QuickReleaseRateBarpS(), elapsedClockSeconds);
                             break;
                         case ControllerState.Apply:
                         case ControllerState.FullServ:
@@ -168,8 +172,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
             }
 
-            if (pressureBar > MaxPressureBar())
-                pressureBar = MaxPressureBar();
             if (pressureBar < 0)
                 pressureBar = 0;
             epControllerState = epState;
