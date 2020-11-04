@@ -2812,7 +2812,7 @@ namespace Orts.Simulation.Timetables
 
             // prepare train data for Train Control System
             if (IsActualPlayerTrain)
-                UpdateTrainData();
+                UpdatePlayerTrainData();
 
             // log train details
 
