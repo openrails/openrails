@@ -201,7 +201,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     MaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
                     break;
 
-                case "engine(trainbrakescontrollermaxoverchargepressure":
+                case "engine(ortstrainbrakescontrollermaxoverchargepressure":
                     MaxOverchargePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
                     break;
 
@@ -215,7 +215,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     QuickReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
                     break;
 
-                case "engine(trainbrakescontrolleroverchargeeliminationrate":
+                case "engine(ortstrainbrakescontrolleroverchargeeliminationrate":
                     OverchargeEliminationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
                     break;
 

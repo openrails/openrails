@@ -48,6 +48,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float MaxReleaseRatePSIpS = 1.86f;
         protected float MaxApplicationRatePSIpS = .9f;
         protected float MaxAuxilaryChargingRatePSIpS = 1.684f;
+        protected float MaxAuxilaryOverchargeEliminationRatePSIpS = 0.05f; // Allows overcharge elimination of 0.4 bar in 2 minutes
         protected float EmergResChargingRatePSIpS = 1.684f;
         protected float EmergAuxVolumeRatio = 1.4f;
         protected string DebugType = string.Empty;
@@ -450,7 +451,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 }
                 if (AuxResPressurePSI > BrakeLine1PressurePSI) // Allow small flow from auxiliary reservoir to brake pipe to restore normal pressure after overcharge
                 {
-                    float dp = elapsedClockSeconds * 0.05f;
+                    float dp = elapsedClockSeconds * MaxAuxilaryOverchargeEliminationRatePSIpS;
                     if (AuxResPressurePSI - dp < BrakeLine1PressurePSI + dp * AuxBrakeLineVolumeRatio)
                         dp = (AuxResPressurePSI - BrakeLine1PressurePSI) / (1 + AuxBrakeLineVolumeRatio);
                     AuxResPressurePSI -= dp;
