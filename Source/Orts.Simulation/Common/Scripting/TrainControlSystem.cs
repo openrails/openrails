@@ -105,7 +105,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<string, float> NextGenericSignalDistanceM;
         /// <summary>
-        /// Features of next generic signal. Not for NORMAL signals
+        /// Features of next generic signal. 
         /// string: signal type (DISTANCE etc.)
         /// int: position of signal in the signal sequence along the train route, starting from train front; 0 for first signal;
         /// float: max testing distance
@@ -587,5 +587,6 @@ namespace ORTS.Scripting.Api
         public string MainHeadSignalTypeName;
         public Aspect Aspect;
         public float DistanceM;
+        public float SpeedLimit;
     }
 }
