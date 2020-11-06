@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2020-08-29 03:09:35+0300\n"
-"PO-Revision-Date: 2020-08-29 03:42+0300\n"
+"PO-Revision-Date: 2020-08-30 04:09+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -769,7 +769,7 @@ msgstr "Гл.Выключатель Откл"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:158
 msgid "Control Circuit Breaker Closing Authorization"
-msgstr "Гл.Главный Выключатель Возврат"
+msgstr "Гл.Выключатель Возврат"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:159
 msgid "Control Diesel Player"
@@ -885,11 +885,11 @@ msgstr "Паровоз Эксгаустер"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:187
 msgid "Control Cylinder Compound"
-msgstr "Паровоз Cylinder Compound"
+msgstr "Паровоз Байпас компаунда"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:188
 msgid "Control Firing"
-msgstr "Паровоз Firing"
+msgstr "Автркочегар вкл/откл"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:189
 msgid "Control Refill"

@@ -417,11 +417,16 @@ driver could be expected to know by memory.
 F6 Siding and Platform Names
 ----------------------------
 
-Hit the ``<F6>`` key to bring up the siding and platform names within a 
-region. These can be crowded so hitting ``<Shift+F6>`` will cycle 
-through showing platforms only, sidings only, and both.
+Hit the ``<F6>`` key to reveal labels naming the siding and platforms.
+Hit it again to hide them.
 
-Hitting ``<F6>`` again removes both siding and platform names.
+Items more distant will show more faded and platforms disappear altogether if more than 1km away from the user; 
+sidings disappear if more than 0.5km away.
+
+Use ``<Shift+F6>`` to cycle through platforms only (in yellow), sidings only (in orange), and both together.
+
+If the user is in Activity Mode or Timetable Mode, then a 4th step is added to the cycle and this step removes
+any labels not relevant to the activity or timetable.
 
 .. image:: images/driving-siding-names.png
 
