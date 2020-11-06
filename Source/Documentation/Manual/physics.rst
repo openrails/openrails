@@ -1990,6 +1990,55 @@ brake features.
 Brake system charging time depends on the train length as it should, but
 at the moment there is no modeling of main reservoirs and compressors.
 
+.. _physics-brake-controller:
+
+Train Brake Controller Positions
+--------------------------------
+
+The following notch positions can be defined for the train brake at ``Engine(EngineControllers(Brake_Train``:
+
+.. index::
+   single: TrainBrakesControllerFullQuickReleaseStart
+   single: TrainBrakesControllerReleaseStart
+   single: TrainBrakesControllerOverchageStart
+   single: TrainBrakesControllerApplyStart
+   single: TrainBrakesControllerFullServiceStart
+   single: TrainBrakesControllerHoldStart
+   single: TrainBrakesControllerSelfLapStart
+   single: TrainBrakesControllerRunningStart
+   single: TrainBrakesControllerMinimalReductionStart
+   single: TrainBrakesControllerHoldLappedStart
+   single: TrainBrakesControllerVaccumContinuousServiceStart
+   single: TrainBrakesControllerVaccumApplyContinuousService
+   single: TrainBrakesControllerGraduatedSelfLapLimitedStart
+   single: TrainBrakesControllerGraduatedSelfLapLimitedHoldingStart
+   single: TrainBrakesControllerSuppressionStart
+   single: TrainBrakesControllerContinuousServiceStart
+   single: EPApply
+   single: TrainBrakesControllerEmergencyStart
+   single: Dummy
+   single: ORTSTrainBrakesControllerMaxOverchargePressure
+   single: ORTSTrainBrakesControllerOverchargeEliminationRate
+   single: TrainBrakesControllerMaxApplicationRate
+   single: TrainBrakesControllerMaxQuickReleaseRate
+   single: TrainBrakesControllerMaxReleaseRate
+   single: TrainBrakesControllerMinPressureReduction
+   single: TrainBrakesControllerMaxSystemPressure
+
+- ``FullQuickReleaseStart`` -- Increases pressure in equalizing reservoir (EQ) at a rate proportional to ``TrainBrakesControllerMaxQuickReleaseRate`` and controller position, releasing the brakes.
+- ``ReleaseStart`` -- same as above, but with a rate of ``TrainBrakesControllerMaxReleaseRate``.
+- ``OverchageStart`` -- Increases pressure in EQ over the maximum (``TrainBrakesControllerMaxSystemPressure``), up to ``ORTSTrainBrakesControllerMaxOverchargePressure``, to release stuck distributors. Setting the controller back to a release position will slowly return pressure to nominal value at a rate of ``ORTSTrainBrakesControllerOverchargeEliminationRate``.
+- ``ApplyStart`` -- Starts decreasing pressure in EQ at a rate proportional to ``TrainBrakesControllerMaxApplicationRate`` and controller position, down to full service pressure.
+- ``FullServiceStart`` -- Same as above, but also applies EP brakes if available.
+- ``HoldStart``, ``SelfLapStart`` and ``RunningStart`` -- Keep EQ pressure constant, maintaining brake pipe pressure.
+- ``MinimalReductionStart`` -- If previous notch position was Running, Release or QuickRelease, applies a minimal reduction to brake pipe pressure (defined by ``TrainBrakesControllerMinPressureReduction``).
+- ``HoldLappedStart`` -- Same as above, but isolates brake pipe from EQ reservoir. Brake pipe leakage is not compensated.
+- ``VaccumContinuousServiceStart`` and ``VaccumApplyContinuousService`` -- Set EQ pressure to a value from MaxPressure to 0, proportional to controller position.
+- ``GraduatedSelfLapStart``, ``GraduatedSelfLapHoldingStart`` and ``SuppressionStart`` -- Adjust EQ pressure to a value from (MaxPressure-MinimalReduction) to FullServicePressure, proportional to controller position. Depending on :ref:`Graduated Release Air Brakes <options-general>` option, EQ pressure can be increased to reduce brake application. ``Suppression`` should be a non-smooth notch used to suppress TCS brake application.
+- ``ContinuousServiceStart`` and ``EPApply`` -- Same as above, but also apply EP brakes if available.
+- ``EmergencyStart`` -- Quickly decreases EQ pressure and connects brake pipe to atmosphere, applying maximum braking.
+- ``Dummy`` -- Adjusts EQ pressure to a value from MaxPressure to FullServicePressure, proportional to controller position.
+
 .. _physics-hud-brake:
 
 Brake Shoe Adhesion
