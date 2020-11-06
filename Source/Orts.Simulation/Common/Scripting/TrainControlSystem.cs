@@ -587,6 +587,6 @@ namespace ORTS.Scripting.Api
         public string MainHeadSignalTypeName;
         public Aspect Aspect;
         public float DistanceM;
-        public float SpeedLimit;
+        public float SpeedLimitM;
     }
 }
