@@ -584,9 +584,17 @@ namespace ORTS.Scripting.Api
 
     public struct SignalFeatures
     {
-        public string MainHeadSignalTypeName;
-        public Aspect Aspect;
-        public float DistanceM;
-        public float SpeedLimitMpS;
+        public readonly string MainHeadSignalTypeName;
+        public readonly Aspect Aspect;
+        public readonly float DistanceM;
+        public readonly float SpeedLimitMpS;
+
+        public SignalFeatures(string mainHeadSignalTypeName, Aspect aspect, float distanceM, float speedLimitMpS)
+        {
+            MainHeadSignalTypeName = mainHeadSignalTypeName;
+            Aspect = aspect;
+            DistanceM = distanceM;
+            SpeedLimitMpS = speedLimitMpS;
+        }
     }
 }
