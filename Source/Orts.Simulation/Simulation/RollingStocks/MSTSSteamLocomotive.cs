@@ -4383,7 +4383,10 @@ namespace Orts.Simulation.RollingStocks
                     CylinderAdmissionSteamWeightLbs = 0.0f;
                 }
                 RawCylinderSteamWeightLbs = CylinderReleaseSteamWeightLbs - CylinderAdmissionSteamWeightLbs;
-                RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
+
+                // Calculate steam usage based upon how many piston strokes happen ffor each revolution of the wheels. 
+                // Geared locomotives will have to take into account gearing ratio. 
+                RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * MotiveForceGearRatio * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
                 CalculatedCylinderSteamUsageLBpS = RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
             }
 
