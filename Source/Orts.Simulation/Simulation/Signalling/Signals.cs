@@ -10347,30 +10347,7 @@ namespace Orts.Simulation.Signalling
             if (extendRoute && fullRoute)
             {
                 isPropagated = propagated;
-                int ReqNumClearAhead = 0;
-
-                if (SignalNumClearAhead_MSTS > -2)
-                {
-                    ReqNumClearAhead = propagated ?
-                        signalNumClearAhead - SignalNumNormalHeads : SignalNumClearAhead_MSTS - SignalNumNormalHeads;
-                }
-                else
-                {
-                    if (SignalNumClearAheadActive == -1)
-                    {
-                        ReqNumClearAhead = propagated ? signalNumClearAhead : 1;
-                    }
-                    else if (SignalNumClearAheadActive == 0)
-                    {
-                        ReqNumClearAhead = 0;
-                    }
-                    else
-                    {
-                        ReqNumClearAhead = isPropagated ? signalNumClearAhead - 1 : SignalNumClearAheadActive - 1;
-                    }
-                }
-
-
+                int ReqNumClearAhead = GetReqNumClearAheadExplorer(isPropagated, signalNumClearAhead);
                 if (ReqNumClearAhead > 0)
                 {
                     int nextSignalIndex = sigfound[(int)MstsSignalFunction.NORMAL];
@@ -10383,6 +10360,39 @@ namespace Orts.Simulation.Signalling
             }
 
             return (newRoute);
+        }
+
+        //================================================================================================//
+        /// <summary>
+        /// number of remaining signals to clear
+        /// </summary>
+
+        public int GetReqNumClearAheadExplorer(bool isPropagated, int signalNumClearAhead)
+        {
+            int ReqNumClearAhead = 0;
+
+            if (SignalNumClearAhead_MSTS > -2)
+            {
+                ReqNumClearAhead = propagated ?
+                    signalNumClearAhead - SignalNumNormalHeads : SignalNumClearAhead_MSTS - SignalNumNormalHeads;
+            }
+            else
+            {
+                if (SignalNumClearAheadActive == -1)
+                {
+                    ReqNumClearAhead = propagated ? signalNumClearAhead : 1;
+                }
+                else if (SignalNumClearAheadActive == 0)
+                {
+                    ReqNumClearAhead = 0;
+                }
+                else
+                {
+                    ReqNumClearAhead = isPropagated ? signalNumClearAhead - 1 : SignalNumClearAheadActive - 1;
+                }
+            }
+
+            return ReqNumClearAhead;
         }
         //================================================================================================//
         /// <summary>

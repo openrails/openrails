@@ -9327,8 +9327,9 @@ namespace Orts.Simulation.Physics
                         int numCleared = 0;
                         totalLengthM = 0;
                         offsetM = direction == 0 ? requiredPosition.TCOffset : thisSection.Length - requiredPosition.TCOffset;
-                        for (int iindex = 0; iindex < newRoute.Count && (firstSignalPassed || totalLengthM < minCheckDistanceM); iindex++)
+                        for (int iindex = 0; iindex < newRoute.Count && (firstSignalPassed || totalLengthM < minCheckDistanceM) && (!firstSignalPassed || numCleared != 0); iindex++)
                         {
+
                             thisSection = signalRef.TrackCircuitList[newRoute[iindex].TCSectionIndex];
                             int actDirection = newRoute[iindex].Direction;
 
@@ -9346,34 +9347,23 @@ namespace Orts.Simulation.Physics
                                     firstSignalPassed = true;
                                     if (thisSignal == reqSignal)
                                     {
-                                        for (int i = newRoute.Count - 1; i >= iindex + 1; i--)
-                                        {
-                                            thisSection = signalRef.TrackCircuitList[newRoute[i].TCSectionIndex];
-                                            thisSection.RemoveTrain(this, true);
-                                            newRoute.RemoveAt(i);
-                                        }
+                                        signalRef.BreakDownRouteList(newRoute, iindex + 1, thisRouted);
+                                        newRoute.RemoveRange(iindex + 1, newRoute.Count - iindex - 1);
                                         newRoute = thisSignal.requestClearSignalExplorer(newRoute, thisRouted, false, 0);
                                         break;
                                     }
-                                    int num = thisSignal.SignalNumClearAhead_MSTS;
-                                    if (num <= -2)
-                                        num = thisSignal.SignalNumClearAheadActive;
-                                    numCleared = Math.Max(num - thisSignal.SignalNumNormalHeads, 0);
+                                    numCleared = thisSignal.GetReqNumClearAheadExplorer(false, 0);
                                 }
                                 else
                                 {
-                                    if (thisSignal == reqSignal && numCleared > 0)
+                                    if (thisSignal == reqSignal)
                                     {
-                                        for (int i = newRoute.Count - 1; i >= iindex + 1; i--)
-                                        {
-                                            thisSection = signalRef.TrackCircuitList[newRoute[i].TCSectionIndex];
-                                            thisSection.RemoveTrain(this, true);
-                                            newRoute.RemoveAt(i);
-                                        }
+                                        signalRef.BreakDownRouteList(newRoute, iindex + 1, thisRouted);
+                                        newRoute.RemoveRange(iindex + 1, newRoute.Count - iindex - 1);
                                         newRoute = thisSignal.requestClearSignalExplorer(newRoute, thisRouted, true, numCleared);
                                         break;
                                     }
-                                    numCleared = Math.Max(numCleared - thisSignal.SignalNumNormalHeads, 0);
+                                    numCleared = thisSignal.GetReqNumClearAheadExplorer(true, numCleared);
                                 }
                             }
                         }
