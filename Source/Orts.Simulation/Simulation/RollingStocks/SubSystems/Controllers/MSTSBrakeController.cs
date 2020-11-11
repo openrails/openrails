@@ -105,11 +105,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     switch (notch.Type)
                     {
                         case ControllerState.Release:
+                            IncreasePressure(ref pressureBar, MaxPressureBar(), ReleaseRateBarpS(), elapsedClockSeconds);
+                            DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
+                            epState = -1;
+                            break;
                         case ControllerState.FullQuickRelease:
-                            if (pressureBar <= MaxPressureBar())
-                                IncreasePressure(ref pressureBar, MaxPressureBar(), notch.Type == ControllerState.FullQuickRelease ? QuickReleaseRateBarpS() : ReleaseRateBarpS(), elapsedClockSeconds);
-                            else
-                                DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
+                            IncreasePressure(ref pressureBar, MaxPressureBar(), QuickReleaseRateBarpS(), elapsedClockSeconds);
+                            DecreasePressure(ref pressureBar, MaxPressureBar(), OverchargeEliminationRateBarpS(), elapsedClockSeconds);
                             epState = -1;
                             break;
                         case ControllerState.Overcharge:
