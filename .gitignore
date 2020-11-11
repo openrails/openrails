@@ -360,6 +360,3 @@ healthchecksdb
 
 # Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
-
-# Settings for editing Manual using Visual Studio Code
-.vscode/settings.json
