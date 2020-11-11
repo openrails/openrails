@@ -247,6 +247,7 @@ namespace Orts.Simulation.Physics
         public float maxTimeS = 120;                     // check ahead for distance covered in 2 mins.
         public float minCheckDistanceM = 5000;           // minimum distance to check ahead
         public float minCheckDistanceManualM = 3000;     // minimum distance to check ahead in manual mode
+        public float minCheckDistanceExplorerM => Math.Max(AllowedMaxSpeedMpS * 240, 5000);      // minimum distance to check ahead in explorer mode
 
         public float standardOverlapM = 15.0f;           // standard overlap on clearing sections
         public float junctionOverlapM = 75.0f;           // standard overlap on clearing sections
@@ -9012,7 +9013,7 @@ namespace Orts.Simulation.Physics
                 List<int> tempSections = new List<int>();
 
                 tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
-                        requiredPosition.TCDirection, forward, minCheckDistanceM, true, false,
+                        requiredPosition.TCDirection, forward, minCheckDistanceExplorerM, true, false,
                         true, false, true, false, false, false, false, IsFreight);
 
                 if (tempSections.Count > 0)
@@ -9098,10 +9099,10 @@ namespace Orts.Simulation.Physics
 
             // if route does not end with signal and is too short, extend
 
-            if (!endWithSignal && totalLengthM < minCheckDistanceM)
+            if (!endWithSignal && totalLengthM < minCheckDistanceExplorerM)
             {
 
-                float extendedDistanceM = minCheckDistanceM - totalLengthM;
+                float extendedDistanceM = minCheckDistanceExplorerM - totalLengthM;
                 TCRouteElement lastElement = newRoute[newRoute.Count - 1];
 
                 int lastSectionIndex = lastElement.TCSectionIndex;
@@ -9327,7 +9328,7 @@ namespace Orts.Simulation.Physics
                         int numCleared = 0;
                         totalLengthM = 0;
                         offsetM = direction == 0 ? requiredPosition.TCOffset : thisSection.Length - requiredPosition.TCOffset;
-                        for (int iindex = 0; iindex < newRoute.Count && (firstSignalPassed || totalLengthM < minCheckDistanceM) && (!firstSignalPassed || numCleared != 0); iindex++)
+                        for (int iindex = 0; iindex < newRoute.Count && (firstSignalPassed || totalLengthM < minCheckDistanceExplorerM) && (!firstSignalPassed || numCleared != 0); iindex++)
                         {
 
                             thisSection = signalRef.TrackCircuitList[newRoute[iindex].TCSectionIndex];
