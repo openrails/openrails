@@ -1639,7 +1639,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 var loco = this as MSTSLocomotive;
                 var i = (int)CabViewType.Front;
-                if (loco == null || loco.CabView3D == null) return false;
+                if (loco == null || loco.CabView3D == null || loco.CabView3D.CabViewType != CabViewType.Front) return false;
                 return (loco.CabView3D.ViewPointList.Count > i);
             }
         }
