@@ -58,11 +58,12 @@ in the route's ``Activities`` directory.
 Timetable groups
 ----------------
 
-Multiple timetables can be loaded simultaneously using timetable group files.
-A group file is a plain text file, also located in the ``OpenRails`` subdirectory 
-of the route's ``Activities`` directory, that contains the filenames of one or 
-more timetable files listed on each line. The first line may also start with a
-``#`` symbol, in which case the text that follows will be used as the timetable 
+Multiple timetables can be loaded simultaneously using timetable group files. 
+A group file is a plain text file that has the extension ``.*.timetablelist-or``, 
+that is also located in the ``OpenRails`` subdirectory of the route's 
+``Activities`` directory, and that contains the filenames of one or more 
+timetable files listed on each line. The first line may also start with a ``#`` 
+symbol, in which case the text that follows will be used as the timetable 
 group's display name in the Open Rails menu.
 
 Here is an example of a timetable group file::
