@@ -74,6 +74,14 @@ Here is an example of a timetable group file::
     MARC Penn Line - Fri Aug 2018.timetable-or
     SEPTA Wilmington-Newark - Fri Aug 2018.timetable-or
 
+Pool files
+----------
+
+:ref:`Pools <pool-general>` can be used to store out-of-service trains on a first-come, first-serve 
+basis, without the need to manually program paths into and out of storage tracks. 
+Pool files are located in the same ``OpenRails`` directory as other timetable 
+files. They have the extension ``.pool-or`` or ``.turntable-or``.
+
 File and train selection
 ------------------------
 
@@ -1880,6 +1888,8 @@ Known Problems
 - If the /binary qualifier is set for #path, but the OpenRails subdirectory in 
   the Paths directory does not exist, the program will not be able to load any 
   paths.
+
+.. _pool-general:
 
 Storing Trains with Pools
 =========================
