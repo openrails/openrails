@@ -247,7 +247,17 @@ namespace Orts.Simulation.Physics
         public float maxTimeS = 120;                     // check ahead for distance covered in 2 mins.
         public float minCheckDistanceM = 5000;           // minimum distance to check ahead
         public float minCheckDistanceManualM = 3000;     // minimum distance to check ahead in manual mode
-        public float minCheckDistanceExplorerM => Math.Max(AllowedMaxSpeedMpS * 240, 5000);      // minimum distance to check ahead in explorer mode
+        /// <summary>
+        /// Minimum distance to check ahead in explorer mode
+        /// </summary>
+        private float MinCheckDistanceExplorerM
+        {
+            get
+            {
+                int checkTimeS = 120, checkDistanceM = 5000;
+                return Math.Max(AllowedMaxSpeedMpS * checkTimeS, checkDistanceM);
+            }
+        }
 
         public float standardOverlapM = 15.0f;           // standard overlap on clearing sections
         public float junctionOverlapM = 75.0f;           // standard overlap on clearing sections
@@ -7894,8 +7904,7 @@ namespace Orts.Simulation.Physics
                 MisalignedSwitch[direction, 0] = -1;
                 MisalignedSwitch[direction, 1] = -1;
 
-                List<int> tempSections = new List<int>();
-                tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
+                List<int> tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
                         requiredPosition.TCDirection, forward, minCheckDistanceManualM, true, false,
                         true, false, true, false, false, false, false, IsFreight);
 
@@ -9010,10 +9019,8 @@ namespace Orts.Simulation.Physics
 
                 // build new route
 
-                List<int> tempSections = new List<int>();
-
-                tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
-                        requiredPosition.TCDirection, forward, minCheckDistanceExplorerM, true, false,
+                List<int> tempSections = signalRef.ScanRoute(this, requiredPosition.TCSectionIndex, requiredPosition.TCOffset,
+                        requiredPosition.TCDirection, forward, MinCheckDistanceExplorerM, true, false,
                         true, false, true, false, false, false, false, IsFreight);
 
                 if (tempSections.Count > 0)
@@ -9099,10 +9106,10 @@ namespace Orts.Simulation.Physics
 
             // if route does not end with signal and is too short, extend
 
-            if (!endWithSignal && totalLengthM < minCheckDistanceExplorerM)
+            if (!endWithSignal && totalLengthM < MinCheckDistanceExplorerM)
             {
 
-                float extendedDistanceM = minCheckDistanceExplorerM - totalLengthM;
+                float extendedDistanceM = MinCheckDistanceExplorerM - totalLengthM;
                 TCRouteElement lastElement = newRoute[newRoute.Count - 1];
 
                 int lastSectionIndex = lastElement.TCSectionIndex;
@@ -9126,7 +9133,7 @@ namespace Orts.Simulation.Physics
                     }
                 }
 
-                List<int> tempSections = new List<int>();
+                List<int> tempSections = null;
 
                 if (nextSectionIndex >= 0 && MisalignedSwitch[direction, 0] < 0)
                 {
@@ -9137,7 +9144,7 @@ namespace Orts.Simulation.Physics
                     true, false, true, false, false, false, false, IsFreight);
                 }
 
-                if (tempSections.Count > 0)
+                if (tempSections != null && tempSections.Count > 0)
                 {
                     // add new sections
 
@@ -9328,9 +9335,8 @@ namespace Orts.Simulation.Physics
                         int numCleared = 0;
                         totalLengthM = 0;
                         offsetM = direction == 0 ? requiredPosition.TCOffset : thisSection.Length - requiredPosition.TCOffset;
-                        for (int iindex = 0; iindex < newRoute.Count && (firstSignalPassed || totalLengthM < minCheckDistanceExplorerM) && (!firstSignalPassed || numCleared != 0); iindex++)
+                        for (int iindex = 0; iindex < newRoute.Count; iindex++)
                         {
-
                             thisSection = signalRef.TrackCircuitList[newRoute[iindex].TCSectionIndex];
                             int actDirection = newRoute[iindex].Direction;
 
@@ -9339,6 +9345,10 @@ namespace Orts.Simulation.Physics
 
                             totalLengthM += thisSection.Length - offsetM;
                             offsetM = 0;
+
+                            // Stop if first signal is far, there's no need to clear it.
+                            if (!firstSignalPassed && totalLengthM > MinCheckDistanceExplorerM) 
+                                break;
 
                             if (thisSection.EndSignals[actDirection] != null)
                             {
@@ -9366,6 +9376,10 @@ namespace Orts.Simulation.Physics
                                     }
                                     numCleared = thisSignal.GetReqNumClearAheadExplorer(true, numCleared);
                                 }
+
+                                // Stop if no more signals to clear
+                                if (numCleared == 0)
+                                    break;
                             }
                         }
                     }
