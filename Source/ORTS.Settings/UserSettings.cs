@@ -395,6 +395,8 @@ namespace ORTS.Settings
         // In-game settings:
         [Default(false)]
         public bool Letterbox2DCab { get; set; }
+        [Default("All")]
+        public string TrackMonitorDisplayMode { get; set; }
 
         #endregion
 
