@@ -77,10 +77,11 @@ Here is an example of a timetable group file::
 Pool files
 ----------
 
-:ref:`Pools <pool-general>` can be used to store out-of-service trains on a first-come, first-serve 
-basis, without the need to manually program paths into and out of storage tracks. 
-Pool files are located in the same ``OpenRails`` directory as other timetable 
-files. They have the extension ``.pool-or`` or ``.turntable-or``.
+:ref:`Pools <pool-general>` can be used to store out-of-service trains on a 
+first-come, first-serve basis, without the need to manually program paths into 
+and out of storage tracks. Pool files are located in the same ``OpenRails`` 
+directory as other timetable files. They have the extension ``.pool-or`` or 
+``.turntable-or``.
 
 Weather files
 -------------
