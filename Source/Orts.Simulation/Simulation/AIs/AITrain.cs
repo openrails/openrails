@@ -702,9 +702,8 @@ namespace Orts.Simulation.AIs
                 }
 
                 // set wipers on or off
-                try
-                {
-                    MSTSLocomotive leadingloco = Cars[0] as MSTSLocomotive;
+                MSTSLocomotive leadingloco = Cars[0] as MSTSLocomotive;
+                if (leadingloco != null)
                     if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0 && !leadingloco.Wiper)
                     {
                         leadingloco.SignalEvent(Event.WiperOn);
@@ -713,9 +712,6 @@ namespace Orts.Simulation.AIs
                     {
                         leadingloco.SignalEvent(Event.WiperOff);
                     }
-                }
-                catch
-                { } // dummy catch
             }
 
             // switch on action depending on state
