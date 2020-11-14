@@ -175,7 +175,9 @@ namespace Orts.Formats.OR
                     if (String.Compare(Parts[0], "#briefing", true) == 0)
                     {
                         briefingFound = true;
-                        Briefing = String.Copy(Parts[1]);
+
+                        // Newlines "\n" cannot be emdedded in CSV files, so HTML breaks "<br>" are used instead.
+                        Briefing = String.Copy(Parts[1].Replace("<br>", "\n"));
                         foreach (TrainInformation train in Trains)
                             train.Briefing = String.Copy(Parts[train.Column]).Replace("<br>", "\n");
                     }
