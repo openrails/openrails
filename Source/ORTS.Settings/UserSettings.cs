@@ -395,8 +395,6 @@ namespace ORTS.Settings
         // In-game settings:
         [Default(false)]
         public bool Letterbox2DCab { get; set; }
-        [Default("All")]
-        public string TrackMonitorDisplayMode { get; set; }
         [Default(true)]
         public bool Use3DCab { get; set; }
         [Default(0x7)] // OSDLocations.DisplayState.Auto
