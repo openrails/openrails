@@ -409,6 +409,8 @@ namespace ORTS.Settings
         public int OSDLocationsState { get; set; }
         [Default(0x1)] // OSDCars.DisplayState.Trains
         public int OSDCarsState { get; set; }
+        [Default(0)] // TrackMonitor.DisplayMode.All
+        public int TrackMonitorDisplayMode { get; set; }
 
         #endregion
 
