@@ -1160,8 +1160,6 @@ namespace Orts.Viewer3D.RollingStock
 
             _Viewer.AdjustCabHeight(_Viewer.DisplaySize.X, _Viewer.DisplaySize.Y);
 
-            _Viewer.CabCamera.ScreenChanged();
-
             // _Viewer.DisplaySize intercepted to adjust cab view height
             Point DisplaySize = _Viewer.DisplaySize;
             DisplaySize.Y = _Viewer.CabHeightPixels;
