@@ -106,7 +106,14 @@ namespace Orts.Viewer3D
         // Cameras
         public Camera Camera { get; set; } // Current camera
         public Camera AbovegroundCamera { get; private set; } // Previous camera for when automatically switching to cab.
-        public CabCamera CabCamera { get; private set; } // Camera 1
+        /// <summary>
+        /// Camera #1, 2D cab. Swaps with <see cref="ThreeDimCabCamera"/> with Alt+1.
+        /// </summary>
+        private readonly CabCamera CabCamera;
+        /// <summary>
+        /// Camera #1, 3D cab. Swaps with <see cref="CabCamera"/> with Alt+1.
+        /// </summary>
+        private readonly ThreeDimCabCamera ThreeDimCabCamera;
         public HeadOutCamera HeadOutForwardCamera { get; private set; } // Camera 1+Up
         public HeadOutCamera HeadOutBackCamera { get; private set; } // Camera 2+Down
         public TrackingCamera FrontCamera { get; private set; } // Camera 2
@@ -117,7 +124,27 @@ namespace Orts.Viewer3D
         public BrakemanCamera BrakemanCamera { get; private set; } // Camera 6
         public List<FreeRoamCamera> FreeRoamCameraList = new List<FreeRoamCamera>();
         public FreeRoamCamera FreeRoamCamera { get { return FreeRoamCameraList[0]; } } // Camera 8
-        public ThreeDimCabCamera ThreeDimCabCamera; //Camera 0
+
+        /// <summary>
+        /// Activate the 2D or 3D cab camera depending on the current player preference.
+        /// </summary>
+        public void ActivateCabCamera()
+        {
+            if (Settings.Use3DCab && ThreeDimCabCamera.IsAvailable)
+                ThreeDimCabCamera.Activate();
+            else
+                CabCamera.Activate();
+        }
+
+        /// <summary>
+        /// Toggle the 2D/3D cab preference and, if already in the cab camera, switch modes.
+        /// </summary>
+        public void ToggleCabCameraView()
+        {
+            Settings.Use3DCab = !Settings.Use3DCab;
+            if (Camera == CabCamera || Camera == ThreeDimCabCamera)
+                ActivateCabCamera();
+        }
 
         List<Camera> WellKnownCameras; // Providing Camera save functionality by GeorgeS
 
@@ -439,13 +466,10 @@ namespace Orts.Viewer3D
             };
             Simulator.Confirmer.DisplayMessage += (s, e) => MessagesWindow.AddMessage(e.Key, e.Text, e.Duration);
 
-            if (Simulator.PlayerLocomotive.HasFront3DCab || Simulator.PlayerLocomotive.HasRear3DCab)
-            {
-                ThreeDimCabCamera.Enabled = true;
-                ThreeDimCabCamera.Activate();
-            }
-            else if (Simulator.PlayerLocomotive.HasFrontCab || Simulator.PlayerLocomotive.HasRearCab) CabCamera.Activate();
-            else CameraActivate();
+            if (CabCamera.IsAvailable || ThreeDimCabCamera.IsAvailable)
+                ActivateCabCamera();
+            else
+                CameraActivate();
 
             // Prepare the world to be loaded and then load it from the correct thread for debugging/tracing purposes.
             // This ensures that a) we have all the required objects loaded when the 3D view first appears and b) that

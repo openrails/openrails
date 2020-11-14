@@ -397,6 +397,8 @@ namespace ORTS.Settings
         public bool Letterbox2DCab { get; set; }
         [Default("All")]
         public string TrackMonitorDisplayMode { get; set; }
+        [Default(true)]
+        public bool Use3DCab { get; set; }
 
         #endregion
 
