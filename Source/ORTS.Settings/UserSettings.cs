@@ -403,10 +403,14 @@ namespace ORTS.Settings
         // In-game settings:
         [Default(false)]
         public bool Letterbox2DCab { get; set; }
-        [Default("All")]
-        public string TrackMonitorDisplayMode { get; set; }
         [Default(true)]
         public bool Use3DCab { get; set; }
+        [Default(0x7)] // OSDLocations.DisplayState.Auto
+        public int OSDLocationsState { get; set; }
+        [Default(0x1)] // OSDCars.DisplayState.Trains
+        public int OSDCarsState { get; set; }
+        [Default(0)] // TrackMonitor.DisplayMode.All
+        public int TrackMonitorDisplayMode { get; set; }
 
         #endregion
 

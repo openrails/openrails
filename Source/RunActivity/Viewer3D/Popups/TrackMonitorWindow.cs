@@ -189,34 +189,12 @@ namespace Orts.Viewer3D.Popups
 
         readonly Viewer Viewer;
         private bool metric => Viewer.MilepostUnitsMetric;
-
-        /// <summary>
-        /// Synchronized with the value of
-        /// <see cref="ORTS.Settings.UserSettings.TrackMonitorDisplayMode"/>, which is a string.
-        /// </summary>
-        private DisplayMode _mode = DisplayMode.All;
-        /// <summary>
-        /// Parsing an enum is expensive, so this variable caches the conversion
-        /// from the underlying <see cref="ORTS.Settings.UserSettings.TrackMonitorDisplayMode"/>
-        /// string value.
-        /// </summary>
-        private string _modeString = null;
         private DisplayMode Mode
         {
-            get
-            {
-                var setting = Viewer.Settings.TrackMonitorDisplayMode;
-                if (setting != _modeString)
-                {
-                    _modeString = setting;
-                    Enum.TryParse(setting, ignoreCase: true, out _mode);
-                }
-                return _mode;
-            }
+            get => (DisplayMode)Viewer.Settings.TrackMonitorDisplayMode;
             set
             {
-                _mode = value;
-                Viewer.Settings.TrackMonitorDisplayMode = _modeString = _mode.ToString();
+                Viewer.Settings.TrackMonitorDisplayMode = (int)value;
             }
         }
 
@@ -228,11 +206,11 @@ namespace Orts.Viewer3D.Popups
             /// <summary>
             /// Display all track and routing features.
             /// </summary>
-            All,
+            All = 0,
             /// <summary>
             /// Show only the static features that a train driver would know by memory.
             /// </summary>
-            StaticOnly,
+            StaticOnly = 1,
         }
 
         public static int DbfEvalOverSpeed;//Debrief eval
