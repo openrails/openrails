@@ -10292,6 +10292,10 @@ namespace Orts.Simulation.Signalling
             // build output route from input route
             Train.TCSubpathRoute newRoute = new Train.TCSubpathRoute(thisRoute);
 
+            // don't clear if enabled for another train
+            if (enabledTrain != null && enabledTrain != thisTrain)
+                return newRoute;
+
             // if signal has fixed route, use that else build route
             if (fixedRoute != null && fixedRoute.Count > 0)
             {
