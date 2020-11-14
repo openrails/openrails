@@ -407,6 +407,10 @@ namespace ORTS.Settings
         public string TrackMonitorDisplayMode { get; set; }
         [Default(true)]
         public bool Use3DCab { get; set; }
+        [Default(0x7)] // OSDLocations.DisplayState.Auto
+        public int OSDLocationsState { get; set; }
+        [Default(0x1)] // OSDCars.DisplayState.Trains
+        public int OSDCarsState { get; set; }
 
         #endregion
 
