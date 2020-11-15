@@ -14281,6 +14281,7 @@ namespace Orts.Simulation.Physics
 
         public TrainInfo GetTrainInfo()
         {
+            // This may occur just  after player train switching 
             if (IsActualPlayerTrain && PlayerTrainSignals == null)
                 UpdatePlayerTrainData();
             TrainInfo thisInfo = new TrainInfo();
