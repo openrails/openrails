@@ -15,7 +15,12 @@
 		<div class="row">
 			<div class="col-md-1"></div>
 			<div class="col-md-5">
-      <h2>Nov 2020</h2>
+        <h2>Nov 2020</h2>
+        <p>
+          Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
+        </p>
+        <hr />
+        <h2>Nov 2020</h2>
         <p>
           A <a href="http://www.siskurail.org/ComingSoon.php">detailed guide to making activities</a> backed by videos and data files <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">for the Siskiyou Route</a> is soon to be published by Dale Rickert. 
         </p>
