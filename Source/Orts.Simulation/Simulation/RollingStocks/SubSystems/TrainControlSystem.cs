@@ -288,6 +288,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.CurrentPostSpeedLimitMpS = () => Locomotive.Train.allowedMaxSpeedLimitMpS;
                 Script.NextPostSpeedLimitMpS = (value) => NextGenericSignalItem<float>(value, ref ItemSpeedLimit, float.MaxValue, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
                 Script.NextPostDistanceM = (value) => NextGenericSignalItem<float>(value, ref ItemDistance, float.MaxValue, Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST);
+                Script.EOADistanceM = (value) => Locomotive.Train.DistanceToEndNodeAuthorityM[value];
                 Script.TrainLengthM = () => Locomotive.Train != null ? Locomotive.Train.Length : 0f;
                 Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
                 Script.CurrentDirection = () => Locomotive.Direction; // Direction of locomotive, may be different from direction of train
