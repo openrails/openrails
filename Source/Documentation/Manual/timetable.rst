@@ -2239,7 +2239,7 @@ special ``WeatherFiles`` subdirectory of the route's folder and they have the
 file extension ``*.weather-or``. They are selected by the player from the 
 timetable mode menu.
 
-A weather file is a JSON file that consists of a single array, named "Changes," 
+A weather file is a JSON file that consists of a single array, named "Changes", 
 each item of which represents a weather event that activates at a specific time. 
 Each event is a JSON object whose "Type" property identifies the kind of weather 
 event. Concretely, a weather file follows the format:
