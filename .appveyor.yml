@@ -1,6 +1,13 @@
 version: AV1.3.1-{build}
 skip_branch_with_pr: true
 image: Visual Studio 2017
+cache:
+  - C:\ProgramData\chocolatey\bin -> .appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> .appveyor.yml
+  - C:\lazarus -> .appveyor.yml
+  - C:\Program Files (x86)\Common Files\Microsoft Shared\XNA -> .appveyor.yml
+  - C:\Windows\assembly\GAC_32\Microsoft.Xna.Framework -> .appveyor.yml
+  - C:\Windows\assembly\GAC_32\Microsoft.Xna.Framework.Game -> .appveyor.yml
 install:
 - ps: >-
     $ErrorActionPreference = "Stop"
