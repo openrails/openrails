@@ -138,6 +138,7 @@
     <Compile Include="Simulation\Traveller.cs" />
     <Compile Include="Simulation\Turntables.cs" />
     <Compile Include="Simulation\Weather.cs" />
+    <Compile Include="Common\Scripting\EuropeanTrainControlSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ORTS.Common\ORTS.Common.csproj">
