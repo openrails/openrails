@@ -58,11 +58,12 @@ in the route's ``Activities`` directory.
 Timetable groups
 ----------------
 
-Multiple timetables can be loaded simultaneously using timetable group files.
-A group file is a plain text file, also located in the ``OpenRails`` subdirectory 
-of the route's ``Activities`` directory, that contains the filenames of one or 
-more timetable files listed on each line. The first line may also start with a
-``#`` symbol, in which case the text that follows will be used as the timetable 
+Multiple timetables can be loaded simultaneously using timetable group files. 
+A group file is a plain text file that has the extension ``.*.timetablelist-or``, 
+that is also located in the ``OpenRails`` subdirectory of the route's 
+``Activities`` directory, and that contains the filenames of one or more 
+timetable files listed on each line. The first line may also start with a ``#`` 
+symbol, in which case the text that follows will be used as the timetable 
 group's display name in the Open Rails menu.
 
 Here is an example of a timetable group file::
@@ -72,6 +73,26 @@ Here is an example of a timetable group file::
     MARC Camden Line - Fri Aug 2018.timetable-or
     MARC Penn Line - Fri Aug 2018.timetable-or
     SEPTA Wilmington-Newark - Fri Aug 2018.timetable-or
+
+Pool files
+----------
+
+:ref:`Pools <pool-general>` can be used to store out-of-service trains on a 
+first-come, first-serve basis, without the need to manually program paths into 
+and out of storage tracks. Pool files are located in the same ``OpenRails`` 
+directory as other timetable files. They have the extension ``.pool-or`` or 
+``.turntable-or``.
+
+Weather files
+-------------
+
+:ref:`Weather files <weather-general>`, a feature exclusive to timetable mode, 
+orchestrate changes in the cloud cover, precipitation, and visibility factors 
+over the course of the timetable day. They are located in a special 
+``WeatherFiles`` subdirectory of the route's folder and they have the 
+``*.weather-or`` file extension. The player activates a weather file by 
+selecting it from the timetable mode section of the main menu; this overrides 
+the static weather condition.
 
 File and train selection
 ------------------------
@@ -83,8 +104,8 @@ desired timetable file or timetable group file must then be selected in the
 After selecting the required timetable, a list of all trains contained in that 
 timetable is displayed and the required train can be selected.
 
-Season and weather can also be selected; these are not preset within the 
-timetable definition.
+Season and weather (static or file-defined) can also be selected; these are not 
+preset within the timetable definition.
 
 Timetable Definition
 ====================
@@ -1880,6 +1901,8 @@ Known Problems
   the Paths directory does not exist, the program will not be able to load any 
   paths.
 
+.. _pool-general:
+
 Storing Trains with Pools
 =========================
 
@@ -2204,6 +2227,111 @@ substitute value is replaced by the value as defined in the shape file.
 One frame per second relates to a rotation speed of 0.1 degrees per second. 
 This parameter is optional. If not defined, a default value of 30 frames per 
 second is used, which gives a default rotation speed of 3 degrees per second.
+
+.. _weather-general:
+
+Changing Weather
+================
+
+The current cloud cover, precipitation, and visibility can be varied over the 
+course of the timetable day with weather files. Weather files reside within a 
+special ``WeatherFiles`` subdirectory of the route's folder and they have the 
+file extension ``*.weather-or``. They are selected by the player from the 
+timetable mode menu.
+
+A weather file is a JSON file that consists of a single array, named "Changes", 
+each item of which represents a weather event that activates at a specific time. 
+Each event is a JSON object whose "Type" property identifies the kind of weather 
+event. Concretely, a weather file follows the format:
+
+.. code-block:: json
+
+    {
+        "Changes": [
+            {
+                "Type": "<type>",
+                "<property>": <value>,
+                ...
+            },
+            ...
+        ]
+    }
+
+There are three types of events: ``Clear``, ``Precipitation``, and ``Fog``, 
+each with their own individual sets of properties.
+
+"Clear" event
+-------------
+
+A Clear event removes any precipitation or fog while also setting the prevailing 
+overcast conditions. Clear events contain the following JSON properties:
+
+==================== ====== ===========
+Property             Type   Description
+==================== ====== ===========
+Time                 string The 24-hour time this event activates.
+Overcast             number The overcast intensity as a percentage from 0 to 100.
+OvercastVariation    number The variation in overcast intensity as a percentage from 0 to 100.
+OvercastRateOfChange number The rate of change of overcast intensity as a scaling factor from 0 to 1.
+OvercastVisibility   number The resulting visibility, in meters. The value must be in the range from 10000 to 60000. (For lower values, use a Fog event.)
+==================== ====== ===========
+
+"Precipitation" event
+---------------------
+
+A Precipitation event represents a rain spell followed by a clear spell, with 
+smooth transitions into, out of, and between both phases.
+
+=================================== ====== ===========
+Property                            Type   Description
+=================================== ====== ===========
+Time                                string The 24-hour time this event activates.
+----------------------------------- ------ -----------
+Phase 1: Build up to precipitation
+------------------------------------------------------
+OvercastPrecipitationStart          number The overcast intensity during the build up to the precipitation spell as a percentage from 0 to 100.
+OvercastBuildUp                     number The rate of change of overcast intensity in advance of the precipitation spell as a scaling factor from 0 to 1.
+PrecipitationStartPhase             number The duration of the precipitation build up phase, in seconds. Must be in the range from 30 to 240.
+----------------------------------- ------ -----------
+Phase 2: Precipitation spell
+------------------------------------------------------
+PrecipitationType                   string The type of precipitation. Must be one of ``Snow`` or ``Rain``.
+PrecipitationDensity                number The precipitation intensity as a scaling factor from 0 to 1.
+PrecipitationVariation              number The variability of the precipitation intensity as a scaling factor from 0 to 1.
+PrecipitationProbability            number The probability of the precipitation event as a percentage from 0 to 100.
+PrecipitationSpread                 number The number of distinct periods of showers during the spell. Must be in the range from 1 to 1000.
+PrecipitationVisibilityAtMinDensity number The visibility at minimum precipitation density.
+PrecipitationVisibilityAtMaxDensity number The visibility at maximum precipitation density.
+----------------------------------- ------ -----------
+Phase 3: Dispersion after precipitation
+------------------------------------------------------
+OvercastDispersion                  number The rate of change of overcast intensity after the precipitation spell as a scaling factor from 0 to 1.
+PrecipitationEndPhase               number The duration of the precipitation dispersion phase, in seconds. Must be in the range from 30 to 360.
+----------------------------------- ------ -----------
+Phase 4: Clear spell
+------------------------------------------------------
+Overcast                            number The overcast intensity as a percentage from 0 to 100.
+OvercastVariation                   number The variation in overcast intensity as a percentage from 0 to 100.
+OvercastRateOfChange                number The rate of change of overcast intensity as a scaling factor from 0 to 1.
+OvercastVisibility                  number The resulting visibility, in meters. The value must be in the range from 10000 to 60000.
+=================================== ====== ===========
+
+"Fog" event
+-----------
+
+A Fog event greatly reduces the prevailing visibility. It features smooth 
+transitions into and out of the fog, from the previous weather event and to the 
+next weather event.
+
+============= ====== ===========
+Property      Type   Description
+============= ====== ===========
+Time          string The 24-hour time this event activates.
+FogVisibility number The resulting visibility, in meters. Maximum value 1000. (For higher values, use a Clear event.)
+FogSetTime    number The transition time for fog to set in, in seconds. The value must be in the range from 300 to 3600.
+FogLiftTime   number The transition time for fog to lift, in seconds. The value must be in the range from 360 to 3600.
+FogOvercast   number The resulting overcast intensity after the fog lifts as a percentage from 0 to 100.
+============= ====== ===========
 
 Example of a Timetable File
 ===========================
