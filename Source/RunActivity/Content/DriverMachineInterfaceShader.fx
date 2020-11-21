@@ -97,6 +97,10 @@ float4 PSCircularSpeedGauge(PIXEL_INPUT In) : COLOR0
 		{
 			returnColor = origColor;
 		}
+        else if (LimitAngle.x < limitStartAngle) // Do not display gauge
+        {
+            returnColor = origColor;
+        }
 		else if (angle > LimitAngle.y)
         {
             if (angle > LimitAngle.w) // Exceeded limit pointer at overspeed

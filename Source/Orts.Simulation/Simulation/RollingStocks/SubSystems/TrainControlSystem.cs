@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
+using ORTS.Scripting.Api.ETCS;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
@@ -110,9 +111,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         public bool PenaltyApplication { get; set; }
         public float CurrentSpeedLimitMpS { get; set; }
         public float NextSpeedLimitMpS { get; set; }
-        public float InterventionSpeedLimitMpS { get; set; }
         public TrackMonitorSignalAspect CabSignalAspect { get; set; }
-        public MonitoringStatus MonitoringStatus { get; set; }
 
         public bool Activated = false;
         public bool CustomTCSScript = false;
@@ -446,10 +445,37 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.SetVigilanceEmergencyDisplay = (value) => this.VigilanceEmergency = value;
                 Script.SetOverspeedWarningDisplay = (value) => this.OverspeedWarning = value;
                 Script.SetPenaltyApplicationDisplay = (value) => this.PenaltyApplication = value;
-                Script.SetMonitoringStatus = (value) => this.MonitoringStatus = value;
-                Script.SetCurrentSpeedLimitMpS = (value) => this.CurrentSpeedLimitMpS = value;
-                Script.SetNextSpeedLimitMpS = (value) => this.NextSpeedLimitMpS = value;
-                Script.SetInterventionSpeedLimitMpS = (value) => this.InterventionSpeedLimitMpS = value;
+                Script.SetMonitoringStatus = (value) =>
+                {
+                    switch (value)
+                    {
+                        case MonitoringStatus.Normal:
+                        case MonitoringStatus.Indication:
+                            ETCSStatus.CurrentMonitor = Monitor.CeilingSpeed;
+                            ETCSStatus.CurrentSupervisionStatus = SupervisionStatus.Normal;
+                            break;
+                        case MonitoringStatus.Overspeed:
+                            ETCSStatus.CurrentMonitor = Monitor.TargetSpeed;
+                            ETCSStatus.CurrentSupervisionStatus = SupervisionStatus.Indication;
+                            break;
+                        case MonitoringStatus.Warning:
+                            ETCSStatus.CurrentSupervisionStatus = SupervisionStatus.Overspeed;
+                            break;
+                        case MonitoringStatus.Intervention:
+                            ETCSStatus.CurrentSupervisionStatus = SupervisionStatus.Intervention;
+                            break;
+                    }
+                };
+                Script.SetCurrentSpeedLimitMpS = (value) =>
+                {
+                    this.CurrentSpeedLimitMpS = value;
+                    ETCSStatus.AllowedSpeedMpS = value;
+                };
+                Script.SetNextSpeedLimitMpS = (value) => {
+                    this.NextSpeedLimitMpS = value;
+                    ETCSStatus.TargetSpeedMpS = value;
+                };
+                Script.SetInterventionSpeedLimitMpS = (value) => Script.ETCSStatus.InterventionSpeedMpS = value;
                 Script.SetNextSignalAspect = (value) => this.CabSignalAspect = (TrackMonitorSignalAspect)value;
                 Script.SetCabDisplayControl = (arg1, arg2) => CabDisplayControls[arg1] = arg2;
                 Script.SetCustomizedTCSControlString = (value) =>
@@ -989,7 +1015,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 OverspeedPenaltyTimer.Setup(OverspeedMonitor.PenaltyTimeS);
             }
 
-            ETCSStatus = new ETCSStatus();
             ETCSStatus.DMIActive = ETCSStatus.PlanningAreaShown = true;
 
             Activated = true;
@@ -1075,16 +1100,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 else
                     Status = MonitoringStatus.Normal;
                 SetMonitoringStatus(Status);
-
                 float maxDistanceAheadM = 0;
                 ETCSStatus.SpeedTargets.Clear();
-                ETCSStatus.SpeedTargets.Add(new ORTS.Scripting.Api.ETCS.PlanningTarget(0, CurrentSpeedLimitMpS));
+                ETCSStatus.SpeedTargets.Add(new PlanningTarget(0, CurrentSpeedLimitMpS));
                 for (int i=0; i<5; i++)
                 {
                     maxDistanceAheadM = NextSignalDistanceM(i);
                     float speedLimMpS = NextSignalSpeedLimitMpS(i); 
                     if (NextSignalAspect(i) == Aspect.Stop) break;
-                    if (speedLimMpS >=0) ETCSStatus.SpeedTargets.Add(new ORTS.Scripting.Api.ETCS.PlanningTarget(maxDistanceAheadM, speedLimMpS));
+                    if (speedLimMpS >=0) ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, speedLimMpS));
                 }
                 float prevDist=0;
                 float prevSpeed = 0;
@@ -1094,15 +1118,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     if (distanceM > maxDistanceAheadM) break;
                     float speed = NextPostSpeedLimitMpS(i);
                     if (speed == prevSpeed || distanceM - prevDist < 10) continue;
-                    ETCSStatus.SpeedTargets.Add(new ORTS.Scripting.Api.ETCS.PlanningTarget(distanceM, speed));
+                    ETCSStatus.SpeedTargets.Add(new PlanningTarget(distanceM, speed));
                     prevDist = distanceM;
                     prevSpeed = speed;
                 }
                 ETCSStatus.SpeedTargets.Sort((x, y) => x.DistanceToTrainM.CompareTo(y.DistanceToTrainM));
-                ETCSStatus.SpeedTargets.Add(new ORTS.Scripting.Api.ETCS.PlanningTarget(maxDistanceAheadM, 0));
+                ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, 0));
                 ETCSStatus.GradientProfile.Clear();
-                ETCSStatus.GradientProfile.Add(new ORTS.Scripting.Api.ETCS.GradientProfileElement(0, (int)(Locomotive().CurrentElevationPercent * 10)));
-                ETCSStatus.GradientProfile.Add(new ORTS.Scripting.Api.ETCS.GradientProfileElement(maxDistanceAheadM, 0)); // End of profile
+                ETCSStatus.GradientProfile.Add(new GradientProfileElement(0, (int)(Locomotive().CurrentElevationPercent * 10)));
+                ETCSStatus.GradientProfile.Add(new GradientProfileElement(maxDistanceAheadM, 0)); // End of profile
             }
         }
 

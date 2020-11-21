@@ -23,6 +23,8 @@ using Orts.Formats.Msts;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
+using ORTS.Scripting.Api;
+using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
 
@@ -33,6 +35,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         // These constants are from ETCS specification
         const int Width = 280;
         const int Height = 300;
+        readonly float NoGaugeAngle = MathHelper.ToRadians(-150); // Special angle when gauge must not be shown
         readonly float StartAngle = MathHelper.ToRadians(-144);
         readonly float EndAngle = MathHelper.ToRadians(144);
         readonly float MidAngle = MathHelper.ToRadians(48);
@@ -282,8 +285,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 var unitPosition = new Point((int)(UnitCenterPosition[0] - FontDialSpeeds.MeasureString(Unit) / Scale / 2f), (int)(UnitCenterPosition[1] - textHeight / 2f));
                 DialSpeeds.Add(new TextPrimitive(unitPosition, Color.White, Unit, FontDialSpeeds));
             }
-
-            Active = true;
         }
 
         /// <summary>
@@ -311,28 +312,72 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             y = -(float)(radius * Math.Cos(angle) - Height / 2);
         }
 
-        private void SetData(float currentSpeed, int permittedSpeed, int targetSpeed, int releaseSpeed, float interventionSpeed, ORTS.Scripting.Api.MonitoringStatus status)
+        private void SetData(ETCSStatus status)
         {
+            Active = status.SpeedAreaShown;
+            if (!Active) return;
+            float currentSpeed = Math.Abs(SpeedFromMpS(Locomotive.SpeedMpS));
+            int permittedSpeed = (int)SpeedFromMpS(status.AllowedSpeedMpS);
+            int targetSpeed = (int)SpeedFromMpS(status.TargetSpeedMpS ?? float.MaxValue);
+            int releaseSpeed = (int)SpeedFromMpS(status.ReleaseSpeedMpS ?? 0);
+            float interventionSpeed = SpeedFromMpS(status.InterventionSpeedMpS);
+
             if (interventionSpeed < permittedSpeed && interventionSpeed < releaseSpeed)
                 interventionSpeed = Math.Max(permittedSpeed, releaseSpeed);
             if (currentSpeed > permittedSpeed && currentSpeed > interventionSpeed)
                 interventionSpeed = Math.Max(currentSpeed - 1, releaseSpeed);
 
-            switch (status)
+            if (status.CurrentMode == Mode.SB || status.CurrentMode == Mode.NL || status.CurrentMode == Mode.PT)
             {
-                case ORTS.Scripting.Api.MonitoringStatus.Normal:
-                    GaugeColor = targetSpeed < permittedSpeed ? Color.White : ColorDarkGrey;
-                    NeedleColor = ColorMediumGrey; SpeedColor = Color.Black; releaseSpeed = 0; interventionSpeed = permittedSpeed; break;
-                case ORTS.Scripting.Api.MonitoringStatus.Indication: GaugeColor = NeedleColor = Color.White; SpeedColor = Color.Black; interventionSpeed = permittedSpeed; break;
-                case ORTS.Scripting.Api.MonitoringStatus.Overspeed: GaugeColor = NeedleColor = ColorYellow; SpeedColor = Color.Black; interventionSpeed = Math.Max(permittedSpeed, releaseSpeed); break;
-                case ORTS.Scripting.Api.MonitoringStatus.Warning: GaugeColor = ColorYellow; NeedleColor = ColorOrange; SpeedColor = Color.Black; break;
-                case ORTS.Scripting.Api.MonitoringStatus.Intervention: GaugeColor = ColorYellow; NeedleColor = ColorRed; SpeedColor = Color.White; break;
+                NeedleColor = ColorGrey;
+            }
+            else if (status.CurrentMode == Mode.TR)
+            {
+                NeedleColor = ColorRed;
+            }
+            else if (status.CurrentMode == Mode.SH || status.CurrentMode == Mode.RV)
+            {
+                if (currentSpeed <= permittedSpeed) NeedleColor = ColorGrey;
+                else NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+            }
+            else if (status.CurrentMode == Mode.SR || status.CurrentMode == Mode.UN)
+            {
+                if (currentSpeed > permittedSpeed) NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+                else if (status.CurrentMonitor == Monitor.TargetSpeed) NeedleColor = currentSpeed < targetSpeed ? ColorGrey : ColorYellow;
+                else if (targetSpeed < permittedSpeed && currentSpeed >= targetSpeed) NeedleColor = Color.White;
+                else NeedleColor = ColorGrey;
+            }
+            else if (status.CurrentMode == Mode.LS)
+            {
+                if (currentSpeed > permittedSpeed) NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+                else if (status.CurrentMonitor == Monitor.ReleaseSpeed) NeedleColor = ColorYellow;
+                else NeedleColor = ColorGrey;
+            }
+            else if (status.CurrentMode == Mode.FS || status.CurrentMode == Mode.OS)
+            {
+                if (currentSpeed > permittedSpeed) NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+                else if (status.CurrentMonitor == Monitor.TargetSpeed || status.CurrentMonitor == Monitor.ReleaseSpeed) NeedleColor = currentSpeed < targetSpeed ? ColorGrey : ColorYellow;
+                else if (targetSpeed < permittedSpeed && currentSpeed >= targetSpeed) NeedleColor = Color.White;
+                else NeedleColor = ColorGrey;
+            }
+            SpeedColor = NeedleColor == ColorRed ? Color.White : Color.Black;
+            if (status.CurrentMode == Mode.FS)
+            {
+                GaugeColor = status.CurrentMonitor == Monitor.TargetSpeed || status.CurrentMonitor == Monitor.ReleaseSpeed ? ColorYellow : Color.White;
+                if (status.CurrentSupervisionStatus != SupervisionStatus.Warning && status.CurrentSupervisionStatus != SupervisionStatus.Warning && status.CurrentSupervisionStatus != SupervisionStatus.Intervention)
+                    interventionSpeed = Math.Max(releaseSpeed, permittedSpeed);
+
+                var shaderAngles = new Vector4(Speed2Angle(targetSpeed), Speed2Angle(permittedSpeed), Speed2Angle(interventionSpeed), Speed2Angle(releaseSpeed));
+                Shader.SetData(shaderAngles, GaugeColor, NeedleColor);
+            }
+            else
+            {
+                // CSG not shown
+                var shaderAngles = new Vector4(NoGaugeAngle, NoGaugeAngle, NoGaugeAngle, NoGaugeAngle);
+                Shader.SetData(shaderAngles, GaugeColor, NeedleColor);
             }
 
             CurrentSpeedAngle = Speed2Angle(currentSpeed);
-
-            var shaderAngles = new Vector4(Speed2Angle(targetSpeed), Speed2Angle(permittedSpeed), Speed2Angle(interventionSpeed), Speed2Angle(releaseSpeed));
-            Shader.SetData(shaderAngles, GaugeColor, NeedleColor);
 
             SpeedText = (int)(currentSpeed + (currentSpeed < 1f || currentSpeed < (float)SpeedText ? 0.99999f : 0.49999f));
 
@@ -345,10 +390,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             ReleaseSpeed.Text = releaseSpeed > 0 ? releaseSpeed.ToString() : String.Empty;
         }
 
+        public void PrepareFrame(ETCSStatus status)
+        {
+            SetData(status);
+        }
         public void PrepareFrame()
         {
-            var tcs = Locomotive.TrainControlSystem;
-            SetData(Math.Abs(SpeedFromMpS(Locomotive.SpeedMpS)), (int)SpeedFromMpS(tcs.CurrentSpeedLimitMpS), (int)SpeedFromMpS(tcs.NextSpeedLimitMpS), 0, SpeedFromMpS(tcs.InterventionSpeedLimitMpS), tcs.MonitoringStatus);
+            ETCSStatus s = Locomotive.TrainControlSystem.ETCSStatus?.Clone(); // Clone the status class so everything can be accessed safely
+            if (s == null || !s.DMIActive) return;
+            SetData(s);
         }
 
         public void Draw(SpriteBatch spriteBatch, Point position)
@@ -370,9 +420,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
             foreach (var lines in DialLineCoords)
             {
-                x = position.X + (int)(lines.X * Scale);
-                y = position.Y + (int)(lines.Y * Scale);
-                var length = (int)(lines.Z * Scale);
+                x = position.X + (int)Math.Round(lines.X * Scale);
+                y = position.Y + (int)Math.Round(lines.Y * Scale);
+                var length = (int)Math.Round(lines.Z * Scale);
                 spriteBatch.Draw(ColorTexture, new Rectangle(x, y, length, 1), null, Color.White, lines.W, new Vector2(0, 0), SpriteEffects.None, 0);
             }
 

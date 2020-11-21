@@ -28,9 +28,11 @@ using ORTS.Scripting.Api.ETCS;
 
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 {
+    // Compliant with ERA_ERTMS_015560 version 3.6.0 (ETCS DRIVER MACHINE INTERFACE)
     public class PlanningWindow
     {
         public List<PlanningTarget> SpeedTargets = new List<PlanningTarget>();
+        public List<PlanningTrackCondition> TrackConditions = new List<PlanningTrackCondition>();
         PlanningTarget? IndicationMarkerTarget;
         float? IndicationMarkerDistanceM;
         public List<GradientProfileElement> GradientProfile = new List<GradientProfileElement>();
@@ -55,16 +57,20 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         Texture2D YellowSpeedReductionTexture;
         Texture2D SpeedIncreaseTexture;
 
+        Dictionary<int, Texture2D> TrackConditionTextures = new Dictionary<int, Texture2D>();
+
         List<TextPrimitive> DistanceText = new List<TextPrimitive>();
         WindowTextFont FontDistance;
         WindowTextFont FontTargetSpeed;
         WindowTextFont FontGradient;
-        const float FontHeightDistance = 16;
+        const float FontHeightDistance = 10;
         const float FontHeightTargetSpeed = 10;
         const float FontHeightGradient = 10;
 
         readonly int[] LinePositions = { 283, 250, 206, 182, 164, 150, 107, 64, 21 };
         readonly int[] LineDistances = { 0, 25, 50, 75, 100, 125, 250, 500, 1000 };
+
+        readonly int[] TrackConditionPositions = { 55, 80, 105 };
 
         public float Scale = 1;
 
@@ -75,6 +81,12 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             SpeedIncreaseTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_21.png"));
             SpeedReductionTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_22.png"));
             YellowSpeedReductionTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_23.png"));
+            for (int i=1; i<37; i++)
+            {
+                if (i == 21) i = 24;
+                Texture2D tex = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_" + (i < 10 ? "0" : "") + i + ".png"));
+                TrackConditionTextures.Add(i, tex);
+            }
 
             SetFont();
             SetDistanceText();
@@ -105,6 +117,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DrawPASP(spriteBatch, new Point(position.X + (int)(133*Scale), position.Y + (int)(15*Scale)));
 
             DrawTargetSpeeds(spriteBatch, new Point(position.X + (int)(133 * Scale), position.Y + (int)(15 * Scale)));
+
+            DrawTrackConditions(spriteBatch, new Point(position.X + (int)(0 * Scale), position.Y + (int)(15 * Scale)));
 
             for (int i = 0; i < 9; i++)
             {
@@ -211,6 +225,69 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
         }
 
+        void DrawTrackConditions(SpriteBatch spriteBatch, Point position)
+        {
+            int[] prevObject = { LinePositions[0] + 10, LinePositions[0] + 10, LinePositions[0] + 10 };
+            for (int i = 0; i < TrackConditions.Count; i++)
+            {
+                PlanningTrackCondition condition = TrackConditions[i];
+                int posy = GetPlanningHeight(condition.DistanceToTrainM) - 10;
+                int row = i % 3;
+                if (condition.DistanceToTrainM > MaxViewingDistanceM || condition.DistanceToTrainM < 0 || prevObject[row] - posy < 20) continue;
+                prevObject[row] = posy;
+                Texture2D tex;
+                switch(condition.Type)
+                {
+                    case TrackConditionType.LowerPantograph:
+                        tex = TrackConditionTextures[condition.YellowColour ? 2 : 1];
+                        break;
+                    case TrackConditionType.RaisePantograph:
+                        tex = TrackConditionTextures[condition.YellowColour ? 4 : 3];
+                        break;
+                    case TrackConditionType.NeutralSectionAnnouncement:
+                        tex = TrackConditionTextures[condition.YellowColour ? 6 : 5];
+                        break;
+                    case TrackConditionType.EndOfNeutralSection:
+                        tex = TrackConditionTextures[condition.YellowColour ? 8 : 7];
+                        break;
+                    case TrackConditionType.NonStoppingArea:
+                        tex = TrackConditionTextures[9];
+                        break;
+                    case TrackConditionType.RadioHole:
+                        tex = TrackConditionTextures[10];
+                        break;
+                    case TrackConditionType.MagneticShoeInhibition:
+                        tex = TrackConditionTextures[condition.YellowColour ? 12 : 11];
+                        break;
+                    case TrackConditionType.EddyCurrentBrakeInhibition:
+                        tex = TrackConditionTextures[condition.YellowColour ? 14 : 13];
+                        break;
+                    case TrackConditionType.RegenerativeBrakeInhibition:
+                        tex = TrackConditionTextures[condition.YellowColour ? 16 : 15];
+                        break;
+                    case TrackConditionType.CloseAirIntake:
+                        tex = TrackConditionTextures[condition.YellowColour ? 19 : 17];
+                        break;
+                    case TrackConditionType.OpenAirIntake:
+                        tex = TrackConditionTextures[condition.YellowColour ? 20 : 18];
+                        break;
+                    case TrackConditionType.SoundHorn:
+                        tex = TrackConditionTextures[24];
+                        break;
+                    case TrackConditionType.TractionSystemChange:
+                        switch(condition.TractionSystem)
+                        {
+                            default:
+                                continue; // TODO
+                        }
+                        break;
+                    default:
+                        continue;
+                }
+                spriteBatch.Draw(tex, ScaledRectangle(position, TrackConditionPositions[row], posy, 20, 20), Color.White);
+            }
+        }
+
         void DrawGradient(SpriteBatch spriteBatch, Point position)
         {
             for (int i = 0; i + 1 < GradientProfile.Count; i++)
@@ -281,6 +358,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 IndicationMarkerTarget = status.IndicationMarkerTarget;
                 IndicationMarkerDistanceM = status.IndicationMarkerDistanceM;
                 GradientProfile = status.GradientProfile;
+                TrackConditions = status.PlanningTrackConditions;
             }
         }
 
@@ -309,7 +387,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 if (i == 0 || i > 4)
                 {
                     string distance = (LineDistances[i] * MaxViewingDistanceM / 1000).ToString();
-                    Point unitPosition = new Point((int)(39 - FontDistance.MeasureString(distance) / Scale), (int)(LinePositions[i] - textHeight / 2f));
+                    Point unitPosition = new Point((int)(40 - 2 - FontDistance.MeasureString(distance) / Scale), (int)(LinePositions[i] - textHeight / 2f));
                     DistanceText.Add(new TextPrimitive(unitPosition, ColorMediumGrey, distance, FontDistance));
                 }
             }

@@ -27,7 +27,7 @@ namespace ORTS.Scripting.Api
     {
         public bool Activated { get; set; }
 
-        public ETCSStatus ETCSStatus;
+        public readonly ETCSStatus ETCSStatus = new ETCSStatus();
 
         /// <summary>
         /// True if train control is switched on (the locomotive is the lead locomotive and the train is not autopiloted).
@@ -645,52 +645,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         Intervention,
     }
-
-    /// <summary>
-    /// Monitoring status of ETCS
-    /// </summary>
-    /*public enum MonitoringStatus2
-    {
-        /// <summary>
-        /// No speed restriction ahead, a fixed speed is supervised.
-        /// </summary>
-        CeilingSpeed,
-        /// <summary>
-        /// A target speed is being supervised.
-        /// </summary>
-        TargetSpeed,
-        /// <summary>
-        /// A release speed is supervised while approaching a zero speed target
-        /// </summary>
-        ReleaseSpeed
-    }
-
-    /// <summary>
-    /// Controls supervision status of ETCS
-    /// </summary>
-    public enum SupervisionStatus
-    {
-        /// <summary>
-        /// Grey color. No speed restriction is ahead.
-        /// </summary>
-        Normal,
-        /// <summary>
-        /// Yellow color. Next signal is restricted, driver should start decreasing speed.
-        /// </summary>
-        Indication,
-        /// <summary>
-        /// Orange color. The locomotive is over the permitted supervision limit.
-        /// </summary>
-        Overspeed,
-        /// <summary>
-        /// Orange color. Computer is close to apply brakes, audible warning is played.
-        /// </summary>
-        Warning,
-        /// <summary>
-        /// Red color. Train control system intervention speed. Computer has to apply full service or emergency brake to maintain speed restriction.
-        /// </summary>
-        Intervention
-    }*/
 
     public struct SignalFeatures
     {
