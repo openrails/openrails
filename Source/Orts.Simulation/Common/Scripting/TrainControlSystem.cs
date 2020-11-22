@@ -593,13 +593,15 @@ namespace ORTS.Scripting.Api
         public readonly Aspect Aspect;
         public readonly float DistanceM;
         public readonly float SpeedLimitMpS;
+        public readonly float AltitudeOrLengthM;
 
-        public SignalFeatures(string mainHeadSignalTypeName, Aspect aspect, float distanceM, float speedLimitMpS)
+        public SignalFeatures(string mainHeadSignalTypeName, Aspect aspect, float distanceM, float speedLimitMpS, float altitudeOrLengthM)
         {
             MainHeadSignalTypeName = mainHeadSignalTypeName;
             Aspect = aspect;
             DistanceM = distanceM;
             SpeedLimitMpS = speedLimitMpS;
+            AltitudeOrLengthM = altitudeOrLengthM;
         }
     }
 }
