@@ -38,8 +38,19 @@ namespace Orts.Viewer3D.RollingStock
             if (ElectricLocomotive.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
                 ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
                 (car.Train.MUDirection != Direction.N && ElectricLocomotive.PowerOn))))
+                // following reactivates the sound triggers related to certain states
+                // for pantos the sound trigger related to the raised panto must be reactivated, else SignalEvent() would raise also another panto
             {
-                ElectricLocomotive.SignalEvent(Event.Pantograph1Up);
+                var iPanto = 0;
+                foreach (var panto in ElectricLocomotive.Pantographs.List)
+                {
+                    if (panto.State == ORTS.Scripting.Api.PantographState.Up)
+                    {
+                        ElectricLocomotive.SignalEvent((Event)((int)Event.Pantograph1Up + 2 * iPanto));
+                        break;
+                    }
+                    iPanto++;
+                }
                 ElectricLocomotive.SignalEvent(Event.EnginePowerOn);
                 ElectricLocomotive.SignalEvent(Event.ReverserToForwardBackward);
                 ElectricLocomotive.SignalEvent(Event.ReverserChange);
