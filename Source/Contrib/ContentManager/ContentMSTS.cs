@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using ORTS.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -79,18 +78,10 @@ namespace ORTS.ContentManager
             }
             else if (type == ContentType.Consist)
             {
-                foreach (var item in VehicleListUtilities.AllVehicleLists(PathName))
-                {
-                    switch (Path.GetExtension(item).ToLowerInvariant())
-                    {
-                        case ".train-or":
-                            yield return new ContentORTSTrain(this, item);
-                            break;
-                        case ".con":
-                            yield return new ContentMSTSConsist(this, item);
-                            break;
-                    }
-                }
+                var path = Path.Combine(Path.Combine(PathName, "Trains"), "Consists");
+                if (Directory.Exists(path))
+                    foreach (var item in Directory.GetFiles(path, "*.con"))
+                        yield return new ContentMSTSConsist(this, Path.Combine(path, item));
             }
         }
 

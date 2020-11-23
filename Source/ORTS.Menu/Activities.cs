@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.IO;
 using GNU.Gettext;
 using Orts.Formats.Msts;
-using ORTS.Content;
 using ORTS.Settings;
 
 namespace ORTS.Menu
@@ -35,13 +34,13 @@ namespace ORTS.Menu
         public readonly WeatherType Weather = WeatherType.Clear;
         public readonly Difficulty Difficulty = Difficulty.Easy;
         public readonly Duration Duration = new Duration(1, 0);
-        public readonly Consist Consist = new Consist("unknown", null, null);
+        public readonly Consist Consist = new Consist("unknown", null);
         public readonly Path Path = new Path("unknown");
         public readonly string FilePath;
 
         GettextResourceManager catalog = new GettextResourceManager("ORTS.Menu");
 
-        protected Activity(string filePath, Folder folder, IList<Folder> allFolders, Route route)
+        protected Activity(string filePath, Folder folder, Route route)
         {
             if (filePath == null && this is DefaultExploreActivity)
             {
@@ -70,7 +69,7 @@ namespace ORTS.Menu
                         Weather = actFile.Tr_Activity.Tr_Activity_Header.Weather;
                         Difficulty = actFile.Tr_Activity.Tr_Activity_Header.Difficulty;
                         Duration = actFile.Tr_Activity.Tr_Activity_Header.Duration;
-                        Consist = new Consist(VehicleListUtilities.ResolveVehicleList(folder.Path, srvFile.Train_Config), folder, allFolders);
+                        Consist = new Consist(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(folder.Path, "TRAINS"), "CONSISTS"), srvFile.Train_Config + ".con"), folder);
                         Path = new Path(System.IO.Path.Combine(System.IO.Path.Combine(route.Path, "PATHS"), srvFile.PathID + ".pat"));
                         if (!Path.IsPlayerPath)
                         {
@@ -102,7 +101,7 @@ namespace ORTS.Menu
             return Name;
         }
 
-        public static List<Activity> GetActivities(Folder folder, IList<Folder> allFolders, Route route)
+        public static List<Activity> GetActivities(Folder folder, Route route)
         {
             var activities = new List<Activity>();
             if (route != null)
@@ -116,7 +115,7 @@ namespace ORTS.Menu
                     {
                         try
                         {
-                            activities.Add(new Activity(activityFile, folder, allFolders, route));
+                            activities.Add(new Activity(activityFile, folder, route));
                         }
                         catch { }
                     }
@@ -131,11 +130,11 @@ namespace ORTS.Menu
         public new string StartTime;
         public new SeasonType Season = SeasonType.Summer;
         public new WeatherType Weather = WeatherType.Clear;
-        public new Consist Consist = new Consist("unknown", null, null);
+        public new Consist Consist = new Consist("unknown", null);
         public new Path Path = new Path("unknown");
 
         internal ExploreActivity()
-            : base(null, null, null, null)
+            : base(null, null, null)
         {
         }
     }

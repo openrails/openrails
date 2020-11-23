@@ -37,13 +37,11 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Timetables;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
-using ORTS.Content;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Orts.Simulation.Simulation;
 
 namespace Orts.Simulation.AIs
 {
@@ -849,7 +847,8 @@ namespace Orts.Simulation.AIs
         {
             // read consist file
 
-            var trainFile = VehicleListLoader.LoadFile(Simulator.BasePath, srvFile.Train_Config);
+            string consistFileName = Simulator.BasePath + @"\TRAINS\CONSISTS\" + srvFile.Train_Config + ".CON";
+            ConsistFile conFile = new ConsistFile(consistFileName);
             string pathFileName = Simulator.RoutePath + @"\PATHS\" + srvFile.PathID + ".PAT";
 
             // Patch Placingproblem - JeroenP
@@ -867,66 +866,86 @@ namespace Orts.Simulation.AIs
                 return null;
             }
 
-            float maxVelocityMpS = trainFile.MaxVelocityMpS ?? 0f;
+            float maxVelocityA = conFile.Train.TrainCfg.MaxVelocity.A;
             // sd.Name is the name of the service file.
             // srvFile.Name points to the name of the service within the Name() category such as Name ( "Eastbound Freight Train" ) in the service file.
-            AITrain train = new AITrain(Simulator, sd, this, aiPath, srvFile.Efficiency, srvFile.Name, trfDef, maxVelocityMpS);
+            AITrain train = new AITrain(Simulator, sd, this, aiPath, srvFile.Efficiency, srvFile.Name, trfDef, maxVelocityA);
             Simulator.TrainDictionary.Add(train.Number, train);
 
             if (!Simulator.NameDictionary.ContainsKey(train.Name.ToLower()))
                 Simulator.NameDictionary.Add(train.Name.ToLower(), train);
 
-            train.IsTilting = trainFile.IsTilting;
+            if (consistFileName.Contains("tilted")) train.IsTilting = true;
 
             // also set Route max speed for speedpost-processing in train.cs
             train.TrainMaxSpeedMpS = (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
 
             train.InitialSpeed = srvFile.TimeTable.InitialSpeed;
 
-            if (maxVelocityMpS > 0 && train.Efficiency > 0)
+            if (maxVelocityA > 0 && train.Efficiency > 0)
             {
                 // <CScomment> this is overridden if there are station stops
-                train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityMpS * train.Efficiency);
+                train.TrainMaxSpeedMpS = Math.Min(train.TrainMaxSpeedMpS, maxVelocityA * train.Efficiency);
             }
 
             // add wagons
             train.Length = 0.0f;
-            IEnumerable<TrainCar> cars;
-            if (isInitialPlayerTrain && Simulator.PreferredLocomotive != null)
-                cars = trainFile.LoadCars(Simulator, playerTrain: true, preference: Simulator.PreferredLocomotive);
-            else
-                cars = trainFile.LoadCars(Simulator, playerTrain: isInitialPlayerTrain);
-            foreach (var car in cars)
+            foreach (Wagon wagon in conFile.Train.TrainCfg.WagonList)
             {
-                train.Cars.Add(car);
-                car.Train = train;
-                train.Length += car.CarLengthM;
-                if (isInitialPlayerTrain)
-                {
-                    Simulator.PathName = aiPath.pathName;
-                    if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
-                    else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
-                    var mstsDieselLocomotive = car as MSTSDieselLocomotive;
-                    if (Simulator.Activity != null && mstsDieselLocomotive != null)
-                        mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
 
-                    var mstsSteamLocomotive = car as MSTSSteamLocomotive;
-                    if (Simulator.Activity != null && mstsSteamLocomotive != null)
+                string wagonFolder = Simulator.BasePath + @"\trains\trainset\" + wagon.Folder;
+                string wagonFilePath = wagonFolder + @"\" + wagon.Name + ".wag";
+                ;
+                if (wagon.IsEngine)
+                    wagonFilePath = Path.ChangeExtension(wagonFilePath, ".eng");
+
+                if (!File.Exists(wagonFilePath))
+                {
+                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonFilePath, consistFileName);
+                    continue;
+                }
+
+                try
+                {
+                    TrainCar car = RollingStock.Load(Simulator, wagonFilePath);
+                    car.Flipped = wagon.Flip;
+                    train.Cars.Add(car);
+                    car.Train = train;
+                    train.Length += car.CarLengthM;
+                    car.UiD = wagon.UiD;
+                    if (isInitialPlayerTrain)
                     {
-                        mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (ORTS.Common.Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
-                        mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+                        Simulator.PathName = aiPath.pathName;
+                        if (MPManager.IsMultiPlayer()) car.CarID = MPManager.GetUserName() + " - " + car.UiD; //player's train is always named train 0.
+                        else car.CarID = "0 - " + car.UiD; //player's train is always named train 0.
+                        var mstsDieselLocomotive = car as MSTSDieselLocomotive;
+                        if (Simulator.Activity != null && mstsDieselLocomotive != null)
+                            mstsDieselLocomotive.DieselLevelL = mstsDieselLocomotive.MaxDieselLevelL * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelDiesel / 100.0f;
+
+                        var mstsSteamLocomotive = car as MSTSSteamLocomotive;
+                        if (Simulator.Activity != null && mstsSteamLocomotive != null)
+                        {
+                            mstsSteamLocomotive.CombinedTenderWaterVolumeUKG = (ORTS.Common.Kg.ToLb(mstsSteamLocomotive.MaxLocoTenderWaterMassKG) / 10.0f) * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelWater / 100.0f;
+                            mstsSteamLocomotive.TenderCoalMassKG = mstsSteamLocomotive.MaxTenderCoalMassKG * Simulator.Activity.Tr_Activity.Tr_Activity_Header.FuelCoal / 100.0f;
+                        }
+                        if (train.InitialSpeed != 0)
+                            car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
                     }
-                    if (train.InitialSpeed != 0)
+                    else
+                    {
                         car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
+                        car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
+                    }
+
+                    // associate location events
+                    Simulator.ActivityRun.AssociateEvents(train);
+
                 }
-                else
+                catch (Exception error)
                 {
-                    car.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
-                    car.CarID = "AI" + train.Number.ToString() + " - " + (train.Cars.Count - 1).ToString();
+                    Trace.WriteLine(new FileLoadException(wagonFilePath, error));
                 }
 
-                // associate location events
-                Simulator.ActivityRun.AssociateEvents(train);
             }// for each rail car
 
             if (train.Cars.Count <= 0)

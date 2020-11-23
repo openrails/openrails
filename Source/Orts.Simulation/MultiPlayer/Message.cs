@@ -264,7 +264,6 @@ namespace Orts.MultiPlayer
         public string code = "";
         public int num; //train number
         public string con; //consist
-        public bool Tilting { get; } = false;
         public string path; //path consist and path will always be double quoted
         public string route;
         public int dir; //direction
@@ -287,7 +286,6 @@ namespace Orts.MultiPlayer
         public MSGPlayer() { }
         public MSGPlayer(string m)
         {
-            // To preserve backwards compatibility with the public server at tsimserver.com, it is important not to change the beginning of this message.
             string[] areas = m.Split('\r');
             if (areas.Length <= 6)
             {
@@ -321,15 +319,24 @@ namespace Orts.MultiPlayer
                 frontorrearcab = data[16];
                 headlight = int.Parse(data[17]);
                 //user = areas[0].Trim();
-                con = Path.GetFileName(areas[2].Trim());
-                route = Path.GetFileName(areas[3].Trim());
+                con = areas[2].Trim();
+                route = areas[3].Trim();
                 path = areas[4].Trim();
                 dir = int.Parse(areas[5].Trim());
                 url = areas[6].Trim();
                 ParseTrainCars(areas[7].Trim());
                 leadingID = areas[1].Trim();
-                if (areas.Length >= 9)
-                    version = int.Parse(areas[8]);
+                int index = path.LastIndexOf("\\PATHS\\", StringComparison.OrdinalIgnoreCase);
+                if (index > 0)
+                {
+                    path = path.Remove(0, index + 7);
+                }
+                index = con.LastIndexOf("\\CONSISTS\\", StringComparison.OrdinalIgnoreCase);
+                if (index > 0)
+                {
+                    con = con.Remove(0, index + 10);
+                }
+                if (areas.Length >= 9) { version = int.Parse(areas[8]); }
                 if (areas.Length >= 10)
                 {
                     MD5 = areas[9];
@@ -337,13 +344,6 @@ namespace Orts.MultiPlayer
                     {
                         MPManager.Instance().GetMD5HashFromTDBFile();
                     }
-                }
-
-                // We can introduce new fields beyond this point.
-                if (version >= 16)
-                {
-                    if (areas.Length >= 11)
-                        Tilting = bool.Parse(areas[10]);
                 }
             }
             catch (Exception e)
@@ -396,7 +396,6 @@ namespace Orts.MultiPlayer
                 dir = (int)t.RearTDBTraveller.Direction; num = tn; TileX = t.RearTDBTraveller.TileX;
                 TileZ = t.RearTDBTraveller.TileZ; X = t.RearTDBTraveller.X; Z = t.RearTDBTraveller.Z; Travelled = t.DistanceTravelledM;
                 trainmaxspeed = t.TrainMaxSpeedMpS;
-                Tilting = t.IsTilting;
             }
             seconds = (int)MPManager.Simulator.ClockTime; season = (int)MPManager.Simulator.Season; weather = (int)MPManager.Simulator.WeatherType;
             pantofirst = pantosecond = pantothird = pantofourth = 0;
@@ -433,7 +432,6 @@ namespace Orts.MultiPlayer
         }
         public override string ToString()
         {
-            // To preserve backwards compatibility with the public server at tsimserver.com, it is important not to change the beginning of this message.
             string tmp = "PLAYER " + user + " " + code + " " + num + " " + TileX + " " + TileZ + " " + X.ToString(CultureInfo.InvariantCulture) + " " + Z.ToString(CultureInfo.InvariantCulture)
                 + " " + Travelled.ToString(CultureInfo.InvariantCulture) + " " + trainmaxspeed.ToString(CultureInfo.InvariantCulture) + " " + seconds.ToString(CultureInfo.InvariantCulture) + " " + season + " " + weather + " " + pantofirst + " " + pantosecond + " " + pantothird + " " + pantofourth + " " + frontorrearcab + " " + headlight + " \r" +
                 leadingID + "\r" + con + "\r" + route + "\r" + path + "\r" + dir + "\r" + url + "\r";
@@ -450,10 +448,6 @@ namespace Orts.MultiPlayer
             }
 
             tmp += "\r" + MPManager.Instance().version + "\r" + MD5;
-
-            // We can introduce new fields beyond this point.
-            tmp += $"\r{string.Join("\r", Tilting)}";
-
             return " " + tmp.Length + ": " + tmp;
         }
 
@@ -700,7 +694,7 @@ namespace Orts.MultiPlayer
 
             MPManager.Instance().lastPlayerAddedTime = MPManager.Simulator.GameTime;
 
-            MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", MPManager.Simulator.trainFileName, MPManager.Simulator.patFileName, MPManager.Simulator.PlayerLocomotive.Train,
+            MSGPlayer host = new MSGPlayer(MPManager.GetUserName(), "1234", MPManager.Simulator.conFileName, MPManager.Simulator.patFileName, MPManager.Simulator.PlayerLocomotive.Train,
                 MPManager.Simulator.PlayerLocomotive.Train.Number, MPManager.Simulator.Settings.AvatarURL);
             SendToPlayer(p, host.ToString() + MPManager.OnlineTrains.AddAllPlayerTrain());
 

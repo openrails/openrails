@@ -15,8 +15,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+
 using Orts.Formats.Msts;
-using Orts.Formats.OR;
 
 namespace ContentChecker
 {
@@ -30,19 +35,9 @@ namespace ContentChecker
         /// Possibly this might raise an exception. That exception is not caught here
         /// </summary>
         /// <param name="file">The file that needs to be loaded</param>
-        public override void TryLoading(string file) => new ConsistFile(file);
-    }
-
-    /// <summary>
-    /// Loader class for .train-or files
-    /// </summary>
-    class TrainLoader : Loader
-    {
-        /// <summary>
-        /// Try to load the file.
-        /// Possibly this might raise an exception. That exception is not caught here
-        /// </summary>
-        /// <param name="file">The file that needs to be loaded</param>
-        public override void TryLoading(string file) => TrainFile.LoadFrom(file);
+        public override void TryLoading(string file)
+        {
+            var act = new ConsistFile(file);
+        }
     }
 }
