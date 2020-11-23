@@ -1996,6 +1996,55 @@ brake features.
 Brake system charging time depends on the train length as it should, but
 at the moment there is no modeling of main reservoirs and compressors.
 
+.. _physics-brake-controller:
+
+Train Brake Controller Positions
+--------------------------------
+
+The following notch positions can be defined for the train brake at ``Engine(EngineControllers(Brake_Train``:
+
+.. index::
+   single: TrainBrakesControllerFullQuickReleaseStart
+   single: TrainBrakesControllerReleaseStart
+   single: TrainBrakesControllerOverchageStart
+   single: TrainBrakesControllerApplyStart
+   single: TrainBrakesControllerFullServiceStart
+   single: TrainBrakesControllerHoldStart
+   single: TrainBrakesControllerSelfLapStart
+   single: TrainBrakesControllerRunningStart
+   single: TrainBrakesControllerMinimalReductionStart
+   single: TrainBrakesControllerHoldLappedStart
+   single: TrainBrakesControllerVaccumContinuousServiceStart
+   single: TrainBrakesControllerVaccumApplyContinuousService
+   single: TrainBrakesControllerGraduatedSelfLapLimitedStart
+   single: TrainBrakesControllerGraduatedSelfLapLimitedHoldingStart
+   single: TrainBrakesControllerSuppressionStart
+   single: TrainBrakesControllerContinuousServiceStart
+   single: EPApply
+   single: TrainBrakesControllerEmergencyStart
+   single: Dummy
+   single: ORTSTrainBrakesControllerMaxOverchargePressure
+   single: ORTSTrainBrakesControllerOverchargeEliminationRate
+   single: TrainBrakesControllerMaxApplicationRate
+   single: TrainBrakesControllerMaxQuickReleaseRate
+   single: TrainBrakesControllerMaxReleaseRate
+   single: TrainBrakesControllerMinPressureReduction
+   single: TrainBrakesControllerMaxSystemPressure
+
+- ``FullQuickReleaseStart`` -- Increases pressure in equalizing reservoir (EQ) at a rate proportional to ``TrainBrakesControllerMaxQuickReleaseRate`` and controller position, releasing the brakes.
+- ``ReleaseStart`` -- same as above, but with a rate of ``TrainBrakesControllerMaxReleaseRate``.
+- ``OverchageStart`` -- Increases pressure in EQ over the maximum (``TrainBrakesControllerMaxSystemPressure``), up to ``ORTSTrainBrakesControllerMaxOverchargePressure``, to release stuck distributors. Setting the controller back to a release position will slowly return pressure to nominal value at a rate of ``ORTSTrainBrakesControllerOverchargeEliminationRate``.
+- ``ApplyStart`` -- Starts decreasing pressure in EQ at a rate proportional to ``TrainBrakesControllerMaxApplicationRate`` and controller position, down to full service pressure.
+- ``FullServiceStart`` -- Same as above, but also applies EP brakes if available.
+- ``HoldStart``, ``SelfLapStart`` and ``RunningStart`` -- Keep EQ pressure constant, maintaining brake pipe pressure.
+- ``MinimalReductionStart`` -- If previous notch position was Running, Release or QuickRelease, applies a minimal reduction to brake pipe pressure (defined by ``TrainBrakesControllerMinPressureReduction``).
+- ``HoldLappedStart`` -- Same as above, but isolates brake pipe from EQ reservoir. Brake pipe leakage is not compensated.
+- ``VaccumContinuousServiceStart`` and ``VaccumApplyContinuousService`` -- Set EQ pressure to a value from MaxPressure to 0, proportional to controller position.
+- ``GraduatedSelfLapStart``, ``GraduatedSelfLapHoldingStart`` and ``SuppressionStart`` -- Adjust EQ pressure to a value from (MaxPressure-MinimalReduction) to FullServicePressure, proportional to controller position. Depending on :ref:`Graduated Release Air Brakes <options-general>` option, EQ pressure can be increased to reduce brake application. ``Suppression`` should be a non-smooth notch used to suppress TCS brake application.
+- ``ContinuousServiceStart`` and ``EPApply`` -- Same as above, but also apply EP brakes if available.
+- ``EmergencyStart`` -- Quickly decreases EQ pressure and connects brake pipe to atmosphere, applying maximum braking.
+- ``Dummy`` -- Adjusts EQ pressure to a value from MaxPressure to FullServicePressure, proportional to controller position.
+
 .. _physics-hud-brake:
 
 Brake Shoe Adhesion
@@ -2055,9 +2104,11 @@ For example, in a lot of normal Westinghouse brake systems, a minimum pressure r
 Train Brake Pipe Losses
 -----------------------
 
-The train brake pipe on a train is subject to air losses through leakage at joints, etc. Typically when the brake controller is in the RUNNING position, air pressure is maintained in the pipe from the reservoir. However on some brake systems, especially older ones such as the A6-ET, when the brake controller is in the LAP position the train brkae pipe is isolated from the air reservoir, and hence over time the pipe will suffer pressure drops due to leakages. This will result in the brakes being gradually applied.
+The train brake pipe on a train is subject to air losses through leakage at joints, etc. Typically when the brake controller is in the RUNNING position, air pressure is maintained in the pipe from the reservoir. However on some brake systems, especially older ones such as the A6-ET, when the brake controller is in the LAP position the train brake pipe is isolated from the air reservoir, and hence over time the pipe will suffer pressure drops due to leakages. This will result in the brakes being gradually applied.
 
-More modern brake systems have a self lapping feature which compensates for train brake pipe leakage regardless of the position that the brake controller is in.
+Some brake systems allow small leakage to happen without applying brakes. This can be regulated with the parameter ``ORTSBrakeInsensitivity`` in the WAG file. UIC vehicles are usually insensitive to pressure drop rates lower than 0.3 bar/min. This parameter also prevents brakes being applied while an overcharge in the brake pipe is being eliminated.
+
+More modern systems have a self lapping feature which compensates for train brake pipe leakage regardless of the position that the brake controller is in.
 
 Open Rails models this feature whenever the ``TrainPipeLeakRate`` parameter is defined in the engine section of the ENG file. Typically most railway companies accepted leakage rates of around 5 psi/min in the train brake pipe before some remedial action needed to be undertaken.
 
