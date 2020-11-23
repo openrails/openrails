@@ -91,7 +91,6 @@ namespace Orts.Common
         MirrorOpen, 
         Pantograph1Down,
         PantographToggle,
-        // Don't modify order of next 7 events
         Pantograph1Up,
         Pantograph2Down,
         Pantograph2Up,
@@ -99,7 +98,6 @@ namespace Orts.Common
         Pantograph3Up,
         Pantograph4Down,
         Pantograph4Up,
-        //
         PermissionDenied,
         PermissionGranted,
         PermissionToDepart,
