@@ -18,8 +18,8 @@ Entering the Simulation
 =======================
 
 At the end of the loading phase, you are in the cab of the train you will 
-drive.(Note: some newer locomotives have experimental 3D cabs - if no cab 
-interior display appears, then type ``<Alt+1>`` to display the cab interior.) 
+drive.(Note: some newer locomotives have 3D cabs - if no cab 
+interior display appears, then type ``<Alt+1>`` to switch between 2D and 3D cabs.) 
 Depending on the configuration of the activity (in case of activity mode), 
 your train will be in motion or stopped. To look around in the simulation, you 
 can select different views using the keyboard, as described in 
@@ -85,6 +85,13 @@ motors from motors to generators.
 Blended Dynamic Brake
 ---------------------
 
+.. index::
+   single: MaxApplicationRate
+   single: MaxReleaseRate
+   single: DynamicBrakesDelayTimeBeforeEngaging
+   single: OrtsDynamicBlendingOverride
+   single: OrtsDynamicBlendingForceMatch
+
 Some locomotives have blended dynamic brake, which means that the 
 trainbrake lever also controls the dynamic brake. Currently this is 
 implemented to be MSTS compatible, the dynamic brake force percentage 
@@ -104,7 +111,7 @@ command, if the dynamic brake lever is not at full release position.
 ``Engine()`` block, which makes the dynamic brake system to try to achieve 
 the same brake force as the airbrake would have (even if the airbrake is 
 bailed off), in the current train brake lever position. Example: if the 
-trainbrake has 22 kN brake force at 40% trainbrake setting, then the 
+trainbrake has 22 kN brake force at 40% train brake setting, then the 
 dynamic brake will try to achieve, and maintain 22 kN braking force, instead 
 of just setting 40% dynamic brake percentage.
 
@@ -172,6 +179,19 @@ how OR behaves. They are listed in the
 
 The following information is displayed in the basic display:
 
+.. index::
+   single: version
+   single: time
+   single: speed
+   single: gradient
+   single: direction
+   single: throttle
+   single: train brake
+   single: engine brake
+   single: dynamic brake
+   single: fps
+
+
 - Version = The version of the Open Rails software you are running
 - Time = Game time of the Activity
 - Speed = the speed in Miles/Hr. or Kilometers/Hr.
@@ -194,7 +214,7 @@ The following information is displayed in the basic display:
 - Engine = shows the running status of the engine. 
   In case of a gear-based engine, after the ``Engine`` line a ``Gear`` line 
   appears displaying the actual gear. ``N`` means no gear inserted.
-- FPS = Number of Frames rendered per second
+- FPS = Number of frames rendered per second
 
 When applicable, an additional line indicationg whether Autopilot is active or not 
 will be shown.
@@ -281,8 +301,8 @@ selected by clicking with the mouse on the desired heading:
   :align: center
   :scale: 80%
 
-``Briefing``: displays what the activity creator has entered as information 
-to be provided to the player about the activity:
+``Briefing``: displays what the activity or timetable creator has entered as information 
+to be provided to the player:
 
 .. image:: images/driving-briefing.png
   :align: center
@@ -292,7 +312,7 @@ to be provided to the player about the activity:
 and actual times of arrival and departure. During the activity the actual 
 performance will be shown on the F10 :ref:`Activity Monitor <driving-activity>`.
 
-``Work Orders``: if defined by the activity creator, lists the coupling and 
+``Work Orders``: if defined by the activity or timetable creator, lists the coupling and 
 uncoupling operations to be performed. When an operation has been 
 completed, the string ``Done`` appears in the last column:
 
@@ -387,14 +407,26 @@ the texts do not overlap. As a result, only the first object is always
 shown at the correct position, all other objects are as close to their 
 position as allowed by other objects closer to the train.
 
+Pressing ``<Shift+F4>`` toggles the Track Monitor's *immersive mode*. In this 
+mode, the window conceals upcoming signal aspects and upcoming signal speed 
+limits and does not display upcoming diverging switches. However, it retains 
+the locations of signals, mileposts, permanent speed limits, sidings, and 
+stations. This level of assistance reflects the route knowledge that a train 
+driver could be expected to know by memory.
+
 F6 Siding and Platform Names
 ----------------------------
 
-Hit the ``<F6>`` key to bring up the siding and platform names within a 
-region. These can be crowded so hitting ``<Shift+F6>`` will cycle 
-through showing platforms only, sidings only, and both.
+Hit the ``<F6>`` key to reveal labels naming the siding and platforms.
+Hit it again to hide them.
 
-Hitting ``<F6>`` again removes both siding and platform names.
+Items more distant will show more faded and platforms disappear altogether if more than 1km away from the user; 
+sidings disappear if more than 0.5km away.
+
+Use ``<Shift+F6>`` to cycle through platforms only (in yellow), sidings only (in orange), and both together.
+
+If the user is in Activity Mode or Timetable Mode, then a 4th step is added to the cycle and this step removes
+any labels not relevant to the activity or timetable.
 
 .. image:: images/driving-siding-names.png
 
@@ -1210,24 +1242,26 @@ depressed.
 
 The commands for each of the views are described below.
 
-- Key ``<1>`` opens the 2D driver's view from the interior of the controlling 
-  cab of the player locomotive. The 2D view can be cycled between the fixed 
-  left, front, and right views with the ``<Left>`` and ``<Right>`` arrow keys. 
-  The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
-  constructed from three 2D images, so the actual camera position can only be 
-  modified by editing the contents of the .cvf file.) If there is a mismatch 
-  between the aspect ratio of the (optionally stretched) cab and the aspect 
-  ratio of the monitor, OR will clip the cab and show only the portion that fits 
-  within the display, as described in 
-  :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
-  to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
-  and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
-  which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
-  without a clip and cover the remaining space with black bars.
-- Key ``<Alt+1>`` opens the 3D driver's view (if the locomotive has a 3D 
-  cabview file) from the interior of the controlling cab of the player 
-  locomotive. The camera position and view direction are fully player 
-  controllable.
+* Key ``<1>`` opens the driver's view from the interior of the controlling 
+  cab of the player locomotive.
+
+  - In case the 2D view is selected, the 2D view can be cycled between the fixed 
+    left, front, and right views with the ``<Left>`` and ``<Right>`` arrow keys. 
+    The cab itself can be hidden with the ``<Shift+1>`` key. (The 2D view is 
+    constructed from three 2D images, so the actual camera position can only be 
+    modified by editing the contents of the .cvf file.) If there is a mismatch 
+    between the aspect ratio of the (optionally stretched) cab and the aspect 
+    ratio of the monitor, OR will clip the cab and show only the portion that fits 
+    within the display, as described in 
+    :ref:`2D cab stretching <options-cab-stretch>`. This clip can be panned around 
+    to reveal the rest of the cab with the ``<Up>``, ``<Down>``, ``<Alt+Left>``, 
+    and ``<Alt+Right>`` keys. Alternatively, if placed into letterboxing mode, 
+    which activates with the ``<Ctrl+1>`` key, OR will render the full cab 
+    without a clip and cover the remaining space with black bars.
+  - In case the 3D view is selected, the camera position and view direction are fully player 
+    controllable.
+
+- Key ``<Alt+1>`` switches between 2D and 3D cabs if both are available.
 - The entire cab view can be moved to other cabs (if available) in the player 
   train by successive presses of ``<Ctrl+E>``; the train must be stopped and the 
   direction switch in Neutral.
@@ -1359,6 +1393,9 @@ Modifying the Game Environment
 
 Time of Day
 -----------
+
+.. index::
+   single: StartTime
 
 In activity mode Open Rails software reads the StartTime from the MSTS 
 .act file to determine what the game time is for the activity. In 
@@ -1876,7 +1913,7 @@ A detailed explanation of the various columns follows:
 
     - SIGN (signal)
     - NODE
-    - MAN: train is in manual mode (only player train, see here)
+    - MAN: train is in manual mode (only player train, see :ref:`here <operation-manual-mode>`)
     - OOC: train is out of control
     - EXPL: train is in explorer mode (only player train)
       When relevant, this field also shows delay (in minutes), e.g. S+05 
@@ -2003,6 +2040,9 @@ A wide variety of parameters is shown, from frame wait and render speeds
 in milliseconds, to number of primitives, Process Thread resource 
 utilization and number of Logical CPUs from the system's bios. They are 
 very useful in case of OR stuttering, to find out where the bottleneck is.
+
+.. index::
+   single: tile
 
 The values in the ``Camera`` line refer to the two tile coordinates and to 
 the three coordinates within the tile.

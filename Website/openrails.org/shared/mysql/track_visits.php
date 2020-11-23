@@ -56,7 +56,13 @@ $made_to = str_replace($path, '/', $folder); // Remove leading filepath to leave
 $made_to = str_replace('//', '/', $made_to); // home page is just '/', but other pages begin with '//' which must become single.
 
 // In a timestamp field, NULL is replaced by current time automatically.
-$sql = "INSERT INTO tVisit (made_by, made_to, visited_on) VALUES('$id', '$made_to', NULL)"; 
-#echo "<br>$sql<br>";
+//$sql = "INSERT INTO tVisit (made_by, made_to, visited_on) VALUES('$id', '$made_to', NULL)";
+// But not on this server, so ask PHP for the date and time.
+$now = date("Y-m-d H:i:s"); 
+
+/* DISABLED as leading to a 500 Server Error
+$sql = "INSERT INTO tVisit (made_by, made_to, visited_on) VALUES('$id', '$made_to', '$now')"; 
+echo "<br>$sql<br>";
 if (!mysqli_query($dbc, $sql)) { die('Error: ' . mysqli_error($dbc)); }
+*/
 ?>

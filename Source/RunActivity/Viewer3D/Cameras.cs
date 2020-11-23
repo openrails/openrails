@@ -1066,7 +1066,7 @@ namespace Orts.Viewer3D
                 {
                     SetCameraCar(GetCameraCars().First());
                     browsedTraveller = new Traveller(attachedCar.Train.FrontTDBTraveller);
-                    ZDistanceM = 0;
+                    ZDistanceM = -attachedCar.CarLengthM / 2;
                     HighWagonOffsetLimit = 0;
                     LowWagonOffsetLimit = -attachedCar.CarLengthM;
                 }
@@ -1075,7 +1075,7 @@ namespace Orts.Viewer3D
                     var trainCars = GetCameraCars();
                     SetCameraCar(trainCars.Last());
                     browsedTraveller = new Traveller(attachedCar.Train.RearTDBTraveller);
-                    ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f;
+                    ZDistanceM = -attachedCar.Train.Length + (trainCars.First().CarLengthM + trainCars.Last().CarLengthM) * 0.5f + attachedCar.CarLengthM / 2;
                     LowWagonOffsetLimit = -attachedCar.Train.Length + trainCars.First().CarLengthM * 0.5f;
                     HighWagonOffsetLimit = LowWagonOffsetLimit + attachedCar.CarLengthM;
                 }
@@ -1237,7 +1237,6 @@ namespace Orts.Viewer3D
             }
             else if (attachedCar != null)
             {
-                attachedLocation.Z += attachedCar.CarLengthM / 2.0f * (Front ? 1 : -1);
                 LookedAtPosition = new WorldPosition(attachedCar.WorldPosition);
             }
             UpdateLocation(LookedAtPosition);
@@ -1825,12 +1824,14 @@ namespace Orts.Viewer3D
     public class ThreeDimCabCamera : InsideThreeDimCamera
     {
         public override Styles Style { get { return Styles.ThreeDimCab; } }
+        public bool Enabled { get; set; }
         public override bool IsAvailable
         {
             get
             {
                 return Viewer.SelectedTrain != null && Viewer.SelectedTrain.IsActualPlayerTrain &&
-                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null;
+                    Viewer.PlayerLocomotive != null && Viewer.PlayerLocomotive.CabViewpoints != null &&
+                    (Viewer.PlayerLocomotive.HasFront3DCab || Viewer.PlayerLocomotive.HasRear3DCab);
             }
         }
         public override string Name { get { return Viewer.Catalog.GetString("3D Cab"); } }

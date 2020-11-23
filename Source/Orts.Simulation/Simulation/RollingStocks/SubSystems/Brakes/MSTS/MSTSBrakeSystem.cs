@@ -25,6 +25,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             switch (type)
             {
+                case "manual_braking": return new ManualBraking(car);
                 case "vacuum_twin_pipe":
                 case "vacuum_single_pipe": return new VacuumSinglePipe(car);
                 case "air_twin_pipe": return new AirTwinPipe(car);

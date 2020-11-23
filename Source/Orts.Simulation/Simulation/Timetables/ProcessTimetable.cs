@@ -71,6 +71,7 @@ namespace Orts.Simulation.Timetables
             restartDelayInfo,
             speedInfo,
             comment,
+            briefing,
             invalid,
         }
 
@@ -343,6 +344,7 @@ namespace Orts.Simulation.Timetables
             int pathRow = -1;
             int startRow = -1;
             int disposeRow = -1;
+            int briefingRow = -1;
 
             int firstCommentRow = -1;
             int firstCommentColumn = -1;
@@ -423,7 +425,7 @@ namespace Orts.Simulation.Timetables
             for (int iRow = 1; iRow <= fileContents.Strings.Count - 1; iRow++)
             {
 
-                string rowDef = fileContents.Strings[iRow][0];
+                string rowDef = fileContents.Strings[iRow][0].ToLower();
 
                 string[] rowCommands = null;
                 if (rowDef.Contains('/'))
@@ -541,6 +543,11 @@ namespace Orts.Simulation.Timetables
                         case "#comment":
                             RowInfo[iRow] = rowType.comment;
                             if (firstCommentRow < 0) firstCommentRow = iRow;
+                            break;
+
+                        case "#briefing":
+                            RowInfo[iRow] = rowType.briefing;
+                            briefingRow = iRow;
                             break;
 
                         default:  // default is station definition
@@ -675,7 +682,7 @@ namespace Orts.Simulation.Timetables
                         ConcatTrainStrings(fileContents.Strings, iColumn, addColumns);
                     }
 
-                    if (!trainInfo[iColumn].BuildTrain(fileContents.Strings, RowInfo, pathRow, consistRow, startRow, disposeRow, description, stationNames, actSpeedConv, this, playerDetails, out bool isPlayer))
+                    if (!trainInfo[iColumn].BuildTrain(fileContents.Strings, RowInfo, pathRow, consistRow, startRow, briefingRow, disposeRow, description, stationNames, actSpeedConv, this, playerDetails, out bool isPlayer))
                         allCorrectBuild = false;
                     if (isPlayer && !playerTrainCol.HasValue)
                         playerTrainCol = iColumn;
@@ -1317,7 +1324,7 @@ namespace Orts.Simulation.Timetables
             /// <param name="ttInfo"></param>
             /// <param name="playerDetails">Name and description to match the player train.</param>
             /// <param name="isPlayerTrain">Indicates whether or not this is the player train.</param>
-            public bool BuildTrain(List<string[]> fileStrings, rowType[] RowInfo, int pathRow, int consistRow, int startRow, int disposeRow, string description,
+            public bool BuildTrain(List<string[]> fileStrings, rowType[] RowInfo, int pathRow, int consistRow, int startRow, int disposeRow, int briefingRow, string description,
                 Dictionary<int, StationInfo> stationNames, float actSpeedConv, TimetableInfo ttInfo, TTTrainSpec playerDetails, out bool isPlayerTrain)
             {
                 TTDescription = string.Copy(description);
@@ -1572,6 +1579,9 @@ namespace Orts.Simulation.Timetables
 
                 // set speed details based on route, config and input
                 TTTrain.ProcessSpeedSettings();
+
+                if (briefingRow >= 0)
+                    TTTrain.Briefing = fileStrings[briefingRow][columnIndex].Replace("<br>", "\n");
 
                 return (true);
             }

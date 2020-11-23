@@ -182,6 +182,9 @@ namespace Orts.Simulation.RollingStocks
         }
         public float IsTenderRequired = 1.0f;  // Flag indicates that a tender is required for operation of the locomotive. Typically tank locomotives do not require a tender. Assume by default that tender is required.
 
+        public float BoilerPressurePSI;     // Steam Gauge pressure - what the engineer sees.
+        public float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
+
         // Vacuum Reservoir and Exhauster Settings
 
         // Steam heating Flags
@@ -201,10 +204,11 @@ namespace Orts.Simulation.RollingStocks
         public float CalculatedCarHeaterSteamUsageLBpS;
 
         // Adhesion Debug
-        bool DebugSpeedReached;
-        float DebugSpeedIncrement = 5.0f; // Speed increment for debug display - in mph
-        float DebugSpeed = 5.0f; // Initialise at 5 mph
-        float DebugTimer = 0.0f;
+        // Commented out as never used
+        //bool DebugSpeedReached;
+        //float DebugSpeedIncrement = 5.0f; // Speed increment for debug display - in mph
+        //float DebugSpeed = 5.0f; // Initialise at 5 mph
+        //float DebugTimer = 0.0f;
 
         // Adhesion parameters
         float BaseFrictionCoefficientFactor;  // Factor used to adjust Curtius formula depending upon weather conditions
@@ -247,7 +251,10 @@ namespace Orts.Simulation.RollingStocks
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public bool VacuumBrakeCutoffActivated = false;
 
+        public bool SteamEngineBrakeFitted = false;
+        public bool TrainBrakeFitted = false;
         public bool EngineBrakeFitted = false;
+        public bool BrakemanBrakeFitted = false;
         public bool VacuumExhausterIsOn = false;
         public float VacuumBrakesMainResVolumeM3 = Me3.FromFt3(200.0f); // Main vacuum reservoir volume
         public float VacuumBrakesMainResMaxVacuumPSIAorInHg = Vac.ToPress(23);
@@ -366,6 +373,7 @@ namespace Orts.Simulation.RollingStocks
         public MSTSNotchController ThrottleController;
         public ScriptedBrakeController TrainBrakeController;
         public ScriptedBrakeController EngineBrakeController;
+        public ScriptedBrakeController BrakemanBrakeController;
         public AirSinglePipe.ValveState EngineBrakeState = AirSinglePipe.ValveState.Lap;
         public MSTSNotchController DynamicBrakeController;
         public MSTSNotchController GearBoxController;
@@ -411,6 +419,7 @@ namespace Orts.Simulation.RollingStocks
 
             TrainBrakeController = new ScriptedBrakeController(this);
             EngineBrakeController = new ScriptedBrakeController(this);
+            BrakemanBrakeController = new ScriptedBrakeController(this);
             ThrottleController = new MSTSNotchController();
             DynamicBrakeController = new MSTSNotchController();
             TrainControlSystem = new ScriptedTrainControlSystem(this);
@@ -475,8 +484,12 @@ namespace Orts.Simulation.RollingStocks
         {
             if (!TrainBrakeController.IsValid())
                 TrainBrakeController = new ScriptedBrakeController(this); //create a blank one
+
             if (!EngineBrakeController.IsValid())
                 EngineBrakeController = null;
+
+            if (!BrakemanBrakeController.IsValid())
+                BrakemanBrakeController = null;
 
             if (ThrottleController == null)
             {
@@ -748,6 +761,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortstrainbrakecontroller":
                 case "engine(enginecontrollers(brake_train":
                     TrainBrakeController.Parse(lowercasetoken, stf);
+                    TrainBrakeFitted = true;
                     break;
                 case "engine(enginecontrollers(ortsfastvacuumexhauster": FastVacuumExhausterFitted = true; break;
                 case "engine(enginebrakescontrollermaxsystempressure":
@@ -762,7 +776,10 @@ namespace Orts.Simulation.RollingStocks
                     EngineBrakeController.Parse(lowercasetoken, stf);
                     EngineBrakeFitted = true;
                     break;
-
+                case "engine(enginecontrollers(brake_brakeman":
+                    BrakemanBrakeController.Parse(lowercasetoken, stf);
+                    BrakemanBrakeFitted = true;
+                    break;
                 case "engine(ortstraincontrolsystem":
                 case "engine(ortstraincontrolsystemsound":
                 case "engine(ortstraincontrolsystemparameters":
@@ -856,6 +873,20 @@ namespace Orts.Simulation.RollingStocks
                                  default:
                                     break;
                             }
+                    }
+                    break;
+
+                case "engine(brakesenginebraketype":
+                    foreach (var brakesenginebraketype in stf.ReadStringBlock("").ToLower().Replace(" ", "").Split(','))
+                    {
+                        switch (brakesenginebraketype)
+                        {
+                            case "steam_brake":
+                                SteamEngineBrakeFitted = true;
+                                break;
+                            default:
+                                break;
+                        }
                     }
                     break;
                 case "engine(ortsdynamicblendingoverride": DynamicBrakeBlendingOverride = stf.ReadBoolBlock(false); break;
@@ -960,11 +991,13 @@ namespace Orts.Simulation.RollingStocks
             SteamHeatController = (MSTSNotchController)locoCopy.SteamHeatController.Clone();
             TrainBrakeController = locoCopy.TrainBrakeController.Clone(this);
             EngineBrakeController = locoCopy.EngineBrakeController != null ? locoCopy.EngineBrakeController.Clone(this) : null;
+            BrakemanBrakeController = locoCopy.BrakemanBrakeController != null ? locoCopy.BrakemanBrakeController.Clone(this) : null;
             DynamicBrakeController = locoCopy.DynamicBrakeController != null ? (MSTSNotchController)locoCopy.DynamicBrakeController.Clone() : null;
             TrainControlSystem.Copy(locoCopy.TrainControlSystem);
             LocomotiveName = locoCopy.LocomotiveName;
             MaxVaccuumMaxPressurePSI = locoCopy.MaxVaccuumMaxPressurePSI;
             VacuumBrakeEQFitted = locoCopy.VacuumBrakeEQFitted;
+            SteamEngineBrakeFitted = locoCopy.SteamEngineBrakeFitted;
             HasWaterScoop = locoCopy.HasWaterScoop;
             WaterScoopFillElevationM = locoCopy.WaterScoopFillElevationM;
             WaterScoopDepthM = locoCopy.WaterScoopDepthM;
@@ -1017,6 +1050,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Save(ThrottleController, outf);
             ControllerFactory.Save(TrainBrakeController, outf);
             ControllerFactory.Save(EngineBrakeController, outf);
+            ControllerFactory.Save(BrakemanBrakeController, outf);
             ControllerFactory.Save(DynamicBrakeController, outf);
             ControllerFactory.Save(SteamHeatController, outf);
             outf.Write(AcceptMUSignals);
@@ -1058,6 +1092,7 @@ namespace Orts.Simulation.RollingStocks
             ControllerFactory.Restore(ThrottleController, inf);
             ControllerFactory.Restore(TrainBrakeController, inf);
             ControllerFactory.Restore(EngineBrakeController, inf);
+            ControllerFactory.Restore(BrakemanBrakeController, inf);
             ControllerFactory.Restore(DynamicBrakeController, inf);
             ControllerFactory.Restore(SteamHeatController, inf);
             AcceptMUSignals = inf.ReadBoolean();
@@ -1135,6 +1170,8 @@ namespace Orts.Simulation.RollingStocks
                 TrainBrakeController.SetValue(((MSTSLocomotive)other).TrainBrakeController.CurrentValue);
             if (EngineBrakeController != null)
                 EngineBrakeController.SetValue(0);
+            if (BrakemanBrakeController != null)
+                BrakemanBrakeController.SetValue(0);
         }
 
         public bool controlUpdated;
@@ -1148,6 +1185,7 @@ namespace Orts.Simulation.RollingStocks
             
             TrainBrakeController.Initialize();
             EngineBrakeController.Initialize();
+            BrakemanBrakeController.Initialize();
             TrainControlSystem.Initialize();
 
             if (MaxSteamHeatPressurePSI == 0)       // Check to see if steam heating is fitted to locomotive
@@ -1744,6 +1782,19 @@ namespace Orts.Simulation.RollingStocks
                 if (EngineBrakeController.UpdateValue < 0.0)
                 {
                     Simulator.Confirmer.Update(CabControl.EngineBrake, CabSetting.Decrease, GetEngineBrakeStatus());
+                }
+            }
+
+            if (BrakemanBrakeController != null)
+            {
+                BrakemanBrakeController.Update(elapsedClockSeconds);
+                if (BrakemanBrakeController.UpdateValue > 0.0)
+                {
+                    Simulator.Confirmer.Update(CabControl.BrakemanBrake, CabSetting.Increase, GetBrakemanBrakeStatus());
+                }
+                if (BrakemanBrakeController.UpdateValue < 0.0)
+                {
+                    Simulator.Confirmer.Update(CabControl.BrakemanBrake, CabSetting.Decrease, GetBrakemanBrakeStatus());
                 }
             }
 
@@ -3351,17 +3402,25 @@ namespace Orts.Simulation.RollingStocks
             if (EngineBrakeController == null)
                 return null;
             // If brake type is only a state, and no numerical fraction application is displayed in the HUD, then display Brake Cylinder (BC) pressure
-                if (String.IsNullOrEmpty(EngineBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application, if no fraction display BC pressure
+            if (String.IsNullOrEmpty(EngineBrakeController.GetStateFractionScripted())) // Test to see if a brake state only is present without a fraction of application, if no fraction display BC pressure
             {
                 if ((BrakeSystem is VacuumSinglePipe))
                 {
-                    return string.Format("{0} BC {1}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Vac.FromPress(Train.HUDLocomotiveBrakeCylinderPSI), PressureUnit.InHg, PressureUnit.InHg, true));
+                    if (SteamEngineBrakeFitted)
+                    {
+                        const float percentageConversion = 100;
+                        return string.Format("{0} {1}%", EngineBrakeController.GetStatus(), percentageConversion * EngineBrakeController.CurrentValue);  // Display for steam brake
+                    }
+                    else
+                    {
+                        return string.Format("{0} BC {1}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Vac.FromPress(Train.HUDLocomotiveBrakeCylinderPSI), PressureUnit.InHg, PressureUnit.InHg, true)); // display for vacuum brakes
+                    }
                 }
                 else
                 {
                     return string.Format("{0} BC {1} {2}", EngineBrakeController.GetStatus(), FormatStrings.FormatPressure(Train.HUDLocomotiveBrakeCylinderPSI, PressureUnit.PSI, MainPressureUnit, true), BailOff ? " BailOff" : "");
                 }
-                    
+
                 // Fraction not found so display BC                
             }
             else
@@ -3378,8 +3437,108 @@ namespace Orts.Simulation.RollingStocks
         }
         #endregion
 
-        #region DynamicBrakeController
-        public void StartDynamicBrakeIncrease(float? target)
+        #region BrakemanBrakeController
+
+        public void StartBrakemanBrakeIncrease(float? target)
+        {
+            AlerterReset(TCSEvent.BrakemanBrakeChanged);
+            if (BrakemanBrakeController == null)
+                return;
+
+            BrakemanBrakeController.StartIncrease(target);
+            Simulator.Confirmer.Confirm(CabControl.BrakemanBrake, CabSetting.Increase, GetBrakemanBrakeStatus());
+//            SignalEvent(Event.EngineBrakeChange);
+        }
+
+        /// <summary>
+        /// Ends change of brake value.
+        /// </summary>
+        public void StopBrakemanBrakeIncrease()
+        {
+            if (BrakemanBrakeController == null)
+                return;
+
+         //   AlerterReset(TCSEvent.BrakemanBrakeChanged);
+            BrakemanBrakeController.StopIncrease();
+            new BrakemanBrakeCommand(Simulator.Log, true, BrakemanBrakeController.CurrentValue, BrakemanBrakeController.CommandStartTime);
+        }
+
+        public void StartBrakemanBrakeDecrease(float? target)
+        {
+            if (BrakemanBrakeController == null)
+                return;
+
+            AlerterReset(TCSEvent.BrakemanBrakeChanged);
+            BrakemanBrakeController.StartDecrease(target);
+            BrakemanBrakeController.CommandStartTime = Simulator.ClockTime; // Remember when the command was issued
+            Simulator.Confirmer.Confirm(CabControl.BrakemanBrake, CabSetting.Increase, GetBrakemanBrakeStatus());
+         //   SignalEvent(Event.BrakemanBrakeChange);
+        }
+
+        /// <summary>
+        /// Ends change of brake value.
+        /// </summary>
+        public void StopBrakemanBrakeDecrease()
+        {
+            if (BrakemanBrakeController == null)
+                return;
+
+            AlerterReset(TCSEvent.BrakemanBrakeChanged);
+            BrakemanBrakeController.StopDecrease();
+            new BrakemanBrakeCommand(Simulator.Log, false, BrakemanBrakeController.CurrentValue, BrakemanBrakeController.CommandStartTime);
+        }
+
+        public void BrakemanBrakeChangeTo(bool increase, float? target)
+        {  // Need a better way to express brake as a single number.
+            if (increase)
+            {
+                if (target > BrakemanBrakeController.CurrentValue)
+                {
+                    StartBrakemanBrakeIncrease(target);
+                }
+            }
+            else
+            {
+                if (target<BrakemanBrakeController.CurrentValue)
+                {
+                    StartBrakemanBrakeDecrease(target);
+                }
+            }
+        }
+
+        public void SetBrakemanBrakeValue(float value)
+        {
+            var controller = BrakemanBrakeController;
+            var oldValue = controller.IntermediateValue;
+            var change = controller.SetValue(value);
+            if (change != 0)
+            {
+                new BrakemanBrakeCommand(Simulator.Log, change > 0, controller.CurrentValue, Simulator.ClockTime);
+             //   SignalEvent(Event.BrakemanBrakeChange);
+                AlerterReset(TCSEvent.BrakemanBrakeChanged);
+            }
+            if (oldValue != controller.IntermediateValue)
+                Simulator.Confirmer.Update(CabControl.BrakemanBrake, oldValue<controller.IntermediateValue? CabSetting.Increase : CabSetting.Decrease, GetBrakemanBrakeStatus());
+        }
+
+        public void SetBrakemanBrakePercent(float percent)
+        {
+            if (BrakemanBrakeController == null)
+                return;
+            BrakemanBrakeController.SetPercent(percent);
+        }
+
+        public override string GetBrakemanBrakeStatus()
+        {
+            if (BrakemanBrakeController == null)
+                return null;
+            return string.Format("{0}", BrakemanBrakeController.GetStatus());
+        }
+
+    #endregion
+
+    #region DynamicBrakeController
+    public void StartDynamicBrakeIncrease(float? target)
         {
             AlerterReset(TCSEvent.DynamicBrakeChanged);
             if (!CanUseDynamicBrake())

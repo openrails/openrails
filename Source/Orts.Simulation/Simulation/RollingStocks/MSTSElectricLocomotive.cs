@@ -137,7 +137,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Initialise water level in steam heat boiler
-            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0)
+            if (CurrentLocomotiveSteamHeatBoilerWaterCapacityL == 0 && IsSteamHeatFitted)
             {
                 if (MaximumSteamHeatBoilerWaterTankCapacityL != 0)
                 {
@@ -207,13 +207,10 @@ namespace Orts.Simulation.RollingStocks
                     // Calculate fuel usage for steam heat boiler
                     float FuelUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerFuelUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
                     CurrentSteamHeatBoilerFuelCapacityL -= FuelUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as fuel used.
-                    float FuelOilConvertLtoKg = 0.85f;
-                    MassKG -= FuelUsageLpS * elapsedClockSeconds * FuelOilConvertLtoKg; // Reduce locomotive weight as Steam heat boiler uses fuel.
 
                     // Calculate water usage for steam heat boiler
                     float WaterUsageLpS = L.FromGUK(pS.FrompH(TrainHeatBoilerWaterUsageGalukpH[pS.TopH(CalculatedCarHeaterSteamUsageLBpS)]));
-                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used.
-                    MassKG -= WaterUsageLpS * elapsedClockSeconds; // Reduce locomotive weight as Steam heat boiler uses water - NB 1 litre of water = 1 kg.
+                    CurrentLocomotiveSteamHeatBoilerWaterCapacityL -= WaterUsageLpS * elapsedClockSeconds; // Reduce Tank capacity as water used. Weight of locomotive is reduced in Wagon.cs
                 }
                 else
                 {

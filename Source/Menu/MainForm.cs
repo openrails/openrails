@@ -83,7 +83,7 @@ namespace ORTS
                 return programNormal;
             }
         }
-        
+
         // Base items
         public Folder SelectedFolder { get { return (Folder)comboBoxFolder.SelectedItem; } }
         public Route SelectedRoute { get { return (Route)comboBoxRoute.SelectedItem; } }
@@ -217,7 +217,8 @@ namespace ORTS
                             Process.Start("cmd", "/k \"" + toolPath + "\"");
                         else
                             Process.Start(toolPath);
-                    }) { Tag = executable });
+                    })
+                    { Tag = executable });
                 }
                 // Add all the tools in alphabetical order.
                 contextMenuStripTools.Items.AddRange((from tool in tools
@@ -232,21 +233,18 @@ namespace ORTS
                 var path = dir + @"\Documentation\";
                 if (Directory.Exists(path))
                 {
-                    foreach (string entry in Directory.GetFiles(path))
+                    // Load English documents
+                    LoadDocuments(docs, path);
+
+                    // Find any non-English documents by looking in \Documentation\<language code>\, e.g. \Documentation\es\
+                    foreach (var codePath in Directory.GetDirectories(path))
                     {
-                        // These are the following formats that can be selected.
-                        if (entry.Contains(".pdf") || entry.Contains(".doc") || entry.Contains(".docx") || entry.Contains(".pptx") || entry.Contains(".txt"))
-                        {
-                            var i = entry.LastIndexOf("\\");
-                            docs.Add(new ToolStripMenuItem(entry.Substring(i + 1), null, (Object sender2, EventArgs e2) =>
-                            {
-                                var docPath = (sender2 as ToolStripItem).Tag as string;
-                                Process.Start(docPath);
-                             }) { Tag = entry });
-                        }
-                        contextMenuStripDocuments.Items.AddRange((from tool in docs
-                                                                  orderby tool.Text
-                                                                  select tool).ToArray());
+                        // Extract the last folder in the path - the language code, e.g. "es"
+                        var code = System.IO.Path.GetFileName(codePath);
+
+                        // include any non-English documents that match the chosen language
+                        if (code == Settings.Language)
+                            LoadDocuments(docs, codePath, code);
                     }
                 }
                 else
@@ -262,6 +260,29 @@ namespace ORTS
             {
                 LoadFolderList();
                 Initialized = true;
+            }
+        }
+
+        private void LoadDocuments(List<ToolStripItem> docs, string folderPath, string code = null)
+        {
+            foreach (var filePath in Directory.GetFiles(folderPath))
+            {
+                var ext = System.IO.Path.GetExtension(filePath);
+                var name = System.IO.Path.GetFileNameWithoutExtension(filePath);
+                // These are the formats that can be selected.
+                if (new[] { ".pdf", ".doc", ".docx", ".pptx", ".txt" }.Contains(ext.ToLowerInvariant()))
+                {
+                    var codeLabel = string.IsNullOrEmpty(code) ? "" : $" [{code}]";
+                    docs.Add(new ToolStripMenuItem($"{name}{ext}{codeLabel}", null, (object sender2, EventArgs e2) =>
+                    {
+                        var docPath = (sender2 as ToolStripItem).Tag as string;
+                        Process.Start(docPath);
+                    })
+                    { Tag = filePath });
+                }
+                contextMenuStripDocuments.Items.AddRange((from tool in docs
+                                                          orderby tool.Text
+                                                          select tool).ToArray());
             }
         }
 
@@ -595,7 +616,7 @@ namespace ORTS
             OpenResumeForm(true);
         }
 
-        void OpenResumeForm (bool multiplayer)
+        void OpenResumeForm(bool multiplayer)
         {
             if (radioButtonModeTimetable.Checked)
             {
@@ -634,7 +655,7 @@ namespace ORTS
         {
             if (CheckUserName(textBoxMPUser.Text) == false) return;
             SaveOptions();
-            SelectedAction = radioButtonMPClient.Checked? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
+            SelectedAction = radioButtonMPClient.Checked ? UserAction.MultiplayerClient : UserAction.MultiplayerServer;
             DialogResult = DialogResult.OK;
         }
 
@@ -1182,16 +1203,16 @@ namespace ORTS
             if (radioButtonModeTimetable.Checked)
             {
                 if (SelectedTimetableSet != null)
-                {
                     ShowDetail(catalog.GetStringFmt("Timetable set: {0}", SelectedTimetableSet), new string[0]);
-                }
+                    // Description not shown as no description is available for a timetable set.
+
                 if (SelectedTimetable != null)
-                {
-                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), new string[0]);
-                }
+                    ShowDetail(catalog.GetStringFmt("Timetable: {0}", SelectedTimetable), SelectedTimetable.Briefing.Split('\n'));
+
                 if (SelectedTimetableTrain != null)
                 {
-                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), SelectedTimetableTrain.ToInfo());
+                    ShowDetail(catalog.GetStringFmt("Train: {0}", SelectedTimetableTrain), HideStartParameters(SelectedTimetableTrain.ToInfo()));
+
                     if (SelectedTimetableConsist != null)
                     {
                         ShowDetail(catalog.GetStringFmt("Consist: {0}", SelectedTimetableConsist.Name), new string[0]);
@@ -1202,14 +1223,30 @@ namespace ORTS
                         }
                     }
                     if (SelectedTimetablePath != null)
-                    {
                         ShowDetail(catalog.GetStringFmt("Path: {0}", SelectedTimetablePath.Name), SelectedTimetablePath.ToInfo());
-                    }
                 }
             }
 
             FlowDetails();
             Win32.LockWindowUpdate(IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Change
+        ///     "Start time: 10:30$$create=00:04/ahead=0040ElghLE70F363U"
+        /// to
+        ///     "Start time: 10:30"
+        /// for higher-level presentation
+        /// </summary>
+        /// <param name="info"></param>
+        /// <returns></returns>
+        private string[] HideStartParameters(string [] info)
+        {
+            var fullStartTime = info[0].TrimStart();
+            var startTimeArray = fullStartTime.Split('$');
+            var shortStartTime = startTimeArray[0];
+            info[0] = shortStartTime;
+            return info;
         }
 
         List<Detail> Details = new List<Detail>();
