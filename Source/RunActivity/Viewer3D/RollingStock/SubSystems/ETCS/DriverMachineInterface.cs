@@ -59,12 +59,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public class Button
         {
-            //public readonly string Name;
+            public readonly string Name;
             public bool Enabled;
             public readonly bool UpType;
             public readonly Rectangle SensitiveArea;
-            public Button(bool upType, Rectangle area)
+            public Button(string name, bool upType, Rectangle area)
             {
+                Name = name;
                 Enabled = false;
                 UpType = upType;
                 SensitiveArea = area;
@@ -156,6 +157,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 }
             }
             if (!pressed) ActiveButton = null;
+            if (PressedButton != null)
+            {
+                PlanningWindow.HandleInput();
+                PressedButton = null;
+            }
         }
         /*public void HandleButtonInput(string button, bool pressed)
         {
@@ -170,7 +176,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
         }*/
     }
-    public class DriverMachineInterfaceRenderer : CabViewDigitalRenderer
+    public class DriverMachineInterfaceRenderer : CabViewDigitalRenderer, ICabViewMouseControlRenderer
     {
         DriverMachineInterface DMI;
         [CallOnThread("Loader")]
@@ -183,10 +189,35 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             base.PrepareFrame(frame, elapsedTime);
-            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
-
             DMI.PrepareFrame();
-            DMI.SizeTo(DrawPosition.Width, DrawPosition.Height); DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
+            DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+        }
+
+        public bool IsMouseWithin()
+        {
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
+            foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
+            {
+                if (b.SensitiveArea.Contains(x, y)) return true;
+            }
+            return false;
+        }
+
+        public void HandleUserInput()
+        {
+            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
+        }
+
+        public string GetControlName()
+        {
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
+            foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
+            {
+                if (b.SensitiveArea.Contains(x, y)) return "ETCS " + b.Name;
+            }
+            return "";
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
