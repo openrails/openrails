@@ -24,8 +24,10 @@ using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.MultiPlayer;
 using Orts.Simulation;
+using Orts.Simulation.Simulation;
 using Orts.Viewer3D.Debugging;
 using ORTS.Common;
+using ORTS.Content;
 using ORTS.Settings;
 using System;
 using System.Collections.Generic;
@@ -157,7 +159,7 @@ namespace Orts.Viewer3D.Processes
                     case "start-profile":
                         InitLogging(settings, args);
                         InitLoading(args);
-                        Start(settings, acttype, data);
+                        Start(settings, acttype, options, data);
                         break;
                     case "resume":
                         InitLogging(settings, args);
@@ -284,9 +286,9 @@ namespace Orts.Viewer3D.Processes
         /// Run the specified activity from the beginning.
         /// This is the start for MSTS Activity or Explorer mode or Timetable mode
         /// </summary>
-        void Start(UserSettings settings, string acttype, string[] args)
+        void Start(UserSettings settings, string acttype, string[] options, string[] args)
         {
-            InitSimulator(settings, args, "", acttype);
+            InitSimulator(settings, args, "", acttype, options);
 
             switch (acttype)
             {
@@ -301,7 +303,7 @@ namespace Orts.Viewer3D.Processes
 
             if (Client != null)
             {
-                Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
+                Client.Send((new MSGPlayer(UserName, Code, Simulator.trainFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
                 // wait 5 seconds to see if you get a reply from server with updated position/consist data, else go on
                
                 System.Threading.Thread.Sleep(5000);
@@ -436,10 +438,10 @@ namespace Orts.Viewer3D.Processes
                     Simulator.Restore(inf, values.pathName, values.initialTileX, values.initialTileZ, Game.LoaderProcess.CancellationToken);
                     Viewer = new Viewer(Simulator, Game);
                     if (Client != null || Server != null)
-                        if (Acttype == "activity") Simulator.GetPathAndConsist();
+                        if (Acttype == "activity") Simulator.GetPathAndTrain();
                     if (Client != null)
                     {
-                        Client.Send((new MSGPlayer(UserName, Code, Simulator.conFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
+                        Client.Send((new MSGPlayer(UserName, Code, Simulator.trainFileName, Simulator.patFileName, Simulator.Trains[0], 0, Simulator.Settings.AvatarURL)).ToString());
                     }
                     Viewer.Restore(inf);
 
@@ -945,12 +947,12 @@ namespace Orts.Viewer3D.Processes
             File.Copy(logFileName, toFile, true);
         }
 
-        void InitSimulator(UserSettings settings, string[] args, string mode)
+        void InitSimulator(UserSettings settings, string[] args, string mode, string[] options = null)
         {
-            InitSimulator(settings, args, mode, "");
+            InitSimulator(settings, args, mode, "", options);
         }
 
-        void InitSimulator(UserSettings settings, string[] args, string mode, string acttype)
+        void InitSimulator(UserSettings settings, string[] args, string mode, string acttype, string[] options = null)
         {
             if (String.IsNullOrEmpty(acttype))
             {
@@ -973,10 +975,10 @@ namespace Orts.Viewer3D.Processes
 
                 case "explorer":
                 case "exploreactivity":
-                    if (args.Length < 5) throw new InvalidCommandLine("Mode 'explorer' needs 5 arguments: path file, consist file, time (hh[:mm[:ss]]), season (0-3), weather (0-2).");
+                    if (args.Length < 5) throw new InvalidCommandLine("Mode 'explorer' needs 5 arguments: path file, train or consist file, time (hh[:mm[:ss]]), season (0-3), weather (0-2).");
                     Console.WriteLine("Route      = {0}", GetRouteName(args[0]));
                     Console.WriteLine("Path       = {0} ({1})", GetPathName(args[0]), args[0]);
-                    Console.WriteLine("Consist    = {0} ({1})", GetConsistName(args[1]), args[1]);
+                    Console.WriteLine("Train      = {0} ({1})", GetTrainName(args[1]), args[1]);
                     Console.WriteLine("Time       = {0} ({1})", GetTime(args[2]), args[2]);
                     Console.WriteLine("Season     = {0} ({1})", GetSeason(args[3]), args[3]);
                     Console.WriteLine("Weather    = {0} ({1})", GetWeather(args[4]), args[4]);
@@ -993,6 +995,22 @@ namespace Orts.Viewer3D.Processes
 
                 default:
                     throw new InvalidCommandLine("Unexpected mode '" + acttype + "' with argument count " + args.Length);
+            }
+
+            PreferredLocomotive preferredLoco = null;
+            var keyOptions = (options ?? new string[0] { })
+                .Where((string o) => o.Contains('='));
+            foreach (string option in keyOptions)
+            {
+                var split = option.Split(new char[] { '=' }, 2);
+                var key = split[0];
+                var value = split[1];
+                switch (key)
+                {
+                    case "preferredLocomotive":
+                        preferredLoco = new PreferredLocomotive(value);
+                        break;
+                }
             }
 
             LogSeparator();
@@ -1017,25 +1035,26 @@ namespace Orts.Viewer3D.Processes
                     Simulator = new Simulator(settings, args[0], false);
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
-                    Simulator.SetActivity(args[0]);
+                    Simulator.SetActivity(args[0], preferredLoco);
                     break;
 
                 case "explorer":
                     Simulator = new Simulator(settings, args[0], false);
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
-                    Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4]);
+                    Simulator.SetExplore(args[0], args[1], args[2], args[3], args[4], preferredLoco);
                     break;
 
                 case "exploreactivity":
                     Simulator = new Simulator(settings, args[0], false);
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
-                    Simulator.SetExploreThroughActivity(args[0], args[1], args[2], args[3], args[4]);
+                    Simulator.SetExploreThroughActivity(args[0], args[1], args[2], args[3], args[4], preferredLoco);
                     break;
 
                 case "timetable":
                     Simulator = new Simulator(settings, args[0], true);
+                    Simulator.PreferredLocomotive = preferredLoco;
                     if (LoadingScreen == null)
                         LoadingScreen = new LoadingScreenPrimitive(Game);
                     if (String.Compare(mode, "start", true) != 0) // no specific action for start, handled in start_timetable
@@ -1128,18 +1147,15 @@ namespace Orts.Viewer3D.Processes
             return pat?.Name;
         }
 
-        string GetConsistName(string path)
+        string GetTrainName(string path)
         {
-            if (!HasExtension(path, ".con"))
-                return null;
-
-            ConsistFile con = null;
+            IVehicleList train = null;
             try
             {
-                con = new ConsistFile(path);
+                train = VehicleListLoader.LoadFile(path);
             }
             catch { }
-            return con?.Name;
+            return train?.DisplayName;
         }
 
         private bool HasExtension(string path, string ext) => Path.GetExtension(path).Equals(ext, StringComparison.OrdinalIgnoreCase);

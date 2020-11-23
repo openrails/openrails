@@ -84,6 +84,10 @@ namespace ORTS
             this.comboBoxDifficulty = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.panelModeTimetable = new System.Windows.Forms.Panel();
+            this.labelTimetableLocomotive = new System.Windows.Forms.Label();
+            this.comboBoxTimetableLocomotive = new System.Windows.Forms.ComboBox();
+            this.labelTimetableConsist = new System.Windows.Forms.Label();
+            this.comboBoxTimetableConsist = new System.Windows.Forms.ComboBox();
             this.labelTimetableWeatherFile = new System.Windows.Forms.Label();
             this.comboBoxTimetableWeatherFile = new System.Windows.Forms.ComboBox();
             this.label24 = new System.Windows.Forms.Label();
@@ -220,7 +224,7 @@ namespace ORTS
             // 
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(12, 58);
-            this.label2.Margin = new System.Windows.Forms.Padding(3);
+            this.label2.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(39, 13);
             this.label2.TabIndex = 2;
@@ -239,7 +243,7 @@ namespace ORTS
             // 
             this.label14.AutoSize = true;
             this.label14.Location = new System.Drawing.Point(6, 48);
-            this.label14.Margin = new System.Windows.Forms.Padding(3);
+            this.label14.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(55, 13);
             this.label14.TabIndex = 2;
@@ -250,7 +254,7 @@ namespace ORTS
             // 
             this.label13.AutoSize = true;
             this.label13.Location = new System.Drawing.Point(6, 22);
-            this.label13.Margin = new System.Windows.Forms.Padding(3);
+            this.label13.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(61, 13);
             this.label13.TabIndex = 0;
@@ -341,7 +345,7 @@ namespace ORTS
             // 
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(12, 12);
-            this.label1.Margin = new System.Windows.Forms.Padding(3);
+            this.label1.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(91, 13);
             this.label1.TabIndex = 0;
@@ -400,7 +404,7 @@ namespace ORTS
             // 
             this.label25.AutoSize = true;
             this.label25.Location = new System.Drawing.Point(12, 104);
-            this.label25.Margin = new System.Windows.Forms.Padding(3);
+            this.label25.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label25.Name = "label25";
             this.label25.Size = new System.Drawing.Size(37, 13);
             this.label25.TabIndex = 4;
@@ -462,7 +466,7 @@ namespace ORTS
             // 
             this.checkDebriefActivityEval.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
             this.checkDebriefActivityEval.Location = new System.Drawing.Point(134, 3);
-            this.checkDebriefActivityEval.Margin = new System.Windows.Forms.Padding(2);
+            this.checkDebriefActivityEval.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.checkDebriefActivityEval.Name = "checkDebriefActivityEval";
             this.checkDebriefActivityEval.Size = new System.Drawing.Size(149, 17);
             this.checkDebriefActivityEval.TabIndex = 20;
@@ -474,7 +478,7 @@ namespace ORTS
             // 
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(3, 3);
-            this.label3.Margin = new System.Windows.Forms.Padding(3);
+            this.label3.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(44, 13);
             this.label3.TabIndex = 0;
@@ -497,7 +501,7 @@ namespace ORTS
             // 
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(3, 49);
-            this.label4.Margin = new System.Windows.Forms.Padding(3);
+            this.label4.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(65, 13);
             this.label4.TabIndex = 2;
@@ -534,7 +538,7 @@ namespace ORTS
             // 
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(3, 93);
-            this.label5.Margin = new System.Windows.Forms.Padding(3);
+            this.label5.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(44, 13);
             this.label5.TabIndex = 4;
@@ -545,7 +549,7 @@ namespace ORTS
             // 
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(3, 139);
-            this.label6.Margin = new System.Windows.Forms.Padding(3);
+            this.label6.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(58, 13);
             this.label6.TabIndex = 6;
@@ -569,7 +573,7 @@ namespace ORTS
             // 
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(3, 185);
-            this.label7.Margin = new System.Windows.Forms.Padding(3);
+            this.label7.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(62, 13);
             this.label7.TabIndex = 8;
@@ -592,7 +596,7 @@ namespace ORTS
             // label11
             // 
             this.label11.Location = new System.Drawing.Point(143, 234);
-            this.label11.Margin = new System.Windows.Forms.Padding(2);
+            this.label11.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(67, 14);
             this.label11.TabIndex = 16;
@@ -602,7 +606,7 @@ namespace ORTS
             // label9
             // 
             this.label9.Location = new System.Drawing.Point(4, 234);
-            this.label9.Margin = new System.Windows.Forms.Padding(2);
+            this.label9.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(56, 14);
             this.label9.TabIndex = 10;
@@ -650,7 +654,7 @@ namespace ORTS
             // label12
             // 
             this.label12.Location = new System.Drawing.Point(4, 289);
-            this.label12.Margin = new System.Windows.Forms.Padding(2);
+            this.label12.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.label12.Name = "label12";
             this.label12.Size = new System.Drawing.Size(56, 14);
             this.label12.TabIndex = 14;
@@ -673,7 +677,7 @@ namespace ORTS
             // label10
             // 
             this.label10.Location = new System.Drawing.Point(143, 262);
-            this.label10.Margin = new System.Windows.Forms.Padding(2);
+            this.label10.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(67, 14);
             this.label10.TabIndex = 18;
@@ -695,7 +699,7 @@ namespace ORTS
             // label8
             // 
             this.label8.Location = new System.Drawing.Point(4, 262);
-            this.label8.Margin = new System.Windows.Forms.Padding(2);
+            this.label8.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(56, 14);
             this.label8.TabIndex = 12;
@@ -704,6 +708,10 @@ namespace ORTS
             // 
             // panelModeTimetable
             // 
+            this.panelModeTimetable.Controls.Add(this.labelTimetableLocomotive);
+            this.panelModeTimetable.Controls.Add(this.comboBoxTimetableLocomotive);
+            this.panelModeTimetable.Controls.Add(this.labelTimetableConsist);
+            this.panelModeTimetable.Controls.Add(this.comboBoxTimetableConsist);
             this.panelModeTimetable.Controls.Add(this.labelTimetableWeatherFile);
             this.panelModeTimetable.Controls.Add(this.comboBoxTimetableWeatherFile);
             this.panelModeTimetable.Controls.Add(this.label24);
@@ -725,14 +733,54 @@ namespace ORTS
             this.panelModeTimetable.TabIndex = 10;
             this.panelModeTimetable.Visible = false;
             // 
+            // labelTimetableLocomotive
+            // 
+            this.labelTimetableLocomotive.AutoSize = true;
+            this.labelTimetableLocomotive.Location = new System.Drawing.Point(3, 143);
+            this.labelTimetableLocomotive.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelTimetableLocomotive.Name = "labelTimetableLocomotive";
+            this.labelTimetableLocomotive.Size = new System.Drawing.Size(65, 13);
+            this.labelTimetableLocomotive.TabIndex = 8;
+            this.labelTimetableLocomotive.Text = "Locomotive:";
+            this.labelTimetableLocomotive.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // comboBoxTimetableLocomotive
+            // 
+            this.comboBoxTimetableLocomotive.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTimetableLocomotive.FormattingEnabled = true;
+            this.comboBoxTimetableLocomotive.Location = new System.Drawing.Point(91, 141);
+            this.comboBoxTimetableLocomotive.Name = "comboBoxTimetableLocomotive";
+            this.comboBoxTimetableLocomotive.Size = new System.Drawing.Size(193, 21);
+            this.comboBoxTimetableLocomotive.TabIndex = 9;
+            // 
+            // labelTimetableConsist
+            // 
+            this.labelTimetableConsist.AutoSize = true;
+            this.labelTimetableConsist.Location = new System.Drawing.Point(3, 117);
+            this.labelTimetableConsist.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.labelTimetableConsist.Name = "labelTimetableConsist";
+            this.labelTimetableConsist.Size = new System.Drawing.Size(44, 13);
+            this.labelTimetableConsist.TabIndex = 6;
+            this.labelTimetableConsist.Text = "Consist:";
+            this.labelTimetableConsist.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // comboBoxTimetableConsist
+            // 
+            this.comboBoxTimetableConsist.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBoxTimetableConsist.FormattingEnabled = true;
+            this.comboBoxTimetableConsist.Location = new System.Drawing.Point(91, 115);
+            this.comboBoxTimetableConsist.Name = "comboBoxTimetableConsist";
+            this.comboBoxTimetableConsist.Size = new System.Drawing.Size(193, 21);
+            this.comboBoxTimetableConsist.TabIndex = 7;
+            // 
             // labelTimetableWeatherFile
             // 
             this.labelTimetableWeatherFile.AutoSize = true;
-            this.labelTimetableWeatherFile.Location = new System.Drawing.Point(5, 212);
-            this.labelTimetableWeatherFile.Margin = new System.Windows.Forms.Padding(3);
+            this.labelTimetableWeatherFile.Location = new System.Drawing.Point(5, 267);
+            this.labelTimetableWeatherFile.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.labelTimetableWeatherFile.Name = "labelTimetableWeatherFile";
             this.labelTimetableWeatherFile.Size = new System.Drawing.Size(70, 13);
-            this.labelTimetableWeatherFile.TabIndex = 14;
+            this.labelTimetableWeatherFile.TabIndex = 16;
             this.labelTimetableWeatherFile.Text = "Weather File:";
             this.labelTimetableWeatherFile.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -740,17 +788,17 @@ namespace ORTS
             // 
             this.comboBoxTimetableWeatherFile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimetableWeatherFile.FormattingEnabled = true;
-            this.comboBoxTimetableWeatherFile.Location = new System.Drawing.Point(91, 209);
+            this.comboBoxTimetableWeatherFile.Location = new System.Drawing.Point(91, 264);
             this.comboBoxTimetableWeatherFile.Name = "comboBoxTimetableWeatherFile";
             this.comboBoxTimetableWeatherFile.Size = new System.Drawing.Size(193, 21);
-            this.comboBoxTimetableWeatherFile.TabIndex = 13;
+            this.comboBoxTimetableWeatherFile.TabIndex = 17;
             this.comboBoxTimetableWeatherFile.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableWeatherFile_SelectedIndexChanged);
             // 
             // label24
             // 
             this.label24.AutoSize = true;
             this.label24.Location = new System.Drawing.Point(3, 79);
-            this.label24.Margin = new System.Windows.Forms.Padding(3);
+            this.label24.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label24.Name = "label24";
             this.label24.Size = new System.Drawing.Size(34, 13);
             this.label24.TabIndex = 4;
@@ -771,7 +819,7 @@ namespace ORTS
             // 
             this.label23.AutoSize = true;
             this.label23.Location = new System.Drawing.Point(3, 52);
-            this.label23.Margin = new System.Windows.Forms.Padding(3);
+            this.label23.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label23.Name = "label23";
             this.label23.Size = new System.Drawing.Size(56, 13);
             this.label23.TabIndex = 2;
@@ -783,21 +831,21 @@ namespace ORTS
             this.comboBoxTimetableDay.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimetableDay.Enabled = false;
             this.comboBoxTimetableDay.FormattingEnabled = true;
-            this.comboBoxTimetableDay.Location = new System.Drawing.Point(91, 121);
+            this.comboBoxTimetableDay.Location = new System.Drawing.Point(91, 176);
             this.comboBoxTimetableDay.Name = "comboBoxTimetableDay";
             this.comboBoxTimetableDay.Size = new System.Drawing.Size(73, 21);
-            this.comboBoxTimetableDay.TabIndex = 8;
+            this.comboBoxTimetableDay.TabIndex = 11;
             this.comboBoxTimetableDay.Visible = false;
             this.comboBoxTimetableDay.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableDay_SelectedIndexChanged);
             // 
             // label22
             // 
             this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(5, 124);
-            this.label22.Margin = new System.Windows.Forms.Padding(3);
+            this.label22.Location = new System.Drawing.Point(5, 180);
+            this.label22.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label22.Name = "label22";
             this.label22.Size = new System.Drawing.Size(29, 13);
-            this.label22.TabIndex = 7;
+            this.label22.TabIndex = 10;
             this.label22.Text = "Day:";
             this.label22.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.label22.Visible = false;
@@ -808,20 +856,20 @@ namespace ORTS
             this.comboBoxTimetableWeather.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxTimetableWeather.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimetableWeather.FormattingEnabled = true;
-            this.comboBoxTimetableWeather.Location = new System.Drawing.Point(91, 176);
+            this.comboBoxTimetableWeather.Location = new System.Drawing.Point(91, 232);
             this.comboBoxTimetableWeather.Name = "comboBoxTimetableWeather";
             this.comboBoxTimetableWeather.Size = new System.Drawing.Size(73, 21);
-            this.comboBoxTimetableWeather.TabIndex = 12;
+            this.comboBoxTimetableWeather.TabIndex = 15;
             this.comboBoxTimetableWeather.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableWeather_SelectedIndexChanged);
             // 
             // label20
             // 
             this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(5, 179);
-            this.label20.Margin = new System.Windows.Forms.Padding(3);
+            this.label20.Location = new System.Drawing.Point(5, 234);
+            this.label20.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label20.Name = "label20";
             this.label20.Size = new System.Drawing.Size(51, 13);
-            this.label20.TabIndex = 11;
+            this.label20.TabIndex = 14;
             this.label20.Text = "Weather:";
             this.label20.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -831,20 +879,20 @@ namespace ORTS
             this.comboBoxTimetableSeason.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.comboBoxTimetableSeason.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxTimetableSeason.FormattingEnabled = true;
-            this.comboBoxTimetableSeason.Location = new System.Drawing.Point(91, 149);
+            this.comboBoxTimetableSeason.Location = new System.Drawing.Point(91, 204);
             this.comboBoxTimetableSeason.Name = "comboBoxTimetableSeason";
             this.comboBoxTimetableSeason.Size = new System.Drawing.Size(73, 21);
-            this.comboBoxTimetableSeason.TabIndex = 10;
+            this.comboBoxTimetableSeason.TabIndex = 13;
             this.comboBoxTimetableSeason.SelectedIndexChanged += new System.EventHandler(this.comboBoxTimetableSeason_SelectedIndexChanged);
             // 
             // label21
             // 
             this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(5, 152);
-            this.label21.Margin = new System.Windows.Forms.Padding(3);
+            this.label21.Location = new System.Drawing.Point(5, 207);
+            this.label21.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label21.Name = "label21";
             this.label21.Size = new System.Drawing.Size(46, 13);
-            this.label21.TabIndex = 9;
+            this.label21.TabIndex = 12;
             this.label21.Text = "Season:";
             this.label21.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -873,7 +921,7 @@ namespace ORTS
             // 
             this.label15.AutoSize = true;
             this.label15.Location = new System.Drawing.Point(3, 3);
-            this.label15.Margin = new System.Windows.Forms.Padding(3);
+            this.label15.Margin = new System.Windows.Forms.Padding(3, 3, 3, 3);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(73, 13);
             this.label15.TabIndex = 0;
@@ -896,7 +944,7 @@ namespace ORTS
             // testingToolStripMenuItem
             // 
             this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
-            this.testingToolStripMenuItem.Size = new System.Drawing.Size(109, 22);
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(111, 22);
             this.testingToolStripMenuItem.Text = "Testing";
             this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
             // 
@@ -906,7 +954,7 @@ namespace ORTS
             this.contextMenuStripTools.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.testingToolStripMenuItem});
             this.contextMenuStripTools.Name = "contextMenuStrip1";
-            this.contextMenuStripTools.Size = new System.Drawing.Size(110, 26);
+            this.contextMenuStripTools.Size = new System.Drawing.Size(112, 26);
             // 
             // linkLabelChangeLog
             // 
@@ -1045,5 +1093,9 @@ namespace ORTS
         private System.Windows.Forms.CheckBox checkDebriefActivityEval;
         private System.Windows.Forms.Label labelTimetableWeatherFile;
         private System.Windows.Forms.ComboBox comboBoxTimetableWeatherFile;
+        private System.Windows.Forms.Label labelTimetableLocomotive;
+        private System.Windows.Forms.ComboBox comboBoxTimetableLocomotive;
+        private System.Windows.Forms.Label labelTimetableConsist;
+        private System.Windows.Forms.ComboBox comboBoxTimetableConsist;
     }
 }

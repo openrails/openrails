@@ -19,6 +19,8 @@ using Orts.Simulation;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
+using Orts.Simulation.Simulation;
+using ORTS.Content;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
@@ -151,7 +153,7 @@ namespace Orts.MultiPlayer
             {
                 train.Number = player.num;
             }
-            if (player.con.Contains("tilted")) train.IsTilting = true;
+            train.IsTilting = player.Tilting;
             int direction = player.dir;
             train.travelled = player.Travelled;
             train.TrainMaxSpeedMpS = player.trainmaxspeed;

@@ -48,6 +48,8 @@ be used anywhere within the actual data. Enclosure of text by quotes (either
 single or double) has no effect. Also, the character '#' should not be used in 
 train names, since it is the prefix for reserved words in the Timetable.
 
+.. _timetable-file-structure:
+
 File structure
 --------------
 
