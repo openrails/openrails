@@ -65,14 +65,12 @@ namespace Orts.Viewer3D.RollingStock
             }
         }
 
-        Event evt;
 
-
-    /// <summary>
-    /// A keyboard or mouse click has occured. Read the UserInput
-    /// structure to determine what was pressed.
-    /// </summary>
-    public override void HandleUserInput(ElapsedTime elapsedTime)
+        /// <summary>
+        /// A keyboard or mouse click has occurred. Read the UserInput
+        /// structure to determine what was pressed.
+        /// </summary>
+        public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             base.HandleUserInput(elapsedTime);
         }
