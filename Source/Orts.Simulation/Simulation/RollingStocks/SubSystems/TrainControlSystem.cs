@@ -487,7 +487,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             var aspect = Aspect.None;
             var distanceM = float.MaxValue;
             var speedLimitMpS = -1f;
-            var altitudeOrLengthM = -float.MaxValue;
+            var altitudeM = float.MinValue;
 
             int dir = Locomotive.Train.MUDirection == Direction.Reverse ? 1 : 0;
 
@@ -515,7 +515,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     aspect = (Aspect)trainSignal.SignalState;
                     speedLimitMpS = trainSignal.AllowedSpeedMpS;
-                    altitudeOrLengthM = trainSignal.SignalObject.tdbtraveller.Y;
+                    altitudeM = trainSignal.SignalObject.tdbtraveller.Y;
                 }
                 else
                 {
@@ -538,7 +538,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
         Exit:
             return new SignalFeatures(mainHeadSignalTypeName: mainHeadSignalTypeName, aspect: aspect, distanceM: distanceM, speedLimitMpS: speedLimitMpS,
-                altitudeOrLengthM: altitudeOrLengthM);
+                altitudeM: altitudeM);
         }
 
         private bool DoesNextNormalSignalHaveRepeaterHead()
