@@ -73,22 +73,32 @@
           </div>
           <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
             <p>
+              <strong>Nov 2020</strong>
+              Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
+            </p>          
+          </div>
+          <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
+            <p>
+              <strong>Nov 2020</strong>
+              A <a href="http://www.siskurail.org/ComingSoon.php" title="by Dale Rickert">detailed guide to making activities</a> backed by videos and data files <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">for the Siskiyou Route</a> is soon to be published. 
+            </p>
+            <p>
               <strong>Apr 2020</strong>
               After more than a year of work <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">the free, restored and improved Siskiyou Route</a> is once more available.
             </p>
+            <p>
+              <strong>Apr 2019</strong>
+              <a href="https://www.trainsim.com/vbts/tslib.php?searchid=13577139">ENG files published</a> with accurate physics for 176 USA diesel locos.
+            </p>
+            <p>
+              <strong>Mar 2018</strong>
+              Geoff Rowlands found a way to model 3D controls so they can be grabbed by the handle <a href="https://www.youtube.com/watch?v=UO9XrBz3iD0&feature=youtu.be">as in this video</a>.
+            </p>
+            <p>
+              <strong>Nov 2017</strong>
+              Open Rails trialled <a href="http://www.monogame.net/">with Monogame instead of XNA</a> uses less RAM and give higher frame rates.
+            </p>
           </div>
-          <p>
-            <strong>Apr 2019</strong>
-            <a href="https://www.trainsim.com/vbts/tslib.php?searchid=13577139">ENG files published</a> with accurate physics for 176 USA diesel locos.
-          </p>
-          <p>
-            <strong>Mar 2018</strong>
-            Geoff Rowlands found a way to model 3D controls so they can be grabbed by the handle <a href="https://www.youtube.com/watch?v=UO9XrBz3iD0&feature=youtu.be">as in this video</a>.
-          </p>
-          <p>
-            <strong>Nov 2017</strong>
-            Open Rails trialled <a href="http://www.monogame.net/">with Monogame instead of XNA</a> uses less RAM and give higher frame rates.
-          </p>
         </div>
         <div class="col-md-4 divider">
           <div class="heading">
