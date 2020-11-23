@@ -27,9 +27,11 @@ using ORTS.Scripting.Api;
 using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
+using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 {
+    // Compliant with ERA_ERTMS_015560 version 3.6.0 (ETCS DRIVER MACHINE INTERFACE)
     public class CircularSpeedGauge
     {
         // These constants are from ETCS specification
@@ -56,16 +58,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         // 240 and 260 are non-standard scales by ETA, but national railways often use one of these instead of 250
         readonly int[] StandardScalesKMpH = new int[] { 140, 180, 240, 250, 260, 400 };
         readonly int[] StandardScalesMpH = new int[] { 87, 111, 155, 248 };
-
-        // Color RGB values are from ETCS specification
-        readonly Color ColorGrey = new Color(195, 195, 195);
-        readonly Color ColorMediumGrey = new Color(150, 150, 150);
-        readonly Color ColorDarkGrey = new Color(85, 85, 85);
-        readonly Color ColorYellow = new Color(223, 223, 0);
-        readonly Color ColorOrange = new Color(234, 145, 0);
-        readonly Color ColorRed = new Color(191, 0, 2);
-        //readonly Color ColorDarkYellow = new Color(105, 105, 0);
-        //readonly Color ColorBackground = new Color(3, 17, 34); // dark blue
 
         const string UnitMetricString = "km/h";
         const string UnitImperialString = "mph";
@@ -285,6 +277,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 var unitPosition = new Point((int)(UnitCenterPosition[0] - FontDialSpeeds.MeasureString(Unit) / Scale / 2f), (int)(UnitCenterPosition[1] - textHeight / 2f));
                 DialSpeeds.Add(new TextPrimitive(unitPosition, Color.White, Unit, FontDialSpeeds));
             }
+            Active = true;
         }
 
         /// <summary>
@@ -314,8 +307,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         private void SetData(ETCSStatus status)
         {
-            Active = status.SpeedAreaShown;
-            if (!Active) return;
+            if (!Active || !status.SpeedAreaShown) return;
             float currentSpeed = Math.Abs(SpeedFromMpS(Locomotive.SpeedMpS));
             int permittedSpeed = (int)SpeedFromMpS(status.AllowedSpeedMpS);
             int targetSpeed = (int)SpeedFromMpS(status.TargetSpeedMpS ?? float.MaxValue);

@@ -25,41 +25,64 @@ using Orts.Viewer3D.Popups;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using ORTS.Scripting.Api.ETCS;
+using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 {
     // Compliant with ERA_ERTMS_015560 version 3.6.0 (ETCS DRIVER MACHINE INTERFACE)
     public class PlanningWindow
     {
-        public List<PlanningTarget> SpeedTargets = new List<PlanningTarget>();
-        public List<PlanningTrackCondition> TrackConditions = new List<PlanningTrackCondition>();
         PlanningTarget? IndicationMarkerTarget;
         float? IndicationMarkerDistanceM;
-        public List<GradientProfileElement> GradientProfile = new List<GradientProfileElement>();
 
         int MaxViewingDistanceM = 8000;
+        const int MaxZoomDistanceM = 32000;
+        const int MinZoomDistanceM = 1000;
 
-        bool Visible = true;
+        bool Visible;
 
         readonly Viewer Viewer;
 
-        readonly Color ColorPASPlight = new Color(41, 74, 107);
-        readonly Color ColorPASPdark = new Color(33, 49, 74);
-        readonly Color ColorYellow = new Color(223, 223, 0);
-        readonly Color ColorDarkGrey = new Color(85, 85, 85);
-        readonly Color ColorMediumGrey = new Color(150, 150, 150);
-        readonly Color ColorGrey = new Color(195, 195, 195);
-        readonly Color ColorWhite = new Color(255, 255, 255);
-        readonly Color ColorBlack = new Color(0, 0, 0);
+        readonly DriverMachineInterface DMI;
+
         Texture2D ColorTexture;
+
+        readonly Button ButtonScaleDown;
+        readonly Button ButtonScaleUp;
 
         Texture2D SpeedReductionTexture;
         Texture2D YellowSpeedReductionTexture;
         Texture2D SpeedIncreaseTexture;
 
-        Dictionary<int, Texture2D> TrackConditionTextures = new Dictionary<int, Texture2D>();
+        Texture2D[] ScaleUpTexture = new Texture2D[2];
+        Texture2D[] ScaleDownTexture = new Texture2D[2];
 
-        List<TextPrimitive> DistanceText = new List<TextPrimitive>();
+        readonly Dictionary<int, Texture2D> TrackConditionTextureData = new Dictionary<int, Texture2D>();
+
+        List<Rectangle> PASPRectangles = new List<Rectangle>();
+        Dictionary<Point, bool> GradientRectangles = new Dictionary<Point, bool>();
+
+        struct LocatedTexture
+        {
+            public readonly Texture2D Texture;
+            public readonly Point Position;
+            public LocatedTexture(Texture2D texture, Point position)
+            {
+                Texture = texture;
+                Position = position;
+            }
+            public LocatedTexture(Texture2D texture, int x, int y)
+            {
+                Texture = texture;
+                Position = new Point(x, y);
+            }
+        }
+        List<LocatedTexture> TrackConditionTextures = new List<LocatedTexture>();
+        List<LocatedTexture> SpeedTargetTextures = new List<LocatedTexture>();
+
+        List<TextPrimitive> DistanceScaleText = new List<TextPrimitive>();
+        List<TextPrimitive> SpeedTargetText = new List<TextPrimitive>();
+        List<TextPrimitive> GradientText = new List<TextPrimitive>();
         WindowTextFont FontDistance;
         WindowTextFont FontTargetSpeed;
         WindowTextFont FontGradient;
@@ -72,35 +95,59 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         readonly int[] TrackConditionPositions = { 55, 80, 105 };
 
+        /*readonly Point TrackConditionLocation = new Point(0, 15);
+        readonly Point GradientLocation = new Point(115, 15);
+        readonly Point PASPLocation = new Point(133, 15);*/
+
         public float Scale = 1;
 
-        public PlanningWindow(Viewer viewer)
+        public PlanningWindow(DriverMachineInterface dmi, Viewer viewer, Point planningLocation)
         {
             Viewer = viewer;
+            DMI = dmi;
 
-            SpeedIncreaseTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_21.png"));
-            SpeedReductionTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_22.png"));
-            YellowSpeedReductionTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_23.png"));
+            SpeedIncreaseTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols","Planning", "PL_21.png"));
+            SpeedReductionTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Planning","PL_22.png"));
+            YellowSpeedReductionTexture = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Planning", "PL_23.png"));
             for (int i=1; i<37; i++)
             {
                 if (i == 21) i = 24;
-                Texture2D tex = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS/symbols/Planning/PL_" + (i < 10 ? "0" : "") + i + ".png"));
-                TrackConditionTextures.Add(i, tex);
+                Texture2D tex = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Planning", "PL_" + (i < 10 ? "0" : "") + i + ".png"));
+                TrackConditionTextureData.Add(i, tex);
             }
+            ScaleUpTexture[0] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_05.bmp"));
+            ScaleUpTexture[1] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_03.bmp"));
+            ScaleDownTexture[0] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_06.bmp"));
+            ScaleDownTexture[1] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_04.bmp"));
+
+            ButtonScaleUp = new Button(true, new Rectangle(planningLocation.X, planningLocation.Y + 285, 40, 30));
+            ButtonScaleDown = new Button(true, new Rectangle(planningLocation.X, planningLocation.Y - 15, 40, 30));
+            DMI.SensitiveButtons.Add(ButtonScaleUp);
+            DMI.SensitiveButtons.Add(ButtonScaleDown);
 
             SetFont();
             SetDistanceText();
         }
 
-        public void ZoomIn()
+        void ScaleUp()
         {
-            if (MaxViewingDistanceM > 1000) MaxViewingDistanceM /= 2;
-            SetDistanceText();
+            if (MaxViewingDistanceM > MinZoomDistanceM)
+            {
+                if (MaxViewingDistanceM >= MaxZoomDistanceM) ButtonScaleDown.Enabled = true;
+                MaxViewingDistanceM /= 2;
+                SetDistanceText();
+            }
+            if (MaxViewingDistanceM <= MinZoomDistanceM) ButtonScaleUp.Enabled = false;
         }
-        public void ZoomOut()
+        void ScaleDown()
         {
-            if (MaxViewingDistanceM < 32000) MaxViewingDistanceM *= 2;
-            SetDistanceText();
+            if (MaxViewingDistanceM < MaxZoomDistanceM)
+            {
+                if (MaxViewingDistanceM <= MinZoomDistanceM) ButtonScaleUp.Enabled = true;
+                MaxViewingDistanceM *= 2;
+                SetDistanceText();
+            }
+            if (MaxViewingDistanceM >= MaxZoomDistanceM) ButtonScaleDown.Enabled = false;
         }
         Rectangle ScaledRectangle(Point origin, int x, int y, int width, int height)
         {
@@ -114,31 +161,111 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 ColorTexture.SetData(new[] { Color.White });
             }
             if (!Visible) return;
-            DrawPASP(spriteBatch, new Point(position.X + (int)(133*Scale), position.Y + (int)(15*Scale)));
 
-            DrawTargetSpeeds(spriteBatch, new Point(position.X + (int)(133 * Scale), position.Y + (int)(15 * Scale)));
+            // Planning area speed profile
+            spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14+133, 15, 99, 270), ColorPASPdark);
+            foreach (Rectangle r in PASPRectangles)
+            {
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, r.X + 133, r.Y + 15, r.Width, r.Height), ColorPASPlight);
+            }
 
-            DrawTrackConditions(spriteBatch, new Point(position.X + (int)(0 * Scale), position.Y + (int)(15 * Scale)));
-
+            // Distance lines
             for (int i = 0; i < 9; i++)
             {
                 if (i == 0 || i == 5 || i == 8) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 40, LinePositions[i], 200, 2), ColorMediumGrey);
                 else spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 40, LinePositions[i], 200, 1), ColorDarkGrey);
             }
-            foreach (var text in DistanceText)
+
+            // Indication marker
+            if (IndicationMarkerDistanceM > 0) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14 + 133, GetPlanningHeight(IndicationMarkerDistanceM.Value), 93, 2), ColorYellow);
+
+            // Speed target icons and numbers
+            foreach (LocatedTexture lt in SpeedTargetTextures)
+            {
+                spriteBatch.Draw(lt.Texture, ScaledRectangle(position, lt.Position.X + 133, lt.Position.Y + 15, 20, 20), Color.White);
+            }
+            foreach (var text in SpeedTargetText)
+            {
+                text.Draw(spriteBatch, new Point(position.X + (int)((133 + text.Position.X) * Scale), position.Y + (int)((15 + text.Position.Y) * Scale)));
+            }
+
+            // Track condition icons
+            foreach (LocatedTexture lt in TrackConditionTextures)
+            {
+                spriteBatch.Draw(lt.Texture, ScaledRectangle(position, lt.Position.X, lt.Position.Y + 15, 20, 20), Color.White);
+            }
+
+            // Distance scale digits
+            foreach (var text in DistanceScaleText)
             {
                 int x = position.X + (int)(text.Position.X * Scale);
                 int y = position.Y + (int)(text.Position.Y * Scale);
                 text.Draw(spriteBatch, new Point(x, y));
             }
 
-            DrawGradient(spriteBatch, new Point(position.X + (int)(115 * Scale), position.Y + (int)(15 * Scale)));
-        }
-        void DrawPASP(SpriteBatch spriteBatch, Point position)
-        {
-            spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14, 0, 99, 270), ColorPASPdark);
+            // Gradient profile
+            foreach(var e in GradientRectangles)
+            {
+                int minp = e.Key.X + 15;
+                int maxp = e.Key.Y + 15;
+                int size = maxp - minp;
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 18, size), e.Value ? ColorGrey : ColorDarkGrey);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 18, 1), e.Value ? Color.White : ColorGrey);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 1, size), e.Value ? Color.White : ColorGrey);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, maxp - (int)Math.Max(1, 1/Scale), 18, 1), Color.Black);
+            }
+            foreach (var text in GradientText)
+            {
+                int x = position.X + (int)((115 + text.Position.X) * Scale);
+                int y = position.Y + (int)((15 + text.Position.Y) * Scale);
+                text.Draw(spriteBatch, new Point(x, y));
+            }
 
-            if (SpeedTargets.Count == 0) return;
+            // Scale buttons
+            spriteBatch.Draw(ScaleUpTexture[ButtonScaleUp.Enabled ? 1 : 0], ScaledRectangle(position, 14, 287, 12, 12), Color.White);
+            spriteBatch.Draw(ScaleDownTexture[ButtonScaleDown.Enabled ? 1 : 0], ScaledRectangle(position, 14, 1, 12, 12), Color.White);
+        }
+
+        void CreateGradient(List<GradientProfileElement> GradientProfile)
+        {
+            var gradientText = new List<TextPrimitive>();
+            var gradientRectangles = new Dictionary<Point, bool>();
+            for (int i = 0; i + 1 < GradientProfile.Count; i++)
+            {
+                GradientProfileElement e = GradientProfile[i];
+                if (e.DistanceToTrainM > MaxViewingDistanceM) break;
+
+                float max = GradientProfile[i + 1].DistanceToTrainM;
+                if (max < 0) continue;
+                int minp = GetPlanningHeight(max) - 15;
+                int maxp = GetPlanningHeight(e.DistanceToTrainM) - 15;
+                if (max > MaxViewingDistanceM) minp = 0;
+                int size = maxp - minp;
+                gradientRectangles.Add(new Point(minp, maxp), e.GradientPerMille < 0);
+                Color textColor = e.GradientPerMille < 0 ? Color.Black : Color.White;
+                string sign = e.GradientPerMille < 0 ? "-" : "+";
+                var signWidth = FontGradient.MeasureString(sign) / Scale;
+                if (size > 44)
+                {
+                    string text = Math.Abs(e.GradientPerMille).ToString();
+                    var fontWidth = FontGradient.MeasureString(text) / Scale;
+                    gradientText.Add(new TextPrimitive(new Point((int)(9 - fontWidth / 2), (int)((minp + maxp - 1) / 2 - FontHeightGradient / 2)), textColor, text, FontGradient));
+                    gradientText.Add(new TextPrimitive(new Point((int)(9 - signWidth / 2), minp + 3), textColor, sign, FontGradient));
+                    gradientText.Add(new TextPrimitive(new Point((int)(9 - signWidth / 2), maxp - 8 - (int)FontHeightGradient), textColor, sign, FontGradient));
+                }
+                else if (size > 14)
+                {
+                    gradientText.Add(new TextPrimitive(new Point((int)(9 - signWidth / 2), (int)(((minp + maxp - 1) / 2 - FontHeightGradient / 2))), textColor, sign, FontGradient));
+                }
+            }
+            GradientText = gradientText;
+            GradientRectangles = gradientRectangles;
+        }
+
+        void CreatePASP(List<PlanningTarget> SpeedTargets)
+        {
+            List<Rectangle> paspRectangles = new List<Rectangle>();
+            if (SpeedTargets.Count == 0) goto Exit;
             PlanningTarget prev_pasp = SpeedTargets[0];
             bool oth1 = false;
             bool oth2 = false;
@@ -151,13 +278,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 if (cur.DistanceToTrainM < 0) continue;
                 if (cur.DistanceToTrainM > MaxViewingDistanceM)
                 {
-                    spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14, 0, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - 15 + (int)Math.Round(1/Scale)), ColorPASPlight);
+                    paspRectangles.Add(new Rectangle(14, 0, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - 15 + (int)Math.Round(1 / Scale)));
                     break;
                 }
                 if (prev_pasp.TargetSpeedMpS > cur.TargetSpeedMpS && (!oth2 || cur.TargetSpeedMpS == 0))
                 {
                     oth1 = true;
-                    spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14, GetPlanningHeight(cur.DistanceToTrainM) - 15, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - GetPlanningHeight(cur.DistanceToTrainM) + (int)Math.Round(1 / Scale)), ColorPASPlight);
+                    paspRectangles.Add(new Rectangle(14, GetPlanningHeight(cur.DistanceToTrainM) - 15, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - GetPlanningHeight(cur.DistanceToTrainM) + (int)Math.Round(1 / Scale)));
                     float v = cur.TargetSpeedMpS / allowedSpeedMpS;
                     if (v > 0.74) widthFactor = 3.0f / 4;
                     else if (v > 0.49) widthFactor = 1.0f / 2;
@@ -167,14 +294,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 }
                 if (oth1 && prev.TargetSpeedMpS < cur.TargetSpeedMpS) oth2 = true;
             }
-            if (IndicationMarkerDistanceM > 0) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14, GetPlanningHeight(IndicationMarkerDistanceM.Value) - 15, 93, 2), ColorYellow);
+        Exit:
+            PASPRectangles = paspRectangles;
         }
 
 
-        bool CheckTargetOverlap(int i, int j)
+        bool CheckTargetOverlap(PlanningTarget cur, PlanningTarget chk)
         {
-            PlanningTarget cur = SpeedTargets[i];
-            PlanningTarget chk = SpeedTargets[j];
             int a = GetPlanningHeight(cur.DistanceToTrainM);
             int b = GetPlanningHeight(chk.DistanceToTrainM);
             if (Math.Abs(a - b) > 18) return false;
@@ -186,23 +312,25 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             return cur.TargetSpeedMpS > chk.TargetSpeedMpS;
         }
 
-        void DrawTargetSpeeds(SpriteBatch spriteBatch, Point position)
+        void CreateTargetSpeeds(List<PlanningTarget> speedTargets)
         {
+            var speedTargetText = new List<TextPrimitive>(speedTargets.Count);
+            var speedTargetTextures = new List<LocatedTexture>(speedTargets.Count);
             int ld = 0;
-            for (int i = 1; i < SpeedTargets.Count; i++)
+            for (int i = 1; i < speedTargets.Count; i++)
             {
                 bool overlap = false;
-                for (int j = 1; j < SpeedTargets.Count; j++)
+                for (int j = 1; j < speedTargets.Count; j++)
                 {
-                    if (i != j && CheckTargetOverlap(i, j))
+                    if (i != j && CheckTargetOverlap(speedTargets[i], speedTargets[j]))
                     {
                         overlap = true;
                         break;
                     }
                 }
                 if (overlap) continue;
-                PlanningTarget cur = SpeedTargets[i];
-                PlanningTarget prev = SpeedTargets[ld];
+                PlanningTarget cur = speedTargets[i];
+                PlanningTarget prev = speedTargets[ld];
                 if (cur.DistanceToTrainM < 0) continue;
                 ld = i;
                 bool im = (IndicationMarkerDistanceM??-1) > 0 && IndicationMarkerTarget.Value.Equals(cur);
@@ -211,26 +339,27 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 string text = ((int)MpS.ToKpH(cur.TargetSpeedMpS)).ToString();
                 if (im || prev.TargetSpeedMpS > cur.TargetSpeedMpS || cur.TargetSpeedMpS == 0)
                 {
-                    Point textPosition = new Point(position.X + (int)(25*Scale), position.Y + (int)((a - 2)*Scale));
-                    FontTargetSpeed.Draw(spriteBatch, textPosition, text, im ? ColorYellow : ColorGrey);
-                    spriteBatch.Draw(im ? YellowSpeedReductionTexture : SpeedReductionTexture, ScaledRectangle(position, 4, a + 7 - 10, 20, 20), Color.White);
+                    speedTargetText.Add(new TextPrimitive(new Point(25, a - 2), im ? ColorYellow : ColorGrey, text, FontTargetSpeed));
+                    speedTargetTextures.Add(new LocatedTexture(im ? YellowSpeedReductionTexture : SpeedReductionTexture, 4, a + 7 - 10));
                 }
                 else
                 {
-                    Point textPosition = new Point(position.X + (int)(25 * Scale), position.Y + (int)((a - 2 - FontHeightTargetSpeed) * Scale));
-                    FontTargetSpeed.Draw(spriteBatch, textPosition, text, ColorGrey);
-                    spriteBatch.Draw(SpeedIncreaseTexture, ScaledRectangle(position, 4, a - 7 - 10, 20, 20), Color.White);
+                    speedTargetText.Add(new TextPrimitive(new Point(25, a - 2 - (int)FontHeightTargetSpeed), ColorGrey, text, FontTargetSpeed));
+                    speedTargetTextures.Add(new LocatedTexture(SpeedIncreaseTexture, 4, a - 7 - 10));
                 }
-                if (cur.TargetSpeedMpS == 0) return;
+                if (cur.TargetSpeedMpS == 0) break;
             }
+            SpeedTargetText = speedTargetText;
+            SpeedTargetTextures = speedTargetTextures;
         }
 
-        void DrawTrackConditions(SpriteBatch spriteBatch, Point position)
+        void CreateTrackConditions(List<PlanningTrackCondition> trackConditions)
         {
+            var trackConditionTextures = new List<LocatedTexture>(trackConditions.Count);
             int[] prevObject = { LinePositions[0] + 10, LinePositions[0] + 10, LinePositions[0] + 10 };
-            for (int i = 0; i < TrackConditions.Count; i++)
+            for (int i = 0; i < trackConditions.Count; i++)
             {
-                PlanningTrackCondition condition = TrackConditions[i];
+                PlanningTrackCondition condition = trackConditions[i];
                 int posy = GetPlanningHeight(condition.DistanceToTrainM) - 10;
                 int row = i % 3;
                 if (condition.DistanceToTrainM > MaxViewingDistanceM || condition.DistanceToTrainM < 0 || prevObject[row] - posy < 20) continue;
@@ -239,126 +368,100 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 switch(condition.Type)
                 {
                     case TrackConditionType.LowerPantograph:
-                        tex = TrackConditionTextures[condition.YellowColour ? 2 : 1];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 2 : 1];
                         break;
                     case TrackConditionType.RaisePantograph:
-                        tex = TrackConditionTextures[condition.YellowColour ? 4 : 3];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 4 : 3];
                         break;
                     case TrackConditionType.NeutralSectionAnnouncement:
-                        tex = TrackConditionTextures[condition.YellowColour ? 6 : 5];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 6 : 5];
                         break;
                     case TrackConditionType.EndOfNeutralSection:
-                        tex = TrackConditionTextures[condition.YellowColour ? 8 : 7];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 8 : 7];
                         break;
                     case TrackConditionType.NonStoppingArea:
-                        tex = TrackConditionTextures[9];
+                        tex = TrackConditionTextureData[9];
                         break;
                     case TrackConditionType.RadioHole:
-                        tex = TrackConditionTextures[10];
+                        tex = TrackConditionTextureData[10];
                         break;
                     case TrackConditionType.MagneticShoeInhibition:
-                        tex = TrackConditionTextures[condition.YellowColour ? 12 : 11];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 12 : 11];
                         break;
                     case TrackConditionType.EddyCurrentBrakeInhibition:
-                        tex = TrackConditionTextures[condition.YellowColour ? 14 : 13];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 14 : 13];
                         break;
                     case TrackConditionType.RegenerativeBrakeInhibition:
-                        tex = TrackConditionTextures[condition.YellowColour ? 16 : 15];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 16 : 15];
                         break;
                     case TrackConditionType.CloseAirIntake:
-                        tex = TrackConditionTextures[condition.YellowColour ? 19 : 17];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 19 : 17];
                         break;
                     case TrackConditionType.OpenAirIntake:
-                        tex = TrackConditionTextures[condition.YellowColour ? 20 : 18];
+                        tex = TrackConditionTextureData[condition.YellowColour ? 20 : 18];
                         break;
                     case TrackConditionType.SoundHorn:
-                        tex = TrackConditionTextures[24];
+                        tex = TrackConditionTextureData[35];
                         break;
                     case TrackConditionType.TractionSystemChange:
                         switch(condition.TractionSystem)
                         {
+                            case TractionSystem.NonFitted:
+                                tex = TrackConditionTextureData[condition.YellowColour ? 24 : 23];
+                                break;
+                            case TractionSystem.AC25kV:
+                                tex = TrackConditionTextureData[condition.YellowColour ? 26 : 25];
+                                break;
+                            case TractionSystem.AC15kV:
+                                tex = TrackConditionTextureData[condition.YellowColour ? 28 : 27];
+                                break;
+                            case TractionSystem.DC3000V:
+                                tex = TrackConditionTextureData[condition.YellowColour ? 30 : 29];
+                                break;
+                            case TractionSystem.DC1500V:
+                                tex = TrackConditionTextureData[condition.YellowColour ? 32 : 31];
+                                break;
+                            case TractionSystem.DC750V:
+                                tex = TrackConditionTextureData[condition.YellowColour ? 34 : 33];
+                                break;
                             default:
-                                continue; // TODO
+                                continue;
                         }
                         break;
                     default:
                         continue;
                 }
-                spriteBatch.Draw(tex, ScaledRectangle(position, TrackConditionPositions[row], posy, 20, 20), Color.White);
+                trackConditionTextures.Add(new LocatedTexture(tex, TrackConditionPositions[row], posy));
             }
-        }
-
-        void DrawGradient(SpriteBatch spriteBatch, Point position)
-        {
-            for (int i = 0; i + 1 < GradientProfile.Count; i++)
-            {
-                GradientProfileElement e = GradientProfile[i];
-                if (e.DistanceToTrainM > MaxViewingDistanceM) break;
-
-                float max = GradientProfile[i + 1].DistanceToTrainM;
-                if (max < 0) continue;
-                int minp = GetPlanningHeight(max) - 15;
-                int maxp = GetPlanningHeight(e.DistanceToTrainM) - 15;
-                if (max > MaxViewingDistanceM) minp = 0;
-                int size = maxp - minp;
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, minp, 18, size), e.GradientPerMille < 0 ? ColorGrey : ColorDarkGrey);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, minp, 18, 1), e.GradientPerMille < 0 ? ColorWhite : ColorGrey);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, minp, 1, size), e.GradientPerMille < 0 ? ColorWhite : ColorGrey);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, maxp - 1, 18, 1), ColorBlack);
-                if (size > 44)
-                {
-                    {
-                        string text = Math.Abs(e.GradientPerMille).ToString();
-                        var fontWidth = FontGradient.MeasureString(text) / Scale;
-                        Point textPosition = new Point(position.X + (int)((9 - fontWidth/2) * Scale), position.Y + (int)(((minp + maxp - 1) / 2 - FontHeightGradient / 2) * Scale));
-                        FontGradient.Draw(spriteBatch, textPosition, text, e.GradientPerMille < 0 ? ColorBlack : ColorWhite);
-                    }
-                    {
-                        string text = e.GradientPerMille < 0 ? "-" : "+";
-                        var fontWidth = FontGradient.MeasureString(text) / Scale;
-                        Point textPosition = new Point(position.X + (int)((9 - fontWidth / 2) * Scale), position.Y + (int)((minp + 3) * Scale));
-                        FontGradient.Draw(spriteBatch, textPosition, text, e.GradientPerMille < 0 ? ColorBlack : ColorWhite);
-                    }
-                    {
-                        string text = e.GradientPerMille < 0 ? "-" : "+";
-                        var fontWidth = FontGradient.MeasureString(text) / Scale;
-                        Point textPosition = new Point(position.X + (int)((9 - fontWidth / 2) * Scale), position.Y + (int)((maxp - 8 - FontHeightGradient) * Scale));
-                        FontGradient.Draw(spriteBatch, textPosition, text, e.GradientPerMille < 0 ? ColorBlack : ColorWhite);
-                    }
-                }
-                else if (size > 14)
-                {
-                    string text = e.GradientPerMille < 0 ? "-" : "+";
-                    var fontWidth = FontGradient.MeasureString(text) / Scale;
-                    Point textPosition = new Point(position.X + (int)((9 - fontWidth / 2) * Scale), position.Y + (int)(((minp + maxp - 1) / 2 - FontHeightGradient / 2) * Scale));
-                    FontGradient.Draw(spriteBatch, textPosition, text, e.GradientPerMille < 0 ? ColorBlack : ColorWhite);
-                }
-            }
+            TrackConditionTextures = trackConditionTextures;
         }
 
         public void PrepareFrame(ETCSStatus status)
         {
-            /*SpeedTargets.Clear();
-            SpeedTargets.Add(new PlanningTarget(0, 90));
-            SpeedTargets.Add(new PlanningTarget(500, 120));
-            SpeedTargets.Add(new PlanningTarget(2000, 60));
-            SpeedTargets.Add(new PlanningTarget(6000, 0));
-            IndicationMarkerTarget = SpeedTargets[1];
-            IndicationMarkerDistanceM = 300;
-
-            GradientProfile.Add(new GradientProfileElement(0, 5));
-            GradientProfile.Add(new GradientProfileElement(500, -5));
-            GradientProfile.Add(new GradientProfileElement(2000, 7));
-            GradientProfile.Add(new GradientProfileElement(3000, -10));
-            GradientProfile.Add(new GradientProfileElement(4000, 0));*/
-            Visible = status.PlanningAreaShown;
+            if (Visible != status.PlanningAreaShown)
+            {
+                Visible = status.PlanningAreaShown;
+                if (Visible)
+                {
+                    ButtonScaleUp.Enabled = MaxViewingDistanceM > MinZoomDistanceM;
+                    ButtonScaleDown.Enabled = MaxViewingDistanceM < MaxZoomDistanceM;
+                }
+                else
+                {
+                    ButtonScaleDown.Enabled = false;
+                    ButtonScaleUp.Enabled = false;
+                }
+            }
             if (Visible)
             {
-                SpeedTargets = status.SpeedTargets;
+                if (DMI.PressedButton == ButtonScaleDown) ScaleDown();
+                if (DMI.PressedButton == ButtonScaleUp) ScaleUp();
                 IndicationMarkerTarget = status.IndicationMarkerTarget;
                 IndicationMarkerDistanceM = status.IndicationMarkerDistanceM;
-                GradientProfile = status.GradientProfile;
-                TrackConditions = status.PlanningTrackConditions;
+                CreateTrackConditions(status.PlanningTrackConditions);
+                CreatePASP(status.SpeedTargets);
+                CreateTargetSpeeds(status.SpeedTargets);
+                CreateGradient(status.GradientProfile);
             }
         }
 
@@ -371,7 +474,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             FontTargetSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightTargetSpeed * Scale, System.Drawing.FontStyle.Regular);
             FontGradient = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightGradient * Scale, System.Drawing.FontStyle.Regular);
 
-            foreach (var text in DistanceText)
+            foreach (var text in DistanceScaleText)
                 text.Font = FontDistance;
         }
 
@@ -380,17 +483,17 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         /// </summary>
         void SetDistanceText()
         {
-            DistanceText.Clear();
-            var textHeight = FontDistance.Height / Scale;
+            var distanceScaleText = new List<TextPrimitive>(DistanceScaleText.Count);
             for (int i = 0; i < 9; i++)
             {
                 if (i == 0 || i > 4)
                 {
                     string distance = (LineDistances[i] * MaxViewingDistanceM / 1000).ToString();
-                    Point unitPosition = new Point((int)(40 - 2 - FontDistance.MeasureString(distance) / Scale), (int)(LinePositions[i] - textHeight / 2f));
-                    DistanceText.Add(new TextPrimitive(unitPosition, ColorMediumGrey, distance, FontDistance));
+                    Point unitPosition = new Point((int)(40 - 2 - FontDistance.MeasureString(distance) / Scale), (int)(LinePositions[i] - FontHeightDistance / 2));
+                    distanceScaleText.Add(new TextPrimitive(unitPosition, ColorMediumGrey, distance, FontDistance));
                 }
             }
+            DistanceScaleText = distanceScaleText;
         }
 
         private int GetPlanningHeight(float distanceM)

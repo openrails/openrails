@@ -18,6 +18,7 @@
 // This file is the responsibility of the 3D & Environment Team. 
 
 using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Formats.Msts;
@@ -31,22 +32,75 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
     public class DriverMachineInterface
     {
         public readonly MSTSLocomotive Locomotive;
+        readonly Viewer Viewer;
         public readonly CircularSpeedGauge CircularSpeedGauge;
         public readonly PlanningWindow PlanningWindow;
         float PrevScale = 1;
-        float Scale = 1;
+        public float Scale { get; private set; }
         readonly int Height = 480;
         readonly int Width = 640;
 
+        // Color RGB values are from ETCS specification
+        public static readonly Color ColorGrey = new Color(195, 195, 195);
+        public static readonly Color ColorMediumGrey = new Color(150, 150, 150);
+        public static readonly Color ColorDarkGrey = new Color(85, 85, 85);
+        public static readonly Color ColorYellow = new Color(223, 223, 0);
+        public static readonly Color ColorOrange = new Color(234, 145, 0);
+        public static readonly Color ColorRed = new Color(191, 0, 2);
+        public static readonly Color ColorBackground = new Color(3, 17, 34); // dark blue
+        public static readonly Color ColorPASPlight = new Color(41, 74, 107);
+        public static readonly Color ColorPASPdark = new Color(33, 49, 74);
+
+        readonly Point SpeedAreaLocation;
+        readonly Point PlanningLocation;
+
+        public bool IsTouchScreen = true;
+        public bool IsSoftLayout;
+
+        public class Button
+        {
+            //public readonly string Name;
+            public bool Enabled;
+            public readonly bool UpType;
+            public readonly Rectangle SensitiveArea;
+            public Button(bool upType, Rectangle area)
+            {
+                Enabled = false;
+                UpType = upType;
+                SensitiveArea = area;
+            }
+        }
+
+        public readonly List<Button> SensitiveButtons = new List<Button>();
+
+        Button ActiveButton; // Name of the button currently being pressed without valid pulsation yet
+        public Button PressedButton; // Name of the button with a valid pulsation in current frame 
+
         ETCSStatus CurrentStatus;
 
-        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, CircularSpeedGauge csg, PlanningWindow planning)
+        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CabShader shader)
         {
+            Viewer = viewer;
             Locomotive = locomotive;
-            CircularSpeedGauge = csg;
-            PlanningWindow = planning;
-
             Scale = Math.Min(width / Width, height / Height);
+
+            PlanningLocation = new Point(334, IsSoftLayout ? 0 : 15);
+            SpeedAreaLocation = new Point(54, IsSoftLayout ? 0 : 15);
+
+            CircularSpeedGauge = new CircularSpeedGauge(
+                   (int)(280 * Scale),
+                   (int)(300 * Scale),
+                   /*(int)Control.MaxValue*/400,
+                   true/**/,
+                   false/*true*/,
+                   false/*Control.MaxValue == 240 || Control.MaxValue == 260*/,
+                   /*(int)Control.MinValue*/400,
+                   Locomotive,
+                   Viewer,
+                   shader
+               );
+            PlanningWindow = new PlanningWindow(this, Viewer, PlanningLocation);
+
             CircularSpeedGauge.Scale = Scale;
             PlanningWindow.Scale = Scale;
         }
@@ -75,9 +129,46 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public void Draw(SpriteBatch spriteBatch, Point position)
         {
             if (CurrentStatus == null || !CurrentStatus.DMIActive) return;
-            CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(54 * Scale), position.Y));
-            PlanningWindow.Draw(spriteBatch, new Point(position.X + (int)(334 * Scale), position.Y));
+            CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(SpeedAreaLocation.X * Scale), position.Y + (int)(SpeedAreaLocation.Y * Scale)));
+            PlanningWindow.Draw(spriteBatch, new Point(position.X + (int)(PlanningLocation.X * Scale), position.Y + (int)(PlanningLocation.Y * Scale)));
         }
+
+        public void HandleMouseInput(bool pressed, int x, int y)
+        {
+            PressedButton = null;
+            if (ActiveButton != null)
+            {
+                if (!pressed && ActiveButton.Enabled && ActiveButton.UpType && ActiveButton.SensitiveArea.Contains(x, y))
+                {
+                    PressedButton = ActiveButton;
+                }
+            }
+            else if (pressed)
+            {
+                foreach (Button b in SensitiveButtons)
+                {
+                    if (b.SensitiveArea.Contains(x, y))
+                    {
+                        ActiveButton = b;
+                        if (!b.UpType && b.Enabled) PressedButton = ActiveButton;
+                        break;
+                    }
+                }
+            }
+            if (!pressed) ActiveButton = null;
+        }
+        /*public void HandleButtonInput(string button, bool pressed)
+        {
+            if (pressed)
+            {
+                if ()
+            }
+            else if (ActiveButton == button && SensitiveButtons[ActiveButton].UpType)
+            {
+                PressedButton = ActiveButton;
+                ActiveButton = null;
+            }
+        }*/
     }
     public class DriverMachineInterfaceRenderer : CabViewDigitalRenderer
     {
@@ -86,32 +177,26 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
-            DMI = new DriverMachineInterface((float)Control.Width, (float)Control.Height, locomotive,
-                new CircularSpeedGauge(
-                    (int)Control.Width * 280 / 640,
-                    (int)Control.Height * 300 / 480,
-                    (int)Control.MaxValue,
-                    Control.Units == CABViewControlUnits.KM_PER_HOUR,
-                    true,
-                    Control.MaxValue == 240 || Control.MaxValue == 260,
-                    (int)Control.MinValue,
-                    Locomotive,
-                    Viewer,
-                    shader
-                ), new PlanningWindow(Viewer));
+            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer, shader);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             base.PrepareFrame(frame, elapsedTime);
-            DMI.PrepareFrame();
+            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
 
-            DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+            DMI.PrepareFrame();
+            DMI.SizeTo(DrawPosition.Width, DrawPosition.Height); DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
+            //var spriteBatch = CabShaderControlView.SpriteBatch;
+            //spriteBatch.End();
+            //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointWrap, DepthStencilState.Default, null, Shader);
             DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
+            //spriteBatch.End();
+            //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
         }
     }
 
