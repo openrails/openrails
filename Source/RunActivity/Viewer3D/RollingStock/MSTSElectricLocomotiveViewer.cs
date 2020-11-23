@@ -42,12 +42,20 @@ namespace Orts.Viewer3D.RollingStock
                 // for pantos the sound trigger related to the raised panto must be reactivated, else SignalEvent() would raise also another panto
             {
                 var iPanto = 0;
+                Event evt;
                 foreach (var panto in ElectricLocomotive.Pantographs.List)
                 {
                     if (panto.State == ORTS.Scripting.Api.PantographState.Up)
                     {
-                        ElectricLocomotive.SignalEvent((Event)((int)Event.Pantograph1Up + 2 * iPanto));
-                        break;
+                        switch (iPanto)
+                        {
+                            case 0: evt = Event.Pantograph1Up; break;
+                            case 1: evt = Event.Pantograph2Up; break;
+                            case 2: evt = Event.Pantograph3Up; break;
+                            case 3: evt = Event.Pantograph4Up; break;
+                            default: evt = Event.Pantograph1Up; break;
+                        }
+                        ElectricLocomotive.SignalEvent(evt);
                     }
                     iPanto++;
                 }
@@ -57,11 +65,14 @@ namespace Orts.Viewer3D.RollingStock
             }
         }
 
-        /// <summary>
-        /// A keyboard or mouse click has occured. Read the UserInput
-        /// structure to determine what was pressed.
-        /// </summary>
-        public override void HandleUserInput(ElapsedTime elapsedTime)
+        Event evt;
+
+
+    /// <summary>
+    /// A keyboard or mouse click has occured. Read the UserInput
+    /// structure to determine what was pressed.
+    /// </summary>
+    public override void HandleUserInput(ElapsedTime elapsedTime)
         {
             base.HandleUserInput(elapsedTime);
         }
