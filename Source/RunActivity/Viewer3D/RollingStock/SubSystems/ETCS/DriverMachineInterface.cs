@@ -54,6 +54,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly Point SpeedAreaLocation;
         readonly Point PlanningLocation;
 
+        Texture2D ColorTexture;
+
         public bool IsTouchScreen = true;
         public bool IsSoftLayout;
 
@@ -79,7 +81,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         ETCSStatus CurrentStatus;
 
-        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CabShader shader)
+        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer)
         {
             Viewer = viewer;
             Locomotive = locomotive;
@@ -98,7 +100,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                    /*(int)Control.MinValue*/400,
                    Locomotive,
                    Viewer,
-                   shader
+                   null
                );
             PlanningWindow = new PlanningWindow(this, Viewer, PlanningLocation);
 
@@ -129,7 +131,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public void Draw(SpriteBatch spriteBatch, Point position)
         {
+            if (ColorTexture == null)
+            {
+                ColorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
+                ColorTexture.SetData(new[] { Color.White });
+            }
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, null);
             if (CurrentStatus == null || !CurrentStatus.DMIActive) return;
+            spriteBatch.Draw(ColorTexture, new Rectangle(position, new Point((int)(640 * Scale), (int)(480 * Scale))), ColorBackground);
             CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(SpeedAreaLocation.X * Scale), position.Y + (int)(SpeedAreaLocation.Y * Scale)));
             PlanningWindow.Draw(spriteBatch, new Point(position.X + (int)(PlanningLocation.X * Scale), position.Y + (int)(PlanningLocation.Y * Scale)));
         }
@@ -183,7 +193,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
-            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer, shader);
+            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
@@ -226,8 +236,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             //spriteBatch.End();
             //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointWrap, DepthStencilState.Default, null, Shader);
             DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
-            //spriteBatch.End();
-            //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
+            CabShaderControlView.SpriteBatch.End();
+            CabShaderControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
         }
     }
 
