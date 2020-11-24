@@ -5,7 +5,7 @@ install:
 - ps: >-
     $ErrorActionPreference = "Stop"
 
-    choco install --yes --no-progress lazarus 7zip.portable xunit
+    choco install --yes --no-progress lazarus 7zip.portable xunit xna31
 
     if ($LASTEXITCODE -ne 0) { throw "Chocolatey failed to install all required packages - use the 're-build' option to try again" }
 
