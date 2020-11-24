@@ -218,7 +218,7 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
         /// <summary>
-        /// Track slope percent at the locomotive's location.
+        /// State of the train brake controller.
         /// </summary>
         public Func<ControllerState> TrainBrakeControllerState;
         /// <summary>
