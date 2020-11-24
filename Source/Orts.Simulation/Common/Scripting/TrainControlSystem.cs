@@ -184,7 +184,7 @@ namespace ORTS.Scripting.Api
         /// Checks the state of any pantograph
         /// int: pantograph ID (1 for first pantograph)
         /// </summary>
-        public Func<int, PantographState> PantographState;
+        public Func<int, PantographState> GetPantographState;
         /// <summary>
         /// True if all pantographs are down.
         /// </summary>
