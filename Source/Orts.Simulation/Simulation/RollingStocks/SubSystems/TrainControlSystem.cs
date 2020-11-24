@@ -300,7 +300,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PowerAuthorization = () => PowerAuthorization;
                 Script.CircuitBreakerClosingOrder = () => CircuitBreakerClosingOrder;
                 Script.CircuitBreakerOpeningOrder = () => CircuitBreakerOpeningOrder;
-                Script.PantographState = (pantoID) => Locomotive.Pantographs[pantoID].State;
+                Script.GetPantographState = (pantoID) => Locomotive.Pantographs[pantoID].State;
                 Script.ArePantographsDown = () => Locomotive.Pantographs.State == PantographState.Down;
                 Script.ThrottlePercent = () => Locomotive.ThrottleController.CurrentValue * 100;
                 Script.DynamicBrakePercent = () => Locomotive.DynamicBrakeController == null ? 0 : Locomotive.DynamicBrakeController.CurrentValue * 100;
