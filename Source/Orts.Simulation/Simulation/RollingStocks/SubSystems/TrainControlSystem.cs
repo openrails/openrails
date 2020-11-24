@@ -303,12 +303,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PantographState = (pantoID) => Locomotive.Pantographs[pantoID].State;
                 Script.ArePantographsDown = () => Locomotive.Pantographs.State == PantographState.Down;
                 Script.ThrottlePercent = () => Locomotive.ThrottleController.CurrentValue * 100;
+                Script.DynamicBrakePercent = () => Locomotive.DynamicBrakeController == null ? 0 : Locomotive.DynamicBrakeController.CurrentValue * 100;
                 Script.TractionAuthorization = () => TractionAuthorization;
                 Script.BrakePipePressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.BrakeLine1PressurePSI) : float.MaxValue;
                 Script.LocomotiveBrakeCylinderPressureBar = () => Locomotive.BrakeSystem != null ? Bar.FromPSI(Locomotive.BrakeSystem.GetCylPressurePSI()) : float.MaxValue;
                 Script.DoesBrakeCutPower = () => Locomotive.DoesBrakeCutPower;
                 Script.BrakeCutsPowerAtBrakeCylinderPressureBar = () => Bar.FromPSI(Locomotive.BrakeCutsPowerAtBrakeCylinderPressurePSI);
-                Script.CurrentElevationPercent = () => Locomotive.CurrentElevationPercent;
+                Script.TrainBrakeControllerState = () => Locomotive.TrainBrakeController.TrainBrakeControllerState;
+                Script.AccelerationMpSS = () => Locomotive.AccelerationMpSS;
+                Script.ElevationM = () => Locomotive.WorldPosition.Location.Y;
+                Script.CurrentSlopePercent = () => Locomotive.CurrentElevationPercent;
                 Script.LineSpeedMpS = () => (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
                 Script.DoesStartFromTerminalStation = () => DoesStartFromTerminalStation();
                 Script.IsColdStart = () => Locomotive.Train.ColdStart;
