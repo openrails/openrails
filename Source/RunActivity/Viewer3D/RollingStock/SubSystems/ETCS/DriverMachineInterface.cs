@@ -36,6 +36,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public readonly CircularSpeedGauge CircularSpeedGauge;
         public readonly PlanningWindow PlanningWindow;
         float PrevScale = 1;
+
+        bool Active;
+
+        public bool ShowDistanceAndSpeedInformation;
         public float Scale { get; private set; }
         readonly int Height = 480;
         readonly int Width = 640;
@@ -56,9 +60,20 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         Texture2D ColorTexture;
 
+        /// <summary>
+        /// True if the screen is sensitive
+        /// </summary>
         public bool IsTouchScreen = true;
+        /// <summary>
+        /// Controls the layout of the DMI screen depending.
+        /// Must be true if there are physical buttons to control the DMI, even if it is a touch screen.
+        /// If false, the screen must be tactile.
+        /// </summary>
         public bool IsSoftLayout;
 
+        /// <summary>
+        /// Class to store information of sensitive areas of the touch screen
+        /// </summary>
         public class Button
         {
             public readonly string Name;
@@ -76,12 +91,16 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public readonly List<Button> SensitiveButtons = new List<Button>();
 
-        Button ActiveButton; // Name of the button currently being pressed without valid pulsation yet
-        public Button PressedButton; // Name of the button with a valid pulsation in current frame 
+        /// <summary>
+        /// Name of the button currently being pressed without valid pulsation yet
+        /// </summary>
+        Button ActiveButton;
+        /// <summary>
+        /// Name of the button with a valid pulsation in current update cycle
+        /// </summary>
+        public Button PressedButton;
 
-        ETCSStatus CurrentStatus;
-
-        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer)
+        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CVCDigital control)
         {
             Viewer = viewer;
             Locomotive = locomotive;
@@ -93,14 +112,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             CircularSpeedGauge = new CircularSpeedGauge(
                    (int)(280 * Scale),
                    (int)(300 * Scale),
-                   /*(int)Control.MaxValue*/400,
-                   true/**/,
-                   false/*true*/,
-                   false/*Control.MaxValue == 240 || Control.MaxValue == 260*/,
-                   /*(int)Control.MinValue*/400,
+                   (int)control.MaxValue,
+                   control.Units == CABViewControlUnits.KM_PER_HOUR,
+                   true,
+                   control.MaxValue == 240 || control.MaxValue == 260,
+                   (int)control.MinValue,
                    Locomotive,
                    Viewer,
-                   null
+                   null,
+                   this
                );
             PlanningWindow = new PlanningWindow(this, Viewer, PlanningLocation);
 
@@ -110,10 +130,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public void PrepareFrame()
         {
-            CurrentStatus = Locomotive.TrainControlSystem.ETCSStatus?.Clone(); // Clone the status class so everything can be accessed safely
-            if (CurrentStatus == null || !CurrentStatus.DMIActive) return;
-            CircularSpeedGauge.PrepareFrame(CurrentStatus);
-            PlanningWindow.PrepareFrame(CurrentStatus);
+            ETCSStatus currentStatus = Locomotive.TrainControlSystem.ETCSStatus;
+            Active = currentStatus != null && currentStatus.DMIActive;
+            if (!Active) return;
+            CircularSpeedGauge.PrepareFrame(currentStatus);
+            PlanningWindow.PrepareFrame(currentStatus);
         }
         public void SizeTo(float width, float height)
         {
@@ -138,7 +159,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, null);
-            if (CurrentStatus == null || !CurrentStatus.DMIActive) return;
+            if (!Active) return;
             spriteBatch.Draw(ColorTexture, new Rectangle(position, new Point((int)(640 * Scale), (int)(480 * Scale))), ColorBackground);
             CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(SpeedAreaLocation.X * Scale), position.Y + (int)(SpeedAreaLocation.Y * Scale)));
             PlanningWindow.Draw(spriteBatch, new Point(position.X + (int)(PlanningLocation.X * Scale), position.Y + (int)(PlanningLocation.Y * Scale)));
@@ -186,6 +207,23 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
         }*/
     }
+
+    public abstract class DMIWindow
+    {
+        protected readonly DriverMachineInterface DMI;
+        public float Scale;
+        protected DMIWindow(DriverMachineInterface dmi)
+        {
+            DMI = dmi;
+        }
+
+        public abstract void PrepareFrame(ETCSStatus status);
+        public abstract void Draw(SpriteBatch spriteBatch, Point position);
+        public Rectangle ScaledRectangle(Point origin, int x, int y, int width, int height)
+        {
+            return new Rectangle(origin.X + (int)(x * Scale), origin.Y + (int)(y * Scale), Math.Max((int)(width * Scale), 1), Math.Max((int)(height * Scale), 1));
+        }
+    }
     public class DriverMachineInterfaceRenderer : CabViewDigitalRenderer, ICabViewMouseControlRenderer
     {
         DriverMachineInterface DMI;
@@ -193,7 +231,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
-            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer);
+            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer, control);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)

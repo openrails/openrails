@@ -32,7 +32,7 @@ using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 {
     // Compliant with ERA_ERTMS_015560 version 3.6.0 (ETCS DRIVER MACHINE INTERFACE)
-    public class CircularSpeedGauge
+    public class CircularSpeedGauge : DMIWindow
     {
         // These constants are from ETCS specification
         const int Width = 280;
@@ -80,6 +80,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         static Color[] NeedleTextureData;
 
         readonly DriverMachineInterfaceShader Shader;
+        readonly CabShader cabShader;
         readonly Viewer Viewer;
         MSTSLocomotive Locomotive;
 
@@ -102,10 +103,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         WindowTextFont FontCurrentSpeed;
 
         readonly Rectangle SourceRectangle = new Rectangle(0, 0, Width, Height);
-        public float Scale { get; set; }
 
         public CircularSpeedGauge(int width, int height, int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale,
-            MSTSLocomotive locomotive, Viewer viewer, CabShader shader)
+            MSTSLocomotive locomotive, Viewer viewer, CabShader shader, DriverMachineInterface dmi) : base(dmi)
         {
             UnitVisible = unitVisible;
             SetUnit(unitMetric);
@@ -115,9 +115,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             MaxVisibleScale = maxVisibleScale;
             Viewer = viewer;
             Locomotive = locomotive;
-            
             cabShader = shader;
-            
+
             SizeTo(width, height);
             SetRange(MaxSpeed);
 
@@ -382,18 +381,12 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             ReleaseSpeed.Text = releaseSpeed > 0 ? releaseSpeed.ToString() : String.Empty;
         }
 
-        public void PrepareFrame(ETCSStatus status)
+        public override void PrepareFrame(ETCSStatus status)
         {
             SetData(status);
         }
-        public void PrepareFrame()
-        {
-            ETCSStatus s = Locomotive.TrainControlSystem.ETCSStatus?.Clone(); // Clone the status class so everything can be accessed safely
-            if (s == null || !s.DMIActive) return;
-            SetData(s);
-        }
 
-        public void Draw(SpriteBatch spriteBatch, Point position)
+        public override void Draw(SpriteBatch spriteBatch, Point position)
         {
             if (ColorTexture == null)
             {
@@ -418,12 +411,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 spriteBatch.Draw(ColorTexture, new Rectangle(x, y, length, 1), null, Color.White, lines.W, new Vector2(0, 0), SpriteEffects.None, 0);
             }
 
-            /* TODO: Check different implementation between NewYear and Official MG versions
-            Shader.CurrentTechnique = Shader.Techniques["CircularSpeedGauge"];
-            Shader.CurrentTechnique.Passes[0].Apply();
-            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
-            */
-            
             // Monogame Spritebatch change Shaders procedure.
             // Following spriteBatch.Begin statements must reflect those for CabSpriteBatchMaterial in materials.cs
 
@@ -476,108 +463,71 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
         }
     }
-
-    /// <summary>
-    /// Wrapper class for CircularSpeedGauge, to display it as UI window control.
-    /// </summary>
-    public class CircularSpeedGaugeControl : Control
+    public class DistanceArea : DMIWindow
     {
-        public readonly CircularSpeedGauge CircularSpeedGauge;
-
-        public CircularSpeedGaugeControl(int width, int height, float maxSpeedMpS, WindowManager owner)
-            : base(0, 0, width, height)
+        readonly int[] DistanceLinePositionsY = { -1, 6, 13, 22, 32, 45, 59, 79, 105, 152, 185 };
+        readonly int[] DistanceLinePositionsX = { 12, 16, 16, 16, 16, 12, 16, 16, 16, 16, 12 };
+        /*Component a2(54,30, displayDistanceText);
+        Component distanceBar(54,191, displayDistance);
+        Component a23(54, 221, nullptr);*/
+        void displayDistance()
         {
-            CircularSpeedGauge = new CircularSpeedGauge(
-                width,
-                height,
-                owner.Viewer.MilepostUnitsMetric ? (int)MpS.ToKpH(maxSpeedMpS) : (int)MpS.ToMpH(maxSpeedMpS),
-                owner.Viewer.MilepostUnitsMetric,
-                true,
-                (int)MpS.ToKpH(maxSpeedMpS) == 240 || (int)MpS.ToKpH(maxSpeedMpS) == 260,
-                0,
-                (MSTSLocomotive)owner.Viewer.PlayerLocomotive,
-                owner.Viewer
-            );
-        }
-
-        /// <summary>
-        /// Resize control to fit into a new rectangle, by keeping aspect ratio.
-        /// </summary>
-        /// <param name="width">The new width of the control</param>
-        /// <param name="height">The new height of the control</param>
-        public void SizeTo(int width, int height)
-        {
-            Position.Width = width;
-            Position.Height = height;
-            CircularSpeedGauge.SizeTo(width, height);
-        }
-
-        /// <summary>
-        /// Recalculate dial lines and numbers positions to a new speed scale.
-        /// </summary>
-        /// <param name="maxSpeedMpS">Maximal speed to show in m/s, which will be recalculated to the actual unit: km/h or mph</param>
-        public void SetRange(float maxSpeedMpS)
-        {
-            CircularSpeedGauge.SetRange(maxSpeedMpS);
-        }
-
-        public void PrepareFrame()
-        {
-            CircularSpeedGauge.PrepareFrame();
-        }
-
-        internal override void Draw(SpriteBatch spriteBatch, Point position)
-        {
-            // Hack to adjust for track monitor
-            position.X += 8;
-            position.Y += 20;
-
-            CircularSpeedGauge.Draw(spriteBatch, position);
-        }
-    }
-
-    /// <summary>
-    /// Wrapper class for CircularSpeedGauge, to render it as a 2D cabview control
-    /// </summary>
-    public class CabViewCircularSpeedGaugeRenderer : CabViewDigitalRenderer
-    {
-        public readonly CircularSpeedGauge CircularSpeedGauge;
-        float PrevScale = 1;
-
-        [CallOnThread("Loader")]
-        public CabViewCircularSpeedGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
-            : base(viewer, locomotive, control, shader)
-        {
-            CircularSpeedGauge = new CircularSpeedGauge(
-                (int)Control.Width,
-                (int)Control.Height,
-                (int)Control.MaxValue,
-                Control.Units == CABViewControlUnits.KM_PER_HOUR,
-                true,
-                Control.MaxValue == 240 || Control.MaxValue == 260,
-                (int)Control.MinValue,
-                Locomotive,
-                Viewer
-            );
-        }
-
-        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
-        {
-            base.PrepareFrame(frame, elapsedTime);
-            CircularSpeedGauge.PrepareFrame();
-
-            CircularSpeedGauge.SizeTo(DrawPosition.Width, DrawPosition.Height);
-            if (Math.Abs(1f - PrevScale / CircularSpeedGauge.Scale) > 0.1f)
+            /*for(float y = 186; y>=(186-h); y-=0.5)
             {
-                PrevScale = CircularSpeedGauge.Scale;
-                CircularSpeedGauge.SetFont();
+                distanceBar.drawLine(29, y, 39, y);
+            }*/
+        }
+        bool DisplayDistance;
+        bool DisplayTTI;
+        Rectangle TTI;
+        Color TTIColor;
+        Rectangle DistanceBar;
+        TextPrimitive TargetDistanceText;
+        WindowTextFont TargetDistanceFont;
+        readonly float TargetDistanceFontHeight = 10;
+        Texture2D ColorTexture;
+        public DistanceArea(DriverMachineInterface dmi, Point position) : base(dmi)
+        {
+
+        }
+        public override void Draw(SpriteBatch spriteBatch, Point position)
+        {
+            if (ColorTexture == null)
+            {
+                ColorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
+                ColorTexture.SetData(new[] { Color.White });
+            }
+            if (!DisplayDistance) return;
+            spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceBar.X, DistanceBar.Y, DistanceBar.Width, DistanceBar.Height), ColorGrey);
+
+            // Distance speed lines
+            for (int i = 0; i < 11; i++)
+            {
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceLinePositionsX[i], DistanceLinePositionsY[i], 25 - DistanceLinePositionsX[i], (int)Math.Max(1, 1 / Scale)), ColorGrey);
             }
         }
-
-        public override void Draw(GraphicsDevice graphicsDevice)
+        public override void PrepareFrame(ETCSStatus status)
         {
-            CircularSpeedGauge.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
+            DisplayDistance = false;
+            float dist = status.TargetDistanceM.Value;
+            if (status.CurrentMonitor == Monitor.CeilingSpeed && !status.TargetSpeedMpS.HasValue) return;
+            if (!DMI.ShowDistanceAndSpeedInformation && (status.CurrentMode == Mode.OS || status.CurrentMode == Mode.SR)) return;
+
+            if (dist > 1000) dist = 1000;
+            double h;
+            if (dist < 100) h = dist / 100 * (185 - 152);
+            else
+            {
+                h = 185 - 152;
+                h += (Math.Log10(dist) - 2) * (152 + 1);
+            }
+            DistanceBar = new Rectangle(29, (int)(186 - h), 10, (int)h);
+
+            var text = (((int)(dist / 10)) * 10).ToString();
+            var fontSize = TargetDistanceFont.MeasureString(text) / Scale;
+            TargetDistanceText = new TextPrimitive(new Point((int)(54-fontSize), 10), ColorGrey, text, TargetDistanceFont);
+
+            DisplayDistance = true;
         }
     }
-
 }
