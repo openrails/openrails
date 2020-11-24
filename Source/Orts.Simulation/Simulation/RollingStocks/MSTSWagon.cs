@@ -423,16 +423,16 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
-            // Ensure Drive Axles is set
+            // Ensure Drive Axles is set to a default if no OR value added to WAG file
             if (WagonNumAxles == 0)
             {
                 if (MSTSWagonNumWheels != 0 && MSTSWagonNumWheels < 6)
                 {
-                    WagonNumAxles = MSTSWagonNumWheels;
+                    WagonNumAxles = (int) MSTSWagonNumWheels;
                 }
                 else
                 {
-                    WagonNumAxles = 4.0f; // Set 4 axles as default
+                    WagonNumAxles = 4; // Set 4 axles as default
                 }
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
@@ -1222,7 +1222,7 @@ namespace Orts.Simulation.RollingStocks
                 case "wagon(inside": HasInsideView = true; ParseWagonInside(stf); break;
                 case "wagon(orts3dcab": Parse3DCab(stf); break;
                 case "wagon(numwheels": MSTSWagonNumWheels= stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); break;
-                case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "wagon(ortsnumberaxles": WagonNumAxles = stf.ReadIntBlock(null); break;
                 case "wagon(ortspantographs":
                     Pantographs.Parse(lowercasetoken, stf);
                     break;
@@ -2208,13 +2208,9 @@ namespace Orts.Simulation.RollingStocks
             float TrackIntersect = LowLoadGrade - (TrackGrad * LowLoadKg);
 
             // Determine Axle loading of Car
-            if (WagonType == WagonTypes.Engine && IsPlayerTrain)
+            if (WagonType == WagonTypes.Engine && IsPlayerTrain && Simulator.PlayerLocomotive is MSTSLocomotive locoParameters)
             {
-                var LocoParameters = Simulator.PlayerLocomotive as MSTSLocomotive;
-                if (LocoParameters != null)
-                {
-                    AxleLoadKg = LocoParameters.DrvWheelWeightKg / LocoParameters.LocoNumDrvAxles;
-                }
+                AxleLoadKg = locoParameters.DrvWheelWeightKg / locoParameters.LocoNumDrvAxles;
             }
             else
             {

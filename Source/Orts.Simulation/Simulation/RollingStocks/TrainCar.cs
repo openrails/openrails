@@ -557,9 +557,9 @@ namespace Orts.Simulation.RollingStocks
         protected float StartCurveResistanceFactor = 2.0f; // Set curve friction at Start = 200%
         protected float RouteSpeedMpS; // Max Route Speed Limit
         protected const float GravitationalAccelerationMpS2 = 9.80665f; // Acceleration due to gravity 9.80665 m/s2
-        protected float WagonNumAxles; // Number of axles on a wagon
+        protected int WagonNumAxles; // Number of axles on a wagon
         protected float MSTSWagonNumWheels; // Number of axless on a wagon - used to read MSTS value as default
-        protected float LocoNumDrvAxles; // Number of drive axles on locomotive
+        protected int LocoNumDrvAxles; // Number of drive axles on locomotive
         protected float MSTSLocoNumDrvWheels; // Number of drive axles on locomotive - used to read MSTS value as default
         public float DriverWheelRadiusM = Me.FromIn(30.0f); // Drive wheel radius of locomotive wheels
 
@@ -1469,7 +1469,7 @@ namespace Orts.Simulation.RollingStocks
 
                                 if (LocoNumDrvAxles >= Axles) // Test to see if ENG file value is too big (typically doubled)
                                 {
-                                    LocoNumDrvAxles = LocoNumDrvAxles / 2.0f;  // Appears this might be the number of wheels rather then the axles.
+                                    LocoNumDrvAxles = LocoNumDrvAxles / 2;  // Appears this might be the number of wheels rather then the axles.
                                 }
 
                                 //    Approximation for calculating rigid wheelbase for steam locomotives

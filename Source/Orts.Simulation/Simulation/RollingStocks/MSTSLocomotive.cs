@@ -828,7 +828,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(dynamicbrakesdelaytimebeforeengaging": DynamicBrakeDelayS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(dynamicbrakesresistorcurrentlimit": DynamicBrakeMaxCurrentA = stf.ReadFloatBlock(STFReader.UNITS.Current, null); break;
                 case "engine(numwheels": MSTSLocoNumDrvWheels = stf.ReadFloatBlock(STFReader.UNITS.None, 4.0f); if (MSTSLocoNumDrvWheels < 1) STFException.TraceWarning(stf, "Engine:NumWheels is less than 1, parts of the simulation may not function correctly"); break;
-                case "engine(ortsnumberdriveaxles": LocoNumDrvAxles = stf.ReadFloatBlock(STFReader.UNITS.None, null); if (LocoNumDrvAxles < 1) STFException.TraceWarning(stf, "Engine:ORTSNumberDriveAxles is less than 1, parts of the simulation may not function correctly"); break;
+                case "engine(ortsnumberdriveaxles": LocoNumDrvAxles = stf.ReadIntBlock(null); if (LocoNumDrvAxles < 1) STFException.TraceWarning(stf, "Engine:ORTSNumberDriveAxles is less than 1, parts of the simulation may not function correctly"); break;
                 case "engine(antislip": AntiSlip = stf.ReadBoolBlock(false); break;
                 case "engine(ortsdrivewheelweight": InitialDrvWheelWeightKg = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "engine(engineoperatingprocedures": EngineOperatingProcedures = stf.ReadStringBlock(""); break;
@@ -1225,16 +1225,16 @@ namespace Orts.Simulation.RollingStocks
                 CurrentTrackSandBoxCapacityM3 = MaxTrackSandBoxCapacityM3;
             }
             
-            // Ensure Drive Axles is set
+            // Ensure Drive Axles is set with a default value if user doesn't supply an OR value in ENG file
             if (LocoNumDrvAxles == 0)
             {
                 if (MSTSLocoNumDrvWheels != 0 && MSTSLocoNumDrvWheels < 6)
                 {
-                    LocoNumDrvAxles = MSTSLocoNumDrvWheels;
+                    LocoNumDrvAxles = (int) MSTSLocoNumDrvWheels;
                 }
                 else
                 {
-                    LocoNumDrvAxles = 4.0f; // Set 4 axles as default
+                    LocoNumDrvAxles = 4; // Set 4 axles as default
                 }
 
                 if (Simulator.Settings.VerboseConfigurationMessages)
