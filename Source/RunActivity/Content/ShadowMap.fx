@@ -92,7 +92,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 
 	if (determinant(In.Instance) != 0) {
 		In.Position = mul(In.Position, transpose(In.Instance));
-		In.Normal = mul(In.Normal, transpose(In.Instance));
+		In.Normal = mul(In.Normal, (float3x3)transpose(In.Instance));
 	}
 
 	Out.Position = mul(In.Position, WorldViewProjection);
@@ -110,7 +110,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT_FOREST In)
 	float3 upVector = float3(0, -1, 0);
 
 	// Move the vertex left/right/up/down based on the normal values (tree size).
-	float3 newPosition = In.Position;
+	float3 newPosition = (float3)In.Position;
 	newPosition += (In.TexCoord.x - 0.5f) * SideVector * In.Normal.x;
 	newPosition += (In.TexCoord.y - 1.0f) * upVector * In.Normal.y;
 	In.Position = float4(newPosition, 1);
