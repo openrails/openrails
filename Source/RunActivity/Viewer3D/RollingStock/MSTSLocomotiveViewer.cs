@@ -1049,7 +1049,6 @@ namespace Orts.Viewer3D.RollingStock
         public CabRenderer(Viewer viewer, MSTSLocomotive car)
         {
             //Sequence = RenderPrimitiveSequence.CabView;
-            _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
             _Viewer = viewer;
             _Locomotive = car;
 
@@ -1173,6 +1172,7 @@ namespace Orts.Viewer3D.RollingStock
                     ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
             }
 
+            _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch", effect: _Shader);
             _PrevScreenSize = DisplaySize;
 
         }
