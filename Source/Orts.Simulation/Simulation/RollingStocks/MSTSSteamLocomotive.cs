@@ -1070,7 +1070,7 @@ namespace Orts.Simulation.RollingStocks
             if (ZeroError(CylinderStrokeM, "CylinderStroke"))
                 CylinderStrokeM = 1;
             if (ZeroError(DriverWheelRadiusM, "WheelRadius"))
-                DriverWheelRadiusM = 30.0f;
+                DriverWheelRadiusM = Me.FromIn(30.0f);
             if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
                 MaxBoilerPressurePSI = 1;
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
