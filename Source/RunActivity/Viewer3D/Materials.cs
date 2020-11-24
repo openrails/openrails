@@ -370,8 +370,9 @@ namespace Orts.Viewer3D
        public bool LoadNightTextures()
         {
             int count = 0;
-            var sceneryMaterials = Materials.Values.Where((material) => material is SceneryMaterial);
-            foreach (SceneryMaterial material in sceneryMaterials)
+            foreach (SceneryMaterial material in from material in Materials.Values
+                                                 where material is SceneryMaterial
+                                                 select material)
             {
                 if (material.LoadNightTexture())
                     count++;
@@ -392,8 +393,9 @@ namespace Orts.Viewer3D
        public bool LoadDayTextures()
        {
            int count = 0;
-            var sceneryMaterials = Materials.Values.Where((material) => material is SceneryMaterial);
-            foreach (SceneryMaterial material in sceneryMaterials)
+            foreach (SceneryMaterial material in from material in Materials.Values
+                                                 where material is SceneryMaterial
+                                                 select material)
             {
                 if (material.LoadDayTexture())
                     count++;
