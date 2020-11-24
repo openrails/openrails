@@ -208,9 +208,9 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> ElevationM;
         /// <summary>
-        /// Track slope percent at the locomotive's location.
+        /// Track gradient percent at the locomotive's location.
         /// </summary>
-        public Func<float> CurrentSlopePercent;
+        public Func<float> CurrentGradientPercent;
         /// <summary>
         /// Line speed taken from .trk file.
         /// </summary>
