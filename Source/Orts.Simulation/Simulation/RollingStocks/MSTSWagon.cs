@@ -103,7 +103,7 @@ namespace Orts.Simulation.RollingStocks
         public string InteriorSoundFileName;
         public string Cab3DSoundFileName;
         public float ExternalSoundPassThruPercent = -1;
-        public float WheelRadiusM = Me.FromIn(18.0f);          // provide some defaults in case it's missing from the wag
+        public float WheelRadiusM = Me.FromIn(18.0f);  // Provide some defaults in case it's missing from the wag - Wagon wheels could vary in size from approx 10" to 25".
         protected float StaticFrictionFactorN;    // factor to multiply friction by to determine static or starting friction - will vary depending upon whether roller or friction bearing
         float FrictionLowSpeedN; // Davis low speed value 0 - 5 mph
         float FrictionBelowMergeSpeedN; // Davis low speed value for defined speed
