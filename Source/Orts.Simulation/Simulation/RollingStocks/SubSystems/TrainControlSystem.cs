@@ -312,8 +312,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.BrakeCutsPowerAtBrakeCylinderPressureBar = () => Bar.FromPSI(Locomotive.BrakeCutsPowerAtBrakeCylinderPressurePSI);
                 Script.TrainBrakeControllerState = () => Locomotive.TrainBrakeController.TrainBrakeControllerState;
                 Script.AccelerationMpSS = () => Locomotive.AccelerationMpSS;
-                Script.ElevationM = () => Locomotive.WorldPosition.Location.Y;
-                Script.CurrentSlopePercent = () => Locomotive.CurrentElevationPercent;
+                Script.AltitudeM = () => Locomotive.WorldPosition.Location.Y;
+                Script.CurrentElevationPercent = () => Locomotive.CurrentElevationPercent;
                 Script.LineSpeedMpS = () => (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
                 Script.DoesStartFromTerminalStation = () => DoesStartFromTerminalStation();
                 Script.IsColdStart = () => Locomotive.Train.ColdStart;

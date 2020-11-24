@@ -226,13 +226,13 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> AccelerationMpSS;
         /// <summary>
-        /// Locomotive elevation.
+        /// Locomotive altitude.
         /// </summary>
-        public Func<float> ElevationM;
+        public Func<float> AltitudeM;
         /// <summary>
-        /// Track slope percent at the locomotive's location.
+        /// Track gradient percent at the locomotive's location.
         /// </summary>
-        public Func<float> CurrentSlopePercent;
+        public Func<float> CurrentElevationPercent;
         /// <summary>
         /// Line speed taken from .trk file.
         /// </summary>
