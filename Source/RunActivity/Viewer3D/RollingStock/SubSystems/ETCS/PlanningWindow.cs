@@ -214,8 +214,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
 
             // Scale buttons
-            spriteBatch.Draw(ScaleUpTexture[ButtonScaleUp.Enabled ? 1 : 0], new Vector2(position.X + 14*Scale, position.Y + 287*Scale), null, Color.White, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 1);
-            //spriteBatch.Draw(ScaleUpTexture[ButtonScaleUp.Enabled ? 1 : 0], ScaledRectangle(position, 14, 287, 12, 12), Color.White);
+            spriteBatch.Draw(ScaleUpTexture[ButtonScaleUp.Enabled ? 1 : 0], ScaledRectangle(position, 14, 287, 12, 12), Color.White);
             spriteBatch.Draw(ScaleDownTexture[ButtonScaleDown.Enabled ? 1 : 0], ScaledRectangle(position, 14, 1, 12, 12), Color.White);
         }
 

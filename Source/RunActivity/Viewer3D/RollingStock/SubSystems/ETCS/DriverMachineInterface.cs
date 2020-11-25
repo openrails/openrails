@@ -60,6 +60,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         Texture2D ColorTexture;
 
+        bool DisplayBackground = false;
+
         /// <summary>
         /// True if the screen is sensitive
         /// </summary>
@@ -157,7 +159,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, null);
             if (!Active) return;
-            spriteBatch.Draw(ColorTexture, new Rectangle(position, new Point((int)(640 * Scale), (int)(480 * Scale))), ColorBackground);
+            if (DisplayBackground) spriteBatch.Draw(ColorTexture, new Rectangle(position, new Point((int)(640 * Scale), (int)(480 * Scale))), ColorBackground);
             CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(SpeedAreaLocation.X * Scale), position.Y + (int)(SpeedAreaLocation.Y * Scale)));
             PlanningWindow.Draw(spriteBatch, new Point(position.X + (int)(PlanningLocation.X * Scale), position.Y + (int)(PlanningLocation.Y * Scale)));
         }
