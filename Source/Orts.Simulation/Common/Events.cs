@@ -133,6 +133,7 @@ namespace Orts.Common
         SteamPulse16,
         SteamSafetyValveOff,
         SteamSafetyValveOn,
+        TakeScreenshot,
         ThrottleChange,
         TrainBrakeChange,
         TrainBrakePressureDecrease,
