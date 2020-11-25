@@ -25,7 +25,7 @@ using Orts.Formats.Msts;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
-using ORTS.Scripting.Api;
+using ORTS.Scripting.Api.ETCS;
 
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 {
@@ -123,9 +123,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                    this
                );
             PlanningWindow = new PlanningWindow(this, Viewer, PlanningLocation);
-
-            CircularSpeedGauge.Scale = Scale;
-            PlanningWindow.Scale = Scale;
         }
 
         public void PrepareFrame()
@@ -215,6 +212,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         protected DMIWindow(DriverMachineInterface dmi)
         {
             DMI = dmi;
+            Scale = dmi.Scale;
         }
 
         public abstract void PrepareFrame(ETCSStatus status);

@@ -16,9 +16,8 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using ORTS.Scripting.Api.ETCS;
 
-namespace ORTS.Scripting.Api
+namespace ORTS.Scripting.Api.ETCS
 {
     /// <summary>
     /// Current status of ETCS, to be shown in DMI
@@ -26,44 +25,96 @@ namespace ORTS.Scripting.Api
     public class ETCSStatus
     {
         // General status
+        /// <summary>
+        /// True if the DMI is active and will be shown
+        /// </summary>
         public bool DMIActive = true;
+        /// <summary>
+        /// Current operating level
+        /// </summary>
         public Level CurrentLevel;
+        /// <summary>
+        /// Current ETCS supervision mode
+        /// </summary>
         public Mode CurrentMode = Mode.FS;
+        /// <summary>
+        /// If mode is NTC, specific name of the NTC. Not used yet
+        /// </summary>
         public string NTCMode;
 
         // Speed and distance monitoring
+        /// <summary>
+        /// True if the speedometer (needle and gauges) are to be shown
+        /// </summary>
         public bool SpeedAreaShown = true;
-        public float EstimatedSpeedMpS;
+        /// <summary>
+        /// Permitted speed to be shown in the circular speed gauge
+        /// </summary>
         public float AllowedSpeedMpS;
+        /// <summary>
+        /// Intervention speed at which brakes will be applied
+        /// </summary>
         public float InterventionSpeedMpS;
+        /// <summary>
+        /// Target speed limit to be displayed, if any
+        /// </summary>
         public float? TargetSpeedMpS;
+        /// <summary>
+        /// Distance to the speed reduction being displayed, if any
+        /// </summary>
         public float? TargetDistanceM;
+        /// <summary>
+        /// Speed at which the train is allowed to approach to a zero target
+        /// </summary>
         public float? ReleaseSpeedMpS;
+        /// <summary>
+        /// Visual indication for the driver for helping him to follow the braking curve
+        /// It is shown as a grey square at the top left corner of the DMI
+        /// Non standard: negative values display a yellow, orange or red square depending on supervision status
+        /// </summary>
         public float? TimeToIndication;
+        /// <summary>
+        /// Current speed monitoring status, either ceiling speed, target speed or release speed
+        /// </summary>
         public Monitor CurrentMonitor;
+        /// <summary>
+        /// Determines the color of the needle and circular speed gauge, depending on train speed
+        /// </summary>
         public SupervisionStatus CurrentSupervisionStatus;
 
         // Planning information
+        /// <summary>
+        /// Set to true to display planning area
+        /// </summary>
         public bool PlanningAreaShown = true;
+        /// <summary>
+        /// List of targets to be shown in the planning area.
+        /// First target must be current speed limit, with distance = 0
+        /// It will also be used to draw the planning area speed profile (PASP)
+        /// </summary>
         public List<PlanningTarget> SpeedTargets = new List<PlanningTarget>();
+        /// <summary>
+        /// Target with the closest distance to indication.
+        /// Its speed limit will be shown in yellow in the planning area
+        /// </summary>
         public PlanningTarget? IndicationMarkerTarget;
+        /// <summary>
+        /// Distance to the point where the monitoring status will change to either TSM or RSM from CSM
+        /// Will be shown as a yellow horizontal line in the planning area
+        /// </summary>
         public float? IndicationMarkerDistanceM;
+        /// <summary>
+        /// Gradient of the track ahead of the train, to be shown in planning area
+        /// First gradient must be with distance = 0
+        /// At the point where the gradient profile ends a target must be inserted with any value, to mark the end of the profile
+        /// </summary>
         public List<GradientProfileElement> GradientProfile = new List<GradientProfileElement>();
+        /// <summary>
+        /// Orders and announcements ahead to be displayed in the planning area
+        /// </summary>
         public List<PlanningTrackCondition> PlanningTrackConditions = new List<PlanningTrackCondition>();
-
-        public ETCSStatus Clone()
-        {
-            ETCSStatus other = (ETCSStatus)MemberwiseClone();
-            other.NTCMode = (string)NTCMode?.Clone();
-            other.SpeedTargets = new List<PlanningTarget>(SpeedTargets);
-            other.GradientProfile = new List<GradientProfileElement>(GradientProfile);
-            other.PlanningTrackConditions = new List<PlanningTrackCondition>();
-            return other;
-        }
     }
-}
-namespace ORTS.Scripting.Api.ETCS
-{
+
     /// <summary>
     /// Monitoring status of ETCS
     /// </summary>
@@ -74,7 +125,7 @@ namespace ORTS.Scripting.Api.ETCS
         /// </summary>
         CeilingSpeed,
         /// <summary>
-        /// A target speed is being supervised.
+        /// A braking curve is being supervised while approaching a speed target
         /// </summary>
         TargetSpeed,
         /// <summary>
@@ -189,15 +240,6 @@ namespace ORTS.Scripting.Api.ETCS
             YellowColour = isYellowColour;
             TractionSystem = tractionSystem;
         }
-
-        // TODO: Allow custom symbols
-        /*public TrackCondition(string customImage, float distanceToTrainM)
-        {
-            Type = TrackConditionType.Custom;
-            DistanceToTrainM = distanceToTrainM;
-            YellowColour = false;
-            TractionSystem = null;
-        }*/
     }
 
     public struct PlanningTarget

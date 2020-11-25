@@ -19,11 +19,9 @@
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Orts.Formats.Msts;
 using Orts.Simulation.RollingStocks;
 using Orts.Viewer3D.Popups;
 using ORTS.Common;
-using ORTS.Scripting.Api;
 using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
@@ -528,6 +526,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             TargetDistanceText = new TextPrimitive(new Point((int)(54-fontSize), 10), ColorGrey, text, TargetDistanceFont);
 
             DisplayDistance = true;
+        }
+
+        void SetFont()
+        {
+
         }
     }
 }

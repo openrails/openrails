@@ -20,6 +20,7 @@ using System.IO;
 using ORTS.Common;
 using Orts.Common;
 using Orts.Simulation.RollingStocks;
+using ORTS.Scripting.Api.ETCS;
 
 namespace ORTS.Scripting.Api
 {
