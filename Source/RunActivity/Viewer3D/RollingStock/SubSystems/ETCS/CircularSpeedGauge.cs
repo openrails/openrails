@@ -82,7 +82,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly Viewer Viewer;
         MSTSLocomotive Locomotive;
 
-        Texture2D ColorTexture;
         Texture2D NeedleTexture;
 
         bool Active; // Trying to fix thread safety issue in SetRange() with this
@@ -421,13 +420,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
             spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
 
-            // Re-apply normal Cab lighting Shader
+            // Re-apply DMI shader
 
             spriteBatch.End();
-            if (cabShader != null)
-                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, cabShader);
-            else
-                spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, null);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.LinearWrap, DepthStencilState.Default, null, null);
 
             spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
 

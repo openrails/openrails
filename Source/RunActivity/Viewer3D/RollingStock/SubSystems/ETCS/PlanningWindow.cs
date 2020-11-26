@@ -48,8 +48,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         readonly Viewer Viewer;
 
-        Texture2D ColorTexture;
-
         readonly Button ButtonScaleDown;
         readonly Button ButtonScaleUp;
 
@@ -122,7 +120,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DMI.SensitiveButtons.Add(ButtonScaleDown);
 
             SetFont();
-            SetDistanceText();
         }
 
         void ScaleUp()
@@ -174,24 +171,24 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             // Speed target icons and numbers
             foreach (LocatedTexture lt in SpeedTargetTextures)
             {
-                spriteBatch.Draw(lt.Texture, ScaledRectangle(position, lt.Position.X + 133, lt.Position.Y + 15, 20, 20), Color.White);
+                DrawSymbol(spriteBatch, lt.Texture, position, lt.Position.X + 133, lt.Position.Y + 15);
             }
             foreach (var text in SpeedTargetText)
             {
-                text.Draw(spriteBatch, new Point(position.X + (int)((133 + text.Position.X) * Scale), position.Y + (int)((15 + text.Position.Y) * Scale)));
+                text.Draw(spriteBatch, new Point(position.X + (int)Math.Round((133 + text.Position.X) * Scale), position.Y + (int)Math.Round((15 + text.Position.Y) * Scale)));
             }
 
             // Track condition icons
             foreach (LocatedTexture lt in TrackConditionTextures)
             {
-                spriteBatch.Draw(lt.Texture, ScaledRectangle(position, lt.Position.X, lt.Position.Y + 15, 20, 20), Color.White);
+                DrawSymbol(spriteBatch, lt.Texture, position, lt.Position.X, lt.Position.Y + 15);
             }
 
             // Distance scale digits
             foreach (var text in DistanceScaleText)
             {
-                int x = position.X + (int)(text.Position.X * Scale);
-                int y = position.Y + (int)(text.Position.Y * Scale);
+                int x = position.X + (int)Math.Round(text.Position.X * Scale);
+                int y = position.Y + (int)Math.Round(text.Position.Y * Scale);
                 text.Draw(spriteBatch, new Point(x, y));
             }
 
@@ -208,14 +205,14 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
             foreach (var text in GradientText)
             {
-                int x = position.X + (int)((115 + text.Position.X) * Scale);
-                int y = position.Y + (int)((15 + text.Position.Y) * Scale);
+                int x = position.X + (int)Math.Round((115 + text.Position.X) * Scale);
+                int y = position.Y + (int)Math.Round((15 + text.Position.Y) * Scale);
                 text.Draw(spriteBatch, new Point(x, y));
             }
 
             // Scale buttons
-            spriteBatch.Draw(ScaleUpTexture[ButtonScaleUp.Enabled ? 1 : 0], ScaledRectangle(position, 14, 287, 12, 12), Color.White);
-            spriteBatch.Draw(ScaleDownTexture[ButtonScaleDown.Enabled ? 1 : 0], ScaledRectangle(position, 14, 1, 12, 12), Color.White);
+            DrawSymbol(spriteBatch, ScaleUpTexture[ButtonScaleUp.Enabled ? 1 : 0], position, 14, 287);
+            DrawSymbol(spriteBatch, ScaleDownTexture[ButtonScaleDown.Enabled ? 1 : 0], position, 14, 1);
         }
 
         void CreateGradient(List<GradientProfileElement> GradientProfile)
@@ -470,8 +467,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             FontTargetSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightTargetSpeed * Scale, System.Drawing.FontStyle.Regular);
             FontGradient = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightGradient * Scale, System.Drawing.FontStyle.Regular);
 
-            foreach (var text in DistanceScaleText)
-                text.Font = FontDistance;
+            SetDistanceText();
         }
 
         /// <summary>
@@ -485,7 +481,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 if (i == 0 || i > 4)
                 {
                     string distance = (LineDistances[i] * MaxViewingDistanceM / 1000).ToString();
-                    Point unitPosition = new Point((int)(40 - 2 - FontDistance.MeasureString(distance) / Scale), (int)(LinePositions[i] - FontHeightDistance / 2));
+                    Point unitPosition = new Point((int)(40 - 3 - FontDistance.MeasureString(distance) / Scale), (int)(LinePositions[i] - FontHeightDistance));
                     distanceScaleText.Add(new TextPrimitive(unitPosition, ColorMediumGrey, distance, FontDistance));
                 }
             }

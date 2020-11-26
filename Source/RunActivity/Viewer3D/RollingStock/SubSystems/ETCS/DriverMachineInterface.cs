@@ -157,7 +157,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 ColorTexture.SetData(new[] { Color.White });
             }
             spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, null);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.LinearWrap);
             if (!Active) return;
             if (DisplayBackground) spriteBatch.Draw(ColorTexture, new Rectangle(position, new Point((int)(640 * Scale), (int)(480 * Scale))), ColorBackground);
             CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(SpeedAreaLocation.X * Scale), position.Y + (int)(SpeedAreaLocation.Y * Scale)));
@@ -211,6 +211,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
     {
         protected readonly DriverMachineInterface DMI;
         public float Scale;
+        protected Texture2D ColorTexture;
         protected DMIWindow(DriverMachineInterface dmi)
         {
             DMI = dmi;
@@ -222,6 +223,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public Rectangle ScaledRectangle(Point origin, int x, int y, int width, int height)
         {
             return new Rectangle(origin.X + (int)(x * Scale), origin.Y + (int)(y * Scale), Math.Max((int)(width * Scale), 1), Math.Max((int)(height * Scale), 1));
+        }
+        public void DrawSymbol(SpriteBatch spriteBatch, Texture2D texture, Point origin, float x, float y)
+        {
+            spriteBatch.Draw(texture, new Vector2(origin.X + x * Scale, origin.Y + y * Scale), null, Color.White, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
         }
     }
     public class DriverMachineInterfaceRenderer : CabViewDigitalRenderer, ICabViewMouseControlRenderer
@@ -270,9 +275,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            //var spriteBatch = CabShaderControlView.SpriteBatch;
-            //spriteBatch.End();
-            //spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointWrap, DepthStencilState.Default, null, Shader);
             DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
             CabShaderControlView.SpriteBatch.End();
             CabShaderControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
