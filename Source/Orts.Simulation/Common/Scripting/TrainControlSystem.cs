@@ -292,11 +292,15 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action SetPantographsDown;
         /// <summary>
-        /// Cut power by pull all pantographs down.
-        /// PowerSupplyEvent: may be LowerPantograph or RaisePantograph
+        /// Raise specified pantograph
         /// int: pantographID, from 1 to 4
         /// </summary>
-        public Action<PowerSupplyEvent, int> SetPantograph;
+        public Action<int> SetPantographUp;
+        /// <summary>
+        /// Lower specified pantograph
+        /// int: pantographID, from 1 to 4
+        /// </summary>
+        public Action<int> SetPantographDown;
         /// <summary>
         /// Set the circuit breaker or power contactor closing authorization.
         /// </summary>
