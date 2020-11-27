@@ -128,6 +128,17 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<int, float> NextPostDistanceM;
         /// <summary>
+        /// Distance and length of next tunnels
+        /// int: position of tunnel along the train route, starting from train front; 0 for first tunnel;
+        /// If train is in tunnel, index 0 will contain the remaining length of the tunnel
+        /// </summary>
+        public Func<int, TunnelInfo> NextTunnel;
+        /// <summary>
+        /// Distance and value of next mileposts
+        /// int: return nth milepost ahead; 0 for first milepost
+        /// </summary>
+        public Func<int, MilepostInfo> NextMilepost;
+        /// <summary>
         /// Distance to end of authority.
         /// int: direction; 0: forwards; 1: backwards
         /// </summary>
@@ -602,6 +613,44 @@ namespace ORTS.Scripting.Api
             DistanceM = distanceM;
             SpeedLimitMpS = speedLimitMpS;
             AltitudeM = altitudeM;
+        }
+    }
+
+    public struct TunnelInfo
+    {
+        /// <summary>
+        /// Distance to tunnel (m)
+        /// -1 if train is in tunnel
+        /// </summary>
+        public readonly float DistanceM;
+        /// <summary>
+        /// Tunnel length (m)
+        /// If train is in tunnel, remaining distance to exit
+        /// </summary>
+        public readonly float LengthM;
+
+        public TunnelInfo(float distanceM, float lengthM)
+        {
+            DistanceM = distanceM;
+            LengthM = lengthM;
+        }
+    }
+
+    public struct MilepostInfo
+    {
+        /// <summary>
+        /// Distance to milepost (m)
+        /// </summary>
+        public readonly float DistanceM;
+        /// <summary>
+        /// Value of the milepost
+        /// </summary>
+        public readonly float Value;
+
+        public MilepostInfo(float distanceM, float value)
+        {
+            DistanceM = distanceM;
+            Value = value;
         }
     }
 }
