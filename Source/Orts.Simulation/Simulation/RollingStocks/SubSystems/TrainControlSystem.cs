@@ -381,7 +381,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
                     }
                 };
-                Script.SetPantograph = (pantoCommand, pantoID) => Locomotive.Train.SignalEvent(pantoCommand, pantoID);
+                Script.SetPantographUp = (pantoID) => Locomotive.Train.SignalEvent(PowerSupplyEvent.RaisePantograph, pantoID);
+                Script.SetPantographDown = (pantoID) => Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph, pantoID);
                 Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
                 Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
                 Script.SetCircuitBreakerOpeningOrder = (value) => CircuitBreakerOpeningOrder = value;
