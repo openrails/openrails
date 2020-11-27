@@ -14374,6 +14374,13 @@ namespace Orts.Simulation.Physics
                                     thisItem = new TrainObjectItem(tunnelStartOffset + sectionDistanceToTrainM, (int)thisTunnel[sectionDirection].TotalLength, TrainObjectItem.TRAINOBJECTTYPE.TUNNEL);
                                     PlayerTrainTunnels[dir].Add(thisItem);
                                 }
+                                else if (PlayerTrainTunnels[dir].Count == 0 && (thisTunnel[sectionDirection].TunnelEnd < 0 || thisTunnel[sectionDirection].TunnelEnd > lengthOffset))
+                                {
+                                    // Train is in tunnel, compute remaining length
+                                    var remainingLength = thisTunnel[sectionDirection].TotalLength - lengthOffset - (tunnelStartOffset < 0 ? thisTunnel[sectionDirection].TCSStartOffset : tunnelStartOffset);
+                                    thisItem = new TrainObjectItem(-1, (int)remainingLength, TrainObjectItem.TRAINOBJECTTYPE.TUNNEL);
+                                    PlayerTrainTunnels[dir].Add(thisItem);
+                                }
                             }
                             else break;
                         }
