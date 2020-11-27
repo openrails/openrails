@@ -236,20 +236,21 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
-            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer, control);
+            // Height is adjusted to keep compatibility with existing gauges
+            DMI = new DriverMachineInterface((int)(Control.Width * 640 / 280), (int)(Control.Height * 480 / 300), locomotive, viewer, control);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             base.PrepareFrame(frame, elapsedTime);
             DMI.PrepareFrame();
-            DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+            DMI.SizeTo(DrawPosition.Width * 640 / 280, DrawPosition.Height * 480 / 300);
         }
 
         public bool IsMouseWithin()
         {
-            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
-            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale + 54);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15);
             foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
             {
                 if (b.SensitiveArea.Contains(x, y)) return true;
@@ -259,13 +260,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public void HandleUserInput()
         {
-            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
+            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale + 54), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15));
         }
 
         public string GetControlName()
         {
-            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
-            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale + 54);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15);
             foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
             {
                 if (b.SensitiveArea.Contains(x, y)) return "ETCS " + b.Name;
@@ -275,7 +276,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
+            DMI.Draw(CabShaderControlView.SpriteBatch, new Point((int)(DrawPosition.X - 54 * DMI.Scale), (int)(DrawPosition.Y - 15 * DMI.Scale)));
             CabShaderControlView.SpriteBatch.End();
             CabShaderControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
         }
