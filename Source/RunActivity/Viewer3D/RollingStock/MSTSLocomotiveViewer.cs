@@ -1501,7 +1501,6 @@ namespace Orts.Viewer3D.RollingStock
             if (Shader != null)
             {
                 Shader.SetTextureData(Position.X, Position.Y, Texture.Width * ScaleToScreen, Texture.Height * ScaleToScreen);
-                Shader.CurrentTechnique.Passes[0].Apply();
             }
             ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation, Origin, ScaleToScreen, SpriteEffects.None, 0);
         }
@@ -1698,7 +1697,6 @@ namespace Orts.Viewer3D.RollingStock
             if (Shader != null)
             {
                 Shader.SetTextureData(DestinationRectangle.Left, DestinationRectangle.Top, DestinationRectangle.Width, DestinationRectangle.Height);
-                Shader.CurrentTechnique.Passes[0].Apply();
             }
             ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor);
         }
@@ -1789,7 +1787,6 @@ namespace Orts.Viewer3D.RollingStock
             if (Shader != null)
             {
                 Shader.SetTextureData(DestinationRectangle.Left, DestinationRectangle.Top, DestinationRectangle.Width, DestinationRectangle.Height);
-                Shader.CurrentTechnique.Passes[0].Apply();
             }
             ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, Color.White);
         }

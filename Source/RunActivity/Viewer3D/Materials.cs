@@ -624,8 +624,8 @@ namespace Orts.Viewer3D
     {
         public readonly SpriteBatch SpriteBatch;
 
-        private readonly BlendState BlendState = BlendState.NonPremultiplied;
-        private readonly Effect Effect;
+        readonly BlendState BlendState = BlendState.NonPremultiplied;
+        readonly Effect Effect;
 
         public SpriteBatchMaterial(Viewer viewer, Effect effect = null)
             : base(viewer, null)
