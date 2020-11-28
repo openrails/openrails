@@ -226,8 +226,8 @@ namespace Orts.Viewer3D
     public class SharedMaterialManager
     {
         readonly Viewer Viewer;
-        Dictionary<string, Material> Materials = new Dictionary<string, Material>();
-        Dictionary<string, bool> MaterialMarks = new Dictionary<string, bool>();
+        IDictionary<(string, string, int, float, Effect), Material> Materials = new Dictionary<(string, string, int, float, Effect), Material>();
+        IDictionary<(string, string, int, float, Effect), bool> MaterialMarks = new Dictionary<(string, string, int, float, Effect), bool>();
 
         public readonly LightConeShader LightConeShader;
         public readonly LightGlowShader LightGlowShader;
@@ -285,28 +285,12 @@ namespace Orts.Viewer3D
 
         }
 
-        public Material Load(string materialName)
-        {
-            return Load(materialName, null, 0, 0);
-        }
-
-        public Material Load(string materialName, string textureName)
-        {
-            return Load(materialName, textureName, 0, 0);
-        }
-
-        public Material Load(string materialName, string textureName, int options)
-        {
-            return Load(materialName, textureName, options, 0);
-        }
-
-        public Material Load(string materialName, string textureName, int options, float mipMapBias)
+        public Material Load(string materialName, string textureName = null, int options = 0, float mipMapBias = 0f, Effect effect = null)
         {
             if (textureName != null)
                 textureName = textureName.ToLower();
 
-            var materialKey = String.Format("{0}:{1}:{2}:{3}", materialName, textureName, options, mipMapBias);
-
+            var materialKey = (materialName, textureName, options, mipMapBias, effect);
             if (!Materials.ContainsKey(materialKey))
             {
                 switch (materialName)
@@ -357,7 +341,7 @@ namespace Orts.Viewer3D
                         Materials[materialKey] = new MSTSSkyMaterial(Viewer);
                         break;
                     case "SpriteBatch":
-                        Materials[materialKey] = new SpriteBatchMaterial(Viewer);
+                        Materials[materialKey] = new SpriteBatchMaterial(Viewer, effect: effect);
                         break;
                     case "Terrain":
                         Materials[materialKey] = new TerrainMaterial(Viewer, textureName, SharedMaterialManager.MissingTexture);
@@ -386,22 +370,21 @@ namespace Orts.Viewer3D
        public bool LoadNightTextures()
         {
             int count = 0;
-            foreach (KeyValuePair<string, Material> materialPair in Materials)
+            foreach (SceneryMaterial material in from material in Materials.Values
+                                                 where material is SceneryMaterial
+                                                 select material)
             {
-                 if (materialPair.Value is SceneryMaterial)
+                if (material.LoadNightTexture())
+                    count++;
+                if (count >= 20)
                 {
-                    var material = materialPair.Value as SceneryMaterial;
-                    if (material.LoadNightTexture()) count++;
-                     if (count >= 20)
-                     {
-                         count = 0;
-                         // retest if there is enough free memory left;
-                         var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
-                         if (remainingMemorySpace < 0)
-                         { 
-                             return false; // too bad, no more space, other night textures won't be loaded
-                         }
-                     }
+                    count = 0;
+                    // retest if there is enough free memory left;
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    if (remainingMemorySpace < 0)
+                    {
+                        return false; // too bad, no more space, other night textures won't be loaded
+                    }
                 }
             }
             return true;
@@ -410,38 +393,42 @@ namespace Orts.Viewer3D
        public bool LoadDayTextures()
        {
            int count = 0;
-           foreach (KeyValuePair<string, Material> materialPair in Materials)
-           {
-               if (materialPair.Value is SceneryMaterial)
-               {
-                   var material = materialPair.Value as SceneryMaterial;
-                   if (material.LoadDayTexture()) count++;
-                   if (count >= 20)
-                   {
-                       count = 0;
-                       // retest if there is enough free memory left;
-                       var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
-                       if (remainingMemorySpace < 0)
-                       {
-                           return false; // too bad, no more space, other night textures won't be loaded
-                       }
-                   }
-               }
+            foreach (SceneryMaterial material in from material in Materials.Values
+                                                 where material is SceneryMaterial
+                                                 select material)
+            {
+                if (material.LoadDayTexture())
+                    count++;
+                if (count >= 20)
+                {
+                    count = 0;
+                    // retest if there is enough free memory left;
+                    var remainingMemorySpace = Viewer.LoadMemoryThreshold - Viewer.HUDWindow.GetWorkingSetSize();
+                    if (remainingMemorySpace < 0)
+                    {
+                        return false; // too bad, no more space, other night textures won't be loaded
+                    }
+                }
            }
            return true;
        }
 
         public void Mark()
         {
-            MaterialMarks = new Dictionary<string, bool>(Materials.Count);
+            MaterialMarks.Clear();
             foreach (var path in Materials.Keys)
                 MaterialMarks.Add(path, false);
         }
 
         public void Mark(Material material)
         {
-            if (Materials.ContainsValue(material))
-                MaterialMarks[Materials.First(kvp => kvp.Value == material).Key] = true;
+            foreach (var path in from kvp in Materials
+                                 where kvp.Value == material
+                                 select kvp.Key)
+            {
+                MaterialMarks[path] = true;
+                break;
+            }
         }
 
         public void Sweep()
@@ -638,22 +625,24 @@ namespace Orts.Viewer3D
         public readonly SpriteBatch SpriteBatch;
 
         readonly BlendState BlendState = BlendState.NonPremultiplied;
+        readonly Effect Effect;
 
-        public SpriteBatchMaterial(Viewer viewer)
+        public SpriteBatchMaterial(Viewer viewer, Effect effect = null)
             : base(viewer, null)
         {
             SpriteBatch = new SpriteBatch(Viewer.RenderProcess.GraphicsDevice);
+            Effect = effect;
         }
 
-        public SpriteBatchMaterial(Viewer viewer, BlendState blendState)
-            : this(viewer)
+        public SpriteBatchMaterial(Viewer viewer, BlendState blendState, Effect effect = null)
+            : this(viewer, effect: effect)
         {
             BlendState = blendState;
         }
 
         public override void SetState(GraphicsDevice graphicsDevice, Material previousMaterial)
         {
-            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState);
+            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState, effect: Effect);
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)

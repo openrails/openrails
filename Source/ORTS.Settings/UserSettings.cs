@@ -352,6 +352,8 @@ namespace ORTS.Settings
         [Default(false)]
         public bool DataLogger { get; set; }
         [Default(false)]
+        public bool Letterbox2DCab { get; set; }
+        [Default(false)]
         public bool Profiling { get; set; }
         [Default(0)]
         public int ProfilingFrameCount { get; set; }
@@ -399,18 +401,6 @@ namespace ORTS.Settings
         [Default(false)]
         [DoNotSave]
         public bool MultiplayerServer { get; set; }
-
-        // In-game settings:
-        [Default(false)]
-        public bool Letterbox2DCab { get; set; }
-        [Default(true)]
-        public bool Use3DCab { get; set; }
-        [Default(0x7)] // OSDLocations.DisplayState.Auto
-        public int OSDLocationsState { get; set; }
-        [Default(0x1)] // OSDCars.DisplayState.Trains
-        public int OSDCarsState { get; set; }
-        [Default(0)] // TrackMonitor.DisplayMode.All
-        public int TrackMonitorDisplayMode { get; set; }
 
         #endregion
 

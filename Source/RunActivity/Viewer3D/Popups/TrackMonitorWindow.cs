@@ -189,14 +189,7 @@ namespace Orts.Viewer3D.Popups
 
         readonly Viewer Viewer;
         private bool metric => Viewer.MilepostUnitsMetric;
-        private DisplayMode Mode
-        {
-            get => (DisplayMode)Viewer.Settings.TrackMonitorDisplayMode;
-            set
-            {
-                Viewer.Settings.TrackMonitorDisplayMode = (int)value;
-            }
-        }
+        private DisplayMode Mode { get; set; } = DisplayMode.All;
 
         /// <summary>
         /// Different information views for the Track Monitor.
@@ -206,11 +199,11 @@ namespace Orts.Viewer3D.Popups
             /// <summary>
             /// Display all track and routing features.
             /// </summary>
-            All = 0,
+            All,
             /// <summary>
             /// Show only the static features that a train driver would know by memory.
             /// </summary>
-            StaticOnly = 1,
+            StaticOnly,
         }
 
         public static int DbfEvalOverSpeed;//Debrief eval
