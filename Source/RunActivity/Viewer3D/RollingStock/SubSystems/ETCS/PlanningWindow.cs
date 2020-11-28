@@ -114,8 +114,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             ScaleDownTexture[0] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_06.bmp"));
             ScaleDownTexture[1] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_04.bmp"));
 
-            ButtonScaleUp = new Button("Scale Up", true, new Rectangle(planningLocation.X, planningLocation.Y + 285, 40, 30));
-            ButtonScaleDown = new Button("Scale Down", true, new Rectangle(planningLocation.X, planningLocation.Y - 15, 40, 30));
+            ButtonScaleUp = new Button(Viewer.Catalog.GetString("Scale Up"), true, new Rectangle(planningLocation.X, planningLocation.Y + 285, 40, 30));
+            ButtonScaleDown = new Button(Viewer.Catalog.GetString("Scale Down"), true, new Rectangle(planningLocation.X, planningLocation.Y - 15, 40, 30));
             DMI.SensitiveButtons.Add(ButtonScaleUp);
             DMI.SensitiveButtons.Add(ButtonScaleDown);
 

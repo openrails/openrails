@@ -269,7 +269,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15);
             foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
             {
-                if (b.SensitiveArea.Contains(x, y)) return "ETCS " + b.Name;
+                if (b.SensitiveArea.Contains(x, y)) return b.Name;
             }
             return "";
         }
