@@ -157,10 +157,10 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
+	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
-	Out.Normal_Light.xyz = normalize(mul(In.Normal, World).xyz);
+	Out.Normal_Light.xyz = normalize(mul(In.Normal, (float3x3)World).xyz);
 	
 	// Normal lighting (range 0.0 - 1.0)
 	// Need to calc. here instead of _VSLightsAndShadows() to avoid calling it from VSForest(), where it has gone into pre-shader in Shaders.cs
@@ -170,7 +170,7 @@ void _VSNormalProjection(in VERTEX_INPUT In, inout VERTEX_OUTPUT Out)
 void _VSSignalProjection(uniform bool Glow, in VERTEX_INPUT_SIGNAL In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
-	float3 relPos = mul(In.Position, World) - ViewerPos;
+	float3 relPos = mul(In.Position, World).xyz - ViewerPos;
 	// Position 1.5cm in front of signal.
 	In.Position.z += 0.015;
 	if (Glow) {
@@ -195,7 +195,7 @@ void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 {
 	// Project position, normal and copy texture coords
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
+	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light.w = 1;
@@ -204,7 +204,7 @@ void _VSTransferProjection(in VERTEX_INPUT_TRANSFER In, inout VERTEX_OUTPUT Out)
 void _VSLightsAndShadows(uniform bool ShaderModel3, in float4 InPosition, inout VERTEX_OUTPUT Out)
 {
 	// Headlight lighting
-	Out.LightDir_Fog.xyz = mul(InPosition, World) - HeadlightPosition.xyz;
+	Out.LightDir_Fog.xyz = mul(InPosition, World).xyz - HeadlightPosition.xyz;
 
 	// Fog fading
 	Out.LightDir_Fog.w = (2.0 / (1.0 + exp(length(Out.Position.xyz) * Fog.a * -2.0))) - 1.0;
@@ -224,7 +224,7 @@ VERTEX_OUTPUT VSGeneral(uniform bool ShaderModel3, in VERTEX_INPUT In)
 	if (ShaderModel3) {
 		if (determinant(In.Instance) != 0) {
 			In.Position = mul(In.Position, transpose(In.Instance));
-			In.Normal = mul(In.Normal, transpose(In.Instance));
+			In.Normal = mul(In.Normal, (float3x3)transpose(In.Instance));
 		}
 	}
 
@@ -295,14 +295,14 @@ VERTEX_OUTPUT VSForest(in VERTEX_INPUT_FOREST In)
 	float3 upVector = float3(0, -1, 0); // This constant is also defined in Shareds.cs
 
 	// Move the vertex left/right/up/down based on the normal values (tree size).
-	float3 newPosition = In.Position;
+	float3 newPosition = In.Position.xyz;
 	newPosition += (In.TexCoords.x - 0.5f) * SideVector * In.Normal.x;
 	newPosition += (In.TexCoords.y - 1.0f) * upVector * In.Normal.y;
 	In.Position = float4(newPosition, 1);
 
 	// Project vertex with fixed w=1 and normal=eye.
 	Out.Position = mul(In.Position, WorldViewProjection);
-	Out.RelPosition.xyz = mul(In.Position, World) - ViewerPos;
+	Out.RelPosition.xyz = mul(In.Position, World).xyz - ViewerPos;
 	Out.RelPosition.w = Out.Position.z;
 	Out.TexCoords.xy = In.TexCoords;
 	Out.Normal_Light = EyeVector;
@@ -422,7 +422,7 @@ float3 _PSGetOvercastColor(in float4 Color, in VERTEX_OUTPUT In)
 	// Value used to determine equivalent grayscale color.
 	const float3 LumCoeff = float3(0.2125, 0.7154, 0.0721);
 
-	float intensity = dot(Color, LumCoeff);
+	float intensity = dot(Color.rgb, LumCoeff);
 	return lerp(intensity, Color.rgb, 0.8) * 0.5;
 }
 
@@ -477,7 +477,7 @@ float4 PSImage(uniform bool ShaderModel3, uniform bool ClampTexCoords, in VERTEX
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color, In);
+	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	if (ShaderModel3) _PSSceneryFade(Color, In);
@@ -513,7 +513,7 @@ float4 PSVegetation(in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color, In);
+	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -534,9 +534,9 @@ float4 PSTerrain(uniform bool ShaderModel3, in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Overlay image for terrain.
-	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * OverlayScale) * 2;
+	litColor.rgb *= tex2D(Overlay, In.TexCoords.xy * OverlayScale).rgb * 2;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color, In);
+	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -569,7 +569,7 @@ float4 PSDarkShade(in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= NightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color, In);
+	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -591,7 +591,7 @@ float4 PSHalfBright(in VERTEX_OUTPUT In) : COLOR0
 	// Night-time darkens everything, except night-time textures.
 	litColor *= HalfNightColorModifier;
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color, In);
+	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
@@ -609,7 +609,7 @@ float4 PSFullBright(in VERTEX_OUTPUT In) : COLOR0
 	// No overcast effect for full-bright.
 	// No night-time effect for full-bright.
 	// Headlights effect use original Color.
-	_PSApplyHeadlights(litColor, Color, In);
+	_PSApplyHeadlights(litColor, Color.rgb, In);
 	// And fogging is last.
 	_PSApplyFog(litColor, In);
 	_PSSceneryFade(Color, In);
