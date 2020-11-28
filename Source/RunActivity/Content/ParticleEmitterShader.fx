@@ -123,7 +123,7 @@ VERTEX_OUTPUT VSParticles(in VERTEX_INPUT In)
 	Out.Position = mul(float4(In.StartPosition_StartTime.xyz, 1), worldViewProjection);
 	
 	Out.TexCoord = texCoords[vertIdx];
-	int texAtlasPosition = In.TileXY_Vertex_ID.w;
+	float texAtlasPosition = In.TileXY_Vertex_ID.w;
 	int atlasX = texAtlasPosition % 4;
 	int atlasY = texAtlasPosition / 4;
 	Out.TexCoord += float2(0.25f * atlasX, 0.25f * atlasY);
