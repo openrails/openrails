@@ -695,7 +695,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             // Based on the principle of pressure equualization between adjacent cars
                             // First, we define a variable storing the pressure diff between cars, but limited to a maximum flow rate depending on pipe characteristics
                             // The sign in the equation determines the direction of air flow.
-                            float TrainPipePressureDiffPropogationPSI = (p0>p1 ? -1 : 1) * Math.Min (TrainPipeTimeVariationS * Math.Abs(p1 - p0) / brakePipeTimeFactorS, Math.Abs(p1 - p0));
+                            float TrainPipePressureDiffPropogationPSI = (p0>p1 ? -1 : 1) * Math.Min(TrainPipeTimeVariationS * Math.Abs(p1 - p0) / brakePipeTimeFactorS, Math.Abs(p1 - p0));
 
                             // Air flows from high pressure to low pressure, until pressure is equal in both cars.
                             // Brake pipe volumes of both cars are taken into account, so pressure increase/decrease is proportional to relative volumes.
