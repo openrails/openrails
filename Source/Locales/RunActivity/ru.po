@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2020-11-22 11:46:25+0300\n"
-"PO-Revision-Date: 2020-11-22 12:16+0300\n"
+"PO-Revision-Date: 2009-12-29 04:07+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -208,16 +208,16 @@ msgstr "Показать свой поезд"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:559
 msgid "MSG to Server"
-msgstr "Сообщ.серверу"
+msgstr "Сбщ.серверу"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:563
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:224
 msgid "MSG to All"
-msgstr "Сообщ.всем"
+msgstr "Сбщ. всем"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:91
 msgid "View Train"
-msgstr "Показать поезд"
+msgstr "Вид поезда"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:134
 msgid "m"
@@ -233,11 +233,11 @@ msgstr "Автопереход"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:183
 msgid "Show Avatars"
-msgstr "Показ аватаров"
+msgstr "Показ аватар"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:210
 msgid "MSG to Selected"
-msgstr "Сообщ. выбранным"
+msgstr "Сбщ. выбранным"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:237
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
@@ -250,7 +250,7 @@ msgstr "Поле"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr "Ответ выбранным"
+msgstr "Отв. выбранным"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:275
 msgid "Draw Path"
@@ -266,11 +266,11 @@ msgstr "Выбор стрелок"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:348
 msgid "Can Join"
-msgstr "Можно присоединиться"
+msgstr "Разр. Присоед"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:371
 msgid "Assist"
-msgstr "Ассистировать"
+msgstr "Ассист"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:383
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:649
@@ -1692,7 +1692,7 @@ msgstr "Меню паузы"
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
 #, csharp-format
 msgid "Quit {1} ({0})"
-msgstr "Выйти {1} ({0})"
+msgstr "Выйти из {1} ({0})"
 
 #: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
 #, csharp-format
@@ -2088,7 +2088,7 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
 msgid "Fire mass"
-msgstr ""
+msgstr "Загрузка топки"
 
 #: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
 msgid "FIRE"
