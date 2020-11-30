@@ -139,6 +139,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> IsDirectionReverse;
         /// <summary>
+        /// True if locomotive is flipped.
+        /// </summary>
+        public Func<bool> IsFlipped;
+        /// <summary>
+        /// True if player is in rear cab.
+        /// </summary>
+        public Func<bool> IsRearCab;
+        /// <summary>
         /// True if train brake controller is in emergency position, otherwise false.
         /// </summary>
         public Func<bool> IsBrakeEmergency;
