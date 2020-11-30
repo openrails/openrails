@@ -714,7 +714,14 @@ namespace Orts.Simulation.RollingStocks
             if (!(this is MSTSSteamLocomotive))
                 InitializeFromORTSSpecific(cvfFilePath, extendedCVF);
 
-            return new CabView3D(cvfFile, CabViewpoints, extendedCVF, CabViewType.Front, noseAhead, shapeFilePath);
+            var cabViewAngle = CabViewpoints[0].StartDirection.Y;
+            var cabViewType = (cabViewAngle >= 90 && cabViewAngle <= 270) || (cabViewAngle <= -90 && cabViewAngle >= -270) ? CabViewType.Rear : CabViewType.Front;
+
+            // only one cabview, and it looks rear; insert a void one at first place to maintain fast indexing
+            if (CabViewpoints.Count == 1 && cabViewType == CabViewType.Rear)
+                CabViewpoints.Insert(0, new PassengerViewPoint());
+
+            return new CabView3D(cvfFile, CabViewpoints, extendedCVF, cabViewType, noseAhead, shapeFilePath);
         }
 
         /// <summary>
