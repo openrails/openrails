@@ -101,7 +101,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         readonly Rectangle SourceRectangle = new Rectangle(0, 0, Width, Height);
 
-        public CircularSpeedGauge(int width, int height, int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale,
+        public CircularSpeedGauge(int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale,
             MSTSLocomotive locomotive, Viewer viewer, CabShader shader, DriverMachineInterface dmi) : base(dmi)
         {
             UnitVisible = unitVisible;
@@ -114,7 +114,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             Locomotive = locomotive;
             cabShader = shader;
 
-            SizeTo(width, height);
             SetRange(MaxSpeed);
 
             CurrentSpeed = new TextPrimitive[3];
@@ -178,16 +177,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (CurrentSpeed != null)
                 foreach (var text in CurrentSpeed)
                     text.Font = FontCurrentSpeed;
-        }
-
-        /// <summary>
-        /// Resize control to fit into a new rectangle, by keeping aspect ratio.
-        /// </summary>
-        /// <param name="width">New width of control.</param>
-        /// <param name="height">New height of control.</param>
-        public void SizeTo(int width, int height)
-        {
-            Scale = Math.Min((float)height / Height, (float)width / Width);
         }
 
         /// <summary>
@@ -461,27 +450,18 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
     {
         readonly int[] DistanceLinePositionsY = { -1, 6, 13, 22, 32, 45, 59, 79, 105, 152, 185 };
         readonly int[] DistanceLinePositionsX = { 12, 16, 16, 16, 16, 12, 16, 16, 16, 16, 12 };
-        /*Component a2(54,30, displayDistanceText);
-        Component distanceBar(54,191, displayDistance);
-        Component a23(54, 221, nullptr);*/
-        void displayDistance()
-        {
-            /*for(float y = 186; y>=(186-h); y-=0.5)
-            {
-                distanceBar.drawLine(29, y, 39, y);
-            }*/
-        }
-        bool DisplayDistance;
-        bool DisplayTTI;
-        Rectangle TTI;
+        bool DisplayDistanceText;
+        bool DisplayDistanceBar;
+        int TTIWidth;
         Color TTIColor;
+        const int T_dispTTI = 14;
         Rectangle DistanceBar;
         TextPrimitive TargetDistanceText;
         WindowTextFont TargetDistanceFont;
-        readonly float TargetDistanceFontHeight = 10;
+        readonly float FontHeightTargetDistance = 10;
 
         readonly Viewer Viewer;
-        public DistanceArea(DriverMachineInterface dmi, Point position, Viewer viewer) : base(dmi)
+        public DistanceArea(DriverMachineInterface dmi, Viewer viewer, Point position) : base(dmi)
         {
             Viewer = viewer;
             SetFont();
@@ -493,21 +473,70 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 ColorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
                 ColorTexture.SetData(new[] { Color.White });
             }
-            if (!DisplayDistance) return;
-            spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceBar.X, DistanceBar.Y, DistanceBar.Width, DistanceBar.Height), ColorGrey);
-
-            // Distance speed lines
-            for (int i = 0; i < 11; i++)
+            if (DisplayDistanceBar)
             {
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceLinePositionsX[i], DistanceLinePositionsY[i], 25 - DistanceLinePositionsX[i], (int)Math.Max(1, 1 / Scale)), ColorGrey);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceBar.X, DistanceBar.Y + 54 + 30, DistanceBar.Width, DistanceBar.Height), ColorGrey);
+
+                // Distance speed lines
+                for (int i = 0; i < 11; i++)
+                {
+                    spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceLinePositionsX[i], DistanceLinePositionsY[i] + 54 + 30, 25 - DistanceLinePositionsX[i], (int)Math.Max(1, 1 / Scale)), ColorGrey);
+                }
+            }
+            if (DisplayDistanceText)
+            {
+                int x = position.X + (int)Math.Round(TargetDistanceText.Position.X * Scale);
+                int y = position.Y + (int)Math.Round((TargetDistanceText.Position.Y + 54) * Scale);
+                TargetDistanceText.Draw(spriteBatch, new Point(x, y));
+            }
+            if (TTIWidth > 0)
+            {
+                if (TTIColor == Color.White) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, 0, 54, 54), ColorDarkGrey);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, (54 - TTIWidth) / 2, (54 - TTIWidth) / 2, TTIWidth, TTIWidth), TTIColor);
             }
         }
         public override void PrepareFrame(ETCSStatus status)
         {
-            DisplayDistance = false;
-            float dist = status.TargetDistanceM.Value;
-            if (status.CurrentMonitor == Monitor.CeilingSpeed && !status.TargetSpeedMpS.HasValue) return;
+            TTIWidth = 0;
+            if (status.TimeToIndicationS.HasValue)
+            {
+                if (status.TimeToIndicationS < 0)
+                {
+                    switch(status.CurrentSupervisionStatus)
+                    {
+                        case SupervisionStatus.Intervention:
+                            TTIColor = ColorRed;
+                            break;
+                        case SupervisionStatus.Warning:
+                        case SupervisionStatus.Overspeed:
+                            TTIColor = ColorOrange;
+                            break;
+                        default:
+                            TTIColor = ColorYellow;
+                            break;
+                    }
+                }
+                else TTIColor = Color.White;
+                float tti = Math.Abs(status.TimeToIndicationS.Value);
+                for (int n=1; n<=10; n++)
+                {
+                    if (T_dispTTI * (10 - n) / 10f <= tti && tti < T_dispTTI * (10 - (n - 1)) / 10f)
+                    {
+                        TTIWidth = 5*n;
+                        break;
+                    }
+                }
+            }
+
+            DisplayDistanceBar = DisplayDistanceText = false;
+            if (!status.TargetDistanceM.HasValue) return;
             if (!DMI.ShowDistanceAndSpeedInformation && (status.CurrentMode == Mode.OS || status.CurrentMode == Mode.SR)) return;
+
+            float dist = status.TargetDistanceM.Value;
+            
+            var text = (((int)(dist / 10)) * 10).ToString();
+            var fontSize = TargetDistanceFont.MeasureString(text) / Scale;
+            TargetDistanceText = new TextPrimitive(new Point((int)(54 - fontSize), (int)(30 - FontHeightTargetDistance) / 2), ColorGrey, text, TargetDistanceFont);
 
             if (dist > 1000) dist = 1000;
             double h;
@@ -519,16 +548,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
             DistanceBar = new Rectangle(29, (int)(186 - h), 10, (int)h);
 
-            var text = (((int)(dist / 10)) * 10).ToString();
-            var fontSize = TargetDistanceFont.MeasureString(text) / Scale;
-            TargetDistanceText = new TextPrimitive(new Point((int)(54-fontSize), 10), ColorGrey, text, TargetDistanceFont);
-
-            DisplayDistance = true;
+            DisplayDistanceText = true;
+            DisplayDistanceBar = status.CurrentMode != Mode.SR;
         }
 
-        void SetFont()
+        public void SetFont()
         {
-            TargetDistanceFont = Viewer.WindowManager.TextManager.GetExact("Arial", TargetDistanceFontHeight * Scale, System.Drawing.FontStyle.Regular);
+            TargetDistanceFont = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightTargetDistance), System.Drawing.FontStyle.Regular);
         }
     }
 }

@@ -68,11 +68,12 @@ namespace ORTS.Scripting.Api.ETCS
         /// </summary>
         public float? ReleaseSpeedMpS;
         /// <summary>
-        /// Visual indication for the driver for helping him to follow the braking curve
-        /// It is shown as a grey square at the top left corner of the DMI
-        /// Non standard: negative values display a yellow, orange or red square depending on supervision status
+        /// Visual indication for the driver to help him follow the braking curve
+        /// It is shown as a grey/white square at the top left corner of the DMI
+        /// Negative values are used for time to permitted speed (non standard)
+        /// With negative values, displays a yellow, orange or red square depending on supervision status
         /// </summary>
-        public float? TimeToIndication;
+        public float? TimeToIndicationS;
         /// <summary>
         /// Current speed monitoring status, either ceiling speed, target speed or release speed
         /// </summary>
