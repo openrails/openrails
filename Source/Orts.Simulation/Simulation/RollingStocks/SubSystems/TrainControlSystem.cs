@@ -313,7 +313,19 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PowerAuthorization = () => PowerAuthorization;
                 Script.CircuitBreakerClosingOrder = () => CircuitBreakerClosingOrder;
                 Script.CircuitBreakerOpeningOrder = () => CircuitBreakerOpeningOrder;
-                Script.GetPantographState = (pantoID) => Locomotive.Pantographs[pantoID].State;
+                Script.PantographCount = () => Locomotive.Pantographs.Count;
+                Script.GetPantographState = (pantoID) =>
+                {
+                   if (pantoID > 0 && pantoID <= 4)
+                    {
+                        return Locomotive.Pantographs[pantoID].State;
+                    }
+                    else
+                    {
+                        Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
+                        return PantographState.Down;
+                    }
+                };
                 Script.ArePantographsDown = () => Locomotive.Pantographs.State == PantographState.Down;
                 Script.ThrottlePercent = () => Locomotive.ThrottleController.CurrentValue * 100;
                 Script.DynamicBrakePercent = () => Locomotive.DynamicBrakeController == null ? 0 : Locomotive.DynamicBrakeController.CurrentValue * 100;
@@ -325,7 +337,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.TrainBrakeControllerState = () => Locomotive.TrainBrakeController.TrainBrakeControllerState;
                 Script.AccelerationMpSS = () => Locomotive.AccelerationMpSS;
                 Script.AltitudeM = () => Locomotive.WorldPosition.Location.Y;
-                Script.CurrentElevationPercent = () => Locomotive.CurrentElevationPercent;
+                Script.CurrentGradientPercent = () => -Locomotive.CurrentElevationPercent;
                 Script.LineSpeedMpS = () => (float)Simulator.TRK.Tr_RouteFile.SpeedLimit;
                 Script.DoesStartFromTerminalStation = () => DoesStartFromTerminalStation();
                 Script.IsColdStart = () => Locomotive.Train.ColdStart;
@@ -381,8 +393,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                         Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph);
                     }
                 };
-                Script.SetPantographUp = (pantoID) => Locomotive.Train.SignalEvent(PowerSupplyEvent.RaisePantograph, pantoID);
-                Script.SetPantographDown = (pantoID) => Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph, pantoID);
+                Script.SetPantographUp = (pantoID) =>
+                {
+                    if (pantoID < 1 || pantoID > 4)
+                    {
+                        Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
+                        return;
+                    }
+                    Locomotive.Train.SignalEvent(PowerSupplyEvent.RaisePantograph, pantoID);
+                };               
+                Script.SetPantographDown = (pantoID) =>
+                {
+                    if (pantoID < 1 || pantoID > 4)
+                    {
+                        Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
+                        return;
+                    }
+                    Locomotive.Train.SignalEvent(PowerSupplyEvent.LowerPantograph, pantoID);
+                };
                 Script.SetPowerAuthorization = (value) => PowerAuthorization = value;
                 Script.SetCircuitBreakerClosingOrder = (value) => CircuitBreakerClosingOrder = value;
                 Script.SetCircuitBreakerOpeningOrder = (value) => CircuitBreakerOpeningOrder = value;
