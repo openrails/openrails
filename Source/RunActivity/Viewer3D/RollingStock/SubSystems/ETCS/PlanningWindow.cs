@@ -144,11 +144,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
         public override void Draw(SpriteBatch spriteBatch, Point position)
         {
-            if (ColorTexture == null)
-            {
-                ColorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
-                ColorTexture.SetData(new[] { Color.White });
-            }
             if (!Visible) return;
 
             // Planning area speed profile
@@ -230,9 +225,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 int maxp = GetPlanningHeight(e.DistanceToTrainM) - 15;
                 if (max > MaxViewingDistanceM) minp = 0;
                 int size = maxp - minp;
-                gradientRectangles[new Point(minp, maxp)] = e.GradientPerMille < 0;
-                Color textColor = e.GradientPerMille < 0 ? Color.Black : Color.White;
-                string sign = e.GradientPerMille < 0 ? "-" : "+";
+                gradientRectangles[new Point(minp, maxp)] = e.GradientPerMille >= 0;
+                Color textColor = e.GradientPerMille >= 0 ? Color.Black : Color.White;
+                string sign = e.GradientPerMille >= 0 ? "+" : "-";
                 var signWidth = FontGradient.MeasureString(sign) / Scale;
                 if (size > 44)
                 {
@@ -349,9 +344,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             for (int i = 0; i < trackConditions.Count; i++)
             {
                 PlanningTrackCondition condition = trackConditions[i];
-                int posy = GetPlanningHeight(condition.DistanceToTrainM) - 10;
+                int posy = GetPlanningHeight(condition.DistanceToTrainM) - 35;
                 int row = i % 3;
-                if (condition.DistanceToTrainM > MaxViewingDistanceM || condition.DistanceToTrainM < 0 || prevObject[row] - posy < 20) continue;
+                if (condition.DistanceToTrainM > MaxViewingDistanceM || condition.DistanceToTrainM < 0 || prevObject[row] - posy < 20 || posy < 0) continue;
                 prevObject[row] = posy;
                 Texture2D tex;
                 switch(condition.Type)
@@ -455,7 +450,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public void HandleInput()
         {
             if (DMI.PressedButton == ButtonScaleDown) ScaleDown();
-            if (DMI.PressedButton == ButtonScaleUp) ScaleUp();
+            else if (DMI.PressedButton == ButtonScaleUp) ScaleUp();
         }
 
         /// <summary>

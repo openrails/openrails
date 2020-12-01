@@ -374,11 +374,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public override void Draw(SpriteBatch spriteBatch, Point position)
         {
-            if (ColorTexture == null)
-            {
-                ColorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
-                ColorTexture.SetData(new[] { Color.White });
-            }
             if (NeedleTexture == null)
             {
                 NeedleTexture = new Texture2D(spriteBatch.GraphicsDevice, 16, 128);
@@ -468,11 +463,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
         public override void Draw(SpriteBatch spriteBatch, Point position)
         {
-            if (ColorTexture == null)
-            {
-                ColorTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1);
-                ColorTexture.SetData(new[] { Color.White });
-            }
             if (DisplayDistanceBar)
             {
                 spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceBar.X, DistanceBar.Y + 54 + 30, DistanceBar.Width, DistanceBar.Height), ColorGrey);
@@ -498,31 +488,36 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public override void PrepareFrame(ETCSStatus status)
         {
             TTIWidth = 0;
+            float? tti = null;
             if (status.TimeToIndicationS.HasValue)
             {
-                if (status.TimeToIndicationS < 0)
+                TTIColor = Color.White;
+                tti = status.TimeToIndicationS;
+            }
+            if (status.TimeToPermittedS.HasValue)
+            {
+                switch (status.CurrentSupervisionStatus)
                 {
-                    switch(status.CurrentSupervisionStatus)
-                    {
-                        case SupervisionStatus.Intervention:
-                            TTIColor = ColorRed;
-                            break;
-                        case SupervisionStatus.Warning:
-                        case SupervisionStatus.Overspeed:
-                            TTIColor = ColorOrange;
-                            break;
-                        default:
-                            TTIColor = ColorYellow;
-                            break;
-                    }
+                    case SupervisionStatus.Intervention:
+                        TTIColor = ColorRed;
+                        break;
+                    case SupervisionStatus.Warning:
+                    case SupervisionStatus.Overspeed:
+                        TTIColor = ColorOrange;
+                        break;
+                    default:
+                        TTIColor = ColorYellow;
+                        break;
                 }
-                else TTIColor = Color.White;
-                float tti = Math.Abs(status.TimeToIndicationS.Value);
-                for (int n=1; n<=10; n++)
+                tti = status.TimeToPermittedS;
+            }
+            if (tti.HasValue)
+            {
+                for (int n = 1; n <= 10; n++)
                 {
                     if (T_dispTTI * (10 - n) / 10f <= tti && tti < T_dispTTI * (10 - (n - 1)) / 10f)
                     {
-                        TTIWidth = 5*n;
+                        TTIWidth = 5 * n;
                         break;
                     }
                 }

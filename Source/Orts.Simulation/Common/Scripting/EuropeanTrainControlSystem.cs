@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 
 namespace ORTS.Scripting.Api.ETCS
@@ -68,12 +69,15 @@ namespace ORTS.Scripting.Api.ETCS
         /// </summary>
         public float? ReleaseSpeedMpS;
         /// <summary>
-        /// Visual indication for the driver to help him follow the braking curve
-        /// It is shown as a grey/white square at the top left corner of the DMI
-        /// Negative values are used for time to permitted speed (non standard)
-        /// With negative values, displays a yellow, orange or red square depending on supervision status
+        /// Visual indication for the driver to help him follow the braking curve with reduced adheasion conditions.
+        /// It is shown as a grey/white square at the top left corner of the DMI while in CSM.
         /// </summary>
         public float? TimeToIndicationS;
+        /// <summary>
+        /// Visual indication for the driver to help him follow the permitted speed curve.
+        /// It is shown as a yellow, orange or red square at the top left corner of the DMI while in TSM.
+        /// </summary>
+        public float? TimeToPermittedS;
         /// <summary>
         /// Current speed monitoring status, either ceiling speed, target speed or release speed
         /// </summary>
@@ -93,7 +97,7 @@ namespace ORTS.Scripting.Api.ETCS
         /// First target must be current speed limit, with distance = 0
         /// It will also be used to draw the planning area speed profile (PASP)
         /// </summary>
-        public List<PlanningTarget> SpeedTargets = new List<PlanningTarget>();
+        public readonly List<PlanningTarget> SpeedTargets = new List<PlanningTarget>();
         /// <summary>
         /// Target with the closest distance to indication.
         /// Its speed limit will be shown in yellow in the planning area
@@ -109,11 +113,12 @@ namespace ORTS.Scripting.Api.ETCS
         /// First gradient must be with distance = 0
         /// At the point where the gradient profile ends a target must be inserted with any value, to mark the end of the profile
         /// </summary>
-        public List<GradientProfileElement> GradientProfile = new List<GradientProfileElement>();
+        public readonly List<GradientProfileElement> GradientProfile = new List<GradientProfileElement>();
         /// <summary>
         /// Orders and announcements ahead to be displayed in the planning area
         /// </summary>
-        public List<PlanningTrackCondition> PlanningTrackConditions = new List<PlanningTrackCondition>();
+        public readonly List<PlanningTrackCondition> PlanningTrackConditions = new List<PlanningTrackCondition>();
+        public readonly List<TextMessage> TextMessages = new List<TextMessage>();
     }
 
     /// <summary>
@@ -261,6 +266,29 @@ namespace ORTS.Scripting.Api.ETCS
         {
             DistanceToTrainM = distanceToTrainM;
             GradientPerMille = gradientPerMille;
+        }
+    }
+
+    public struct TextMessage : IEquatable<TextMessage>
+    {
+        public readonly string Text;
+        public readonly bool FirstGroup;
+        public float TimestampS;
+        public bool Acknowledgeable;
+        public bool Acknowledged;
+        public bool Displayed;
+        public TextMessage(string text, float timestampS, bool firstGroup = false, bool acknowledgeable = false)
+        {
+            Text = text;
+            TimestampS = timestampS;
+            FirstGroup = firstGroup;
+            Acknowledgeable = acknowledgeable;
+            Acknowledged = false;
+            Displayed = false;
+        }
+        public bool Equals(TextMessage o)
+        {
+            return o.Text == Text && o.TimestampS == TimestampS;
         }
     }
 }
