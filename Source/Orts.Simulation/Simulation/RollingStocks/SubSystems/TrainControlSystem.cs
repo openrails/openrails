@@ -22,6 +22,7 @@ using Orts.Common;
 using Orts.Parsers.Msts;
 using Orts.Simulation.Physics;
 using Orts.Simulation.Signalling;
+using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
 using System;
@@ -305,7 +306,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.PantographCount = () => Locomotive.Pantographs.Count;
                 Script.GetPantographState = (pantoID) =>
                 {
-                   if (pantoID > 0 && pantoID <= 4)
+                   if (pantoID >= Pantographs.MinPantoID && pantoID <= Pantographs.MaxPantoID)
                     {
                         return Locomotive.Pantographs[pantoID].State;
                     }
@@ -384,7 +385,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };
                 Script.SetPantographUp = (pantoID) =>
                 {
-                    if (pantoID < 1 || pantoID > 4)
+                    if (pantoID < Pantographs.MinPantoID || pantoID > Pantographs.MaxPantoID)
                     {
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
@@ -393,7 +394,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 };               
                 Script.SetPantographDown = (pantoID) =>
                 {
-                    if (pantoID < 1 || pantoID > 4)
+                    if (pantoID < Pantographs.MinPantoID || pantoID > Pantographs.MaxPantoID)
                     {
                         Trace.TraceError($"TCS script used bad pantograph ID {pantoID}");
                         return;
