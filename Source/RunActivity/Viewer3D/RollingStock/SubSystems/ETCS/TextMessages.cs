@@ -76,11 +76,6 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             DisplayedTexts = new TextPrimitive[MaxTextLines];
             DisplayedTimes = new TextPrimitive[MaxTextLines];
 
-            ScrollUpTexture[0] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_15.bmp"));
-            ScrollUpTexture[1] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_13.bmp"));
-            ScrollDownTexture[0] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_16.bmp"));
-            ScrollDownTexture[1] = SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "symbols", "Navigation", "NA_14.bmp"));
-
             ButtonScrollUp = new Button(Viewer.Catalog.GetString("Scroll Up"), true, new Rectangle(position.X + 234, position.Y, 46, AreaHeight / 2));
             ButtonScrollDown = new Button(Viewer.Catalog.GetString("Scroll Down"), true, new Rectangle(position.X + 234, position.Y + AreaHeight / 2, 46, AreaHeight / 2));
             ButtonAcknowledgeMessage = new Button(Viewer.Catalog.GetString("Acknowledge"), true, new Rectangle(position.X, position.Y, 234, AreaHeight));
@@ -88,7 +83,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             DMI.SensitiveButtons.Add(ButtonScrollDown);
             DMI.SensitiveButtons.Add(ButtonAcknowledgeMessage);
 
-            SetFont();
+            ScaleChanged();
         }
         public override void Draw(SpriteBatch spriteBatch, Point position)
         {
@@ -262,7 +257,16 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                 AcknowledgingMessage = null;
             }
         }
-        public void SetFont()
+        public void ScaleChanged()
+        {
+            ScrollUpTexture[0] = DMI.LoadTexture("NA_15.bmp");
+            ScrollUpTexture[1] = DMI.LoadTexture("NA_13.bmp");
+            ScrollDownTexture[0] = DMI.LoadTexture("NA_16.bmp");
+            ScrollDownTexture[1] = DMI.LoadTexture("NA_14.bmp");
+
+            SetFont();
+        }
+        void SetFont()
         {
             FontTimestamp = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightTimestamp), System.Drawing.FontStyle.Regular);
             FontMessage = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightMessage), System.Drawing.FontStyle.Regular);

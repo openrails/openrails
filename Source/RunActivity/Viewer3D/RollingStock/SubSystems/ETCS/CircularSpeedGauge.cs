@@ -160,11 +160,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 StandardScales = StandardScalesMpH;
             }
         }
-
-        /// <summary>
-        /// Set new font heights to match the actual scale.
-        /// </summary>
-        public void SetFont()
+        public void ScaleChanged()
+        {
+            SetFont();
+        }
+        void SetFont()
         {
             FontDialSpeeds = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightDial * Scale, System.Drawing.FontStyle.Bold);
             FontReleaseSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightReleaseSpeed * Scale, System.Drawing.FontStyle.Regular);
@@ -208,7 +208,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DialLineCoords = new List<Vector4>();
             DialSpeeds = new List<TextPrimitive>();
 
-            SetFont();
+            ScaleChanged();
 
             var longLine = 0;
             var textHeight = (float)FontDialSpeeds.Height / Scale;
@@ -459,7 +459,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public DistanceArea(DriverMachineInterface dmi, Viewer viewer, Point position) : base(dmi)
         {
             Viewer = viewer;
-            SetFont();
+            ScaleChanged();
         }
         public override void Draw(SpriteBatch spriteBatch, Point position)
         {
@@ -546,8 +546,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DisplayDistanceText = true;
             DisplayDistanceBar = status.CurrentMode != Mode.SR;
         }
-
-        public void SetFont()
+        public void ScaleChanged()
+        {
+            SetFont();
+        }
+        void SetFont()
         {
             TargetDistanceFont = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightTargetDistance), System.Drawing.FontStyle.Regular);
         }

@@ -221,184 +221,364 @@
     <Content Include="Content\DriverMachineInterfaceShader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_01.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_01.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_02.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_02.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_03.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_03.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_04.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_04.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_05.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_05.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_06.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_06.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_07.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_07.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_08.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_08.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_09.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_09.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_10.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_10.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_11.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_11.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_12.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_12.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_13.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_13.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_14.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_14.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_15.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_15.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_16.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_16.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_17.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_17.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_18.2.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_18.2.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_18.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_18.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_19.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_19.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_20.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_20.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_21.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_21.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_22.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_22.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Navigation\NA_23.bmp">
+    <Content Include="Content\ETCS\mipmap-2\NA_23.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_01.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_01.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_02.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_02.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_03.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_03.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_04.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_04.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_05.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_05.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_06.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_06.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_07.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_07.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_08.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_08.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_09.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_09.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_10.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_10.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_11.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_11.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_12.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_12.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_13.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_13.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_14.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_14.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_15.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_15.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_16.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_16.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_17.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_17.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_18.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_18.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_19.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_19.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_20.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_20.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_21.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_21.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_22.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_22.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_23.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_23.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_24.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_24.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_25.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_25.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_26.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_26.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_27.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_27.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_28.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_28.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_29.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_29.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_30.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_30.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_31.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_31.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_32.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_32.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_33.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_33.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_34.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_34.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_35.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_35.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\ETCS\symbols\Planning\PL_36.png">
+    <Content Include="Content\ETCS\mipmap-2\PL_36.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_01.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_02.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_03.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_04.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_05.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_06.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_07.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_08.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_09.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_10.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_11.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_12.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_13.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_14.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_15.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_16.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_17.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_18.2.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_18.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_19.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_20.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_21.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_22.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\NA_23.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_01.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_02.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_03.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_04.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_05.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_06.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_07.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_08.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_09.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_10.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_11.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_12.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_13.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_14.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_15.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_16.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_17.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_18.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_19.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_20.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_21.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_22.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_23.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_24.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_25.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_26.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_27.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_28.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_29.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_30.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_31.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_32.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_33.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_34.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_35.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\PL_36.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\LightConeShader.fx">
