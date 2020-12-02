@@ -61,11 +61,11 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 
         readonly TextPrimitive[] DisplayedTexts;
         readonly TextPrimitive[] DisplayedTimes;
-        bool FlashingFrame;
 
         readonly List<TextMessage> MessageList = new List<TextMessage>();
         TextMessage? AcknowledgingMessage;
 
+        bool Visible = false;
         public MessageArea(DriverMachineInterface dmi, Viewer viewer, Point position) : base(dmi)
         {
             Viewer = viewer;
@@ -83,13 +83,16 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 
             ButtonScrollUp = new Button(Viewer.Catalog.GetString("Scroll Up"), true, new Rectangle(position.X + 234, position.Y, 46, AreaHeight / 2));
             ButtonScrollDown = new Button(Viewer.Catalog.GetString("Scroll Down"), true, new Rectangle(position.X + 234, position.Y + AreaHeight / 2, 46, AreaHeight / 2));
+            ButtonAcknowledgeMessage = new Button(Viewer.Catalog.GetString("Acknowledge"), true, new Rectangle(position.X, position.Y, 234, AreaHeight));
             DMI.SensitiveButtons.Add(ButtonScrollUp);
             DMI.SensitiveButtons.Add(ButtonScrollDown);
+            DMI.SensitiveButtons.Add(ButtonAcknowledgeMessage);
 
             SetFont();
         }
         public override void Draw(SpriteBatch spriteBatch, Point position)
         {
+            if (!Visible) return;
             foreach (var text in DisplayedTexts)
             {
                 if (text == null) continue;
@@ -104,21 +107,21 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                 int y = position.Y + (int)(text.Position.Y * Scale);
                 text.Draw(spriteBatch, new Point(x, y));
             }
-            DrawSymbol(spriteBatch, ScrollUpTexture[ButtonScrollUp.Enabled ? 1 : 0], position, 234, 0);
-            DrawSymbol(spriteBatch, ScrollDownTexture[ButtonScrollDown.Enabled ? 1 : 0], position, 234, AreaHeight/2);
+            DrawSymbol(spriteBatch, ScrollUpTexture[ButtonScrollUp.Enabled ? 1 : 0], position, 234 + 7, DMI.IsSoftLayout ? 4 : 9);
+            DrawSymbol(spriteBatch, ScrollDownTexture[ButtonScrollDown.Enabled ? 1 : 0], position, 234 + 7, AreaHeight/2 + (DMI.IsSoftLayout ? 4 : 9));
 
-            if (FlashingFrame)
+            if (AcknowledgingMessage.HasValue && DMI.Blinker4Hz)
             {
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, 0, 234, 1), ColorYellow);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, AreaHeight, 234, 1), ColorYellow);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, 0, 1, AreaHeight), ColorYellow);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 234, 0, 1, AreaHeight), ColorYellow);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, 0, 234, 2), ColorYellow);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, AreaHeight - 2, 234, 2), ColorYellow);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, 0, 2, AreaHeight), ColorYellow);
+                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 232, 0, 2, AreaHeight), ColorYellow);
             }
         }
 
         int CompareMessages(TextMessage m1, TextMessage m2)
         {
-            int ack = m1.Acknowledgeable.CompareTo(m2.Acknowledgeable);
+            int ack = m2.Acknowledgeable.CompareTo(m1.Acknowledgeable);
             if (ack != 0) return ack;
             int date = m2.TimestampS.CompareTo(m1.TimestampS);
             if (m1.Acknowledgeable) return date;
@@ -131,12 +134,12 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             int totalseconds = (int)timestampS;
             int hour = (totalseconds / 3600) % 24;
             int minute = (totalseconds / 60) % 60;
-            DisplayedTimes[row] = new TextPrimitive(new Point(3, 3 + row * RowHeight), Color.White, hour.ToString() + ":" + (minute < 10 ? "0" : "") + minute.ToString(), FontTimestamp);
+            DisplayedTimes[row] = new TextPrimitive(new Point(3, (row + 1) * RowHeight - (int)FontHeightTimestamp), Color.White, (hour < 10 ? "0" : "") + hour.ToString() + ":" + (minute < 10 ? "0" : "") + minute.ToString(), FontTimestamp);
         }
         void SetTextPrimitive(string text, int row, bool isBold)
         {
             var font = isBold ? FontMessageBold : FontMessage;
-            DisplayedTexts[row] = new TextPrimitive(new Point(48, 3 + row * RowHeight), Color.White, text, font);
+            DisplayedTexts[row] = new TextPrimitive(new Point(48, (row + 1) * RowHeight - (int)FontHeightMessage), Color.White, text, font);
         }
         string[] GetRowSeparated(string text, bool isBold)
         {
@@ -144,8 +147,13 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             var size = font.MeasureString(text) / Scale;
             if (size > 234 - 48)
             {
-                int split = text.LastIndexOf(' ', 20);
-                return new string[] { text.Substring(0, split), text.Substring(split + 1) };
+                int split = text.LastIndexOf(' ', (int)((234 - 48)/size*text.Length));
+                if (split == -1) split = (int)((234 - 48) / size * text.Length);
+                var remaining = GetRowSeparated(text.Substring(split + 1), isBold);
+                var arr = new string[remaining.Length + 1];
+                arr[0] = text.Substring(0, split);
+                remaining.CopyTo(arr, 1);
+                return arr;
             }
             else
             {
@@ -162,25 +170,30 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             if (MessageList.Count == 0) return;
             if (MessageList[0].Acknowledgeable)
             {
+                var msg = MessageList[0];
+                msg.Displayed = true;
                 CurrentPage = 0;
-                SetDatePrimitive(MessageList[0].TimestampS, 0);
-                string[] text = GetRowSeparated(MessageList[0].Text, false);
+                SetDatePrimitive(msg.TimestampS, 0);
+                string[] text = GetRowSeparated(msg.Text, false);
                 for (int j = 0; j < text.Length && j < MaxTextLines; j++)
                 {
                     SetTextPrimitive(text[j], j, false);
                 }
-                AcknowledgingMessage = MessageList[0];
+                AcknowledgingMessage = msg;
+                MessageList[0] = msg;
                 NumPages = 1;
             }
             else
             {
-                //if (!MessageList[0].Displayed) CurrentPage = 0;
+                if (!MessageList[0].Displayed) CurrentPage = 0;
                 int row = 0;
-                foreach (var msg in MessageList)
+                for (int i=0; i<MessageList.Count; i++)
                 {
+                    var msg = MessageList[i];
                     string[] text = GetRowSeparated(msg.Text, msg.FirstGroup);
                     if (CurrentPage * MaxTextLines <= row && row < (CurrentPage + 1) * MaxTextLines)
                     {
+                        msg.Displayed = true;
                         SetDatePrimitive(msg.TimestampS, row % MaxTextLines);
                     }
                     for (int j = 0; j < text.Length; j++)
@@ -191,12 +204,15 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                         }
                         row++;
                     }
+                    MessageList[i] = msg;
                 }
                 NumPages = row / MaxTextLines + 1;
             }
         }
         public override void PrepareFrame(ETCSStatus status)
         {
+            Visible = status.ShowTextMessageArea;
+            if (!Visible) return;
             if (AcknowledgingMessage.HasValue)
             {
                 if (status.TextMessages.Contains(AcknowledgingMessage.Value)) return;
@@ -204,15 +220,19 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             }
 
             MessageList.RemoveAll(x => !status.TextMessages.Contains(x));
-            foreach (var msg in status.TextMessages)
+            for (int i = 0; i < status.TextMessages.Count; i++)
             {
-                if (!MessageList.Contains(msg)) MessageList.Add(msg);
+                var msg = status.TextMessages[i];
+                int index = MessageList.IndexOf(msg);
+                if (index == -1) MessageList.Add(msg);
+                else status.TextMessages[i] = MessageList[index];
             }
             MessageList.Sort(CompareMessages);
             SetMessages();
 
             ButtonScrollDown.Enabled = CurrentPage < NumPages - 1;
             ButtonScrollUp.Enabled = CurrentPage > 0;
+            ButtonAcknowledgeMessage.Enabled = AcknowledgingMessage != null;
         }
         public void HandleInput()
         {
@@ -232,9 +252,14 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                     SetMessages();
                 }
             }
-            else if (DMI.PressedButton == ButtonAcknowledgeMessage)
+            else if (DMI.PressedButton == ButtonAcknowledgeMessage && AcknowledgingMessage != null)
             {
-                AcknowledgingMessage = null;   
+                var ackmsg = AcknowledgingMessage.Value;
+                ackmsg.Acknowledgeable = false;
+                ackmsg.Acknowledged = true;
+                int index = MessageList.IndexOf(ackmsg);
+                if (index != -1) MessageList[index] = ackmsg;
+                AcknowledgingMessage = null;
             }
         }
         public void SetFont()
@@ -242,6 +267,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             FontTimestamp = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightTimestamp), System.Drawing.FontStyle.Regular);
             FontMessage = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightMessage), System.Drawing.FontStyle.Regular);
             FontMessageBold = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightMessage), System.Drawing.FontStyle.Bold);
+            SetMessages();
         }
     }
 }

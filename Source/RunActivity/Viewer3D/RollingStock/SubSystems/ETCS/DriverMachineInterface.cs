@@ -67,6 +67,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         bool DisplayBackground = false;
 
+        public bool Blinker2Hz;
+        public bool Blinker4Hz;
+        float BlinkerTime;
+
         /// <summary>
         /// True if the screen is sensitive
         /// </summary>
@@ -134,11 +138,17 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             MessageArea = new MessageArea(this, Viewer, MessageAreaLocation);
         }
 
-        public void PrepareFrame()
+        public void PrepareFrame(float elapsedSeconds)
         {
             ETCSStatus currentStatus = Locomotive.TrainControlSystem.ETCSStatus;
             Active = currentStatus != null && currentStatus.DMIActive;
             if (!Active) return;
+
+            BlinkerTime += elapsedSeconds;
+            BlinkerTime -= (int)BlinkerTime;
+            Blinker2Hz = BlinkerTime < 0.5;
+            Blinker4Hz = BlinkerTime < 0.25 || (BlinkerTime > 0.5 && BlinkerTime < 0.75);
+
             CircularSpeedGauge.PrepareFrame(currentStatus);
             PlanningWindow.PrepareFrame(currentStatus);
             DistanceArea.PrepareFrame(currentStatus);
@@ -172,7 +182,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(SpeedAreaLocation.X * Scale), position.Y + (int)(SpeedAreaLocation.Y * Scale)));
             PlanningWindow.Draw(spriteBatch, new Point(position.X + (int)(PlanningLocation.X * Scale), position.Y + (int)(PlanningLocation.Y * Scale)));
             DistanceArea.Draw(spriteBatch, new Point(position.X + (int)(DistanceAreaLocation.X * Scale), position.Y + (int)(DistanceAreaLocation.Y * Scale)));
-            //MessageArea.Draw(spriteBatch, new Point(position.X + (int)(MessageAreaLocation.X * Scale), position.Y + (int)(MessageAreaLocation.Y * Scale)));
+            MessageArea.Draw(spriteBatch, new Point(position.X + (int)(MessageAreaLocation.X * Scale), position.Y + (int)(MessageAreaLocation.Y * Scale)));
         }
 
         public void HandleMouseInput(bool pressed, int x, int y)
@@ -285,7 +295,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             base.PrepareFrame(frame, elapsedTime);
-            DMI.PrepareFrame();
+            DMI.PrepareFrame(elapsedTime.ClockSeconds);
             DMI.SizeTo(DrawPosition.Width * 640 / 280, DrawPosition.Height * 480 / 300);
         }
 
@@ -295,7 +305,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15);
             foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
             {
-                if (b.SensitiveArea.Contains(x, y)) return true;
+                if (b.SensitiveArea.Contains(x, y) && b.Enabled) return true;
             }
             return false;
         }

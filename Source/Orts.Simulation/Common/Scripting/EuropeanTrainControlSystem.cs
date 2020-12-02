@@ -118,6 +118,13 @@ namespace ORTS.Scripting.Api.ETCS
         /// Orders and announcements ahead to be displayed in the planning area
         /// </summary>
         public readonly List<PlanningTrackCondition> PlanningTrackConditions = new List<PlanningTrackCondition>();
+        /// <summary>
+        /// True if the text message area shall be displayed
+        /// </summary>
+        public bool ShowTextMessageArea;
+        /// <summary>
+        /// List of text messages to be displayed in text area
+        /// </summary>
         public readonly List<TextMessage> TextMessages = new List<TextMessage>();
     }
 
@@ -268,14 +275,34 @@ namespace ORTS.Scripting.Api.ETCS
             GradientPerMille = gradientPerMille;
         }
     }
-
+    /// <summary>
+    /// Defines a text message to be shown in DMI
+    /// </summary>
     public struct TextMessage : IEquatable<TextMessage>
     {
+        /// <summary>
+        /// Text to show
+        /// </summary>
         public readonly string Text;
+        /// <summary>
+        /// Defines the priority of the message
+        /// </summary>
         public readonly bool FirstGroup;
+        /// <summary>
+        /// Timestamp in seconds of the message
+        /// </summary>
         public float TimestampS;
+        /// <summary>
+        /// True if it needs acknowledgement from the driver
+        /// </summary>
         public bool Acknowledgeable;
+        /// <summary>
+        /// Will be set by the DMI if the driver acknowledges the message
+        /// </summary>
         public bool Acknowledged;
+        /// <summary>
+        /// Internally used by the DMI to determine if it shall inform the driver about the reception
+        /// </summary>
         public bool Displayed;
         public TextMessage(string text, float timestampS, bool firstGroup = false, bool acknowledgeable = false)
         {
