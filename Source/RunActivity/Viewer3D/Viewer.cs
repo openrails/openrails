@@ -391,6 +391,7 @@ namespace Orts.Viewer3D
 
             if (PlayerLocomotive == null) PlayerLocomotive = Simulator.InitialPlayerLocomotive();
             SelectedTrain = PlayerTrain;
+            PlayerTrain.InitializePlayerTrainData();
             if (PlayerTrain.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING)
             {
                 Simulator.Trains[0].LeadLocomotive = null;
