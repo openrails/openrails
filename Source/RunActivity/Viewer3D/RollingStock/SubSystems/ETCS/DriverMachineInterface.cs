@@ -274,6 +274,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             return new Rectangle(origin.X + (int)(x * Scale), origin.Y + (int)(y * Scale), Math.Max((int)(width * Scale), 1), Math.Max((int)(height * Scale), 1));
         }
+        public void DrawRectangle(SpriteBatch spriteBatch, Point origin, int x, int y, int width, int height, Color color)
+        {
+            spriteBatch.Draw(ColorTexture, new Vector2(origin.X + x * Scale, origin.Y + y * Scale), null, color, 0f, Vector2.Zero, new Vector2(width * Scale, height * Scale), SpriteEffects.None, 0);
+        }
         public void DrawSymbol(SpriteBatch spriteBatch, Texture2D texture, Point origin, float x, float y)
         {
             spriteBatch.Draw(texture, new Vector2(origin.X + x * Scale, origin.Y + y * Scale), null, Color.White, 0, Vector2.Zero, Scale * DMI.MipMapScale, SpriteEffects.None, 0);

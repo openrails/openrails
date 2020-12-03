@@ -94,7 +94,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly int[] LinePositions = { 283, 250, 206, 182, 164, 150, 107, 64, 21 };
         readonly int[] LineDistances = { 0, 25, 50, 75, 100, 125, 250, 500, 1000 };
 
-        readonly int[] TrackConditionPositions = { 45, 70, 95 };
+        readonly int[] TrackConditionPositions = { 43, 68, 93 };
 
         public PlanningWindow(DriverMachineInterface dmi, Viewer viewer, Point planningLocation) : base(dmi)
         {
@@ -132,10 +132,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (!Visible) return;
 
             // Planning area speed profile
-            spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14+133, 15, 99, 270), ColorPASPdark);
+            DrawRectangle(spriteBatch, position, 14+133, 15, 99, 270, ColorPASPdark);
             foreach (Rectangle r in PASPRectangles)
             {
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, r.X + 133, r.Y + 15, r.Width, r.Height), ColorPASPlight);
+                DrawRectangle(spriteBatch, position, r.X + 133, r.Y + 15, r.Width, r.Height, ColorPASPlight);
             }
 
             // Distance lines
@@ -178,7 +178,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 int minp = e.Key.X + 15;
                 int maxp = e.Key.Y + 15;
                 int size = maxp - minp;
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 18, size), e.Value ? ColorGrey : ColorDarkGrey);
+                DrawRectangle(spriteBatch, position, 115, minp, 18, size, e.Value ? ColorGrey : ColorDarkGrey);
                 spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 18, 1), e.Value ? Color.White : ColorGrey);
                 spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 1, size), e.Value ? Color.White : ColorGrey);
                 spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, maxp - (int)Math.Max(1, 1/Scale), 18, 1), Color.Black);
@@ -224,7 +224,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 }
                 else if (size > 14)
                 {
-                    gradientText.Add(new TextPrimitive(new Point((int)(9 - signWidth / 2), (int)(((minp + maxp - 1) / 2 - FontHeightGradient / 2))), textColor, sign, FontGradient));
+                    gradientText.Add(new TextPrimitive(new Point((int)(9 - signWidth / 2), (int)((minp + maxp - 1) / 2 - FontHeightGradient / 2)), textColor, sign, FontGradient));
                 }
             }
             GradientText = gradientText;
@@ -247,13 +247,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 if (cur.DistanceToTrainM < 0) continue;
                 if (cur.DistanceToTrainM > MaxViewingDistanceM)
                 {
-                    paspRectangles.Add(new Rectangle(14, 0, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - 15 + (int)Math.Round(1 / Scale)));
+                    paspRectangles.Add(new Rectangle(14, 0, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - 15));
                     break;
                 }
                 if (prev_pasp.TargetSpeedMpS > cur.TargetSpeedMpS && (!oth2 || cur.TargetSpeedMpS == 0))
                 {
                     oth1 = true;
-                    paspRectangles.Add(new Rectangle(14, GetPlanningHeight(cur.DistanceToTrainM) - 15, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - GetPlanningHeight(cur.DistanceToTrainM) + (int)Math.Round(1 / Scale)));
+                    paspRectangles.Add(new Rectangle(14, GetPlanningHeight(cur.DistanceToTrainM) - 15, (int)(93 * widthFactor), GetPlanningHeight(prev_pasp.DistanceToTrainM) - GetPlanningHeight(cur.DistanceToTrainM)));
                     float v = cur.TargetSpeedMpS / allowedSpeedMpS;
                     if (v > 0.74) widthFactor = 3.0f / 4;
                     else if (v > 0.49) widthFactor = 1.0f / 2;
@@ -397,6 +397,18 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                                 continue;
                         }
                         break;
+                    case TrackConditionType.Tunnel:
+                        tex = TrackConditionTextureData[40];
+                        break;
+                    case TrackConditionType.Bridge:
+                        tex = TrackConditionTextureData[41];
+                        break;
+                    case TrackConditionType.Station:
+                        tex = TrackConditionTextureData[42];
+                        break;
+                    case TrackConditionType.EndOfTrack:
+                        tex = TrackConditionTextureData[43];
+                        break;
                     default:
                         continue;
                 }
@@ -448,6 +460,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 Texture2D tex = DMI.LoadTexture("PL_" + (i < 10 ? "0" : "") + i + ".png");
                 TrackConditionTextureData[i] = tex;
             }
+            TrackConditionTextureData[40] = DMI.LoadTexture("PL_tunnel.png");
+            TrackConditionTextureData[41] = DMI.LoadTexture("PL_bridge.png");
+            TrackConditionTextureData[42] = DMI.LoadTexture("PL_station.png");
+            TrackConditionTextureData[43] = DMI.LoadTexture("PL_endoftrack.png");
             ScaleUpTexture[0] = DMI.LoadTexture("NA_05.bmp");
             ScaleUpTexture[1] = DMI.LoadTexture("NA_03.bmp");
             ScaleDownTexture[0] = DMI.LoadTexture("NA_06.bmp");
