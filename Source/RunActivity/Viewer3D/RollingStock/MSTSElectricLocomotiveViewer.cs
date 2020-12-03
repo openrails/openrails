@@ -38,16 +38,36 @@ namespace Orts.Viewer3D.RollingStock
             if (ElectricLocomotive.Train != null && (car.Train.TrainType == Train.TRAINTYPE.AI ||
                 ((car.Train.TrainType == Train.TRAINTYPE.PLAYER || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERDRIVEN || car.Train.TrainType == Train.TRAINTYPE.AI_PLAYERHOSTING) &&
                 (car.Train.MUDirection != Direction.N && ElectricLocomotive.PowerOn))))
+                // following reactivates the sound triggers related to certain states
+                // for pantos the sound trigger related to the raised panto must be reactivated, else SignalEvent() would raise also another panto
             {
-                ElectricLocomotive.SignalEvent(Event.Pantograph1Up);
+                var iPanto = 0;
+                Event evt;
+                foreach (var panto in ElectricLocomotive.Pantographs.List)
+                {
+                    if (panto.State == ORTS.Scripting.Api.PantographState.Up)
+                    {
+                        switch (iPanto)
+                        {
+                            case 0: evt = Event.Pantograph1Up; break;
+                            case 1: evt = Event.Pantograph2Up; break;
+                            case 2: evt = Event.Pantograph3Up; break;
+                            case 3: evt = Event.Pantograph4Up; break;
+                            default: evt = Event.Pantograph1Up; break;
+                        }
+                        ElectricLocomotive.SignalEvent(evt);
+                    }
+                    iPanto++;
+                }
                 ElectricLocomotive.SignalEvent(Event.EnginePowerOn);
                 ElectricLocomotive.SignalEvent(Event.ReverserToForwardBackward);
                 ElectricLocomotive.SignalEvent(Event.ReverserChange);
             }
         }
 
+
         /// <summary>
-        /// A keyboard or mouse click has occured. Read the UserInput
+        /// A keyboard or mouse click has occurred. Read the UserInput
         /// structure to determine what was pressed.
         /// </summary>
         public override void HandleUserInput(ElapsedTime elapsedTime)

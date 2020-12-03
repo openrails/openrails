@@ -172,6 +172,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<Direction> CurrentTrainMUDirection;
         /// <summary>
+        /// True if locomotive is flipped.
+        /// </summary>
+        public Func<bool> IsFlipped;
+        /// <summary>
+        /// True if player is in rear cab.
+        /// </summary>
+        public Func<bool> IsRearCab;
+        /// <summary>
         /// True if train brake controller is in emergency position, otherwise false.
         /// </summary>
         public Func<bool> IsBrakeEmergency;
@@ -191,6 +199,27 @@ namespace ORTS.Scripting.Api
         /// True if circuit breaker or power contactor opening order is true.
         /// </summary>
         public Func<bool> CircuitBreakerOpeningOrder;
+         /// <summary>
+        /// Returns the number of pantographs on the locomotive.
+        /// </summary>
+        public Func<int> PantographCount;
+        /// <summary>
+        /// Checks the state of any pantograph
+        /// int: pantograph ID (1 for first pantograph)
+        /// </summary>
+        public Func<int, PantographState> GetPantographState;
+        /// <summary>
+        /// True if all pantographs are down.
+        /// </summary>
+        public Func<bool> ArePantographsDown;
+        /// <summary>
+        /// Returns throttle percent
+        /// </summary>
+        public Func<float> ThrottlePercent;
+        /// <summary>
+        /// Returns dynamic brake percent
+        /// </summary>
+        public Func<float> DynamicBrakePercent;
         /// <summary>
         /// True if traction is authorized.
         /// </summary>
@@ -211,6 +240,22 @@ namespace ORTS.Scripting.Api
         /// Train brake pressure value which triggers the power cut-off.
         /// </summary>
         public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
+        /// <summary>
+        /// State of the train brake controller.
+        /// </summary>
+        public Func<ControllerState> TrainBrakeControllerState;
+        /// <summary>
+        /// Locomotive acceleration.
+        /// </summary>
+        public Func<float> AccelerationMpSS;
+        /// <summary>
+        /// Locomotive altitude.
+        /// </summary>
+        public Func<float> AltitudeM;
+        /// <summary>
+        /// Track gradient percent at the locomotive's location (positive = uphill).
+        /// </summary>
+        public Func<float> CurrentGradientPercent;
         /// <summary>
         /// Line speed taken from .trk file.
         /// </summary>
@@ -291,6 +336,16 @@ namespace ORTS.Scripting.Api
         /// Cut power by pull all pantographs down.
         /// </summary>
         public Action SetPantographsDown;
+        /// <summary>
+        /// Raise specified pantograph
+        /// int: pantographID, from 1 to 4
+        /// </summary>
+        public Action<int> SetPantographUp;
+        /// <summary>
+        /// Lower specified pantograph
+        /// int: pantographID, from 1 to 4
+        /// </summary>
+        public Action<int> SetPantographDown;
         /// <summary>
         /// Set the circuit breaker or power contactor closing authorization.
         /// </summary>

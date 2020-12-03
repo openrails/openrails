@@ -68,13 +68,19 @@ number should be used instead of zero.
    single: ORTSMergeSpeed
    single: ORTSStandstillFriction
 
-When a car is pulled from steady state, an additional force is needed due
-to higher bearing forces. The situation is simplified by using a different
-calculation at low speed (``ORTSMergeSpeed`` and lower). Empirical static
-friction forces are used for different classes of mass (under 10 tons, 10 to 100
-tons and above 100 tons). In addition, if weather conditions are poor
-(snowing is set), the static friction is increased. This low-speed friction
-force can be manually specified with ``ORTSStandstillFriction``.
+When a train is initially started, additional force is needed to overcome
+the initial higher bearing torque (forces) and track resistance.  Starting resistance is calculated 
+automatically by Open Rails based upon empirical prototypical data at low speeds. 
+By selecting different values for ``ORTSBearingType`` different values of starting 
+resistance will be applied. The Open Rails calculation for starting resistance takes 
+into account different conditions, such as weather (for example, snowing or clear), 
+wagon (axle) load, wheel bearing temperature and wheel diameter. Hence when using the OR calculation 
+the correct values should be inserted in ``ORTSNumberAxles`` parameter in the wagon section, and 
+``ORTSNumberDriveAxles`` in the engine section. The ``WheelRadius`` value should also be 
+inserted in both sections as appropriate.
+
+Alternatively the low-speed friction force can be manually specified by the user by setting 
+``ORTSStandstillFriction`` and ``ORTSMergeSpeed``.
 
 .. index::
    single: ORTSTrackGauge
