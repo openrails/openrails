@@ -762,6 +762,12 @@ When left- or right-clicking on a signal, a pop-up menu appears:
 Using the mouse, you can force the signal to Stop, Approach or Proceed. 
 Later you can return it to System Controlled mode.
 
+For signals using the TrainHasCallOn functions as described 
+:ref:`here <operation-callon-functions>`, an additional option labeled
+``Enable CallOn`` will appear in the pop-up menu. The use of this
+function allows a train to enter into an occupied platform if the
+dispatcher allows so.
+
 By left- or right-clicking on a switch, a small pop-up menu with the two 
 selections ``Main route`` and ``Side route`` appears. By clicking on them 
 you can throw the switch, provided the OR AI dispatcher allows it.
