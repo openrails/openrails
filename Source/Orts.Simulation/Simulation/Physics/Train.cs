@@ -14376,7 +14376,7 @@ namespace Orts.Simulation.Physics
                                 else if (PlayerTrainTunnels[dir].Count == 0 && (thisTunnel[sectionDirection].TunnelEnd < 0 || thisTunnel[sectionDirection].TunnelEnd > lengthOffset))
                                 {
                                     // Train is in tunnel, compute remaining length
-                                    var remainingLength = thisTunnel[sectionDirection].TotalLength - lengthOffset - (tunnelStartOffset < 0 ? thisTunnel[sectionDirection].TCSStartOffset : tunnelStartOffset);
+                                    var remainingLength = thisTunnel[sectionDirection].TotalLength - lengthOffset + (tunnelStartOffset < 0 ? -thisTunnel[sectionDirection].TCSStartOffset : tunnelStartOffset);
                                     thisItem = new TrainObjectItem(-1, (int)remainingLength, TrainObjectItem.TRAINOBJECTTYPE.TUNNEL);
                                     PlayerTrainTunnels[dir].Add(thisItem);
                                 }
