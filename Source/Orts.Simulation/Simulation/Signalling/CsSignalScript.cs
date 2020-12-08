@@ -25,6 +25,8 @@ namespace Orts.Simulation.Signalling
         public float? ApproachControlRequiredSpeed => SignalHead.ApproachControlLimitSpeedMpS.Value;
         public MstsBlockState BlockState => SignalObject.block_state();
         public bool RouteSet => SignalHead.route_set() > 0;
+        public bool AllowClearPartialRoute { set { SignalObject.AllowClearPartialRoute(value ? 1 : 0); } }
+        public int SignalNumClearAhead { get { return SignalObject.SignalNumClearAheadActive; } set { SignalObject.SetSignalNumClearAhead(value); } }
         public int DefaultDrawState(MstsSignalAspect signalAspect) => SignalHead.def_draw_state(signalAspect);
         public int SignalId => SignalObject.thisRef;
         public Dictionary<int, int> SharedVariables => SignalObject.localStorage;
@@ -68,6 +70,14 @@ namespace Orts.Simulation.Signalling
         {
             return SignalObject.next_nsig_id(SigFnIndex(sigfn), count + 1);
         }
+        public int OppositeSignalId(string sigfn)
+        {
+            return SignalObject.opp_sig_id(SigFnIndex(sigfn));
+        }
+        public int RequiredNormalSignalId(string normalSubtype)
+        {
+            return SignalObject.FindReqNormalSignal(SignalObject.signalRef.ORTSNormalsubtypes.IndexOf(normalSubtype), DebugFileName);
+        }
         public string IdTextSignalAspect(int id, string sigfn, int headindex=0)
         {
             if (id < 0 || id > SignalObject.signalRef.SignalObjects.Length) return String.Empty;
@@ -98,9 +108,13 @@ namespace Orts.Simulation.Signalling
         {
             return SignalHead.id_sig_enabled(id) > 0;
         }
-        public bool TrainHasCallOn(bool allowOnNonePlatform = true)
+        public bool TrainHasCallOn(bool allowOnNonePlatform = true, bool allowAdvancedSignal = false)
         {
-            return SignalObject.TrainHasCallOn(allowOnNonePlatform, DebugFileName);
+            return SignalObject.TrainHasCallOn(allowOnNonePlatform, allowAdvancedSignal, DebugFileName);
+        }
+        public bool TrainRequiresSignal(int signalId, float reqPositionM)
+        {
+            return SignalObject.RequiresNextSignal(signalId, (int)reqPositionM, DebugFileName);
         }
         public bool ApproachControlPosition(float reqPositionM, bool forced = false)
         {

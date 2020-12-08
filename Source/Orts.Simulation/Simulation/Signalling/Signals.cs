@@ -72,6 +72,7 @@ namespace Orts.Simulation.Signalling
         public static CsSignalScripts CsSignalScripts;
         public int ORTSSignalTypeCount { get; private set; }
         public IList<string> ORTSSignalTypes;
+        public IList<string> ORTSNormalsubtypes;
 
         public int noSignals;
         private int foundSignals;
@@ -112,6 +113,7 @@ namespace Orts.Simulation.Signalling
 
             ORTSSignalTypeCount = sigcfg.ORTSFunctionTypes.Count;
             ORTSSignalTypes = sigcfg.ORTSFunctionTypes;
+            ORTSNormalsubtypes = sigcfg.ORTSNormalSubtypes;
 
             trackDB = simulator.TDB.TrackDB;
             tsectiondat = simulator.TSectionDat;
