@@ -12805,7 +12805,7 @@ namespace Orts.Simulation.Signalling
 
                     if (usedCsSignalScript != null)
                     {
-                        usedCsSignalScript.SignalHead = this;
+                        usedCsSignalScript.AttachToHead(this);
                         usedCsSignalScript.Initialize();
                     }
                 }
