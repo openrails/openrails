@@ -12660,15 +12660,6 @@ namespace Orts.Simulation.Signalling
             holdState = HoldState.None;
         }
 
-        public List<string> GetAllTextSignalAspects(MstsSignalFunction signalFunction)
-        {
-            int signalFunctionInt = Convert.ToInt32(signalFunction);
-
-            return SignalHeads
-                    .FindAll(x => x.ORTSsigFunctionIndex == signalFunctionInt && x.TextSignalAspect != String.Empty)
-                    .Select(x => x.TextSignalAspect)
-                    .ToList();
-        }
     }  // SignalObject
 
 
