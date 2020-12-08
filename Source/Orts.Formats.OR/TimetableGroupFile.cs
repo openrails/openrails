@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Orts.Formats.OR
 {
@@ -70,27 +71,10 @@ namespace Orts.Formats.OR
 
         void MultiTTFilePreliminaryRead(String filePath, String directory, StreamReader scrStream)
         {
-            String readLine;
-
-            // read first line - first character is separator, rest is train info
-            readLine = scrStream.ReadLine();
-
-            while (readLine != null)
-            {
-                if (!String.IsNullOrEmpty(readLine))
-                {
-                    if (String.Compare(readLine.Substring(0, 1), "#") == 0)
-                    {
-                        if (String.IsNullOrEmpty(Description)) Description = String.Copy(readLine.Substring(1));
-                    }
-                    else
-                    {
-                        String ttfile = System.IO.Path.Combine(directory, readLine);
-                        ORTTInfo.Add(new TimetableFileLite(ttfile));
-                    }
-                }
-                readLine = scrStream.ReadLine();
-            }
+            var (description, ttfiles) = TimetableGroupFileUtilities.ReadMultiTTFiles(directory, scrStream);
+            Description = description;
+            ORTTInfo = (from ttfile in ttfiles
+                        select new TimetableFileLite(ttfile)).ToList();
         }
     }
 
@@ -137,27 +121,41 @@ namespace Orts.Formats.OR
 
         void MultiTTFileRead(String filePath, String directory, StreamReader scrStream)
         {
-            String readLine;
+            var (description, ttfiles) = TimetableGroupFileUtilities.ReadMultiTTFiles(directory, scrStream);
+            Description = description;
+            TTFiles = ttfiles.ToList();
+        }
+    }
 
-            // read first line - first character is separator, rest is train info
-            readLine = scrStream.ReadLine();
-
-            while (readLine != null)
+    internal class TimetableGroupFileUtilities
+    {
+        /// <summary>
+        /// Extract a description and list of file paths from a MultiTTfile.
+        /// </summary>
+        /// <param name="directory">The directory where the MultiTTfile is located, to prepend to all filenames.</param>
+        /// <param name="scrStream">The MultiTTfile stream reader.</param>
+        /// <returns>The description (null if not present) and the list of file paths.</returns>
+        public static (string, IEnumerable<string>) ReadMultiTTFiles(string directory, StreamReader scrStream)
+        {
+            string description = null;
+            var ttfiles = new List<string>();
+            var validLines = scrStream
+                .ReadToEnd()
+                .Split(new[] { '\n', '\r' })
+                .Where((string l) => !string.IsNullOrEmpty(l));
+            foreach (string readLine in validLines)
             {
-                if (!String.IsNullOrEmpty(readLine))
+                if (readLine[0] == '#')
                 {
-                    if (String.Compare(readLine.Substring(0, 1), "#") == 0)
-                    {
-                        if (String.IsNullOrEmpty(Description)) Description = String.Copy(readLine.Substring(1));
-                    }
-                    else
-                    {
-                        String ttfile = System.IO.Path.Combine(directory, readLine);
-                        TTFiles.Add(ttfile);
-                    }
+                    if (string.IsNullOrEmpty(description))
+                        description = readLine.Substring(1);
                 }
-                readLine = scrStream.ReadLine();
+                else
+                {
+                    ttfiles.Add(Path.Combine(directory, readLine));
+                }
             }
+            return (description, ttfiles);
         }
     }
 }

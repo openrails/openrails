@@ -82,13 +82,14 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> WagonSmoke = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> HeatingSteamBoiler = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> BearingHotBox = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SteamBrake = new List<ParticleEmitterViewer>();
 
         // Create viewers for special steam effects on car
         List<ParticleEmitterViewer> WagonGenerator = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> DieselLocoGenerator = new List<ParticleEmitterViewer>();
 
         bool HasFirstPanto;
-        int numBogie1, numBogie2, numBogie, bogie1Axles, bogie2Axles = 0;
+        int numBogie1, numBogie2, bogie1Axles, bogie2Axles = 0;
         int bogieMatrix1, bogieMatrix2 = 0;
         FreightAnimationsViewer FreightAnimations;
 
@@ -210,6 +211,14 @@ namespace Orts.Viewer3D.RollingStock
                     TenderWaterOverflow.AddRange(emitter.Value);
 
                 foreach (var drawer in TenderWaterOverflow)
+                {
+                    drawer.Initialize(steamTexture);
+                }
+
+                if (emitter.Key.ToLowerInvariant() == "steambrakefx")
+                    SteamBrake.AddRange(emitter.Value);
+
+                foreach (var drawer in SteamBrake)
                 {
                     drawer.Initialize(steamTexture);
                 }
@@ -356,7 +365,7 @@ namespace Orts.Viewer3D.RollingStock
             car.SetUpWheels();
 
             // If we have two pantographs, 2 is the forwards pantograph, unlike when there's only one.
-            if (!car.Flipped && !Pantograph1.Empty() && !Pantograph2.Empty())
+            if (!(car.Flipped ^ (car.Train.IsActualPlayerTrain && Viewer.PlayerLocomotive.Flipped)) && !Pantograph1.Empty() && !Pantograph2.Empty())
                 AnimatedPart.Swap(ref Pantograph1, ref Pantograph2);
 
             Pantograph1.SetState(MSTSWagon.Pantographs[1].CommandUp);
@@ -624,6 +633,12 @@ namespace Orts.Viewer3D.RollingStock
             foreach (var drawer in BearingHotBox)
             {
                 drawer.SetOutput(car.BearingHotBoxSmokeVelocityMpS, car.BearingHotBoxSmokeVolumeM3pS, car.BearingHotBoxSmokeDurationS, car.BearingHotBoxSmokeSteadyColor);
+            }
+
+            // Steam Brake effects
+            foreach (var drawer in SteamBrake)
+            {
+                drawer.SetOutput(car.SteamBrakeLeaksVelocityMpS, car.SteamBrakeLeaksVolumeM3pS, car.SteamBrakeLeaksDurationS);
             }
 
             foreach (List<ParticleEmitterViewer> drawers in ParticleDrawers.Values)

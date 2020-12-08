@@ -209,6 +209,7 @@ namespace Orts.Simulation.Timetables
         }
 
         public List<TriggerActivation> activatedTrainTriggers = new List<TriggerActivation>();
+        public string Briefing { get; set; } = "";
 
         //================================================================================================//
         /// <summary>
@@ -591,6 +592,8 @@ namespace Orts.Simulation.Timetables
             DriverOnlyOperation = inf.ReadBoolean();
             ForceReversal = inf.ReadBoolean();
 
+            Briefing = inf.ReadString();
+
             // reset actions if train is active
             bool activeTrain = true;
 
@@ -896,6 +899,7 @@ namespace Orts.Simulation.Timetables
             outf.Write(SpeedSettings.restrictedSet);
             outf.Write(DriverOnlyOperation);
             outf.Write(ForceReversal);
+            outf.Write(Briefing);
         }
 
 
@@ -15174,4 +15178,3 @@ namespace Orts.Simulation.Timetables
         }
     }
 }
-

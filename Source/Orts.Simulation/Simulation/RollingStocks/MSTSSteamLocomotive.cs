@@ -198,7 +198,6 @@ namespace Orts.Simulation.RollingStocks
         public float CylinderSteamUsageLBpS;
         public float NewCylinderSteamUsageLBpS;
         public float BlowerSteamUsageLBpS;
-        public float BoilerPressurePSI;     // Gauge pressure - what the engineer sees.
         public float EvaporationLBpS;          // steam generation rate
         public float FireMassKG;      // Mass of coal currently on grate area
         public float FireRatio;     // Ratio of actual firemass to ideal firemass
@@ -212,7 +211,6 @@ namespace Orts.Simulation.RollingStocks
 
         // eng file configuration parameters
 
-        float MaxBoilerPressurePSI = 180f;  // maximum boiler pressure, safety valve setting
         float BoilerVolumeFT3;      // total space in boiler that can hold water and steam
         int NumCylinders = 2;       // Number of Cylinders
         float CylinderStrokeM;      // High pressure cylinders
@@ -478,11 +476,12 @@ namespace Orts.Simulation.RollingStocks
         public float LogSteamChestPressurePSI;
 
         // Values for Steam Cylinder events
-        float ValveTravel = 10.8268f;
-        float ValveLead = 0.275591f;
-        float ValveExhLap = 0.708661f;
-        float ValveSteamLap;
-        double ValveAdvanceAngleDeg;
+        // Commented out as never used
+        //float ValveTravel = 10.8268f;
+        //float ValveLead = 0.275591f;
+        //float ValveExhLap = 0.708661f;
+        //float ValveSteamLap;
+        //double ValveAdvanceAngleDeg;
 
         public float LogLPInitialPressurePSI;
         public float LogLPCutoffPressurePSI;
@@ -572,7 +571,7 @@ namespace Orts.Simulation.RollingStocks
         float absStartTractiveEffortN = 0.0f;      // Record starting tractive effort
         float TractiveEffortLbsF;           // Current sim calculated tractive effort
         const float TractiveEffortFactor = 0.85f;  // factor for calculating Theoretical Tractive Effort for non-geared locomotives
-        const float GearedTractiveEffortFactor = 0.7f;  // factor for calculating Theoretical Tractive Effort for geared locomotives
+        float GearedTractiveEffortFactor = 0.7f;  // factor for calculating Theoretical Tractive Effort for geared locomotives
         float NeutralGearedDavisAN; // Davis A value adjusted for neutral gearing
         const float DavisMechanicalResistanceFactor = 20.0f;
         float GearedRetainedDavisAN; // Remembers the Davis A value
@@ -582,6 +581,7 @@ namespace Orts.Simulation.RollingStocks
         float MaxPistonSpeedFtpM;   // Piston speed @ max performance for the locomotive
         float MaxIndicatedHorsePowerHP; // IHP @ max performance for the locomotive
         float DisplayMaxIndicatedHorsePowerHP; // Display value for HUD of IHP @ max performance for the geared locomotive
+        float RetainedGearedMaxMaxIndicatedHorsePowerHP; // Retrains maximum IHP value for steam locomotives.
         float absSpeedMpS;
         float CombFrictionN;  // Temporary parameter to store combined friction values of locomotive and tender
         float CombGravityN;   // Temporary parameter to store combined Gravity values of locomotive and tender
@@ -827,6 +827,7 @@ namespace Orts.Simulation.RollingStocks
                     stf.SkipRestOfBlock();
                     break;
                 case "engine(ortssteammaxgearpistonrate": MaxSteamGearPistonRateFtpM = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
+                case "engine(ortsgearedtractiveeffortfactor": GearedTractiveEffortFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamlocomotivetype":
                     stf.MustMatch("(");
                     var steamengineType = stf.ReadString();
@@ -883,6 +884,7 @@ namespace Orts.Simulation.RollingStocks
             EjectorSmallSteamConsumptionLbpS = locoCopy.EjectorSmallSteamConsumptionLbpS;
             EjectorLargeSteamConsumptionLbpS = locoCopy.EjectorLargeSteamConsumptionLbpS;
             ShovelMassKG = locoCopy.ShovelMassKG;
+            GearedTractiveEffortFactor = locoCopy.GearedTractiveEffortFactor;
             MaxTenderCoalMassKG = locoCopy.MaxTenderCoalMassKG;
             MaxLocoTenderWaterMassKG = locoCopy.MaxLocoTenderWaterMassKG;
             MaxFiringRateKGpS = locoCopy.MaxFiringRateKGpS;
@@ -1068,11 +1070,30 @@ namespace Orts.Simulation.RollingStocks
             if (ZeroError(CylinderStrokeM, "CylinderStroke"))
                 CylinderStrokeM = 1;
             if (ZeroError(DriverWheelRadiusM, "WheelRadius"))
-                DriverWheelRadiusM = 1;
+                DriverWheelRadiusM = Me.FromIn(30.0f); // Wheel radius of loco drive wheels can be anywhere from about 10" to 40"
             if (ZeroError(MaxBoilerPressurePSI, "MaxBoilerPressure"))
                 MaxBoilerPressurePSI = 1;
             if (ZeroError(BoilerVolumeFT3, "BoilerVolume"))
                 BoilerVolumeFT3 = 1;
+
+            // For light locomotives reduce the weight of the various connecting rods, as the default values are for larger locomotives. This will reduce slip on small locomotives
+            // It is not believed that the weight reduction on the connecting rods is linear with the weight of the locmotive. However this requires futher research, and this section is a 
+            // work around until any further research is undertaken
+            // "The following code provides a simple 2-step adjustment, as not enough information is currently available for a more flexible one."
+            if (MassKG < Kg.FromTUS(10))
+            {
+                const float reductionfactor = 0.2f;
+                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
+                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
+                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
+            }
+            else if (MassKG < Kg.FromTUS(20)) 
+            {
+                const float reductionfactor = 0.3f;
+                ReciprocatingWeightLb = 580.0f * reductionfactor;  // Weight of reciprocating parts of the rod driving gears
+                ConnectingRodWeightLb = 600.0f * reductionfactor;  // Weignt of connecting rod
+                ConnectingRodBalanceWeightLb = 300.0f * reductionfactor; // Balance weight for connecting rods
+            }
 
             #region Initialise additional steam properties
 
@@ -1255,10 +1276,13 @@ namespace Orts.Simulation.RollingStocks
                     }
                     MotiveForceGearRatio = SteamGearRatioLow;
                     SteamGearRatio = SteamGearRatioLow;
+                    SteamGearPosition = 1.0f; // set starting gear position 
                     // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
                     // Max Geared speed = ((MaxPistonSpeedFt/m / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
-                    LowMaxGearedSpeedMpS = pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatio * MathHelper.Pi * DriverWheelRadiusM * 2.0f);
+                    LowMaxGearedSpeedMpS = (Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioLow))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
                     MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2.0f * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                    DisplayMaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                     DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
                 else if (IsSelectGeared)
@@ -1281,12 +1305,12 @@ namespace Orts.Simulation.RollingStocks
                     }
                     if (SteamGearRatioLow == 0)
                     {
-                        SteamGearRatioLow = 5.0f;
+                        SteamGearRatioLow = 9.0f;
                         Trace.TraceWarning("SteamGearRatioLow not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                     }
                     if (SteamGearRatioHigh == 0)
                     {
-                        SteamGearRatioHigh = 2.0f;
+                        SteamGearRatioHigh = 4.5f;
                         Trace.TraceWarning("SteamGearRatioHigh not found in ENG file, or doesn't appear to be a valid figure, and has been set to default value");
                     }
                     // Adjust resistance for neutral gearing
@@ -1304,9 +1328,11 @@ namespace Orts.Simulation.RollingStocks
                     SteamGearPosition = 1.0f; // assume in low gear as starting position 
                     // Calculate maximum locomotive speed - based upon the number of revs for the drive shaft, geared to wheel shaft, and then circumference of drive wheel
                     // Max Geared speed = ((MaxPistonSpeed / Gear Ratio) x DrvWheelCircumference) / Feet in mile - miles per min
-                    LowMaxGearedSpeedMpS = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioLow))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
-                    HighMaxGearedSpeedMpS = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioHigh))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
+                    LowMaxGearedSpeedMpS = (Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioLow))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
+                    HighMaxGearedSpeedMpS = (Me.FromFt(pS.FrompM(MaxSteamGearPistonRateFtpM / SteamGearRatioHigh))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
                     MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio * CylinderEfficiencyRate;
+                    MaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
+                    DisplayMaxLocoSpeedMpH = MpS.ToMpH(LowMaxGearedSpeedMpS);
                     DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
                 }
                 else
@@ -1412,7 +1438,7 @@ namespace Orts.Simulation.RollingStocks
             {
                 BoilerEvapRateLbspFt2 = 15.0f; // Default rate for evaporation rate. Assume a default rate of 15 lbs/sqft of evaporation area
             }
-            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 10.0f, 30.0f); // Clamp BoilerEvap Rate to between 10 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
+            BoilerEvapRateLbspFt2 = MathHelper.Clamp(BoilerEvapRateLbspFt2, 7.5f, 30.0f); // Clamp BoilerEvap Rate to between 7.5 & 30 - some modern locomotives can go as high as 30, but majority are around 15.
             TheoreticalMaxSteamOutputLBpS = pS.FrompH(Me2.ToFt2(EvaporationAreaM2) * BoilerEvapRateLbspFt2); // set max boiler theoretical steam output
 
             float BoilerVolumeCheck = Me2.ToFt2(EvaporationAreaM2) / BoilerVolumeFT3;    //Calculate the Boiler Volume Check value.
@@ -1517,12 +1543,7 @@ namespace Orts.Simulation.RollingStocks
             }
 
             // Calculate max velocity of the locomotive based upon above piston speed
-            if (SteamGearRatio == 0)
-            {
-                MaxLocoSpeedMpH = 0.0f;
-                DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
-            }
-            else
+            if (SteamEngineType != SteamEngineTypes.Geared)
             {
                 MaxLocoSpeedMpH = MpS.ToMpH(Me.FromFt(pS.FrompM(MaxPistonSpeedFtpM / SteamGearRatio))) * 2.0f * MathHelper.Pi * DriverWheelRadiusM / (2.0f * CylinderStrokeM);
                 DisplayMaxLocoSpeedMpH = MaxLocoSpeedMpH;
@@ -1728,26 +1749,30 @@ namespace Orts.Simulation.RollingStocks
 
             MaxBoilerOutputHP = MaxBoilerOutputLBpH / SteamperIHPh; // Calculate boiler output power
 
+            // if MaxIHP is set in ENG file, and is a geared (mainly selectable model) locomotive then retain a copy of the original value
+            if (MaxIndicatedHorsePowerHP != 0) 
+            {
+                RetainedGearedMaxMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+            }
+
             if (MaxIndicatedHorsePowerHP == 0) // if MaxIHP is not set in ENG file, then set a default
             {
-
                 // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
-                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                MaxIndicatedHorsePowerHP = MaxSpeedFactor * (MaxTractiveEffortLbf * MaxLocoSpeedMpH) / 375.0f;  // To be checked what MaxTractive Effort is for the purposes of this formula.
 
                 // Check to see if MaxIHP is in fact limited by the boiler
                 if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                 {
                     MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                    DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                     ISBoilerLimited = true;
                 }
                 else
                 {
                     ISBoilerLimited = false;
                 }
-
             }
+                       
+            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
 
             // If DrvWheelWeight is not in ENG file, then calculate from Factor of Adhesion(FoA) = DrvWheelWeight / Start (Max) Tractive Effort, assume FoA = 4.2
 
@@ -1865,7 +1890,7 @@ namespace Orts.Simulation.RollingStocks
                 Trace.TraceInformation("Steam Locomotive Type - {0}", SteamLocoType);
 
                 Trace.TraceInformation("**************** General ****************");
-                Trace.TraceInformation("WheelRadius {0:N2} ft, NumWheels {1}, DriveWheelWeight {2:N1} t-uk", Me.ToFt(DriverWheelRadiusM), LocoNumDrvWheels, Kg.ToTUK(DrvWheelWeightKg));
+                Trace.TraceInformation("WheelRadius {0:N2} ft, NumWheels {1}, DriveWheelWeight {2:N1} t-uk", Me.ToFt(DriverWheelRadiusM), LocoNumDrvAxles, Kg.ToTUK(DrvWheelWeightKg));
 
                 Trace.TraceInformation("**************** Boiler ****************");
                 Trace.TraceInformation("Boiler Volume {0:N1} cu ft, Evap Area {1:N1} sq ft, Superheat Area {2:N1} sq ft, Max Superheat Temp {3:N1} F, Max Boiler Pressure {4:N1} psi", BoilerVolumeFT3, Me2.ToFt2(EvaporationAreaM2), Me2.ToFt2(SuperheatAreaM2), MaxSuperheatRefTempF, MaxBoilerPressurePSI);
@@ -4012,7 +4037,7 @@ namespace Orts.Simulation.RollingStocks
                 RatioOfExpansion_bc = (CylinderExhaustOpenFactor + CylinderClearancePC) / (cutoff + CylinderClearancePC);
                 // Absolute Mean Pressure = Ratio of Expansion
 
-                SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
+                SteamChestPressurePSI = (throttle * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS * MotiveForceGearRatio)] * BoilerPressurePSI); // pressure in cylinder steam chest - allowance for pressure drop between boiler and steam chest
 
                 LogSteamChestPressurePSI = SteamChestPressurePSI;  // Value for recording in log file
                 LogSteamChestPressurePSI = MathHelper.Clamp(LogSteamChestPressurePSI, 0.00f, LogSteamChestPressurePSI); // Clamp so that steam chest pressure does not go negative
@@ -4020,14 +4045,14 @@ namespace Orts.Simulation.RollingStocks
                 // Initial pressure will be decreased depending upon locomotive speed
                 // This drop can be adjusted with a table in Eng File
                 // (a) - Initial Pressure
-                Pressure_a_AtmPSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
+                Pressure_a_AtmPSI = ((throttle * BoilerPressurePSI) + OneAtmospherePSI) * InitialPressureDropRatioRpMtoX[pS.TopM(DrvWheelRevRpS * MotiveForceGearRatio)]; // This is the gauge pressure + atmospheric pressure to find the absolute pressure - pressure drop gas been allowed for as the steam goes into the cylinder through the opening in the steam chest port.
 
                 LogInitialPressurePSI = Pressure_a_AtmPSI - OneAtmospherePSI; // Value for log file & display
                 LogInitialPressurePSI = MathHelper.Clamp(LogInitialPressurePSI, 0.00f, LogInitialPressurePSI); // Clamp so that initial pressure does not go negative
 
                 // Calculate Cut-off Pressure drop - cutoff pressure drops as speed of locomotive increases.
-                float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
-                float CutoffDropLower = CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS), cutoff);  // Get Cutoff Pressure to Initial pressure drop - lower limit
+                float CutoffDropUpper = CutoffInitialPressureDropRatioUpper.Get(pS.TopM(DrvWheelRevRpS * MotiveForceGearRatio), cutoff);  // Get Cutoff Pressure to Initial pressure drop - upper limit
+                float CutoffDropLower = CutoffInitialPressureDropRatioLower.Get(pS.TopM(DrvWheelRevRpS * MotiveForceGearRatio), cutoff);  // Get Cutoff Pressure to Initial pressure drop - lower limit
 
                 // calculate value based upon setting of Cylinder port opening
 
@@ -4036,7 +4061,7 @@ namespace Orts.Simulation.RollingStocks
                 if (HasSuperheater) // If locomotive is superheated then cutoff pressure drop will be different.
                 {
                     float DrvWheelRevpM = pS.TopM(DrvWheelRevRpS);
-                    CutoffPressureDropRatio = (1.0f - ((1 / SuperheatCutoffPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS))));
+                    CutoffPressureDropRatio = (1.0f - ((1 / SuperheatCutoffPressureFactor) * (float)Math.Sqrt(pS.TopM(DrvWheelRevRpS * MotiveForceGearRatio))));
                 }
 
 
@@ -4313,7 +4338,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     // For time being assume that compound locomotive doesn't experience cylinder condensation.
                     RawCylinderSteamWeightLbs = CylinderReleaseSteamWeightLbs - CylinderAdmissionSteamWeightLbs;
-                    RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
+                    RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * RawCylinderSteamWeightLbs;
                     CalculatedCylinderSteamUsageLBpS = RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
 
                 }
@@ -4334,7 +4359,7 @@ namespace Orts.Simulation.RollingStocks
                         CylinderAdmissionSteamWeightLbs = 0.0f;
                     }
                     RawCylinderSteamWeightLbs = CylinderReleaseSteamWeightLbs - CylinderAdmissionSteamWeightLbs;
-                    RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
+                    RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * RawCylinderSteamWeightLbs;
                     CalculatedCylinderSteamUsageLBpS = RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
                 }
             }
@@ -4358,7 +4383,10 @@ namespace Orts.Simulation.RollingStocks
                     CylinderAdmissionSteamWeightLbs = 0.0f;
                 }
                 RawCylinderSteamWeightLbs = CylinderReleaseSteamWeightLbs - CylinderAdmissionSteamWeightLbs;
-                RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * CylStrokesPerCycle * (RawCylinderSteamWeightLbs);
+
+                // Calculate steam usage based upon how many piston strokes happen for each revolution of the wheels. 
+                // Geared locomotives will have to take into account gearing ratio. 
+                RawCalculatedCylinderSteamUsageLBpS = NumCylinders * DrvWheelRevRpS * MotiveForceGearRatio * CylStrokesPerCycle * RawCylinderSteamWeightLbs;
                 CalculatedCylinderSteamUsageLBpS = RawCalculatedCylinderSteamUsageLBpS * SuperheaterSteamUsageFactor;
             }
 
@@ -4583,12 +4611,12 @@ namespace Orts.Simulation.RollingStocks
 
             #region - Steam Adhesion Model Input for Steam Locomotives
 
-            // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson
+            // Based upon information presented in "Locomotive Operation - A Technical and Practical Analysis" by G. R. Henderson - https://archive.org/details/locomotiveoperat00hend
             // At its simplest slip occurs when the wheel tangential force exceeds the static frictional force
             // Static frictional force = weight on the locomotive driving wheels * frictional co-efficient
             // Tangential force = Effective force (Interia + Piston force) * Tangential factor (sin (crank angle) + (crank radius / connecting rod length) * sin (crank angle) * cos (crank angle))
             // Typically tangential force will be greater at starting then when the locomotive is at speed, as interia and reduce steam pressure will decrease the value. 
-            // Thus we will only consider slip impacts at start of the locomotive
+            // By default this model uses information based upon a "NYC 4-4-2 locomotive", for smaller locomotives this data is changed in the OR initialisation phase.
 
             if (Simulator.UseAdvancedAdhesion && this == Simulator.PlayerLocomotive && this.Train.TrainType != Train.TRAINTYPE.AI_PLAYERHOSTING) // only set advanced wheel slip when advanced adhesion and is the player locomotive, AI locomotive will not work to this model. Don't use slip model when train is in auto pilot
             {
@@ -4844,7 +4872,7 @@ namespace Orts.Simulation.RollingStocks
                 // Dry, wght per wheel > 10,000lbs   == 0.35
                 // Dry, wght per wheel < 10,000lbs   == 0.25
 
-                SteamDrvWheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / LocoNumDrvWheels); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
+                SteamDrvWheelWeightLbs = Kg.ToLb(DrvWheelWeightKg / LocoNumDrvAxles); // Calculate the weight per axle (used in MSTSLocomotive for friction calculatons)
 
                 // Static Friction Force - adhesive factor increased by vertical thrust when travelling forward, and reduced by vertical thrust when travelling backwards
 
@@ -4925,7 +4953,7 @@ namespace Orts.Simulation.RollingStocks
                     TotalWheelMomentofInertia *= DriverWheelRadiusM / WheelRadiusAssumptM;
 
                     // The moment of inertia needs to be increased by the number of wheel sets
-                    TotalWheelMomentofInertia *= LocoNumDrvWheels;
+                    TotalWheelMomentofInertia *= LocoNumDrvAxles;
 
                     // the inertia of the coupling rods can also be added
                     // Assume rods weigh approx 1500 lbs
@@ -6667,21 +6695,29 @@ public void SteamStartGearBoxIncrease()
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
-                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
-                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                            // If value set in ENG file then hold to this value, otherwise calculate the value
+                            if (RetainedGearedMaxMaxIndicatedHorsePowerHP != 0)
+                            {
+                                MaxIndicatedHorsePowerHP = RetainedGearedMaxMaxIndicatedHorsePowerHP;
+                            }
+                            else
+                            {
+                                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            }
 
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
                             {
                                 ISBoilerLimited = false;
                             }
+
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                         }
                         else if (SteamGearPosition == 2.0)
                         {
@@ -6696,20 +6732,29 @@ public void SteamStartGearBoxIncrease()
                             MaxTractiveEffortLbf = (NumCylinders / 2.0f) * (Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderDiameterM) * Me.ToIn(CylinderStrokeM) / (2 * Me.ToIn(DriverWheelRadiusM))) * MaxBoilerPressurePSI * GearedTractiveEffortFactor * MotiveForceGearRatio;
                             DisplayMaxTractiveEffortLbf = MaxTractiveEffortLbf;
 
-                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
-                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                            // If value set in ENG file then hold to this value, otherwise calculate the value
+                            if (RetainedGearedMaxMaxIndicatedHorsePowerHP != 0)
+                            {
+                                MaxIndicatedHorsePowerHP = RetainedGearedMaxMaxIndicatedHorsePowerHP;
+                            }
+                            else
+                            {
+                                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            }
+
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
                             {
                                 ISBoilerLimited = false;
                             }
+
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                         }
                     }
                 }
@@ -6750,20 +6795,29 @@ public void SteamStartGearBoxIncrease()
                             SignalEvent(Event.SteamGearLeverToggle);
                             SignalEvent(Event.GearPosition1);
 
-                            // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
-                            MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
-                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
+                            // If value set in ENG file then hold to this value, otherwise calculate the value
+                            if (RetainedGearedMaxMaxIndicatedHorsePowerHP != 0)
+                            {
+                                MaxIndicatedHorsePowerHP = RetainedGearedMaxMaxIndicatedHorsePowerHP;
+                            }
+                            else
+                            {
+                                // Max IHP = (Max TE x Speed) / 375.0, use a factor of 0.85 to calculate max TE
+                                MaxIndicatedHorsePowerHP = MaxSpeedFactor * ((MaxTractiveEffortLbf) * MaxLocoSpeedMpH) / 375.0f;
+                            }
+
                             // Check to see if MaxIHP is in fact limited by the boiler
                             if (MaxIndicatedHorsePowerHP > MaxBoilerOutputHP)
                             {
                                 MaxIndicatedHorsePowerHP = MaxBoilerOutputHP; // Set maxIHp to limit set by boiler
-                                DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
                                 ISBoilerLimited = true;
                             }
                             else
                             {
                                 ISBoilerLimited = false;
                             }
+
+                            DisplayMaxIndicatedHorsePowerHP = MaxIndicatedHorsePowerHP;
 
                         }
                         else if (SteamGearPosition == 0.0)

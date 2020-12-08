@@ -1,17 +1,17 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-06-05 18:27:34+0100\n"
-"PO-Revision-Date: 2020-06-09 04:04+0300\n"
+"POT-Creation-Date: 2020-08-29 03:09:44+0300\n"
+"PO-Revision-Date: 2020-08-30 13:55+0300\n"
+"Last-Translator: \n"
 "Language-Team: \n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3.1\n"
-"Last-Translator: \n"
+"X-Generator: Poedit 2.4\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
-"Language: ru\n"
 
 #: ../../RunActivity/Viewer3D/Cameras.cs:600
 msgid "Free"
@@ -33,23 +33,23 @@ msgstr "Составитель"
 msgid "Passenger"
 msgstr "Пассажир"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1836
+#: ../../RunActivity/Viewer3D/Cameras.cs:1838
 msgid "3D Cab"
 msgstr "Виртуальная кабина"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1932
+#: ../../RunActivity/Viewer3D/Cameras.cs:1934
 msgid "Head out"
 msgstr "Вид из окна"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1976
+#: ../../RunActivity/Viewer3D/Cameras.cs:1978
 msgid "Cab"
 msgstr "Кабина"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:2227
+#: ../../RunActivity/Viewer3D/Cameras.cs:2229
 msgid "Trackside"
 msgstr "Вид с обочины"
 
-#: ../../RunActivity/Viewer3D/Materials.cs:199
+#: ../../RunActivity/Viewer3D/Materials.cs:221
 #, csharp-format
 msgid "{0:F0} texture"
 msgid_plural "{0:F0} textures"
@@ -57,7 +57,7 @@ msgstr[0] "{0:F0} текстура"
 msgstr[1] "{0:F0} текстуры"
 msgstr[2] "{0:F0} текстур"
 
-#: ../../RunActivity/Viewer3D/Materials.cs:449
+#: ../../RunActivity/Viewer3D/Materials.cs:471
 #, csharp-format
 msgid "{0:F0} material"
 msgid_plural "{0:F0} materials"
@@ -81,72 +81,76 @@ msgstr[0] "{0:F0} тайл"
 msgstr[1] "{0:F0} тайла"
 msgstr[2] "{0:F0} тайлов"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:810
-#: ../../RunActivity/Viewer3D/Viewer.cs:999
+#: ../../RunActivity/Viewer3D/Viewer.cs:815
+#: ../../RunActivity/Viewer3D/Viewer.cs:1000
 msgid "Cab view not available"
 msgstr "Нет кабины"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:894
+#: ../../RunActivity/Viewer3D/Viewer.cs:899
 msgid "In MP, use Alt-F4 to quit directly"
 msgstr "Чтобы сразу выйти из мультиплеереа, нажмите Alt-F4"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:925
+#: ../../RunActivity/Viewer3D/Viewer.cs:930
 msgid "Automatic platform and siding labels visible."
 msgstr "Отображены названия используемых поездом платформ и путей ."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:928
+#: ../../RunActivity/Viewer3D/Viewer.cs:933
 msgid "Platform and siding labels visible."
 msgstr "Названия платформ и путей отображаются."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:931
+#: ../../RunActivity/Viewer3D/Viewer.cs:936
 msgid "Platform labels visible."
 msgstr "Названия платформ отображаются."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:934
+#: ../../RunActivity/Viewer3D/Viewer.cs:939
 msgid "Siding labels visible."
 msgstr "Названия путей отображаются."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:940
+#: ../../RunActivity/Viewer3D/Viewer.cs:945
 msgid "Platform and siding labels hidden."
 msgstr "Названия платформ и путей не отображаются."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:951
+#: ../../RunActivity/Viewer3D/Viewer.cs:956
 msgid "Train labels visible."
 msgstr "Названия поездов отображаются."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:954
+#: ../../RunActivity/Viewer3D/Viewer.cs:959
 msgid "Car labels visible."
 msgstr "Номера вагонов отображаются."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:960
+#: ../../RunActivity/Viewer3D/Viewer.cs:965
 msgid "Train and car labels hidden."
 msgstr "Номера поездов и вагонов не отображаются."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1010
-msgid "3D Cab view not available"
-msgstr "Нет виртуальной кабины"
+#: ../../RunActivity/Viewer3D/Viewer.cs:1007
+msgid "This car doesn't have a 2D cab"
+msgstr "Эта модель не снабжена 2D кабиной"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1037
+#: ../../RunActivity/Viewer3D/Viewer.cs:1011
+msgid "This car doesn't have a 3D cab"
+msgstr "Эта модель не снабжена 3D кабиной"
+
+#: ../../RunActivity/Viewer3D/Viewer.cs:1042
 msgid "Confirmations suppressed"
 msgstr "Подтверждения не отображаются"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1039
+#: ../../RunActivity/Viewer3D/Viewer.cs:1044
 msgid "Confirmations visible"
 msgstr "Подтверждения отображаются"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1193
+#: ../../RunActivity/Viewer3D/Viewer.cs:1192
 msgid "Switched to player control"
 msgstr "Автопилот отключён"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1200
+#: ../../RunActivity/Viewer3D/Viewer.cs:1199
 msgid "You can't switch from manual to autopilot mode"
 msgstr "Невозможно перейти на автопилот"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1206
+#: ../../RunActivity/Viewer3D/Viewer.cs:1205
 msgid "Switched to autopilot"
 msgstr "Автопилот включён"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1811
+#: ../../RunActivity/Viewer3D/Viewer.cs:1812
 msgid "Game saved"
 msgstr "Сохранение создано"
 
@@ -155,22 +159,22 @@ msgstr "Сохранение создано"
 msgid "Allowed speed raised to {0}"
 msgstr "Разрешённая скорость повышена до {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1028
+#: ../../RunActivity/Viewer3D/Viewer.cs:1033
 #, csharp-format
 msgid "Vibrating at level {0}"
 msgstr "Амплитуда качки {0}"
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1224
+#: ../../RunActivity/Viewer3D/Viewer.cs:1223
 #, csharp-format
 msgid "Keyboard map list saved to '{0}'."
 msgstr "Таблица назначения клавиш сохранена в '{0}'."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1228
+#: ../../RunActivity/Viewer3D/Viewer.cs:1227
 #, csharp-format
 msgid "Keyboard map image saved to '{0}'."
 msgstr "Схема назначения клавиш сохранена в '{0}'."
 
-#: ../../RunActivity/Viewer3D/Viewer.cs:1075
+#: ../../RunActivity/Viewer3D/Viewer.cs:1080
 #, csharp-format
 msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
 msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
@@ -186,7 +190,7 @@ msgstr ""
 "Сценарий предполагает динамическую погоду, а сохранение содержит управляемую "
 "игроком"
 
-#: ../../RunActivity/Viewer3D/Weather.cs:1647
+#: ../../RunActivity/Viewer3D/Weather.cs:1654
 msgid ""
 "Restoring wrong weather type : trying to restore user controlled weather but "
 "save contains dynamic weather"
@@ -194,22 +198,22 @@ msgstr ""
 "Сценарий предполагает управляемую игроком, а сохранение содержит "
 "динамическую погоду"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1967
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1935
 msgid "Switching Request Sent to the Server"
-msgstr ""
+msgstr "Запрос отправлен на сервер"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:176
 msgid "View Self"
 msgstr "Показать свой поезд"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:563
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:559
 msgid "MSG to Server"
-msgstr ""
+msgstr "Сообщ.серверу"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:567
+#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:563
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:224
 msgid "MSG to All"
-msgstr ""
+msgstr "Сообщ.всем"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:91
 msgid "View Train"
@@ -221,24 +225,24 @@ msgstr "м"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:155
 msgid "Remove"
-msgstr ""
+msgstr "Убрать"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:169
 msgid "Auto Switch"
-msgstr ""
+msgstr "Автопереход"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:183
 msgid "Show Avatars"
-msgstr ""
+msgstr "Показ аватаров"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:210
 msgid "MSG to Selected"
-msgstr ""
+msgstr "Сообщ. выбранным"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:237
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
 msgid "Compose MSG"
-msgstr ""
+msgstr "Сообщение"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:249
 msgid "Res"
@@ -246,7 +250,7 @@ msgstr "Поле"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:261
 msgid "Reply to Selected"
-msgstr ""
+msgstr "Ответ выбранным"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:275
 msgid "Draw Path"
@@ -262,15 +266,17 @@ msgstr "Выбор стрелок"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:348
 msgid "Can Join"
-msgstr ""
+msgstr "Можно присоединиться"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:371
 msgid "Assist"
-msgstr ""
+msgstr "Ассистировать"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:383
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:649
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:692
 msgid "Normal"
-msgstr ""
+msgstr "Обычно"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:395
 msgid "Follow"
@@ -278,7 +284,7 @@ msgstr "Вести"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:409
 msgid "Penalty"
-msgstr ""
+msgstr "Автостоп"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:423
 msgid "Prefer Green"
@@ -290,24 +296,25 @@ msgstr "Показать в игре"
 
 #: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:474
 msgid "DispatchViewer"
-msgstr ""
+msgstr "Монитор диспетчера"
 
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:46
 msgid "Clear All"
-msgstr ""
+msgstr "Очистить всё"
 
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:57
 msgid "Reply Selected"
-msgstr ""
+msgstr "Ответ на выбранное"
 
 #: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:102
 msgid "MessageViewer"
-msgstr ""
+msgstr "Просмотр сообщения"
 
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:180
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:213
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:214
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:215
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:658
 msgid "-"
 msgstr ""
 
@@ -339,6 +346,9 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:433
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:609
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:921
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:291
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:211
 msgid "Speed"
 msgstr "Скорость"
 
@@ -367,7 +377,7 @@ msgstr "Громкость"
 
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:429
 msgid "WavCache"
-msgstr ""
+msgstr "Кэш звука"
 
 #: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:484
 msgid "AL Sources"
@@ -564,9 +574,9 @@ msgstr "Шир:"
 msgid "Lon:"
 msgstr "Долг:"
 
-#: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:31
+#: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:32
 msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
-msgstr ""
+msgstr "Напишите сообщение (напр.   адресат1, адресат2, текст сообщения)"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:75
 msgid "Help"
@@ -649,7 +659,7 @@ msgstr "Соберите состав"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:179
 msgid "At Location"
-msgstr ""
+msgstr "На"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:183
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:457
@@ -702,7 +712,7 @@ msgstr "Наряды:"
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:453
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:850
 msgid "Assemble Train At Location"
-msgstr ""
+msgstr "Сформировать поезд в"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:514
 msgid "- Tasks: "
@@ -733,16 +743,16 @@ msgid "A report file was created:"
 msgstr "Отчёт составлен:"
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
-msgid " Diesel. "
-msgstr ""
+msgid "Diesel."
+msgstr "Тепловоз."
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
-msgid " Steam."
-msgstr ""
+msgid "Steam."
+msgstr "Паровоз."
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
-msgid " Electric."
-msgstr ""
+msgid "Electric."
+msgstr "Электровоз."
 
 #: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:1049
 msgid "Procedures"
@@ -781,12 +791,13 @@ msgstr[2] "{0} минут"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:436
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:595
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:608
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
 msgid "Throttle"
 msgstr "Тяга"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:130
 msgid "Power In/Out"
-msgstr ""
+msgstr "Энергия Вх/Исх"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:134
 msgid "Motive force"
@@ -794,7 +805,7 @@ msgstr "Сила тяги"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:136
 msgid "Num of substeps"
-msgstr ""
+msgstr "Число подшагов"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:139
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1075
@@ -807,27 +818,27 @@ msgstr ""
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
 msgid "Frame time"
-msgstr ""
+msgstr "Время кадра"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:142
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1089
 msgid "Render process"
-msgstr ""
+msgstr "Обраб.графики"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:143
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1090
 msgid "Updater process"
-msgstr ""
+msgstr "Обраб.обновления"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:144
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1091
 msgid "Loader process"
-msgstr ""
+msgstr "Обраб.вывода"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:145
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1092
 msgid "Sound process"
-msgstr ""
+msgstr "Обраб.звука"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:422
 msgid "Version"
@@ -835,51 +846,76 @@ msgstr "Версия программы"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:426
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:428
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:188
 msgid "Time"
 msgstr "Игровое время"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:431
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:195
 msgid "Replay"
-msgstr ""
+msgstr "Повтор"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:434
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:848
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:322
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:229
 msgid "Gradient"
 msgstr "Уклон"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:435
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:593
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:605
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
 msgid "Direction"
 msgstr "Направл"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:436
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:595
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
 msgid "Regulator"
 msgstr "Регулятор"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:437
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:363
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:408
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:442
 msgid "Train brake"
 msgstr "Автотормоза"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:439
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:459
 msgid "Retainers"
 msgstr "Ретейнеры"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:441
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:468
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:483
 msgid "Engine brake"
 msgstr "Независ. тормоз"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:443
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:596
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:494
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:502
 msgid "Dynamic brake"
 msgstr "Динамич. тормоз"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:457
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:619
 msgid "FPS"
 msgstr "Кадров в секунду"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:461
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:81
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:629
 msgid "Autopilot"
 msgstr "Автопилот"
 
@@ -905,12 +941,15 @@ msgid "Sander on"
 msgstr "Пескоподача включена"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:490
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:709
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:717
 msgid "Doors open"
 msgstr "Двери открыты"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:496
 msgid "MultiPlayerStatus: "
-msgstr "Состояние мультиплеера: "
+msgstr "Роль в мультиплеере: "
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:497
 msgid "Dispatcher"
@@ -963,7 +1002,7 @@ msgstr "Режим АЛС"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:527
 msgid "Out of Control"
-msgstr ""
+msgstr "Автостоп"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:528
 msgid "Cab Aspect"
@@ -1051,6 +1090,7 @@ msgid "MU'd"
 msgstr "СМЕ"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:611
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
 msgid "Power"
 msgstr "Мощн"
 
@@ -1102,7 +1142,7 @@ msgstr "Вакуумный насос"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:681
 msgid "Brake Sys Vol"
-msgstr ""
+msgstr "Объём торм.сист"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:682
 msgid "Train Pipe"
@@ -1114,7 +1154,7 @@ msgstr "ТЦ"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:686
 msgid "Air Vol"
-msgstr ""
+msgstr "Объём Возд"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:695
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:710
@@ -1138,7 +1178,7 @@ msgstr "ТМ"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:725
 msgid "VacRes"
-msgstr ""
+msgstr "Вак.Рез"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:727
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:756
@@ -1200,11 +1240,11 @@ msgstr "Сцепл.вагона"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:793
 msgid "Tang. Force"
-msgstr ""
+msgstr "Касат.Сила"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:794
 msgid "Static Force"
-msgstr ""
+msgstr "Статическая сила"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:801
 msgid "Conditions"
@@ -1220,7 +1260,7 @@ msgstr "Торм.сила на ободе"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:804
 msgid "Number of substeps"
-msgstr ""
+msgstr "Промежут.ступеней"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:806
 msgid "Solver"
@@ -1228,7 +1268,7 @@ msgstr "Вычислитель"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:807
 msgid "Stability correction"
-msgstr ""
+msgstr "Испр. устойчивости"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:808
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:818
@@ -1242,7 +1282,7 @@ msgstr "Сцепление вагона"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:817
 msgid "(Simple adhesion model)"
-msgstr "(Упрощённая модель сцепл)"
+msgstr "(Упрощённая модель сцепл.)"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:836
 msgid "Total"
@@ -1305,7 +1345,7 @@ msgstr "Темп.подш"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:916
 msgid "DISPATCHER INFORMATION : active trains : "
-msgstr "ДИСПЕТЧЕР: активные поезда: "
+msgstr "ДИСПЕТЧЕР - активные поезда "
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:919
 msgid "Train"
@@ -1321,11 +1361,11 @@ msgstr "Макс"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:923
 msgid "AI mode"
-msgstr ""
+msgstr "Режим"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:924
 msgid "AI data"
-msgstr ""
+msgstr "Значения"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:925
 msgid "Mode"
@@ -1333,7 +1373,7 @@ msgstr "АЛС"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:926
 msgid "Auth"
-msgstr "Разр"
+msgstr "Огранич"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:928
 msgid "Signal"
@@ -1385,11 +1425,11 @@ msgstr "Сборка"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1076
 msgid "CPU"
-msgstr "Загр.ЦП"
+msgstr "Загрузка ЦП"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1077
 msgid "GPU"
-msgstr "Загр.ГП"
+msgstr "Загрузка ГП"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1078
 msgid "Adapter"
@@ -1397,15 +1437,15 @@ msgstr "Графич.адаптер"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1083
 msgid "Shadow maps"
-msgstr ""
+msgstr "Схемы теней"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1085
 msgid "Shadow primitives"
-msgstr ""
+msgstr "Фигур тени"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1088
 msgid "Render primitives"
-msgstr ""
+msgstr "Отрисовано фигур"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1089
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1090
@@ -1426,12 +1466,12 @@ msgstr "Положение камеры"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:805
 #, csharp-format
 msgid "filtered by {0:F0}"
-msgstr ""
+msgstr "выборка {0:F0}"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1057
 #, csharp-format
 msgid "{0:N0} m"
-msgstr ""
+msgstr "{0:N0} м"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1058
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1060
@@ -1442,12 +1482,12 @@ msgstr ""
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1059
 #, csharp-format
 msgid "{0:F4} p/s/m^2"
-msgstr ""
+msgstr "{0:F4} p/s/m²"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1061
 #, csharp-format
 msgid "{0:F1},{1:F1} m/s"
-msgstr ""
+msgstr "{0:F1},{1:F1} м/с"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1075
 #, csharp-format
@@ -1455,6 +1495,8 @@ msgid ""
 "{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, "
 "{2:F0}/{3:F0}/{4:F0} GCs)"
 msgstr ""
+"{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} МБ управляется, {9:F0} кБ/фрэйм "
+"выделено, {2:F0}/{3:F0}/{4:F0} GCs)"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1076
 #, csharp-format
@@ -1467,11 +1509,13 @@ msgid ""
 "{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader "
 "model {4})"
 msgstr ""
+"{0:F0} кадров/сек (50й/95й/99й percentiles {1:F1} / {2:F1} / {3:F1} мс, "
+"shader model {4})"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1078
 #, csharp-format
 msgid "{0} ({1:F0} MB)"
-msgstr ""
+msgstr "{0} ({1:F0} МБ)"
 
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1081
 #, csharp-format
@@ -1524,7 +1568,7 @@ msgstr "А"
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:557
 msgctxt "Cab"
 msgid "D"
-msgstr ""
+msgstr "Да"
 
 #. Context: Steam
 #: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:594
@@ -1537,48 +1581,6 @@ msgstr "Реверс"
 msgctxt "NonSteam"
 msgid "Reverser"
 msgstr "Реверсор"
-
-#. Context: Coupler
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgctxt "Coupler"
-msgid "F"
-msgstr ""
-
-#. Context: Coupler
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgctxt "Coupler"
-msgid "R"
-msgstr ""
-
-#. Context: Coupler
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgctxt "Coupler"
-msgid "N"
-msgstr ""
-
-#. Context: Coupler
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgctxt "Coupler"
-msgid "xxx"
-msgstr ""
-
-#. Context: Coupler
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgctxt "Coupler"
-msgid "O/L"
-msgstr ""
-
-#. Context: Coupler
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgctxt "Coupler"
-msgid "Pull"
-msgstr "Сжата"
-
-#. Context: Coupler
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgctxt "Coupler"
-msgid "Push"
-msgstr "Растян"
 
 #: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:60
 msgid "Next Station"
@@ -1698,34 +1700,42 @@ msgid "Track Monitor"
 msgstr "Путевая обстановка"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:232
 msgid "Auto Signal"
 msgstr "АЛС - Автомат"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:233
 msgid "Node"
 msgstr "АЛС - Полуавт"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:234
 msgid "Manual"
 msgstr "АЛС - Маневр"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:235
 msgid "Explorer"
 msgstr "АЛС - Исслед"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:236
 msgid "OutOfControl : "
-msgstr ""
+msgstr "АЛС - Автостоп: "
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:237
 msgid "Inactive"
 msgstr "АЛС - Неактивен"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:83
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:238
 msgid "Turntable"
 msgstr "АЛС - поворотный круг"
 
 #: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:239
 msgid "Unknown"
 msgstr "АЛС - некодируемый участок"
 
@@ -1826,120 +1836,530 @@ msgid ""
 "()=?;:'_[]"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1195
+#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1203
 #, csharp-format
 msgid "Activity Save file '*.save' not found in folder {0}"
 msgstr "Файл сохранения '*.save' не найден в папке {0}"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:370
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:382
 msgid "freight-grain"
 msgstr "зерно"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:371
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:383
 msgid "freight-coal"
 msgstr "уголь"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:372
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:384
 msgid "freight-gravel"
 msgstr "щебень"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:373
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:385
 msgid "freight-sand"
 msgstr "песок"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:374
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:386
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
 msgid "water"
 msgstr "вода"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:375
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:387
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:118
 msgid "coal"
 msgstr "уголь"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:376
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:388
 msgid "diesel oil"
 msgstr "нефтепродукты"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:377
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:389
 msgid "wood"
 msgstr "дрова"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:378
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:390
 msgid "sand"
 msgstr "песок"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:379
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:391
 msgid "freight-general"
 msgstr "общие грузы"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:380
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:392
 msgid "freight-livestock"
 msgstr "животные"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:381
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:393
 msgid "freight-fuel"
 msgstr "жидкое топливо"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:382
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:394
 msgid "freight-milk"
 msgstr "молоко"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:383
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:395
 msgid "mail"
 msgstr "почта"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:512
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:524
 msgid "Refill: Immediate refill process selected, refilling immediately."
 msgstr "Выбрана моментальная экипировка, запас пополнен."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:533
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:545
 msgid "Refill: Electric loco and no pickup. Command rejected"
 msgstr "Электровоз не требуется заправлять топливом"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:649
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:668
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:661
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:680
 msgid "Incompatible pickup type"
 msgstr "Неподходящий тип груза"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:655
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:673
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:667
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:685
 msgid "Starting refill"
 msgstr "Заправка начата"
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:540
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:552
 #, csharp-format
 msgid "Refill: Distance to {0} supply is {1}."
 msgstr "Расстояние до {0} заправки {1}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:548
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:560
 #, csharp-format
 msgid "Refill: Loco must be stationary to refill {0}."
 msgstr "Остановитесь, чтобы пополнить {0}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:554
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:566
 #, csharp-format
 msgid "Refill: Loco speed must exceed {0}."
 msgstr "Скорость должна превышать {0}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:561
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:573
 #, csharp-format
 msgid "Refill: Loco speed must not exceed {0}."
 msgstr "Скорость не должна превышать {0}."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:579
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:600
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:591
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:612
 #, csharp-format
 msgid "Refill: {0} supply now replenished."
 msgstr "{0} запас пополнен."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:606
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:618
 #, csharp-format
 msgid "Unload: {0} fuel or freight now unloaded."
 msgstr "Разгрузка: {0} уже разгружено."
 
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:541
+#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:553
 #, csharp-format
 msgid "{0} meter"
 msgid_plural "{0} meters"
 msgstr[0] "{0} метр"
 msgstr[1] "{0} метра"
 msgstr[2] "{0} метров"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:280
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:167
+msgid "Sprtr"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:298
+msgid "Projected"
+msgstr "Ожидается"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:305
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:362
+msgid "Limit"
+msgstr "Ограничение"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
+msgid "Reverser"
+msgstr "Реверс"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:339
+msgid "Cab ORIEN"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:340
+msgid "Forward"
+msgstr "Вперёд"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:340
+msgid "Backward"
+msgstr "Назад"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:361
+msgid "Milepost"
+msgstr "Пикет"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:363
+msgid "Dist"
+msgstr "Удаление"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:607
+msgid "SprtrDarkGray"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:81
+msgid "AUTO"
+msgstr "АВТО"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:517
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:535
+msgid "Boiler pressure"
+msgstr "Давление"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
+msgid "PRES"
+msgstr "ДАВЛ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
+msgid "Boiler water glass"
+msgstr "Водомерное стекло"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
+msgid "WATR"
+msgstr "ВОДА"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
+msgid "Boiler water level"
+msgstr "Уровень воды в котле"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
+msgid "LEVL"
+msgstr "УРОВ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
+msgid "Circuit breaker"
+msgstr "ГВ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
+msgid "CIRC"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:305
+msgid "Cylinder cocks"
+msgstr "Клапаны продувки цилиндров"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
+msgid "CCOK"
+msgstr "КЛЦИЛ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
+msgid "DIRC"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
+msgid "DOOR"
+msgstr "ДВЕРИ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
+msgid "BDYN"
+msgstr "ЭДТОРМ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
+msgid "BLOC"
+msgstr "ВСТОРМ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:594
+msgid "Engine"
+msgstr "Мотор"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
+msgid "ENGN"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
+msgid "Fire mass"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
+msgid "FIRE"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
+msgid "Fixed gear"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
+msgid "GEAR"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:540
+msgid "Fuel levels"
+msgstr "Уровни топлива"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
+msgid "FUEL"
+msgstr "ТОПЛ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:548
+msgid "Gear"
+msgstr "Передача"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
+msgid "GRAD"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:640
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:648
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:657
+msgid "Grate limit"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
+msgid "GRAT"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:572
+msgid "Pantographs"
+msgstr "Токосъёмники"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
+msgid "PANT"
+msgstr "ПАНТ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
+msgid "POWR"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
+msgid "REGL"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
+msgid "RPLY"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
+msgid "RETN"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
+msgid "REVR"
+msgstr "РЕВЕРС"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:319
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:329
+msgid "Sander"
+msgstr "Песочница"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
+msgid "SAND"
+msgstr "ПЕСОК"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
+msgid "SPED"
+msgstr "СКОР"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
+msgid "Steam usage"
+msgstr "Расход пара"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
+msgid "STEM"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
+msgid "THRO"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
+msgid "TIME"
+msgstr "ВРЕМ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
+msgid "BTRN"
+msgstr "АТОРМ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:667
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:675
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:683
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:691
+msgid "Wheel"
+msgstr "Колесо"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
+msgid "WHEL"
+msgstr "БОКС"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
+msgid "apply Service"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
+msgid "Apply"
+msgstr "Применить"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:116
+msgid "Apply Quick"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:116
+msgid "ApplQ"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:117
+msgid "Apply Slow"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:117
+msgid "ApplS"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:118
+msgid "c"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:119
+msgid "Emergency Braking Push Button"
+msgstr "Кнопка аварийного останова"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:119
+msgid "EmerBPB"
+msgstr "КнАвОст"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:120
+msgid "Lap Self"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:120
+msgid "LapS"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
+msgid "Minimum Reduction"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
+msgid "MRedc"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
+msgid "safe range"
+msgstr "в допуске"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
+msgid "safe"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:684
+msgid "skid"
+msgstr "юз"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
+msgid "Skid"
+msgstr "Юз"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:676
+msgid "slip warning"
+msgstr "на грани боксования"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
+msgid "Warning"
+msgstr "Оповещение"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:668
+msgid "slip"
+msgstr "бокс"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
+msgid "Slip"
+msgstr "Бокс"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
+msgid "w"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:295
+msgid "Open"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:300
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:718
+msgid "Closed"
+msgstr "Закрыто"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
+msgid "Blocked"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:630
+msgid "On"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:330
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:503
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:630
+msgid "Off"
+msgstr "Откл"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:345
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:360
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:369
+msgid "EQ"
+msgstr "УР"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:370
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:379
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:394
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:437
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:439
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:446
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:464
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:471
+msgid "BC"
+msgstr "ТЦ"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:376
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:378
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:380
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:385
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:413
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:415
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:421
+msgid "EOT"
+msgstr "Хвост"
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:402
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:404
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:405
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:412
+msgid "Lead"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:495
+msgid "Setup"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:578
+msgid "Up"
+msgstr ""
+
+#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:641
+msgid "Exceeded"
+msgstr "Превышение"
+
+#~ msgid "3D Cab view not available"
+#~ msgstr "Нет виртуальной кабины"
+
+#~ msgctxt "Coupler"
+#~ msgid "Pull"
+#~ msgstr "Сжата"
+
+#~ msgctxt "Coupler"
+#~ msgid "Push"
+#~ msgstr "Растян"

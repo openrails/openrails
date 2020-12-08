@@ -73,7 +73,7 @@
 
         [GetString("Camera Cab")] CameraCab,
         [GetString("Camera Change Passenger Viewpoint")] CameraChangePassengerViewPoint,
-        [GetString("Camera 3D Cab")] CameraThreeDimensionalCab,
+        [GetString("Camera Toggle 3D Cab")] CameraToggleThreeDimensionalCab,
         [GetString("Camera Toggle Show Cab")] CameraToggleShowCab,
         [GetString("Camera Toggle Letterbox Cab")] CameraToggleLetterboxCab,
         [GetString("Camera Head Out Forward")] CameraHeadOutForward,
@@ -124,6 +124,8 @@
         [GetString("Control Train Brake Zero")] ControlTrainBrakeZero,
         [GetString("Control Engine Brake Increase")] ControlEngineBrakeIncrease,
         [GetString("Control Engine Brake Decrease")] ControlEngineBrakeDecrease,
+        [GetString("Control Brakeman Brake Increase")] ControlBrakemanBrakeIncrease,
+        [GetString("Control Brakeman Brake Decrease")] ControlBrakemanBrakeDecrease,
         [GetString("Control Dynamic Brake Increase")] ControlDynamicBrakeIncrease,
         [GetString("Control Dynamic Brake Decrease")] ControlDynamicBrakeDecrease,
         [GetString("Control Bail Off")] ControlBailOff,

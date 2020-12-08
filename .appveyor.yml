@@ -1,20 +1,27 @@
 version: AV1.3.1-{build}
 skip_branch_with_pr: true
 image: Visual Studio 2017
+cache:
+  - C:\ProgramData\chocolatey\bin -> .appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> .appveyor.yml
+  - C:\lazarus -> .appveyor.yml
+  - C:\Program Files (x86)\Common Files\Microsoft Shared\XNA -> .appveyor.yml
+  - C:\Windows\assembly\GAC_32\Microsoft.Xna.Framework -> .appveyor.yml
+  - C:\Windows\assembly\GAC_32\Microsoft.Xna.Framework.Game -> .appveyor.yml
 install:
 - ps: >-
     $ErrorActionPreference = "Stop"
 
-    choco install --yes --no-progress lazarus 7zip.portable xna31
+    choco install --yes --no-progress lazarus 7zip.portable xunit xna31
 
     if ($LASTEXITCODE -ne 0) { throw "Chocolatey failed to install all required packages - use the 're-build' option to try again" }
 
     (New-Object Net.WebClient).DownloadFile('https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x86.exe', 'rcedit-x86.exe')
 
-    $env:PATH="$env:PATH;C:\lazarus;$((Get-ChildItem -Recurse C:\lazarus\fpc\strip.exe).DirectoryName);C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
+    $env:PATH="C:\ProgramData\chocolatey\bin;$env:PATH;C:\lazarus;$((Get-ChildItem -Recurse C:\lazarus\fpc\strip.exe).DirectoryName);C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
 build_script:
 - cmd: Build.cmd unstable
 test: off
-artifacts:
-- path: OpenRails-Unstable.zip
-- path: OpenRails-Unstable-Source.zip
+# artifacts:
+# - path: OpenRails-Unstable.zip
+# - path: OpenRails-Unstable-Source.zip

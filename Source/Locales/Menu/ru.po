@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-06-06 21:59:06+0300\n"
-"PO-Revision-Date: 2020-06-06 23:05+0300\n"
+"POT-Creation-Date: 2009-12-28 00:25:09+0300\n"
+"PO-Revision-Date: 2020-08-29 08:43+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3.1\n"
+"X-Generator: Poedit 2.4\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
@@ -167,7 +167,7 @@ msgstr ""
 "Имя должно содержать 4-10 символов, кроме пробела, апострофа, кавычек и "
 "дефиса и не должно начинаться с цифры."
 
-#: ../../Menu/MainForm.cs:1125
+#: ../../Menu/MainForm.cs:1128
 msgid "Activity Briefing"
 msgstr "Инструктаж"
 
@@ -198,52 +198,52 @@ msgstr ""
 "\n"
 "{0}"
 
-#: ../../Menu/MainForm.cs:1114
+#: ../../Menu/MainForm.cs:1117
 #, csharp-format
 msgid "Route: {0}"
 msgstr "Игровой полигон {0}"
 
-#: ../../Menu/MainForm.cs:1120 ../../Menu/MainForm.cs:1153
+#: ../../Menu/MainForm.cs:1123 ../../Menu/MainForm.cs:1156
 #, csharp-format
 msgid "Locomotive: {0}"
 msgstr "Локомотив: {0}"
 
-#: ../../Menu/MainForm.cs:1124
+#: ../../Menu/MainForm.cs:1127
 #, csharp-format
 msgid "Activity: {0}"
 msgstr "Сценарий: {0}"
 
-#: ../../Menu/MainForm.cs:1129 ../../Menu/MainForm.cs:1158
+#: ../../Menu/MainForm.cs:1132 ../../Menu/MainForm.cs:1161
 #, csharp-format
 msgid "Path: {0}"
 msgstr "Маршрут: {0}"
 
-#: ../../Menu/MainForm.cs:1130
+#: ../../Menu/MainForm.cs:1133
 #, csharp-format
 msgid "Starting at: {0}"
 msgstr "Отправление из: {0}"
 
-#: ../../Menu/MainForm.cs:1131
+#: ../../Menu/MainForm.cs:1134
 #, csharp-format
 msgid "Heading to: {0}"
 msgstr "Прибытие в: {0}"
 
-#: ../../Menu/MainForm.cs:1139
+#: ../../Menu/MainForm.cs:1142
 #, csharp-format
 msgid "Timetable set: {0}"
 msgstr "Расписание: {0}"
 
-#: ../../Menu/MainForm.cs:1143
+#: ../../Menu/MainForm.cs:1146
 #, csharp-format
 msgid "Timetable: {0}"
 msgstr "График: {0}"
 
-#: ../../Menu/MainForm.cs:1147
+#: ../../Menu/MainForm.cs:1150
 #, csharp-format
 msgid "Train: {0}"
 msgstr "Поезд: {0}"
 
-#: ../../Menu/MainForm.cs:1150
+#: ../../Menu/MainForm.cs:1153
 #, csharp-format
 msgid "Consist: {0}"
 msgstr "Состав: {0}"
@@ -399,7 +399,7 @@ msgstr "Расписание:"
 #: ../../Menu/MainForm.Designer.cs:900 ../../Menu/Options.cs:270
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
-msgstr "Тестовой версии"
+msgstr "Проверка"
 
 #: ../../Menu/MainForm.Designer.cs:918
 msgid "What's new?"
@@ -439,7 +439,7 @@ msgstr "фунт/дюйм²"
 
 #: ../../Menu/Options.cs:114
 msgid "inHg"
-msgstr "мм рт.ст"
+msgstr "дюйм рт.ст"
 
 #: ../../Menu/Options.cs:115
 msgid "kgf/cm²"
@@ -542,14 +542,14 @@ msgid ""
 "Infrequent updates to official, hand-picked versions. Recommended for most "
 "users."
 msgstr ""
-"Периодически обновлять до официальных проверенных версий. Рекомендовано "
-"большинству пользователей."
+"Нечасто выходящие официальные, проверенные версии. Рекомендовано большинству "
+"пользователей."
 
 #: ../../Menu/Options.cs:276
 msgid ""
 "Weekly updates which may contain noticable defects. For project supporters."
 msgstr ""
-"Еженедельные обновления могут содержать значительные изъяны. Для энтузиастов "
+"Еженедельные обновления могут содержать существенные изъяны. Для энтузиастов "
 "проекта."
 
 #: ../../Menu/Options.cs:277
@@ -633,7 +633,7 @@ msgstr "{0}%"
 #: ../../Menu/Options.cs:632
 #, csharp-format
 msgid "No detail (-{0}%)"
-msgstr "No detail (-{0}%)"
+msgstr "Без деталей (-{0}%)"
 
 #: ../../Menu/Options.cs:634
 #, csharp-format
@@ -779,7 +779,7 @@ msgstr "Дальность видимости (км)"
 
 #: ../../Menu/Options.Designer.cs:798
 msgid "Fast full-screen alt-tab"
-msgstr "Переход по Alt-Tab конда развёрнуто"
+msgstr "Переход по Alt-Tab когда развёрнуто"
 
 #: ../../Menu/Options.Designer.cs:808
 msgid "Distant mountains"
@@ -1062,7 +1062,7 @@ msgstr "Предельная частота кадров"
 
 #: ../../Menu/Options.Designer.cs:2133
 msgid "Automatically tune settings to keep performance level"
-msgstr "Автонастройка для требуемой производительности"
+msgstr "Автонастройка под требуемую производительность"
 
 #: ../../Menu/Options.Designer.cs:2144
 msgid "Extend object maximum viewing distance to horizon"
@@ -1089,7 +1089,7 @@ msgstr "Возвышение"
 
 #: ../../Menu/Options.Designer.cs:2277
 msgid "Load DDS textures in preference to ACE"
-msgstr "Приоритет загрузки текстур DDS в вместо ACE"
+msgstr "Приоритет загрузки текстур DDS вместо ACE"
 
 #: ../../Menu/Options.Designer.cs:2288
 msgid "Location-linked passing path processing"
@@ -1207,7 +1207,7 @@ msgid ""
 "saved from older versions if they fail to restore.\n"
 msgstr ""
 "Во избежание сбоев и артефактов, сохранения из прежних версий помечены как "
-"устаревшие, если нельзя их не восстановить.\n"
+"устаревшие, если их не восстановить.\n"
 
 #: ../../Menu/ResumeForm.cs:231
 #, csharp-format
@@ -1333,7 +1333,7 @@ msgstr "Восстановить все сохранения, удалённые
 
 #: ../../Menu/TestingForm.Designer.cs:65
 msgid "Test all"
-msgstr "Проверить все"
+msgstr "Пров. все"
 
 #: ../../Menu/TestingForm.Designer.cs:76
 msgid "Test"

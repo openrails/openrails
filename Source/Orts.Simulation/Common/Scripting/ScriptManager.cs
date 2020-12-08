@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using Microsoft.CSharp;
+using Microsoft.CodeDom.Providers.DotNetCompilerPlatform;
 using Orts.Simulation;
 using ORTS.Common;
 using System;
@@ -34,7 +34,8 @@ namespace Orts.Common.Scripting
     {
         readonly Simulator Simulator;
         readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
-        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider();
+        static readonly ProviderOptions ProviderOptions = new ProviderOptions(Path.Combine(new Uri(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase)).LocalPath, "roslyn", "csc.exe"), 10);
+        static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(ProviderOptions);
 
         static CompilerParameters GetCompilerParameters()
         {

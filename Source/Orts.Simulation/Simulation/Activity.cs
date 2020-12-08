@@ -1321,9 +1321,8 @@ namespace Orts.Simulation
                 case EventType.AssembleTrainAtLocation:
                     if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        consistTrain = null;
                         consistTrain = matchesConsist(ChangeWagonIdList);
-                        triggered = (consistTrain != null ? true : false);
+                        triggered = consistTrain != null;
                     }
                     break;
                 case EventType.DropOffWagonsAtLocation:
@@ -1332,9 +1331,8 @@ namespace Orts.Simulation
                     // To recognize the dropping off of the cars before the event is activated, this method is used.
                     if (atSiding(OriginalPlayerTrain.FrontTDBTraveller, OriginalPlayerTrain.RearTDBTraveller, this.SidingEnd1, this.SidingEnd2))
                     {
-                        consistTrain = null;
                         consistTrain = matchesConsistNoOrder(ChangeWagonIdList);
-                        triggered = (consistTrain != null ? false : true);
+                        triggered = consistTrain != null;
                     }
                     break;
                 case EventType.PickUpPassengers:
@@ -1388,12 +1386,10 @@ namespace Orts.Simulation
         {
             foreach (var trainItem in Simulator.Trains)
             {
-                bool lEngine = false;
                 int nCars = 0;//all cars other than WagonIdList.
                 int nWagonListCars = 0;//individual wagon drop.
                 foreach (var item in trainItem.Cars)
                 {
-                    if (item.AuxWagonType == "Engine") lEngine = true;
                     if (!wagonIdList.Contains(item.CarID)) nCars++;
                     if (wagonIdList.Contains(item.CarID)) nWagonListCars++;
                 }
@@ -1403,13 +1399,11 @@ namespace Orts.Simulation
                 if (trainItem.Cars.Count - nCars == (wagonIdList.Count == nWagonListCars ? wagonIdList.Count : nWagonListCars))
                 {
                     if (excludesWagons(trainItem, wagonIdList)) listsMatch = false;//all wagons dropped
-
-                    //a consist require engine + wagons
-                    if (listsMatch && lEngine) return trainItem;
+                    
+                    if (listsMatch) return trainItem;
+                    
                 }
-                else if (lEngine)
-                    //TODO: Maybe, it would be necessary to avoid detach cars that are not included in wagonIdList.
-                    return trainItem;
+               
             }
             return null;
         }
@@ -1438,6 +1432,10 @@ namespace Orts.Simulation
         /// <returns>True if all listed wagons are not part of the given train.</returns>
         static bool excludesWagons(Train train, List<string> wagonIdList)
         {
+            // The Cars list is a global list that includes STATIC cars.  We need to make sure that the active train/car is processed only.
+            if (train.TrainType == Train.TRAINTYPE.STATIC)
+                return true;
+
             bool lNotFound = false;
             foreach (var item in wagonIdList)
             {
@@ -1451,7 +1449,7 @@ namespace Orts.Simulation
                     lNotFound = false; break;//wagon still part of the train
                 }
             }
-            return (lNotFound? true : false);
+            return lNotFound;
         }
         /// <summary>
         /// Like platforms, checking that one end of the train is within the siding.
