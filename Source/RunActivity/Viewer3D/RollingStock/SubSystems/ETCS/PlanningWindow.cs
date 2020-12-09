@@ -146,7 +146,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
 
             // Indication marker
-            if (IndicationMarkerDistanceM > 0) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14 + 133, GetPlanningHeight(IndicationMarkerDistanceM.Value), 93, 2), ColorYellow);
+            if (IndicationMarkerDistanceM > 0 && IndicationMarkerDistanceM < MaxViewingDistanceM) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14 + 133, GetPlanningHeight(IndicationMarkerDistanceM.Value), 93, 2), ColorYellow);
 
             // Speed target icons and numbers
             foreach (LocatedTexture lt in SpeedTargetTextures)
