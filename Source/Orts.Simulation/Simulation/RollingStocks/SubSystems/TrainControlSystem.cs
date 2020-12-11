@@ -273,7 +273,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 Script.NextSignalDistanceM = (value) => NextGenericSignalItem<float>(value, ref ItemDistance, float.MaxValue, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, "NORMAL");
                 Script.NextNormalSignalDistanceHeadsAspect = () => NextNormalSignalDistanceHeadsAspect();
                 Script.DoesNextNormalSignalHaveTwoAspects = () => DoesNextNormalSignalHaveTwoAspects();
-                Script.NextNormalSignalMainHeadSignalType = (value) => NextGenericSignalItem<string>(value, ref MainHeadSignalTypeName, float.MaxValue, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, "NORMAL");
                 Script.NextDistanceSignalAspect = () =>
                     NextGenericSignalItem<Aspect>(0, ref ItemAspect, GenericItemDistance, Train.TrainObjectItem.TRAINOBJECTTYPE.SIGNAL, "DISTANCE");
                 Script.NextDistanceSignalDistanceM = () =>
