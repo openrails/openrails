@@ -62,7 +62,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         readonly TextPrimitive[] DisplayedTexts;
         readonly TextPrimitive[] DisplayedTimes;
 
-        readonly List<TextMessage> MessageList = new List<TextMessage>();
+        List<TextMessage> MessageList;
         TextMessage? AcknowledgingMessage;
 
         bool Visible = false;
@@ -162,7 +162,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                 DisplayedTexts[i] = null;
                 DisplayedTimes[i] = null;
             }
-            if (MessageList.Count == 0) return;
+            if (MessageList == null || MessageList.Count == 0) return;
             if (MessageList[0].Acknowledgeable)
             {
                 var msg = MessageList[0];
@@ -207,20 +207,12 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         public override void PrepareFrame(ETCSStatus status)
         {
             Visible = status.ShowTextMessageArea;
+            MessageList = status.TextMessages;
             if (!Visible) return;
             if (AcknowledgingMessage.HasValue)
             {
-                if (status.TextMessages.Contains(AcknowledgingMessage.Value)) return;
+                if (MessageList.Contains(AcknowledgingMessage.Value)) return;
                 AcknowledgingMessage = null;
-            }
-
-            MessageList.RemoveAll(x => !status.TextMessages.Contains(x));
-            for (int i = 0; i < status.TextMessages.Count; i++)
-            {
-                var msg = status.TextMessages[i];
-                int index = MessageList.IndexOf(msg);
-                if (index == -1) MessageList.Add(msg);
-                else status.TextMessages[i] = MessageList[index];
             }
             MessageList.Sort(CompareMessages);
             SetMessages();

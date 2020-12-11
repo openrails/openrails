@@ -341,7 +341,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (status.CurrentMode == Mode.FS)
             {
                 GaugeColor = status.CurrentMonitor == Monitor.TargetSpeed || status.CurrentMonitor == Monitor.ReleaseSpeed ? ColorYellow : Color.White;
-                if (status.CurrentSupervisionStatus != SupervisionStatus.Warning && status.CurrentSupervisionStatus != SupervisionStatus.Warning && status.CurrentSupervisionStatus != SupervisionStatus.Intervention)
+                if (status.CurrentSupervisionStatus != SupervisionStatus.Overspeed && status.CurrentSupervisionStatus != SupervisionStatus.Warning && status.CurrentSupervisionStatus != SupervisionStatus.Intervention)
                     interventionSpeed = Math.Max(releaseSpeed, permittedSpeed);
 
                 var shaderAngles = new Vector4(Speed2Angle(targetSpeed), Speed2Angle(permittedSpeed), Speed2Angle(interventionSpeed), Speed2Angle(releaseSpeed));
@@ -450,7 +450,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         int TTIWidth;
         Color TTIColor;
         const int T_dispTTI = 14;
-        Rectangle DistanceBar;
+        Vector4 DistanceBar;
         TextPrimitive TargetDistanceText;
         WindowTextFont TargetDistanceFont;
         readonly float FontHeightTargetDistance = 10;
@@ -465,7 +465,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             if (DisplayDistanceBar)
             {
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceBar.X, DistanceBar.Y + 54 + 30, DistanceBar.Width, DistanceBar.Height), ColorGrey);
+                DrawRectangle(spriteBatch, position, DistanceBar.X, DistanceBar.Y + 54 + 30, DistanceBar.Z, DistanceBar.W, ColorGrey);
 
                 // Distance speed lines
                 for (int i = 0; i < 11; i++)
@@ -541,7 +541,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 h = 185 - 152;
                 h += (Math.Log10(dist) - 2) * (152 + 1);
             }
-            DistanceBar = new Rectangle(29, (int)(186 - h), 10, (int)h);
+            DistanceBar = new Vector4(29, 186 - (float)h, 10, (float)h);
 
             DisplayDistanceText = true;
             DisplayDistanceBar = status.CurrentMode != Mode.SR;

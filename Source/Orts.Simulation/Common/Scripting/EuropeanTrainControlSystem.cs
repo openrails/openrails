@@ -91,7 +91,7 @@ namespace ORTS.Scripting.Api.ETCS
         /// <summary>
         /// Set to true to display planning area
         /// </summary>
-        public bool PlanningAreaShown = true;
+        public bool PlanningAreaShown;
         /// <summary>
         /// List of targets to be shown in the planning area.
         /// First target must be current speed limit, with distance = 0
@@ -123,7 +123,7 @@ namespace ORTS.Scripting.Api.ETCS
         /// </summary>
         public bool ShowTextMessageArea;
         /// <summary>
-        /// List of text messages to be displayed in text area
+        /// List of text messages to be displayed in text area. Do not rely on the order, as the DMI will reorder the list.
         /// </summary>
         public readonly List<TextMessage> TextMessages = new List<TextMessage>();
     }
