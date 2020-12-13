@@ -33,12 +33,12 @@
 
 Чтобы различать эти элементы, в описании режима расписания используются следующие стили.
 
-* Элементы, выделенные черным курсивом - доступны, но только в предварительной
+*Элементы, выделенные черным курсивом - доступны, но только в предварительной
 реализации или в ограниченном контексте. Дальнейшая разработка этих пунктов все
-еще требуется. *
+еще требуется.*
 
-** Важные аспекты, в которых использование конкретных элементов ORTS или MSTS для расписаний
-существенно отличается от их использования в сценариях, выделены жирным шрифтом. **
+**Важные аспекты, в которых использование конкретных элементов ORTS или MSTS для расписаний
+существенно отличается от их использования в сценариях, выделены жирным шрифтом.**
 
 Помимо пунктов, указанных выше, следует понимать, что по мере продолжения работы все пункты
 все еще могут быть изменены.
@@ -72,53 +72,40 @@
 --------------------
 
 При запуске режима расписания в меню выбирается режим *Расписание*. Затем
-нужный файл расписания должен быть выбран из списка * набор расписаний *.
+нужный файл расписания должен быть выбран из списка *Набор расписаний*.
 
 После выбора необходимого расписания отображается список всех поездов, содержащихся в этом
-расписании, и можно выбрать нужный поезд.
+расписании, и можно выбрать желаемый поезд.
 
-Сезон и погода также могут быть выбраны; они не заданы заранее в определении
-расписания.
+Сезон и погода также могут быть выбраны; они не заданы жёстко в файлах расписания.
 
-Определение Сроков
+Задание расписаний
+==================
+
+Общая информация
+----------------
+
+Расписание представляет собой список поездов и, для каждого поезда, задаёт требуемое время движения.
+Время может быть ограничено только временем старта, или оно может включать также промежуточное время.
+
+*В настоящее время промежуточные времена ограничены местоположениями "платформы", заданными
+с помощью редактора маршрутов MSTS.*
+
+Каждый столбец в электронной таблице содержит все данные для поезда, а каждая строка представляет
+местоположение. Ячейка на пересечении столбца данного поезда и строки местоположения содержит
+временные данные для данного поезда в этом местоположении.
+
+Специальные строки и столбцы могут быть определены для общей информации или команд управления.
+
+Первая строка для каждого столбца содержит название поезда.
+
+Первый столбец для каждой строки содержит название местоположения.
+
+Ячейка на пересечении первой строки и первого столбца **должна быть пустой**.
+
+В этом параграфе даётся только общее представление, более полное и подробное описание будет
+приведено в следующих параграфах.
 ***
-When starting a timetable run, the mode *Timetable* is selected in the menu. The 
-desired timetable file must then be selected in the *Timetable set* display.
-
-After selecting the required timetable, a list of all trains contained in that 
-timetable is displayed and the required train can be selected.
-
-Season and weather can also be selected; these are not preset within the 
-timetable definition.
-
-Timetable Definition
-====================
-
-General
--------
-
-A timetable consists of a list of trains, and, per train, the required timing of 
-these trains. The timing can be limited to just the start time, or it can 
-include intermediate times as well.
-
-*At present, intermediate timings are limited to 'platform' locations as created 
-using the MSTS Route Editor.*
-
-Each column in the spreadsheet contains data for a train and each row represents 
-a location. A cell at the intersection of a train and location contains the 
-timing data for that particular train at that location.
-
-Special rows and columns can be defined for general information or control 
-commands.
-
-The first row for each column contains the train definition.
-
-The first column for each row contains the location definition.
-
-The cell at the intersection of the first row and first column **must be empty**.
-
-This paragraph only lists the main outline, a fuller detailed description will 
-follow in the next paragraphs.
 
 Column definitions
 ------------------
