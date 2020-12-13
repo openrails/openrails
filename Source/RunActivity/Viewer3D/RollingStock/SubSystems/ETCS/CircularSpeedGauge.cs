@@ -77,8 +77,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         Color SpeedColor;
         static Color[] NeedleTextureData;
 
-        readonly DriverMachineInterfaceShader Shader;
-        readonly CabShader cabShader;
         readonly Viewer Viewer;
         MSTSLocomotive Locomotive;
 
@@ -102,7 +100,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly Rectangle SourceRectangle = new Rectangle(0, 0, Width, Height);
 
         public CircularSpeedGauge(int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale,
-            MSTSLocomotive locomotive, Viewer viewer, CabShader shader, DriverMachineInterface dmi) : base(dmi)
+            MSTSLocomotive locomotive, Viewer viewer, DriverMachineInterface dmi) : base(dmi)
         {
             UnitVisible = unitVisible;
             SetUnit(unitMetric);
@@ -112,7 +110,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             MaxVisibleScale = maxVisibleScale;
             Viewer = viewer;
             Locomotive = locomotive;
-            cabShader = shader;
 
             SetRange(MaxSpeed);
 
@@ -122,7 +119,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
             ReleaseSpeed = new TextPrimitive(ReleaseSpeedPosition, ColorGrey, String.Empty, FontReleaseSpeed);
 
-            Shader = new DriverMachineInterfaceShader(Viewer.GraphicsDevice);
             if (NeedleTextureData == null)
             {
                 NeedleTextureData = new Color[128 * 16];
@@ -337,6 +333,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 else if (targetSpeed < permittedSpeed && currentSpeed >= targetSpeed) NeedleColor = Color.White;
                 else NeedleColor = ColorGrey;
             }
+            else if (status.CurrentMode == Mode.SN)
+            {
+                // TODO: Allow direct management of colors from STM
+            }
             SpeedColor = NeedleColor == ColorRed ? Color.White : Color.Black;
             if (status.CurrentMode == Mode.FS)
             {
@@ -345,13 +345,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                     interventionSpeed = Math.Max(releaseSpeed, permittedSpeed);
 
                 var shaderAngles = new Vector4(Speed2Angle(targetSpeed), Speed2Angle(permittedSpeed), Speed2Angle(interventionSpeed), Speed2Angle(releaseSpeed));
-                Shader.SetData(shaderAngles, GaugeColor, NeedleColor);
+                DMI.Shader.SetData(shaderAngles, GaugeColor, NeedleColor, status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange);
             }
             else
             {
                 // CSG not shown
                 var shaderAngles = new Vector4(NoGaugeAngle, NoGaugeAngle, NoGaugeAngle, NoGaugeAngle);
-                Shader.SetData(shaderAngles, GaugeColor, NeedleColor);
+                DMI.Shader.SetData(shaderAngles, GaugeColor, NeedleColor, GaugeColor);
             }
 
             CurrentSpeedAngle = Speed2Angle(currentSpeed);
@@ -395,17 +395,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             // Monogame Spritebatch change Shaders procedure.
             // Following spriteBatch.Begin statements must reflect those for CabSpriteBatchMaterial in materials.cs
 
-            // Apply DriverMachineInterface Shader
-
+            // Apply circular speed gauge shader
             spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, DMI.Shader);
 
             // Draw gauge needle centre and speed limit markings
 
             spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
 
             // Re-apply DMI shader
-
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.LinearWrap, DepthStencilState.Default, null, null);
 

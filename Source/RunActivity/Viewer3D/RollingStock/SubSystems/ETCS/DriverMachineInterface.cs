@@ -48,6 +48,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         readonly int Height = 480;
         readonly int Width = 640;
 
+
+        public readonly DriverMachineInterfaceShader Shader;
+
         // Color RGB values are from ETCS specification
         public static readonly Color ColorGrey = new Color(195, 195, 195);
         public static readonly Color ColorMediumGrey = new Color(150, 150, 150);
@@ -66,7 +69,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public Texture2D ColorTexture { get; private set; }
 
-        bool DisplayBackground = false;
+        public bool DisplayBackground = false;
 
         public bool Blinker2Hz;
         public bool Blinker4Hz;
@@ -125,6 +128,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DistanceAreaLocation = new Point(0, IsSoftLayout ? 0 : 15);
             MessageAreaLocation = new Point(54, IsSoftLayout ? 350 : 365);
 
+            Shader = new DriverMachineInterfaceShader(Viewer.GraphicsDevice);
+
             CircularSpeedGauge = new CircularSpeedGauge(
                    (int)control.MaxValue,
                    control.Units == CABViewControlUnits.KM_PER_HOUR,
@@ -133,7 +138,35 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                    (int)control.MinValue,
                    Locomotive,
                    Viewer,
-                   null,
+                   this
+               );
+            PlanningWindow = new PlanningWindow(this, Viewer, PlanningLocation);
+            DistanceArea = new DistanceArea(this, Viewer, DistanceAreaLocation);
+            MessageArea = new MessageArea(this, Viewer, MessageAreaLocation);
+        }
+        public DriverMachineInterface(float width, float height, MSTSLocomotive locomotive, Viewer viewer)
+        {
+            Viewer = viewer;
+            Locomotive = locomotive;
+            Scale = Math.Min(width / Width, height / Height);
+            if (Scale < 0.5) MipMapScale = 2;
+            else MipMapScale = 1;
+
+            PlanningLocation = new Point(334, IsSoftLayout ? 0 : 15);
+            SpeedAreaLocation = new Point(54, IsSoftLayout ? 0 : 15);
+            DistanceAreaLocation = new Point(0, IsSoftLayout ? 0 : 15);
+            MessageAreaLocation = new Point(54, IsSoftLayout ? 350 : 365);
+
+            Shader = new DriverMachineInterfaceShader(Viewer.GraphicsDevice);
+
+            CircularSpeedGauge = new CircularSpeedGauge(
+                   400,
+                   true,
+                   true,
+                   false,
+                   400,
+                   Locomotive,
+                   Viewer,
                    this
                );
             PlanningWindow = new PlanningWindow(this, Viewer, PlanningLocation);
@@ -187,7 +220,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 ColorTexture.SetData(new[] { Color.White });
             }
             spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.LinearWrap);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.LinearWrap, null, null, null); // TODO: Handle brightness via DMI shader
             if (!Active) return;
             if (DisplayBackground) spriteBatch.Draw(ColorTexture, new Rectangle(position, new Point((int)(640 * Scale), (int)(480 * Scale))), ColorBackground);
             CircularSpeedGauge.Draw(spriteBatch, new Point(position.X + (int)(SpeedAreaLocation.X * Scale), position.Y + (int)(SpeedAreaLocation.Y * Scale)));
@@ -299,6 +332,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
     public class DriverMachineInterfaceRenderer : CabViewDigitalRenderer, ICabViewMouseControlRenderer
     {
         DriverMachineInterface DMI;
+        bool Zoomed = false;
         [CallOnThread("Loader")]
         public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
@@ -310,14 +344,32 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             base.PrepareFrame(frame, elapsedTime);
+            if (Zoomed)
+            {
+                DrawPosition.Width = 640;
+                DrawPosition.Height = 480;
+                DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+                DrawPosition.X -= 320;
+                DrawPosition.Y -= 240;
+                DMI.DisplayBackground = true;
+            }
+            else
+            {
+                DrawPosition.Width = DrawPosition.Width * 640 / 280;
+                DrawPosition.Height = DrawPosition.Height * 480 / 300;
+                DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+                DrawPosition.X -= (int)(54 * DMI.Scale);
+                DrawPosition.Y -= (int)(15 * DMI.Scale);
+                DMI.DisplayBackground = true;
+            }
             DMI.PrepareFrame(elapsedTime.ClockSeconds);
-            DMI.SizeTo(DrawPosition.Width * 640 / 280, DrawPosition.Height * 480 / 300);
         }
 
         public bool IsMouseWithin()
         {
-            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale + 54);
-            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15);
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
+            if (UserInput.IsMouseRightButtonPressed && new Rectangle(0, 0, 640, 480).Contains(x, y)) Zoomed = !Zoomed;
             foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
             {
                 if (b.SensitiveArea.Contains(x, y) && b.Enabled) return true;
@@ -327,13 +379,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public void HandleUserInput()
         {
-            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale + 54), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15));
+            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
         }
 
         public string GetControlName()
         {
-            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale + 54);
-            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale + 15);
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
             foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
             {
                 if (b.SensitiveArea.Contains(x, y)) return b.Name;
@@ -343,9 +395,96 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            DMI.Draw(CabShaderControlView.SpriteBatch, new Point((int)(DrawPosition.X - 54 * DMI.Scale), (int)(DrawPosition.Y - 15 * DMI.Scale)));
+            DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
             CabShaderControlView.SpriteBatch.End();
             CabShaderControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
+        }
+    }
+    /// <summary>
+    /// Wrapper class for DriverMachineInterface, to display it as UI window control.
+    /// </summary>
+    public class DriverMachineInterfaceControl : Control
+    {
+        public readonly DriverMachineInterface DMI;
+
+        public DriverMachineInterfaceControl(int width, int height, WindowManager owner)
+            : base(0, 0, width, height)
+        {
+            DMI = new DriverMachineInterface(width, height, owner.Viewer.PlayerLocomotive as MSTSLocomotive, owner.Viewer);
+            DMI.DisplayBackground = true;
+        }
+
+        /// <summary>
+        /// Resize control to fit into a new rectangle, by keeping aspect ratio.
+        /// </summary>
+        /// <param name="width">The new width of the control</param>
+        /// <param name="height">The new height of the control</param>
+        public void SizeTo(int width, int height)
+        {
+            Position.Width = width;
+            Position.Height = height;
+            DMI.SizeTo(width, height);
+        }
+
+        public void PrepareFrame(float elapsedSeconds)
+        {
+            DMI.PrepareFrame(elapsedSeconds);
+        }
+        public bool IsMouseWithin(WindowMouseEvent e)
+        {
+            int x = (int)((e.MousePosition.X - Position.X - 8) / DMI.Scale);
+            int y = (int)((e.MousePosition.Y - Position.Y) / DMI.Scale);
+            foreach (DriverMachineInterface.Button b in DMI.SensitiveButtons)
+            {
+                if (b.SensitiveArea.Contains(x, y) && b.Enabled) return true;
+            }
+            return false;
+        }
+        internal override bool HandleUserInput(WindowMouseEvent e)
+        {
+            int x = (int)((e.MousePosition.X - Position.X - 8) / DMI.Scale);
+            int y = (int)((e.MousePosition.Y - Position.Y) / DMI.Scale);
+            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, x, y);
+            return IsMouseWithin(e);
+        }
+        internal override bool HandleMouseDown(WindowMouseEvent e)
+        {
+            return HandleUserInput(e);
+        }
+        internal override bool HandleMouseUp(WindowMouseEvent e)
+        {
+            return HandleUserInput(e);
+        }
+        internal override bool HandleMouseMove(WindowMouseEvent e)
+        {
+            return HandleUserInput(e);
+        }
+        internal override void Draw(SpriteBatch spriteBatch, Point position)
+        {
+            position.X += 8;
+            position.Y += 25;
+            DMI.Draw(spriteBatch, position);
+            spriteBatch.End();
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, null);
+        }
+    }
+    public class DriverMachineInterfaceWindow : Window
+    {
+        DriverMachineInterfaceControl Control;
+        public DriverMachineInterfaceWindow(WindowManager owner)
+            : base(owner, 400, 300, Viewer.Catalog.GetString("ERTMS/ETCS Driver Machine Interface"))
+        {
+        }
+        protected override ControlLayout Layout(ControlLayout layout)
+        {
+            var vbox = base.Layout(layout).AddLayoutVertical();
+            vbox.Add(Control = new DriverMachineInterfaceControl(vbox.RemainingWidth, vbox.RemainingHeight, Owner));
+            return vbox;
+        }
+        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
+        {
+            base.PrepareFrame(elapsedTime, updateFull);
+            Control?.PrepareFrame(elapsedTime.ClockSeconds);
         }
     }
 }

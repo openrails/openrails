@@ -27,6 +27,7 @@ float4   LimitAngle;   // radian, x: target speed (colored start), y: permitted 
 
 float4   LimitColor;   // dark grey, white or yellow
 float4   PointerColor; // medium grey, white, yellow or red
+float4	 InterventionColor; // yellow or red
 
 texture  ImageTexture;
 
@@ -104,7 +105,7 @@ float4 PSCircularSpeedGauge(PIXEL_INPUT In) : COLOR0
 		else if (angle > LimitAngle.y)
         {
             if (angle > LimitAngle.w) // Exceeded limit pointer at overspeed
-                returnColor = PointerColor;
+                returnColor = InterventionColor;
             else if (radius > radiusInside)
                 returnColor = ReleaseColor;
 			else
