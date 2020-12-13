@@ -32,17 +32,17 @@
 или элементы, которые еще предстоит усовершенствовать.
 
 Чтобы различать эти элементы, в описании режима расписания используются следующие стили.
+
+* Элементы, выделенные черным курсивом, доступны, но только в предварительной
+реализации или в ограниченном контексте. Дальнейшая разработка этих пунктов все
+еще требуется.*
+
+** Важные аспекты, в которых использование конкретных элементов ORTS или MSTS для расписаний
+существенно отличается от их использования в сценариях, выделены жирным шрифтом**.
+
+Помимо пунктов, указанных выше, следует понимать, что по
+мере продолжения работы все пункты все еще могут быть изменены.
 ***
-
-*Items shown in black italics are available but only in a provisional 
-implementation, or in a limited context. Further development of these items is 
-still required.*
-
-**Important aspects where the use of specific OR or MSTS items for timetables 
-differs significantly from its use in an activity are shown in bold**.
-
-Apart from the items indicated as above, it should be realised that as work 
-continues, all items are still subject to change.
 
 General
 =======
