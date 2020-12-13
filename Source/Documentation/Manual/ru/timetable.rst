@@ -31,7 +31,7 @@
 но также описывает функции, которые еще предстоит реализовать,
 или элементы, которые еще предстоит усовершенствовать.
 
-Чтобы различать эти элементы, в описании режима расписания используются следующие стили.
+Чтобы различать эти элементы, в описании режима расписания используются следующие стили:
 
 *Элементы, выделенные черным курсивом - доступны, но только в предварительной
 реализации или в ограниченном контексте. Дальнейшая разработка этих пунктов все
@@ -106,7 +106,7 @@
 В этом параграфе даётся только общее представление, более полное и подробное описание будет
 приведено в следующих параграфах.
 
-Определение столбцов
+Определения столбцов
 --------------------
 
 Столбец определяется содержимым ячейки в первой строке.
@@ -135,40 +135,39 @@
 - ``#note``: задаёт общие команды для этого поезда
 - ``#dispose``: определяет, как обрабатывается поезд по окончании поездки.
 
+Задание времени
+---------------
+
+Каждая ячейка, которая находится на пересечении столбца поезда и строки местоположения, может
+содержать сведения о времени проследования этоим поездом данного места.
+
+*В настоящее время можно определить только детали остановки поезда. Позже будет также определено
+время проследования; это может быть использовано для определения задержки поезда.*
+
+Управляющие команды могут быть заданы в местах остановки поезда, но также могут быть
+установлены для мест, где не вводится время - когда поезд проходит через это
+место без остановки.
+
+Информация О Расписании
+=======================
+
+Описание Графика
+----------------
+
+Хотя строки и столбцы с заголовком ``#comment`` обычно игнорируются, содержимое
+ячейки на пересечении первой строки ``"#comment`` и первого ``#comment`` - столбца
+используется для задания имени расписания и отображается как имя расписания
+в меню Open Rails.
+
+Описание Поезда
+---------------
+
+Имя поезда, определенное в первой строке, должно быть уникальным для каждого поезда в
+файле расписания. Это имя также используется при ссылке на этот поезд в команде поезда;
+подробности см. ниже.
+
+Последовательность поездов не имеет значения.
 ***
-
-Timing details
---------------
-
-Each cell which is at an intersection of a train column and a location row, can 
-contain timing details for that train at that location.
-
-*Presently, only train stop details can be defined. Later on, passing times will 
-also be defined; these passing times can be used to determine a train's delay.*
-
-Control commands can be set at locations where the train stops, but can also be 
-set for locations where no timing is inserted as the train passes through that 
-location without stopping.
-
-Timetable Data Details
-======================
-
-Timetable Description
----------------------
-
-Although ``#comment`` rows and columns are generally ignored, the contents of 
-the cell at the intersection of the first ``#comment`` row and first ``#comment`` 
-column is used as the timetable description and appears as the timetable's name 
-in the Open Rails menu.
-
-Train Details
--------------
-
-The train name as defined in the first row must be unique for each train in a 
-timetable file. This name is also used when referencing this train in a train 
-command; see details below.
-
-The sequence of trains is not important.
 
 Location Details
 ----------------
