@@ -105,30 +105,28 @@
 
 В этом параграфе даётся только общее представление, более полное и подробное описание будет
 приведено в следующих параграфах.
+
+Определение столбцов
+--------------------
+
+Столбец определяется содержимым ячейки в первой строке.
+
+По умолчанию, в первой строке задаётся имя поезда.
+
+Специальные столбцы могут быть определены с помощью следующего синтаксиса :
+
+- ``#comment"``: столбец содержит только комментарий и игнорируется при чтении расписания.
+- <пусто>: столбец является продолжением предыдущего столбца.
+
+Определения строк
+-----------------
+
+Строки определяются содержимым ячеек первого столбца.
+
+По умолчанию первый столбец определяет местоположение остановки.
+
+Специальные строки могут быть определены с помощью следующего синтаксиса :
 ***
-
-Column definitions
-------------------
-
-A column is defined by the contents of the first row.
-
-Default, the first row defines the train name.
-
-Special columns can be defined using the following syntax :
-
-    - ``#comment``: column contains comment only and is ignored when reading the 
-      timetable.
-    - <blank>: column is extension of preceding column.
-
-Row definitions
----------------
-
-A row is defined by the contents of the first column.
-
-Default, the first column defines the stop location.
-
-Special columns can be defined using the following syntax :
-
     - ``#comment``: row contains comment only and is ignored when reading the 
       timetable
     - <blank>:      row is extension of row above
