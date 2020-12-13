@@ -1,36 +1,38 @@
 .. _timetable:
 
 **************
-Timetable Mode
+Режим расписания
 **************
 
-Introduction
+Введение
 ============
 
-The timetable concept is not a replacement for the activity definition, but is 
-an alternative way of defining both player and computer-controlled (AI and 
-Static) trains.
+Концепция расписания не является заменой режима сценария, а представляет собой
+альтернативный способ описания как поезда игрока, так и управляемых компьютером
+(Трафика и Статических) поездов.
 
-In an activity, the player train is defined explicitly, and all AI trains are 
-defined in a traffic definition. Static trains are defined separately.
+В сценарии, поезд игрока описывается явно, а все поезда, управляемые компьютером
+определяются в описании трафика. Статические поезда определяются отдельно.
 
-In a timetable all trains are defined in a similar way. On starting a timetable 
-run, the required player train is selected from the list of available trains. In 
-the timetable definition itself, no distinction is made between running trains -- 
-any of the running trains can be selected as player train, and if not selected 
-as such they will be run as AI trains. Static trains are also defined in the 
-same way but cannot be selected as the player train.
+В расписании же, все поезда определены одинаковым образом.
+Начиная игру в режиме расписания, желаемый поезд выбирается игроком из списка доступных поездов.
+В самом определении расписания не делается никакого различия между курсирующими поездами:
+любой из них может быть выбран в качестве поезда игрока, а те, что не выбраны
+в качестве такового, будут запускаться как поезда, управляемые компьютером.
+Статические поезда определяются таким же образом, только не могут быть выбраны
+в качестве поезда игрока.
 
-As a result, the number of different 'activities' that can be played using the 
-same timetable file is equal to the number of trains which are defined in the 
-timetable.
+В результате, количество различных "сценариев", которые могут быть реализованы
+с использованием одного и того же файла расписания, равно количеству поездов,
+определенных в расписании.
 
-The development of the timetable concept is still very much a work in progress. 
-This document details the state as it is at the moment, but also includes items 
-yet to be produced, or items which have yet to be developed further.
+Разработка концепции расписания до сих пор продолжается.
+Этот документ подробно описывает её состояние на данный момент,
+но также описывает функции, которые еще предстоит реализовать,
+или элементы, которые еще предстоит усовершенствовать.
 
-To distinguish between these items, the following styles are used in the 
-description of timetable mode.
+Чтобы различать эти элементы, в описании режима расписания используются следующие стили.
+***
 
 *Items shown in black italics are available but only in a provisional 
 implementation, or in a limited context. Further development of these items is 
