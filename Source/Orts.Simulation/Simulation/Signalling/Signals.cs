@@ -3171,7 +3171,8 @@ namespace Orts.Simulation.Signalling
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
             int routeIndex = -1;
-            float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
+            float maxDistance = Math.Max((thisTrain.Train.IsActualPlayerTrain ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : thisTrain.Train.AllowedMaxSpeedMpS)
+                * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
 
             int lastReserved = thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex];
             int endListIndex = -1;
@@ -3538,8 +3539,8 @@ namespace Orts.Simulation.Signalling
                                 }
                             }
 
-                            if (clearedDistanceM > thisTrain.Train.minCheckDistanceM &&
-                                            clearedDistanceM > (thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS))
+                            if (clearedDistanceM > thisTrain.Train.minCheckDistanceM && clearedDistanceM > (
+                                (thisTrain.Train.IsActualPlayerTrain ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : thisTrain.Train.AllowedMaxSpeedMpS) * thisTrain.Train.maxTimeS))
                             {
                                 endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
                                 furthestRouteCleared = true;
