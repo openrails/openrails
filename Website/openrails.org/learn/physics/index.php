@@ -16,7 +16,7 @@
           <h2>Models in Open Rails</h2>
           <p>
             Open Rails strives to match the real world operation of trains as faithfully as possible through research and development of algorithms to provide accurate performance. 
-            We see these algorithms at work in a loco's smoke which changes intensity with the throttle and also changes color with the amount of unburnt material in the
+            We see these algorithms at work in a loco's smoke, which changes intensity with the throttle and also changes color with the amount of unburnt material in the
             exhaust.
           <p>
             But some of the key algorithms in Open Rails are not visible at all. 
