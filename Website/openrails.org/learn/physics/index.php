@@ -16,7 +16,7 @@
           <h2>Models in Open Rails</h2>
           <p>
             Open Rails strives to match the real world operation of trains as faithfully as possible through research and development of algorithms to provide accurate performance. 
-            We see these algorithms at work in a loco's smoke which changes intensity with the throttle and also changes color with the amount of unburnt material in the
+            We see these algorithms at work in a loco's smoke, which changes intensity with the throttle and also changes color with the amount of unburnt material in the
             exhaust.
           <p>
             But some of the key algorithms in Open Rails are not visible at all. 
@@ -25,7 +25,7 @@
           <h3>OR Physics</h3>
           <p>
           Typically these algorithms are just formulas, such as the rolling resistance of a train which is greater when at rest than it is when first moving and
-          then rises again with speed. Open Rails also considers the extra resistance of a train rounding a tight curve and even passing through a tunnel!
+          then rises again with speed. Open Rails also considers the extra resistance of a train as it rounds a tight curve, and even when it passes through a tunnel!
           </p>
           <p>
             <img src="https://www.coalstonewcastle.com.au/images/physics/tunnel_drawings.png" width=617/>
