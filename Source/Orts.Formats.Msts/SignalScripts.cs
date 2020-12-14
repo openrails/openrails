@@ -1782,7 +1782,7 @@ namespace Orts.Formats.Msts
             private static void TraceError(int lineNumber, string tokenType, string termString )
             {
 #if DEBUG_PRINT_IN
-                                File.AppendAllText(din_fileLoc + @"sigscr.txt", $"Unknown {tokenType : " + termString + "\n");
+                                File.AppendAllText(din_fileLoc + @"sigscr.txt", $"Unknown {tokenType} : {termString}\n");
 #endif
                 Trace.TraceWarning($"sigscr-file line {lineNumber} : Unknown {tokenType} : {termString}");
             }
