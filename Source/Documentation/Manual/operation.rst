@@ -1194,18 +1194,24 @@ has reduced its speed to a specific value. Such control is used for diverging
 routes, to ensure the speed of the train is reduced sufficiently to safely 
 negotiate the switches onto the diverging route.
 
-Two script functions for use in OR have been defined which can be used to 
+Three script functions for use in OR have been defined which can be used to
 control the signal until the train has reached a specific position or has 
 reduced its speed.
 
 These functions are::
 
     APPROACH_CONTROL_POSITION(position)
+    APPROACH_CONTROL_POSITION_FORCED(position)
     APPROACH_CONTROL_SPEED(position, speed)
 
 These functions are Boolean functions: the returned value is 'true' if a train 
-is approaching the signal and is within the required distance of the signal 
-and, for APPROACH_CONTROL_SPEED, has reduced its speed below the required values.
+is approaching the signal and is within the required distance of the signal and,
+for ``APPROACH_CONTROL_SPEED``, has reduced its speed below the required values.
+
+``APPROACH_CONTROL_POSITION_FORCED`` function is similar to
+``APPROACH_CONTROL_POSITION``, but it can be used with any type of signal.
+Meanwhile, ``APPROACH_CONTROL_POSITION`` requires NORMAL signals, and will
+only clear the signal if it is the train's next signal.
 
 Parameters :
 
