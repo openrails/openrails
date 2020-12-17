@@ -168,6 +168,8 @@
     <Compile Include="Viewer3D\RollingStock\MSTSLocomotiveViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSSteamLocomotiveViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\MSTSWagonViewer.cs" />
+    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\DataEntry.cs" />
+    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\Menus.cs" />
     <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\TextMessages.cs" />
     <Compile Include="Viewer3D\RollingStock\SubSystems\FreightAnimationsViewer.cs" />
     <Compile Include="Viewer3D\RollingStock\TrainCarViewer.cs" />
@@ -194,7 +196,7 @@
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\World.cs" />
     <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\DriverMachineInterface.cs" />
-    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\CircularSpeedGauge.cs" />
+    <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\SpeedDistanceMonitoring.cs" />
     <Compile Include="Viewer3D\RollingStock\SubSystems\ETCS\PlanningWindow.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -413,6 +415,18 @@
     <Content Include="Content\ETCS\mipmap-2\PL_tunnel.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\ETCS\mipmap-2\SE_01.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\mipmap-2\SE_02.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\mipmap-2\SE_03.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\mipmap-2\SE_04.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\ETCS\NA_01.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -603,6 +617,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\ETCS\PL_tunnel.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\SE_01.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\SE_02.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\SE_03.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\ETCS\SE_04.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\LightConeShader.fx">

@@ -126,6 +126,14 @@ namespace ORTS.Scripting.Api.ETCS
         /// List of text messages to be displayed in text area. Do not rely on the order, as the DMI will reorder the list.
         /// </summary>
         public readonly List<TextMessage> TextMessages = new List<TextMessage>();
+        /// <summary>
+        /// If not null, the window that shall be displayed to the driver
+        /// </summary>
+        public DMISubwindowDefinition ActiveSubwindow;
+        /// <summary>
+        /// Last information sent or requested by the driver (to be redefined)
+        /// </summary>
+        public string DriverActionResult;
     }
 
     /// <summary>
@@ -321,6 +329,90 @@ namespace ORTS.Scripting.Api.ETCS
         public bool Equals(TextMessage o)
         {
             return o.Text == Text && o.TimestampS == TimestampS;
+        }
+    }
+    public struct DMIButtonDefinition
+    {
+        public readonly string Caption;
+        public bool Enabled;
+        public DMIButtonDefinition(string caption, bool enabled)
+        {
+            Caption = caption;
+            Enabled = enabled;
+        }
+    }
+    public abstract class DMISubwindowDefinition
+    {
+        public readonly string WindowTitle;
+        public DMISubwindowDefinition(string title)
+        {
+            WindowTitle = title;
+        }
+    }
+    public class DMIMenuWindowDefinition : DMISubwindowDefinition
+    {
+        /// <summary>
+        /// List of buttons to show in the window. Made public to enable or disable buttons
+        /// while the window is shown.
+        /// </summary>
+        public readonly List<DMIButtonDefinition> Buttons;
+        public DMIMenuWindowDefinition(string windowTitle, List<DMIButtonDefinition> buttons) : base(windowTitle)
+        {
+            Buttons = buttons;
+        }
+    }
+    public struct DMIDataEntryValue
+    {
+        public string Name;
+        public string Value;
+        //public bool Accepted;
+        public DMIKeyboard Keyboard;
+        public DMIVariableCheck TechnicalResolutionCheck;
+        public DMIVariableCheck TechnicalRangeCheck;
+        public DMIVariableCheck OperationalRangeCheck;
+    }
+    public class DMIKeyboard
+    {
+        public enum KeyboardType
+        {
+            Numeric,
+            Alphanumeric,
+            Dedicate
+        }
+        public KeyboardType Type;
+        public readonly List<string> KeyLabels;
+        public DMIKeyboard(List<string> keyLabels)
+        {
+            KeyLabels = keyLabels;
+            Type = KeyboardType.Dedicate;
+        }
+        public DMIKeyboard(KeyboardType type)
+        {
+            Type = type;
+        }
+    }
+    public struct DMIVariableCheck
+    {
+        public Func<string, bool> IsValid;
+    }
+    public struct DMIVariableCrossCheck
+    {
+        public Func<Dictionary<string, string>, List<string>> GetConflictingVariables;
+    }
+    public class DMIDataEntryDefinition : DMISubwindowDefinition
+    {
+        public readonly List<DMIDataEntryValue> Fields;
+        public readonly List<DMIVariableCrossCheck> TechnicalCrossChecks;
+        public readonly List<DMIVariableCrossCheck> OperationalCrossChecks;
+        public readonly bool FullScreen;
+        public DMIDataEntryDefinition(string windowTitle, List<DMIDataEntryValue> fields, bool fullscreen, List<DMIVariableCrossCheck> technicalCrossChecks = null, List<DMIVariableCrossCheck> operationalCrossChecks = null) : base(windowTitle)
+        {
+            Fields = fields;
+            FullScreen = fullscreen;
+            TechnicalCrossChecks = technicalCrossChecks;
+            OperationalCrossChecks = operationalCrossChecks;
+            if (TechnicalCrossChecks == null) TechnicalCrossChecks = new List<DMIVariableCrossCheck>();
+            if (OperationalCrossChecks == null) OperationalCrossChecks = new List<DMIVariableCrossCheck>();
         }
     }
 }

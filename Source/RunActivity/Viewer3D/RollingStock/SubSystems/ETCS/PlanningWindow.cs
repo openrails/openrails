@@ -44,19 +44,12 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         const int MaxZoomDistanceM = 32000;
         const int MinZoomDistanceM = 1000;
 
-        bool Visible;
-
-        readonly Viewer Viewer;
-
-        readonly Button ButtonScaleDown;
-        readonly Button ButtonScaleUp;
+        public readonly DMIButton ButtonScaleDown;
+        public readonly DMIButton ButtonScaleUp;
 
         Texture2D SpeedReductionTexture;
         Texture2D YellowSpeedReductionTexture;
         Texture2D SpeedIncreaseTexture;
-
-        Texture2D[] ScaleUpTexture = new Texture2D[2];
-        Texture2D[] ScaleDownTexture = new Texture2D[2];
 
         readonly Dictionary<int, Texture2D> TrackConditionTextureData = new Dictionary<int, Texture2D>();
 
@@ -96,14 +89,14 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         readonly int[] TrackConditionPositions = { 43, 68, 93 };
 
-        public PlanningWindow(DriverMachineInterface dmi, Viewer viewer, Point planningLocation) : base(dmi)
+        public PlanningWindow(DriverMachineInterface dmi) : base(dmi, 246, 300)
         {
-            Viewer = viewer;
-            ButtonScaleUp = new Button(Viewer.Catalog.GetString("Scale Up"), true, new Rectangle(planningLocation.X, planningLocation.Y + 285, 40, 30));
-            ButtonScaleDown = new Button(Viewer.Catalog.GetString("Scale Down"), true, new Rectangle(planningLocation.X, planningLocation.Y - 15, 40, 30));
-            DMI.SensitiveButtons.Add(ButtonScaleUp);
-            DMI.SensitiveButtons.Add(ButtonScaleDown);
-
+            ButtonScaleUp = new DMIIconButton("NA_03.bmp", "NA_05.bmp", Viewer.Catalog.GetString("Scale Up"), true, ScaleUp, 40, 15, dmi);
+            ButtonScaleDown = new DMIIconButton("NA_04.bmp", "NA_06.bmp", Viewer.Catalog.GetString("Scale Down"), true, ScaleDown, 40, 15, dmi);
+            ButtonScaleDown.ExtendedSensitiveArea = new Rectangle(0, 15, 0, 0);
+            ButtonScaleUp.ExtendedSensitiveArea = new Rectangle(0, 0, 0, 15);
+            ButtonScaleUp.ShowButtonBorder = false;
+            ButtonScaleDown.ShowButtonBorder = false;
             ScaleChanged();
         }
 
@@ -130,7 +123,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public override void Draw(SpriteBatch spriteBatch, Point position)
         {
             if (!Visible) return;
-
+            base.Draw(spriteBatch, position);
             // Planning area speed profile
             DrawRectangle(spriteBatch, position, 14+133, 15, 99, 270, ColorPASPdark);
             foreach (Rectangle r in PASPRectangles)
@@ -141,12 +134,12 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             // Distance lines
             for (int i = 0; i < 9; i++)
             {
-                if (i == 0 || i == 5 || i == 8) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 40, LinePositions[i], 200, 2), ColorMediumGrey);
-                else spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 40, LinePositions[i], 200, 1), ColorDarkGrey);
+                if (i == 0 || i == 5 || i == 8) DrawIntRectangle(spriteBatch, position, 40, LinePositions[i], 200, 2, ColorMediumGrey);
+                else DrawIntRectangle(spriteBatch, position, 40, LinePositions[i], 200, 1, ColorDarkGrey);
             }
 
             // Indication marker
-            if (IndicationMarkerDistanceM > 0 && IndicationMarkerDistanceM < MaxViewingDistanceM) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 14 + 133, GetPlanningHeight(IndicationMarkerDistanceM.Value), 93, 2), ColorYellow);
+            if (IndicationMarkerDistanceM > 0 && IndicationMarkerDistanceM < MaxViewingDistanceM) DrawIntRectangle(spriteBatch, position, 14 + 133, GetPlanningHeight(IndicationMarkerDistanceM.Value), 93, 2, ColorYellow);
 
             // Speed target icons and numbers
             foreach (LocatedTexture lt in SpeedTargetTextures)
@@ -179,9 +172,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 int maxp = e.Key.Y + 15;
                 int size = maxp - minp;
                 DrawRectangle(spriteBatch, position, 115, minp, 18, size, e.Value ? ColorGrey : ColorDarkGrey);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 18, 1), e.Value ? Color.White : ColorGrey);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, minp, 1, size), e.Value ? Color.White : ColorGrey);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 115, maxp - (int)Math.Max(1, 1/Scale), 18, 1), Color.Black);
+                DrawIntRectangle(spriteBatch, position, 115, minp, 18, 1, e.Value ? Color.White : ColorGrey);
+                DrawIntRectangle(spriteBatch, position, 115, minp, 1, size, e.Value ? Color.White : ColorGrey);
+                DrawIntRectangle(spriteBatch, position, 115, maxp - (int)Math.Max(1, 1/Scale), 18, 1, Color.Black);
             }
             foreach (var text in GradientText)
             {
@@ -189,10 +182,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 int y = position.Y + (int)Math.Round((15 + text.Position.Y) * Scale);
                 text.Draw(spriteBatch, new Point(x, y));
             }
-
-            // Scale buttons
-            DrawSymbol(spriteBatch, ScaleUpTexture[ButtonScaleUp.Enabled ? 1 : 0], position, 14, 287);
-            DrawSymbol(spriteBatch, ScaleDownTexture[ButtonScaleDown.Enabled ? 1 : 0], position, 14, 1);
         }
 
         void CreateGradient(List<GradientProfileElement> GradientProfile)
@@ -443,13 +432,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 CreateGradient(status.GradientProfile);
             }
         }
-
-        public void HandleInput()
-        {
-            if (DMI.PressedButton == ButtonScaleDown) ScaleDown();
-            else if (DMI.PressedButton == ButtonScaleUp) ScaleUp();
-        }
-        public void ScaleChanged()
+        public override void ScaleChanged()
         {
             SpeedIncreaseTexture = DMI.LoadTexture("PL_21.png");
             SpeedReductionTexture = DMI.LoadTexture("PL_22.png");
@@ -464,18 +447,14 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             TrackConditionTextureData[41] = DMI.LoadTexture("PL_bridge.png");
             TrackConditionTextureData[42] = DMI.LoadTexture("PL_station.png");
             TrackConditionTextureData[43] = DMI.LoadTexture("PL_endoftrack.png");
-            ScaleUpTexture[0] = DMI.LoadTexture("NA_05.bmp");
-            ScaleUpTexture[1] = DMI.LoadTexture("NA_03.bmp");
-            ScaleDownTexture[0] = DMI.LoadTexture("NA_06.bmp");
-            ScaleDownTexture[1] = DMI.LoadTexture("NA_04.bmp");
 
             SetFont();
         }
         void SetFont()
         {
-            FontDistance = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightDistance), System.Drawing.FontStyle.Regular);
-            FontTargetSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightTargetSpeed), System.Drawing.FontStyle.Regular);
-            FontGradient = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightGradient), System.Drawing.FontStyle.Regular);
+            FontDistance = GetFont(FontHeightDistance);
+            FontTargetSpeed = GetFont(FontHeightTargetSpeed);
+            FontGradient = GetFont(FontHeightGradient);
 
             SetDistanceText();
         }

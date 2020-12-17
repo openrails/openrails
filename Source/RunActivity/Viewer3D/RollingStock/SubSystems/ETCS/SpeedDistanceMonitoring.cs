@@ -30,11 +30,9 @@ using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 {
     // Compliant with ERA_ERTMS_015560 version 3.6.0 (ETCS DRIVER MACHINE INTERFACE)
-    public class CircularSpeedGauge : DMIWindow
+    public class CircularSpeedGauge : DMIArea
     {
         // These constants are from ETCS specification
-        const int Width = 280;
-        const int Height = 300;
         readonly float NoGaugeAngle = MathHelper.ToRadians(-150); // Special angle when gauge must not be shown
         readonly float StartAngle = MathHelper.ToRadians(-144);
         readonly float EndAngle = MathHelper.ToRadians(144);
@@ -77,9 +75,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         Color SpeedColor;
         static Color[] NeedleTextureData;
 
-        readonly Viewer Viewer;
-        MSTSLocomotive Locomotive;
-
         Texture2D NeedleTexture;
 
         bool Active; // Trying to fix thread safety issue in SetRange() with this
@@ -97,10 +92,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         WindowTextFont FontReleaseSpeed;
         WindowTextFont FontCurrentSpeed;
 
-        readonly Rectangle SourceRectangle = new Rectangle(0, 0, Width, Height);
-
-        public CircularSpeedGauge(int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale,
-            MSTSLocomotive locomotive, Viewer viewer, DriverMachineInterface dmi) : base(dmi)
+        public CircularSpeedGauge(int maxSpeed, bool unitMetric, bool unitVisible, bool dialQuarterLines, int maxVisibleScale, DriverMachineInterface dmi) : base(dmi, 280, 300)
         {
             UnitVisible = unitVisible;
             SetUnit(unitMetric);
@@ -108,8 +100,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DialQuarterLines = dialQuarterLines;
             MaxSpeed = maxSpeed;
             MaxVisibleScale = maxVisibleScale;
-            Viewer = viewer;
-            Locomotive = locomotive;
 
             SetRange(MaxSpeed);
 
@@ -156,15 +146,15 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 StandardScales = StandardScalesMpH;
             }
         }
-        public void ScaleChanged()
+        public override void ScaleChanged()
         {
             SetFont();
         }
         void SetFont()
         {
-            FontDialSpeeds = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightDial * Scale, System.Drawing.FontStyle.Bold);
-            FontReleaseSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightReleaseSpeed * Scale, System.Drawing.FontStyle.Regular);
-            FontCurrentSpeed = Viewer.WindowManager.TextManager.GetExact("Arial", FontHeightCurrentSpeed * Scale, System.Drawing.FontStyle.Bold);
+            FontDialSpeeds = GetFont(FontHeightDial, true);
+            FontReleaseSpeed = GetFont(FontHeightReleaseSpeed);
+            FontCurrentSpeed = GetFont(FontHeightCurrentSpeed, true);
 
             foreach (var text in DialSpeeds)
                 text.Font = FontDialSpeeds;
@@ -289,7 +279,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         private void SetData(ETCSStatus status)
         {
             if (!Active || !status.SpeedAreaShown) return;
-            float currentSpeed = Math.Abs(SpeedFromMpS(Locomotive.SpeedMpS));
+            float currentSpeed = Math.Abs(SpeedFromMpS(DMI.Locomotive.SpeedMpS));
             int permittedSpeed = (int)SpeedFromMpS(status.AllowedSpeedMpS);
             int targetSpeed = status.TargetSpeedMpS < status.AllowedSpeedMpS ? (int)SpeedFromMpS(status.TargetSpeedMpS.Value) : permittedSpeed;
             int releaseSpeed = (int)SpeedFromMpS(status.ReleaseSpeedMpS ?? 0);
@@ -381,6 +371,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
 
             if (!Active) return;
+            base.Draw(spriteBatch, position);
 
             int x = 0, y = 0;
 
@@ -401,13 +392,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
             // Draw gauge needle centre and speed limit markings
 
-            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
+            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), new Rectangle(0, 0, Width, Height), Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
 
             // Re-apply DMI shader
             spriteBatch.End();
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.LinearWrap, DepthStencilState.Default, null, null);
-
-            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
 
             // End of spritebatch change Shaders
 
@@ -439,49 +428,14 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
         }
     }
-    public class DistanceArea : DMIWindow
+    public class TTIandLSSMArea : DMIArea
     {
-        readonly int[] DistanceLinePositionsY = { -1, 6, 13, 22, 32, 45, 59, 79, 105, 152, 185 };
-        readonly int[] DistanceLinePositionsX = { 12, 16, 16, 16, 16, 12, 16, 16, 16, 16, 12 };
-        bool DisplayDistanceText;
-        bool DisplayDistanceBar;
         int TTIWidth;
         Color TTIColor;
         const int T_dispTTI = 14;
-        Vector4 DistanceBar;
-        TextPrimitive TargetDistanceText;
-        WindowTextFont TargetDistanceFont;
-        readonly float FontHeightTargetDistance = 10;
-
-        readonly Viewer Viewer;
-        public DistanceArea(DriverMachineInterface dmi, Viewer viewer, Point position) : base(dmi)
+        public TTIandLSSMArea(DriverMachineInterface dmi) : base(dmi, 54, 54)
         {
-            Viewer = viewer;
-            ScaleChanged();
-        }
-        public override void Draw(SpriteBatch spriteBatch, Point position)
-        {
-            if (DisplayDistanceBar)
-            {
-                DrawRectangle(spriteBatch, position, DistanceBar.X, DistanceBar.Y + 54 + 30, DistanceBar.Z, DistanceBar.W, ColorGrey);
 
-                // Distance speed lines
-                for (int i = 0; i < 11; i++)
-                {
-                    spriteBatch.Draw(ColorTexture, ScaledRectangle(position, DistanceLinePositionsX[i], DistanceLinePositionsY[i] + 54 + 30, 25 - DistanceLinePositionsX[i], (int)Math.Max(1, 1 / Scale)), ColorGrey);
-                }
-            }
-            if (DisplayDistanceText)
-            {
-                int x = position.X + (int)Math.Round(TargetDistanceText.Position.X * Scale);
-                int y = position.Y + (int)Math.Round((TargetDistanceText.Position.Y + 54) * Scale);
-                TargetDistanceText.Draw(spriteBatch, new Point(x, y));
-            }
-            if (TTIWidth > 0)
-            {
-                if (TTIColor == Color.White) spriteBatch.Draw(ColorTexture, ScaledRectangle(position, 0, 0, 54, 54), ColorDarkGrey);
-                spriteBatch.Draw(ColorTexture, ScaledRectangle(position, (54 - TTIWidth) / 2, (54 - TTIWidth) / 2, TTIWidth, TTIWidth), TTIColor);
-            }
         }
         public override void PrepareFrame(ETCSStatus status)
         {
@@ -520,10 +474,56 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                     }
                 }
             }
+        }
+        public override void Draw(SpriteBatch spriteBatch, Point drawPosition)
+        {
+            base.Draw(spriteBatch, drawPosition);
+            if (TTIWidth > 0)
+            {
+                if (TTIColor == Color.White) DrawRectangle(spriteBatch, drawPosition, 0, 0, 54, 54, ColorDarkGrey);
+                DrawRectangle(spriteBatch, drawPosition, (54 - TTIWidth) / 2, (54 - TTIWidth) / 2, TTIWidth, TTIWidth, TTIColor);
+            }
+        }
+    }
+    public class TargetDistance : DMIArea
+    {
+        readonly int[] DistanceLinePositionsY = { -1, 6, 13, 22, 32, 45, 59, 79, 105, 152, 185 };
+        readonly int[] DistanceLinePositionsX = { 12, 16, 16, 16, 16, 12, 16, 16, 16, 16, 12 };
+        bool DisplayDistanceText;
+        bool DisplayDistanceBar;
+        Vector4 DistanceBar;
+        TextPrimitive TargetDistanceText;
+        WindowTextFont TargetDistanceFont;
+        readonly float FontHeightTargetDistance = 10;
+        public TargetDistance(DriverMachineInterface dmi) : base(dmi, 54, 221)
+        {
+            ScaleChanged();
+        }
+        public override void Draw(SpriteBatch spriteBatch, Point position)
+        {
+            base.Draw(spriteBatch, position);
+            if (DisplayDistanceBar)
+            {
+                DrawRectangle(spriteBatch, position, DistanceBar.X, DistanceBar.Y + 30, DistanceBar.Z, DistanceBar.W, ColorGrey);
 
+                // Distance speed lines
+                for (int i = 0; i < 11; i++)
+                {
+                    DrawIntRectangle(spriteBatch, position, DistanceLinePositionsX[i], DistanceLinePositionsY[i] + 30, 25 - DistanceLinePositionsX[i], (int)Math.Max(1, 1 / Scale), ColorGrey);
+                }
+            }
+            if (DisplayDistanceText)
+            {
+                int x = position.X + (int)Math.Round(TargetDistanceText.Position.X * Scale);
+                int y = position.Y + (int)Math.Round((TargetDistanceText.Position.Y + 54) * Scale);
+                TargetDistanceText.Draw(spriteBatch, new Point(x, y));
+            }
+        }
+        public override void PrepareFrame(ETCSStatus status)
+        {
             DisplayDistanceBar = DisplayDistanceText = false;
             if (!status.TargetDistanceM.HasValue) return;
-            if (!DMI.ShowDistanceAndSpeedInformation && (status.CurrentMode == Mode.OS || status.CurrentMode == Mode.SR)) return;
+            if (status.CurrentMode == Mode.OS || status.CurrentMode == Mode.SR) return;
 
             float dist = status.TargetDistanceM.Value;
             
@@ -544,13 +544,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DisplayDistanceText = true;
             DisplayDistanceBar = status.CurrentMode != Mode.SR;
         }
-        public void ScaleChanged()
+        public override void ScaleChanged()
         {
             SetFont();
         }
         void SetFont()
         {
-            TargetDistanceFont = Viewer.WindowManager.TextManager.GetExact("Arial", GetScaledFontSize(FontHeightTargetDistance), System.Drawing.FontStyle.Regular);
+            TargetDistanceFont = GetFont(FontHeightTargetDistance);
         }
     }
 }
