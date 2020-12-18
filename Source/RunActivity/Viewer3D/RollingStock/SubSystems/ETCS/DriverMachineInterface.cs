@@ -34,6 +34,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
     public class DriverMachineInterface
     {
         public readonly MSTSLocomotive Locomotive;
+        public readonly bool GaugeOnly;
         public readonly Viewer Viewer;
         public List<DMIWindow> Windows = new List<DMIWindow>();
         float PrevScale = 1;
@@ -84,8 +85,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public bool IsSoftLayout;
         public DMIWindow ActiveWindow;
         DMIButton ActiveButton;
-        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CVCDigital control)
+        public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CabViewControl control)
         {
+            GaugeOnly = control is CVCDigital;
             Viewer = viewer;
             Locomotive = locomotive;
             Scale = Math.Min(width / Width, height / Height);
@@ -93,7 +95,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             //else MipMapScale = 1;
 
             Shader = new DriverMachineInterfaceShader(Viewer.GraphicsDevice);
-            ETCSDefaultWindow = new ETCSDefaultWindow(this);
+            ETCSDefaultWindow = new ETCSDefaultWindow(this, control);
             ETCSDefaultWindow.Visible = true;
 
             AddToLayout(ETCSDefaultWindow, Point.Zero);
@@ -251,16 +253,36 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         MessageArea MessageArea;
         TargetDistance TargetDistance;
         MenuBar MenuBar;
-        public ETCSDefaultWindow(DriverMachineInterface dmi) : base(dmi, 640, 480)
+        public ETCSDefaultWindow(DriverMachineInterface dmi, CabViewControl control) : base(dmi, 640, 480)
         {
-            CircularSpeedGauge = new CircularSpeedGauge(
-                   400,
-                   true,
-                   true,
-                   false,
-                   400,
-                   dmi
-               );
+            if (DMI.GaugeOnly)
+            {
+                var dig = control as CVCDigital;
+                CircularSpeedGauge = new CircularSpeedGauge(
+                (int)dig.MaxValue,
+                dig.Units == CABViewControlUnits.KM_PER_HOUR,
+                true,
+                dig.MaxValue == 240 || dig.MaxValue == 260,
+                (int)dig.MinValue,
+                DMI);
+                AddToLayout(CircularSpeedGauge, new Point(0, 0));
+                return;
+            }
+            {
+                var param = (control as CVCScreen).CustomParameters;
+                int maxSpeed = 400;
+                if (param.ContainsKey("maxspeed")) int.TryParse(param["maxspeed"], out maxSpeed);
+                int maxVisibleSpeed = maxSpeed;
+                if (param.ContainsKey("maxvisiblespeed")) int.TryParse(param["maxvisiblespeed"], out maxVisibleSpeed);
+                CircularSpeedGauge = new CircularSpeedGauge(
+                       maxSpeed,
+                       control.Units != CABViewControlUnits.MILES_PER_HOUR,
+                       param.ContainsKey("displayunits") && param["displayunits"]=="1",
+                       maxSpeed == 240 || maxSpeed == 260,
+                       maxVisibleSpeed,
+                       dmi
+                   );
+            }
             PlanningWindow = new PlanningWindow(dmi);
             TargetDistance = new TargetDistance(dmi);
             MessageArea = new MessageArea(dmi);
@@ -680,21 +702,55 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
         }
     }
-    public class DriverMachineInterfaceRenderer : CabViewDigitalRenderer, ICabViewMouseControlRenderer
+
+    public class StandaloneCircularSpeedGaugeRenderer : CabViewDigitalRenderer
     {
         DriverMachineInterface DMI;
         bool Zoomed = false;
         [CallOnThread("Loader")]
-        public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
+        public StandaloneCircularSpeedGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
-            // Height is adjusted to keep compatibility with existing gauges
+            // Height is adjusted to keep compatibility
             DMI = new DriverMachineInterface((int)(Control.Width * 640 / 280), (int)(Control.Height * 480 / 300), locomotive, viewer, control);
+        }
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            base.PrepareFrame(frame, elapsedTime);
+            DrawPosition.Width = DrawPosition.Width * 640 / 280;
+            DrawPosition.Height = DrawPosition.Height * 480 / 300;
+            DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
+            DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
+            DMI.PrepareFrame(elapsedTime.ClockSeconds);
+        }
+        public override void Draw(GraphicsDevice graphicsDevice)
+        {
+            DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
+            CabShaderControlView.SpriteBatch.End();
+            CabShaderControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
+        }
+    }
+    public class DriverMachineInterfaceRenderer : CabViewControlRenderer, ICabViewMouseControlRenderer
+    {
+        DriverMachineInterface DMI;
+        bool Zoomed = false;
+        protected Rectangle DrawPosition;
+        [CallOnThread("Loader")]
+        public DriverMachineInterfaceRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCScreen control, CabShader shader)
+            : base(viewer, locomotive, control, shader)
+        {
+            Position.X = (float)Control.PositionX;
+            Position.Y = (float)Control.PositionY;
+            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer, control);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             base.PrepareFrame(frame, elapsedTime);
+            DrawPosition.X = (int)(Position.X * Viewer.CabWidthPixels / 640) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            DrawPosition.Y = (int)(Position.Y * Viewer.CabHeightPixels / 480) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
+            DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
+            DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);
             if (Zoomed)
             {
                 DrawPosition.Width = 640;
@@ -706,11 +762,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
             else
             {
-                DrawPosition.Width = DrawPosition.Width * 640 / 280;
-                DrawPosition.Height = DrawPosition.Height * 480 / 300;
                 DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
-                DrawPosition.X -= (int)(54 * DMI.Scale);
-                DrawPosition.Y -= (int)(15 * DMI.Scale);
                 DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
             }
             DMI.PrepareFrame(elapsedTime.ClockSeconds);
