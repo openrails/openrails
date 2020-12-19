@@ -1494,6 +1494,8 @@ This function uses approach control for the 'lower' route.::
     // Get draw state
     draw_state = def_draw_state (state);
 
+.. _operation-callon-functions:
+    
 TrainHasCallOn, TrainHasCallOn_Advanced Functions
 -------------------------------------------------
 
@@ -1530,6 +1532,10 @@ It is a Boolean function and returns state as follows:
             - Train is part of ``RunRound`` command, and is to attach to the 
               train presently in the platform.
 
+Additionally, both in Timetable and Activity modes, this functions will return 
+true if the CallOn option is selected from signal's context menu in the
+:ref:`Dispatcher Window <driving-dispatcher>`.
+              
 The use of this function must be combined with a check for::
 
     blockstate ==# BLOCK_OCCUPIED
@@ -1613,6 +1619,9 @@ So, in a nutshell :
         - ``TrainsHasCallOn_Restricted()``:
 
             - Activity or Timetable: call-on never allowed
+
+All these functions can be set to true by hand from the
+:ref:`Dispatcher Window <driving-dispatcher>`.
 
 These signals can be laid down with the MSTS RE. In the .tdb file only a 
 reference to the  SignalType name is written, an in the world file only a 
