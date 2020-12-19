@@ -12118,7 +12118,6 @@ namespace Orts.Simulation.Signalling
 
         public bool TrainHasCallOn(bool allowOnNonePlatform, bool allowAdvancedSignal, string dumpfile)
         {
-            CallOnEnabled = true;
             // no train approaching
             if (enabledTrain == null)
             {
