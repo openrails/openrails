@@ -692,6 +692,15 @@ namespace Orts.Simulation.RollingStocks
         public float Injector1SteamVelocityMpS;
         public float Injector2SteamVolumeM3pS;
         public float Injector2SteamVelocityMpS;
+
+        public float SmallEjectorSteamVolumeM3pS;
+        public float SmallEjectorSteamVelocityMpS;
+        public float SmallEjectorParticleDurationS = 3.0f;
+
+        public float LargeEjectorSteamVolumeM3pS;
+        public float LargeEjectorSteamVelocityMpS;
+        public float LargeEjectorParticleDurationS = 3.0f;
+
         public float CompressorSteamVolumeM3pS;
         public float CompressorSteamVelocityMpS;
         public float GeneratorSteamVolumeM3pS;
@@ -2082,6 +2091,17 @@ namespace Orts.Simulation.RollingStocks
             Injector2SteamVelocityMpS = 10.0f;
             Injector2ParticleDurationS = 1.0f;
             Injector2ParticleDurationS = MathHelper.Clamp(Injector2ParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+
+            // Ejector Steam Effects
+            SmallEjectorSteamVolumeM3pS = (SmallSteamEjectorIsOn ? (1.5f * SteamEffectsFactor) : 0);
+            SmallEjectorSteamVelocityMpS = 10.0f;
+            SmallEjectorParticleDurationS = 1.0f;
+            SmallEjectorParticleDurationS = MathHelper.Clamp(SmallEjectorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
+
+            LargeEjectorSteamVolumeM3pS = (LargeSteamEjectorIsOn ? (1.5f * SteamEffectsFactor) : 0);
+            LargeEjectorSteamVelocityMpS = 10.0f;
+            LargeEjectorParticleDurationS = 1.0f;
+            LargeEjectorParticleDurationS = MathHelper.Clamp(LargeEjectorParticleDurationS / (absSpeedMpS / 4.0f), 0.1f, 1.0f);
 
             // Compressor Steam Effects
             // Only show compressor steam effects if it is not a vacuum controlled steam engine
