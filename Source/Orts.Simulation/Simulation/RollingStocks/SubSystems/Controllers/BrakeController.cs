@@ -106,6 +106,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         public float ReleaseRatePSIpS { get; private set; }
         public float QuickReleaseRatePSIpS { get; private set; }
         public float OverchargeEliminationRatePSIpS { get; private set; }
+        public float SlowApplicationRatePSIpS { get; private set; }
         public float ApplyRatePSIpS { get; private set; }
         public float EmergencyRatePSIpS { get; private set; }
         public float FullServReductionPSI { get; private set; }
@@ -242,6 +243,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     MinReductionPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
                     break;
 
+                case "engine(ortstrainbrakescontrollerslowapplicationrate":
+                case "engine(ortsenginebrakescontrollerslowapplicationrate":
+                    SlowApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
+                    break;
+
                 case "engine(enginecontrollers(brake_train":
                 case "engine(enginecontrollers(brake_engine":
                 case "engine(enginecontrollers(brake_brakeman":
@@ -314,6 +320,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.ReleaseRateBarpS = () => BarpS.FromPSIpS(ReleaseRatePSIpS);
                 Script.QuickReleaseRateBarpS = () => BarpS.FromPSIpS(QuickReleaseRatePSIpS);
                 Script.OverchargeEliminationRateBarpS = () => BarpS.FromPSIpS(OverchargeEliminationRatePSIpS);
+                Script.SlowApplicationRateBarpS = () => BarpS.FromPSIpS(SlowApplicationRatePSIpS);
                 Script.ApplyRateBarpS = () => BarpS.FromPSIpS(ApplyRatePSIpS);
                 Script.EmergencyRateBarpS = () => BarpS.FromPSIpS(EmergencyRatePSIpS);
                 Script.FullServReductionBar = () => Bar.FromPSI(FullServReductionPSI);
