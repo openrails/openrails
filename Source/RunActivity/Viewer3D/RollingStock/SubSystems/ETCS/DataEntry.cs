@@ -500,7 +500,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             }
             if (FullScreen)
             {
-                NextButton = new DMIIconButton("NA_17.bmp", "NA_18.2.bmp", "Next", true, () =>
+                NextButton = new DMIIconButton("NA_17.bmp", "NA_18.2.bmp", Viewer.Catalog.GetString("Next"), true, () =>
                 {
                     if ((ActiveField / 4) < (Fields.Count / 4))
                     {
@@ -510,7 +510,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                         PrepareLayout();
                     }
                 }, 82, 50, dmi);
-                PrevButton = new DMIIconButton("NA_18.bmp", "NA_19.bmp", "Next", true, () =>
+                PrevButton = new DMIIconButton("NA_18.bmp", "NA_19.bmp", Viewer.Catalog.GetString("Next"), true, () =>
                 {
                     if (ActiveField > 3)
                     {
@@ -578,7 +578,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                     {
                         result += field.Name + "=" + field.AcceptedValue + "\n";
                     }
-                    if (DMI.ETCSStatus != null) DMI.ETCSStatus.DriverActionResult = result;
+                    //if (DMI.ETCSStatus != null) DMI.ETCSStatus.DriverActionResult = result;
                     DMI.ExitWindow(this);
                 };
                 YesButton.ExtendedSensitiveArea = new Rectangle(0, 50, 0, 0);
@@ -690,7 +690,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                 }
                 string result = WindowTitle + "\n";
                 result += field.Name + "=" + field.AcceptedValue + "\n";
-                if (DMI.ETCSStatus != null) DMI.ETCSStatus.DriverActionResult = result;
+                //if (DMI.ETCSStatus != null) DMI.ETCSStatus.DriverActionResult = result;
                 DMI.ExitWindow(this);
             }
             else if (ActiveField == index)

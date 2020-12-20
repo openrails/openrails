@@ -127,13 +127,13 @@ namespace ORTS.Scripting.Api.ETCS
         /// </summary>
         public readonly List<TextMessage> TextMessages = new List<TextMessage>();
         /// <summary>
+        /// List of menu items to be shown
+        /// </summary>
+        public readonly List<DMIButtonDefinition> MenuBarButtons = new List<DMIButtonDefinition>();
+        /// <summary>
         /// If not null, the window that shall be displayed to the driver
         /// </summary>
         public DMISubwindowDefinition ActiveSubwindow;
-        /// <summary>
-        /// Last information sent or requested by the driver (to be redefined)
-        /// </summary>
-        public string DriverActionResult;
     }
 
     /// <summary>
@@ -331,14 +331,37 @@ namespace ORTS.Scripting.Api.ETCS
             return o.Text == Text && o.TimestampS == TimestampS;
         }
     }
-    public struct DMIButtonDefinition
+    public abstract class DMIButtonDefinition
     {
-        public readonly string Caption;
+        public readonly string ConfirmerCaption;
         public bool Enabled;
-        public DMIButtonDefinition(string caption, bool enabled)
+        public DMIButtonDefinition(string confirmerCaption, bool enabled)
         {
-            Caption = caption;
+            ConfirmerCaption = confirmerCaption;
             Enabled = enabled;
+        }
+    }
+    public class DMITextButtonDefinition : DMIButtonDefinition
+    {
+        public readonly string Label;
+        public DMITextButtonDefinition(string label, string confirmerCaption, bool enabled) : base(confirmerCaption, enabled)
+        {
+            Label = label;
+        }
+    }
+    public class DMIIconButtonDefinition : DMIButtonDefinition
+    {
+        public readonly string EnabledIconName;
+        public readonly string DisabledIconName;
+        public DMIIconButtonDefinition(string iconName, string confirmerCaption, bool enabled) : base(confirmerCaption, enabled)
+        {
+            EnabledIconName = iconName;
+            DisabledIconName = iconName;
+        }
+        public DMIIconButtonDefinition(string enabledIconName, string disabledIconName, string confirmerCaption, bool enabled) : base(confirmerCaption, enabled)
+        {
+            EnabledIconName = enabledIconName;
+            DisabledIconName = disabledIconName;
         }
     }
     public abstract class DMISubwindowDefinition
@@ -365,7 +388,6 @@ namespace ORTS.Scripting.Api.ETCS
     {
         public string Name;
         public string Value;
-        //public bool Accepted;
         public DMIKeyboard Keyboard;
         public DMIVariableCheck TechnicalResolutionCheck;
         public DMIVariableCheck TechnicalRangeCheck;
@@ -376,6 +398,7 @@ namespace ORTS.Scripting.Api.ETCS
         public enum KeyboardType
         {
             Numeric,
+            EnhancedNumeric,
             Alphanumeric,
             Dedicate
         }

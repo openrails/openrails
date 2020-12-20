@@ -87,7 +87,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         DMIButton ActiveButton;
         public DriverMachineInterface(float height, float width, MSTSLocomotive locomotive, Viewer viewer, CabViewControl control)
         {
-            GaugeOnly = control is CVCDigital;
             Viewer = viewer;
             Locomotive = locomotive;
             Scale = Math.Min(width / Width, height / Height);
@@ -255,19 +254,18 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         MenuBar MenuBar;
         public ETCSDefaultWindow(DriverMachineInterface dmi, CabViewControl control) : base(dmi, 640, 480)
         {
-            if (DMI.GaugeOnly)
+            if (control is CVCDigital)
             {
                 var dig = control as CVCDigital;
                 CircularSpeedGauge = new CircularSpeedGauge(
                 (int)dig.MaxValue,
-                dig.Units == CABViewControlUnits.KM_PER_HOUR,
-                true,
+                dig.Units != CABViewControlUnits.MILES_PER_HOUR,
+                dig.Units != CABViewControlUnits.NONE,
                 dig.MaxValue == 240 || dig.MaxValue == 260,
                 (int)dig.MinValue,
                 DMI);
-                AddToLayout(CircularSpeedGauge, new Point(0, 0));
-                return;
             }
+            else
             {
                 var param = (control as CVCScreen).CustomParameters;
                 int maxSpeed = 400;
@@ -277,11 +275,16 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 CircularSpeedGauge = new CircularSpeedGauge(
                        maxSpeed,
                        control.Units != CABViewControlUnits.MILES_PER_HOUR,
-                       param.ContainsKey("displayunits") && param["displayunits"]=="1",
+                       param.ContainsKey("displayunits") && param["displayunits"] == "1",
                        maxSpeed == 240 || maxSpeed == 260,
                        maxVisibleSpeed,
                        dmi
                    );
+            }
+            if (DMI.GaugeOnly)
+            {
+                AddToLayout(CircularSpeedGauge, new Point(0, 0));
+                return;
             }
             PlanningWindow = new PlanningWindow(dmi);
             TargetDistance = new TargetDistance(dmi);
@@ -703,12 +706,12 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
     }
 
-    public class StandaloneCircularSpeedGaugeRenderer : CabViewDigitalRenderer
+    public class DigitalDMIRenderer : CabViewDigitalRenderer, ICabViewMouseControlRenderer
     {
         DriverMachineInterface DMI;
         bool Zoomed = false;
         [CallOnThread("Loader")]
-        public StandaloneCircularSpeedGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
+        public DigitalDMIRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
             // Height is adjusted to keep compatibility
@@ -719,6 +722,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             base.PrepareFrame(frame, elapsedTime);
             DrawPosition.Width = DrawPosition.Width * 640 / 280;
             DrawPosition.Height = DrawPosition.Height * 480 / 300;
+            DrawPosition.X -= (int)(54 * DMI.Scale);
+            DrawPosition.Y -= (int)(15 * DMI.Scale);
             DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
             DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
             DMI.PrepareFrame(elapsedTime.ClockSeconds);
@@ -728,6 +733,35 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
             CabShaderControlView.SpriteBatch.End();
             CabShaderControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
+        }
+        public bool IsMouseWithin()
+        {
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
+            if (UserInput.IsMouseRightButtonPressed && new Rectangle(0, 0, 640, 480).Contains(x, y)) Zoomed = !Zoomed;
+            foreach (var area in DMI.ActiveWindow.SubAreas)
+            {
+                if (!(area is DMIButton)) continue;
+                var b = (DMIButton)area;
+                if (b.SensitiveArea(DMI.ActiveWindow.Position).Contains(x, y) && b.Enabled) return true;
+            }
+            return false;
+        }
+        public void HandleUserInput()
+        {
+            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
+        }
+        public string GetControlName()
+        {
+            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
+            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
+            foreach (var area in DMI.ActiveWindow.SubAreas)
+            {
+                if (!(area is DMIButton)) continue;
+                var b = (DMIButton)area;
+                if (b.SensitiveArea(DMI.ActiveWindow.Position).Contains(x, y)) return b.DisplayName;
+            }
+            return "";
         }
     }
     public class DriverMachineInterfaceRenderer : CabViewControlRenderer, ICabViewMouseControlRenderer
