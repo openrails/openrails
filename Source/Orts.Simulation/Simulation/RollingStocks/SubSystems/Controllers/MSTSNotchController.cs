@@ -67,6 +67,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "manualbrakingstart": Type = ControllerState.ManualBraking; break;
                 case "brakenotchstart": Type = ControllerState.BrakeNotch; break;
                 case "overchargestart": Type = ControllerState.Overcharge; break;
+                case "slowservicestart": Type = ControllerState.SlowService; break;
                 default:
                     STFException.TraceInformation(stf, "Skipped unknown notch type " + type);
                     break;

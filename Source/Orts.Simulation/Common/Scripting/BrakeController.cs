@@ -61,6 +61,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> OverchargeEliminationRateBarpS;
         /// <summary>
+        /// Slow application rate of the equalizing reservoir
+        /// </summary>
+        public Func<float> SlowApplicationRateBarpS;
+        /// <summary>
         /// Apply rate of the equalizing reservoir
         /// </summary>
         public Func<float> ApplyRateBarpS;
@@ -228,6 +232,7 @@ namespace ORTS.Scripting.Api
         BrakeNotch,         // EngineBrakesControllerBrakeNotchStart
         EPOnly,             // TrainBrakesControllerEPOnlyStart
         EPFullServ,         // TrainBrakesControllerEPFullServiceStart
+        SlowService,        // TrainBrakesControllerSlowServiceStart
     };
 
     public static class ControllerStateDictionary
@@ -262,7 +267,8 @@ namespace ORTS.Scripting.Api
             {ControllerState.ManualBraking, Catalog.GetString("Manual Braking")},
             {ControllerState.BrakeNotch, Catalog.GetString("Notch")},
             {ControllerState.EPOnly, Catalog.GetString("EP Service")},
-            {ControllerState.EPFullServ, Catalog.GetString("EP Full Service")}
+            {ControllerState.EPFullServ, Catalog.GetString("EP Full Service")},
+            {ControllerState.SlowService, Catalog.GetString("Slow service")}
         };
     }
 }

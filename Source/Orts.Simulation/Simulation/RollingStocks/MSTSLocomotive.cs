@@ -767,6 +767,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(trainbrakescontrolleremergencyapplicationrate":
                 case "engine(trainbrakescontrollerfullservicepressuredrop":
                 case "engine(trainbrakescontrollerminpressurereduction":
+                case "engine(ortstrainbrakescontrollerslowapplicationrate":
                 case "engine(ortstrainbrakecontroller":
                 case "engine(enginecontrollers(brake_train":
                     TrainBrakeController.Parse(lowercasetoken, stf);
@@ -780,6 +781,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginebrakescontrolleremergencyapplicationrate":
                 case "engine(enginebrakescontrollerfullservicepressuredrop":
                 case "engine(enginebrakescontrollerminpressurereduction":
+                case "engine(ortsenginebrakescontrollerslowapplicationrate":
                 case "engine(enginecontrollers(brake_engine":
                 case "engine(ortsenginebrakecontroller":
                     EngineBrakeController.Parse(lowercasetoken, stf);
