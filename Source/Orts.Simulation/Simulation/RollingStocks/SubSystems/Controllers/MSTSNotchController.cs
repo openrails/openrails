@@ -59,6 +59,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "emergencystart": Type = ControllerState.Emergency; break;
                 case "minimalreductionstart": Type = ControllerState.MinimalReduction; break;
                 case "epapplystart": Type = ControllerState.EPApply; break;
+                case "eponlystart": Type = ControllerState.EPOnly; break;
+                case "epfullservicestart": Type = ControllerState.EPFullServ; break;
                 case "epholdstart": Type = ControllerState.SelfLap; break;
                 case "vacuumcontinuousservicestart": Type = ControllerState.VacContServ; break;
                 case "vacuumapplycontinuousservicestart": Type = ControllerState.VacApplyContServ; break;
@@ -447,7 +449,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             MSTSNotch notch = Notches[CurrentNotch];
             if (!notch.Smooth)
                 // Respect British 3-wire EP brake configurations
-                return notch.Type == ControllerState.EPApply ? CurrentValue : 1;
+                return (notch.Type == ControllerState.EPApply || notch.Type == ControllerState.EPOnly) ? CurrentValue : 1;
             float x = 1;
             if (CurrentNotch + 1 < Notches.Count)
                 x = Notches[CurrentNotch + 1].Value;
