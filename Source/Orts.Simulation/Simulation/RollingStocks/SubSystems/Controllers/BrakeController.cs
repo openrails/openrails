@@ -302,6 +302,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.DistanceM = () => Locomotive.DistanceM;
+                Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
 
                 // BrakeController
                 Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
@@ -334,6 +335,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
                 Script.SetCurrentValue = (value) => CurrentValue = value;
                 Script.SetUpdateValue = (value) => UpdateValue = value;
+
+                Script.SetDynamicBrakeIntervention = (value) =>
+                {
+                    // TODO: Set dynamic brake intervention instead of controller position
+                    // There are some issues that need to be identified and fixed before setting the intervention directly
+                    if (Locomotive.DynamicBrakeController == null) return;
+                    Locomotive.DynamicBrakeChangeActiveState(value > 0);
+                    Locomotive.DynamicBrakeController.SetValue(value);
+                };
 
                 Script.Initialize();
             }
