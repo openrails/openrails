@@ -251,6 +251,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         PlanningWindow PlanningWindow;
         MessageArea MessageArea;
         TargetDistance TargetDistance;
+        TTIandLSSMArea TTIandLSSMArea;
         MenuBar MenuBar;
         public ETCSDefaultWindow(DriverMachineInterface dmi, CabViewControl control) : base(dmi, 640, 480)
         {
@@ -287,16 +288,19 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 return;
             }
             PlanningWindow = new PlanningWindow(dmi);
+            TTIandLSSMArea = new TTIandLSSMArea(dmi);
             TargetDistance = new TargetDistance(dmi);
             MessageArea = new MessageArea(dmi);
             MenuBar = new MenuBar(dmi);
             CircularSpeedGauge.Layer = -1;
             TargetDistance.Layer = -1;
+            TTIandLSSMArea.Layer = -1;
             MessageArea.Layer = -1;
             AddToLayout(CircularSpeedGauge, new Point(54, DMI.IsSoftLayout ? 0 : 15));
             AddToLayout(PlanningWindow, new Point(334, DMI.IsSoftLayout ? 0 : 15));
             AddToLayout(PlanningWindow.ButtonScaleDown, new Point(334, DMI.IsSoftLayout ? 0 : 15));
             AddToLayout(PlanningWindow.ButtonScaleUp, new Point(334, 285 + (DMI.IsSoftLayout ? 0 : 15)));
+            AddToLayout(TTIandLSSMArea, new Point(0, DMI.IsSoftLayout ? 0 : 15));
             AddToLayout(TargetDistance, new Point(0, 54 + (DMI.IsSoftLayout ? 0 : 15)));
             AddToLayout(MessageArea, new Point(54, DMI.IsSoftLayout ? 350 : 365));
             AddToLayout(MessageArea.ButtonScrollUp, new Point(54+234, DMI.IsSoftLayout ? 350 : 365));
