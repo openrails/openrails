@@ -279,7 +279,8 @@ namespace Orts.Viewer3D
 
         public void SetData(ref Matrix v)
         {
-            sideVector.SetValue(v.Right);
+            var eyeVector = Vector3.Normalize(new Vector3(v.M13, v.M23, v.M33));
+            sideVector.SetValue(Vector3.Normalize(Vector3.Cross(eyeVector, Vector3.Down)));
         }
 
         public void SetData(ref Matrix wvp, Texture2D texture)
