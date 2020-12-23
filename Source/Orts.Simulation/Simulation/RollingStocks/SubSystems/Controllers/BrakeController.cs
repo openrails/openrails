@@ -153,6 +153,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             QuickReleaseRatePSIpS = 10;
             OverchargeEliminationRatePSIpS = 0.036f;
             ApplyRatePSIpS = 2;
+            SlowApplicationRatePSIpS = 1;
             EmergencyRatePSIpS = 10;
             FullServReductionPSI = 26;
             MinReductionPSI = 6;
@@ -170,6 +171,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             QuickReleaseRatePSIpS = controller.QuickReleaseRatePSIpS;
             OverchargeEliminationRatePSIpS = controller.OverchargeEliminationRatePSIpS;
             ApplyRatePSIpS = controller.ApplyRatePSIpS;
+            SlowApplicationRatePSIpS = controller.SlowApplicationRatePSIpS;
             EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
             FullServReductionPSI = controller.FullServReductionPSI;
             MinReductionPSI = controller.MinReductionPSI;
@@ -302,6 +304,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.DistanceM = () => Locomotive.DistanceM;
+                Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
 
                 // BrakeController
                 Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
@@ -334,6 +337,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
                 Script.SetCurrentValue = (value) => CurrentValue = value;
                 Script.SetUpdateValue = (value) => UpdateValue = value;
+
+                Script.SetDynamicBrakeIntervention = (value) =>
+                {
+                    // TODO: Set dynamic brake intervention instead of controller position
+                    // There are some issues that need to be identified and fixed before setting the intervention directly
+                    if (Locomotive.DynamicBrakeController == null) return;
+                    Locomotive.DynamicBrakeChangeActiveState(value > 0);
+                    Locomotive.DynamicBrakeController.SetValue(value);
+                };
 
                 Script.Initialize();
             }
