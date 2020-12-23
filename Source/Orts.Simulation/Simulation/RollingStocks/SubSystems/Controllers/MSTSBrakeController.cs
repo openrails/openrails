@@ -120,7 +120,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             break;
                         case ControllerState.SlowService:
                             if (pressureBar > MaxPressureBar() - MinReductionBar()) pressureBar = MaxPressureBar() - MinReductionBar();
-                            else DecreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), SlowApplicationRateBarpS(), elapsedClockSeconds);
+                            DecreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), SlowApplicationRateBarpS(), elapsedClockSeconds);
                             break;
                         case ControllerState.Apply:
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
@@ -128,7 +128,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.FullServ:
                             epState = x;
                             if (pressureBar > MaxPressureBar() - MinReductionBar()) pressureBar = MaxPressureBar() - MinReductionBar();
-                            else DecreasePressure(ref pressureBar, MaxPressureBar()-FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
+                            DecreasePressure(ref pressureBar, MaxPressureBar()-FullServReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
                             break;
                         case ControllerState.Lap:
                             // Lap position applies min service reduction when first selected, and previous contoller position was Running, then no change in pressure occurs 
@@ -162,7 +162,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             {
                                 x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                                 if (pressureBar > MaxPressureBar() - MinReductionBar()) pressureBar = MaxPressureBar() - MinReductionBar();
-                                else DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                                DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                                 if (ForceControllerReleaseGraduated || notch.Type == ControllerState.EPApply)
                                     IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                             }
@@ -172,7 +172,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.GSelfLap:
                             x = MaxPressureBar() - MinReductionBar() * (1 - x) - FullServReductionBar() * x;
                             if (pressureBar > MaxPressureBar() - MinReductionBar()) pressureBar = MaxPressureBar() - MinReductionBar();
-                            else DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
+                            DecreasePressure(ref pressureBar, x, ApplyRateBarpS(), elapsedClockSeconds);
                             if (ForceControllerReleaseGraduated || notch.Type == ControllerState.GSelfLap)
                                 IncreasePressure(ref pressureBar, x, ReleaseRateBarpS(), elapsedClockSeconds);
                             break;
