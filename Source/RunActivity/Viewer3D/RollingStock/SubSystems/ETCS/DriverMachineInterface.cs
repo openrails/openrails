@@ -327,6 +327,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         protected bool FlashingFrame;
         public Color BackgroundColor = Color.Transparent;
         public bool Pressed;
+        public bool Visible;
         public class TextPrimitive
         {
             public Point Position;
@@ -472,7 +473,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
     {
         public DMIWindow Parent;
         public List<DMIArea> SubAreas = new List<DMIArea>();
-        public bool Visible;
         public bool FullScreen;
         protected DMIWindow(DriverMachineInterface dmi, int width, int height) : base(dmi, width, height)
         {
@@ -492,12 +492,13 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             base.Draw(spriteBatch, drawPosition);
             foreach(var area in SubAreas)
             {
-                area.Draw(spriteBatch, new Point((int)Math.Round(drawPosition.X + area.Position.X * Scale), (int)Math.Round(drawPosition.Y + area.Position.Y * Scale)));
+                if (area.Visible) area.Draw(spriteBatch, new Point((int)Math.Round(drawPosition.X + area.Position.X * Scale), (int)Math.Round(drawPosition.Y + area.Position.Y * Scale)));
             }
         }
         public void AddToLayout(DMIArea area, Point position)
         {
             area.Position = position;
+            area.Visible = true;
             SubAreas.Add(area);
         }
         public override void ScaleChanged()
