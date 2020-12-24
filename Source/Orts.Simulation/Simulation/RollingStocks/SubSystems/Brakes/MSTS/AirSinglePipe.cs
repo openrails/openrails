@@ -398,6 +398,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     dp = MaxCylPressurePSI - AutoCylPressurePSI;
                 if (BrakeLine1PressurePSI > AuxResPressurePSI - dp / AuxCylVolumeRatio && !BleedOffValveOpen)
                     dp = (AuxResPressurePSI - BrakeLine1PressurePSI) * AuxCylVolumeRatio;
+                if (dp < 0)
+                    dp = 0;
 
                 AuxResPressurePSI -= dp / AuxCylVolumeRatio;
                 AutoCylPressurePSI += dp;
