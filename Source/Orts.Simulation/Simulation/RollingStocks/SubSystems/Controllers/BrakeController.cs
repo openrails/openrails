@@ -102,8 +102,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         }
 
         public float MaxPressurePSI { get; set; }
+        public float MaxOverchargePressurePSI { get; private set; }
         public float ReleaseRatePSIpS { get; private set; }
         public float QuickReleaseRatePSIpS { get; private set; }
+        public float OverchargeEliminationRatePSIpS { get; private set; }
         public float ApplyRatePSIpS { get; private set; }
         public float EmergencyRatePSIpS { get; private set; }
         public float FullServReductionPSI { get; private set; }
@@ -142,8 +144,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             Locomotive = locomotive;
 
             MaxPressurePSI = 90;
+            MaxOverchargePressurePSI = 95;
             ReleaseRatePSIpS = 5;
             QuickReleaseRatePSIpS = 10;
+            OverchargeEliminationRatePSIpS = 0.036f;
             ApplyRatePSIpS = 2;
             EmergencyRatePSIpS = 10;
             FullServReductionPSI = 26;
@@ -157,8 +161,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
             ScriptName = controller.ScriptName;
             MaxPressurePSI = controller.MaxPressurePSI;
+            MaxOverchargePressurePSI = controller.MaxOverchargePressurePSI;
             ReleaseRatePSIpS = controller.ReleaseRatePSIpS;
             QuickReleaseRatePSIpS = controller.QuickReleaseRatePSIpS;
+            OverchargeEliminationRatePSIpS = controller.OverchargeEliminationRatePSIpS;
             ApplyRatePSIpS = controller.ApplyRatePSIpS;
             EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
             FullServReductionPSI = controller.FullServReductionPSI;
@@ -195,6 +201,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     MaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
                     break;
 
+                case "engine(ortstrainbrakescontrollermaxoverchargepressure":
+                    MaxOverchargePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
+                    break;
+
                 case "engine(trainbrakescontrollermaxreleaserate":
                 case "engine(enginebrakescontrollermaxreleaserate":    
                     ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
@@ -203,6 +213,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "engine(trainbrakescontrollermaxquickreleaserate":
                 case "engine(enginebrakescontrollermaxquickreleaserate":
                     QuickReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
+                    break;
+
+                case "engine(ortstrainbrakescontrolleroverchargeeliminationrate":
+                    OverchargeEliminationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
                     break;
 
                 case "engine(trainbrakescontrollermaxapplicationrate":
@@ -293,8 +307,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         return float.MaxValue;
                 };
                 Script.MaxPressureBar = () => Bar.FromPSI(MaxPressurePSI);
+                Script.MaxOverchargePressureBar = () => Bar.FromPSI(MaxOverchargePressurePSI);
                 Script.ReleaseRateBarpS = () => BarpS.FromPSIpS(ReleaseRatePSIpS);
                 Script.QuickReleaseRateBarpS = () => BarpS.FromPSIpS(QuickReleaseRatePSIpS);
+                Script.OverchargeEliminationRateBarpS = () => BarpS.FromPSIpS(OverchargeEliminationRatePSIpS);
                 Script.ApplyRateBarpS = () => BarpS.FromPSIpS(ApplyRatePSIpS);
                 Script.EmergencyRateBarpS = () => BarpS.FromPSIpS(EmergencyRatePSIpS);
                 Script.FullServReductionBar = () => Bar.FromPSI(FullServReductionPSI);
