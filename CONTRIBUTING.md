@@ -85,7 +85,7 @@ Your code should be fixing exactly one bug or adding a single new feature; mixin
 
 Changes to the Git "master" branch are selected by peer review and the branch is automatically published as the "Testing Version" every Friday.
 Changes to the Git "unstable" branch are automatically selected and published as the "Unstable Version" every 15 minutes.
-Your changes should always start from the "master" branch and not the "unstable branch.
+Your changes should always start from the "master" branch and not the "unstable" branch.
 
 ### Submitting your code
 
