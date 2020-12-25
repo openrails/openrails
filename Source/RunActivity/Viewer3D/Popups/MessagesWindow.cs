@@ -121,8 +121,8 @@ namespace Orts.Viewer3D.Popups
             foreach( var message in messages )
             {
                 var hbox = vbox.AddLayoutHorizontal(TextSize);
-                var width = hbox.RemainingWidth;
-                hbox.Add(message.LabelShadow = new LabelShadow(hbox.RemainingWidth, hbox.RemainingHeight));
+                var width = Owner.Viewer.WindowManager.TextFontDefault.MeasureString(message.Text);
+                hbox.Add(message.LabelShadow = new LabelShadow(width, hbox.RemainingHeight));
                 hbox.Add(message.LabelText = new Label(-width, 0, width, TextSize, message.Text));
             }
             return vbox;
