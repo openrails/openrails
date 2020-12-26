@@ -43,7 +43,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
             else
             {
-                demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * FullServPressurePSI;
+                demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
                 HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
             }
 
