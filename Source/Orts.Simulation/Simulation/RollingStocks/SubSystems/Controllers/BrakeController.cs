@@ -38,6 +38,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         private bool emergencyBrakingPushButton = false;
         private bool tcsEmergencyBraking = false;
         private bool tcsFullServiceBraking = false;
+        private bool overchargeButtonPressed = false;
+        private bool quickReleaseButtonPressed = false;
         public bool EmergencyBraking
         {
             get
@@ -98,6 +100,44 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 }
 
                 tcsFullServiceBraking = value;
+            }
+        }
+        public bool QuickReleaseButtonPressed
+        {
+            get
+            {
+                return quickReleaseButtonPressed;
+            }
+            set
+            {
+                if (Simulator.Confirmer != null)
+                {
+                    if (value && !quickReleaseButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.QuickRelease, CabSetting.On);
+                    else if (!value && quickReleaseButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.QuickRelease, CabSetting.Off);
+                }
+
+                quickReleaseButtonPressed = value;
+            }
+        }
+        public bool OverchargeButtonPressed
+        {
+            get
+            {
+                return overchargeButtonPressed;
+            }
+            set
+            {
+                if (Simulator.Confirmer != null)
+                {
+                    if (value && !overchargeButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.Overcharge, CabSetting.On);
+                    else if (!value && overchargeButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.Overcharge, CabSetting.Off);
+                }
+
+                overchargeButtonPressed = value;
             }
         }
 
@@ -310,6 +350,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
                 Script.TCSEmergencyBraking = () => TCSEmergencyBraking;
                 Script.TCSFullServiceBraking = () => TCSFullServiceBraking;
+                Script.QuickReleaseButtonPressed = () => QuickReleaseButtonPressed;
+                Script.OverchargeButtonPressed = () => OverchargeButtonPressed;
 
                 Script.MainReservoirPressureBar = () =>
                 {

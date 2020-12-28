@@ -37,6 +37,14 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<bool> TCSFullServiceBraking;
         /// <summary>
+        /// True if the driver has pressed the Quick Release button
+        /// </summary>
+        public Func<bool> QuickReleaseButtonPressed;
+        /// <summary>
+        /// True if the driver has pressed the Overcharge button
+        /// </summary>
+        public Func<bool> OverchargeButtonPressed;
+        /// <summary>
         /// Main reservoir pressure
         /// </summary>
         public Func<float> MainReservoirPressureBar;

@@ -93,7 +93,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     PreviousNotchPosition = NotchController.GetCurrentNotch();
                     BrakeControllerInitialised = true;
                 }
-
                 if (notch == null)
                 {
                     pressureBar = MaxPressureBar() - FullServReductionBar() * CurrentValue();
@@ -102,7 +101,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 {
                     epState = 0;
                     float x = NotchController.GetNotchFraction();
-                    switch (notch.Type)
+                    var type = notch.Type;
+                    if (OverchargeButtonPressed()) type = ControllerState.Overcharge;
+                    else if (QuickReleaseButtonPressed()) type = ControllerState.FullQuickRelease;
+                    switch (type)
                     {
                         case ControllerState.Release:
                             IncreasePressure(ref pressureBar, MaxPressureBar(), ReleaseRateBarpS(), elapsedClockSeconds);
@@ -321,6 +323,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 return ControllerState.TCSEmergency;
             else if (TCSFullServiceBraking())
                 return ControllerState.TCSFullServ;
+            else if (OverchargeButtonPressed())
+                return ControllerState.Overcharge;
+            else if (QuickReleaseButtonPressed())
+                return ControllerState.FullQuickRelease;
             else if (NotchController != null && NotchController.NotchCount() > 0)
                 return NotchController.GetCurrentNotch().Type;
             else
@@ -329,7 +335,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
         public override float? GetStateFraction()
         {
-            if (EmergencyBrakingPushButton() || TCSEmergencyBraking() || TCSFullServiceBraking())
+            if (EmergencyBrakingPushButton() || TCSEmergencyBraking() || TCSFullServiceBraking() || QuickReleaseButtonPressed() || OverchargeButtonPressed())
             {
                 return null;
             }
