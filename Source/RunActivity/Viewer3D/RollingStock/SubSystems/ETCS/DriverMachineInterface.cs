@@ -92,6 +92,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             Scale = Math.Min(width / Width, height / Height);
             /*if (Scale < 0.5) */MipMapScale = 2;
             //else MipMapScale = 1;
+            GaugeOnly = control is CVCDigital;
 
             Shader = new DriverMachineInterfaceShader(Viewer.GraphicsDevice);
             ETCSDefaultWindow = new ETCSDefaultWindow(this, control);
@@ -711,12 +712,11 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
     }
 
-    public class DigitalDMIRenderer : CabViewDigitalRenderer, ICabViewMouseControlRenderer
+    public class CircularSpeedGaugeRenderer : CabViewDigitalRenderer
     {
         DriverMachineInterface DMI;
-        bool Zoomed = false;
         [CallOnThread("Loader")]
-        public DigitalDMIRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
+        public CircularSpeedGaugeRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCDigital control, CabShader shader)
             : base(viewer, locomotive, control, shader)
         {
             // Height is adjusted to keep compatibility
@@ -727,8 +727,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             base.PrepareFrame(frame, elapsedTime);
             DrawPosition.Width = DrawPosition.Width * 640 / 280;
             DrawPosition.Height = DrawPosition.Height * 480 / 300;
-            DrawPosition.X -= (int)(54 * DMI.Scale);
-            DrawPosition.Y -= (int)(15 * DMI.Scale);
             DMI.SizeTo(DrawPosition.Width, DrawPosition.Height);
             DMI.ETCSDefaultWindow.BackgroundColor = Color.Transparent;
             DMI.PrepareFrame(elapsedTime.ClockSeconds);
@@ -738,35 +736,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             DMI.Draw(CabShaderControlView.SpriteBatch, new Point(DrawPosition.X, DrawPosition.Y));
             CabShaderControlView.SpriteBatch.End();
             CabShaderControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
-        }
-        public bool IsMouseWithin()
-        {
-            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
-            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
-            if (UserInput.IsMouseRightButtonPressed && new Rectangle(0, 0, 640, 480).Contains(x, y)) Zoomed = !Zoomed;
-            foreach (var area in DMI.ActiveWindow.SubAreas)
-            {
-                if (!(area is DMIButton)) continue;
-                var b = (DMIButton)area;
-                if (b.SensitiveArea(DMI.ActiveWindow.Position).Contains(x, y) && b.Enabled) return true;
-            }
-            return false;
-        }
-        public void HandleUserInput()
-        {
-            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale), (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale));
-        }
-        public string GetControlName()
-        {
-            int x = (int)((UserInput.MouseX - DrawPosition.X) / DMI.Scale);
-            int y = (int)((UserInput.MouseY - DrawPosition.Y) / DMI.Scale);
-            foreach (var area in DMI.ActiveWindow.SubAreas)
-            {
-                if (!(area is DMIButton)) continue;
-                var b = (DMIButton)area;
-                if (b.SensitiveArea(DMI.ActiveWindow.Position).Contains(x, y)) return b.DisplayName;
-            }
-            return "";
         }
     }
     public class DriverMachineInterfaceRenderer : CabViewControlRenderer, ICabViewMouseControlRenderer
