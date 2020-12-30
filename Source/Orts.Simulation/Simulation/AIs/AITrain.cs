@@ -292,6 +292,7 @@ namespace Orts.Simulation.AIs
             }
             // associate location events
             if (Simulator.ActivityRun != null) Simulator.ActivityRun.AssociateEvents(this);
+            LastSpeedMpS = SpeedMpS;
         }
 
         //================================================================================================//
@@ -376,6 +377,7 @@ namespace Orts.Simulation.AIs
                 AITrainThrottlePercent = initialThrottlepercent;
 
                 TraincarsInitializeMoving();
+                LastSpeedMpS = SpeedMpS;
             }
         }
 
