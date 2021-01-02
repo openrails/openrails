@@ -3175,7 +3175,8 @@ namespace Orts.Simulation.Signalling
             float clearedDistanceM = 0.0f;
             Train.END_AUTHORITY endAuthority = Train.END_AUTHORITY.NO_PATH_RESERVED;
             int routeIndex = -1;
-            float maxDistance = Math.Max(thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
+            float maxDistance = Math.Max((thisTrain.Train.IsActualPlayerTrain ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : thisTrain.Train.AllowedMaxSpeedMpS)
+                * thisTrain.Train.maxTimeS, thisTrain.Train.minCheckDistanceM);
 
             int lastReserved = thisTrain.Train.LastReservedSection[thisTrain.TrainRouteDirectionIndex];
             int endListIndex = -1;
@@ -3542,8 +3543,8 @@ namespace Orts.Simulation.Signalling
                                 }
                             }
 
-                            if (clearedDistanceM > thisTrain.Train.minCheckDistanceM &&
-                                            clearedDistanceM > (thisTrain.Train.AllowedMaxSpeedMpS * thisTrain.Train.maxTimeS))
+                            if (clearedDistanceM > thisTrain.Train.minCheckDistanceM && clearedDistanceM > (
+                                (thisTrain.Train.IsActualPlayerTrain ? (float)Simulator.TRK.Tr_RouteFile.SpeedLimit : thisTrain.Train.AllowedMaxSpeedMpS) * thisTrain.Train.maxTimeS))
                             {
                                 endAuthority = Train.END_AUTHORITY.MAX_DISTANCE;
                                 furthestRouteCleared = true;
@@ -8412,6 +8413,8 @@ namespace Orts.Simulation.Signalling
         public bool StationHold = false;        // Set if signal must be held at station - processed by signal script
         protected List<KeyValuePair<int, int>> LockedTrains;
 
+        public bool CallOnEnabled = false;      // set if signal script file uses CallOn functionality
+
         public bool enabled
         {
             get
@@ -11743,33 +11746,45 @@ namespace Orts.Simulation.Signalling
             }
 
             bool found = false;
+            bool isNormal = isSignalNormal();
             float distance = 0;
             int actDirection = enabledTrain.TrainRouteDirectionIndex;
             Train.TCSubpathRoute routePath = enabledTrain.Train.ValidRoute[actDirection];
             int actRouteIndex = routePath == null ? -1 : routePath.GetRouteIndex(enabledTrain.Train.PresentPosition[actDirection].TCSectionIndex, 0);
             if (actRouteIndex >= 0)
             {
-                float offset = 0;
+                float offset;
                 if (enabledTrain.TrainRouteDirectionIndex == 0)
                     offset = enabledTrain.Train.PresentPosition[0].TCOffset;
                 else
                     offset = signalRef.TrackCircuitList[enabledTrain.Train.PresentPosition[1].TCSectionIndex].Length - enabledTrain.Train.PresentPosition[1].TCOffset;
-                while (!found)
+                while (!found && actRouteIndex < routePath.Count)
                 {
                     Train.TCRouteElement thisElement = routePath[actRouteIndex];
                     TrackCircuitSection thisSection = signalRef.TrackCircuitList[thisElement.TCSectionIndex];
-                    distance += thisSection.Length - offset;
                     if (thisSection.EndSignals[thisElement.Direction] == this)
                     {
+                        distance += thisSection.Length - offset;
                         found = true;
                     }
-                    else
+                    else if (!isNormal)
                     {
+                        TrackCircuitSignalList thisSignalList = thisSection.CircuitItems.TrackCircuitSignals[thisElement.Direction][SignalHeads[0].ORTSsigFunctionIndex];
+                        foreach (TrackCircuitSignalItem thisSignal in thisSignalList.TrackCircuitItem)
+                        {
+                            if (thisSignal.SignalRef == this)
+                            {
+                                distance += thisSignal.SignalLocation - offset;
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!found)
+                    {
+                        distance += thisSection.Length - offset;
                         offset = 0;
-                        int setSection = thisSection.ActivePins[thisElement.OutPin[0], thisElement.OutPin[1]].Link;
                         actRouteIndex++;
-                        if (actRouteIndex >= routePath.Count || setSection < 0)
-                            break;
                     }
                 }
             }
@@ -12597,6 +12612,8 @@ namespace Orts.Simulation.Signalling
             bool[] returnValue = new bool[2] { false, false };
             MstsSignalAspect thisAspect = this_sig_lr(MstsSignalFunction.NORMAL);
 
+            SetManualCallOn(false);
+
             // signal not enabled - set lock, reset if cleared (auto signal can clear without enabling)
 
             if (enabledTrain == null || enabledTrain.Train == null)
@@ -12662,6 +12679,25 @@ namespace Orts.Simulation.Signalling
             holdState = HoldState.None;
         }
 
+        //================================================================================================//
+        /// <summary>
+        /// Set call on manually from dispatcher
+        /// </summary>
+        public void SetManualCallOn(bool state)
+        {
+            if (enabledTrain != null)
+            {
+                if (state && CallOnEnabled)
+                {
+                    enabledTrain.Train.AllowedCallOnSignal = this;
+                    clearHoldSignalDispatcher();
+                }
+                else if (enabledTrain.Train.AllowedCallOnSignal == this)
+                {
+                    enabledTrain.Train.AllowedCallOnSignal = null;
+                }
+            }
+        }
     }  // SignalObject
 
 

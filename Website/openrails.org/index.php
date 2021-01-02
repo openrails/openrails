@@ -73,15 +73,15 @@
           </div>
           <div style="background-color: #ffffcc; margin: 0 -5px; padding: 0 5px;">
             <p>
-              <strong>Nov 2020</strong>
-              Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
-            </p>          
+              <strong>Dec 2020</strong>
+              A <a href="http://www.siskurail.org/news.php" title="by Dale Rickert">detailed guide to making activities</a> backed by videos and data files <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">for the Siskiyou Route</a> has now been released. 
+            </p>
           </div>
           <div style="background-color: #ffffee; margin: 0 -5px; padding: 0 5px;">
             <p>
               <strong>Nov 2020</strong>
-              A <a href="http://www.siskurail.org/ComingSoon.php" title="by Dale Rickert">detailed guide to making activities</a> backed by videos and data files <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">for the Siskiyou Route</a> is soon to be published. 
-            </p>
+              Wagons can now be braked individually as on the oldest railways. This can be experienced in 2 scenarios - <a href="https://www.coalstonewcastle.com.au/physics/stock/#rainhill">Stephenson's Rocket at Rainhill Trials</a> and <a href="https://www.coalstonewcastle.com.au/physics/stock/#select">Langley Vale Timber Tramway</a>. 
+            </p>          
             <p>
               <strong>Apr 2020</strong>
               After more than a year of work <a href="http://www.siskurail.org/" title="Oregon to California, created by Dale Rickert">the free, restored and improved Siskiyou Route</a> is once more available.

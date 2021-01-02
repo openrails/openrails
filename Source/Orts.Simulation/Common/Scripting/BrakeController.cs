@@ -45,6 +45,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> MaxPressureBar;
         /// <summary>
+        /// Maximum pressure in the brake pipes when they are overcharged
+        /// </summary>
+        public Func<float> MaxOverchargePressureBar;
+        /// <summary>
         /// Release rate of the equalizing reservoir
         /// </summary>
         public Func<float> ReleaseRateBarpS;
@@ -52,6 +56,10 @@ namespace ORTS.Scripting.Api
         /// Quick release rate of the equalizing reservoir
         /// </summary>
         public Func<float> QuickReleaseRateBarpS;
+        /// <summary>
+        /// Pressure decrease rate of equalizing reservoir when eliminating overcharge
+        /// </summary>
+        public Func<float> OverchargeEliminationRateBarpS;
         /// <summary>
         /// Apply rate of the equalizing reservoir
         /// </summary>
