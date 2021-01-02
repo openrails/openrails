@@ -6,7 +6,7 @@ using System.Linq;
 namespace Orts.Simulation.Signalling
 {
     // The exchange of information is done through the TextSignalAspect property.
-    // The MSTS signal aspect is only used for TCS scripts that do not support TextSignalAspect..
+    // The MSTS signal aspect is only used for TCS scripts that do not support TextSignalAspect.
     public abstract class CsSignalScript
     {
         // References and shortcuts. Must be private to not expose them through the API
@@ -78,6 +78,10 @@ namespace Orts.Simulation.Signalling
         {
             return SignalObject.FindReqNormalSignal(SignalObject.signalRef.ORTSNormalsubtypes.IndexOf(normalSubtype), DebugFileName);
         }
+        public bool IdSignalHasNormalSubtype(int id, string normalSubtype)
+        {
+            return SignalHead.id_sig_hasnormalsubtype(id, SignalObject.signalRef.ORTSNormalsubtypes.IndexOf(normalSubtype)) == 1;
+        }
         public string IdTextSignalAspect(int id, string sigfn, int headindex=0)
         {
             if (id < 0 || id > SignalObject.signalRef.SignalObjects.Length) return String.Empty;
@@ -131,6 +135,10 @@ namespace Orts.Simulation.Signalling
         public void ApproachControlLockClaim()
         {
             SignalObject.LockClaim();
+        }
+        public MstsBlockState RouteClearedToSignal(int signalId, bool allowCallOn = false)
+        {
+            return SignalObject.RouteClearedToSignal(signalId, allowCallOn, DebugFileName);
         }
         internal void AttachToHead(SignalHead signalHead)
         {

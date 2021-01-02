@@ -34,6 +34,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using Event = Orts.Common.Event;
+using System.Text;
 
 namespace Orts.MultiPlayer
 {
@@ -3018,7 +3019,11 @@ namespace Orts.MultiPlayer
         static byte[] preState;
         static SortedList<long, SignalHead> signals;
         public bool OKtoSend = false;
+        bool SendEverything;
         static byte[] signalsStates;
+        int changedTextStates = 0;
+        static string[] signalTextStates;
+        static string[] preTextState;
         //constructor to create a message from signal data
         public MSGSignalStatus()
         {
@@ -3038,12 +3043,18 @@ namespace Orts.MultiPlayer
                             }
                     }
                 }
-                signalsStates = new byte[signals.Count * 2 + 2];
+                signalsStates = new byte[signals.Count * 2];
+                signalTextStates = new string[signals.Count];
             }
             if (preState == null)
             {
                 preState = new byte[signals.Count * 2 + 2];
                 for (i = 0; i < preState.Length; i++) preState[i] = 0;
+            }
+            if (preTextState == null)
+            {
+                preTextState = new string[signals.Count];
+                for (i = 0; i < preTextState.Length; i++) preTextState[i] = String.Empty;
             }
 
             i = 0;
@@ -3051,20 +3062,34 @@ namespace Orts.MultiPlayer
             {
                 signalsStates[2 * i] = (byte)(t.Value.state + 1);
                 signalsStates[2 * i + 1] = (byte)(t.Value.draw_state + 1);
+                signalTextStates[i] = t.Value.TextSignalAspect;
                 i++;
-                //msgx += (char)(((int)t.Value.state + 1) * 100 + (t.Value.draw_state + 1));
-                //msgx += "" + (char)(t.Value.state + 1) + "" + (char)(t.Value.draw_state + 1);//avoid \0
             }
             OKtoSend = false;
+            SendEverything = false;
             for (i = 0; i < signals.Count * 2; i++)
             {
                 if (signalsStates[i] != preState[i]) { OKtoSend = true; }//something is different, will send
                 preState[i] = signalsStates[i];
             }
+            changedTextStates = 0;
+            for (i = 0; i < signals.Count; i++)
+            {
+                if (signalTextStates[i] != preTextState[i])
+                {
+                    changedTextStates++;
+                    OKtoSend = true;
+                }
+            }
             if (OKtoSend == false)
             {
                 //new player added, will keep sending for a while
-                if (MPManager.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval) OKtoSend = true;
+                if (MPManager.Simulator.GameTime - MPManager.Instance().lastPlayerAddedTime < 3 * MPManager.Instance().MPUpdateInterval)
+                {
+                    OKtoSend = true;
+                    SendEverything = true;
+                    changedTextStates = signalTextStates.Length;
+                }
             }
         }
 
@@ -3088,7 +3113,8 @@ namespace Orts.MultiPlayer
                                 }
                         }
                     }
-                    signalsStates = new byte[signals.Count * 2 + 128];
+                    signalsStates = new byte[signals.Count * 2];
+                    signalTextStates = new string[signals.Count];
                 }
                 catch (Exception e) { signals = null; throw e; }//error, clean the list, so we can get another signal
             }
@@ -3102,6 +3128,19 @@ namespace Orts.MultiPlayer
                 using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Decompress))
                 {
                     gZipStream.Read(signalsStates, 0, signalsStates.Length);
+                    byte[] changedcount = new byte[4];
+                    gZipStream.Read(changedcount, 0, 4);
+                    changedTextStates = BitConverter.ToInt32(changedcount, 0);
+                    for (int i = 0; i < changedTextStates; i++)
+                    {
+                        byte[] signum = new byte[4];
+                        gZipStream.Read(signum, 0, signum.Length);
+                        int index = BitConverter.ToInt32(signum, 0);
+                        int length = gZipStream.ReadByte();
+                        byte[] strbuff = new byte[length];
+                        gZipStream.Read(strbuff, 0, strbuff.Length);
+                        signalTextStates[index] = Encoding.UTF8.GetString(strbuff);
+                    }
                 }
             }
         }
@@ -3117,6 +3156,7 @@ namespace Orts.MultiPlayer
             {
                 t.Value.state = (MstsSignalAspect)(signalsStates[2 * i] - 1); //we added 1 when build the message, need to subtract it out
                 t.Value.draw_state = (int)(signalsStates[2 * i + 1] - 1);
+                t.Value.TextSignalAspect = signalTextStates[i];
                 //t.Value.draw_state = t.Value.def_draw_state(t.Value.state);
                 //System.Console.Write(msgx[i]-48);
                 i++;
@@ -3132,6 +3172,22 @@ namespace Orts.MultiPlayer
             using (var gZipStream = new GZipStream(memoryStream, CompressionMode.Compress, true))
             {
                 gZipStream.Write(buffer, 0, buffer.Length);
+                byte[] changedcount = BitConverter.GetBytes(changedTextStates);
+                gZipStream.Write(changedcount, 0, changedcount.Length);
+                int sendcount = 0;
+                for (int i = 0; i < signals.Count && sendcount < changedTextStates; i++)
+                {
+                    if (SendEverything || signalTextStates[i] != preTextState[i])
+                    {
+                        byte[] signum = BitConverter.GetBytes(i);
+                        gZipStream.Write(signum, 0, signum.Length);
+                        byte[] strbuff = Encoding.UTF8.GetBytes(signalTextStates[i]);
+                        gZipStream.WriteByte((byte)strbuff.Length);
+                        gZipStream.Write(strbuff, 0, strbuff.Length);
+                        preTextState[i] = signalTextStates[i];
+                        sendcount++;
+                    }
+                }
             }
 
             memoryStream.Position = 0;
