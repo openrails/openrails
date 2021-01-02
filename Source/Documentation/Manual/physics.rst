@@ -1826,6 +1826,9 @@ OR supports the following special visual effects in a steam locomotive:
 - Injectors (named ``Injectors1FX`` and ``Injectors2FX``) -- represents the
   steam discharge from the steam overflow pipe of the injectors. They will
   appear whenever the respective injectors operate.
+- Ejectors (named ``SmallEjectorFX`` and ``LargeEjectorFX``) -- represents the
+  steam discharge from the steam ejectors associated with vacuum braking. They will
+  appear whenever the respective ejectors operate.  
 - Boiler blowdown valves (named ``BlowdownFX``) -- represents the discharge of the
   steam boiler blowdown valve. It will appear whenever the blowdown valve operates.
 
