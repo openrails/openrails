@@ -607,10 +607,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // BP is charged and discharged between approx 4.185psi = 21 InHg (or 25InHg, as set by user) and 14.5 psi (atmospheric pressure)
             // The resulting air pressures are then converted to a respective vacuum value where - 14.5psi (atmospheric pressure) = 0 InHg, and approx 4.185psi = 21 InHg.
             // Brakes are applied when vaccum is destroyed, ie 0 InHg, Brakes released when vacuum established ie 21 or 25 InHg
-            float DesiredPipeVacuum = Vac.ToPress(train.EqualReservoirPressurePSIorInHg);
+
             float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for small ejector to operate - fraction set in steam locomotive
             float LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.LargeEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for large ejector to operate - fraction set in steam locomotive
             float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
+
+            // Desired Vacuum pipe level must operate between full vacuum level (eg 2.278 psi = 25 inhg) and atmospheric pressure (14.7psi). 
+            // Hence conversion of equalising pressure required which operates between 0 and full pipe vacuum (12.278psi = 25 inHg)
+            float DesiredPipeVacuum = train.EqualReservoirPressurePSIorInHg + (OneAtmospherePSI - MaxVacuumPipeLevelPSI);
+
             float TrainPipeLeakLossPSI = lead == null ? 0.0f : (lead.TrainBrakePipeLeakPSIorInHgpS);
 
             float TempTrainPipePSI = lead == null ? 5.0f : lead.BrakeSystem.BrakeLine1PressurePSI;
