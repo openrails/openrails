@@ -28,7 +28,9 @@ namespace Orts.Simulation.Signalling
         public bool AllowClearPartialRoute { set { SignalObject.AllowClearPartialRoute(value ? 1 : 0); } }
         public int SignalNumClearAhead { get { return SignalObject.SignalNumClearAheadActive; } set { SignalObject.SetSignalNumClearAhead(value); } }
         public int DefaultDrawState(MstsSignalAspect signalAspect) => SignalHead.def_draw_state(signalAspect);
+        public int GetDrawState(string name) => SignalHead.signalType.DrawStates.ContainsKey(name) ? SignalHead.signalType.DrawStates[name].Index : -1;
         public int SignalId => SignalObject.thisRef;
+        public string SignalTypeName => SignalHead.SignalTypeName;
         public Dictionary<int, int> SharedVariables => SignalObject.localStorage;
         public float ClockTimeS => (float)SignalObject.signalRef.Simulator.GameTime;
         public class Timer
@@ -52,7 +54,6 @@ namespace Orts.Simulation.Signalling
         }
         public void SendSignalMessage(int signalId, string message)
         {
-            Console.WriteLine("Message to " + signalId + ": " + message);
             if (signalId < 0 || signalId > SignalObject.signalRef.SignalObjects.Length) return;
             foreach (var head in SignalObjectById(signalId).SignalHeads)
             {
@@ -65,7 +66,10 @@ namespace Orts.Simulation.Signalling
 
             return SignalHead.sig_feature(signalFeatureIndex);
         }
-
+        public bool HasHead(int requiredHeadIndex)
+        {
+            return SignalObject.HasHead(requiredHeadIndex) == 1;
+        }
         public int NextSignalId(string sigfn, int count = 0)
         {
             return SignalObject.next_nsig_id(SigFnIndex(sigfn), count + 1);

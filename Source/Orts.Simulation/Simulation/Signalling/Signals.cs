@@ -12831,12 +12831,15 @@ namespace Orts.Simulation.Signalling
                 if (Signals.CsSignalScripts.ScriptFileExists(signalType.Name))
                 {
                     usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Name) as CsSignalScript;
-
-                    if (usedCsSignalScript != null)
-                    {
-                        usedCsSignalScript.AttachToHead(this);
-                        usedCsSignalScript.Initialize();
-                    }
+                }
+                else if (Signals.CsSignalScripts.ScriptFileExists(signalType.Script))
+                {
+                    usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Script) as CsSignalScript;
+                }
+                if (usedCsSignalScript != null)
+                {
+                    usedCsSignalScript.AttachToHead(this);
+                    usedCsSignalScript.Initialize();
                 }
 
                 // set signal speeds
@@ -13285,6 +13288,8 @@ namespace Orts.Simulation.Signalling
             else
                 state = MstsSignalAspect.STOP;
 
+            TextSignalAspect = "";
+
             draw_state = def_draw_state(state);
         }//SetMostRestrictiveAspect
 
@@ -13299,6 +13304,9 @@ namespace Orts.Simulation.Signalling
                 state = signalType.GetLeastRestrictiveAspect();
             else
                 state = MstsSignalAspect.CLEAR_2;
+
+            TextSignalAspect = "";
+
             def_draw_state(state);
         }//SetLeastRestrictiveAspect
 

@@ -3580,6 +3580,7 @@ namespace Orts.MultiPlayer
                         else if (drawstate2 > 0) { sigHead.state = MstsSignalAspect.APPROACH_2; }
                         else { sigHead.state = MstsSignalAspect.APPROACH_3; }
                         sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+                        sigHead.TextSignalAspect = "";
                     }
                     break;
                 case 3:
