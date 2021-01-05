@@ -311,6 +311,7 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeServiceTimeFactorS;
         public float BrakeEmergencyTimeFactorS;
         public float BrakePipeChargingRatePSIorInHgpS;
+        public float BrakePipeQuickChargingRatePSIpS;
         public InterpolatorDiesel2D TractiveForceCurves;
         public InterpolatorDiesel2D DynamicBrakeForceCurves;
         public float DynamicBrakeSpeed1MpS = MpS.FromKpH(5);
@@ -818,6 +819,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "engine(ortsbrakepipequickchargingrate": BrakePipeQuickChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipedischargetimemult": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); TractiveForceCurves.HasNegativeValue();  break;
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
@@ -1272,6 +1274,8 @@ namespace Orts.Simulation.RollingStocks
                     BrakePipeChargingRatePSIorInHgpS = Simulator.Settings.BrakePipeChargingRate; // Air brakes
                 }
             }
+            // Initialise Brake Pipe Quick Charging Rate
+            if (BrakePipeQuickChargingRatePSIpS == 0) BrakePipeQuickChargingRatePSIpS = BrakePipeChargingRatePSIorInHgpS;
 
             // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
             if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)

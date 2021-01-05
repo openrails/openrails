@@ -633,7 +633,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             if (lead.BrakeSystem.BrakeLine1PressurePSI < train.EqualReservoirPressurePSIorInHg)
                             {
                                 // Calculate change in brake pipe pressure between equalising reservoir and lead brake pipe
-                                float PressureDiffEqualToPipePSI = TrainPipeTimeVariationS * lead.BrakePipeChargingRatePSIorInHgpS; // default condition - if EQ Res is higher then Brake Pipe Pressure
+                                float chargingRatePSIpS = lead.BrakePipeChargingRatePSIorInHgpS;
+                                if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.Overcharge)
+                                {
+                                    chargingRatePSIpS = lead.BrakePipeQuickChargingRatePSIpS;
+                                }
+                                float PressureDiffEqualToPipePSI = TrainPipeTimeVariationS * chargingRatePSIpS; // default condition - if EQ Res is higher then Brake Pipe Pressure
 
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI + PressureDiffEqualToPipePSI > train.EqualReservoirPressurePSIorInHg)
                                     PressureDiffEqualToPipePSI = train.EqualReservoirPressurePSIorInHg - lead.BrakeSystem.BrakeLine1PressurePSI;
