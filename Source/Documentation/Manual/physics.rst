@@ -1922,32 +1922,31 @@ Open Rails software has implemented its own braking physics in the
 current release. It is based on the Westinghouse 26C and 26F air brake
 and controller system. Open Rails braking will parse the type of braking
 from the .eng file to determine if the braking physics uses passenger or
-freight standards, self-lapping or not. This is controlled within the
-Options menu as shown in :ref:`General Options <options-general>` above.
+freight standards, self-lapping or not. 
 
-Selecting :ref:`Graduated Release Air Brakes <options-general>` in *Menu >
-Options* allows partial release of the brakes. Some 26C brake valves have a
-cut-off valve that has three positions: passenger, freight and cut-out. Checked
-is equivalent to passenger standard and unchecked is equivalent to freight
-standard.
+There are two different features regarding graduated release of brakes.
+If the train brake controller has a self-lapping notch that provides
+graduated release, then the amount of brake pressure can be adjusted up
+or down by changing the control in this notch. If the notch does not
+provide graduated release, then the brakes can only be increased in 
+this notch and one of the release positions is required to release the brakes.
+The list of notches that have graduated release can be found :ref:`here <physics-brake-controller>`.
 
-The *Graduated Release Air Brakes* option controls two different features.
-If the train brake controller has a self-lapping notch and the *Graduated
-Release Air Brakes* box is checked, then the amount of brake pressure can
-be adjusted up or down by changing the control in this notch. If the
-*Graduated Release Air Brakes* option is not checked, then the brakes can
-only be increased in this notch and one of the release positions is
-required to release the brakes.
-
-Another capability controlled by the *Graduated Release Air Brakes*
-checkbox is the behavior of the brakes on each car in the train. If the
-*Graduated Release Air Brakes* box is checked, then the brake cylinder
-pressure is regulated to keep it proportional to the difference between
-the emergency reservoir pressure and the brake pipe pressure. If the
-*Graduated Release Air Brakes* box is not checked and the brake pipe
-pressure rises above the auxiliary reservoir pressure, then the brake
+To achieve a graduated release, the brake valves in the train cars must
+have this capability. If the BrakeEquipmentType() parameter in the Wagon()
+section contains "Graduated_release_triple_valve" or "Distributor", then the 
+brake cylinder pressure is regulated to keep it proportional to the difference 
+between the emergency reservoir pressure and the brake pipe pressure. If the
+brake valve is a "Triple_valve" instead, when the brake pipe
+pressure rises above the auxiliary reservoir pressure, the brake
 cylinder pressure is released completely at a rate determined by the
 retainer setting.
+
+Selecting :ref:`Graduated Release Air Brakes <options-general>` in *Menu >
+Options* will force self-lapping notches in the brake controller to have
+graduated release. It will also force graduated release of brakes in triple
+valves. This option should be unchecked, except for compatibility problems
+with old MSTS stock.
 
 The following brake types are implemented in OR:
 
@@ -2291,6 +2290,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSEngineBrakeReleaseRate
    single: ORTSEngineBrakeApplicationRate
    single: ORTSBrakePipeChargingRate
+   single: ORTSBrakePipeQuickChargingRate
    single: ORTSBrakeServiceTimeFactor
    single: ORTSBrakeEmergencyTimeFactor
    single: ORTSBrakePipeTimeFactor
@@ -2317,6 +2317,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   (default 12.5).
 - ``Engine(ORTSBrakePipeChargingRate`` -- Rate of lead engine brake pipe
   pressure increase in PSI per second (default 21).
+- ``Engine(ORTSBrakePipeQuickChargingRate`` -- Rate of lead engine brake pipe
+  pressure increase in PSI per second during a quick release (by default
+  will be equal to ORTSBrakePipeChargingRate).
 - ``Engine(ORTSBrakeServiceTimeFactor`` -- Time in seconds for lead engine
   brake pipe pressure to drop to about 1/3 for service application
   (default 1.009).
