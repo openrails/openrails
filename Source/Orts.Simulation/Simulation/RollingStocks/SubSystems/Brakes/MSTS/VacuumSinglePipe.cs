@@ -118,7 +118,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // display depending upon whether an EQ reservoir fitted
             if ( Car.Train.EQEquippedVacLoco)
             {
-                s = string.Format(" EQ {0}", FormatStrings.FormatPressure(Vac.FromPress(Vac.ToPress(Car.Train.EqualReservoirPressurePSIorInHg)), PressureUnit.InHg, PressureUnit.InHg, true));
+                // The equalising pressure operates between 0 (Apply) and full pipe vacuum (12.278psi = 25 inHg - Release), which is the reverse of above, 
+                // so it needs to be mapped to provide a desired vacuum of 2.278 psi = 25 inhg = Release and 14.503psi = 0 inhg = Apply
+                MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
+                float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
+                float ValveFraction = 1 - (Car.Train.EqualReservoirPressurePSIorInHg / MaxVacuumPipeLevelPSI);
+                ValveFraction = MathHelper.Clamp(ValveFraction, 0.0f, 1.0f); // Keep fraction within bounds
+
+                float DisplayEqualReservoirPressurePSIorInHg = (ValveFraction * (OneAtmospherePSI - (OneAtmospherePSI - MaxVacuumPipeLevelPSI))) + (OneAtmospherePSI - MaxVacuumPipeLevelPSI);
+
+                s = string.Format(" EQ {0}", FormatStrings.FormatPressure(Vac.FromPress(DisplayEqualReservoirPressurePSIorInHg), PressureUnit.InHg, PressureUnit.InHg, true));
                 s += string.Format(" V {0}", FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, true));
             }
             else // No EQ reservoir by default
