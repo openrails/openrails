@@ -576,7 +576,7 @@ namespace Orts.MultiPlayer
                                     string wagonFilePath = MPManager.Simulator.BasePath + @"\trains\trainset\" + cars[i];
                                     if (!File.Exists(wagonFilePath))
                                     {
-                                        Trace.TraceWarning("Ignored missing wagon {0}", wagonFilePath);
+                                        Trace.TraceWarning($"Ignored missing rolling stock {wagonFilePath}");
                                         continue;
                                     }
 

@@ -901,7 +901,7 @@ namespace Orts.Simulation.AIs
 
                 if (!File.Exists(wagonFilePath))
                 {
-                    Trace.TraceWarning("Ignored missing wagon {0} in consist {1}", wagonFilePath, consistFileName);
+                    Trace.TraceWarning($"Ignored missing {(wagon.IsEngine ? "engine" : "wagon")} {wagonFilePath} in consist {consistFileName}");
                     continue;
                 }
 
