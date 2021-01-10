@@ -1192,8 +1192,9 @@ namespace Orts.Simulation
             else
                 train.TrainMaxSpeedMpS = Math.Min((float)TRK.Tr_RouteFile.SpeedLimit, conFile.Train.TrainCfg.MaxVelocity.A);
 
-
+            float prevEQres = train.EqualReservoirPressurePSIorInHg;
             train.AITrainBrakePercent = 100; //<CSComment> This seems a tricky way for the brake modules to test if it is an AI train or not
+            train.EqualReservoirPressurePSIorInHg = prevEQres; // The previous command modifies EQ reservoir pressure, causing issues with EP brake systems, so restore to prev value
             return (train);
         }
 

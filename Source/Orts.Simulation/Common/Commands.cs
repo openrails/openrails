@@ -553,6 +553,52 @@ namespace Orts.Common
     }
 
     [Serializable()]
+    public sealed class QuickReleaseCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public QuickReleaseCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TrainBrakeController.QuickReleaseButtonPressed = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "off" : "on");
+        }
+    }
+
+    [Serializable()]
+    public sealed class BrakeOverchargeCommand : BooleanCommand
+    {
+        public static MSTSLocomotive Receiver { get; set; }
+
+        public BrakeOverchargeCommand(CommandLog log, bool toState)
+            : base(log, toState)
+        {
+            Redo();
+        }
+
+        public override void Redo()
+        {
+            Receiver.TrainBrakeController.OverchargeButtonPressed = ToState;
+            // Report();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " - " + (ToState ? "off" : "on");
+        }
+    }
+
+    [Serializable()]
     public sealed class HandbrakeCommand : BooleanCommand {
         public static MSTSLocomotive Receiver { get; set; }
 

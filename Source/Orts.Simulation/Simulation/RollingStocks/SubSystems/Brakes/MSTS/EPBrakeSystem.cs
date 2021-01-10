@@ -32,9 +32,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override void Update(float elapsedClockSeconds)
         {
-            var demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * FullServPressurePSI;
-            if (BrakeLine3PressurePSI >= 1000f) demandedAutoCylPressurePSI = 0;
-            HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
+            float demandedAutoCylPressurePSI = 0;
+            if (BrakeLine3PressurePSI >= 1000f || Car.Train.BrakeLine4 < 0)
+            {
+                HoldingValve = ValveState.Release;
+            }
+            else if (Car.Train.BrakeLine4 == 0)
+            {
+                HoldingValve = ValveState.Lap;
+            }
+            else
+            {
+                demandedAutoCylPressurePSI = Math.Min(Math.Max(Car.Train.BrakeLine4, 0), 1) * MaxCylPressurePSI;
+                HoldingValve = AutoCylPressurePSI <= demandedAutoCylPressurePSI ? ValveState.Lap : ValveState.Release;
+            }
 
             base.Update(elapsedClockSeconds);
 
