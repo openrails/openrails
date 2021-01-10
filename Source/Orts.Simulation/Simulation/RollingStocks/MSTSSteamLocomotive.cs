@@ -152,7 +152,7 @@ namespace Orts.Simulation.RollingStocks
         public float CurrentLocoTenderWaterVolumeUKG;
         float PrevCombinedTenderWaterVolumeUKG;
         float PreviousTenderWaterVolumeUKG;
-        public float MaxLocoTenderWaterMassKG;         // Maximum read from Eng file
+        public float MaxLocoTenderWaterMassKG = 1;         // Maximum read from Eng file - this value must be non-zero, if not defined in ENG file, can cause NaN errors
         float RestoredMaxTotalCombinedWaterVolumeUKG; // Values to restore after game save
         float RestoredCombinedTenderWaterVolumeUKG;     // Values to restore after game save
 
@@ -342,7 +342,7 @@ namespace Orts.Simulation.RollingStocks
         float FuelDensityKGpM3 = 864.5f;    // Anthracite Coal : 50 - 58 (lb/ft3), 800 - 929 (kg/m3)
         float DamperFactorManual = 1.0f;    // factor to control draft through fire when locomotive is running in Manual mode
         public float WaterLBpUKG = 10.0f;    // lbs of water in 1 gal (uk)
-        public float MaxTenderCoalMassKG;          // Maximum read from Eng File
+        public float MaxTenderCoalMassKG = 1;          // Maximum read from Eng File -  - this value must be non-zero, if not defined in ENG file, can cause NaN errors
         public float TenderCoalMassKG              // Decreased by firing and increased by refilling
         {
             get { return FuelController.CurrentValue * MaxTenderCoalMassKG; }
