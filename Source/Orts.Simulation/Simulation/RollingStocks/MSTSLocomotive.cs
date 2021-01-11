@@ -1337,11 +1337,16 @@ namespace Orts.Simulation.RollingStocks
             {
                 if (TrainBrakeController.MaxPressurePSI == 21 || TrainBrakeController.MaxPressurePSI == 25) // If 21 or 25 has been entered assume that it is 21InHg or 25InHg, and convert it to the correct psi equivalent
                 {
+                    float TempMaxPressure = TrainBrakeController.MaxPressurePSI;
+
+                    // Convert assumed inHg value to psi
+                    TrainBrakeController.MaxPressurePSI = Bar.ToPSI(Bar.FromInHg(TrainBrakeController.MaxPressurePSI));
+
                     if (Simulator.Settings.VerboseConfigurationMessages)
                     {
-                        Trace.TraceInformation("TrainBrakeController.MaxPressurePSI is assumed to be {0} Inhg, - confirmed as a value of {1} InHg", TrainBrakeController.MaxPressurePSI, Bar.ToInHg(Bar.FromPSI(Bar.ToPSI(Bar.FromInHg(TrainBrakeController.MaxPressurePSI)))));
+                        Trace.TraceInformation("TrainBrakeController.MaxPressurePSI is assumed to be {0} Inhg, - confirmed as a value of {1} InHg", TempMaxPressure, Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
                     }
-                    TrainBrakeController.MaxPressurePSI = Bar.ToPSI(Bar.FromInHg(TrainBrakeController.MaxPressurePSI));
+                    
                 }
                 else if (TrainBrakeController.MaxPressurePSI < 10 || TrainBrakeController.MaxPressurePSI > 13) // Outside an acceptable range, then convert to a fixed default
                 {
