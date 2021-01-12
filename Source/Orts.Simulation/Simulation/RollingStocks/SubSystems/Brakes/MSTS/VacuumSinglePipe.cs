@@ -473,7 +473,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 if (BrakeLine1PressurePSI < VacResPressurePSIA)
                 {
-                    Trace.TraceInformation("Loop VacRes - Carid {0}", Car.CarID);
                     float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
                     float vr = VacResVolM3 / BrakePipeVolumeM3;
                     if (VacResPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
@@ -989,7 +988,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                                 lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + TrainPipeTimeVariationS / AdjBrakeServiceTimeFactorS);
                                 if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
                                     lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
-                       //         Trace.TraceInformation("Brake - serviceTime {0} Variation {1}", AdjBrakeServiceTimeFactorS, TrainPipeTimeVariationS);
                             }
                             else if (lead.BrakeSystem.BrakeLine1PressurePSI > DesiredPipeVacuum)
                             {
