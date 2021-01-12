@@ -311,6 +311,7 @@ namespace Orts.Simulation.RollingStocks
         public float BrakeServiceTimeFactorS;
         public float BrakeEmergencyTimeFactorS;
         public float BrakePipeChargingRatePSIorInHgpS;
+        public float BrakePipeQuickChargingRatePSIpS;
         public InterpolatorDiesel2D TractiveForceCurves;
         public InterpolatorDiesel2D DynamicBrakeForceCurves;
         public float DynamicBrakeSpeed1MpS = MpS.FromKpH(5);
@@ -767,6 +768,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(trainbrakescontrolleremergencyapplicationrate":
                 case "engine(trainbrakescontrollerfullservicepressuredrop":
                 case "engine(trainbrakescontrollerminpressurereduction":
+                case "engine(ortstrainbrakescontrollerslowapplicationrate":
                 case "engine(ortstrainbrakecontroller":
                 case "engine(enginecontrollers(brake_train":
                     TrainBrakeController.Parse(lowercasetoken, stf);
@@ -780,6 +782,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(enginebrakescontrolleremergencyapplicationrate":
                 case "engine(enginebrakescontrollerfullservicepressuredrop":
                 case "engine(enginebrakescontrollerminpressurereduction":
+                case "engine(ortsenginebrakescontrollerslowapplicationrate":
                 case "engine(enginecontrollers(brake_engine":
                 case "engine(ortsenginebrakecontroller":
                     EngineBrakeController.Parse(lowercasetoken, stf);
@@ -816,6 +819,7 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(ortsbrakeservicetimefactor": BrakeServiceTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakeemergencytimefactor": BrakeEmergencyTimeFactorS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); break;
                 case "engine(ortsbrakepipechargingrate": BrakePipeChargingRatePSIorInHgpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
+                case "engine(ortsbrakepipequickchargingrate": BrakePipeQuickChargingRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null); break;
                 case "engine(ortsbrakepipedischargetimemult": BrakePipeDischargeTimeFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortsmaxtractiveforcecurves": TractiveForceCurves = new InterpolatorDiesel2D(stf, false); TractiveForceCurves.HasNegativeValue();  break;
                 case "engine(ortstractioncharacteristics": TractiveForceCurves = new InterpolatorDiesel2D(stf, true); break;
@@ -1270,6 +1274,8 @@ namespace Orts.Simulation.RollingStocks
                     BrakePipeChargingRatePSIorInHgpS = Simulator.Settings.BrakePipeChargingRate; // Air brakes
                 }
             }
+            // Initialise Brake Pipe Quick Charging Rate
+            if (BrakePipeQuickChargingRatePSIpS == 0) BrakePipeQuickChargingRatePSIpS = BrakePipeChargingRatePSIorInHgpS;
 
             // Initialise Exhauster Charging rate in diesel and electric locomotives. The equivalent ejector charging rates are set in the steam locomotive.
             if (this is MSTSDieselLocomotive || this is MSTSElectricLocomotive)
@@ -2821,7 +2827,7 @@ namespace Orts.Simulation.RollingStocks
 
         public void StartThrottleIncrease()
         {
-            if (DynamicBrakePercent >= 0 || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake))
+            if (DynamicBrakeController != null && DynamicBrakeController.CurrentValue >= 0 && (DynamicBrakePercent >= 0 || !(DynamicBrakePercent == -1 && !DynamicBrake || DynamicBrakePercent >= 0 && DynamicBrake)))
             {
                 if (!(CombinedControlType == CombinedControl.ThrottleDynamic
                     || CombinedControlType == CombinedControl.ThrottleAir && TrainBrakeController.CurrentValue > 0))
@@ -4434,6 +4440,21 @@ namespace Orts.Simulation.RollingStocks
                 case CABViewControlTypes.TRAIN_BRAKE:
                     {
                         data = (TrainBrakeController == null) ? 0.0f : TrainBrakeController.CurrentValue;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_BAILOFF:
+                    {
+                        data = BailOff ? 1 : 0;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_QUICKRELEASE:
+                    {
+                        data = (TrainBrakeController == null || !TrainBrakeController.QuickReleaseButtonPressed) ? 0 : 1;
+                        break;
+                    }
+                case CABViewControlTypes.ORTS_OVERCHARGE:
+                    {
+                        data = (TrainBrakeController == null || !TrainBrakeController.OverchargeButtonPressed) ? 0 : 1;
                         break;
                     }
                 case CABViewControlTypes.FRICTION_BRAKING:

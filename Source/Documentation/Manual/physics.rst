@@ -1631,6 +1631,14 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 |ORTS |-| Superheat |-| Area ( x )                          |Superheating       |Area               |("2198*(ft^2)")    |
 |                                                           |heating area       |                   |("194*(m^2)" )     |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|**Locomotive Tender Info (Wagon section - will override Engine section values)**                                       |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Tender |-| Wagon |-| Water |-| Mass ( x )         |Water in tender    |Mass               || (36500lb)        |
+|                                                           |                   |                   || (16000kg)        |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
+|ORTS |-| Tender |-| Wagon |-| Coal |-| Mass ( x )          |Coal in tender     |Mass               || (13440lb)        |
+|                                                           |                   |                   || (6000kg)         |
++-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |**Locomotive Tender Info (Engine section)**                                                                            |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |Max |-| Tender |-| Water |-| Mass ( x )                    |Water in tender    |Mass               || (36500lb)        |
@@ -1925,32 +1933,31 @@ Open Rails software has implemented its own braking physics in the
 current release. It is based on the Westinghouse 26C and 26F air brake
 and controller system. Open Rails braking will parse the type of braking
 from the .eng file to determine if the braking physics uses passenger or
-freight standards, self-lapping or not. This is controlled within the
-Options menu as shown in :ref:`General Options <options-general>` above.
+freight standards, self-lapping or not. 
 
-Selecting :ref:`Graduated Release Air Brakes <options-general>` in *Menu >
-Options* allows partial release of the brakes. Some 26C brake valves have a
-cut-off valve that has three positions: passenger, freight and cut-out. Checked
-is equivalent to passenger standard and unchecked is equivalent to freight
-standard.
+There are two different features regarding graduated release of brakes.
+If the train brake controller has a self-lapping notch that provides
+graduated release, then the amount of brake pressure can be adjusted up
+or down by changing the control in this notch. If the notch does not
+provide graduated release, then the brakes can only be increased in 
+this notch and one of the release positions is required to release the brakes.
+The list of notches that have graduated release can be found :ref:`here <physics-brake-controller>`.
 
-The *Graduated Release Air Brakes* option controls two different features.
-If the train brake controller has a self-lapping notch and the *Graduated
-Release Air Brakes* box is checked, then the amount of brake pressure can
-be adjusted up or down by changing the control in this notch. If the
-*Graduated Release Air Brakes* option is not checked, then the brakes can
-only be increased in this notch and one of the release positions is
-required to release the brakes.
-
-Another capability controlled by the *Graduated Release Air Brakes*
-checkbox is the behavior of the brakes on each car in the train. If the
-*Graduated Release Air Brakes* box is checked, then the brake cylinder
-pressure is regulated to keep it proportional to the difference between
-the emergency reservoir pressure and the brake pipe pressure. If the
-*Graduated Release Air Brakes* box is not checked and the brake pipe
-pressure rises above the auxiliary reservoir pressure, then the brake
+To achieve a graduated release, the brake valves in the train cars must
+have this capability. If the BrakeEquipmentType() parameter in the Wagon()
+section contains "Graduated_release_triple_valve" or "Distributor", then the 
+brake cylinder pressure is regulated to keep it proportional to the difference 
+between the emergency reservoir pressure and the brake pipe pressure. If the
+brake valve is a "Triple_valve" instead, when the brake pipe
+pressure rises above the auxiliary reservoir pressure, the brake
 cylinder pressure is released completely at a rate determined by the
 retainer setting.
+
+Selecting :ref:`Graduated Release Air Brakes <options-general>` in *Menu >
+Options* will force self-lapping notches in the brake controller to have
+graduated release. It will also force graduated release of brakes in triple
+valves. This option should be unchecked, except for compatibility problems
+with old MSTS stock.
 
 The following brake types are implemented in OR:
 
@@ -2009,10 +2016,12 @@ The following notch positions can be defined for the train brake at ``Engine(Eng
 .. index::
    single: TrainBrakesControllerFullQuickReleaseStart
    single: TrainBrakesControllerReleaseStart
-   single: TrainBrakesControllerOverchageStart
+   single: TrainBrakesControllerOverchargeStart
    single: TrainBrakesControllerApplyStart
+   single: TrainBrakesControllerSlowServiceStart
    single: TrainBrakesControllerFullServiceStart
    single: TrainBrakesControllerHoldStart
+   single: TrainBrakesControllerEPHoldStart
    single: TrainBrakesControllerSelfLapStart
    single: TrainBrakesControllerRunningStart
    single: TrainBrakesControllerMinimalReductionStart
@@ -2023,30 +2032,501 @@ The following notch positions can be defined for the train brake at ``Engine(Eng
    single: TrainBrakesControllerGraduatedSelfLapLimitedHoldingStart
    single: TrainBrakesControllerSuppressionStart
    single: TrainBrakesControllerContinuousServiceStart
-   single: EPApply
+   single: TrainBrakesControllerEPApplyStart
+   single: TrainBrakesControllerEPFullServiceStart
+   single: TrainBrakesControllerEPOnlyStart
    single: TrainBrakesControllerEmergencyStart
    single: Dummy
    single: ORTSTrainBrakesControllerMaxOverchargePressure
    single: ORTSTrainBrakesControllerOverchargeEliminationRate
-   single: TrainBrakesControllerMaxApplicationRate
-   single: TrainBrakesControllerMaxQuickReleaseRate
-   single: TrainBrakesControllerMaxReleaseRate
-   single: TrainBrakesControllerMinPressureReduction
-   single: TrainBrakesControllerMaxSystemPressure
+   single: ORTSTrainBrakesControllerSlowApplicationRate
 
-- ``FullQuickReleaseStart`` -- Increases pressure in equalizing reservoir (EQ) at a rate proportional to ``TrainBrakesControllerMaxQuickReleaseRate`` and controller position, releasing the brakes.
-- ``ReleaseStart`` -- same as above, but with a rate of ``TrainBrakesControllerMaxReleaseRate``.
-- ``OverchageStart`` -- Increases pressure in EQ over the maximum (``TrainBrakesControllerMaxSystemPressure``), up to ``ORTSTrainBrakesControllerMaxOverchargePressure``, to release stuck distributors. Setting the controller back to a release position will slowly return pressure to nominal value at a rate of ``ORTSTrainBrakesControllerOverchargeEliminationRate``.
-- ``ApplyStart`` -- Starts decreasing pressure in EQ at a rate proportional to ``TrainBrakesControllerMaxApplicationRate`` and controller position, down to full service pressure.
-- ``FullServiceStart`` -- Same as above, but also applies EP brakes if available.
-- ``HoldStart``, ``SelfLapStart`` and ``RunningStart`` -- Keep EQ pressure constant, maintaining brake pipe pressure.
-- ``MinimalReductionStart`` -- If previous notch position was Running, Release or QuickRelease, applies a minimal reduction to brake pipe pressure (defined by ``TrainBrakesControllerMinPressureReduction``).
-- ``HoldLappedStart`` -- Same as above, but isolates brake pipe from EQ reservoir. Brake pipe leakage is not compensated.
-- ``VaccumContinuousServiceStart`` and ``VaccumApplyContinuousService`` -- Set EQ pressure to a value from MaxPressure to 0, proportional to controller position.
-- ``GraduatedSelfLapStart``, ``GraduatedSelfLapHoldingStart`` and ``SuppressionStart`` -- Adjust EQ pressure to a value from (MaxPressure-MinimalReduction) to FullServicePressure, proportional to controller position. Depending on :ref:`Graduated Release Air Brakes <options-general>` option, EQ pressure can be increased to reduce brake application. ``Suppression`` should be a non-smooth notch used to suppress TCS brake application.
-- ``ContinuousServiceStart`` and ``EPApply`` -- Same as above, but also apply EP brakes if available.
-- ``EmergencyStart`` -- Quickly decreases EQ pressure and connects brake pipe to atmosphere, applying maximum braking.
-- ``Dummy`` -- Adjusts EQ pressure to a value from MaxPressure to FullServicePressure, proportional to controller position.
+.. table:: Brake Controller Tokens
+    :widths: 20 45 20 15
+
+    +-----------------+-----------------+-----------------+-----------+
+    | OR Brake Token  | Description     | Brake Systems   | Operation |
+    +-----------------+-----------------+-----------------+-----------+
+    | **RELEASE and RUNNING tokens**                                  |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | RELEASE or      | Air single pipe | Air       |
+    | Brakes |-|      | OVERCHARGE      |                 |           |
+    | Controller |-|  |                 | Air twin pipe   |           |
+    | Overcharge |-|  | Rapidly         |                 |           |
+    | Start           | releases air    | EP              |           |
+    |                 | brakes and      |                 |           |
+    |                 | charges air     |                 |           |
+    |                 | reservoirs.     |                 |           |
+    |                 |                 |                 |           |
+    |                 | Train brake     |                 |           |
+    |                 | pipe may be     |                 |           |
+    |                 | overcharged (up |                 |           |
+    |                 | to ORTS |-|     |                 |           |
+    |                 | Train |-|       |                 |           |
+    |                 | Brakes |-|      |                 |           |
+    |                 | Controller |-|  |                 |           |
+    |                 | Max |-|         |                 |           |
+    |                 | Overcharge |-|  |                 |           |
+    |                 | Pressure |-|    |                 |           |
+    |                 | and will        |                 |           |
+    |                 | gradually       |                 |           |
+    |                 | return to       |                 |           |
+    |                 | normal working  |                 |           |
+    |                 | pressure when   |                 |           |
+    |                 | the controller  |                 |           |
+    |                 | is moved to a   |                 |           |
+    |                 | release         |                 |           |
+    |                 | position (the   |                 |           |
+    |                 | rate will be    |                 |           |
+    |                 | determined by   |                 |           |
+    |                 | ORTS |-| Train  |                 |           |
+    |                 | Brakes |-|      |                 |           |
+    |                 | Controller |-|  |                 |           |
+    |                 | Overcharge |-|. |                 |           |
+    |                 | Elimination |-| |                 |           |
+    |                 | Rate            |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | RELEASE or      | Air single pipe | Air       |
+    | Brakes |-|      | QUICK RELEASE   |                 |           |
+    | Controller |-|  |                 | Air twin pipe   | EP        |
+    | Full |-| Quick  | Air brakes:     |                 |           |
+    | |-| Release |-| | Rapidly         | EP              | Vacuum    |
+    | Start           | releases air    |                 |           |
+    |                 | brakes and      | Vacuum single   |           |
+    |                 | charges air     | pipe            |           |
+    |                 | reservoirs,     |                 |           |
+    |                 | without         |                 |           |
+    |                 | overcharging    |                 |           |
+    |                 | the train pipe. |                 |           |
+    |                 |                 |                 |           |
+    |                 | EP brakes:      |                 |           |
+    |                 | Rapidly         |                 |           |
+    |                 | releases EP     |                 |           |
+    |                 | brakes.         |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | diesel and      |                 |           |
+    |                 | electric loco:  |                 |           |
+    |                 | Operates        |                 |           |
+    |                 | exhauster at    |                 |           |
+    |                 | fast speed.     |                 |           |
+    |                 | Rapidly         |                 |           |
+    |                 | releases vacuum |                 |           |
+    |                 | brakes and      |                 |           |
+    |                 | charges vacuum  |                 |           |
+    |                 | reservoirs.     |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | steam with      |                 |           |
+    |                 | combination     |                 |           |
+    |                 | ejector:        |                 |           |
+    |                 | Operates large  |                 |           |
+    |                 | ejector at full |                 |           |
+    |                 | power. Rapidly  |                 |           |
+    |                 | releases vacuum |                 |           |
+    |                 | brakes and      |                 |           |
+    |                 | charges vacuum  |                 |           |
+    |                 | reservoirs.     |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | steam with      |                 |           |
+    |                 | separate        |                 |           |
+    |                 | ejector:        |                 |           |
+    |                 | Connects brake  |                 |           |
+    |                 | pipe to         |                 |           |
+    |                 | ejector(s)      |                 |           |
+    |                 | and/or vacuum   |                 |           |
+    |                 | pump. Brakes    |                 |           |
+    |                 | may be released |                 |           |
+    |                 | by operating    |                 |           |
+    |                 | large or small  |                 |           |
+    |                 | ejector.        |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | RUNNING or      | Air single pipe | Air       |
+    | Brakes |-|      | RELEASE         |                 |           |
+    | Controller |-|  |                 | Air twin pipe   | EP        |
+    | Release |-|     | Air brakes:     |                 |           |
+    | Start           | Maintains       | EP              | Vacuum    |
+    |                 | working         |                 |           |
+    |                 | pressure in     | Vacuum single   |           |
+    |                 | train pipe.     | pipe            |           |
+    |                 | Slowly releases |                 |           |
+    |                 | brakes.         |                 |           |
+    |                 |                 |                 |           |
+    |                 | EP brakes:      |                 |           |
+    |                 | Releases        |                 |           |
+    |                 | brakes.         |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | diesel and      |                 |           |
+    |                 | electric loco:  |                 |           |
+    |                 | Connects brake  |                 |           |
+    |                 | pipe to         |                 |           |
+    |                 | exhauster.      |                 |           |
+    |                 | Maintains       |                 |           |
+    |                 | vacuum in train |                 |           |
+    |                 | pipe. Slowly    |                 |           |
+    |                 | releases        |                 |           |
+    |                 | brakes.         |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | steam with      |                 |           |
+    |                 | combination     |                 |           |
+    |                 | ejector:        |                 |           |
+    |                 | Operates large  |                 |           |
+    |                 | ejector at full |                 |           |
+    |                 | power. Rapidly  |                 |           |
+    |                 | releases vacuum |                 |           |
+    |                 | brakes and      |                 |           |
+    |                 | charges vacuum  |                 |           |
+    |                 | reservoirs.     |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | steam with      |                 |           |
+    |                 | separate        |                 |           |
+    |                 | ejector:        |                 |           |
+    |                 | Connects brake  |                 |           |
+    |                 | pipe to         |                 |           |
+    |                 | ejector(s)      |                 |           |
+    |                 | and/or vacuum   |                 |           |
+    |                 | pump. Brakes    |                 |           |
+    |                 | may be released |                 |           |
+    |                 | by operating    |                 |           |
+    |                 | large or small  |                 |           |
+    |                 | ejector.        |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | **LAP, HOLDING and NEUTRAL tokens**                             |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | LAP or RUNNING  | Air single pipe | Air       |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Air brakes:     | Air twin pipe   | EP        |
+    | Running |-|     | Train pipe      |                 |           |
+    | Start           | pressure is     | EP              | Vacuum    |
+    |                 | held at any     |                 |           |
+    |                 | pressure with   | Vacuum single   |           |
+    |                 | compensation    | pipe            |           |
+    |                 | for leakage.    |                 |           |
+    |                 |                 |                 |           |
+    |                 | EP brakes:      |                 |           |
+    |                 | Brake           |                 |           |
+    |                 | application is  |                 |           |
+    |                 | held at any     |                 |           |
+    |                 | value.          |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | diesel and      |                 |           |
+    |                 | electric loco:  |                 |           |
+    |                 | Train pipe      |                 |           |
+    |                 | vacuum is held  |                 |           |
+    |                 | at any value    |                 |           |
+    |                 | with            |                 |           |
+    |                 | compensation    |                 |           |
+    |                 | for leakage.    |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes – |                 |           |
+    |                 | steam with      |                 |           |
+    |                 | combination     |                 |           |
+    |                 | ejector:        |                 |           |
+    |                 | Connects brake  |                 |           |
+    |                 | pipe to small   |                 |           |
+    |                 | ejector and/or  |                 |           |
+    |                 | vacuum pump.    |                 |           |
+    |                 | Maintains       |                 |           |
+    |                 | vacuum. Brakes  |                 |           |
+    |                 | may be released |                 |           |
+    |                 | by operating    |                 |           |
+    |                 | small ejector.  |                 |           |
+    |                 |                 |                 |           |
+    |                 | (Vacuum brakes  |                 |           |
+    |                 | – steam with    |                 |           |
+    |                 | separate        |                 |           |
+    |                 | ejector:        |                 |           |
+    |                 | Connects brake  |                 |           |
+    |                 | pipe only to    |                 |           |
+    |                 | small ejector   |                 |           |
+    |                 | and/or vacuum   |                 |           |
+    |                 | pump.)          |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | LAP             | Air single pipe | Air       |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Air brakes:     | Air twin pipe   | EP        |
+    | Self |-| Lap    | Train pipe      |                 |           |
+    | |-| Start       | pressure is     | EP              | Vacuum    |
+    |                 | held at any     |                 |           |
+    |                 | pressure with   | Vacuum single   |           |
+    |                 | compensation    | pipe            |           |
+    |                 | for leakage.    |                 |           |
+    |                 |                 |                 |           |
+    |                 | EP brakes:      |                 |           |
+    |                 | Brake           |                 |           |
+    |                 | application is  |                 |           |
+    |                 | held at any     |                 |           |
+    |                 | value.          |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes:  |                 |           |
+    |                 | Train pipe      |                 |           |
+    |                 | vacuum is held  |                 |           |
+    |                 | with            |                 |           |
+    |                 | compensation    |                 |           |
+    |                 | for leakage.    |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | LAP – all brake | Air single pipe | Air       |
+    | Brakes |-|      | types held      |                 |           |
+    | Controller |-|  | without change  | Air twin pipe   | EP        |
+    | Hold |-| Start  | – legacy MSTS   |                 |           |
+    |                 | token           | EP              | Vacuum    |
+    |                 |                 |                 |           |
+    |                 |                 | Vacuum single   |           |
+    |                 |                 | pipe            |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train\ |-|\     | HOLD EP – EP    | EP              | EP        |
+    | Brakes\ |-|\    | brake setting   |                 |           |
+    | Controller\     | is held without |                 |           |
+    | |-|\ EP\ Hold   | influence on    |                 |           |
+    | |-|  Start      | train air pipe. |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | LAP or NEUTRAL  | Air single pipe | Air       |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Air brakes:     | Air twin pipe   | EP        |
+    | Hold |-| Lapped | Train pipe      |                 |           |
+    | |-| Start       | pressure is     | EP              | Vacuum    |
+    |                 | held without    |                 |           |
+    |                 | compensation    | Vacuum single   |           |
+    |                 | for leakage.    | pipe            |           |
+    |                 |                 |                 |           |
+    |                 | EP brakes:      |                 |           |
+    |                 | Brake           |                 |           |
+    |                 | application is  |                 |           |
+    |                 | held at any     |                 |           |
+    |                 | value.          |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes:  |                 |           |
+    |                 | Train pipe      |                 |           |
+    |                 | vacuum is held  |                 |           |
+    |                 | without         |                 |           |
+    |                 | compensation    |                 |           |
+    |                 | for leakage.    |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | LAP or NEUTRAL  | Air single pipe | Air       |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Air brakes:     | Air twin pipe   | EP        |
+    | Neutral |-|     | Train pipe      |                 |           |
+    | Handle |-| Off  | pressure is     | EP              | Vacuum    |
+    | |-| Start       | held without    |                 |           |
+    |                 | compensation    | Vacuum single   |           |
+    |                 | for leakage.    | pipe            |           |
+    |                 |                 |                 |           |
+    |                 | EP brakes:      |                 |           |
+    |                 | Brake           |                 |           |
+    |                 | application is  |                 |           |
+    |                 | held at any     |                 |           |
+    |                 | value.          |                 |           |
+    |                 |                 |                 |           |
+    |                 | Vacuum brakes:  |                 |           |
+    |                 | Train pipe      |                 |           |
+    |                 | vacuum is held  |                 |           |
+    |                 | without         |                 |           |
+    |                 | compensation    |                 |           |
+    |                 | for leakage.    |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | **SELF LAPPING APPLY tokens**                                   |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | INITIAL / FIRST | Air single pipe | Air       |
+    | Brakes |-|      | SERVICE         |                 |           |
+    | Controller |-|  |                 | Air twin pipe   | Vacuum    |
+    | Minimal |-|     | Notch. Train    |                 |           |
+    | Reduction |-|   | pipe pressure   | Vacuum single   |           |
+    | Start           | or vacuum is    | pipe            |           |
+    |                 | held at Minimum |                 |           |
+    |                 | Reduction       |                 |           |
+    |                 | value.          |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | INITIAL / FIRST | Air single pipe | Air       |
+    | Brakes |-|      | SERVICE << >>   |                 |           |
+    | Controller |-|  | FULL SERVICE    | Air twin pipe   |           |
+    | Graduated |-|   |                 |                 |           |
+    | Self |-| Lap    | Graduated       |                 |           |
+    | |-| Limited |-| | service         |                 |           |
+    | Start           | application and |                 |           |
+    |                 | release of air  |                 |           |
+    |                 | brakes only.    |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | INITIAL / FIRST | Air single pipe | Air       |
+    | Brakes |-|      | SERVICE >>>>    |                 |           |
+    | Controller |-|  | FULL SERVICE    | Air twin pipe   |           |
+    | Graduated |-|   |                 |                 |           |
+    | Self |-| Lap    | Graduated       |                 |           |
+    | |-| Limited |-| | service         |                 |           |
+    | Holding |-|     | application of  |                 |           |
+    | Start           | air brakes      |                 |           |
+    |                 | only. (Release  |                 |           |
+    |                 | is not          |                 |           |
+    |                 | graduable.)     |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | INITIAL / FIRST | Air single pipe | Air       |
+    | Brakes |-|      | SERVICE << >>   |                 |           |
+    | Controller |-|  | FULL SERVICE    | Air twin pipe   | EP        |
+    | EPApply |-|     |                 |                 |           |
+    | Start           | Graduated       | EP              |           |
+    |                 | service         |                 |           |
+    |                 | application and |                 |           |
+    |                 | release of air  |                 |           |
+    |                 | brakes and EP   |                 |           |
+    |                 | brakes.         |                 |           |
+    |                 |                 |                 |           |
+    |                 | Can be used for |                 |           |
+    |                 | notched         |                 |           |
+    |                 | controllers.    |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | INITIAL / FIRST | Air single pipe | Air       |
+    | Brakes |-|      | SERVICE >>>>    |                 |           |
+    | Controller |-|  | FULL SERVICE    | Air twin pipe   | EP        |
+    | Continuous |-|  |                 |                 |           |
+    | Service |-|     | Graduated       | EP              |           |
+    | Start           | service         |                 |           |
+    |                 | application of  |                 |           |
+    |                 | air brakes and  |                 |           |
+    |                 | EP brakes.      |                 |           |
+    |                 | (Release is not |                 |           |
+    |                 | graduable.)     |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | INITIAL / FIRST | EP              | EP        |
+    | Brakes |-|      | SERVICE << >>   |                 |           |
+    | Controller |-|  | FULL SERVICE    |                 |           |
+    | EPOnly |-|      |                 |                 |           |
+    | Start           | Graduated       |                 |           |
+    |                 | service         |                 |           |
+    |                 | application and |                 |           |
+    |                 | release of EP   |                 |           |
+    |                 | brakes only     |                 |           |
+    |                 | without         |                 |           |
+    |                 | reduction in    |                 |           |
+    |                 | air train pipe  |                 |           |
+    |                 | pressure.       |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | RUNNING << >>   | Vacuum single   | Vacuum    |
+    | Brakes |-|      | FULL SERVICE /  | pipe            |           |
+    | Controller |-|  | EMERGENCY       |                 |           |
+    | Vacuum |-|      |                 |                 |           |
+    | Continuous |-|  | Graduated       |                 |           |
+    | Service |-|     | application and |                 |           |
+    | Start           | release of      |                 |           |
+    |                 | vacuum brakes.  |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Dummy           | Train pipe      | Air single pipe | Air       |
+    |                 | pressure of     |                 |           |
+    |                 | vacuum can be   | Air twin pipe   | Vacuum    |
+    |                 | held at any     |                 |           |
+    |                 | value.          | Vacuum single   |           |
+    |                 |                 | pipe            |           |
+    |                 | Can be used for |                 |           |
+    |                 | notched         |                 |           |
+    |                 | controllers.    |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | **NON SELF LAPPING APPLY tokens**                               |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | FIRST SERVICE   | Air single pipe | Air       |
+    | Brakes |-|      | or SLOW APPLY   |                 |           |
+    | Controller |-|  |                 | Air twin pipe   | EP        |
+    | Slow |-|        | Notch. Train    |                 |           |
+    | Service |-|     | brakes are      | EP              |           |
+    | Start           | applied at a    |                 |           |
+    |                 | slow rate from  |                 |           |
+    |                 | minimal         |                 |           |
+    |                 | application     |                 |           |
+    |                 | until full      |                 |           |
+    |                 | service         |                 |           |
+    |                 | application.    |                 |           |
+    |                 | The rate is     |                 |           |
+    |                 | determined by   |                 |           |
+    |                 | ORTS |-| Train  |                 |           |
+    |                 | |-| Brakes |-|  |                 |           |
+    |                 | Controller |-|  |                 |           |
+    |                 | Slow |-|        |                 |           |
+    |                 | Application |-| |                 |           |
+    |                 | Rate in the     |                 |           |
+    |                 | .eng file.      |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | APPLY           | Air single pipe | Air       |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Notch. Train    | Air twin pipe   | EP        |
+    | Full |-|        | brakes are      |                 |           |
+    | Service |-|     | applied at the  | EP              |           |
+    | Start           | normal service  |                 |           |
+    |                 | rate from       |                 |           |
+    |                 | minimal         |                 |           |
+    |                 | application     |                 |           |
+    |                 | until full      |                 |           |
+    |                 | service         |                 |           |
+    |                 | application.    |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | EP APPLY        | EP              | EP        |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Notch. EP       |                 |           |
+    | EP |-| Full |-| | brakes are      |                 |           |
+    | Service |-|     | applied at the  |                 |           |
+    | Start           | normal service  |                 |           |
+    |                 | rate without    |                 |           |
+    |                 | reduction in    |                 |           |
+    |                 | air train pipe  |                 |           |
+    |                 | pressure.       |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | APPLY           | Air single pipe | Air       |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Notch. Train    | Air twin pipe   | EP        |
+    | Apply |-| Start | brakes are      |                 |           |
+    |                 | applied at the  | EP              | Vacuum    |
+    |                 | normal service  |                 |           |
+    |                 | rate from       | Vacuum single   |           |
+    |                 | minimal         | pipe            |           |
+    |                 | application     |                 |           |
+    |                 | until emergency |                 |           |
+    |                 | application.    |                 |           |
+    |                 |                 |                 |           |
+    |                 | (Vacuum brakes  |                 |           |
+    |                 | – steam: MSTS   |                 |           |
+    |                 | legacy          |                 |           |
+    |                 | controller is   |                 |           |
+    |                 | now replaced by |                 |           |
+    |                 | Train |-|       |                 |           |
+    |                 | Brakes |-|      |                 |           |
+    |                 | Controller |-|  |                 |           |
+    |                 | Vaccuum |-|     |                 |           |
+    |                 | Apply |-|       |                 |           |
+    |                 | Continuous |-|  |                 |           |
+    |                 | Service |-|     |                 |           |
+    |                 | Start)          |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | APPLY           | Vacuum single   | Vacuum    |
+    | Brakes |-|      |                 | pipe            |           |
+    | Controller |-|  | Range. The rate |                 |           |
+    | Vacuum |-|      | of the brake    |                 |           |
+    | Apply |-|       | application is  |                 |           |
+    | Continuous |-|  | determined by   |                 |           |
+    | ServiceStart    | the position of |                 |           |
+    |                 | the valve.      |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | EMERGENCY       | Air single pipe | Air       |
+    | Brakes |-|      |                 |                 |           |
+    | Controller |-|  | Notch. Makes a  | Air twin pipe   | EP        |
+    | Emergency |-|   | full emergency  |                 |           |
+    | Start           | application of  | EP              | Vacuum    |
+    |                 | brakes at the   |                 |           |
+    |                 | fastest         | Vacuum single   |           |
+    |                 | possible rate.  | pipe            |           |
+    +-----------------+-----------------+-----------------+-----------+
+    | **OTHER train brake controller tokens**                         |
+    +-----------------+-----------------+-----------------+-----------+
+    | Train |-|       | Cancels effect  | Air single pipe | Air       |
+    | Brakes |-|      | of penalty      |                 |           |
+    | Controller |-|  | brake           | Air twin pipe   | EP        |
+    | Suppression |-| | application by  |                 |           |
+    | Start           | TCS and         | EP              |           |
+    |                 | restores        |                 |           |
+    |                 | control of      |                 |           |
+    |                 | brakes to       |                 |           |
+    |                 | driver.         |                 |           |
+    +-----------------+-----------------+-----------------+-----------+
 
 .. _physics-hud-brake:
 
@@ -2294,6 +2774,7 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
    single: ORTSEngineBrakeReleaseRate
    single: ORTSEngineBrakeApplicationRate
    single: ORTSBrakePipeChargingRate
+   single: ORTSBrakePipeQuickChargingRate
    single: ORTSBrakeServiceTimeFactor
    single: ORTSBrakeEmergencyTimeFactor
    single: ORTSBrakePipeTimeFactor
@@ -2320,6 +2801,9 @@ MaxAuxilaryChargingRate and EmergencyResChargingRate.
   (default 12.5).
 - ``Engine(ORTSBrakePipeChargingRate`` -- Rate of lead engine brake pipe
   pressure increase in PSI per second (default 21).
+- ``Engine(ORTSBrakePipeQuickChargingRate`` -- Rate of lead engine brake pipe
+  pressure increase in PSI per second during a quick release (by default
+  will be equal to ORTSBrakePipeChargingRate).
 - ``Engine(ORTSBrakeServiceTimeFactor`` -- Time in seconds for lead engine
   brake pipe pressure to drop to about 1/3 for service application
   (default 1.009).
