@@ -5109,10 +5109,11 @@ namespace Orts.Simulation.RollingStocks
                 SteamEjectorSmallPressurePSI = BoilerPressurePSI * SteamEjectorSmallSetting;
                 // Steam consumption for small ejector is assumed to be @ 120 psi steam pressure, therefore pressure will vary up and down from this reference figure.
                 float TempSteamPressure = SteamEjectorSmallPressurePSI / 120.0f;
-                TempEjectorSmallSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * TempSteamPressure;
+                TempEjectorSmallSteamConsumptionLbpS = 0;
 
                 if (SteamEjectorSmallSetting > 0.1f && SmallEjectorFitted) // Test to see if small steam ejector is on, provided a small ejector is fitted
                 {
+                    TempEjectorSmallSteamConsumptionLbpS = EjectorSmallSteamConsumptionLbpS * TempSteamPressure;
                     SmallSteamEjectorIsOn = true;
                     // calculate small ejector fraction (maximum of the ratio of steam consumption for small and large ejector of train pipe charging rate - 
                     //assumes consumption rates have been set correctly to relative sizes) to be used in vacuum brakes 
