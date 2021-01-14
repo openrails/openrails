@@ -251,8 +251,8 @@ namespace Orts.Viewer3D
             {
                 var ux2 = (int)((x + 2048 * (tile.TileX - otherTile.TileX)) / otherTile.SampleSize);
                 var uz2 = -(int)((z + 2048 * (tile.TileZ - otherTile.TileZ - otherTile.Size)) / otherTile.SampleSize);
-                ux2 = ux2 <= otherTile.SampleCount - 1 ? ux2 : otherTile.SampleCount - 1;
-                uz2 = uz2 <= otherTile.SampleCount - 1 ? uz2 : otherTile.SampleCount - 1;
+                ux2 = Math.Min(ux2, otherTile.SampleCount - 1);
+                uz2 = Math.Min(uz2, otherTile.SampleCount - 1);
                 return otherTile.GetElevation(ux2, uz2);
             }
 
@@ -408,4 +408,3 @@ namespace Orts.Viewer3D
         }
     }
 }
-
