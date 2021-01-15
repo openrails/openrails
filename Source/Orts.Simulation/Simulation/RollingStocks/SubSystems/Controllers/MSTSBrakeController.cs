@@ -117,11 +117,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         case ControllerState.Overcharge:
                             IncreasePressure(ref pressureBar, Math.Min(MaxOverchargePressureBar(), MainReservoirPressureBar()), QuickReleaseRateBarpS(), elapsedClockSeconds);
                             break;
+                        case ControllerState.StrBrkApplyOn:
                         case ControllerState.Apply:
                         case ControllerState.FullServ:
                             if (notch.Type == ControllerState.FullServ)
                                 epState = x;
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
+                            break;
+                       case ControllerState.StrBrkApplyOff:
+                           // This position is an off position so pressure will be zero
+                            pressureBar = 0;
                             break;
                         case ControllerState.Lap:
                             // Lap position applies min service reduction when first selected, and previous contoller position was Running, then no change in pressure occurs 

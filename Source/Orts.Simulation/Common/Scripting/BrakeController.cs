@@ -225,6 +225,8 @@ namespace ORTS.Scripting.Api
         VacContServ,         // TrainBrakesControllerVacuumContinuousServiceStart
         VacApplyContServ,    // TrainBrakesControllerVacuumApplyContinuousServiceStart
         ManualBraking,        // BrakemanBrakesControllerManualBraking
+        StrBrkApplyOn,        // TrainBrakesControllerStraightBrakingApplyOnStart
+        StrBrkApplyOff,         // TrainBrakesControllerStraightBrakingApplyOffStart
         BrakeNotch           // EngineBrakesControllerBrakeNotchStart
     };
 
@@ -258,6 +260,8 @@ namespace ORTS.Scripting.Api
             {ControllerState.VacContServ, Catalog.GetString("Vac. Cont. Service")},
             {ControllerState.VacApplyContServ, Catalog.GetString("Vac. Apply Cont. Service")},
             {ControllerState.ManualBraking, Catalog.GetString("Manual Braking")},
+            {ControllerState.StrBrkApplyOn, Catalog.GetString("Str. Brk. Apply On")},
+            {ControllerState.StrBrkApplyOff, Catalog.GetString("Str. Brk. Apply Off")},
             {ControllerState.BrakeNotch, Catalog.GetString("Notch")}
         };
     }

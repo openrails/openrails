@@ -63,6 +63,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "vacuumcontinuousservicestart": Type = ControllerState.VacContServ; break;
                 case "vacuumapplycontinuousservicestart": Type = ControllerState.VacApplyContServ; break;
                 case "manualbrakingstart": Type = ControllerState.ManualBraking; break;
+                case "straightbrakingapplyonstart":Type = ControllerState.StrBrkApplyOn; break;
+                case "straightbrakingapplyoffstart": Type = ControllerState.StrBrkApplyOff; break;
                 case "brakenotchstart": Type = ControllerState.BrakeNotch; break;
                 case "overchargestart": Type = ControllerState.Overcharge; break;
                 default:
