@@ -124,6 +124,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             if (pressureBar > MaxPressureBar() - MinReductionBar()) pressureBar = MaxPressureBar() - MinReductionBar();
                             DecreasePressure(ref pressureBar, MaxPressureBar() - FullServReductionBar(), SlowApplicationRateBarpS(), elapsedClockSeconds);
                             break;
+                       case ControllerState.StrBrkApplyOn:
+                            // This position is an on position so pressure will be zero (reversed due to vacuum brake operation)
+                            pressureBar = 0;
+                            break;
+                        case ControllerState.StrBrkApplyOff: //(reversed due to vacuum brake operation)
                         case ControllerState.Apply:
                             pressureBar -= x * ApplyRateBarpS() * elapsedClockSeconds;
                             break;

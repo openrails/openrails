@@ -238,6 +238,11 @@ namespace Orts.Simulation.RollingStocks
         public bool ManualBrakePresent;
 
         /// <summary>
+        /// Indicates whether a non auto (straight) brake is present or not when braking is selected.
+        /// </summary>
+        public bool NonAutoBrakePresent;
+
+        /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
         /// </summary>
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
