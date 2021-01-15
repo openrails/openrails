@@ -152,14 +152,27 @@ namespace ORTS
                             break;
                     }
 
-                    var processStartInfo = new System.Diagnostics.ProcessStartInfo();
-                    processStartInfo.FileName = MainForm.RunActivityProgram;
-                    processStartInfo.Arguments = String.Join(" ", parameters.ToArray());
-                    processStartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Normal;
-                    processStartInfo.WorkingDirectory = Application.StartupPath;
-
-                    var process = Process.Start(processStartInfo);
-                    process.WaitForExit();
+                    var joinedParameters = string.Join(" ", parameters);
+                    if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
+                    {
+                        Clipboard.SetText(joinedParameters);
+                        MessageBox.Show(
+                            "RunActivity.exe arguments have been copied to the clipboard:" +
+                            $"\n\n{joinedParameters}\n\n" +
+                            "This is a debugging aid. If you wanted to start the simulator instead, select Start without holding down the Alt key.");
+                    }
+                    else
+                    {
+                        var processStartInfo = new ProcessStartInfo()
+                        {
+                            FileName = MainForm.RunActivityProgram,
+                            Arguments = joinedParameters,
+                            WindowStyle = ProcessWindowStyle.Normal,
+                            WorkingDirectory = Application.StartupPath,
+                        };
+                        var process = Process.Start(processStartInfo);
+                        process.WaitForExit();
+                    }
                 }
             }
         }
