@@ -189,6 +189,7 @@
     <Compile Include="Viewer3D\Weather.cs" />
     <Compile Include="Viewer3D\WebServices\TrackMonitorDisplay.cs" />
     <Compile Include="Viewer3D\WebServices\TrainDrivingDisplay.cs" />
+    <Compile Include="Viewer3D\WebServices\TrainInfo.cs" />
     <Compile Include="Viewer3D\WebServices\WebServer.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\World.cs" />
