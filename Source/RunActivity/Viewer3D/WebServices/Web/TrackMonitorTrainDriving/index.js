@@ -84,7 +84,7 @@ async function ApiTrackMonitor() {
 	const codeColor = ['???', '??!', '?!?', '?!!', '!??', '!!?', '!!!', '%%%', '%$$', '%%$', '$%$', '$$$'];
 
 	//controlMode
-	const controlMode = modes[tnInfo.ControlMode];
+	const controlMode = tnInfo.ControlMode;
 
 	// Table title
 	Str += "<tr> <td colspan='9' style='text-align: center'>" + 'Track Monitor' + "</td></tr>";
