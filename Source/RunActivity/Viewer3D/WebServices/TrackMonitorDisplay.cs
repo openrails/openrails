@@ -1054,7 +1054,7 @@ namespace Orts.Viewer3D.WebServices
             {
                 while (labels.Count < index)
                 {
-                    ListLabel empty = new ListLabel();
+                    var empty = new ListLabel();
                     CheckLabel(ref empty);
                     labels.Add(empty);
                 }
