@@ -724,22 +724,44 @@ namespace Orts.Viewer3D.Popups
             // Different display depending upon whether vacuum braked, manual braked or air braked
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
             {
-                TableSetCells(table, 0,
-                                Viewer.Catalog.GetString("Car"),
-                                Viewer.Catalog.GetString("Type"),
-                                Viewer.Catalog.GetString("BrkCyl"),
-                                Viewer.Catalog.GetString("BrkPipe"),
-                                Viewer.Catalog.GetString("VacRes"),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString("Handbrk"),
-                                Viewer.Catalog.GetString("Conn"),
-                                Viewer.Catalog.GetString("AnglCock")
-                                );
-                TableAddLine(table);
+                if ((Viewer.PlayerLocomotive as MSTSLocomotive).NonAutoBrakePresent) // Straight brake system
+                {
+                    TableSetCells(table, 0,
+                    Viewer.Catalog.GetString("Car"),
+                    Viewer.Catalog.GetString("Type"),
+                    Viewer.Catalog.GetString("BrkCyl"),
+                    Viewer.Catalog.GetString("BrkPipe"),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString("Handbrk"),
+                    Viewer.Catalog.GetString("Conn"),
+                    Viewer.Catalog.GetString("AnglCock")
+                                                                                                );
+                    TableAddLine(table);
+                }
+                else // automatic vacuum brake system
+                {
+                    TableSetCells(table, 0,
+                    Viewer.Catalog.GetString("Car"),
+                    Viewer.Catalog.GetString("Type"),
+                    Viewer.Catalog.GetString("BrkCyl"),
+                    Viewer.Catalog.GetString("BrkPipe"),
+                    Viewer.Catalog.GetString("VacRes"),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString("Handbrk"),
+                    Viewer.Catalog.GetString("Conn"),
+                    Viewer.Catalog.GetString("AnglCock")
+                                                                                                );
+                    TableAddLine(table);
+                }
 
                 var n = train.Cars.Count; // Number of lines to show
                 for (var i = 0; i < n; i++)
