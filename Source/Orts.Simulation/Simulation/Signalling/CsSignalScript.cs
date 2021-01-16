@@ -118,6 +118,7 @@ namespace Orts.Simulation.Signalling
         }
         public bool TrainHasCallOn(bool allowOnNonePlatform = true, bool allowAdvancedSignal = false)
         {
+            SignalObject.CallOnEnabled = true;
             return SignalObject.TrainHasCallOn(allowOnNonePlatform, allowAdvancedSignal, DebugFileName);
         }
         public bool TrainRequiresSignal(int signalId, float reqPositionM)
