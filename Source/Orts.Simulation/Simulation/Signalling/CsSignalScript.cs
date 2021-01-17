@@ -1,7 +1,6 @@
 ﻿using Orts.Formats.Msts;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Orts.Simulation.Signalling
 {
@@ -16,23 +15,81 @@ namespace Orts.Simulation.Signalling
         private SignalObject SignalObjectById(int id) => SignalObject.signalRef.SignalObjects[id];
 
         // Public interface
+        /// <summary>
+        /// File name where debugging information provided by signalling functions will be inserted
+        /// </summary>
         public string DebugFileName = String.Empty;
+        /// <summary>
+        /// Represents one of the eight aspects used for display purposes, AI traffic and SIGSCR signalling
+        /// </summary>
         public MstsSignalAspect MstsSignalAspect { get => SignalHead.state; protected set => SignalHead.state = value; }
+        /// <summary>
+        /// Custom aspect of the signal
+        /// </summary>
         public string TextSignalAspect { get => SignalHead.TextSignalAspect; protected set => SignalHead.TextSignalAspect = value; }
+        /// <summary>
+        /// Draw State that the signal object will show (i. e. active lights and semaphore position)
+        /// </summary>
         public int DrawState { get => SignalHead.draw_state; protected set => SignalHead.draw_state = value; }
+        /// <summary>
+        /// True if a train is approaching the signal
+        /// </summary>
         public bool Enabled => SignalObject.enabled;
-        public float? ApproachControlRequiredPosition => SignalHead.ApproachControlLimitPositionM.Value;
-        public float? ApproachControlRequiredSpeed => SignalHead.ApproachControlLimitSpeedMpS.Value;
+        /// <summary>
+        /// Distance at which the signal will be cleared during approach control
+        /// </summary>
+        public float? ApproachControlRequiredPosition => SignalHead.ApproachControlLimitPositionM;
+        /// <summary>
+        /// Maximum train speed at which the signal will be cleared during approach control
+        /// </summary>
+        public float? ApproachControlRequiredSpeed => SignalHead.ApproachControlLimitSpeedMpS;
+        /// <summary>
+        /// Occupation and reservation state of the signal's route
+        /// </summary>
         public MstsBlockState BlockState => SignalObject.block_state();
+        /// <summary>
+        /// True if the signal link is activated
+        /// </summary>
         public bool RouteSet => SignalHead.route_set() > 0;
+        /// <summary>
+        /// Set this variable to true to allow clear to partial route
+        /// </summary>
         public bool AllowClearPartialRoute { set { SignalObject.AllowClearPartialRoute(value ? 1 : 0); } }
+        /// <summary>
+        /// Number of signals to clear ahead of this signal
+        /// </summary>
         public int SignalNumClearAhead { get { return SignalObject.SignalNumClearAheadActive; } set { SignalObject.SetSignalNumClearAhead(value); } }
+        /// <summary>
+        /// Default draw state of the signal for a specific aspect
+        /// </summary>
+        /// <param name="signalAspect">Aspect for which the default draw state must be found</param>
+        /// <returns></returns>
         public int DefaultDrawState(MstsSignalAspect signalAspect) => SignalHead.def_draw_state(signalAspect);
+        /// <summary>
+        /// Index of the draw state with the specified name
+        /// </summary>
+        /// <param name="name">Name of the draw state as defined in sigcfg</param>
+        /// <returns>The index of the draw state, -1 if no one exist with that name</returns>
         public int GetDrawState(string name) => SignalHead.signalType.DrawStates.ContainsKey(name) ? SignalHead.signalType.DrawStates[name].Index : -1;
+        /// <summary>
+        /// Signal identity of this signal
+        /// </summary>
         public int SignalId => SignalObject.thisRef;
+        /// <summary>
+        /// Name of this signal type, as defined in sigcfg
+        /// </summary>
         public string SignalTypeName => SignalHead.SignalTypeName;
+        /// <summary>
+        /// Local storage of this signal, which can be accessed from other signals
+        /// </summary>
         public Dictionary<int, int> SharedVariables => SignalObject.localStorage;
+        /// <summary>
+        /// Current time in seconds
+        /// </summary>
         public float ClockTimeS => (float)SignalObject.signalRef.Simulator.GameTime;
+        /// <summary>
+        /// Represents a timer which can be started and stopped several times, with a configurable trigger value
+        /// </summary>
         public class Timer
         {
             float EndValue;
@@ -52,6 +109,11 @@ namespace Orts.Simulation.Signalling
         public CsSignalScript()
         {
         }
+        /// <summary>
+        /// Sends a message to the specified signal
+        /// </summary>
+        /// <param name="signalId">Id of the signal to which the message shall be sent</param>
+        /// <param name="message">Message to send</param>
         public void SendSignalMessage(int signalId, string message)
         {
             if (signalId < 0 || signalId > SignalObject.signalRef.SignalObjects.Length) return;
@@ -60,32 +122,69 @@ namespace Orts.Simulation.Signalling
                 head.usedCsSignalScript?.HandleSignalMessage(SignalObject.thisRef, message);
             }
         }
+        /// <summary>
+        /// Check if this signal has a specific feature
+        /// </summary>
+        /// <param name="signalFeature">Name of the requested feature</param>
+        /// <returns></returns>
         public bool IsSignalFeatureEnabled(string signalFeature)
         {
             int signalFeatureIndex = SignalShape.SignalSubObj.SignalSubTypes.IndexOf(signalFeature);
 
             return SignalHead.sig_feature(signalFeatureIndex);
         }
+        /// <summary>
+        /// Checks if the signal has a specific head
+        /// </summary>
+        /// <param name="requiredHeadIndex">Index of the required head</param>
+        /// <returns>True if the required head is present</returns>
         public bool HasHead(int requiredHeadIndex)
         {
             return SignalObject.HasHead(requiredHeadIndex) == 1;
         }
+        /// <summary>
+        /// Get id of next signal
+        /// </summary>
+        /// <param name="sigfn">Signal function of the required signal</param>
+        /// <param name="count">Get id of nth signal (first is 0)</param>
+        /// <returns>Id of required signal</returns>
         public int NextSignalId(string sigfn, int count = 0)
         {
             return SignalObject.next_nsig_id(SigFnIndex(sigfn), count + 1);
         }
+        /// <summary>
+        /// Get id of opposite signal
+        /// </summary>
+        /// <param name="sigfn">Signal function of the required signal</param>
+        /// <returns></returns>
         public int OppositeSignalId(string sigfn)
         {
             return SignalObject.opp_sig_id(SigFnIndex(sigfn));
         }
+        /// <summary>
+        /// Find next normal signal of a specific subtype
+        /// </summary>
+        /// <param name="normalSubtype">Required normal subtype</param>
+        /// <returns>Id of required signal</returns>
         public int RequiredNormalSignalId(string normalSubtype)
         {
             return SignalObject.FindReqNormalSignal(SignalObject.signalRef.ORTSNormalsubtypes.IndexOf(normalSubtype), DebugFileName);
         }
+        /// <summary>
+        /// Check if required signal has a normal subtype
+        /// </summary>
+        /// <param name="id">Id of the signal</param>
+        /// <param name="normalSubtype">Normal subtype to test</param>
         public bool IdSignalHasNormalSubtype(int id, string normalSubtype)
         {
             return SignalHead.id_sig_hasnormalsubtype(id, SignalObject.signalRef.ORTSNormalsubtypes.IndexOf(normalSubtype)) == 1;
         }
+        /// <summary>
+        /// Get the text aspect of a specific signal
+        /// </summary>
+        /// <param name="id">Id of the signal to query</param>
+        /// <param name="sigfn">Consider only heads with a specific signal function</param>
+        /// <param name="headindex">Get aspect of nth head of the specified type</param>
         public string IdTextSignalAspect(int id, string sigfn, int headindex=0)
         {
             if (id < 0 || id > SignalObject.signalRef.SignalObjects.Length) return String.Empty;
@@ -99,52 +198,125 @@ namespace Orts.Simulation.Signalling
             }
             return String.Empty;
         }
+        /// <summary>
+        /// Obtains the most restrictive aspect of the signals of type A up to the first signal of type B
+        /// </summary>
+        /// <param name="sigfnA">Signals to search</param>
+        /// <param name="sigfnB">Signal type where search is stopped</param>
+        /// <param name="mostRestrictiveHead">Check most restrictive head per signal</param>
         public MstsSignalAspect DistMultiSigMR(string sigfnA, string sigfnB, bool mostRestrictiveHead = true)
         {
             if(mostRestrictiveHead) return SignalHead.dist_multi_sig_mr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
             return SignalHead.dist_multi_sig_mr_of_lr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
         }
-        public MstsSignalAspect IdSignalAspect(int id, string sigfn, bool mostRestrictive = false)
+        /// <summary>
+        /// Get aspect of required signal
+        /// </summary>
+        /// <param name="id">Id of required signal</param>
+        /// <param name="sigfn">Function of the signal heads to consider</param>
+        /// <param name="mostRestrictive">Get most restrictive instead of least restrictive</param>
+        /// <param name="checkRouting">If looking for most restrictive aspect, consider only heads with the route link activated</param>
+        public MstsSignalAspect IdSignalAspect(int id, string sigfn, bool mostRestrictive = false, bool checkRouting = false)
         {
-            return SignalHead.id_sig_lr(id, SigFnIndex(sigfn));
+            if (!mostRestrictive) return SignalHead.id_sig_lr(id, SigFnIndex(sigfn));
+            else if (id >= 0 && id < SignalObject.signalRef.SignalObjects.Length)
+            {
+                var signal = SignalObjectById(id);
+                if (checkRouting) return signal.this_sig_mr_routed(SigFnIndex(sigfn), DebugFileName);
+                else return signal.this_sig_mr(SigFnIndex(sigfn));
+            }
+            return MstsSignalAspect.STOP;
         }
+        /// <summary>
+        /// Get local variable of the required signal
+        /// </summary>
+        /// <param name="id">Id of the signal to get local variable from</param>
+        /// <param name="key">Key of the variable</param>
+        /// <returns>The value of the required variable</returns>
         public int IdSignalLocalVariable(int id, int key)
         {
             return SignalHead.id_sig_lvar(id, key);
         }
+        /// <summary>
+        /// Check if signal is enabled
+        /// </summary>
+        /// <param name="id">Id of the signal to check</param>
         public bool IdSignalEnabled(int id)
         {
             return SignalHead.id_sig_enabled(id) > 0;
         }
+        /// <summary>
+        /// Check if train has 'call on' set
+        /// </summary>
+        /// <param name="allowOnNonePlatform">Allow Call On without platform</param>
+        /// <param name="allowAdvancedSignal">Allow Call On even if this is not first signal for train</param>
+        /// <returns>True if train is allowed to call on with the required parameters, false otherwise</returns>
         public bool TrainHasCallOn(bool allowOnNonePlatform = true, bool allowAdvancedSignal = false)
         {
             SignalObject.CallOnEnabled = true;
             return SignalObject.TrainHasCallOn(allowOnNonePlatform, allowAdvancedSignal, DebugFileName);
         }
-        public bool TrainRequiresSignal(int signalId, float reqPositionM)
+        /// <summary>
+        /// Test if train requires next signal
+        /// </summary>
+        /// <param name="signalId">Id of the signal to be tested</param>
+        /// <param name="reqPosition">1 if next track circuit after required signal is checked, 0 if not</param>
+        public bool TrainRequiresSignal(int signalId, int reqPosition)
         {
-            return SignalObject.RequiresNextSignal(signalId, (int)reqPositionM, DebugFileName);
+            return SignalObject.RequiresNextSignal(signalId, reqPosition, DebugFileName);
         }
+        /// <summary>
+        /// Checks if train is closer than required position from the signal
+        /// </summary>
+        /// <param name="reqPositionM">Maximum distance to activate approach control</param>
+        /// <param name="forced">Activate approach control even if this is not the first signal for the train</param>
+        /// <returns>True if approach control is set</returns>
         public bool ApproachControlPosition(float reqPositionM, bool forced = false)
         {
             return SignalObject.ApproachControlPosition((int)reqPositionM, DebugFileName, forced);
         }
+        /// <summary>
+        /// Checks if train is closer than required distance to the signal, and if it is running at lower speed than specified
+        /// </summary>
+        /// <param name="reqPositionM">Maximum distance to activate approach control</param>
+        /// <param name="reqSpeedMpS">Maximum speed at which approach control will be set</param>
+        /// <returns>True if the conditions are fulfilled, false otherwise</returns>
         public bool ApproachControlSpeed(float reqPositionM, float reqSpeedMpS)
         {
             return SignalObject.ApproachControlSpeed((int)reqPositionM, (int)reqSpeedMpS, DebugFileName);
         }
+        /// <summary>
+        /// Checks if train is closer than required distance to the signal, and if it is running at lower speed than specified,
+        /// in case of APC in next STOP
+        /// </summary>
+        /// <param name="reqPositionM">Maximum distance to activate approach control</param>
+        /// <param name="reqSpeedMpS">Maximum speed at which approach control will be set</param>
+        /// <returns>True if the conditions are fulfilled, false otherwise</returns>
         public bool ApproachControlNextStop(float reqPositionM, float reqSpeedMpS)
         {
             return SignalObject.ApproachControlNextStop((int)reqPositionM, (int)reqSpeedMpS, DebugFileName);
         }
+        /// <summary>
+        /// Lock claim (only if approach control is active)
+        /// </summary>
         public void ApproachControlLockClaim()
         {
             SignalObject.LockClaim();
         }
+        /// <summary>
+        /// Checks if the route is cleared up to the required signal
+        /// </summary>
+        /// <param name="signalId">Id of the signal where check is stopped</param>
+        /// <param name="allowCallOn">Consider route as cleared if train has call on</param>
+        /// <returns>The state of the route from this signal to the required signal</returns>
         public MstsBlockState RouteClearedToSignal(int signalId, bool allowCallOn = false)
         {
             return SignalObject.RouteClearedToSignal(signalId, allowCallOn, DebugFileName);
         }
+
+        /// <summary>
+        /// Internally called to assign this instance to a signal head
+        /// </summary>
         internal void AttachToHead(SignalHead signalHead)
         {
             SignalHead = signalHead;

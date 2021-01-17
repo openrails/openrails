@@ -18,13 +18,14 @@
 // #define DEBUG_MULTIPLAYER
 // DEBUG flag for debug prints
 
+using Event = Orts.Common.Event;
+using Orts.Common;
 using Orts.Formats.Msts;
 using Orts.Simulation;
 using Orts.Simulation.Physics;
 using Orts.Simulation.RollingStocks;
 using Orts.Simulation.Signalling;
 using ORTS.Common;
-using Orts.Common;
 using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,6 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using Event = Orts.Common.Event;
 using System.Text;
 
 namespace Orts.MultiPlayer
