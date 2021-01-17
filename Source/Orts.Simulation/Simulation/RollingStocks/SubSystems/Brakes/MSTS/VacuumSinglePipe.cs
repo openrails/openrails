@@ -53,6 +53,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         float DirectAdmissionValve = 0.0f;
         protected float MaxReleaseRatePSIpS = 2.5f;
         protected float MaxApplicationRatePSIpS = 2.5f;
+        protected float LargeEjectorChargingRate;
         bool TrainBrakePressureChanging = false;
         bool BrakePipePressureChanging = false;
         int SoundTriggerCounter = 0;
@@ -735,6 +736,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 AdjbrakePipeTimeFactorS = TempbrakePipeTimeMultFactor * brakePipeTimeFactorS;
                 AdjBrakePipeDischargeTimeFactor = TempbrakePipeTimeMultFactor * lead.BrakePipeDischargeTimeFactor;
 
+     
                 // This section determines whether small ejector or vacuum pump is going to counteract brake pipe leakage - only applies to steam locomotives
 
                 if (lead.EngineType == TrainCar.EngineTypes.Steam)
