@@ -1354,7 +1354,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     
                 }
-                else if (TrainBrakeController.MaxPressurePSI < 10 || TrainBrakeController.MaxPressurePSI > 13) // Outside an acceptable range, then convert to a fixed default
+                else if (TrainBrakeController.MaxPressurePSI < 7 || TrainBrakeController.MaxPressurePSI > 13) // Outside an acceptable range (Eqiv = 15InHg to 25InHg), then convert to a fixed default
                 {
                     if (Simulator.Settings.VerboseConfigurationMessages)
                     {
