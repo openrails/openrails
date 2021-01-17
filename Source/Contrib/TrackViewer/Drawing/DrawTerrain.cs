@@ -401,8 +401,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             UpdateCamera(drawArea);
 
-            device.SamplerStates[0].AddressU = TextureAddressMode.Wrap;
-            device.SamplerStates[0].AddressV = TextureAddressMode.Wrap;
+            device.SamplerStates[0] = SamplerState.LinearWrap;
 
             foreach (string textureName in vertexBuffers.Keys)
             {
@@ -981,7 +980,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             int width = renderTarget.Width;
             int height = renderTarget.Height;
-            var scaledTexture = new Texture2D(device, width, height, true, SurfaceFormat.Color);
+            var scaledTexture = new Texture2D(device, width, height, mipmap: false, SurfaceFormat.Color);
             Color[] data = GetColorDataArray(width * height);
             renderTarget.GetData<Color>(data);
             scaledTexture.SetData(data);
