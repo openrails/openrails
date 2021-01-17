@@ -223,6 +223,9 @@
     <Content Include="Content\DriverMachineInterfaceShader.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\ETCS\ETCS_DMI_symbols_credit.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\ETCS\mipmap-2\NA_01.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

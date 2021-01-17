@@ -90,8 +90,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             Viewer = viewer;
             Locomotive = locomotive;
             Scale = Math.Min(width / Width, height / Height);
-            /*if (Scale < 0.5) */MipMapScale = 2;
-            //else MipMapScale = 1;
+            if (Scale < 0.5) MipMapScale = 2;
+            else MipMapScale = 1;
             GaugeOnly = control is CVCDigital;
 
             Shader = new DriverMachineInterfaceShader(Viewer.GraphicsDevice);
@@ -141,8 +141,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (Math.Abs(1f - PrevScale / Scale) > 0.1f)
             {
                 PrevScale = Scale;
-                /*if (Scale < 0.5) */MipMapScale = 2;
-                /*else MipMapScale = 1;*/
+                if (Scale < 0.5) MipMapScale = 2;
+                else MipMapScale = 1;
                 foreach (var area in Windows)
                 {
                     area.ScaleChanged();
