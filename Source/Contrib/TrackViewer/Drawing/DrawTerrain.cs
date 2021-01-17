@@ -85,11 +85,6 @@ namespace ORTS.TrackViewer.Drawing
         //basic graphics
         private GraphicsDevice device;
         private BasicEffect basicEffect;
-        private static readonly SamplerState samplerState = new SamplerState
-        {
-            AddressU = TextureAddressMode.Wrap,
-            AddressV = TextureAddressMode.Wrap,
-        };
 
         //Managin textures
         private TerrainTextureManager textureManager;
@@ -406,7 +401,7 @@ namespace ORTS.TrackViewer.Drawing
         {
             UpdateCamera(drawArea);
 
-            device.SamplerStates[0] = samplerState;
+            device.SamplerStates[0] = SamplerState.LinearWrap;
 
             foreach (string textureName in vertexBuffers.Keys)
             {
