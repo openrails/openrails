@@ -3741,7 +3741,7 @@ namespace Orts.Simulation.Timetables
                         FormType = formType;
                         FormTrain = true;
 
-                        if (trainCommands.CommandQualifiers != null && formType == TTTrain.FormCommand.TerminationFormed)
+                        if (trainCommands.CommandQualifiers != null && (formType == TTTrain.FormCommand.TerminationFormed || formType == TTTrain.FormCommand.TerminationTriggered))
                         {
                             foreach (TTTrainCommands.TTTrainComQualifiers formedTrainQualifiers in trainCommands.CommandQualifiers)
                             {
