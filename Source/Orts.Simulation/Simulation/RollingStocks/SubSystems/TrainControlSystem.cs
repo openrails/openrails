@@ -691,7 +691,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     break;
 
                 default:
-                    if (Locomotive == Simulator.PlayerLocomotive)
+                    if (Locomotive == Simulator.PlayerLocomotive || Locomotive.Train.PlayerTrainSignals == null)
                         Locomotive.Train.UpdatePlayerTrainData();
                     if (Script == null)
                     {
