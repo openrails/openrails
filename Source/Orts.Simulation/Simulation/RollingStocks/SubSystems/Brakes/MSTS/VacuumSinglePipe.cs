@@ -92,7 +92,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         // return vacuum reservior pressure adjusted for piston movement
         // this section works out from the brake cylinder movement the amount of volume change in the reservoir, and hence the drop in vacuum in the reservoir. 
         // Normally the reservoir is a closed space during brake application, and thus vacuum is not lost, but simply varied with volume change
-        float VacResPressureAdjPSIA()
+        protected float VacResPressureAdjPSIA()
         {
             if (VacResPressurePSIA >= CylPressurePSIA)
             {
@@ -540,7 +540,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // If a straight vacuum brake, then calculate brake force in straightvacuumsinglepipe class.
             if (lead != null && lead.CarBrakeSystemType != "straight_vacuum_single_pipe")
             {
-                Trace.TraceInformation("vacuum loop");
 
                 float vrp = VacResPressureAdjPSIA();
                 float f;
