@@ -79,7 +79,11 @@ namespace Orts.Common.Scripting
             var type = String.Format("{0}.{1}", nameSpace, Path.GetFileNameWithoutExtension(path).Replace('-', '_'));
 
             if (Scripts.ContainsKey(path))
+            {
+                var assembly = Scripts[path];
+                if (assembly == null) return null;
                 return Scripts[path].CreateInstance(type, true);
+            }
 
             try
             {
@@ -110,12 +114,14 @@ namespace Orts.Common.Scripting
                     }
 
                     Trace.TraceWarning(errorString.ToString());
+                    Scripts.Add(path, null);
                     return null;
                 }
             }
             catch (InvalidDataException error)
             {
                 Trace.TraceWarning("Skipped script {0} with error: {1}", path, error.Message);
+                Scripts.Add(path, null);
                 return null;
             }
             catch (Exception error)
@@ -124,6 +130,7 @@ namespace Orts.Common.Scripting
                     Trace.WriteLine(new FileLoadException(path, error));
                 else
                     Trace.TraceWarning("Ignored missing script file {0}", path);
+                Scripts.Add(path, null);
                 return null;
             }
         }
