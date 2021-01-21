@@ -113,6 +113,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
 
 
+                    // Straight brake is opposite of automatic brake, ie vacuum pipe goes from 14.503psi (0 InHg - Release) to 2.24 (25InHg - Apply)
+
                     // Calculate train pipe pressure at lead locomotive.
 
                     float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
@@ -132,36 +134,37 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                         AdjLargeEjectorChargingRateInHgpS = 0;
                     }
-                    float AdjBrakeServiceTimeFactorS = (Car.Train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.BrakeServiceTimeFactorS;
+                    float AdjBrakeServiceTimeFactorS = (Me3.FromFt3(200.0f) / Car.Train.TotalTrainBrakeSystemVolumeM3) * lead.BrakeServiceTimeFactorS;
                     AdjTrainPipeLeakLossPSI = (Car.Train.TotalTrainBrakeSystemVolumeM3 / Me3.FromFt3(200.0f)) * lead.TrainBrakePipeLeakPSIorInHgpS;
 
-                    // Straight brake is opposite of automatic brake, ie vacuum pipe goes from 14.503psi (0 InHg - Release) to 2.24 (25InHg - Apply)
-
-                    // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
-
-                    lead.BrakeSystem.BrakeLine1PressurePSI -= elapsedClockSeconds * AdjLargeEjectorChargingRateInHgpS;
-                    if (lead.BrakeSystem.BrakeLine1PressurePSI < (OneAtmospherePSI - MaxVacuumPipeLevelPSI))
+                    // Only adjust lead pressure when lcoomotive car is processed, otherwise lead pressure will be "over adjusted"
+                    if (Car == lead)
                     {
-                        lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
-                    }
-
-                    // Release brakes - brakepipe has to have brake pipe decreased back to atmospheric pressure to apply brakes (ie psi increases).
-                    if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkReleaseOn)
-                    {
-
-                        lead.BrakeSystem.BrakeLine1PressurePSI *= (1 + elapsedClockSeconds / AdjBrakeServiceTimeFactorS); ;
-                        if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
+                        // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
+                        lead.BrakeSystem.BrakeLine1PressurePSI -= elapsedClockSeconds * AdjLargeEjectorChargingRateInHgpS;
+                        if (lead.BrakeSystem.BrakeLine1PressurePSI < (OneAtmospherePSI - MaxVacuumPipeLevelPSI))
                         {
-                            lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
+                            lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
                         }
+
+                        // Release brakes - brakepipe has to have brake pipe decreased back to atmospheric pressure to apply brakes (ie psi increases).
+                        if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkReleaseOn)
+                        {
+
+                            lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds / AdjBrakeServiceTimeFactorS;
+                            if (lead.BrakeSystem.BrakeLine1PressurePSI > OneAtmospherePSI)
+                            {
+                                lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI;
+                            }
+                        }
+
+                        // leaks in train pipe will reduce vacuum (increase pressure)
+                        lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds * AdjTrainPipeLeakLossPSI;
+
+                        // Keep brake line within relevant limits - ie between 21 or 25 InHg and Atmospheric pressure.
+                        lead.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(lead.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
+
                     }
-
-                    // leaks in train pipe will reduce vacuum (increase pressure)
-                    lead.BrakeSystem.BrakeLine1PressurePSI += elapsedClockSeconds * AdjTrainPipeLeakLossPSI;
-
-                    // Keep brake line within relevant limits - ie between 21 or 25 InHg and Atmospheric pressure.
-                    lead.BrakeSystem.BrakeLine1PressurePSI = MathHelper.Clamp(lead.BrakeSystem.BrakeLine1PressurePSI, OneAtmospherePSI - MaxVacuumPipeLevelPSI, OneAtmospherePSI);
-
                 }
                                  
                 if (lead.CarBrakeSystemType == "straight_vacuum_single_pipe" || ((lead.CarBrakeSystemType == "vacuum_single_pipe" || lead.CarBrakeSystemType == "vacuum_twin_pipe") && (Car as MSTSWagon).AuxiliaryReservoirPresent))
