@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
 //
 // This file is part of Open Rails.
 //
@@ -230,7 +230,7 @@ async function ApiTrainDriving() {//*** TrainDriving code ***
 	let [tdDisplay] = await Promise.all([ApiGet(`TRAINDRIVINGDISPLAY?normalText=${normalTextMode}`)]);
 
 	Str = "<table>";
-	var endIndexFirst = 0,
+    var endIndexFirst = 0,
 		endIndexLast = 0,
 		endIndexKey = 0;
 
@@ -407,17 +407,24 @@ var tdDrag = document.getElementById("traindrivingdiv");
 
 function dragMouseElement(tdDrag) {
 	var offsetX = 0, offsetY = 0, initX = 0, initY = 0;
-	tdDrag.ontouchstart = touchStart;
-	tdDrag.onmousedown = initDrag;
+    tdDrag.ontouchstart = touchStart;
+    tdDrag.onmousedown = initDrag;
 
-	function touchStart(event) {
-		event.preventDefault();
-		var touch = event.touches[0];
-		initX = touch.clientX;
-		initY = touch.clientY;
-		document.ontouchend = closeDrag;
-		document.ontouchmove = touchMove;
-	}
+    function touchStart(event) {
+        event.preventDefault();
+        var touch = event.touches[0];
+        initX = touch.clientX;
+        initY = touch.clientY;
+        document.ontouchend = closeDrag;
+        document.ontouchmove = touchMove;
+
+        var currentsrc = touch.target.currentSrc;
+        if (currentsrc != undefined){
+            var png = 'or_logo.png';
+            if (currentsrc.slice(-png.length) === png){
+                changeNormalTextMode();
+        }}
+    }
 
 	function initDrag(event) {
 		event.preventDefault();
@@ -462,9 +469,9 @@ function dragMouseElement(tdDrag) {
 		}else{
 			tdDrag.style.border = "0px solid gray";
 		}
-	offsetX = initX - event.clientX;
-	offsetY = initY - event.clientY;
-	initX = event.clientX;
+	    offsetX = initX - event.clientX;
+	    offsetY = initY - event.clientY;
+	    initX = event.clientX;
 		initY = event.clientY;
 		// avoids to overlap the trackmonitor window
 		tdDrag.style.left = (collision && offsetX > 0 ? tdDrag.offsetLeft : tdDrag.offsetLeft - offsetX) + "px";// X
