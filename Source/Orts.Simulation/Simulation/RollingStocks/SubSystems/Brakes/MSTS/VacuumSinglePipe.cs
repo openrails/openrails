@@ -41,7 +41,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         // Commented out as never used
         //float BrakeCutOffPSIA;
         //float BrakeRestorePSIA; 
-        float VacResPressurePSIA;  // vacuum reservior pressure with piston in released position
+        protected float VacResPressurePSIA;  // vacuum reservior pressure with piston in released position
         // defaults based on information in http://www.lmsca.org.uk/lms-coaches/LMSRAVB.pdf
         public int NumBrakeCylinders = 2;
         // brake cylinder volume with piston in applied position
@@ -331,7 +331,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     float MaximumVacuumPressureValue = Vac.ToPress(lead.TrainBrakeController.MaxPressurePSI); // As model uses air pressure this equates to minimum vacuum pressure
                     float MinimumVacuumPressureValue = Vac.ToPress(0); // As model uses air pressure this equates to maximum vacuum pressure
                     float EngineBrakePipeFraction = (lead.BrakeSystem.BrakeLine3PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+                    EngineBrakePipeFraction = MathHelper.Clamp(EngineBrakePipeFraction, 0.0f, 1.0f); // Keep fraction within bounds
                     float TrainBrakePipeFraction = (lead.BrakeSystem.BrakeLine1PressurePSI - MaximumVacuumPressureValue) / (MinimumVacuumPressureValue - MaximumVacuumPressureValue);
+                    TrainBrakePipeFraction = MathHelper.Clamp(TrainBrakePipeFraction, 0.0f, 1.0f); // Keep fraction within bounds
 
                     float conversionFactor = (MinimumVacuumPressureValue - MaximumVacuumPressureValue); // factor to scale application and release values to match pressure values in engine brake nethod
 
