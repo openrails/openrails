@@ -38,6 +38,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         {
             CylPressurePSIA = BrakeLine1PressurePSI = Vac.ToPress(fullServVacuumInHg);
             HandbrakePercent = handbrakeOn & (Car as MSTSWagon).HandBrakePresent ? 100 : 0;
+            VacResPressurePSIA = Vac.ToPress(maxVacuumInHg); // Only used if car coupled to auto braked locomotive
         }
 
         public override void InitializeMoving() // used when initial speed > 0
@@ -45,6 +46,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             BrakeLine1PressurePSI = Vac.ToPress(Car.Train.EqualReservoirPressurePSIorInHg);
             CylPressurePSIA = Vac.ToPress(Car.Train.EqualReservoirPressurePSIorInHg);
+            VacResPressurePSIA = Vac.ToPress(Car.Train.EqualReservoirPressurePSIorInHg); // Only used if car coupled to auto braked locomotive
             HandbrakePercent = 0;
         }
 
