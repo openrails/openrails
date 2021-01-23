@@ -50,6 +50,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "holdstart": Type = ControllerState.Hold; break;
                 case "straightbrakingreleaseonstart": Type = ControllerState.StrBrkReleaseOn; break;
                 case "straightbrakingreleaseoffstart": Type = ControllerState.StrBrkReleaseOff; break;
+                case "straightbrakingreleasestart": Type = ControllerState.StrBrkRelease; break;
+                case "straightbrakinglapstart": Type = ControllerState.StrBrkLap; break;
+                case "straightbrakingapplystart": Type = ControllerState.StrBrkApply; break;
+                case "straightbrakingemergencystart": Type = ControllerState.StrBrkEmergency; break;
                 case "holdlappedstart": Type = ControllerState.Lap; break;
                 case "neutralhandleoffstart": Type = ControllerState.Neutral; break;
                 case "graduatedselflaplimitedstart": Type = ControllerState.GSelfLap; break;
