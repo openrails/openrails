@@ -2127,6 +2127,16 @@ namespace Orts.Simulation.RollingStocks
                 }
             }
 
+            // Turn small ejector on if controlled from drivers controller
+            if (SmallEjectorFeedFraction > 0.05)
+            {
+                SmallSteamEjectorIsOn = true;  // turn ejector on
+            }
+            else
+            {
+                SmallSteamEjectorIsOn = false; // turn ejector off
+            }
+
 
             // If diesel or electric locomotive, assume vacuum pump (exhauster) is continually running.
             if (!(this is MSTSSteamLocomotive))
