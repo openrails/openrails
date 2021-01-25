@@ -198,6 +198,10 @@ namespace Orts.Common
         GearPosition7,
         GearPosition8,
 
+        LargeEjectorOn,
+        LargeEjectorOff,
+        SmallEjectorOn,
+        SmallEjectorOff,
 
     }
 
@@ -410,6 +414,11 @@ namespace Orts.Common
                         case 206: return Event.GearPosition6;
                         case 207: return Event.GearPosition7;
                         case 208: return Event.GearPosition8;
+
+                        case 210: return Event.LargeEjectorOn;
+                        case 211: return Event.LargeEjectorOff;
+                        case 212: return Event.SmallEjectorOn;
+                        case 213: return Event.SmallEjectorOff;
 
                         default: return 0;
                     }

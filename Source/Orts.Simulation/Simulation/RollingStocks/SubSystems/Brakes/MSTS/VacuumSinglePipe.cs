@@ -278,6 +278,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             BrakeLine3PressurePSI = BrakeLine1PressurePSI;  // Initialise engine brake as same value on train
             //CylVolumeM3 = MaxForcePressurePSI * MaxBrakeForceN * 0.00000059733491f; //an average volume (M3) of air used in brake cylinder for 1 N brake force.
             Car.Train.PreviousCarCount = Car.Train.Cars.Count;
+
         }
 
         public override void InitializeMoving() // used when initial speed > 0
@@ -435,87 +436,90 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // Brake information is updated for each vehicle
-
-            if (EngineBrake && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)) // Only apples when an engine brake is in place, otherwise processed to next loop
+            // For straight brakes, the brake cylinders are updated in StraightVacuumSinglePipe.cs
+            if (lead != null && lead.CarBrakeSystemType != "straight_vacuum_single_pipe")
             {
-                // The engine brake can only be applied when the train brake is released or partially released. It cannot be released whilever the train brake is applied.
-                if (lead.TrainBrakeController.CurrentValue == 0 && lead.EngineBrakeController.CurrentValue > 0) // If train brake is completely released & Engine brake is applied
+
+                if (EngineBrake && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)) // Only apples when an engine brake is in place, otherwise processed to next loop
                 {
-                    CylPressurePSIA = BrakeLine3PressurePSI;
-                }
-                else if (lead.TrainBrakeController.CurrentValue > 0) // if train brake is applied, then set engine brake to the higher of either the train brake or engine brake
-                {
-                    if (BrakeLine3PressurePSI > BrakeLine1PressurePSI)
+                    // The engine brake can only be applied when the train brake is released or partially released. It cannot be released whilever the train brake is applied.
+                    if (lead.TrainBrakeController.CurrentValue == 0 && lead.EngineBrakeController.CurrentValue > 0) // If train brake is completely released & Engine brake is applied
                     {
                         CylPressurePSIA = BrakeLine3PressurePSI;
                     }
-                    else
+                    else if (lead.TrainBrakeController.CurrentValue > 0) // if train brake is applied, then set engine brake to the higher of either the train brake or engine brake
+                    {
+                        if (BrakeLine3PressurePSI > BrakeLine1PressurePSI)
+                        {
+                            CylPressurePSIA = BrakeLine3PressurePSI;
+                        }
+                        else
+                        {
+                            CylPressurePSIA = BrakeLine1PressurePSI;
+                        }
+                    }
+                    else // normally only the train brake will drive the cylinder pressure
                     {
                         CylPressurePSIA = BrakeLine1PressurePSI;
                     }
-                }
-                else // normally only the train brake will drive the cylinder pressure
-                {
-                    CylPressurePSIA = BrakeLine1PressurePSI;
-                }
 
-                // Adjust vacuum reservoir if necessary
-                if (BrakeLine1PressurePSI < VacResPressurePSIA)
-                {
-                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
-                    float vr = VacResVolM3 / BrakePipeVolumeM3;
-                    if (VacResPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
+                    // Adjust vacuum reservoir if necessary
+                    if (BrakeLine1PressurePSI < VacResPressurePSIA)
                     {
-                        dp = (VacResPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
-                    }
+                        float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
+                        float vr = VacResVolM3 / BrakePipeVolumeM3;
+                        if (VacResPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
+                        {
+                            dp = (VacResPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
+                        }
 
-                    VacResPressurePSIA -= dp;
+                        VacResPressurePSIA -= dp;
+                    }
+                }
+                else
+                {
+                    if (BrakeLine1PressurePSI < VacResPressurePSIA)
+                    {
+                        float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
+                        float vr = VacResVolM3 / BrakePipeVolumeM3;
+                        if (VacResPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
+                        {
+                            dp = (VacResPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
+                        }
+                        VacResPressurePSIA -= dp;
+
+                        if (LeadLoco == false)
+                        {
+                            BrakeLine1PressurePSI += dp * vr; // don't adjust the BP pressure if this is the lead locomotive
+                        }
+
+                        CylPressurePSIA = VacResPressurePSIA;
+                    }
+                    else if (BrakeLine1PressurePSI < CylPressurePSIA) // Increase BP pressure, hence vacuum brakes are being released
+                    {
+                        float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
+                        float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                        if (CylPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
+                            dp = (CylPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
+                        CylPressurePSIA -= dp;
+
+                        if (LeadLoco == false)
+                        {
+                            BrakeLine1PressurePSI += dp * vr;
+                        }
+                    }
+                    else if (BrakeLine1PressurePSI > CylPressurePSIA)  // Decrease BP pressure, hence vacuum brakes are being applied
+                    {
+                        float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
+                        float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                        if (CylPressurePSIA + dp > BrakeLine1PressurePSI - dp * vr)
+                            dp = (BrakeLine1PressurePSI - CylPressurePSIA) / (1 + vr);
+                        CylPressurePSIA += dp;
+                        if (!HasDirectAdmissionValue)
+                            BrakeLine1PressurePSI -= dp * vr;
+                    }
                 }
             }
-            else
-            {
-                if (BrakeLine1PressurePSI < VacResPressurePSIA)
-                {
-                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS * (NumBrakeCylinders * BrakeCylVolM3) / VacResVolM3;
-                    float vr = VacResVolM3 / BrakePipeVolumeM3;
-                    if (VacResPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
-                    {
-                        dp = (VacResPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
-                    }
-                    VacResPressurePSIA -= dp;
-
-                    if (LeadLoco == false)
-                    {
-                        BrakeLine1PressurePSI += dp * vr; // don't adjust the BP pressure if this is the lead locomotive
-                    }
-
-                    CylPressurePSIA = VacResPressurePSIA;
-                }
-                else if (BrakeLine1PressurePSI < CylPressurePSIA) // Increase BP pressure, hence vacuum brakes are being released
-                {
-                    float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
-                    float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
-                    if (CylPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
-                        dp = (CylPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
-                    CylPressurePSIA -= dp;
-
-                    if (LeadLoco == false)
-                    {
-                        BrakeLine1PressurePSI += dp * vr;
-                    }
-                }
-                else if (BrakeLine1PressurePSI > CylPressurePSIA)  // Decrease BP pressure, hence vacuum brakes are being applied
-                {
-                    float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                    float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
-                    if (CylPressurePSIA + dp > BrakeLine1PressurePSI - dp * vr)
-                        dp = (BrakeLine1PressurePSI - CylPressurePSIA) / (1 + vr);
-                    CylPressurePSIA += dp;
-                    if (!HasDirectAdmissionValue)
-                        BrakeLine1PressurePSI -= dp * vr;
-                }
-            }
-
             // Record HUD display values for brake cylidners depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
@@ -640,7 +644,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
             float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for small ejector to operate - fraction set in steam locomotive
             float LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.LargeEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for large ejector to operate - fraction set in steam locomotive
-            float MaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
+
+            // Vaccum brake effectiveness decreases with increases in altitude because the atmospheric pressure increases as altitude increases.
+            // The formula for decrease in pressure:  P = P0 * Exp (- Mgh/RT) - https://www.math24.net/barometric-formula/
+
+            float massearthair = 0.02896f; // Molar mass of Earth's air = M = 0.02896 kg/mol
+            // float sealevelpressure = 101325f; // Average sea level pressure = P0 = 101,325 kPa
+            float sealevelpressure = 101325f; // Average sea level pressure = P0 = 101,325 kPa
+            float gravitationalacceleration = 9.807f; // Gravitational acceleration = g = 9.807 m/s^2
+            float standardtemperature = 288.15f; // Standard temperature = T = 288.15 K
+            float universalgasconstant = 8.3143f; // Universal gas constant = R = 8.3143 (N*m/mol*K)
+
+            float alititudereducedvacuum = sealevelpressure * (float) Math.Exp((-1.0f * massearthair * gravitationalacceleration * trainCar.CarHeightAboveSeaLevelM) / (standardtemperature * universalgasconstant));
+
+            float vacuumreductionfactor = alititudereducedvacuum / sealevelpressure;
+
+            float MaxVacuumPipeLevelPSI = lead.TrainBrakeController.MaxPressurePSI * vacuumreductionfactor;
 
             // Desired Vacuum pipe level must operate between full vacuum level (eg 2.278 psi = 25 inhg = Release) and atmospheric pressure (14.503psi = 0 inhg = Apply). 
             // The equalising pressure operates between 0 (Apply) and full pipe vacuum (12.278psi = 25 inHg - Release), which is the reverse of above, so it needs to be mapped to
