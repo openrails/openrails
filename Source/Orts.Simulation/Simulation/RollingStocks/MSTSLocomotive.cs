@@ -1339,35 +1339,49 @@ namespace Orts.Simulation.RollingStocks
 
             // Check TrainBrakesControllerMaxSystemPressure parameter for "correct" value 
             // This is only done for vacuum brakes as the UoM can be confusing - it defaults to psi due to way parameter is read, and if units are entered then a InHG value can be incorrectly converted.
-            if ((BrakeSystem is VacuumSinglePipe) && TrainBrakeController.MaxPressurePSI > 10 && TrainBrakeController.MaxPressurePSI < 15)
+            if ((BrakeSystem is VacuumSinglePipe))
             {
-                Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being incorrectly read as {0} Inhg, - set to value of {1} InHg", TrainBrakeController.MaxPressurePSI, Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
-                TrainBrakeController.MaxPressurePSI = Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI));
+                if (TrainBrakeController.MaxPressurePSI == 21 || TrainBrakeController.MaxPressurePSI == 25) // If 21 or 25 has been entered assume that it is 21InHg or 25InHg, and convert it to the correct psi equivalent
+                {
+                    float TempMaxPressure = TrainBrakeController.MaxPressurePSI;
+
+                    // Convert assumed inHg value to psi
+                    TrainBrakeController.MaxPressurePSI = Bar.ToPSI(Bar.FromInHg(TrainBrakeController.MaxPressurePSI));
+
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                    {
+                        Trace.TraceInformation("TrainBrakeController.MaxPressurePSI is assumed to be {0} Inhg, - confirmed as a value of {1} InHg", TempMaxPressure, Bar.ToInHg(Bar.FromPSI(TrainBrakeController.MaxPressurePSI)));
+                    }
+                    
+                }
+                else if (TrainBrakeController.MaxPressurePSI < 10 || TrainBrakeController.MaxPressurePSI > 13) // Outside an acceptable range, then convert to a fixed default
+                {
+                    if (Simulator.Settings.VerboseConfigurationMessages)
+                    {
+                        Trace.TraceInformation("TrainBrakeController.MaxPressurePSI being incorrectly read as {0} Inhg, - set to a default value of {1} InHg", TrainBrakeController.MaxPressurePSI, Bar.ToInHg(Bar.FromPSI(Bar.ToPSI(Bar.FromInHg(21.0f)))));
+                    }
+                    TrainBrakeController.MaxPressurePSI = Bar.ToPSI(Bar.FromInHg(21.0f));
+                }
             }
 
-            // Check initialisation of brake cutoff values - set if zero values or are greater then atmospheric pressure as this will put them "out of range" in vacuum brakes class
-            if ((BrakeSystem is VacuumSinglePipe) && ( BrakeCutsPowerAtBrakePipePressurePSI == 0 || BrakeCutsPowerAtBrakePipePressurePSI > OneAtmospherePSI))
-            {
-                BrakeCutsPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(12.5f)); // Power is cut @ 12.5 InHg
-
-                // TODO - set for verbose messaging option
-                Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", BrakeCutsPowerAtBrakePipePressurePSI);
-            }
-
-            if ((BrakeSystem is VacuumSinglePipe) && ( BrakeRestoresPowerAtBrakePipePressurePSI == 0 || BrakeRestoresPowerAtBrakePipePressurePSI > OneAtmospherePSI))
-            {
-                BrakeRestoresPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(15.0f)); // Power can be resotred once brake pipe rises above 15 InHg
-                
-                // TODO - set for verbose messaging option
-                Trace.TraceInformation("BrakeRestoresPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", BrakeRestoresPowerAtBrakePipePressurePSI);
-            }
-
-            if (BrakeCutsPowerAtBrakePipePressurePSI > BrakeRestoresPowerAtBrakePipePressurePSI)
+            if (DoesBrakeCutPower && BrakeCutsPowerAtBrakePipePressurePSI > BrakeRestoresPowerAtBrakePipePressurePSI)
             {
                 BrakeCutsPowerAtBrakePipePressurePSI = BrakeRestoresPowerAtBrakePipePressurePSI - 1.0f;
-                // TODO - set for verbose messaging option
-                Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure is greater then BrakeRestoresPowerAtBrakePipePressurePSI, and has been set to value of {0} InHg", BrakeCutsPowerAtBrakePipePressurePSI);
 
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("BrakeCutsPowerAtBrakePipePressure is greater then BrakeRestoresPowerAtBrakePipePressurePSI, and has been set to value of {0} InHg", Bar.ToInHg(Bar.FromPSI(BrakeCutsPowerAtBrakePipePressurePSI)));
+                }
+            }
+
+            if (DoesBrakeCutPower && (BrakeSystem is VacuumSinglePipe) && (BrakeRestoresPowerAtBrakePipePressurePSI == 0 || BrakeRestoresPowerAtBrakePipePressurePSI > OneAtmospherePSI))
+            {
+                BrakeRestoresPowerAtBrakePipePressurePSI = Bar.ToPSI(Bar.FromInHg(15.0f)); // Power can be restored once brake pipe rises above 15 InHg
+
+                if (Simulator.Settings.VerboseConfigurationMessages)
+                {
+                    Trace.TraceInformation("BrakeRestoresPowerAtBrakePipePressure appears out of limits, and has been set to value of {0} InHg", Bar.ToInHg(Bar.FromPSI(BrakeRestoresPowerAtBrakePipePressurePSI)));
+                }
             }
 
             // Initialise Brake Time Factor

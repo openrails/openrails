@@ -1774,11 +1774,6 @@ iii. `Testing Resources for Open Rails Steam Locomotives
 |                                                           |                   |Leave out if       |                   |
 |                                                           |                   |unused             |                   |
 +-----------------------------------------------------------+-------------------+-------------------+-------------------+
-|ORTS |-| Cylinder |-| Exhaust |-| Open ( x )               |Point at which the |Between            |(0.1)              |
-|                                                           |cylinder exhaust   |0.1--0.95,         |                   |
-|                                                           |port opens         |Leave out if       |                   |
-|                                                           |                   |unused             |                   |
-+-----------------------------------------------------------+-------------------+-------------------+-------------------+
 |ORTS |-| Cylinder |-| Port |-| Opening ( x )               |Size of cylinder   |Between            |(0.085)            |
 |                                                           |port opening       |0.05--0.12,        |                   |
 |                                                           |                   |Leave out if       |                   |
