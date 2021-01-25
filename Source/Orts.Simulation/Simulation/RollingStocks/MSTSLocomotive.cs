@@ -262,7 +262,6 @@ namespace Orts.Simulation.RollingStocks
         public float VacuumBrakesMainResChargingRatePSIAorInHgpS = Bar.ToPSI(Bar.FromInHg(0.2f));
         public float VacuumMainResVacuumPSIAorInHg = Vac.ToPress(23); // Vacuum currently in Main Reservoir
 
-
         // Set values for display in HUD
         public float WagonCoefficientFrictionHUD;
         public float LocomotiveCoefficientFrictionHUD;
@@ -1362,6 +1361,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     TrainBrakeController.MaxPressurePSI = Bar.ToPSI(Bar.FromInHg(21.0f));
                 }
+
             }
 
             if (DoesBrakeCutPower && BrakeCutsPowerAtBrakePipePressurePSI > BrakeRestoresPowerAtBrakePipePressurePSI)
@@ -2097,10 +2097,12 @@ namespace Orts.Simulation.RollingStocks
                 if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
                 {
                     LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                    SignalEvent(Event.LargeEjectorOn);
                 }
                 else
                 {
                     LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, or full vacuum reached, then turn ejector off
+                    SignalEvent(Event.LargeEjectorOff);
                 }
             }
             else if (!LargeEjectorFitted) // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
@@ -2108,10 +2110,12 @@ namespace Orts.Simulation.RollingStocks
                 if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                 {
                     LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
+                    SignalEvent(Event.LargeEjectorOn);
                 }
                 else
                 {
                     LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
+                    SignalEvent(Event.LargeEjectorOff);
                 }
 
             }
@@ -2120,10 +2124,12 @@ namespace Orts.Simulation.RollingStocks
                 if (LargeEjectorFeedFraction > 0.05)
                 {
                     LargeSteamEjectorIsOn = true;  // turn ejector on
+                    SignalEvent(Event.LargeEjectorOn);
                 }
                 else
                 {
                     LargeSteamEjectorIsOn = false; // turn ejector off
+                    SignalEvent(Event.LargeEjectorOff);
                 }
             }
 
@@ -2131,10 +2137,12 @@ namespace Orts.Simulation.RollingStocks
             if (SmallEjectorFeedFraction > 0.05)
             {
                 SmallSteamEjectorIsOn = true;  // turn ejector on
+                SignalEvent(Event.SmallEjectorOn);
             }
             else
             {
                 SmallSteamEjectorIsOn = false; // turn ejector off
+                SignalEvent(Event.SmallEjectorOff);
             }
 
 
