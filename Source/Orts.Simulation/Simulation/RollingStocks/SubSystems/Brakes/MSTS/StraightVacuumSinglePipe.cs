@@ -19,6 +19,7 @@
 using Microsoft.Xna.Framework;
 using System;
 using ORTS.Common;
+using Orts.Common;
 using ORTS.Scripting.Api;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -181,7 +182,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
 
                         // Hardy brake system
-                        if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkApply)
+                        if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkApply || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkApplyAll)
                         {
 
                             // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
@@ -192,6 +193,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             }
                             // turn ejector steon as required
                             lead.LargeSteamEjectorIsOn = true;
+                            if (!lead.LargeEjectorSoundOn)
+                            {
+                                Car.SignalEvent(Event.LargeEjectorOn);
+                                lead.LargeEjectorSoundOn = true;
+                            }
                         }
 
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkEmergency)
@@ -205,14 +211,36 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             }
                             // turn ejectors on as required
                             lead.LargeSteamEjectorIsOn = true;
+                            if (!lead.LargeEjectorSoundOn)
+                            {
+                                Car.SignalEvent(Event.LargeEjectorOn);
+                                lead.LargeEjectorSoundOn = true;
+                            }
+
                             lead.SmallSteamEjectorIsOn = true;
+                            if (!lead.SmallEjectorSoundOn)
+                            {
+                                Car.SignalEvent(Event.SmallEjectorOn);
+                                lead.SmallEjectorSoundOn = true;
+                            }
                         }
 
                         if (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkLap)
                         {
                             // turn ejectors off if not required
                             lead.LargeSteamEjectorIsOn = false;
+                            if (lead.LargeEjectorSoundOn)
+                            {
+                                Car.SignalEvent(Event.LargeEjectorOff);
+                                lead.LargeEjectorSoundOn = false;
+                            }
+
                             lead.SmallSteamEjectorIsOn = false;
+                            if (lead.SmallEjectorSoundOn)
+                            {
+                                Car.SignalEvent(Event.SmallEjectorOff);
+                                lead.SmallEjectorSoundOn = false;
+                            }
 
                         }
 

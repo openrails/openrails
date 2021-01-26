@@ -250,6 +250,8 @@ namespace Orts.Simulation.RollingStocks
         public float ExhausterHighSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public float ExhausterLowSBPChargingRatePSIorInHgpS;  // Rate for Exhauster in high speed mode
         public bool VacuumBrakeCutoffActivated = false;
+        public bool SmallEjectorSoundOn = false;
+        public bool LargeEjectorSoundOn = false;
 
         public bool SteamEngineBrakeFitted = false;
         public bool TrainBrakeFitted = false;
@@ -2097,12 +2099,20 @@ namespace Orts.Simulation.RollingStocks
                 if ((TrainBrakeController.TrainBrakeControllerState == ControllerState.Release || TrainBrakeController.TrainBrakeControllerState == ControllerState.FullQuickRelease || (TrainBrakeController.TrainBrakeControllerState == ControllerState.VacContServ)) && (this.BrakeSystem.BrakeLine1PressurePSI > Vac.ToPress(this.TrainBrakeController.MaxPressurePSI)))
                 {
                     LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
-                    SignalEvent(Event.LargeEjectorOn);
+                    if (!LargeEjectorSoundOn)
+                    {
+                        SignalEvent(Event.LargeEjectorOn);
+                        LargeEjectorSoundOn = true;
+                    }
                 }
                 else
                 {
                     LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, or full vacuum reached, then turn ejector off
-                    SignalEvent(Event.LargeEjectorOff);
+                    if (LargeEjectorSoundOn)
+                    {
+                        SignalEvent(Event.LargeEjectorOff);
+                        LargeEjectorSoundOn = false;
+                    }
                 }
             }
             else if (!LargeEjectorFitted) // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
@@ -2110,12 +2120,20 @@ namespace Orts.Simulation.RollingStocks
                 if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                 {
                     LargeSteamEjectorIsOn = true;  // If brake is set to a release controller, then turn ejector on
-                    SignalEvent(Event.LargeEjectorOn);
+                    if (!LargeEjectorSoundOn)
+                    {
+                        SignalEvent(Event.LargeEjectorOn);
+                        LargeEjectorSoundOn = true;
+                    }
                 }
                 else
                 {
                     LargeSteamEjectorIsOn = false; // If brake is not set to a release controller, then turn ejector off
-                    SignalEvent(Event.LargeEjectorOff);
+                    if (LargeEjectorSoundOn)
+                    {
+                        SignalEvent(Event.LargeEjectorOff);
+                        LargeEjectorSoundOn = false;
+                    }
                 }
 
             }
@@ -2124,12 +2142,20 @@ namespace Orts.Simulation.RollingStocks
                 if (LargeEjectorFeedFraction > 0.05)
                 {
                     LargeSteamEjectorIsOn = true;  // turn ejector on
-                    SignalEvent(Event.LargeEjectorOn);
+                    if (!LargeEjectorSoundOn)
+                    {
+                        SignalEvent(Event.LargeEjectorOn);
+                        LargeEjectorSoundOn = true;
+                    }
                 }
                 else
                 {
                     LargeSteamEjectorIsOn = false; // turn ejector off
-                    SignalEvent(Event.LargeEjectorOff);
+                    if (LargeEjectorSoundOn)
+                    {
+                        SignalEvent(Event.LargeEjectorOff);
+                        LargeEjectorSoundOn = false;
+                    }
                 }
             }
 
@@ -2137,12 +2163,20 @@ namespace Orts.Simulation.RollingStocks
             if (SmallEjectorFeedFraction > 0.05)
             {
                 SmallSteamEjectorIsOn = true;  // turn ejector on
-                SignalEvent(Event.SmallEjectorOn);
+                if (!SmallEjectorSoundOn)
+                {
+                    SignalEvent(Event.SmallEjectorOn);
+                    SmallEjectorSoundOn = true;
+                }
             }
             else
             {
                 SmallSteamEjectorIsOn = false; // turn ejector off
-                SignalEvent(Event.SmallEjectorOff);
+                if (SmallEjectorSoundOn)
+                {
+                    SignalEvent(Event.SmallEjectorOff);
+                    SmallEjectorSoundOn = false;
+                }
             }
 
 
