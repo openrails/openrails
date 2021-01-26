@@ -126,6 +126,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                             break;
                         case ControllerState.StrBrkLap:
                         case ControllerState.StrBrkApply:
+                        case ControllerState.StrBrkApplyAll:
                         case ControllerState.StrBrkEmergency:
                             // Nothing is done in these positions, instead they are controlled by the steam ejector in straight brake module
                             break;

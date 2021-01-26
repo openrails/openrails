@@ -756,7 +756,7 @@ namespace Orts.Parsers.Msts
             /// </summary>
             Resistance = 1 << 18,
 
-            /// <summary>Valid Units: psi, bar, inhg, kpa
+            /// <summary>Valid Units: psi, bar, inhg, cmhg, kpa
             /// <para>Scaled to pounds per square inch.</para>
             /// </summary>
             PressureDefaultPSI = 1 << 19,
@@ -1055,6 +1055,7 @@ namespace Orts.Parsers.Msts
                     case "psi": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "bar": return 14.5037738;
                     case "inhg": return 0.4911542;
+                    case "cmhg": return 0.1933672;
                     case "kpa": return 0.145037738;
                 }
             if ((validUnits & UNITS.PressureDefaultInHg) > 0)

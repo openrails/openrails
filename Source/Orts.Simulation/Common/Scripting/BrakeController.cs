@@ -239,6 +239,7 @@ namespace ORTS.Scripting.Api
         StrBrkRelease,      // TrainBrakesControllerStraightBrakingReleaseStart
         StrBrkLap,          // TrainBrakesControllerStraightBrakingLapStart
         StrBrkApply,        // TrainBrakesControllerStraightBrakingApplyStart
+        StrBrkApplyAll,     // TrainBrakesControllerStraightBrakingApplyAllStart
         StrBrkEmergency,    // TrainBrakesControllerStraightBrakingEmergencyStart
         Overcharge,         // Overcharge
         EBPB,               // Emergency Braking Push Button
@@ -281,6 +282,7 @@ namespace ORTS.Scripting.Api
             {ControllerState.StrBrkRelease, Catalog.GetString("Str. Brk. Release:")},
             {ControllerState.StrBrkLap, Catalog.GetString("Str. Brk. Lap:")},
             {ControllerState.StrBrkApply, Catalog.GetString("Str. Brk. Apply:")},
+            {ControllerState.StrBrkApplyAll, Catalog.GetString("Str. Brk. Apply All:")},
             {ControllerState.StrBrkEmergency, Catalog.GetString("Str. Brk. Emerg:")},
             {ControllerState.Overcharge, Catalog.GetString("Overcharge")},
             {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
