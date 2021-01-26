@@ -358,12 +358,14 @@ namespace Orts.Formats.OR
         public int Delay;
         [JsonProperty("RequiredDistance")]
         public float RequiredDistance;
+        public int AmHornPhase = -1;
 
-        public AuxActionHorn(bool isGeneric, int delay = 2, float requiredDistance = 0) :    //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.SOUND_HORN, , float requiredDistance = 0) :
+        public AuxActionHorn(bool isGeneric, int amHornPhase = -1) :    //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.SOUND_HORN, , float requiredDistance = 0) :
             base(AUX_ACTION.SOUND_HORN ,isGeneric)                                          //location, requiredSpeedMpS, , endSignalIndex, actionType, delay, requiredDistance)
         {
-            Delay = delay;
-            RequiredDistance = requiredDistance;
+            Delay = 2;
+            RequiredDistance = 9;
+            AmHornPhase = amHornPhase;
         }
 
         public static void Register(string key)
