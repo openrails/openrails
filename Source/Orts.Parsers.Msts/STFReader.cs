@@ -1073,15 +1073,17 @@ namespace Orts.Parsers.Msts
                     case "": return 1.0;
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "inhg/s": return 0.4911542;
+                    case "cmhg/s": return 0.1933672;
                     case "bar/s": return 14.5037738;
                     case "kpa/s": return 0.145;
                 }
             if ((validUnits & UNITS.PressureRateDefaultInHgpS) > 0)
                 switch (suffix)
                 {
-                    case "": return 0.4911542;
+                    case "": return 0.4911542; // <PNComment> Is this correct? - It appears to hold inHg values, yet it does no conversion on psi values, and a conversion on inHg values 
                     case "psi/s": return 1;  // <CJComment> Factors to be revised when non-metric internal units removed. </CJComment>
                     case "inhg/s": return 0.4911542;
+                    case "cmhg/s": return 0.1933672;
                     case "bar/s": return 14.5037738;
                     case "kpa/s": return 0.145;
                 }
