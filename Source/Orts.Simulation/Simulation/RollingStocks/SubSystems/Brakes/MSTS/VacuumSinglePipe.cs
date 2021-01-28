@@ -654,12 +654,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             float gravitationalacceleration = 9.807f; // Gravitational acceleration = g = 9.807 m/s^2
             float standardtemperature = 288.15f; // Standard temperature = T = 288.15 K
             float universalgasconstant = 8.3143f; // Universal gas constant = R = 8.3143 (N*m/mol*K)
+            float height = lead == null ? 10.0f : lead.CarHeightAboveSeaLevelM;
+            float alititudereducedvacuum = 0;
 
-            float alititudereducedvacuum = sealevelpressure * (float) Math.Exp((-1.0f * massearthair * gravitationalacceleration * trainCar.CarHeightAboveSeaLevelM) / (standardtemperature * universalgasconstant));
+            alititudereducedvacuum = sealevelpressure * (float)Math.Exp((-1.0f * massearthair * gravitationalacceleration * height) / (standardtemperature * universalgasconstant));
 
             float vacuumreductionfactor = alititudereducedvacuum / sealevelpressure;
 
-            float MaxVacuumPipeLevelPSI = lead.TrainBrakeController.MaxPressurePSI * vacuumreductionfactor;
+            float InitialMaxVacuumPipeLevelPSI = lead == null ? Bar.ToPSI(Bar.FromInHg(21)) : lead.TrainBrakeController.MaxPressurePSI;
+
+            float MaxVacuumPipeLevelPSI = InitialMaxVacuumPipeLevelPSI * vacuumreductionfactor;
 
             // Desired Vacuum pipe level must operate between full vacuum level (eg 2.278 psi = 25 inhg = Release) and atmospheric pressure (14.503psi = 0 inhg = Apply). 
             // The equalising pressure operates between 0 (Apply) and full pipe vacuum (12.278psi = 25 inHg - Release), which is the reverse of above, so it needs to be mapped to
