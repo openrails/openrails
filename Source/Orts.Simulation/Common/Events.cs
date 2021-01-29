@@ -184,6 +184,9 @@ namespace Orts.Common
         BoilerBlowdownOn,
         BoilerBlowdownOff,
 
+        WaterScoopRaiseLower,
+        WaterScoopBroken,
+
         SteamGearLeverToggle,
         AIFiremanSoundOn,
         AIFiremanSoundOff,
@@ -389,6 +392,9 @@ namespace Orts.Common
 
                         case 175: return Event.BoilerBlowdownOn;
                         case 176: return Event.BoilerBlowdownOff;
+
+                        case 177: return Event.WaterScoopRaiseLower;
+                        case 178: return Event.WaterScoopBroken;
 
                         case 181: return Event.GenericEvent1;
                         case 182: return Event.GenericEvent2;

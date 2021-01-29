@@ -167,6 +167,7 @@ namespace Orts.Simulation.RollingStocks
         bool WaterScoopSlowSpeedFlag = false;
         bool WaterScoopDirectionFlag = false;
         public bool IsWaterScoopPlayerLocomotive = false;
+        bool WaterScoopSoundOn = false;
         public float MaxTotalCombinedWaterVolumeUKG;
         public MSTSNotchController WaterController = new MSTSNotchController(0, 1, 0.01f);
         public float CombinedTenderWaterVolumeUKG          // Decreased by running injectors and increased by refilling
@@ -2418,6 +2419,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     ScoopIsBroken = true;
                     RefillingFromTrough = false;
+                    SignalEvent(Event.WaterScoopBroken);
                     return;
                 }
                 else if (!IsOverTrough())
@@ -2457,6 +2459,11 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else if (fraction > 1.0)
                 {
+                    if (WaterScoopSoundOn)
+                    {
+                        WaterScoopSoundOn = false;
+                        SignalEvent(Event.WaterScoopUp);
+                    }
                     Simulator.Confirmer.Message(ConfirmLevel.None, Simulator.Catalog.GetStringFmt("Refill: Water supply now replenished."));
                     return;
                 }
@@ -2466,6 +2473,11 @@ namespace Orts.Simulation.RollingStocks
                     MSTSWagon.RefillProcess.ActivePickupObjectUID = -1;
                     RefillingFromTrough = true;
                     WaterScoopOverTroughFlag = false; // Reset flag so that message will come up again
+                    if ( !WaterScoopSoundOn)
+                    {
+                        WaterScoopSoundOn = true;
+                        SignalEvent(Event.WaterScoopDown);
+                    }
                 }
 
             }
@@ -2978,16 +2990,14 @@ namespace Orts.Simulation.RollingStocks
             if (Simulator.PlayerLocomotive == this)
             {
                 WaterScoopDown = !WaterScoopDown;
-                SignalEvent(Event.WaterScoopDown);
+                SignalEvent(Event.WaterScoopRaiseLower);
                 if (WaterScoopDown)
                 {
                     IsWaterScoopDown = true; // Set flag to potentially fill from water trough
-                    SignalEvent(Event.WaterScoopDown);
                 }
                 else
                 {
                     IsWaterScoopDown = false;
-                    SignalEvent(Event.WaterScoopUp);
                     WaterScoopOverTroughFlag = false; // Reset flags so that message will come up again
                     WaterScoopNotFittedFlag = false;
                     WaterScoopSlowSpeedFlag = false;
