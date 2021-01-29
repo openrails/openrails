@@ -265,6 +265,21 @@ Trigger       Function
 172           Pantograph4Down
 =========     =====================================
 
+Additional triggers:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+173           HotBoxBearingOn
+174           HotBoxBearingOff
+175           BoilerBlowdownOn
+176           BoilerBlowdownOff
+177           WaterScoopRaiseLower
+178           WaterScoopBrocken
+=========     =====================================
+
+
+
 The following triggers are used to activate the gear positions:
 
 =========     =====================================
