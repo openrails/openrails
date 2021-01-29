@@ -2432,6 +2432,11 @@ namespace Orts.Simulation.RollingStocks
                         MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
                     }
                     RefillingFromTrough = false;
+                    if (WaterScoopSoundOn)
+                    {
+                        WaterScoopSoundOn = false;
+                        SignalEvent(Event.WaterScoopUp);
+                    }
                     return;
                 }
                 else if (IsTenderRequired == 1 && Direction == Direction.Reverse) // Locomotives with tenders cannot go in reverse
@@ -2442,6 +2447,11 @@ namespace Orts.Simulation.RollingStocks
                         WaterScoopDirectionFlag = true;
                     }
                     RefillingFromTrough = false;
+                    if (WaterScoopSoundOn)
+                    {
+                        WaterScoopSoundOn = false;
+                        SignalEvent(Event.WaterScoopUp);
+                    }
                     return;
                 }
                 else if (absSpeedMpS < WaterScoopMinSpeedMpS)
@@ -2455,6 +2465,11 @@ namespace Orts.Simulation.RollingStocks
                         MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
                     }
                     RefillingFromTrough = false;
+                    if (WaterScoopSoundOn)
+                    {
+                        WaterScoopSoundOn = false;
+                        SignalEvent(Event.WaterScoopUp);
+                    }
                     return;
                 }
                 else if (fraction > 1.0)
