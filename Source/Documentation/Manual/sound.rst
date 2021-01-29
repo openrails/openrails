@@ -275,7 +275,7 @@ Trigger       Function
 175           BoilerBlowdownOn
 176           BoilerBlowdownOff
 177           WaterScoopRaiseLower
-178           WaterScoopBrocken
+178           WaterScoopBroken
 =========     =====================================
 
 
