@@ -26,6 +26,8 @@ place the OR-specific .wag or .eng file in a created folder
 ``TRAINS\TRAINSET\TrainCar\OpenRails\`` (see :ref:`here <physics-inclusions>`
 for more).
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Train Cars (WAG, or Wagon Part of ENG file)
 ===========================================
 
