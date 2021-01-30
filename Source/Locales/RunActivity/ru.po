@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-11-22 11:46:25+0300\n"
-"PO-Revision-Date: 2009-12-29 04:07+0300\n"
+"POT-Creation-Date: 2021-01-16 15:50:27+0300\n"
+"PO-Revision-Date: 2021-01-30 01:25+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -13,2368 +13,2368 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:600
-msgid "Free"
-msgstr "Свободная"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:257
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:78
+msgid "Release"
+msgstr "Поездное"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:998
-msgid "Outside Front"
-msgstr "Наружная-голова"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:258
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:229
+msgid "Quick Release"
+msgstr "Быстрый отпуск"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:998
-msgid "Outside Rear"
-msgstr "Наружная-хвост"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:260
+msgid "Neutral"
+msgstr "Нейтраль"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1516
-msgid "Brakeman"
-msgstr "Составитель"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:261
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:77
+msgid "Apply"
+msgstr "Служебное"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1760
-msgid "Passenger"
-msgstr "Пассажир"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:262
+msgid "EPApply"
+msgstr "ЭПТ"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1837
-msgid "3D Cab"
-msgstr "Виртуальная кабина"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:263
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:79
+msgid "Emergency"
+msgstr "Экстренное"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1933
-msgid "Head out"
-msgstr "Вид из окна"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:264
+msgid "Self Lap"
+msgstr "Самоперекрыша"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:1977
-msgid "Cab"
-msgstr "Кабина"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:265
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:266
+msgid "Service"
+msgstr "Служебное"
 
-#: ../../RunActivity/Viewer3D/Cameras.cs:2228
-msgid "Trackside"
-msgstr "Вид с обочины"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:267
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:76
+msgid "Lap"
+msgstr "Перекрыша БП"
 
-#: ../../RunActivity/Viewer3D/Materials.cs:221
-#, csharp-format
-msgid "{0:F0} texture"
-msgid_plural "{0:F0} textures"
-msgstr[0] "{0:F0} текстура"
-msgstr[1] "{0:F0} текстуры"
-msgstr[2] "{0:F0} текстур"
-
-#: ../../RunActivity/Viewer3D/Materials.cs:471
-#, csharp-format
-msgid "{0:F0} material"
-msgid_plural "{0:F0} materials"
-msgstr[0] "{0:F0} материал"
-msgstr[1] "{0:F0} материала"
-msgstr[2] "{0:F0} материалов"
-
-#: ../../RunActivity/Viewer3D/Shapes.cs:110
-#, csharp-format
-msgid "{0:F0} shape"
-msgid_plural "{0:F0} shapes"
-msgstr[0] "{0:F0} форма"
-msgstr[1] "{0:F0} формы"
-msgstr[2] "{0:F0} форм"
-
-#: ../../RunActivity/Viewer3D/Terrain.cs:127
-#, csharp-format
-msgid "{0:F0} tile"
-msgid_plural "{0:F0} tiles"
-msgstr[0] "{0:F0} тайл"
-msgstr[1] "{0:F0} тайла"
-msgstr[2] "{0:F0} тайлов"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:816
-#: ../../RunActivity/Viewer3D/Viewer.cs:1001
-msgid "Cab view not available"
-msgstr "Нет кабины"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:900
-msgid "In MP, use Alt-F4 to quit directly"
-msgstr "Чтобы сразу выйти из мультиплеереа, нажмите Alt-F4"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:931
-msgid "Automatic platform and siding labels visible."
-msgstr "Отображены названия используемых поездом платформ и путей ."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:934
-msgid "Platform and siding labels visible."
-msgstr "Названия платформ и путей отображаются."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:937
-msgid "Platform labels visible."
-msgstr "Названия платформ отображаются."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:940
-msgid "Siding labels visible."
-msgstr "Названия путей отображаются."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:946
-msgid "Platform and siding labels hidden."
-msgstr "Названия платформ и путей не отображаются."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:957
-msgid "Train labels visible."
-msgstr "Названия поездов отображаются."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:960
-msgid "Car labels visible."
-msgstr "Номера вагонов отображаются."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:966
-msgid "Train and car labels hidden."
-msgstr "Номера поездов и вагонов не отображаются."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1008
-msgid "This car doesn't have a 2D cab"
-msgstr "Эта модель не снабжена 2D кабиной"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1012
-msgid "This car doesn't have a 3D cab"
-msgstr "Эта модель не снабжена 3D кабиной"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1043
-msgid "Confirmations suppressed"
-msgstr "Подтверждения не отображаются"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1045
-msgid "Confirmations visible"
-msgstr "Подтверждения отображаются"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1193
-msgid "Switched to player control"
-msgstr "Автопилот отключён"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1200
-msgid "You can't switch from manual to autopilot mode"
-msgstr "Невозможно перейти на автопилот"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1206
-msgid "Switched to autopilot"
-msgstr "Автопилот включён"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1813
-msgid "Game saved"
-msgstr "Сохранение создано"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:295
-#, csharp-format
-msgid "Allowed speed raised to {0}"
-msgstr "Разрешённая скорость повышена до {0}"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1034
-#, csharp-format
-msgid "Vibrating at level {0}"
-msgstr "Амплитуда качки {0}"
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1224
-#, csharp-format
-msgid "Keyboard map list saved to '{0}'."
-msgstr "Таблица назначения клавиш сохранена в '{0}'."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1228
-#, csharp-format
-msgid "Keyboard map image saved to '{0}'."
-msgstr "Схема назначения клавиш сохранена в '{0}'."
-
-#: ../../RunActivity/Viewer3D/Viewer.cs:1081
-#, csharp-format
-msgid "{0} viewpoint stored. Use Shift+8 to restore viewpoints."
-msgid_plural "{0} viewpoints stored. Use Shift+8 to restore viewpoints."
-msgstr[0] "{0} точка обзора сохранена. Shift+8 переключает между точками."
-msgstr[1] "{0} точки обзора сохранены. Shift+8 переключает между точками."
-msgstr[2] "{0} точек обзора сохранено. Shift+8 переключает между точками."
-
-#: ../../RunActivity/Viewer3D/Weather.cs:144
-msgid ""
-"Restoring wrong weather type : trying to restore dynamic weather but save "
-"contains user controlled weather"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:268
+msgid "Suppression"
 msgstr ""
-"Сценарий предполагает динамическую погоду, а сохранение содержит управляемую "
-"игроком"
 
-#: ../../RunActivity/Viewer3D/Weather.cs:1654
-msgid ""
-"Restoring wrong weather type : trying to restore user controlled weather but "
-"save contains dynamic weather"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:269
+msgid "Cont. Service"
+msgstr "Непр.Служебн"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:270
+msgid "Full Service"
+msgstr "Полн.Служебное"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:271
+msgid "Minimum Reduction"
+msgstr "Предв. разрядка"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:272
+msgid "Hold"
+msgstr "Перекрыша СП"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:273
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:230
+msgid "Overcharge"
+msgstr "Отпускное"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:274
+msgid "Emergency Braking Push Button"
+msgstr "Кнопка аварийного останова"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:275
+msgid "TCS Emergency Braking"
+msgstr "Автостоп Экстренное"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:276
+msgid "TCS Full Service Braking"
+msgstr "Автостоп Служебное"
+
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:277
+msgid "Vac. Cont. Service"
 msgstr ""
-"Сценарий предполагает управляемую игроком, а сохранение содержит "
-"динамическую погоду"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:1935
-msgid "Switching Request Sent to the Server"
-msgstr "Запрос отправлен на сервер"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:278
+msgid "Vac. Apply Cont. Service"
+msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:176
-msgid "View Self"
-msgstr "Показать свой поезд"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:279
+msgid "Manual Braking"
+msgstr "Ручное торможение"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:559
-msgid "MSG to Server"
-msgstr "Сбщ.серверу"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:280
+msgid "Notch"
+msgstr "Позиция"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.cs:563
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:224
-msgid "MSG to All"
-msgstr "Сбщ. всем"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:281
+msgid "EP Service"
+msgstr "ЭП тормож"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:91
-msgid "View Train"
-msgstr "Вид поезда"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:282
+msgid "EP Full Service"
+msgstr "ЭПТ"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:134
-msgid "m"
-msgstr "м"
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:283
+msgid "Slow service"
+msgstr "Темп мягкости"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:155
-msgid "Remove"
-msgstr "Убрать"
+#. Context: Brake Controller
+#: ../../Orts.Simulation/Common/Scripting/BrakeController.cs:259
+msgctxt "Brake Controller"
+msgid "Running"
+msgstr "Поездное"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:169
-msgid "Auto Switch"
-msgstr "Автопереход"
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:83
+msgctxt "PowerSupply"
+msgid "Off"
+msgstr "Снято"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:183
-msgid "Show Avatars"
-msgstr "Показ аватар"
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:84
+msgctxt "PowerSupply"
+msgid "On ongoing"
+msgstr "Взводится"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:210
-msgid "MSG to Selected"
-msgstr "Сбщ. выбранным"
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:85
+msgctxt "PowerSupply"
+msgid "On"
+msgstr "Вкл"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:237
-#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:88
-msgid "Compose MSG"
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:90
+msgctxt "Pantograph"
+msgid "Down"
+msgstr "Опущен"
+
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:91
+msgctxt "Pantograph"
+msgid "Lowering"
+msgstr "Опускается"
+
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:92
+msgctxt "Pantograph"
+msgid "Raising"
+msgstr "Поднимается"
+
+#. Context: Pantograph
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/AbstractPowerSupply.cs:93
+msgctxt "Pantograph"
+msgid "Up"
+msgstr "Поднят"
+
+#. Context: CircuitBreaker
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:111
+msgctxt "CircuitBreaker"
+msgid "Open"
+msgstr "Отключён"
+
+#. Context: CircuitBreaker
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:112
+msgctxt "CircuitBreaker"
+msgid "Closing"
+msgstr "Включается"
+
+#. Context: CircuitBreaker
+#: ../../Orts.Simulation/Common/Scripting/PowerSupply/CircuitBreaker.cs:113
+msgctxt "CircuitBreaker"
+msgid "Closed"
+msgstr "Включён"
+
+#: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:130
+#: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:142
+msgid "Connection to the server is lost, will play as single mode"
+msgstr ""
+"Связь с сервером потеряна, игра продолжится в однопользовательском режиме"
+
+#: ../../Orts.Simulation/MultiPlayer/ClientComm.cs:159
+msgid "Alt-E to gain control of your train"
+msgstr "Чтобы управлять поездом, нажмите Alt-E"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:838
+msgid "Dispatcher does not allow hand throw at this time"
+msgstr "Сейчас диспетчер запретил ручной перевод стрелок"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:882
+msgid "main route"
+msgstr "прямое"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:882
+msgid "side route"
+msgstr "отклонённое"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1708
+msgid "You are the new dispatcher. Enjoy!"
+msgstr "Вы теперь диспетчер. Поздравляем!"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1839
+msgid "Name conflicted with people in the game, will play in single mode"
+msgstr ""
+"Имя совпадает с именем другого игрока. Игра продолжится в "
+"однопользовательском режиме"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1919
+#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:188
+msgid "You gained back the control of your train"
+msgstr "Вы снова управляете своим поездом"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2165
+msgid "Server quits, will play as single mode"
+msgstr "Сервер отключился, начат однопользовательский режим"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2446
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2694
+msgid "Trains uncoupled, gain back control by Alt-E"
+msgstr "Поезд расцеплен. Для управления им, нажмите Alt-E"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2838
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2964
+msgid "Trains coupled, hit \\ then Shift-? to release brakes"
+msgstr "Поезд сцеплен, нажмите\"\\\"затем \"Shift-?\"для сброса автотормозов"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3420
+msgid "You are an assistant now, will be able to handle switches and signals."
+msgstr "Вы теперь помошник диспетчера. Можете управлять стрелками и сигналами."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3426
+msgid "You are no longer an assistant."
+msgstr "Вы больше не помошник диспетчера."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:881
+#, csharp-format
+msgid "Switched, current route is {0}"
+msgstr ""
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:1716
+#, csharp-format
+msgid "New dispatcher is {0}"
+msgstr "Диспетчер теперь {0}"
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2176
+#: ../../Orts.Simulation/MultiPlayer/OnlinePlayer.cs:176
+#, csharp-format
+msgid "{0} quit."
+msgstr "{0} вышел."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:2248
+#, csharp-format
+msgid "{0} lost."
+msgstr "{0} слетел."
+
+#: ../../Orts.Simulation/MultiPlayer/Message.cs:3306
+#, csharp-format
+msgid " From {0}: {1}"
+msgstr " От {0}: {1}"
+
+#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:828
+msgid "Missing car, have substituted with other one."
+msgstr "Отсутствующий вагон заменён другим."
+
+#: ../../Orts.Simulation/MultiPlayer/MPManager.cs:457
+#, csharp-format
+msgid "Cannot decouple: train has {0} player, need to completely stop."
+msgid_plural "Cannot decouple: train has {0} players, need to completely stop."
+msgstr[0] "Нельзя расцепиться до полной остановки: в составе поезда {0} игрок."
+msgstr[1] ""
+"Нельзя расцепиться до полной остановки: в составе поезда {0} игрока ."
+msgstr[2] ""
+"Нельзя расцепиться до полной остановки: в составе поезда {0} игроков ."
+
+#: ../../Orts.Simulation/Simulation/Activity.cs:1004
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6535
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10600
+msgid "Passenger boarding completed. Waiting for signal ahead to clear."
+msgstr "Посадка окончена. Ожидание разрешающего сигнала."
+
+#: ../../Orts.Simulation/Simulation/Activity.cs:1009
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6540
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10608
+msgid "Passenger boarding completed. You may depart now."
+msgstr "Посадка окончена. Отправление разрешается."
+
+#: ../../Orts.Simulation/Simulation/Activity.cs:984
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:6547
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10615
+#, csharp-format
+msgid "Passenger boarding completes in {0:D2}:{1:D2}"
+msgstr "Посадка заканчивается в {0:D2}:{1:D2}"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:26
+msgid "None"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:27
+msgid "Information"
+msgstr "Информация"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:28
+msgid "Warning"
+msgstr "Предупреждение"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:29
+msgid "Error"
+msgstr "Ошибка"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:30
+msgid "MSG"
 msgstr "Сообщение"
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:249
-msgid "Res"
-msgstr "Поле"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:261
-msgid "Reply to Selected"
-msgstr "Отв. выбранным"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:275
-msgid "Draw Path"
-msgstr "Показ маршрута"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:322
-msgid "Pick Signals"
-msgstr "Выбор сигналов"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:335
-msgid "Pick Switches"
-msgstr "Выбор стрелок"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:348
-msgid "Can Join"
-msgstr "Разр. Присоед"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:371
-msgid "Assist"
-msgstr "Ассист"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:383
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:649
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:692
-msgid "Normal"
-msgstr "Обычно"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:395
-msgid "Follow"
-msgstr "Вести"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:409
-msgid "Penalty"
-msgstr "Автостоп"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:423
-msgid "Prefer Green"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:177
+msgid "<none>"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:436
-msgid "See in Game"
-msgstr "Показать в игре"
-
-#: ../../RunActivity/Viewer3D/Debugging/DebugViewerForm.Designer.cs:474
-msgid "DispatchViewer"
-msgstr "Монитор диспетчера"
-
-#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:46
-msgid "Clear All"
-msgstr "Очистить всё"
-
-#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:57
-msgid "Reply Selected"
-msgstr "Ответ на выбранное"
-
-#: ../../RunActivity/Viewer3D/Debugging/MessageViewer.Designer.cs:102
-msgid "MessageViewer"
-msgstr "Просмотр сообщения"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:180
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:213
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:214
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:215
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:658
-msgid "-"
-msgstr "-"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.cs:212
-msgid "0"
-msgstr "0"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:149
-msgid "Active sounds"
-msgstr "Активные звуки"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:160
-msgid "Inactive sounds"
-msgstr "Неактивные звуки"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:192
-msgid "Sound cache"
-msgstr "Кэш звуков"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:204
-msgid "Selected sound"
-msgstr "Выбранный звук"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:216
-msgid "3D"
-msgstr "3D"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:284
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:434
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:613
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:962
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:291
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:211
-msgid "Speed"
-msgstr "Скорость"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:312
-msgid "Variable 2"
-msgstr "Переменная 2"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:331
-msgid "Variable 3"
-msgstr "Переменная 3"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:341
-msgid "Variable 1"
-msgstr "Переменная 1"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:351
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:968
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:970
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:78
-msgid "Distance"
-msgstr "Удаление"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:361
-msgid "Volume"
-msgstr "Громкость"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:429
-msgid "WavCache"
-msgstr "Кэш звука"
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:484
-msgid "AL Sources"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/Debugging/SoundDebugForm.Designer.cs:513
-msgid "Sound Debug"
-msgstr "Отладка звука"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:45
-msgid "Activity Events"
-msgstr "События сценария"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:178
-msgid "without success"
-msgstr "безуспешно"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:294
-msgid "Resume"
-msgstr "Продолжить"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:294
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:324
-msgid "Pause"
-msgstr "Пауза"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:295
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:316
-msgid "Resume and close box"
-msgstr "Продолжить, закрыв окно"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:295
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:307
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:325
-msgid "Close box"
-msgstr "Закрыть окно"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:296
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:308
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:326
-msgid "Quit activity"
-msgstr "Выйти из сценария"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:297
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:318
-msgid "Status: Activity paused"
-msgstr "Состояние: сценарий приостановлен"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:297
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:309
-msgid "Status: Activity resumed"
-msgstr "Состояние: сценарий возобновлён"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:317
-msgid "End Activity"
-msgstr "Закончить сценарий"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:327
-msgid "Status: Activity running"
-msgstr "Состояние: сценарий выполняется"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:177
-#, csharp-format
-msgid ""
-"This activity has ended {0}.\n"
-"For a detailed evaluation, see the Help Window (F1)."
-msgstr ""
-"Сценарий завершён {0}.\n"
-"Для подробного анализа откройте справочник (F1)."
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:333
-#, csharp-format
-msgid "Event: {0}"
-msgstr "Событие: {0}"
-
-#: ../../RunActivity/Viewer3D/Popups/ActivityWindow.cs:341
-#, csharp-format
-msgid "Train: {0}"
-msgstr "Поезд: {0}"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:41
-msgid "Car Operation Menu"
-msgstr "Операции с составом"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:51
-msgid "Car ID"
-msgstr "Вагон №"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:54
-msgid "Toggle Handbrake"
-msgstr "Ручной тормоз"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:56
-msgid "Toggle Power"
-msgstr "Силовая установка"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:58
-msgid "Toggle MU Connection"
-msgstr "Управление по СМЕ"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:60
-msgid "Toggle Brake Hose Connection"
-msgstr "Тормозные рукава"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:62
-msgid "Open/Close Front Angle Cock"
-msgstr "Передний концевой кран"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:64
-msgid "Open/Close Rear Angle Cock"
-msgstr "Задний концевой кран"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:66
-msgid "Open/Close Bleed Off Valve"
-msgstr "Трёхходовой кран"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:68
-msgid "Close window"
-msgstr "Закрыть окно"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:100
-msgid "Handbrake set"
-msgstr "Ручной тормоз затянут"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:102
-msgid "Handbrake off"
-msgstr "Ручной тормоз отпущен"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:115
-msgid "Power OFF command sent"
-msgstr "Команда на отключение подана"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:117
-msgid "Power ON command sent"
-msgstr "Команда на включение подана"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:120
-msgid "No power command for this type of car!"
-msgstr "Эта команда неприменима к данной единице!"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:134
-msgid "MU signal connected"
-msgstr "Включен в СМЕ"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:136
-msgid "MU signal disconnected"
-msgstr "Отключен от СМЕ"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:139
-msgid "No MU command for this type of car!"
-msgstr "Эта единица не может работать по СМЕ!"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:146
-msgid "Front brake hose connected"
-msgstr "Рукава спереди соединены"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:148
-msgid "Front brake hose disconnected"
-msgstr "Рукава спереди разъединены"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:155
-msgid "Front angle cock opened"
-msgstr "Передний концевой кран открыт"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:157
-msgid "Front angle cock closed"
-msgstr "Передний концевой кран закрыт"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:164
-msgid "Rear angle cock opened"
-msgstr "Задний концевой кран открыт"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:166
-msgid "Rear angle cock closed"
-msgstr "Задний концевой кран закрыт"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:176
-msgid "Bleed off valve opened"
-msgstr "Трёхходовой кран открыт"
-
-#: ../../RunActivity/Viewer3D/Popups/CarOperationsWindow.cs:178
-msgid "Bleed off valve closed"
-msgstr "Трёхходовой кран закрыт"
-
-#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:35
-msgid "Compass"
-msgstr "Компас"
-
-#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:46
-msgid "Lat:"
-msgstr "Шир:"
-
-#: ../../RunActivity/Viewer3D/Popups/CompassWindow.cs:49
-msgid "Lon:"
-msgstr "Долг:"
-
-#: ../../RunActivity/Viewer3D/Popups/ComposeMessage.cs:32
-msgid "Compose Message (e.g.   receiver1, receiver2: message body)"
-msgstr "Напишите сообщение (напр.   адресат1, адресат2, текст сообщения)"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:78
-msgid "Help"
-msgstr "Помощь"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:80
-msgid "Key Commands"
-msgstr "Список команд"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:106
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:1052
-msgid "Briefing"
-msgstr "Инструктаж"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:117
-msgid "Timetable"
-msgstr "Расписание"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:122
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:408
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:77
-msgid "Station"
-msgstr "Станция"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:123
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:79
-msgid "Arrive"
-msgstr "Прибытие"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:124
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:126
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:80
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:82
-msgid "Actual"
-msgstr "По факту"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:125
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:81
-msgid "Depart"
-msgstr "Отправл"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:141
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:143
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:401
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:414
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:277
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:494
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:570
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:573
-msgid "(missed)"
-msgstr "(пропущена)"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:150
-msgid "Work Orders"
-msgstr "Наряды"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:155
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:581
-msgid "Task"
-msgid_plural "Tasks"
-msgstr[0] "Задание"
-msgstr[1] "Задания"
-msgstr[2] "Заданий"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:156
-msgid "Car(s)"
-msgstr "Вагон(ы)"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:157
-msgid "Location"
-msgstr "Станц.путь"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:158
-msgid "Status"
-msgstr "Состояние"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:178
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:453
-msgid "Assemble Train"
-msgstr "Соберите состав"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:182
-msgid "At Location"
-msgstr "На"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:186
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:460
-msgid "Drop Off"
-msgstr "Отцепка"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:190
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:464
-msgid "Pick Up"
-msgstr "Прицепка"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:283
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:491
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:524
-msgid "Done"
-msgstr "Выполнено"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:297
-msgid "Evaluation"
-msgstr "Протокол"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:336
-msgid "This Activity has ended."
-msgstr "Сценарий завершён."
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:345
-msgid "Timetable:"
-msgstr "Расписание:"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:380
-msgid "- Station stops: "
-msgstr "-Остановки: "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:391
-msgid "- Remaining station stops: "
-msgstr "-Оставшиеся остановки: "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:406
-msgid "- Missed station stops: "
-msgstr "-Пропущеные остановки: "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:416
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:768
-msgid " "
-msgstr " "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:430
-msgid "Work orders:"
-msgstr "Наряды:"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:456
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:850
-msgid "Assemble Train At Location"
-msgstr "Сформировать поезд в"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:517
-msgid "- Tasks: "
-msgstr "- Задания: "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:529
-msgid "- Accomplished: "
-msgstr "- Выполнены: "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:531
-msgid "- Coupling speed limits: "
-msgstr "- Скорость при прицепке: "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:539
-msgid "  The Debrief evaluation report is disabled."
-msgstr " Отчёт с анализом протокола не создан."
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:594
-msgid "- "
-msgstr "- "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:595
-msgid "= "
-msgstr "= "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:667
-msgid "A report file was created:"
-msgstr "Отчёт составлен:"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
-msgid "Diesel."
-msgstr "Тепловоз."
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
-msgid "Steam."
-msgstr "Паровоз."
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:763
-msgid "Electric."
-msgstr "Электровоз."
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:1061
-msgid "Procedures"
-msgstr "Порядок работы"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:1133
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:1160
-msgid " = "
-msgstr " = "
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:394
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:130
-#, csharp-format
-msgid "Current Delay: {0} minute"
-msgid_plural "Current Delay: {0} minutes"
-msgstr[0] "Текущее опоздание: {0} минута"
-msgstr[1] "Текущее опоздание: {0} минуты"
-msgstr[2] "Текущее опоздание: {0} минут"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:582
-msgid "Task accomplished"
-msgid_plural "Tasks accomplished"
-msgstr[0] "Задание выполнено"
-msgstr[1] "Задания выполнено"
-msgstr[2] "Заданий выполнено"
-
-#: ../../RunActivity/Viewer3D/Popups/HelpWindow.cs:595
-#, csharp-format
-msgid "{0} minute"
-msgid_plural "{0} minutes"
-msgstr[0] "{0} минута"
-msgstr[1] "{0} минуты"
-msgstr[2] "{0} минут"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:129
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:437
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:599
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:612
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+msgid "reverse"
+msgstr "назад"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+msgid "neutral"
+msgstr "нейтраль"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+msgid "forward"
+msgstr "вперёд"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+msgid "locked. Close throttle, stop train then re-try."
+msgstr "заблокирован. Выключите контроллер и остановите поезд."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:180
 msgid "Throttle"
-msgstr "Тяга"
+msgstr "Контроллер"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:130
-msgid "Power In/Out"
-msgstr "Энергия Вх/Исх"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:180
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:188
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:189
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:198
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:199
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:201
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:204
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:205
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:209
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:210
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:243
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:244
+msgid "close"
+msgstr "закр"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:134
-msgid "Motive force"
-msgstr "Сила тяги"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:180
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:188
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:189
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:198
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:199
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:201
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:204
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:205
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:209
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:210
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:243
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:244
+msgid "open"
+msgstr "откр"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:136
-msgid "Num of substeps"
-msgstr "Число подшагов"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:180
+msgid "locked. Release dynamic brake then re-try."
+msgstr "заблокирован. Выключите динамическое торможение."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:139
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1116
-msgid "Memory"
-msgstr "Исп.памяти"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:181
+msgid "Wheel-slip"
+msgstr "Боксование"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:140
-msgid "GCs"
-msgstr ""
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:181
+msgid "over"
+msgstr "прекратилось"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:141
-msgid "Frame time"
-msgstr "Время кадра"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:181
+msgid "occurring. Tractive power greatly reduced."
+msgstr "началось. Сила тяги значительно снизилась."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:142
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1130
-msgid "Render process"
-msgstr "Обраб.графики"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:181
+msgid "warning"
+msgstr "предупреждение"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:143
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1131
-msgid "Updater process"
-msgstr "Обраб.обновления"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:183
+msgid "Power"
+msgstr "Мощность"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:144
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1132
-msgid "Loader process"
-msgstr "Обраб.вывода"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:183
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:193
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:199
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:207
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:227
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:229
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:230
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:232
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:234
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:235
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:236
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:237
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:238
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:239
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:259
+msgid "off"
+msgstr "Откл"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:145
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1133
-msgid "Sound process"
-msgstr "Обраб.звука"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:183
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:193
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:199
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:207
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:227
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:229
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:230
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:232
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:238
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:239
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:259
+msgid "on"
+msgstr "Вкл"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:423
-msgid "Version"
-msgstr "Версия программы"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:184
+msgid "Pantograph 1"
+msgstr "Токоприёмник 1"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:427
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:429
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:188
-msgid "Time"
-msgstr "Игровое время"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:184
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:185
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:186
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:187
+msgid "lower"
+msgstr "опущен"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:432
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:195
-msgid "Replay"
-msgstr "Повтор"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:184
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:185
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:186
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:187
+msgid "raise"
+msgstr "поднят"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:435
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:889
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:322
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:229
-msgid "Gradient"
-msgstr "Уклон"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:185
+msgid "Pantograph 2"
+msgstr "Токоприёмник 2"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:436
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:597
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:609
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
-msgid "Direction"
-msgstr "Направл"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:186
+msgid "Pantograph 3"
+msgstr "Токоприёмник 3"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:437
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:599
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:187
+msgid "Pantograph 4"
+msgstr "Токоприёмник 4"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:188
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:189
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:465
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:477
+msgid "Circuit breaker"
+msgstr "ГВ"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:190
+msgid "Circuit breaker closing authorization"
+msgstr "Разрешение включить ГВ"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:190
+msgid "remove"
+msgstr "снято"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:190
+msgid "give"
+msgstr "дано"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+msgid "Player Diesel Power"
+msgstr "Первый ДВС"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:192
+msgid "locked. Close throttle then re-try."
+msgstr "заблокировано. Сначала выключите контроллер."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:193
+msgid "Helper Diesel Power"
+msgstr "Остальные ДВС"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:194
+msgid "Diesel Tank"
+msgstr "Топливный бак"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:194
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:195
+msgid "re-fueled"
+msgstr "заправлен"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:194
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:195
+msgid "level"
+msgstr "уровень"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:195
+msgid "Boiler Water Tank"
+msgstr "Водяной бак"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:198
 msgid "Regulator"
 msgstr "Регулятор"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:439
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:363
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:408
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:442
-msgid "Train brake"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:199
+msgid "Injector 1"
+msgstr "Инжектор 1"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:200
+msgid "Injector 2"
+msgstr "Инжектор 2"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:201
+msgid "Blowdown Valve"
+msgstr "Вентиль продувки котла"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:202
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6019
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6046
+msgid "Blower"
+msgstr "Сифон"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:202
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:203
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:206
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:211
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:212
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:250
+msgid "decrease"
+msgstr "уменьшить"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:202
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:203
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:206
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:211
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:212
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:250
+msgid "increase"
+msgstr "увеличить"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:203
+msgid "SteamHeat"
+msgstr "Паровое отопление"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:204
+msgid "Damper"
+msgstr "Поддувало"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:205
+msgid "Firebox Door"
+msgstr "Топка"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:206
+msgid "Firing Rate"
+msgstr "Подача топлива"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:207
+msgid "Manual Firing"
+msgstr "Ручная подача угля"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:208
+msgid "Fire"
+msgstr "Топить"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:208
+msgid "add shovel-full"
+msgstr "полными лопатами"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:209
+msgid "Cylinder Cocks"
+msgstr "Клапаны продувки цилиндров"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:210
+msgid "Cylinder Compound"
+msgstr "Компаунд"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:211
+msgid "LargeEjector"
+msgstr "Большой эжектор"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:212
+msgid "SmallEjector"
+msgstr "Малый эжектор"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:213
+msgid "VacuumExhauster"
+msgstr "Эксгаустер"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:213
+msgid "normal"
+msgstr "обычно"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:213
+msgid "fast"
+msgstr "ускоренно"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:214
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:215
+msgid "Tender"
+msgstr "Тендер"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:214
+msgid "Coal re-filled"
+msgstr "Уголь погружен"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:214
+msgid "Coal level"
+msgstr "Остаток угля"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:215
+msgid "Water re-filled"
+msgstr "Вода залита"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:215
+msgid "Water level"
+msgstr "Остаток воды"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:217
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6642
+msgid "Water Scoop"
+msgstr "Водяной черпак"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:217
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:254
+msgid "up"
+msgstr "поднят"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:217
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:254
+msgid "down"
+msgstr "опущен"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:219
+msgid "Train Brake"
 msgstr "Автотормоза"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:441
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:459
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:219
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:220
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:221
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:223
+msgid "release"
+msgstr "отпускается"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:219
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:220
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:221
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:223
+msgid "apply"
+msgstr "затормаживается"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:220
+msgid "Engine Brake"
+msgstr "Независ. тормоз"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:221
+msgid "Brakeman Brake"
+msgstr "Тормозильщик Тормозить"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+msgid "Dynamic Brake"
+msgstr "Динамич. тормоз"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:222
+msgid "setup"
+msgstr "подготовка"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:223
+msgid "Emergency Brake"
+msgstr "Экстренное"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:224
+msgid "Bail Off"
+msgstr "Отпуск ВТ"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:224
+msgid "disengage"
+msgstr "не задействован"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:224
+msgid "engage"
+msgstr "задействован"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:225
+msgid "Brakes"
+msgstr "Тормоза"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:225
+msgid "initialize"
+msgstr "исправлены"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:225
+msgid "cannot initialize. Stop train then re-try."
+msgstr "невозможно исправить. Сначала остановите поезд."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:226
+msgid "Handbrake"
+msgstr "Ручной тормоз"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:226
+msgid "none"
+msgstr "отсутствует"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:226
+msgid "full"
+msgstr "полностью затянут"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:227
 msgid "Retainers"
 msgstr "Ретейнеры"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:443
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:468
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:483
-msgid "Engine brake"
-msgstr "Независ. тормоз"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:227
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:102
+msgid "Exhaust"
+msgstr "Выпуск"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:445
-msgid "Brakemen brake"
-msgstr "Ручные тормоза"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:227
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:103
+msgid "High Pressure"
+msgstr "Выс.Давление"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:447
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:600
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:494
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:502
-msgid "Dynamic brake"
-msgstr "Динамич. тормоз"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:227
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:104
+msgid "Low Pressure"
+msgstr "Низк.Давление"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:461
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:619
-msgid "FPS"
-msgstr "Кадров в секунду"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:227
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/BrakeSystem.cs:105
+msgid "Slow Direct"
+msgstr ""
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:465
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:81
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:629
-msgid "Autopilot"
-msgstr "Автопилот"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:228
+msgid "Brake Hose"
+msgstr "Тормозной рукав"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:468
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:841
-msgid "Wheel slip"
-msgstr "Боксование"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:228
+msgid "disconnect"
+msgstr "разъединён"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:470
-msgid "Wheel slip warning"
-msgstr "На грани боксования"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:228
+msgid "connect"
+msgstr "соединён"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:473
-msgid "Wheel skid"
-msgstr "Юз"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:232
+msgid "Sander"
+msgstr "Песочница"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:479
-msgid "Sander blocked"
-msgstr "Пескоподача заблокирована"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:233
+msgid "Alerter"
+msgstr "Контроль бдительности"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:481
-msgid "Sander on"
-msgstr "Пескоподача включена"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:233
+msgid "acknowledge"
+msgstr "проведён"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:494
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:709
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:717
-msgid "Doors open"
-msgstr "Двери открыты"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:234
+msgid "Horn"
+msgstr "Тифон"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:500
-msgid "MultiPlayerStatus: "
-msgstr "Роль в мультиплеере: "
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:235
+msgid "Whistle"
+msgstr "Гудок"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:501
-msgid "Dispatcher"
-msgstr "Диспетчер"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:235
+msgid "blow"
+msgstr "гудит"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:502
-msgid "Helper"
-msgstr "Ассистент"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:236
+msgid "Bell"
+msgstr "Сигн.мал.громк"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:503
-msgid "Client"
-msgstr "Клиент"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:236
+msgid "ring"
+msgstr "звучит"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:512
-msgid "CONSIST INFORMATION"
-msgstr "ИНФОРМАЦИЯ О СОСТАВЕ"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:237
+msgid "Headlight"
+msgstr "Прожектор"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:524
-msgid "Player"
-msgstr "Игрок"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:237
+msgid "dim"
+msgstr "тускло"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:525
-msgid "Tilted"
-msgstr "Наклон"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:237
+msgid "bright"
+msgstr "ярко"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:526
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:548
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:729
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:758
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:788
-msgid "Type"
-msgstr "Тип"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:238
+msgid "Cab Light"
+msgstr "Освещение кабины"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:527
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:549
-msgid "Length"
-msgstr "Длина"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:239
+msgid "Wipers"
+msgstr "Стеклоочистители"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:528
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:550
-msgid "Weight"
-msgstr "Вес"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:240
+msgid "Cab"
+msgstr "Кабину"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:529
-msgid "Tonnage"
-msgstr "Тоннаж"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:240
+msgid "changing is not available"
+msgstr "не на что сменить"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:530
-msgid "Control Mode"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:240
+msgid ""
+"changing disabled. Close throttle, set reverser to neutral, stop train then "
+"re-try."
+msgstr ""
+"нельзя сменить. Сначала остановите поезд, поставьте контроллер и реверсор в "
+"нейтральное положение."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:241
+msgid "Odometer"
+msgstr "Одометр"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:243
+msgid "Doors Left"
+msgstr "Лев.двери"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:244
+msgid "Doors Right"
+msgstr "Прав.двери"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:245
+msgid "Mirror"
+msgstr "Зеркала"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:245
+msgid "retract"
+msgstr "сложены"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:245
+msgid "extend"
+msgstr "открыты"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:247
+msgid "Switch Ahead"
+msgstr "Стрелка впереди"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:247
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:248
+msgid "locked. Use Control+M to change signals to manual mode then re-try."
+msgstr "заблокирована. Используйте Control+M для перехода в маневровый режим."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:248
+msgid "Switch Behind"
+msgstr "Стрелка позади"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:250
+msgid "Simulation Speed"
+msgstr "Скорость симуляции"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:250
+msgid "reset"
+msgstr "нормальная"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:251
+msgid "Uncouple After"
+msgstr "Расцепить после"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:252
+msgid "Activity"
+msgstr "Сценарий"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:252
+msgid "quit"
+msgstr "выйти"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:252
+msgid "resume"
+msgstr "продолжить"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:253
+msgid "Replay"
+msgstr "Переиграть"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:253
+msgid "Overriding camera replay. Press Escape to resume camera replay."
+msgstr "Взять управление на себя? Для продолжения просмотра, нажмите Esc."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:254
+msgid "Gearbox"
+msgstr "Коробка передач"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:254
+msgid "locked. Use shaft before changing gear."
+msgstr "заблокирована. Сначала выключите контроллер."
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:255
+msgid "Signal mode"
 msgstr "Режим АЛС"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:531
-msgid "Out of Control"
-msgstr "Автостоп"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:255
+msgid "manual"
+msgstr "маневровый"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:532
-msgid "Cab Aspect"
-msgstr "Локомот. светофор"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:255
+msgid "auto"
+msgstr "поездной"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:535
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:557
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:925
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1114
-msgid "Yes"
-msgstr "Да"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:255
+msgid "locked. Stop train, then re-try."
+msgstr "заблокирован. Сначала остановите поезд."
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:535
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:557
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:925
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1114
-msgid "No"
-msgstr "Нет"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:536
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:558
-msgid "Freight"
-msgstr "Грузов"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:536
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:558
-msgid "Pass"
-msgstr "Пасс"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:546
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:728
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:757
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:787
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:876
-msgid "Car"
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:257
+msgid "Wagon"
 msgstr "Вагон"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:547
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:610
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:936
-msgid "Flipped"
-msgstr "Развёрн"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:551
-msgid "Drv/Cabs"
-msgstr "Пост упр"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:552
-msgid "Wheels"
-msgstr "Кол.формула"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:591
-msgid "LOCOMOTIVE INFORMATION"
-msgstr "ЛОКОМОТИВЫ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:604
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:644
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:653
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:655
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:659
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:668
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:670
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:678
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:680
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:704
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:719
-msgid "off"
-msgstr "откл"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:605
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:642
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:651
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:666
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:676
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:700
-msgid "PlayerLoco"
-msgstr "Ведущий"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:608
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:714
-msgid "Loco"
-msgstr "Ведомый"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:611
-msgid "MU'd"
-msgstr "СМЕ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:615
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
-msgid "Power"
-msgstr "Мощн"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:616
-msgid "Force"
-msgstr "Усилие"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:626
-msgid "BRAKE INFORMATION"
-msgstr "ТОРМОЗА"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:643
-msgid "Exhauster"
-msgstr "Эксгаустер"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:644
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:653
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:655
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:659
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:668
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:670
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:678
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:680
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:704
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:719
-msgid "on"
-msgstr "вкл"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:652
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:667
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:677
-msgid "Large Ejector"
-msgstr "Бол.эжектор"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:654
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:679
-msgid "Small Ejector"
-msgstr "Мал.эжектор"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:656
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:681
-msgid "Pressure"
-msgstr "Давление"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:658
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:669
-msgid "Vacuum Pump"
-msgstr "Вакуумный насос"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:687
-msgid "Brake Sys Vol"
-msgstr "Объём торм.сист"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:688
-msgid "Train Pipe"
-msgstr "ТМ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:690
-msgid "Brake Cyl"
-msgstr "ТЦ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:692
-msgid "Air Vol"
-msgstr "Объём Возд"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:701
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:716
-msgid "Main reservoir"
-msgstr "ГР"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:703
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:718
-msgid "Compressor"
-msgstr "Компрессор"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:730
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:789
-msgid "BrkCyl"
-msgstr "ТЦ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:731
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:790
-msgid "BrkPipe"
-msgstr "ТМ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:732
-msgid "VacRes"
-msgstr "Вак.Рез"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:738
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:767
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:797
-msgid "Handbrk"
-msgstr "Руч.тор"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:739
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:798
-msgid "Conn"
-msgstr "Магистр"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:740
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:799
-msgid "AnglCock"
-msgstr "Конц.кран"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:759
-msgid "Brk"
-msgstr "Тормож"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:791
-msgid "AuxRes"
-msgstr "ЗР"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:792
-msgid "ErgRes"
-msgstr "АвР"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:793
-msgid "MRPipe"
-msgstr "НМ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:794
-msgid "RetValve"
-msgstr "Ретейн"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:795
-msgid "TripleValve"
-msgstr "ВР"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:800
-msgid "BleedOff"
-msgstr "Трёхх.кран"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:817
-msgid "FORCE INFORMATION"
-msgstr "СИЛЫ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:831
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:840
-msgid "(Advanced adhesion model)"
-msgstr "(Сложная модель сцепления)"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:832
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:852
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:860
-msgid "Loco Adhesion"
-msgstr "Сцепление локом"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:833
-msgid "Wag Adhesion"
-msgstr "Сцепл.вагона"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:834
-msgid "Tang. Force"
-msgstr "Касат.Сила"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:835
-msgid "Static Force"
-msgstr "Статическая сила"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:842
-msgid "Conditions"
-msgstr "Условия"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:843
-msgid "Axle drive force"
-msgstr "Сила тяги на ободе"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:844
-msgid "Axle brake force"
-msgstr "Торм.сила на ободе"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:845
-msgid "Number of substeps"
-msgstr "Промежут.ступеней"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:847
-msgid "Solver"
-msgstr "Вычислитель"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:848
-msgid "Stability correction"
-msgstr "Испр. устойчивости"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:849
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:859
-msgid "Axle out force"
-msgstr "Сила тяги на ободе"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:853
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:861
-msgid "Wagon Adhesion"
-msgstr "Сцепление вагона"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:858
-msgid "(Simple adhesion model)"
-msgstr "(Упрощённая модель сцепл.)"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:877
-msgid "Total"
-msgstr "Результ"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:878
-msgid "Motive"
-msgstr "Тяга"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:879
-msgid "Brake"
-msgstr "Тормож"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:880
-msgid "Friction"
-msgstr "Трение"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:881
-msgid "Gravity"
-msgstr "Вес"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:882
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:890
-msgid "Curve"
-msgstr "Кривая"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:883
-msgid "Tunnel"
-msgstr "Тоннель"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:884
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1102
-msgid "Wind"
-msgstr "Ветер"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:885
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:886
-msgid "Coupler"
-msgstr "Сцепка"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:887
-msgid "Slack"
-msgstr "Растяж"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:888
-msgid "Mass"
-msgstr "Масса"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:891
-msgid "Brk Frict."
-msgstr "Тр.торм."
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:892
-msgid "Brk Slide"
-msgstr "Скольжен"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:893
-msgid "Bear Temp"
-msgstr "Темп.подш"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:957
-msgid "DISPATCHER INFORMATION : active trains : "
-msgstr "ДИСПЕТЧЕР - активные поезда "
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:960
-msgid "Train"
-msgstr "Поезд"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:961
-msgid "Travelled"
-msgstr "Прошёл"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:963
-msgid "Max"
-msgstr "Макс"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:964
-msgid "AI mode"
-msgstr "Режим"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:965
-msgid "AI data"
-msgstr "Значения"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:966
-msgid "Mode"
-msgstr "АЛС"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:967
-msgid "Auth"
-msgstr "Огранич"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:969
-msgid "Signal"
-msgstr "Сигнал"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:971
-msgid "Consist"
-msgstr "Состав"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:972
-msgid "Path"
-msgstr "Маршрут"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1096
-msgid "WEATHER INFORMATION"
-msgstr "ПОГОДА"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1098
-msgid "Visibility"
-msgstr "Видимость"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1099
-msgid "Cloud cover"
-msgstr "Облачность"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1100
-msgid "Intensity"
-msgstr "Интенсивн. осадков"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1101
-msgid "Liquidity"
-msgstr "Влажность осадков"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1103
-msgid "Amb Temp"
-msgstr "Температура"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1108
-msgid "DEBUG INFORMATION"
-msgstr "НАЛАДКА"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1114
-msgid "Logging enabled"
-msgstr "Ведётся журнал"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1115
-msgid "Build"
-msgstr "Сборка"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1117
-msgid "CPU"
-msgstr "Загрузка ЦП"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1118
-msgid "GPU"
-msgstr "Загрузка ГП"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1119
-msgid "Adapter"
-msgstr "Графич.адаптер"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1124
-msgid "Shadow maps"
-msgstr "Схемы теней"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1126
-msgid "Shadow primitives"
-msgstr "Фигур тени"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1129
-msgid "Render primitives"
-msgstr "Отрисовано фигур"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1130
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1131
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1132
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1133
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1134
-msgid "wait"
-msgstr "в ожидании"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1134
-msgid "Total process"
-msgstr "Процесс, всего"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1135
-msgid "Camera"
-msgstr "Положение камеры"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:846
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:257
+msgid "Wagon fully unloaded"
+msgstr "Вагон полностью разгружен"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:257
+msgid "Wagon fully loaded"
+msgstr "Вагон полностью погружен"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:257
+msgid "Freight load"
+msgstr "Загрузка"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:259
+msgid "Cab Radio"
+msgstr "Радиостанция"
+
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:269
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:278
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:316
 #, csharp-format
-msgid "filtered by {0:F0}"
-msgstr "выборка {0:F0}"
+msgid "{0} {1}"
+msgstr "{0} {1}"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1098
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:273
 #, csharp-format
-msgid "{0:N0} m"
-msgstr "{0:N0} м"
+msgid "{0}"
+msgstr "{0}"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1099
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1101
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:283
 #, csharp-format
-msgid "{0:F0} %"
-msgstr "{0:F0} %"
+msgid "{0} to {1:0}%"
+msgstr "{0} до {1:0}%"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1100
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:288
 #, csharp-format
-msgid "{0:F4} p/s/m^2"
-msgstr "{0:F4} p/s/m²"
+msgid "{0} {1:0}% {2}"
+msgstr "{0} {1:0}% {2}"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1102
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:293
 #, csharp-format
-msgid "{0:F1},{1:F1} m/s"
-msgstr "{0:F1},{1:F1} м/с"
+msgid "{0:0}% {1}"
+msgstr "{0:0}% {1}"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1116
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:298
 #, csharp-format
-msgid ""
-"{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} MB managed, {9:F0} kB/frame allocated, "
-"{2:F0}/{3:F0}/{4:F0} GCs)"
-msgstr ""
-"{0:F0} MB ({5}, {6}, {7}, {8}, {1:F0} МБ управляется, {9:F0} кБ/фрэйм "
-"выделено, {2:F0}/{3:F0}/{4:F0} GCs)"
+msgid "{0:0}%"
+msgstr "{0:0}%"
 
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1117
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:306
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:311
 #, csharp-format
-msgid "{0:F0}% ({1})"
-msgstr "{0:F0}% ({1})"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1118
-#, csharp-format
-msgid ""
-"{0:F0} FPS (50th/95th/99th percentiles {1:F1} / {2:F1} / {3:F1} ms, shader "
-"model {4})"
-msgstr ""
-"{0:F0} кадров/сек (50й/95й/99й percentiles {1:F1} / {2:F1} / {3:F1} мс, "
-"shader model {4})"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1119
-#, csharp-format
-msgid "{0} ({1:F0} MB)"
-msgstr "{0} ({1:F0} МБ)"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1122
-#, csharp-format
-msgid "{0}/{1}"
-msgstr "{0}/{1}"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1123
-#, csharp-format
-msgid "({0}x{0})"
-msgstr "({0}x{0})"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1126
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1129
-#, csharp-format
-msgid "{0:F0}"
-msgstr "{0:F0}"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1130
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1131
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1132
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1133
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1134
-#, csharp-format
-msgid "{0:F0}% ({1:F0}% {2})"
-msgstr "{0:F0}% ({1:F0}% {2})"
-
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:1117
-#, csharp-format
-msgid "{0} logical processor"
-msgid_plural "{0} logical processors"
-msgstr[0] "{0} логический процессор"
-msgstr[1] "{0} логических процессора"
-msgstr[2] "{0} логических процессоров"
-
-#. Context: Cab
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:534
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:561
-msgctxt "Cab"
-msgid "R"
-msgstr "Б"
-
-#. Context: Cab
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:534
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:561
-msgctxt "Cab"
-msgid "F"
-msgstr "А"
-
-#. Context: Cab
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:561
-msgctxt "Cab"
-msgid "D"
-msgstr "Да"
-
-#. Context: Steam
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:598
-msgctxt "Steam"
-msgid "Reverser"
-msgstr "Реверс"
+msgid "{0} {1:0}%"
+msgstr "{0} {1:0}%"
 
 #. Context: NonSteam
-#: ../../RunActivity/Viewer3D/Popups/HUDWindow.cs:598
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:179
 msgctxt "NonSteam"
 msgid "Reverser"
 msgstr "Реверсор"
 
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:60
-msgid "Next Station"
-msgstr "Следующая станция"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:188
-msgid "Waiting for train to attach"
-msgstr "Ожидается прицепка к поезду"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:194
-msgid "Waiting for train to attach : "
-msgstr "Ожидается прицепка к поезду: "
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:207
-msgid "Waiting for transfer"
-msgstr "Ожидается обмен вагонами"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:223
-msgid "Train inactive."
-msgstr "Поезд неактивен."
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:227
-msgid "Train static."
-msgstr "Поезд статичен."
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:231
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:454
-msgid "Train not active."
-msgstr "Поезд не активен."
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:237
-msgid " Activated by other train."
-msgstr " Активирован другим поездом."
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:241
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:463
-msgid " Activation time : "
-msgstr " Активация в: "
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:246
-msgid "Train has terminated."
-msgstr "Поезд аннулирован."
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:298
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:515
-msgid "No more stations."
-msgstr "Станций больше нет."
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:347
-msgid "Transfer units at next station with train "
-msgstr "На следующей станции передача вагонов поезду "
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:357
-msgid "Transfer units with train "
-msgstr "Передача вагонов поезду "
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:389
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:395
-msgid "Train is to attach to : "
-msgstr "Поезд сцепляется с: "
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:397
-msgid " ; other train not yet ready"
-msgstr " ; другой состав пока не готов"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:406
-msgid "Train is to pickup train at end of path"
-msgstr "Поезд для прицепки в конце маршрута"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:411
-msgid "Pick up train ahead"
-msgstr "Прицепка к поезду перед Вами"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:421
-msgid "Transfer units with train ahead"
-msgstr "Передача вагонов поезду впепеди"
-
-#: ../../RunActivity/Viewer3D/Popups/NextStationWindow.cs:650
-msgid "Activity completed."
-msgstr "Сценарий выполнен."
-
-#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:96
-#, csharp-format
-msgid "Odometer {0}"
-msgstr "Одометр {0}"
-
-#: ../../RunActivity/Viewer3D/Popups/NoticeWindow.cs:110
-#, csharp-format
-msgid "FOV: {0:F0}°"
-msgstr "Угол обзора: {0:F0}°"
-
-#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:32
-msgid "Pause Menu"
-msgstr "Меню паузы"
-
-#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:46
-#, csharp-format
-msgid "Quit {1} ({0})"
-msgstr "Выйти из {1} ({0})"
-
-#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:51
-#, csharp-format
-msgid "Save your game ({0})"
-msgstr "Сохранить игру ({0})"
-
-#: ../../RunActivity/Viewer3D/Popups/QuitWindow.cs:59
-#, csharp-format
-msgid "Continue playing ({0})"
-msgstr "Продолжить игру ({0})"
-
-#: ../../RunActivity/Viewer3D/Popups/SwitchWindow.cs:46
-msgid "Switch"
-msgstr "Стрелки"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:73
-msgid "Track Monitor"
-msgstr "Путевая обстановка"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:77
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:232
-msgid "Auto Signal"
-msgstr "АЛС - Автомат"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:78
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:233
-msgid "Node"
-msgstr "АЛС - Полуавт"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:79
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:234
-msgid "Manual"
-msgstr "АЛС - Маневр"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:80
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:235
-msgid "Explorer"
-msgstr "АЛС - Исслед"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:81
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:236
-msgid "OutOfControl : "
-msgstr "АЛС - Автостоп: "
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:82
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:237
-msgid "Inactive"
-msgstr "АЛС - Неактивен"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:83
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:238
-msgid "Turntable"
-msgstr "АЛС - поворотный круг"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:84
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:239
-msgid "Unknown"
-msgstr "АЛС - некодируемый участок"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:95
-msgid "Speed:"
-msgstr "Скорость:"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:100
-msgid "Projected:"
-msgstr "Ожидается:"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:105
-msgid "Limit:"
-msgstr "Ограничение:"
-
-#: ../../RunActivity/Viewer3D/Popups/TrackMonitorWindow.cs:118
-msgid " Milepost   Limit     Dist"
-msgstr " Пикет  Огр.ск. Сиг Дист"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:33
-msgid "Train List"
-msgstr "Список поездов"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:45
-msgid "Number"
-msgstr "№ записи"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:46
-msgid "Service Name"
-msgstr "Название поезда"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:47
-msgid "Viewed"
-msgstr "Показать"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:166
-msgid "Train in turntable not aligned to a track can't be selected"
-msgstr "Нельзя переключиться, пока локомотив на поворотном круге"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainListWindow.cs:171
-msgid "Player train can't be switched when in turntable not aligned to a track"
-msgstr "Нельзя переключиться, пока локомотив на поворотном круге"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:39
-msgid "Train Operations"
-msgstr "Действия с поездом"
-
-#: ../../RunActivity/Viewer3D/Popups/TrainOperationsWindow.cs:119
-msgid "In Timetable Mode uncoupling using this window is not allowed"
-msgstr "В режиме расписания нельзя управлять сцепками через это окно"
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:44
-msgid "Timetable Detach Menu"
-msgstr "Выполняется отцепка"
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:54
-msgid "This train is about to split."
-msgstr "Поезд будет разъединён."
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:63
-msgid "Use 'cab switch' command to select cab in required portion."
-msgstr "Для выбора поезда, которым хотите управлять, смените кабину."
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:69
-msgid "Perform Detach"
-msgstr "Выполняется отцепка"
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:93
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:98
-msgid "static consist"
-msgstr "статический состав"
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:102
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:107
-msgid "Rear"
-msgstr "Задний"
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:103
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:106
-msgid "Front"
-msgstr "Передний"
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:112
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:117
-#, csharp-format
-msgid "This portion will continue as train : {0}"
-msgstr "Этот отцеп формирует поезд: {0}"
-
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:113
-#: ../../RunActivity/Viewer3D/Popups/TTDetachWindow.cs:118
-#, csharp-format
-msgid "{0} portion will form train : {1}"
-msgstr "{0} отцеп формирует поезд: {1}"
-
-#: ../../RunActivity/Viewer3D/Popups/WindowText.cs:152
-msgid ""
-"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/"
-"()=?;:'_[]"
-msgstr ""
-"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \",.-+|!$%&/"
-"()=?;:'_[]"
-
-#: ../../RunActivity/Viewer3D/Processes/GameStateRunActivity.cs:1203
-#, csharp-format
-msgid "Activity Save file '*.save' not found in folder {0}"
-msgstr "Файл сохранения '*.save' не найден в папке {0}"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:385
-msgid "freight-grain"
-msgstr "зерно"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:386
-msgid "freight-coal"
-msgstr "уголь"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:387
-msgid "freight-gravel"
-msgstr "щебень"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:388
-msgid "freight-sand"
-msgstr "песок"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:389
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
-msgid "water"
-msgstr "вода"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:390
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:118
-msgid "coal"
-msgstr "уголь"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:391
-msgid "diesel oil"
-msgstr "нефтепродукты"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:392
-msgid "wood"
-msgstr "дрова"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:393
-msgid "sand"
-msgstr "песок"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:394
-msgid "freight-general"
-msgstr "общие грузы"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:395
-msgid "freight-livestock"
-msgstr "животные"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:396
-msgid "freight-fuel"
-msgstr "жидкое топливо"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:397
-msgid "freight-milk"
-msgstr "молоко"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:398
-msgid "mail"
-msgstr "почта"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:527
-msgid "Refill: Immediate refill process selected, refilling immediately."
-msgstr "Выбрана моментальная экипировка, запас пополнен."
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:548
-msgid "Refill: Electric loco and no pickup. Command rejected"
-msgstr "Электровоз не требуется заправлять топливом"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:664
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:683
-msgid "Incompatible pickup type"
-msgstr "Неподходящий тип груза"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:670
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:688
-msgid "Starting refill"
-msgstr "Заправка начата"
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:555
-#, csharp-format
-msgid "Refill: Distance to {0} supply is {1}."
-msgstr "Расстояние до {0} заправки {1}."
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:563
-#, csharp-format
-msgid "Refill: Loco must be stationary to refill {0}."
-msgstr "Остановитесь, чтобы пополнить {0}."
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:569
-#, csharp-format
-msgid "Refill: Loco speed must exceed {0}."
-msgstr "Скорость должна превышать {0}."
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:576
-#, csharp-format
-msgid "Refill: Loco speed must not exceed {0}."
-msgstr "Скорость не должна превышать {0}."
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:594
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:615
-#, csharp-format
-msgid "Refill: {0} supply now replenished."
-msgstr "{0} запас пополнен."
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:621
-#, csharp-format
-msgid "Unload: {0} fuel or freight now unloaded."
-msgstr "Разгрузка: {0} уже разгружено."
-
-#: ../../RunActivity/Viewer3D/RollingStock/MSTSLocomotiveViewer.cs:556
-#, csharp-format
-msgid "{0} meter"
-msgid_plural "{0} meters"
-msgstr[0] "{0} метр"
-msgstr[1] "{0} метра"
-msgstr[2] "{0} метров"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:280
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:167
-msgid "Sprtr"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:298
-msgid "Projected"
-msgstr "Ожидается"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:305
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:362
-msgid "Limit"
-msgstr "Ограничение"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:332
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
+#. Context: Steam
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:197
+msgctxt "Steam"
 msgid "Reverser"
 msgstr "Реверс"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:339
-msgid "Cab ORIEN"
+#. Context: Alerter
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:233
+msgctxt "Alerter"
+msgid "sound"
+msgstr "свисток"
+
+#. Context: Horn
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:234
+msgctxt "Horn"
+msgid "sound"
+msgstr "звучит"
+
+#. Context: Cab
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:240
+msgctxt "Cab"
+msgid "change"
+msgstr "сменил"
+
+#. Context: Odometer
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:241
+msgctxt "Odometer"
+msgid "reset"
+msgstr "сброшен"
+
+#. Context: Odometer
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:241
+msgctxt "Odometer"
+msgid "counting down"
+msgstr "на убывание"
+
+#. Context: Odometer
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:241
+msgctxt "Odometer"
+msgid "counting up"
+msgstr "на возрастание"
+
+#. Context: Switch
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:247
+#: ../../Orts.Simulation/Simulation/Confirmer.cs:248
+msgctxt "Switch"
+msgid "change"
+msgstr "переведена"
+
+#: ../../Orts.Simulation/Simulation/Simulator.cs:1724
+msgid "Train can't be suspended with speed not equal 0"
+msgstr "Движущийся поезд нельзя приостановить"
+
+#: ../../Orts.Simulation/Simulation/Simulator.cs:1845
+msgid "To return to static train speed must be = 0"
+msgstr "Чтобы поезд снова стал статическим, остановите его"
+
+#: ../../Orts.Simulation/Simulation/Simulator.cs:799
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4426
+#, csharp-format
+msgid ""
+"Player train has been included into train {0} service {1}, that "
+"automatically becomes the new player train"
 msgstr ""
+"Поезд игрока объединён с {0} в поезд {1}, который теперь управляется Вами"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:340
-msgid "Forward"
-msgstr "Вперёд"
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:245
+msgid "Train partially on transfertable, can't transfer"
+msgstr "Часть состава не на столе, переставлять нельзя"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:340
-msgid "Backward"
-msgstr "Назад"
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:256
+msgid "Transfer can't start: check throttle, speed, direction and control mode"
+msgstr "Не сдвинуть. Проверьте контроллер, реверсор, скорость, АЛС"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:361
-msgid "Milepost"
-msgstr "Пикет"
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:283
+msgid "Transfertable starting transferring train"
+msgstr "Перестановка начата"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:363
-msgid "Dist"
-msgstr "Удаление"
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:348
+#: ../../Orts.Simulation/Simulation/Transfertables.cs:364
+msgid "Transfertable connected"
+msgstr "Перестановка окончена"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrackMonitorDisplay.cs:607
-msgid "SprtrDarkGray"
+#: ../../Orts.Simulation/Simulation/Turntables.cs:205
+msgid "turntable"
+msgstr "поворотный круг"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:205
+msgid "transfertable"
+msgstr "передаточную платформу"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:224
+#: ../../Orts.Simulation/Simulation/Turntables.cs:265
+#, csharp-format
+msgid "Train slipped into non aligned {0}"
+msgstr "Скатывание с не готового {0}"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:231
+#, csharp-format
+msgid "Train front on {0}"
+msgstr "Зашёл на {0}"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:239
+#, csharp-format
+msgid "Train front outside {0}"
+msgstr "Переехал  {0}"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:272
+#, csharp-format
+msgid "Train rear on {0}"
+msgstr "Полностью на {0}"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:280
+#, csharp-format
+msgid "Train rear outside {0}"
+msgstr "Недозаехал на {0}"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:599
+msgid "Train partially on turntable, can't rotate"
+msgstr "Часть поезда не на мосту"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:610
+msgid "Rotation can't start: check throttle, speed, direction and control mode"
+msgstr "Не повернуть. Проверьте контроллер, реверсор, скорость, АЛС"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:618
+msgid "Turntable starting rotation with train"
+msgstr "Поворот начат"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:729
+#: ../../Orts.Simulation/Simulation/Turntables.cs:760
+msgid "Turntable forward connected"
+msgstr "Выезд вперёд"
+
+#: ../../Orts.Simulation/Simulation/Turntables.cs:742
+#: ../../Orts.Simulation/Simulation/Turntables.cs:773
+msgid "Turntable backward connected"
+msgstr "Выезд назад"
+
+#: ../../Orts.Simulation/Simulation/AIs/AITrain.cs:4977
+#, csharp-format
+msgid ""
+"Join success: Train {0} service {1} has been incorporated into train {2} "
+"service {3}"
 msgstr ""
+"Сцепка удалась: Состав {0} (Поезд) {1} сцеплен с составом {2} (Поезд) {3}"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:81
-msgid "AUTO"
-msgstr "АВТО"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1770
+msgid "Coupler broken!"
+msgstr "Сцепка разрушилась!"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:517
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:535
-msgid "Boiler pressure"
-msgstr "Давление"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:1773
+msgid "Coupler overloaded!"
+msgstr "Сцепка перегружена!"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:82
-msgid "PRES"
-msgstr "ДАВЛ"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2366
+msgid ""
+"The steam usage has exceeded the capacity of the steam boiler. Steam boiler "
+"locked out."
+msgstr "Расход пара превысил производительность котла."
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
-msgid "Boiler water glass"
-msgstr "Водомерное стекло"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6703
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:6708
+msgid "Other train is blocking path"
+msgstr "Маршрут занят другим составом"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:83
-msgid "WATR"
-msgstr "ВОДА"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:7575
+msgid "Stopped due to errors in route setting"
+msgstr "Остановлен, поскольку маршрут задан с ошибками"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
-msgid "Boiler water level"
-msgstr "Уровень воды в котле"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8291
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9456
+msgid "No signal in train's path"
+msgstr "На маршруте нет сигналов"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:84
-msgid "LEVL"
-msgstr "УРОВ"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8299
+msgid "Next signal already allocated to other train"
+msgstr "Участок впереди уже выделен другому поезду"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
-msgid "Circuit breaker"
-msgstr "Главн Выключ"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8360
+msgid "Request to clear signal cannot be processed"
+msgstr "Запрос на открытие сигнала не может быть выполнен"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:85
-msgid "CIRC"
-msgstr "ГВ"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:8468
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9576
+msgid "No switch found"
+msgstr "Стрелок не обнаружено"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:305
-msgid "Cylinder cocks"
-msgstr "Клапаны продувки цилиндров"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9934
+msgid "You cannot enter manual mode when autopiloted"
+msgstr "На автопилоте нельзя перейти в маневровый режим"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:86
-msgid "CCOK"
-msgstr "КЛЦИЛ"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9939
+msgid "You cannot use this command for pathless trains"
+msgstr "Команда неприменима, когда поезду не задан маршрут"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:87
-msgid "DIRC"
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9951
+msgid "Train is not back on original route"
+msgstr "Поезд не вернулся на маршрут"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9960
+msgid ""
+"Original route is reverse from present direction, stop train before switching"
+msgstr "Маршрут требует смены направления. Сначала остановите поезд"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:9980
+msgid "Cannot change to Manual Mode while in Explorer Mode"
+msgstr "В режиме исследования нельзя включить маневровый режим АЛС"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10067
+msgid "Reversal required and rear of train not on required route"
+msgstr "Необходимо сменить направление, хвост поезда не освободил стрелку"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10339
+msgid "Cannot clear signal behind train while in AUTO mode"
+msgstr "Нельзя открыть сигнал сзади при автоматическом режмие АЛС"
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16042
+msgid "Car "
+msgstr "Вагон "
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16116
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:16121
+msgid "Locomotive "
+msgstr "Локомотив "
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2312
+#, csharp-format
+msgid "Carriage {0} temperature is too cold, the passengers are freezing."
+msgstr "В вагоне {0} слишком холодно. Пассажиры мёрзнут."
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:2316
+#, csharp-format
+msgid "Car {0} temperature is too cold for the freight."
+msgstr "В вагоне {0} влишком холодно для этого груза."
+
+#: ../../Orts.Simulation/Simulation/Physics/Train.cs:10822
+#, csharp-format
+msgid "Train stopped due to problems with other train: train {0} , reason: {1}"
 msgstr ""
+"Поезд остановлен из-за неполадок с другим поездом: поезд {0} , причина: {1}"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:88
-msgid "DOOR"
-msgstr "ДВЕРИ"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:89
-msgid "BDYN"
-msgstr "ЭДТОРМ"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:90
-msgid "BLOC"
-msgstr "ВСТОРМ"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:594
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:731
 msgid "Engine"
-msgstr "Мотор"
+msgstr "Двигатель"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:91
-msgid "ENGN"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
-msgid "Fire mass"
-msgstr "Загрузка топки"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:92
-msgid "FIRE"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
-msgid "Fixed gear"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:93
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
-msgid "GEAR"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:540
-msgid "Fuel levels"
-msgstr "Уровни топлива"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:94
-msgid "FUEL"
-msgstr "ТОПЛ"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:95
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:548
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:735
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:747
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5912
 msgid "Gear"
 msgstr "Передача"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:96
-msgid "GRAD"
-msgstr "УКЛОН"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:749
+msgid "Fuel"
+msgstr "Топливо"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:640
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:648
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:657
-msgid "Grate limit"
-msgstr ""
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:757
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:487
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6202
+msgid "StHeat:"
+msgstr "ПарОтоп:"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:97
-msgid "GRAT"
-msgstr ""
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:758
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:768
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:488
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:498
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6203
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6211
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6589
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6604
+msgid "Press"
+msgstr "Давл"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:572
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:760
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:490
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6205
+msgid "StTemp"
+msgstr "Темп.пара"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:762
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:492
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6207
+msgid "StUse"
+msgstr "Расх.пара"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:765
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:495
+msgid "WaterLvl"
+msgstr "Зап.воды"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:767
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:497
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6210
+msgid "Last:"
+msgstr "Хвост:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:770
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:500
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6213
+msgid "Temp"
+msgstr "Тепрер"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:772
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:502
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6215
+msgid "OutTemp"
+msgstr "Наружн"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:774
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:504
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6217
+msgid "NetHt"
+msgstr "Баланс"
+
+#. Context: Gear
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSDieselLocomotive.cs:736
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5913
+msgctxt "Gear"
+msgid "N"
+msgstr "Нейтраль"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:297
+msgid "No power line!"
+msgstr "Отсутствует КС!"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:299
+msgid "Power line condition overridden."
+msgstr "КС игнорируется."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:460
 msgid "Pantographs"
 msgstr "Токосъёмники"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:98
-msgid "PANT"
-msgstr "ПАНТ"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:478
+msgid "TCS"
+msgstr "Система безопасости движения"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:99
-msgid "POWR"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:478
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:479
+msgid "OK"
+msgstr "Исправна"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:478
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:479
+msgid "NOT OK"
+msgstr "Неисправна"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:479
+msgid "Driver"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:100
-msgid "REGL"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:480
+msgid "Auxiliary power"
+msgstr "Питание ВЦ"
+
+#. Context: PowerSupply
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSElectricLocomotive.cs:469
+msgctxt "PowerSupply"
+msgid "Power"
+msgstr "Сеть"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2379
+msgid "No water scoop on this loco"
+msgstr "Локомотив не оборудован черпаком"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2387
+msgid "Scoop is broken, can't refill"
+msgstr "Черпак повреждён, набор воды невозможен"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2395
+msgid "Scoop is broken by junction track"
+msgstr "Черпак разбит об рельсы"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2405
+msgid "Scoop is not over trough, can't refill"
+msgstr "Черпак не над канавой, набор воды невозможен"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2721
+msgid "Sand supply has been exhausted"
+msgstr "Песочный бункер экипировочного устройства пуст"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2417
+msgid "Refill: Loco must be moving forward."
+msgstr "Для набора двигайтесь вперёд."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2427
+#, csharp-format
+msgid "Refill: Loco speed must exceed {0} for water to enter tender."
+msgstr "Для набора воды, скорость движения должна превышать {0}."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSLocomotive.cs:2438
+msgid "Refill: Water supply now replenished."
+msgstr "Запасы воды пополнены."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2326
+msgid "Tender coal supply is empty. Your loco will fail."
+msgstr "Весь уголь израсходован."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2423
+msgid "Tender water supply is empty. Your loco will fail."
+msgstr "Вся вода израсходована."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2549
+msgid "Fire has dropped too far. Your loco will fail."
+msgstr "Огонь в топке гаснет."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2631
+msgid ""
+"FireMass is getting low. Your fireman will shovel faster, but don't wear him "
+"out."
+msgstr "Почти весь уголь прогорел. Поторопите кочегара."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:2643
+msgid "FireMass is back within limits. Your fireman will shovel as per normal."
+msgstr "Горение нормализовано. Кочегар может не торопиться."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:3116
+msgid "Grate limit exceeded - boiler heat rate cannot increase."
+msgstr "Колосник забит-мощность котла больше не увеличить."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:3124
+msgid "Grate limit return to normal."
+msgstr "Колосник очищается."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5277
+msgid "Water level dropped too far. Plug has fused and loco has failed."
+msgstr "Выкипело слишком много воды-котёл вышел из строя."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5284
+msgid "Boiler overfull and priming."
+msgstr "Котёл переполнен."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5290
+msgid "Boiler no longer priming."
+msgstr "Уровень в котле нормализовался."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5910
+msgid "Fixed gear"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:101
-msgid "RPLY"
-msgstr ""
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:102
-msgid "RETN"
-msgstr "РЕТЕЙН"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:103
-msgid "REVR"
-msgstr "РЕВЕРС"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:319
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:329
-msgid "Sander"
-msgstr "Песочница"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:104
-msgid "SAND"
-msgstr "ПЕСОК"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:105
-msgid "SPED"
-msgstr "СКОР"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5914
 msgid "Steam usage"
 msgstr "Расход пара"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:106
-msgid "STEM"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5915
+msgid "Boiler pressure"
+msgstr "Давление в котле"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5916
+msgid "Boiler water glass"
+msgstr "Водомерное стекло"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5916
+msgid "(safe range)"
+msgstr "Раб.интервал"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5920
+msgid "Boiler water level"
+msgstr "Воды в котле"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5920
+msgid "(absolute)"
+msgstr "(абсолют)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5922
+msgid "Fire mass"
+msgstr "Загрузка топки"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5924
+msgid "Fire Heat Loss"
+msgstr "Теплопотери горения"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5927
+msgid "Fuel levels"
+msgstr "Запасы"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5927
+msgid "coal"
+msgstr "уголь"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5927
+msgid "water"
+msgstr "вода"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5936
+msgid "Key Inputs"
+msgstr "Ключевые параметры"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5938
+msgid "Locomotive Type:"
+msgstr "Тип паровоза:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5942
+msgid "Input:"
+msgstr "Характ:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5943
+msgid "Evap"
+msgstr "S испар"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5944
+msgid "Grate"
+msgstr "S колосн"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5945
+msgid "Boiler"
+msgstr "V котла"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5946
+msgid "SuperHr"
+msgstr "S перегр"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5947
+msgid "FuelCal"
+msgstr "Кал.топл"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5955
+msgid "Adj:"
+msgstr "Перем:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5956
+msgid "CylEff"
+msgstr "Эфф.Цил"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5958
+msgid "PortOpen"
+msgstr "Откр.регул"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5962
+msgid "Steam Production"
+msgstr "Парообразование"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5967
+msgid "Boiler:"
+msgstr "Котёл:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5969
+msgid "Mass"
+msgstr "Воды"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5970
+msgid "MaxOutp"
+msgstr "Макс.отд"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5971
+msgid "BoilerEff"
+msgstr "Отд.котла"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5979
+msgid "Heat:"
+msgstr "Тепло:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5980
+msgid "In"
+msgstr "Подвод"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5982
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6620
+msgid "Out"
+msgstr "Расход"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5984
+msgid "Rad"
+msgstr "Излуч"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5986
+msgid "Stored"
+msgstr "Накопл"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5988
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6282
+msgid "Max"
+msgstr "Номин"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5990
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6160
+msgid "Safety"
+msgstr "Предохр"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5992
+msgid "Raw"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:107
-msgid "THRO"
-msgstr "КОНТР"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5997
+msgid "Temp:"
+msgstr "Темпер:"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:108
-msgid "TIME"
-msgstr "ВРЕМ"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5998
+msgid "Flue"
+msgstr "Стенок"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:109
-msgid "BTRN"
-msgstr "АТОРМ"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6000
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6323
+msgid "Water"
+msgstr "Воды"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:667
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:675
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:683
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:691
-msgid "Wheel"
-msgstr "Колесо"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6002
+msgid "MaxSupH"
+msgstr "Макс.пер"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:110
-msgid "WHEL"
-msgstr "БОКС"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6004
+msgid "CurSupH"
+msgstr "Текущ.пер"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
-msgid "apply Service"
-msgstr "Темп служебный"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6008
+msgid "Steam Usage"
+msgstr "Расход пара"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:115
-msgid "Apply"
-msgstr "Применить"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6016
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6043
+msgid "Usage:"
+msgstr "Потребл:"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:116
-msgid "Apply Quick"
-msgstr "Быстрая разрядка"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6017
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6044
+msgid "Cyl"
+msgstr "Машина"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:116
-msgid "ApplQ"
-msgstr "Быстр"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6021
+msgid "Comprsr"
+msgstr "Компресс"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:117
-msgid "Apply Slow"
-msgstr "Темп мягкости"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6023
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6050
+msgid "SafetyV"
+msgstr "Пред.кл"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:117
-msgid "ApplS"
-msgstr "Мягк"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6025
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6052
+msgid "CylCock"
+msgstr "Цил.прод"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:118
-msgid "c"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6027
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6054
+msgid "Genertr"
+msgstr "Турбоген"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6029
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6056
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6341
+msgid "Stoker"
+msgstr "Стокер"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6031
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6058
+msgid "BlowD"
+msgstr "Эверласт"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6033
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6060
+msgid "MaxSafe"
+msgstr "Все пред"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6048
+msgid "Ejector"
+msgstr "Эжектор"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6071
+msgid "CylValve:"
+msgstr "Золотники:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6072
+msgid "Travel"
+msgstr "Ход"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6074
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6092
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6112
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6127
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6147
+msgid "Cutoff"
+msgstr "Отсечное"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6076
+msgid "Lead"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:119
-msgid "Emergency Braking Push Button"
-msgstr "Кнопка аварийного останова"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:119
-msgid "EmerBPB"
-msgstr "КнАвОст"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:120
-msgid "Lap Self"
-msgstr "Самоперекрыша"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:120
-msgid "LapS"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6078
+msgid "ExhLap"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
-msgid "Minimum Reduction"
-msgstr "Предв. разрядка"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:121
-msgid "MRedc"
-msgstr "ПрРазр"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
-msgid "safe range"
-msgstr "в допуске"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:122
-msgid "safe"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6080
+msgid "StLap"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:684
-msgid "skid"
-msgstr "юз"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:123
-msgid "Skid"
-msgstr "Юз"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:676
-msgid "slip warning"
-msgstr "на грани боксования"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:124
-msgid "Warning"
-msgstr "Оповещение"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:668
-msgid "slip"
-msgstr "бокс"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:125
-msgid "Slip"
-msgstr "Бокс"
-
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:126
-msgid "w"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6082
+msgid "AdvAng"
 msgstr ""
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:295
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6091
+msgid "CylEvts:"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6094
+msgid "CylExh"
+msgstr "Отсечка"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6096
+msgid "CylComp"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6098
+msgid "CyAdmis"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6107
+msgid "PressHP:"
+msgstr "Давление Iст:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6108
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6143
+msgid "Chest"
+msgstr "Входное"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6110
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6125
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6145
+msgid "Initial"
+msgstr "Начальн"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6114
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6129
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6149
+msgid "Rel"
+msgstr "Выпускн"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6116
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6131
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6151
+msgid "Back"
+msgstr "Остаточн"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6118
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6133
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6153
+msgid "MEP"
+msgstr "Ср.Эфф"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6124
+msgid "PressLP:"
+msgstr "Давление IIст:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6142
+msgid "Press:"
+msgstr "Давл:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6159
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6334
+msgid "Status:"
+msgstr "Состоян:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6161
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/AirSinglePipe.cs:168
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/Brakes/MSTS/SingleTransferPipe.cs:141
 msgid "Open"
-msgstr "Откр"
+msgstr "Открыт"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:300
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:718
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6161
 msgid "Closed"
-msgstr "Закрыто"
+msgstr "Закрыт"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
-msgid "Blocked"
-msgstr "Забл"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6162
+msgid "Plug"
+msgstr "Заглушка"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:320
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:630
-msgid "On"
-msgstr "Вкл"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6163
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6165
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6336
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6338
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6340
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6342
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6344
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6346
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6348
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6350
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6352
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6367
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6382
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6412
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6427
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6464
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6597
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6612
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6625
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6646
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6648
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1519
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1521
+msgid "Yes"
+msgstr "Да"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:330
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:503
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:630
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6163
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6165
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6336
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6338
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6340
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6342
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6344
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6346
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6348
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6350
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6352
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6367
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6382
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6412
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6427
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6464
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6597
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6612
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6625
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6646
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6648
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1519
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1521
+msgid "No"
+msgstr "Нет"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6164
+msgid "Prime"
+msgstr "Выброс"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6166
+msgid "Comp"
+msgstr "Байпас"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6167
 msgid "Off"
 msgstr "Откл"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:345
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:360
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:369
-msgid "EQ"
-msgstr "УР"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6167
+msgid "On"
+msgstr "Вкл"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:370
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:379
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:394
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:437
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:439
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:446
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:464
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:471
-msgid "BC"
-msgstr "ТЦ"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6221
+msgid "Fireman"
+msgstr "Кочегар"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:376
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:378
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:380
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:385
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:413
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:415
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:421
-msgid "EOT"
-msgstr "Хвост"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6223
+msgid "Fire:"
+msgstr "Горение:"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:402
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:404
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:405
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:412
-msgid "Lead"
-msgstr "Голова"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6224
+msgid "Ideal"
+msgstr "Идеальн"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:495
-msgid "Setup"
-msgstr "Подг"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6226
+msgid "Actual"
+msgstr "Фактич"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:578
-msgid "Up"
-msgstr "Подн"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6228
+msgid "MaxFireR"
+msgstr "МаксПод"
 
-#: ../../RunActivity/Viewer3D/WebServices/TrainDrivingDisplay.cs:641
-msgid "Exceeded"
-msgstr "Превышение"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6230
+msgid "FeedRate"
+msgstr "Подача"
 
-#~ msgid "3D Cab view not available"
-#~ msgstr "Нет виртуальной кабины"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6232
+msgid "BurnRate"
+msgstr "Ск Сгор"
 
-#~ msgctxt "Coupler"
-#~ msgid "Pull"
-#~ msgstr "Сжата"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6234
+msgid "Combust"
+msgstr "Уд Сгор"
 
-#~ msgctxt "Coupler"
-#~ msgid "Push"
-#~ msgstr "Растян"
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6238
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6345
+msgid "GrLimit"
+msgstr "Огр.Кол"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6242
+msgid "MaxBurn"
+msgstr "Макс-Возм"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6281
+msgid "Injector:"
+msgstr "Инжектор:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6283
+msgid "Inj1"
+msgstr "Инж.1"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6284
+msgid "Temp1"
+msgstr "Темп.1"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6285
+msgid "Inj2"
+msgstr "Инж.2"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6286
+msgid "Temp2"
+msgstr "Темп.2"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6299
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6319
+msgid "Tender:"
+msgstr "Тендер:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6300
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6320
+msgid "Coal"
+msgstr "Уголь"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6303
+msgid "Water(C)"
+msgstr "Вода(вся)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6306
+msgid "Water(T)"
+msgstr "Вода(осн)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6308
+msgid "Water(A)"
+msgstr "Вода(доп)"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6310
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6326
+msgid "Steam"
+msgstr "Пар,исп"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6312
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6328
+msgid "TotSteam"
+msgstr "Пар всего"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6335
+msgid "CoalOut"
+msgstr "Нет угля"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6337
+msgid "WaterOut"
+msgstr "Нет воды"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6339
+msgid "FireOut"
+msgstr "Нет огня"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6343
+msgid "Boost"
+msgstr "Форсир"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6347
+msgid "FireOn"
+msgstr "Подн.пар"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6349
+msgid "FireOff"
+msgstr "Сбр.пар"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6351
+msgid "AIOR"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6357
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6402
+msgid "Performance"
+msgstr "Производительность"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6359
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6404
+msgid "Power:"
+msgstr "Мощн:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6360
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6405
+msgid "MaxInd"
+msgstr "Макс.Инд"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6362
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6407
+msgid "Ind"
+msgstr "ИндТек"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6364
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6409
+msgid "Drawbar"
+msgstr "На сцепке"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6366
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6411
+msgid "BlrLmt"
+msgstr "Огр.кот"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6370
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6415
+msgid "Force:"
+msgstr "Усилие:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6371
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6416
+msgid "TheorTE"
+msgstr "ТеорТУ"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6373
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6418
+msgid "StartTE"
+msgstr "ТрогТУ"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6375
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6420
+msgid "TE"
+msgstr "ФактТУ"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6377
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6422
+msgid "Draw"
+msgstr "СцепТУ"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6379
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6424
+msgid "CritSpeed"
+msgstr "Крит.Ск"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6381
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6426
+msgid "SpdLmt"
+msgstr "ПределСк"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6385
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6430
+msgid "Move:"
+msgstr "Движ:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6386
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6431
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6453
+msgid "Piston"
+msgstr "Поршень"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6388
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6433
+msgid "DrvWhl"
+msgstr "ВедКол"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6390
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6435
+msgid "MF-Gear"
+msgstr "Перед.Ч"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6395
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6440
+msgid "Max-SpdF"
+msgstr "МаксКоэфСк"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6448
+msgid "Slip Monitor"
+msgstr "Боксование"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6450
+msgid "Slip:"
+msgstr "Боксование:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6451
+msgid "MForceN"
+msgstr "Движ.сила"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6455
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6532
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6546
+msgid "Tang(c)"
+msgstr "Вращ.момент"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6457
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6534
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6548
+msgid "Tang(t)"
+msgstr "Сила на банд"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6459
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6536
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6550
+msgid "Static"
+msgstr "Трение покоя"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6461
+msgid "Coeff"
+msgstr "Коэф.трения"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6463
+msgid "Slip"
+msgstr "Боксование"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6465
+msgid "WheelM"
+msgstr "Сцепной вес"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6467
+msgid "FoA"
+msgstr "Коэф.сцеплен"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6471
+msgid "Sand:"
+msgstr "Пескоподача:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6472
+msgid "S/Use"
+msgstr "Расход песка"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6474
+msgid "S/Box"
+msgstr "Номин.запас"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6476
+msgid "M/Press"
+msgstr "Давл.ГР"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6525
+msgid "Slip Debug"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6527
+msgid "Start:"
+msgstr "Трогание:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6528
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6542
+msgid "CyPressL"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6530
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6544
+msgid "CyPressR"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6541
+msgid "Speed:"
+msgstr "Скорость:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6555
+msgid "Wheel:"
+msgstr "Колёса:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6556
+msgid "TangSp"
+msgstr "Касат.ск"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6566
+msgid "Sound Variables"
+msgstr "Переменные звука"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6568
+msgid "V1:"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6570
+msgid "V2:"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6572
+msgid "V3:"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6583
+msgid "Ejector / Vacuum Pump"
+msgstr "Эжектор/Вакум.насос"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6588
+msgid "Large:"
+msgstr "Бол:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6591
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6606
+msgid "StCons"
+msgstr "Потр.пара"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6594
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6609
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6622
+msgid "Rate"
+msgstr "Производит"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6596
+msgid "Lg Ej"
+msgstr "Работает"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6603
+msgid "Small:"
+msgstr "Мал:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6611
+msgid "Sm Ej"
+msgstr "Работает"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6619
+msgid "Vac:"
+msgstr "Вак:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6624
+msgid "Pump"
+msgstr "Нагн"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6630
+msgid "Leak:"
+msgstr "Утечка:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6632
+msgid "Net:"
+msgstr "Баланс:"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6644
+msgid "Fill:"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6645
+msgid "ScDwn"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6647
+msgid "ScBrk"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6649
+msgid "Min"
+msgstr "Мин"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6651
+msgid "WaVel"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6653
+msgid "Drag"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6655
+msgid "WaterU"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6657
+msgid "Input"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6659
+msgid "Total"
+msgstr "Всего"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6773
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:6851
+msgid "Gears can't be changed unless throttle is at zero."
+msgstr "Переключать скорости можно только на нулевой позиции контроллера."
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7511
+msgid "AI Fireman has started adding fuel to fire"
+msgstr "Автокочегар начал подачу топлива"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7518
+msgid "AI Fireman has stopped adding fuel to fire"
+msgstr "Автокочегар прекратил подачу топлива"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:7525
+msgid "AI Fireman has been reset"
+msgstr "\"Автокочегар - сброс\""
+
+#. Context: HUD
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSSteamLocomotive.cs:5968
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:354
+msgctxt "HUD"
+msgid "Power"
+msgstr ""
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:1760
+msgid "Starting unload"
+msgstr "Начинается разгрузка"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3775
+msgid "Incompatible data"
+msgstr "Несовместимо"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3789
+msgid "Starting refill"
+msgstr "Экипировка начата"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/MSTSWagon.cs:3798
+msgid "Preparing for unload"
+msgstr "Подготовка к выгрузке"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1310
+msgid ""
+"You were travelling too fast for this curve, and have snapped a brake hose "
+"on Car "
+msgstr "Скорость в кривой превышена. Разъединился тормозной рукав у вагона "
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1272
+#, csharp-format
+msgid ""
+"You are travelling too fast for this curve. Slow down, your freight car {0} "
+"may be damaged. The recommended speed for this curve is {1}"
+msgstr ""
+"Скорость в кривой превышена. Притормозите,груз в вагоне {0} может быть "
+"повреждён. Рекомендуется скорость {1}"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/TrainCar.cs:1276
+#, csharp-format
+msgid ""
+"You are travelling too fast for this curve. Slow down, your passengers in "
+"car {0} are feeling uncomfortable. The recommended speed for this curve is "
+"{1}"
+msgstr ""
+"Скорость в кривой превышена. Притормозите, пассажиры в вагоне {0} испытали "
+"дискомфорт. Рекомендуется скорость {1}"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/CircuitBreaker.cs:407
+msgid "Circuit breaker closing not authorized"
+msgstr "Возврат ГВ не выполнен"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:350
+msgid "Status"
+msgstr "Состоян"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:358
+msgid "Load"
+msgstr "Нагрузка"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:365
+msgid "Flow"
+msgstr "Расх"
+
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:373
+msgid "Oil"
+msgstr "Масло"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:469
+msgctxt "Engine"
+msgid "Stopped"
+msgstr "Заглушен"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:470
+msgctxt "Engine"
+msgid "Starting"
+msgstr "Заводится"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:471
+msgctxt "Engine"
+msgid "Running"
+msgstr "Работает"
+
+#. Context: Engine
+#: ../../Orts.Simulation/Simulation/RollingStocks/SubSystems/PowerSupplies/DieselEngine.cs:472
+msgctxt "Engine"
+msgid "Stopping"
+msgstr "Останавливается"
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10410
+msgid "Held for connecting train : "
+msgstr "Ожидается согласованный поезд: "
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10418
+msgid "Waiting for train to attach : "
+msgstr "Ожидается прицепка к поезду: "
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10434
+msgid "Waiting for transfer with train : "
+msgstr "Ожидается обмен вагонами с поездом: "
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10449
+msgid "Waiting for train to arrive : "
+msgstr "Ожидание прибытия поезда: "
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10504
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10535
+msgid ", backward"
+msgstr "сзади"
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10519
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10535
+msgid ", forward"
+msgstr "спереди"
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10528
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10536
+msgid "Train is ready to attach to : "
+msgstr "Поезд готов к сцепке с: "
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTrain.cs:10591
+msgid "Passenger detraining completed. Train terminated."
+msgstr "Высадка пассажиров окончена. Поезд аннулирован."
+
+#: ../../Orts.Simulation/Simulation/Timetables/TTTurntable.cs:1788
+#: ../../Orts.Simulation/Simulation/Timetables/TTTurntable.cs:1829
+#, csharp-format
+msgid "Turntable is ready for access - allowed speed set to {0}"
+msgstr "Поворотный круг готов - разрешённая скорость {0}"
