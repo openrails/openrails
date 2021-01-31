@@ -2455,13 +2455,11 @@ namespace Orts.Simulation.RollingStocks
                         WaterScoopNotFittedFlag = true;
                     }
                     RefillingFromTrough = false;
-                    return;
                 }
                 else if (ScoopIsBroken)
                 {
                     Simulator.Confirmer.Message(ConfirmLevel.Error, Simulator.Catalog.GetString("Scoop is broken, can't refill"));
-                    RefillingFromTrough = false;
-                    return;
+                    RefillingFromTrough = false;       
                 }
                 else if (IsOverJunction())
                 {
@@ -2471,8 +2469,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                     ScoopIsBroken = true;
                     RefillingFromTrough = false;
-                    SignalEvent(Event.WaterScoopBroken);
-                    return;
+                    SignalEvent(Event.WaterScoopBroken);       
                 }
                 else if (!IsOverTrough())
                 {
@@ -2484,7 +2481,6 @@ namespace Orts.Simulation.RollingStocks
                         MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
                     }
                     RefillingFromTrough = false;
-                    return;
                 }
                 else if (IsTenderRequired == 1 && Direction == Direction.Reverse) // Locomotives with tenders cannot go in reverse
                 {
@@ -2494,7 +2490,6 @@ namespace Orts.Simulation.RollingStocks
                         WaterScoopDirectionFlag = true;
                     }
                     RefillingFromTrough = false;
-                    return;
                 }
                 else if (absSpeedMpS < WaterScoopMinSpeedMpS)
                 {
@@ -2507,12 +2502,10 @@ namespace Orts.Simulation.RollingStocks
                         MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
                     }
                     RefillingFromTrough = false;
-                    return;
                 }
                 else if (fraction > 1.0)
                 {
                     Simulator.Confirmer.Message(ConfirmLevel.None, Simulator.Catalog.GetStringFmt("Refill: Water supply now replenished."));
-                    return;
                 }
                 else
                 {
@@ -2528,7 +2521,6 @@ namespace Orts.Simulation.RollingStocks
                 MSTSWagon.RefillProcess.OkToRefill = false;
                 MSTSWagon.RefillProcess.ActivePickupObjectUID = 0;
                 RefillingFromTrough = false;
-                return;
             }
 
 
@@ -2606,10 +2598,7 @@ namespace Orts.Simulation.RollingStocks
                     WaterScoopSoundOn = false;
                     SignalEvent(Event.WaterScoopUp);
                 }
-
             }
-
-
         }
 
         #region Calculate Friction Coefficient
