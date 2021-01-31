@@ -73,7 +73,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     bool skiploop = false;
 
                     // In hardy brake system, BC on tender and locomotive is not changed in the StrBrkApply brake position
-                    if ((Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender) && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkApply))
+                    if ((Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender) && (lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkApply || lead.TrainBrakeController.TrainBrakeControllerState == ControllerState.StrBrkLap ))
                     {
                         skiploop = true;
                     }
@@ -191,7 +191,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             {
                                 lead.BrakeSystem.BrakeLine1PressurePSI = OneAtmospherePSI - MaxVacuumPipeLevelPSI;
                             }
-                            // turn ejector steon as required
+                            // turn ejector on as required
                             lead.LargeSteamEjectorIsOn = true;
                             if (!lead.LargeEjectorSoundOn)
                             {
