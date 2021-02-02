@@ -54,11 +54,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         protected float MaxReleaseRatePSIpS = 2.5f;
         protected float MaxApplicationRatePSIpS = 2.5f;
         protected float LargeEjectorChargingRate;
-        bool TrainBrakePressureChanging = false;
-        bool BrakePipePressureChanging = false;
-        int SoundTriggerCounter = 0;
-        float prevCylPressurePSIA = 0f;
-        float prevBrakePipePressurePSI = 0f;
+        protected bool TrainBrakePressureChanging = false;
+        protected bool BrakePipePressureChanging = false;
+        protected int SoundTriggerCounter = 0;
+        protected float prevCylPressurePSIA = 0f;
+        protected float prevBrakePipePressurePSI = 0f;
         bool LocomotiveSteamBrakeFitted = false;
         float SteamBrakeCylinderPressurePSI = 0;
         float SteamBrakeCompensation;
@@ -436,9 +436,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             }
 
             // Brake information is updated for each vehicle
-            // For straight brakes, the brake cylinders are updated in StraightVacuumSinglePipe.cs
-            if (lead != null && lead.CarBrakeSystemType != "straight_vacuum_single_pipe")
-            {
 
                 if (EngineBrake && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)) // Only apples when an engine brake is in place, otherwise processed to next loop
                 {
@@ -519,7 +516,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             BrakeLine1PressurePSI -= dp * vr;
                     }
                 }
-            }
+           
             // Record HUD display values for brake cylidners depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
             if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
             {
@@ -542,10 +539,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             {
                 Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSIA;
             }
-
-            // If a straight vacuum brake, then calculate brake force in straightvacuumsinglepipe class.
-            if (lead != null && lead.CarBrakeSystemType != "straight_vacuum_single_pipe")
-            {
 
                 float vrp = VacResPressureAdjPSIA();
                 float f;
@@ -573,8 +566,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 {
                     Car.BrakeForceN = f * Car.BrakeShoeCoefficientFrictionAdjFactor; // In advanced adhesion model brake shoe coefficient varies with speed, in simple model constant force applied as per value in WAG file, will vary with wheel skid.
                 }
-
-            }
+           
 
             // sound trigger checking runs every 4th update, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
             if (SoundTriggerCounter >= 4)
@@ -765,7 +757,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
                 if (lead.EngineType == TrainCar.EngineTypes.Steam)
                 {
-                    if (!lead.SmallEjectorFitted)
+                    if (!lead.SmallEjectorControllerFitted)
                     {
                         AdjSmallEjectorChargingRateInHgpS = 0.0f; // If small ejector not fitted, then set input from ejector to zero
                     }

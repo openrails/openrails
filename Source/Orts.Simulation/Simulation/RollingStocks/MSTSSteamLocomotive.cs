@@ -802,8 +802,8 @@ namespace Orts.Simulation.RollingStocks
                 case "engine(steamfiremanismechanicalstoker": Stoker = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "engine(ortssteamfiremanmaxpossiblefiringrate": ORTSMaxFiringRateKGpS = stf.ReadFloatBlock(STFReader.UNITS.MassRateDefaultLBpH, null) / 2.2046f / 3600; break;
                 case "engine(enginecontrollers(cutoff": CutoffController.Parse(stf); break;
-                case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorFitted = true; break;
-                case "engine(enginecontrollers(ortslargeejector": LargeEjectorController.Parse(stf); LargeEjectorFitted = true; break;
+                case "engine(enginecontrollers(ortssmallejector": SmallEjectorController.Parse(stf); SmallEjectorControllerFitted = true; break;
+                case "engine(enginecontrollers(ortslargeejector": LargeEjectorController.Parse(stf); LargeEjectorControllerFitted = true; break;
                 case "engine(enginecontrollers(injector1water": Injector1Controller.Parse(stf); break;
                 case "engine(enginecontrollers(injector2water": Injector2Controller.Parse(stf); break;
                 case "engine(enginecontrollers(blower": BlowerController.Parse(stf); break;
@@ -931,7 +931,7 @@ namespace Orts.Simulation.RollingStocks
             HasSuperheater = locoCopy.HasSuperheater;
             IsFixGeared = locoCopy.IsFixGeared;
             IsSelectGeared = locoCopy.IsSelectGeared;
-            LargeEjectorFitted = locoCopy.LargeEjectorFitted;
+            LargeEjectorControllerFitted = locoCopy.LargeEjectorControllerFitted;
             CylinderExhausttoCutoff = locoCopy.CylinderExhausttoCutoff;
             CylinderCompressiontoCutoff = locoCopy.CylinderCompressiontoCutoff;
             CylinderAdmissiontoCutoff = locoCopy.CylinderAdmissiontoCutoff;
@@ -2215,22 +2215,28 @@ namespace Orts.Simulation.RollingStocks
                     Simulator.Confirmer.UpdateWithPerCent(CabControl.FiringRate, CabSetting.Decrease, FiringRateController.CurrentValue * 100);
             }
 
-            SmallEjectorController.Update(elapsedClockSeconds);
-            if (IsPlayerTrain)
+            if (SmallEjectorControllerFitted)
             {
-                if (SmallEjectorController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Increase, SmallEjectorController.CurrentValue * 100);
-                if (SmallEjectorController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Decrease, SmallEjectorController.CurrentValue * 100);
+                SmallEjectorController.Update(elapsedClockSeconds);
+                if (IsPlayerTrain)
+                {
+                    if (SmallEjectorController.UpdateValue > 0.0)
+                        Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Increase, SmallEjectorController.CurrentValue * 100);
+                    if (SmallEjectorController.UpdateValue < 0.0)
+                        Simulator.Confirmer.UpdateWithPerCent(CabControl.SmallEjector, CabSetting.Decrease, SmallEjectorController.CurrentValue * 100);
+                }
             }
 
-            LargeEjectorController.Update(elapsedClockSeconds);
-            if (IsPlayerTrain)
+            if (LargeEjectorControllerFitted)
             {
-                if (LargeEjectorController.UpdateValue > 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Increase, LargeEjectorController.CurrentValue * 100);
-                if (LargeEjectorController.UpdateValue < 0.0)
-                    Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue * 100);
+                LargeEjectorController.Update(elapsedClockSeconds);
+                if (IsPlayerTrain)
+                {
+                    if (LargeEjectorController.UpdateValue > 0.0)
+                        Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Increase, LargeEjectorController.CurrentValue * 100);
+                    if (LargeEjectorController.UpdateValue < 0.0)
+                        Simulator.Confirmer.UpdateWithPerCent(CabControl.LargeEjector, CabSetting.Decrease, LargeEjectorController.CurrentValue * 100);
+                }
             }
 
             Injector1Controller.Update(elapsedClockSeconds);
@@ -5171,7 +5177,7 @@ namespace Orts.Simulation.RollingStocks
                 }
 
                 // If simple brake controls chosen, then "automatically" set the large ejector value
-                if (Simulator.Settings.SimpleControlPhysics || !LargeEjectorFitted)
+                if (Simulator.Settings.SimpleControlPhysics || !LargeEjectorControllerFitted)
                 {
 
                     //  Provided BP is greater then max vacuum pressure large ejector will operate at full efficiency
@@ -6611,7 +6617,7 @@ namespace Orts.Simulation.RollingStocks
                 LargeSteamEjectorIsOn ? Simulator.Catalog.GetString("Yes") : Simulator.Catalog.GetString("No")
                 );
 
-                if (SmallEjectorFitted) // only display small ejector if fitted.
+                if (SmallEjectorControllerFitted) // only display small ejector if fitted.
                 {
                     status.AppendFormat("\t{0}\t{1}\t{2:N2}\t{3}\t{4:N2}/{5}\t{6}\t{7:N2}\t{8}\t{9}",
                     Simulator.Catalog.GetString("Small:"),

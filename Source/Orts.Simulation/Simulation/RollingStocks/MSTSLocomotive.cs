@@ -232,7 +232,7 @@ namespace Orts.Simulation.RollingStocks
         public float SteamEjectorSmallPressurePSI = 0.0f;
         public float SteamEjectorLargePressurePSI = 0.0f;
         public bool VacuumPumpFitted;
-        public bool SmallEjectorFitted = false;
+        public bool SmallEjectorControllerFitted = false;
         public float VacuumPumpResistanceN;
         public float EjectorSmallSteamConsumptionLbpS;
         public float EjectorLargeSteamConsumptionLbpS;
@@ -241,7 +241,7 @@ namespace Orts.Simulation.RollingStocks
         public float MaxVaccuumMaxPressurePSI = 110.0f;  // Value for the boiler pressure when maximum vacuum will be produced for the steam ejector 
         public float SmallEjectorFeedFraction = 0.35f;
         public float LargeEjectorFeedFraction = 1.0f;
-        public bool LargeEjectorFitted = false;
+        public bool LargeEjectorControllerFitted = false;
         public float VacuumPumpChargingRateInHgpS = 0.0f;
         public bool VacuumBrakeEQFitted = false;  // Flag to indicate that equalising resevoir fitted to vacuum brakes
         public float HUDNetBPLossGainPSI;
@@ -2092,9 +2092,9 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         protected virtual void UpdateSteamEjector(float elapsedClockSeconds)
         {
-            if (CarBrakeSystemType != "straight_vacuum_single_pipe") // Ejectors are controlled independently for the "straight_vacuum_single_pipe" brake type 
-            {
-                if (Simulator.Settings.SimpleControlPhysics)
+                 // Ejectors are controlled independently for the "straight_vacuum_single_pipe" brake type 
+                 // Ejectors are controlled by brake control valves in Simple Physics Control
+                if (Simulator.Settings.SimpleControlPhysics && CarBrakeSystemType != "straight_vacuum_single_pipe")
                 // Simple braking - control Ejector automatically based upon the brake control position
                 // Stop ejector operation if full vacuum pressure reached
                 {
@@ -2117,7 +2117,7 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
                 }
-                else if (!LargeEjectorFitted) // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
+                else if (!LargeEjectorControllerFitted && CarBrakeSystemType != "straight_vacuum_single_pipe") // Use an "automatic" large ejector when using a dreadnought style brake controller - large ejector stays on until moved back to released position
                 {
                     if (TrainBrakeController.TrainBrakeControllerState == ControllerState.Release)
                     {
@@ -2139,7 +2139,7 @@ namespace Orts.Simulation.RollingStocks
                     }
 
                 }
-                else  // Advanced braking - control ejector based upon using a "manual" large ejector control setting
+                else  if (LargeEjectorControllerFitted)// Advanced braking - control ejector based upon using a "manual" large ejector control setting
                 {
                     if (LargeEjectorFeedFraction > 0.05)
                     {
@@ -2161,6 +2161,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
+
+                if (SmallEjectorControllerFitted && CarBrakeSystemType != "straight_vacuum_single_pipe")
                 // Turn small ejector on if controlled from drivers controller
                 if (SmallEjectorFeedFraction > 0.05)
                 {
@@ -2171,7 +2173,7 @@ namespace Orts.Simulation.RollingStocks
                         SmallEjectorSoundOn = true;
                     }
                 }
-                else
+                else if (SmallEjectorControllerFitted)
                 {
                     SmallSteamEjectorIsOn = false; // turn ejector off
                     if (SmallEjectorSoundOn)
@@ -2181,7 +2183,7 @@ namespace Orts.Simulation.RollingStocks
                     }
                 }
 
-            }
+            
             // If diesel or electric locomotive, assume vacuum pump (exhauster) is continually running.
             if (!(this is MSTSSteamLocomotive))
             {
