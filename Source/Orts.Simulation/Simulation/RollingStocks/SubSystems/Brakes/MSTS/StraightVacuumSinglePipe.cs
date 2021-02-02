@@ -102,7 +102,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             CylPressurePSIA += dp;
                         }
                     }
-                    
+
+
+                    // Record HUD display values for brake cylidners depending upon whether they are wagons or locomotives/tenders (which are subject to their own engine brakes)   
+                    if (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender)
+                    {
+                        Car.Train.HUDLocomotiveBrakeCylinderPSI = CylPressurePSIA;
+                        Car.Train.HUDWagonBrakeCylinderPSI = Car.Train.HUDLocomotiveBrakeCylinderPSI;  // Initially set Wagon value same as locomotive, will be overwritten if a wagon is attached
+                    }
+                    else
+                    {
+                        // Record the Brake Cylinder pressure in first wagon, as EOT is also captured elsewhere, and this will provide the two extremeties of the train
+                        // Identifies the first wagon based upon the previously identified UiD 
+                        if (Car.UiD == Car.Train.FirstCarUiD)
+                        {
+                            Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSIA; // In Vacuum HUD BP is actually supposed to be dispalayed
+                        }
+
+                    }
 
                     // Adjust braking force as brake cylinder pressure varies.
                     float f;
@@ -132,6 +149,56 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
 
 
+                    // If wagons are not attached to the locomotive, then set wagon BC pressure to same as locomotive in the Train brake line
+                    if (!Car.Train.WagonsAttached && (Car.WagonType == MSTSWagon.WagonTypes.Engine || Car.WagonType == MSTSWagon.WagonTypes.Tender))
+                    {
+                        Car.Train.HUDWagonBrakeCylinderPSI = CylPressurePSIA;
+                    }
+
+                    // sound trigger checking runs every 4th update, to avoid the problems caused by the jumping BrakeLine1PressurePSI value, and also saves cpu time :)
+                    if (SoundTriggerCounter >= 4)
+                    {
+                        SoundTriggerCounter = 0;
+                        if (CylPressurePSIA != prevCylPressurePSIA)
+                        {
+                            if (!TrainBrakePressureChanging)
+                            {
+                                if (CylPressurePSIA > prevCylPressurePSIA)
+                                    Car.SignalEvent(Event.TrainBrakePressureIncrease);
+                                else
+                                    Car.SignalEvent(Event.TrainBrakePressureDecrease);
+                                TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                            }
+
+                        }
+                        else if (TrainBrakePressureChanging)
+                        {
+                            TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                            Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
+                        }
+
+                        if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.05f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
+                        {
+                            if (!BrakePipePressureChanging)
+                            {
+                                if (BrakeLine1PressurePSI < prevBrakePipePressurePSI) // Brakepipe vacuum increases as pressure in pipe decreases
+                                    Car.SignalEvent(Event.BrakePipePressureIncrease);
+                                else
+                                    Car.SignalEvent(Event.BrakePipePressureDecrease);
+                                BrakePipePressureChanging = !BrakePipePressureChanging;
+                            }
+
+                        }
+                        else if (BrakePipePressureChanging)
+                        {
+                            BrakePipePressureChanging = !BrakePipePressureChanging;
+                            Car.SignalEvent(Event.BrakePipePressureStoppedChanging);
+                        }
+                        prevCylPressurePSIA = CylPressurePSIA;
+                        prevBrakePipePressurePSI = BrakeLine1PressurePSI;
+                    }
+                    SoundTriggerCounter++;
+
                     // Straight brake is opposite of automatic brake, ie vacuum pipe goes from 14.503psi (0 InHg - Release) to 2.24 (25InHg - Apply)
 
                     // Calculate train pipe pressure at lead locomotive.
@@ -160,7 +227,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                     else
                     {
-                        LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.BrakePipeChargingRatePSIorInHgpS);
+                        LargeEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.BrakePipeChargingRatePSIorInHgpS); // Single ejector model
                     }
                         
                     float SmallEjectorChargingRateInHgpS = lead == null ? 10.0f : (lead.SmallEjectorBrakePipeChargingRatePSIorInHgpS); // Set value for small ejector to operate - fraction set in steam locomotive
@@ -197,6 +264,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             {
                                 Car.SignalEvent(Event.LargeEjectorOn);
                                 lead.LargeEjectorSoundOn = true;
+                            }
+
+                            // turn small ejector off
+                            lead.SmallSteamEjectorIsOn = false;
+                            if (lead.SmallEjectorSoundOn)
+                            {
+                                Car.SignalEvent(Event.SmallEjectorOff);
+                                lead.SmallEjectorSoundOn = false;
                             }
                         }
 
@@ -245,7 +320,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         }
 
                             // Eames type brake with separate release and ejector operating handles
-                            if (lead.LargeEjectorFitted && lead.LargeSteamEjectorIsOn)
+                            if (lead.LargeEjectorControllerFitted && lead.LargeSteamEjectorIsOn)
                         {
                             // Apply brakes - brakepipe has to have vacuum increased to max vacuum value (ie decrease psi), vacuum is created by large ejector control
                             lead.BrakeSystem.BrakeLine1PressurePSI -= elapsedClockSeconds * AdjLargeEjectorChargingRateInHgpS;
@@ -274,7 +349,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     }
                 }
                                  
-                if (lead.CarBrakeSystemType == "straight_vacuum_single_pipe" || ((lead.CarBrakeSystemType == "vacuum_single_pipe" || lead.CarBrakeSystemType == "vacuum_twin_pipe") && (Car as MSTSWagon).AuxiliaryReservoirPresent))
+                if (((lead.CarBrakeSystemType == "vacuum_single_pipe" || lead.CarBrakeSystemType == "vacuum_twin_pipe") && (Car as MSTSWagon).AuxiliaryReservoirPresent))
                 {
                     // update non calculated values using vacuum single pipe class
                     base.Update(elapsedClockSeconds);
