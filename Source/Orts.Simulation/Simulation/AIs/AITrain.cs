@@ -703,21 +703,20 @@ namespace Orts.Simulation.AIs
                     return;
                 }
 
-                // set wipers on or off
-                try
+                var leadingloco = Cars[0] as MSTSLocomotive;
+                if (leadingloco != null)
                 {
-                    MSTSLocomotive leadingloco = Cars[0] as MSTSLocomotive;
-                    if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0 && !leadingloco.Wiper)
+                    if (leadingloco.Wiper) // wipers on and no rain, turn them off
                     {
-                        leadingloco.SignalEvent(Event.WiperOn);
+                        if (Simulator.Weather.PricipitationIntensityPPSPM2 == 0)
+                            leadingloco.SignalEvent(Event.WiperOff);
                     }
-                    else if (Simulator.Weather.PricipitationIntensityPPSPM2 == 0 && leadingloco.Wiper)
+                    else // wipers off and some rain, turn them on
                     {
-                        leadingloco.SignalEvent(Event.WiperOff);
+                        if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0)
+                            leadingloco.SignalEvent(Event.WiperOn);
                     }
                 }
-                catch
-                { } // dummy catch
             }
 
             // switch on action depending on state
