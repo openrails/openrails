@@ -580,7 +580,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                             Car.SignalEvent(Event.TrainBrakePressureIncrease);
                         else
                             Car.SignalEvent(Event.TrainBrakePressureDecrease);
-                        TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                            TrainBrakePressureChanging = !TrainBrakePressureChanging;
                     }
 
                 }
@@ -590,7 +590,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
                 }
 
-                if ( Math.Abs(BrakeLine1PressurePSI-prevBrakePipePressurePSI)> 0.05f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
+                if ( Math.Abs(BrakeLine1PressurePSI-prevBrakePipePressurePSI)> 0.05) /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/
                 {
                     if (!BrakePipePressureChanging)
                     {
