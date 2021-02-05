@@ -196,6 +196,12 @@ Trigger       Function
 143           BrakePipePressureStoppedChanging : for rolling stock equipped with train brakes, triggered when brake pipe/brakeline pressure stops changing
 =========     ============================================================================================================================================================================
 
+=========     =====================================
+Trigger       Function
+=========     =====================================
+145           WaterScoopRaiseLower
+146           WaterScoopBroken
+=========     =====================================
 
 =========     ======================================================================
 Trigger       Function
@@ -264,6 +270,19 @@ Trigger       Function
 171           Pantograph4Up
 172           Pantograph4Down
 =========     =====================================
+
+Additional triggers:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+173           HotBoxBearingOn
+174           HotBoxBearingOff
+175           BoilerBlowdownOn
+176           BoilerBlowdownOff
+=========     =====================================
+
+
 
 The following triggers are used to activate the gear positions:
 
