@@ -34,6 +34,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         }
 
+        bool TrainBrakeIncrease = false;
+        bool TrainBrakeDecrease = false;
+
+        bool BrakePipeIncrease = false;
+        bool BrakePipeDecrease = false;
 
         public override void Initialize(bool handbrakeOn, float maxVacuumInHg, float fullServVacuumInHg, bool immediateRelease)
         {
@@ -159,42 +164,69 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     if (SoundTriggerCounter >= 4)
                     {
                         SoundTriggerCounter = 0;
-                        if (CylPressurePSIA != prevCylPressurePSIA)
+                        
+                        if (Math.Abs(CylPressurePSIA - prevCylPressurePSIA) > 0.0005)
                         {
+                        //    Trace.TraceInformation("CylPress: Current {0} prev {1}", CylPressurePSIA, prevCylPressurePSIA);
+
                             if (!TrainBrakePressureChanging)
                             {
-                                if (CylPressurePSIA > prevCylPressurePSIA)
+                                
+                                if (CylPressurePSIA < prevCylPressurePSIA)  // Brake cylinder vacuum increases as pressure in pipe decreases
+                                {
                                     Car.SignalEvent(Event.TrainBrakePressureIncrease);
-                                else
+                                    TrainBrakePressureChanging = true;
+                                    TrainBrakeIncrease = true;
+                                 //   Trace.TraceInformation("Increase");
+                                }
+                                else if (CylPressurePSIA > prevCylPressurePSIA)
+
+                                {
                                     Car.SignalEvent(Event.TrainBrakePressureDecrease);
-                                TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                                    TrainBrakePressureChanging = true;
+                                    TrainBrakeDecrease = true;
+                                //    Trace.TraceInformation("Decrease");
+                                }
                             }
 
                         }
                         else if (TrainBrakePressureChanging)
                         {
-                            TrainBrakePressureChanging = !TrainBrakePressureChanging;
+                          //  Trace.TraceInformation("Sound Reset");
                             Car.SignalEvent(Event.TrainBrakePressureStoppedChanging);
+                            TrainBrakePressureChanging = false;
+                            TrainBrakeDecrease = false;
+                            TrainBrakeIncrease = false;
                         }
+                        prevCylPressurePSIA = CylPressurePSIA;
 
-                        if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.05f /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/)
+
+                        if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.0005) /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/
                         {
                             if (!BrakePipePressureChanging)
                             {
                                 if (BrakeLine1PressurePSI < prevBrakePipePressurePSI) // Brakepipe vacuum increases as pressure in pipe decreases
+                                {
                                     Car.SignalEvent(Event.BrakePipePressureIncrease);
-                                else
+                                    BrakePipePressureChanging = true;
+                                    BrakePipeIncrease = true;
+                                }
+                                else if (BrakeLine1PressurePSI > prevBrakePipePressurePSI)
+                                {
                                     Car.SignalEvent(Event.BrakePipePressureDecrease);
-                                BrakePipePressureChanging = !BrakePipePressureChanging;
+                                    BrakePipePressureChanging = true;
+                                    BrakePipeDecrease = true;
+                                }
                             }
 
                         }
                         else if (BrakePipePressureChanging)
                         {
-                            BrakePipePressureChanging = !BrakePipePressureChanging;
                             Car.SignalEvent(Event.BrakePipePressureStoppedChanging);
-                        }
-                        prevCylPressurePSIA = CylPressurePSIA;
+                            BrakePipePressureChanging = false;
+                            BrakePipeDecrease = false;
+                            BrakePipeIncrease = false;
+                        }                  
                         prevBrakePipePressurePSI = BrakeLine1PressurePSI;
                     }
                     SoundTriggerCounter++;
@@ -397,6 +429,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                 HandbrakePercent > 0 ? string.Format("{0:F0}%", HandbrakePercent) : string.Empty,
                 FrontBrakeHoseConnected? "I" : "T",
                 string.Format("A{0} B{1}", AngleCockAOpen? "+" : "-", AngleCockBOpen? "+" : "-"),
+                string.Format("TBI {0} TBD {1}",TrainBrakeIncrease? "y" : "n", TrainBrakeDecrease? "y" : "n"),
+                string.Empty,
+                string.Empty,
+                string.Format("BPI {0} BPD {1}",BrakePipeIncrease? "y" : "n", BrakePipeDecrease? "y" : "n"),
                 };
             }
         }
