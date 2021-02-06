@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 
 namespace Orts.Simulation.Signalling
 {
@@ -6,23 +7,19 @@ namespace Orts.Simulation.Signalling
     {
         readonly Simulator Simulator;
 
+        Assembly ScriptAssembly;
+
         public CsSignalScripts(Simulator simulator)
         {
             Simulator = simulator;
-        }
-
-        public bool ScriptFileExists(string scriptName)
-        {
-            string path = Path.Combine(Simulator.RoutePath, "Script", "Signal", scriptName + ".cs");
-
-            return File.Exists(path);
+            ScriptAssembly = Simulator.ScriptManager.LoadFolder(Path.Combine(Simulator.RoutePath, "Script", "Signal"));
         }
 
         public CsSignalScript LoadSignalScript(string scriptName)
         {
-            var pathArray = new string[] { Path.Combine(Simulator.RoutePath, "Script", "Signal") };
-
-            return Simulator.ScriptManager.Load(pathArray, scriptName, "Orts.Simulation.Signalling") as CsSignalScript;
+            if (ScriptAssembly == null) return null;
+            var type = string.Format("{0}.{1}", "Orts.Simulation.Signalling", scriptName);
+            return ScriptAssembly.CreateInstance(type, true) as CsSignalScript;
         }
     }
 }

@@ -135,6 +135,54 @@ namespace Orts.Common.Scripting
             }
         }
 
+        public Assembly LoadFolder(string path)
+        {
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+
+            if (path == null || path == "")
+                return null;
+
+            if (!Directory.Exists(path)) return null;
+
+            string[] files = Directory.GetFiles(path, "*.cs");
+
+            if (files == null || files.Length == 0) return null;
+
+            try
+            {
+                var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), files);
+                if (!compilerResults.Errors.HasErrors)
+                {
+                    return compilerResults.CompiledAssembly;
+                }
+                else
+                {
+                    var errorString = new StringBuilder();
+                    errorString.AppendFormat("Skipped script folder {0} with error:", path);
+                    errorString.Append(Environment.NewLine);
+                    foreach (CompilerError error in compilerResults.Errors)
+                    {
+                        errorString.AppendFormat("   {0}, file: {1}, line: {2}, column: {3}", error.ErrorText, error.FileName, error.Line /*- prefixLines*/, error.Column);
+                        errorString.Append(Environment.NewLine);
+                    }
+
+                    Trace.TraceWarning(errorString.ToString());
+                    return null;
+                }
+            }
+            catch (InvalidDataException error)
+            {
+                Trace.TraceWarning("Skipped script folder {0} with error: {1}", path, error.Message);
+                return null;
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException(path, error));
+                return null;
+            }
+        }
+
         /*
         static ClassType CreateInstance<ClassType>(Assembly assembly) where ClassType : class
         {
