@@ -165,7 +165,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                     {
                         SoundTriggerCounter = 0;
                         
-                        if (Math.Abs(CylPressurePSIA - prevCylPressurePSIA) > 0.0005)
+                        if (Math.Abs(CylPressurePSIA - prevCylPressurePSIA) > 0.005)
                         {
                         //    Trace.TraceInformation("CylPress: Current {0} prev {1}", CylPressurePSIA, prevCylPressurePSIA);
 
@@ -201,7 +201,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         prevCylPressurePSIA = CylPressurePSIA;
 
 
-                        if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.0005) /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/
+                        if (Math.Abs(BrakeLine1PressurePSI - prevBrakePipePressurePSI) > 0.005) /*BrakeLine1PressurePSI > prevBrakePipePressurePSI*/
                         {
                             if (!BrakePipePressureChanging)
                             {
