@@ -7,6 +7,8 @@ Open Rails Cabs
 OR supports both MSTS-compatible 2D cabs as well as native 3D cabs, even on 
 the same locomotive.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 2D Cabs
 =======
 
