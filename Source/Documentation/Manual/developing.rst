@@ -79,8 +79,8 @@ The parameters used in content files have been mentioned throughout this manual 
 | train timetable              |        timetable-or         |
 +------------------------------+-----------------------------+
 
-The complete list is very extensive and is documented in `an on-line spreadsheet at http://tinyurl.com/or-parameters-excel
-<http://tinyurl.com/or-parameters-excel>`_
+The complete list is very extensive and is documented in an online spreadsheet at `tinyurl.com/or-parameters-excel
+<https://tinyurl.com/or-parameters-excel>`_.
 
 Since this is a spreadsheet with many rows, you can restrict your view to relevant rows using the filters at the top of each column.
 
