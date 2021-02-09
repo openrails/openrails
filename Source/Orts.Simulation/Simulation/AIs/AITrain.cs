@@ -703,19 +703,13 @@ namespace Orts.Simulation.AIs
                     return;
                 }
 
-                var leadingloco = Cars[0] as MSTSLocomotive;
-                if (leadingloco != null)
+                if (Cars[0] is MSTSLocomotive leadingLoco)
                 {
-                    if (leadingloco.Wiper) // wipers on and no rain, turn them off
-                    {
-                        if (Simulator.Weather.PricipitationIntensityPPSPM2 == 0)
-                            leadingloco.SignalEvent(Event.WiperOff);
-                    }
-                    else // wipers off and some rain, turn them on
-                    {
-                        if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0)
-                            leadingloco.SignalEvent(Event.WiperOn);
-                    }
+                    var isRainingOrSnowing = Simulator.Weather.PricipitationIntensityPPSPM2 > 0;
+                    if (leadingLoco.Wiper && !isRainingOrSnowing)
+                        leadingLoco.SignalEvent(Event.WiperOff);
+                    else if (!leadingLoco.Wiper && isRainingOrSnowing)
+                        leadingLoco.SignalEvent(Event.WiperOn);
                 }
             }
 
