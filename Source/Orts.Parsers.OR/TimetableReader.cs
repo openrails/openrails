@@ -52,17 +52,24 @@ namespace Orts.Parsers.OR
                 // extract and store all strings
                 do
                 {
-                    var lineElements = readLine.Split(separator[0]);
-                    
-                    // Remove leading and trailing whitespace which is difficult to see in a spreadsheet.
-                    for (var i = 0; i < lineElements.Count(); i++)
-                        lineElements[i] = lineElements[i].Trim();
-                    
-                    Strings.Add(lineElements);
-                    
+                    Strings.Add(TrimElements(readLine, separator));
                     readLine = filestream.ReadLine();
                 } while (readLine != null);
             }
+        }
+
+        /// <summary>
+        /// Remove leading and trailing whitespace which is difficult to see in a spreadsheet and may confuse the timetable author.
+        /// </summary>
+        /// <param name="readLine"></param>
+        /// <param name="separator"></param>
+        /// <returns></returns>
+        private string[] TrimElements(string readLine, string separator)
+        {
+            var lineElements = readLine.Split(separator[0]);
+            for (var i = 0; i < lineElements.Count(); i++)
+                lineElements[i] = lineElements[i].Trim();
+            return lineElements;
         }
     }
 }
