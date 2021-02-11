@@ -3078,7 +3078,7 @@ An additional engine controller has been added to facilitate the operation of al
 The controller can be added to an ENG file in a similar fashion to an air brake or vacuum controller by using the following 
 brake controller parameter: ``TrainBrakesControllerManualBrakingStart``
 
-To configure a car with manual braking then in the car brake section configure the fllowing two parameters:
+To configure a car with manual braking then in the car brake section configure the following two parameters:
 
 ``BrakeSystemType ( "Manual_Braking" )``
 ``BrakeEquipmentType( "Manual_brake, Handbrake" )``

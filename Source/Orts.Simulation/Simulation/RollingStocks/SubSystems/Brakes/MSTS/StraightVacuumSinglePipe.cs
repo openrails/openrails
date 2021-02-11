@@ -69,7 +69,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // reservoir. OR senses this and if a straight braked car is coupled to a auto (vacuum braked) locomotive, and it has an auxilary reservoir fitted then it will use the vacuum single pipe module to manage 
             // brakes. In this case relevant straight brake functions are disabled in this module.
 
-            MSTSLocomotive lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
+            var lead = (MSTSLocomotive)Car.Train.LeadLocomotive;
 
             if (lead != null)
             {
@@ -95,7 +95,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         if (BrakeLine1PressurePSI < CylPressurePSIA) // Increase BP pressure, hence vacuum brakes are being released
                         {
                             float dp = elapsedClockSeconds * MaxReleaseRatePSIpS;
-                            float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                            var vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
                             if (CylPressurePSIA - dp < BrakeLine1PressurePSI + dp * vr)
                                 dp = (CylPressurePSIA - BrakeLine1PressurePSI) / (1 + vr);
                             CylPressurePSIA -= dp;
@@ -104,7 +104,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
                         else if (BrakeLine1PressurePSI > CylPressurePSIA)  // Decrease BP pressure, hence vacuum brakes are being applied
                         {
                             float dp = elapsedClockSeconds * MaxApplicationRatePSIpS;
-                            float vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
+                            var vr = NumBrakeCylinders * BrakeCylVolM3 / BrakePipeVolumeM3;
                             if (CylPressurePSIA + dp > BrakeLine1PressurePSI - dp * vr)
                                 dp = (BrakeLine1PressurePSI - CylPressurePSIA) / (1 + vr);
                             CylPressurePSIA += dp;
