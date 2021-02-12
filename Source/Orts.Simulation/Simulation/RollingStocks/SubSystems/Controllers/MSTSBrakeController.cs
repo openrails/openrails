@@ -107,14 +107,17 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     if (OverchargeButtonPressed()) type = ControllerState.Overcharge;
                     else if (QuickReleaseButtonPressed()) type = ControllerState.FullQuickRelease;
 
-                    if (type == ControllerState.Hold || type == ControllerState.Lap || type == ControllerState.MinimalReduction)
+                    switch (type)
                     {
-                        if (EnforceMinimalReduction)
-                            DecreasePressure(ref pressureBar, MaxPressureBar() - MinReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
-                    }
-                    else
-                    {
-                        EnforceMinimalReduction = false;
+                        case ControllerState.Hold:
+                        case ControllerState.Lap:
+                        case ControllerState.MinimalReduction:
+                            if (EnforceMinimalReduction)
+                                DecreasePressure(ref pressureBar, MaxPressureBar() - MinReductionBar(), ApplyRateBarpS(), elapsedClockSeconds);
+                            break;
+                        default:
+                            EnforceMinimalReduction = false;
+                            break;
                     }
 
                     switch (type)
