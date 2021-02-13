@@ -427,7 +427,7 @@ To enable this feature steps here below must be followed:
 
      SIMISA@@@@@@@@@@JINX0t1t______
      
-     13
+     14
      TrackType ( "Default" "EuropeSteamTrack0In.sms" "EuropeSteamTrack0Ex.sms" )
      TrackType ( "Concrete Supported"	"EuropeSteamTrack1In.sms" "EuropeSteamTrack1Ex.sms" )
      TrackType ( "Wood Supported"	"EuropeSteamTrack2In.sms" "EuropeSteamTrack2Ex.sms" )
@@ -452,25 +452,24 @@ To enable this feature steps here below must be followed:
 3. For every route you must tell OR which of the ttype sound files are those related to 
    automatic sounds. This is done by inserting following line in the route's ``.trk`` file::
      
-     ORTSSwitchSMSNumber ( 10 )
-     ORTSCurveSMSNumber ( 11 )       
-     ORTSCurveSwitchSMSNumber ( 12 ) 
+     ORTSSwitchSMSNumber ( 11 )
+     ORTSCurveSMSNumber ( 12 )       
+     ORTSCurveSwitchSMSNumber ( 13 ) 
 
    A better solution, because it leaves the ``.trk`` file unaltered, is to create an 
    ``OpenRails`` subfolder within the route's folder, and to put in it an integration 
    ``.trk`` file, named like the base one, and with following sample content (supposing 
    the base .trk file is named ``ITALIA13.trk``::
 
-
-        
+       ->BLANK LINE HERE<-
        include ( "../ITALIA13.trk" )
           ORTSDefaultTurntableSMS ( turntable.sms )
-          ORTSSwitchSMSNumber ( 10 )
-          ORTSCurveSMSNumber ( 11 )       
-          ORTSCurveSwitchSMSNumber ( 12 )  
-
+          ORTSSwitchSMSNumber ( 11 )
+          ORTSCurveSMSNumber ( 12 )       
+          ORTSCurveSwitchSMSNumber ( 13 )  
       
-   Note that the above the ``include`` line a blank line must be present.
+   Note that a blank line must be present above the ``include`` line, but that is difficult to reproduce in this manual.
+   
    Note also that with the same integration ``.trk`` file also the default turntable sound 
    is defined, in case this route has turntables or transfertables.                  
  
