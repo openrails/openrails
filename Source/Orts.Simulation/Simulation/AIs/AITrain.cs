@@ -72,7 +72,7 @@ namespace Orts.Simulation.AIs
 
         public float doorOpenDelay = -1f;
         public float doorCloseAdvance = -1f;
-        public AILevelCrossingHornPattern LevelCrossingHornPattern { get; }
+        public AILevelCrossingHornPattern LevelCrossingHornPattern { get; set; }
 
         public float PathLength;
 
@@ -141,7 +141,7 @@ namespace Orts.Simulation.AIs
         /// </summary>
 
         public AITrain(Simulator simulator, Service_Definition sd, AI ai, AIPath path, float efficiency,
-                string name, Traffic_Service_Definition trafficService, float maxVelocityA, AILevelCrossingHornPattern hornPattern)
+                string name, Traffic_Service_Definition trafficService, float maxVelocityA)
             : base(simulator)
         {
             ServiceDefinition = sd;
@@ -158,7 +158,6 @@ namespace Orts.Simulation.AIs
             Name = String.Copy(name);
             TrafficService = trafficService;
             MaxVelocityA = maxVelocityA;
-            LevelCrossingHornPattern = hornPattern;
             // <CSComment> TODO: as Cars.Count is always = 0 at this point, activityClearingDistanceM is set to the short distance also for long trains
             // However as no one complained about AI train SPADs it may be considered to consolidate short distance for all trains</CSComment>
             if (Cars.Count < standardTrainMinCarNo) activityClearingDistanceM = shortClearingDistanceM;
@@ -415,6 +414,10 @@ namespace Orts.Simulation.AIs
 
             if (!IsActualPlayerTrain)
                 CheckDeadlock(ValidRoute[0], Number);
+
+            // Set up horn blow at crossings if required
+            var activityFile = Simulator.Activity.Tr_Activity.Tr_Activity_File;
+            LevelCrossingHornPattern = activityFile.AIBlowsHornAtLevelCrossings ? AILevelCrossingHornPattern.CreateInstance(activityFile.AILevelCrossingHornPattern) : null;
 
             // set initial position and state
 

@@ -1221,10 +1221,9 @@ namespace Orts.Simulation
             Player_Traffic_Definition player_Traffic_Definition = Activity.Tr_Activity.Tr_Activity_File.Player_Service_Definition.Player_Traffic_Definition;
             Traffic_Service_Definition aPPlayer_Traffic_Definition = new Traffic_Service_Definition(playerServiceFileName, player_Traffic_Definition);
             Service_Definition aPPlayer_Service_Definition = new Service_Definition(playerServiceFileName, player_Traffic_Definition);
-            var hornPattern = AILevelCrossingHornPattern.CreateInstance(Activity.Tr_Activity.Tr_Activity_File.AILevelCrossingHornPattern);
 
             AI AI = new AI(this);
-            AITrain train = AI.CreateAITrainDetail(aPPlayer_Service_Definition, aPPlayer_Traffic_Definition, srvFile, hornPattern, TimetableMode, true);
+            AITrain train = AI.CreateAITrainDetail(aPPlayer_Service_Definition, aPPlayer_Traffic_Definition, srvFile, TimetableMode, true);
             AI = null;
             train.Name = "PLAYER";
             train.Cars[0].Headlight = 0;
