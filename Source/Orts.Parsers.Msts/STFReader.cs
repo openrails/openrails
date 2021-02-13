@@ -1474,7 +1474,7 @@ namespace Orts.Parsers.Msts
         /// <summary>Parse an STF file until the end of block ')' marker, using the array of lower case tokens, with a processor delegate/lambda
         /// </summary>
         /// <param name="processors">Array of lower case token, and the delegate/lambda to call when matched.</param>
-        public void ParseBlock(TokenProcessor[] processors)
+        public void ParseBlock(IEnumerable<TokenProcessor> processors)
         { // Press F10 'Step Over' to jump to the next token
 #line hidden
             while (!EndOfBlock())

@@ -273,6 +273,7 @@ using System.Diagnostics;
 using System.Text;
 using System.IO;
 using Orts.Parsers.Msts; // For class S (seconds)
+using ORTS.Common;
 
 namespace Orts.Formats.Msts
 {
@@ -492,23 +493,25 @@ namespace Orts.Formats.Msts
         public Traffic_Definition Traffic_Definition;
         public PlatformNumPassengersWaiting PlatformNumPassengersWaiting;
         public ActivityRestrictedSpeedZones ActivityRestrictedSpeedZones;
-        public int ORTSAIHornAtCrossings = -1;
+        public bool AIBlowsHornAtLevelCrossings { get; private set; } = false;
+        public LevelCrossingHornPattern AILevelCrossingHornPattern { get; private set; } = LevelCrossingHornPattern.Single;
 
 
         public Tr_Activity_File(STFReader stf) {
             stf.MustMatch("(");
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
+            var parser = new List<STFReader.TokenProcessor> {
                 new STFReader.TokenProcessor("player_service_definition",()=>{ Player_Service_Definition = new Player_Service_Definition(stf); }),
                 new STFReader.TokenProcessor("nextserviceuid",()=>{ NextServiceUID = stf.ReadIntBlock(null); }),
                 new STFReader.TokenProcessor("nextactivityobjectuid",()=>{ NextActivityObjectUID = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("ortsaihornatcrossings", ()=>{ ORTSAIHornAtCrossings = stf.ReadIntBlock(ORTSAIHornAtCrossings); }),
                 new STFReader.TokenProcessor("events",()=>{ Events = new Events(stf); }),
                 new STFReader.TokenProcessor("traffic_definition",()=>{ Traffic_Definition = new Traffic_Definition(stf); }),
                 new STFReader.TokenProcessor("activityobjects",()=>{ ActivityObjects = new ActivityObjects(stf); }),
                 new STFReader.TokenProcessor("platformnumpassengerswaiting",()=>{ PlatformNumPassengersWaiting = new PlatformNumPassengersWaiting(stf); }),  // 35 files. To test, use EUROPE1\ACTIVITIES\aftstorm.act
                 new STFReader.TokenProcessor("activityfailedsignals",()=>{ ActivityFailedSignals = new ActivityFailedSignals(stf); }),
                 new STFReader.TokenProcessor("activityrestrictedspeedzones",()=>{ ActivityRestrictedSpeedZones = new ActivityRestrictedSpeedZones(stf); }),   // 27 files. To test, use EUROPE1\ACTIVITIES\lclsrvce.act
-            });
+            };
+            parser.AddRange(ORSpecificDataTokenProcessors(stf));
+            stf.ParseBlock(parser);
         }
 
         // Used for explore in activity mode
@@ -525,14 +528,28 @@ namespace Orts.Formats.Msts
         public void InsertORSpecificData(STFReader stf)
         {
             stf.MustMatch("(");
-            stf.ParseBlock(new STFReader.TokenProcessor[] {
-                new STFReader.TokenProcessor("ortsaihornatcrossings", ()=>{ ORTSAIHornAtCrossings = stf.ReadIntBlock(ORTSAIHornAtCrossings); }),
+            var parser = new List<STFReader.TokenProcessor> {
                 new STFReader.TokenProcessor("events",()=>
                 {
                     if ( Events == null) Events = new Events(stf);
                     else Events.InsertORSpecificData (stf);
                 }
                 ),
+            };
+            parser.AddRange(ORSpecificDataTokenProcessors(stf));
+            stf.ParseBlock(parser);
+        }
+
+        private IEnumerable<STFReader.TokenProcessor> ORSpecificDataTokenProcessors(STFReader stf)
+        {
+            yield return new STFReader.TokenProcessor("ortsaihornatcrossings", () =>
+            {
+                AIBlowsHornAtLevelCrossings = stf.ReadIntBlock(Convert.ToInt32(AIBlowsHornAtLevelCrossings)) > 0;
+            });
+            yield return new STFReader.TokenProcessor("ortsaicrossinghornpattern", () =>
+            {
+                if (Enum.TryParse<LevelCrossingHornPattern>(stf.ReadStringBlock(""), ignoreCase: true, out var value))
+                    AILevelCrossingHornPattern = value;
             });
         }
     }
