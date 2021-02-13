@@ -43,7 +43,7 @@
             <RadioButton GroupName="shuntingOption" Name="selectBlowHorn" VerticalAlignment="Center" 
                          Content="Blow horn for" Width="105" Checked="Option_CheckChanged" />
             <TextBox Height="23" Name="blowHornSeconds" Width="35" PreviewTextInput="NumberValidationTextBox" KeyDown="OnKeyDownHandler" TextChanged="TwoDigits_TextChanged"/>
-            <Label Content="seconds.  Set to 11 for horn blow sequence."/>
+            <Label Content="seconds.  11 = American horn sequence."/>
         </StackPanel>
         <Separator/>
         <StackPanel Orientation="Horizontal">

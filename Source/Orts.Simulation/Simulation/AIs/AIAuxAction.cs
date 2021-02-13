@@ -161,29 +161,6 @@ namespace Orts.Simulation.AIs
                     }
                 }
             }
-            // check for horn actions
-            if (ThisTrain is AITrain && aiTrain.AuxActionsContain.specRequiredActions.Count > 0)
-            {
-                foreach (AITrain.DistanceTravelledItem specRequiredAction in aiTrain.AuxActionsContain.specRequiredActions)
-                {
-                    if (specRequiredAction is AuxActionHornItem && (specRequiredAction as AuxActionHornItem).ActualDepart != 0)
-                    {
-                        if (SpecAuxActions.Count > 0)
-                        {
-                            foreach (AuxActionRef specAuxAction in SpecAuxActions)
-                            {
-                                if (specAuxAction is AIActionHornRef)
-                                {
-                                    (specAuxAction as AIActionHornRef).Delay = (specRequiredAction as AuxActionHornItem).ActualDepart - currentClock;
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                        else break;
-                    }
-                }
-            }
             foreach (var action in SpecAuxActions)
             {
                 ((AIAuxActionsRef)action).save(outf, cnt);
@@ -270,9 +247,11 @@ namespace Orts.Simulation.AIs
             {
                 loaded = ConvertActions(thisTrain, orRouteConfig.ActionContainer);
             }
-            if (!thisTrain.Simulator.TimetableMode && thisTrain.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings > 0 && SpecAuxActions.Count == 0)
+
+            var activity = thisTrain.Simulator.Activity;
+            if (activity != null && activity.Tr_Activity.Tr_Activity_File.AIBlowsHornAtLevelCrossings && SpecAuxActions.Count == 0)
             {
-                AuxActionHorn auxActionHorn = new AuxActionHorn(true, thisTrain.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings == 2 ? 0 : -1);
+                AuxActionHorn auxActionHorn = new AuxActionHorn(isGeneric: true, hornPattern: activity.Tr_Activity.Tr_Activity_File.AILevelCrossingHornPattern);
                 AIActionHornRef horn = new AIActionHornRef(thisTrain, auxActionHorn, 0);
                 List<KeyValuePair<System.Type, AuxActionRef>> listInfo = horn.GetCallFunction();
                 foreach (var function in listInfo)
@@ -1096,18 +1075,30 @@ namespace Orts.Simulation.AIs
 
     public class AIActionHornRef : AIAuxActionsRef
     {
-        public int AmHornPhase = -1;
-        public AIActionHornRef(Train thisTrain, float distance, float requiredSpeedMpS, int subrouteIdx, int routeIdx, int sectionIdx, int dir)
+        /// <summary>
+        /// The duration of the horn blast, if specified by an activity event.
+        /// </summary>
+        private int? DurationS { get; }
+
+        /// <summary>
+        /// The horn pattern to use.
+        /// </summary>
+        private AILevelCrossingHornPattern HornPattern { get; set; }
+
+        public AIActionHornRef(Train thisTrain, float distance, float requiredSpeedMpS, int subrouteIdx, int routeIdx, int sectionIdx, int dir, int? durationS, AILevelCrossingHornPattern hornPattern)
             : base(thisTrain, distance, requiredSpeedMpS, subrouteIdx, routeIdx, sectionIdx, dir, AUX_ACTION.SOUND_HORN)
         {
+            DurationS = durationS;
+            HornPattern = hornPattern;
             NextAction = AUX_ACTION.SOUND_HORN;
         }
 
         public AIActionHornRef(Train thisTrain, BinaryReader inf)
             : base(thisTrain, inf, AUX_ACTION.SOUND_HORN)
         {
-            Delay = inf.ReadInt32();
-            AmHornPhase = inf.ReadInt32();
+            if (inf.ReadBoolean())
+                DurationS = inf.ReadInt32();
+            HornPattern = AILevelCrossingHornPattern.Restore(inf);
             NextAction = AUX_ACTION.SOUND_HORN;
 #if WITH_PATH_DEBUG
             File.AppendAllText(@"C:\temp\checkpath.txt", "\tRestore one WPAuxAction" +
@@ -1120,12 +1111,10 @@ namespace Orts.Simulation.AIs
         public AIActionHornRef(Train thisTrain, AuxActionHorn myBase, int nop = 0)
             : base(thisTrain, 0f, 0f, 0, 0, 0, 0, myBase.ActionType)
         {
-            Delay = myBase.Delay;
+            DurationS = myBase.Delay;
             NextAction = AUX_ACTION.SOUND_HORN;
             IsGeneric = myBase.IsGeneric;
-            RequiredDistance = myBase.RequiredDistance;
-            AmHornPhase = myBase.AmHornPhase;
-
+            HornPattern = AILevelCrossingHornPattern.CreateInstance(myBase.Pattern);
         }
 
         public override void save(BinaryWriter outf, int cnt)
@@ -1137,8 +1126,10 @@ namespace Orts.Simulation.AIs
                 " Delay: " + Delay + "\n");
 #endif
             base.save(outf, cnt);
-            outf.Write(Delay);
-            outf.Write(AmHornPhase);
+            outf.Write(DurationS.HasValue);
+            if (DurationS.HasValue)
+                outf.Write(DurationS.Value);
+            HornPattern.Save(outf);
         }
 
 
@@ -1148,11 +1139,8 @@ namespace Orts.Simulation.AIs
             if (!LinkedAuxAction || IsGeneric)
             {
                 LinkedAuxAction = true;
-                info = new AuxActionHornItem(this, AIActionItem.AI_ACTION_TYPE.AUX_ACTION);
+                info = new AuxActionHornItem(this, AIActionItem.AI_ACTION_TYPE.AUX_ACTION, DurationS, HornPattern);
                 info.SetParam((float)list[0], (float)list[1], (float)list[2], (float)list[3]);
-                ((AuxActionHornItem)info).SetDelay(Delay);
-                ((AuxActionHornItem)info).SetPhase(AmHornPhase);
-                //                ((AuxActionHornItem)info).RequiredDistance = RequiredDistance;
             }
             return (AIActionItem)info;
         }
@@ -1174,17 +1162,7 @@ namespace Orts.Simulation.AIs
 #endif
             if (distances[0] >= -minDist)   //  We call the handler to generate an actionRef
             {
-                if (thisTrain.Simulator.Activity.Tr_Activity.Tr_Activity_File.ORTSAIHornAtCrossings != 2)
-                {
-                    //Pseudorandom value between 2 and 5
-                    int Rand = (DateTime.Now.Millisecond % 10) / 3 + 2;
-                    Delay = Rand;
-                }
-                else
-                {
-                    //AmHorn case
-                    Delay = 3; // Duration of first blast
-                }
+                HornPattern = (AILevelCrossingHornPattern)list[3];
                 newAction = Handler(distances[0] + thisTrain.DistanceTravelledM, thisTrain.SpeedMpS, distances[0] + thisTrain.DistanceTravelledM, thisTrain.DistanceTravelledM);
                 Register(thisTrain.Number, location);
 #if WITH_PATH_DEBUG
@@ -1201,17 +1179,6 @@ namespace Orts.Simulation.AIs
             List<KeyValuePair<System.Type, AuxActionRef>> listInfo = new List<KeyValuePair<System.Type, AuxActionRef>>();
             listInfo.Add(info);
             return listInfo;
-        }
-
-        //================================================================================================//
-        /// <summary>
-        /// SetDelay
-        /// To fullfill the waiting delay.
-        /// </summary>
-
-        public void SetDelay(int delay)
-        {
-            Delay = delay;
         }
 
         //  Start horn whatever the speed.
@@ -1939,19 +1906,15 @@ namespace Orts.Simulation.AIs
 
     public class AuxActionHornItem : AuxActionItem
     {
-        [JsonProperty("Delay")]
-        int Delay;
+        [JsonProperty("DurationS")]
+        private int? DurationS { get; }
         [JsonIgnore]
-        public int ActualDepart;
-        private const int BellPlayTime = 30;
-        private int AmHornPhase;
-        private const int SilenceTime0 = 2;
-        private const int SilenceTime1 = 2;
-        private const int SilenceTime2 = 1;
-        private const int Phase0HornDuration = 3;
-        private const int Phase1HornDuration = 3;
-        private const int Phase2HornDuration = 0;
-        private const int Phase3HornDuration = 8;
+        private AILevelCrossingHornPattern HornPattern { get; }
+        [JsonIgnore]
+        private int NextStepTimeS { get; set; }
+        [JsonIgnore]
+        private IEnumerator<int> Execution { get; set; }
+
 
         //================================================================================================//
         /// <summary>
@@ -1959,10 +1922,11 @@ namespace Orts.Simulation.AIs
         /// The specific constructor for horn action
         /// </summary>
 
-        public AuxActionHornItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction) :
+        public AuxActionHornItem(AuxActionRef thisItem, AI_ACTION_TYPE thisAction, int? durationS, AILevelCrossingHornPattern hornPattern) :
             base(thisItem, thisAction)
         {
-            ActualDepart = 0;
+            DurationS = durationS;
+            HornPattern = hornPattern;
         }
 
         //================================================================================================//
@@ -1993,16 +1957,6 @@ namespace Orts.Simulation.AIs
             return false;
         }
 
-        public void SetDelay(int delay)
-        {
-            Delay = delay;
-        }
-
-        public void SetPhase(int hornPhase)
-        {
-            AmHornPhase = hornPhase;
-        }
-
         public override bool ValidAction(Train thisTrain)
         {
             bool actionValid = CanActivate(thisTrain, thisTrain.SpeedMpS, true);
@@ -2031,19 +1985,14 @@ namespace Orts.Simulation.AIs
 #endif
             Processing = true;
             int correctedTime = presentTime;
-            if (Delay == 11)
-            {
-                Delay = 3;
-                AmHornPhase = 0;
-            }
-            ActualDepart = correctedTime + Delay;
             if (!Triggered)
             {
+                NextStepTimeS = correctedTime;
+                var locomotive = (MSTSLocomotive)thisTrain.FindLeadLocomotive();
+                Execution = HornPattern.Execute(locomotive, DurationS);
 #if WITH_PATH_DEBUG
                     File.AppendAllText(@"C:\temp\checkpath.txt", "Do Horn for AITRain " + thisTrain.Number + " , mvt state " + movementState.ToString() + " at " + presentTime + "\n");
 #endif
-                TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                ((MSTSLocomotive)locomotive).ManualHorn = true;
                 Triggered = true;
             }
             return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
@@ -2051,137 +2000,25 @@ namespace Orts.Simulation.AIs
 
         public override AITrain.AI_MOVEMENT_STATE HandleAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
         {
-            if (ActualDepart >= presentTime)
+            if (Triggered && presentTime > NextStepTimeS)
             {
-                movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
+                // Advance to the next step.
+                if (Execution.MoveNext())
+                {
+                    NextStepTimeS = presentTime + Execution.Current;
+                    return AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
+                }
+                else
+                {
+                    thisTrain.AuxActionsContain.Remove(this);
+                    Triggered = false;
+                    return currentMvmtState;    //  Restore previous MovementState
+                }
             }
             else
             {
-                TrainCar locomotive = thisTrain.FindLeadLocomotive();
-                switch (AmHornPhase)
-                {
-                    case -1:
-                        {
-                            if (Triggered)
-                            {
-#if WITH_PATH_DEBUG
-                    File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                                ((MSTSLocomotive)locomotive).ManualHorn = false;
-                                Triggered = false;
-                            }
-
-                            if (((MSTSLocomotive)locomotive).DoesHornTriggerBell && ActualDepart + BellPlayTime >= presentTime)
-                            {
-                                movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
-                                return movementState;
-                            }
-                            else if (((MSTSLocomotive)locomotive).DoesHornTriggerBell && ActualDepart + BellPlayTime < presentTime)
-                                ((MSTSLocomotive)locomotive).BellState = MSTSLocomotive.SoundState.Stopped;
-                            thisTrain.AuxActionsContain.Remove(this);
-                            return currentMvmtState;    //  Restore previous MovementState
-                        }
-                    case 0:
-                        {
-                            if (Triggered)
-                            {
-#if WITH_PATH_DEBUG
-                    File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                                ((MSTSLocomotive)locomotive).ManualHorn = false;
-                                Triggered = false;
-                                ActualDepart = presentTime + SilenceTime0;
-                            }
-                            if (ActualDepart >= presentTime)
-                            {
-                                movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
-                                return movementState;
-                            }
-                            else
-                            {
-                                ActualDepart = presentTime + Phase1HornDuration;
-                                ((MSTSLocomotive)locomotive).ManualHorn = true;
-                                Triggered = true;
-                                AmHornPhase = 1;
-                            }
-                            return movementState;  
-                        }
-                    case 1:
-                        {
-                            if (Triggered)
-                            {
-#if WITH_PATH_DEBUG
-                    File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                                ((MSTSLocomotive)locomotive).ManualHorn = false;
-                                Triggered = false;
-                                ActualDepart = presentTime + SilenceTime1;
-                            }
-                            if (ActualDepart >= presentTime)
-                            {
-                                movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
-                                return movementState;
-                            }
-                            else
-                            {
-                                ActualDepart = presentTime + Phase2HornDuration;
-                                ((MSTSLocomotive)locomotive).ManualHorn = true;
-                                Triggered = true;
-                                AmHornPhase = 2;
-                            }
-                            return movementState;
-                        }
-                    case 2:
-                        {
-                            if (Triggered)
-                            {
-#if WITH_PATH_DEBUG
-                    File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                                ((MSTSLocomotive)locomotive).ManualHorn = false;
-                                Triggered = false;
-                                ActualDepart = presentTime + SilenceTime2;
-                            }
-                            if (ActualDepart >= presentTime)
-                            {
-                                movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
-                                return movementState;
-                            }
-                            else
-                            {
-                                ActualDepart = presentTime + Phase3HornDuration;
-                                ((MSTSLocomotive)locomotive).ManualHorn = true;
-                                AmHornPhase = 3;
-                                Triggered = true;
-                            }
-                            return movementState;
-                        }
-                    case 3:
-                        {
-                            if (Triggered)
-                            {
-#if WITH_PATH_DEBUG
-                    File.AppendAllText(@"C:\temp\checkpath.txt", "Stop Horn for AITRain " + thisTrain.Number + " : mvt state " + movementState.ToString() + " at " + presentTime + "\n");
-#endif
-                                ((MSTSLocomotive)locomotive).ManualHorn = false;
-                                Triggered = false;
-                            }
-                            if (((MSTSLocomotive)locomotive).DoesHornTriggerBell && ActualDepart + BellPlayTime >= presentTime)
-                            {
-                                movementState = AITrain.AI_MOVEMENT_STATE.HANDLE_ACTION;
-                                return movementState;
-                            }
-                            else if (((MSTSLocomotive)locomotive).DoesHornTriggerBell && ActualDepart + BellPlayTime < presentTime)
-                                ((MSTSLocomotive)locomotive).BellState = MSTSLocomotive.SoundState.Stopped;
-                            thisTrain.AuxActionsContain.Remove(this);
-                            return currentMvmtState;    //  Restore previous MovementState
-                        }
-                    default:
-                        break;
-                }
-
+                return movementState;
             }
-            return movementState;
         }
 
         public override AITrain.AI_MOVEMENT_STATE ProcessAction(Train thisTrain, int presentTime, float elapsedClockSeconds, AITrain.AI_MOVEMENT_STATE movementState)
