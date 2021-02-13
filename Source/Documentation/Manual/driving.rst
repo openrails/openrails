@@ -115,6 +115,8 @@ trainbrake has 22 kN brake force at 40% train brake setting, then the
 dynamic brake will try to achieve, and maintain 22 kN braking force, instead 
 of just setting 40% dynamic brake percentage.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Refill
 ------
 
@@ -257,6 +259,8 @@ An example of the basic HUD for Steam locomotives:
 .. image:: images/driving-hud-steam.png
     :align: center
     :scale: 80%
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 The default :ref:`firing <physics-steam-firing>` setting is automatic fireman. 
 If manual firing is engaged with ``<Ctrl+F>``, then additional information 
@@ -884,6 +888,8 @@ button has
 been pressed -- the button must be pressed again to cancel the emergency 
 brake condition.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Connect/Disconnect Brake Hoses
 ------------------------------
 
@@ -1437,6 +1443,8 @@ other modes the weather can be selected in the start menu. A :ref:`Weather
 Change Activity Event <operation-activity-weather-change>` can be included 
 in an activity that will modify the weather during the activity.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Modifying Weather at Runtime
 ----------------------------
 
@@ -1470,6 +1478,8 @@ In activity mode Open Rails software determines the season, and its
 related alternative textures to display from the Season parameter in the 
 MSTS Activity file. In other modes the player can select the season in the 
 start menu.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 .. _driving-act-randomization:
 
@@ -1551,6 +1561,8 @@ All these train failures occur only on the player train.
   waiting point delay is introduced, that can have a maximum value of 25 seconds 
   for the standard WPs and 5 minutes for the absolute WPs. Such maximum 
   values depend also from randomization level.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 Screenshot - Print Screen
 =========================

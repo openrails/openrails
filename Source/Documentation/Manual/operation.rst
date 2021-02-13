@@ -7,6 +7,8 @@ Open Rails Train Operation
 Note that this document details behaviour while in single-player mode only. For 
 :ref:`multi-player mode <multiplayer>`, different rules may apply.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Open Rails Activities
 =====================
 
