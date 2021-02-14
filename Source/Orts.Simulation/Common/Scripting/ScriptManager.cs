@@ -47,7 +47,6 @@ namespace Orts.Common.Scripting
             cp.ReferencedAssemblies.Add("System.dll");
             cp.ReferencedAssemblies.Add("System.Core.dll");
             cp.ReferencedAssemblies.Add("ORTS.Common.dll");
-            cp.ReferencedAssemblies.Add("Orts.Formats.Msts.dll");
             cp.ReferencedAssemblies.Add("Orts.Simulation.dll");
             return cp;
         }

@@ -1,6 +1,6 @@
-﻿using Orts.Formats.Msts;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Orts.Formats.Msts;
 
 namespace Orts.Simulation.Signalling
 {
@@ -19,10 +19,38 @@ namespace Orts.Simulation.Signalling
         /// File name where debugging information provided by signalling functions will be inserted
         /// </summary>
         public string DebugFileName = String.Empty;
+        public enum Aspect
+        {
+            /// <summary>Stop (absolute)</summary>
+            Stop,
+            /// <summary>Stop and proceed</summary>
+            StopAndProceed,
+            /// <summary>Restricting</summary>
+            Restricting,
+            /// <summary>Final caution before 'stop' or 'stop and proceed'</summary>
+            Approach_1,
+            /// <summary>Advanced caution</summary>
+            Approach_2,
+            /// <summary>Least restrictive advanced caution</summary>
+            Approach_3,
+            /// <summary>Clear to next signal</summary>
+            Clear_1,
+            /// <summary>Clear to next signal (least restrictive)</summary>
+            Clear_2
+        }
+        public enum BlockState
+        {
+            /// <summary>Block ahead is clear and accesible</summary>
+            Clear,
+            /// <summary>Block ahead is occupied by one or more wagons/locos not moving in opposite direction</summary>
+            Occupied,
+            /// <summary>Block ahead is impassable due to the state of a switch or occupied by moving train or not accesible</summary>
+            Obstructed
+        }
         /// <summary>
         /// Represents one of the eight aspects used for display purposes, AI traffic and SIGSCR signalling
         /// </summary>
-        public MstsSignalAspect MstsSignalAspect { get => SignalHead.state; protected set => SignalHead.state = value; }
+        public Aspect MstsSignalAspect { get => (Aspect)SignalHead.state; protected set => SignalHead.state = (MstsSignalAspect)value; }
         /// <summary>
         /// Custom aspect of the signal
         /// </summary>
@@ -46,7 +74,7 @@ namespace Orts.Simulation.Signalling
         /// <summary>
         /// Occupation and reservation state of the signal's route
         /// </summary>
-        public MstsBlockState BlockState => SignalObject.block_state();
+        public BlockState CurrentBlockState => (BlockState)SignalObject.block_state();
         /// <summary>
         /// True if the signal link is activated
         /// </summary>
@@ -64,7 +92,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         /// <param name="signalAspect">Aspect for which the default draw state must be found</param>
         /// <returns></returns>
-        public int DefaultDrawState(MstsSignalAspect signalAspect) => SignalHead.def_draw_state(signalAspect);
+        public int DefaultDrawState(Aspect signalAspect) => SignalHead.def_draw_state((MstsSignalAspect)signalAspect);
         /// <summary>
         /// Index of the draw state with the specified name
         /// </summary>
@@ -204,10 +232,10 @@ namespace Orts.Simulation.Signalling
         /// <param name="sigfnA">Signals to search</param>
         /// <param name="sigfnB">Signal type where search is stopped</param>
         /// <param name="mostRestrictiveHead">Check most restrictive head per signal</param>
-        public MstsSignalAspect DistMultiSigMR(string sigfnA, string sigfnB, bool mostRestrictiveHead = true)
+        public Aspect DistMultiSigMR(string sigfnA, string sigfnB, bool mostRestrictiveHead = true)
         {
-            if(mostRestrictiveHead) return SignalHead.dist_multi_sig_mr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
-            return SignalHead.dist_multi_sig_mr_of_lr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
+            if(mostRestrictiveHead) return (Aspect)SignalHead.dist_multi_sig_mr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
+            return (Aspect)SignalHead.dist_multi_sig_mr_of_lr(SigFnIndex(sigfnA), SigFnIndex(sigfnB), DebugFileName);
         }
         /// <summary>
         /// Get aspect of required signal
@@ -216,16 +244,16 @@ namespace Orts.Simulation.Signalling
         /// <param name="sigfn">Function of the signal heads to consider</param>
         /// <param name="mostRestrictive">Get most restrictive instead of least restrictive</param>
         /// <param name="checkRouting">If looking for most restrictive aspect, consider only heads with the route link activated</param>
-        public MstsSignalAspect IdSignalAspect(int id, string sigfn, bool mostRestrictive = false, bool checkRouting = false)
+        public Aspect IdSignalAspect(int id, string sigfn, bool mostRestrictive = false, bool checkRouting = false)
         {
-            if (!mostRestrictive) return SignalHead.id_sig_lr(id, SigFnIndex(sigfn));
+            if (!mostRestrictive) return (Aspect)SignalHead.id_sig_lr(id, SigFnIndex(sigfn));
             else if (id >= 0 && id < SignalObject.signalRef.SignalObjects.Length)
             {
                 var signal = SignalObjectById(id);
-                if (checkRouting) return signal.this_sig_mr_routed(SigFnIndex(sigfn), DebugFileName);
-                else return signal.this_sig_mr(SigFnIndex(sigfn));
+                if (checkRouting) return (Aspect)signal.this_sig_mr_routed(SigFnIndex(sigfn), DebugFileName);
+                else return (Aspect)signal.this_sig_mr(SigFnIndex(sigfn));
             }
-            return MstsSignalAspect.STOP;
+            return Aspect.Stop;
         }
         /// <summary>
         /// Get local variable of the required signal
@@ -309,9 +337,9 @@ namespace Orts.Simulation.Signalling
         /// <param name="signalId">Id of the signal where check is stopped</param>
         /// <param name="allowCallOn">Consider route as cleared if train has call on</param>
         /// <returns>The state of the route from this signal to the required signal</returns>
-        public MstsBlockState RouteClearedToSignal(int signalId, bool allowCallOn = false)
+        public BlockState RouteClearedToSignal(int signalId, bool allowCallOn = false)
         {
-            return SignalObject.RouteClearedToSignal(signalId, allowCallOn, DebugFileName);
+            return (BlockState)SignalObject.RouteClearedToSignal(signalId, allowCallOn, DebugFileName);
         }
 
         /// <summary>
