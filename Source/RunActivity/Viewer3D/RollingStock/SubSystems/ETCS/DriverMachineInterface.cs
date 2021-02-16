@@ -749,16 +749,18 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             Position.X = (float)Control.PositionX;
             Position.Y = (float)Control.PositionY;
-            DMI = new DriverMachineInterface((int)Control.Width, (int)Control.Height, locomotive, viewer, control);
+            DMI = new DriverMachineInterface((int)Control.Height, (int)Control.Width, locomotive, viewer, control);
         }
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             base.PrepareFrame(frame, elapsedTime);
-            DrawPosition.X = (int)(Position.X * Viewer.CabWidthPixels / 640) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
-            DrawPosition.Y = (int)(Position.Y * Viewer.CabHeightPixels / 480) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
-            DrawPosition.Width = (int)(Control.Width * Viewer.DisplaySize.X / 640);
-            DrawPosition.Height = (int)(Control.Height * Viewer.DisplaySize.Y / 480);
+            var xScale = Viewer.CabWidthPixels / 640f;
+            var yScale = Viewer.CabHeightPixels / 480f;
+            DrawPosition.X = (int)(Position.X * xScale) - Viewer.CabXOffsetPixels + Viewer.CabXLetterboxPixels;
+            DrawPosition.Y = (int)(Position.Y * yScale) + Viewer.CabYOffsetPixels + Viewer.CabYLetterboxPixels;
+            DrawPosition.Width = (int)(Control.Width * xScale);
+            DrawPosition.Height = (int)(Control.Height * yScale);
             if (Zoomed)
             {
                 DrawPosition.Width = 640;
