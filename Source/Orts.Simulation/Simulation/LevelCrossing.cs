@@ -117,6 +117,7 @@ namespace Orts.Simulation
                 var totalMaxDist = predictedDist + maxPredictedDist + minimumDist + 1;
 
                 var reqDist = 0f; // actual used distance
+                var hornReqDist = 0f; // used distance for horn blow
                 var adjustDist = 0f;
 
 
@@ -146,12 +147,14 @@ namespace Orts.Simulation
                 {
                     validTrain = true;
                     reqDist = totalDist;
+                    hornReqDist = Math.Min(totalDist, 80.0f);
                 }
 
                 else if ((train.TrainType != Train.TRAINTYPE.STATIC) && WorldLocation.Within(crossing.Location, train.FrontTDBTraveller.WorldLocation, totalMaxDist) || WorldLocation.Within(crossing.Location, train.RearTDBTraveller.WorldLocation, totalMaxDist))
                 {
                     validTrain = true;
                     reqDist = totalMaxDist;
+                    hornReqDist = Math.Min(totalMaxDist, 80.0f);
                 }
 
                 if ((train.TrainType == Train.TRAINTYPE.STATIC) && !validStaticConsist && !crossing.StaticConsists.Contains(train))
@@ -179,10 +182,10 @@ namespace Orts.Simulation
 
                 var rearDist = -frontDist - train.Length;
 
-                if (train is AITrain aiTrain && (aiTrain.LevelCrossingHornPattern?.ShouldActivate(crossing.CrossingGroup, absSpeedMpS, Math.Min(frontDist, Math.Abs(rearDist))) ?? false))
+                if (train is AITrain && frontDist <= hornReqDist && (train.ReservedTrackLengthM <= 0 || frontDist < train.ReservedTrackLengthM) && rearDist <= minimumDist)
                 {
                     //  Add generic actions if needed
-                    aiTrain.AuxActionsContain.CheckGenActions(this.GetType(), crossing.Location, rearDist, frontDist, crossing.TrackIndex, aiTrain.LevelCrossingHornPattern);
+                    ((AITrain)train).AuxActionsContain.CheckGenActions(this.GetType(), crossing.Location, rearDist, frontDist, crossing.TrackIndex);
                 }
 
                 // The tests below is to allow the crossings operate like the crossings under MSTS

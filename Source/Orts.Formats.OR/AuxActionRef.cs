@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using ORTS.Common;
 using System;
 using System.Collections.Generic;
@@ -359,16 +358,12 @@ namespace Orts.Formats.OR
         public int Delay;
         [JsonProperty("RequiredDistance")]
         public float RequiredDistance;
-        [JsonProperty("Pattern")]
-        [JsonConverter(typeof(StringEnumConverter))]
-        public LevelCrossingHornPattern Pattern { get; private set; }
 
-        public AuxActionHorn(bool isGeneric, int delay = 2, float requiredDistance = 0, LevelCrossingHornPattern hornPattern = LevelCrossingHornPattern.Single) :    //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.SOUND_HORN, , float requiredDistance = 0) :
-            base(AUX_ACTION.SOUND_HORN, isGeneric)                                          //location, requiredSpeedMpS, , endSignalIndex, actionType, delay, requiredDistance)
+        public AuxActionHorn(bool isGeneric, int delay = 2, float requiredDistance = 0) :    //WorldLocation? location, float requiredSpeedMpS, , int endSignalIndex = -1, AUX_ACTION actionType = AUX_ACTION.SOUND_HORN, , float requiredDistance = 0) :
+            base(AUX_ACTION.SOUND_HORN ,isGeneric)                                          //location, requiredSpeedMpS, , endSignalIndex, actionType, delay, requiredDistance)
         {
             Delay = delay;
             RequiredDistance = requiredDistance;
-            Pattern = hornPattern;
         }
 
         public static void Register(string key)
@@ -381,7 +376,6 @@ namespace Orts.Formats.OR
         {
             Delay = action.Delay;
             RequiredDistance = action.RequiredDistance;
-            Pattern = action.Pattern;
         }
     }
 
