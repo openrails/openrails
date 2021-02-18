@@ -749,6 +749,12 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             Position.X = (float)Control.PositionX;
             Position.Y = (float)Control.PositionY;
+            if ((int)Control.Height == 102 && (int)Control.Width == 136)
+            {
+                // Hack for ETR400 cab, which was built with a bugged size calculation of digital displays
+                Control.Height *= 0.75f;
+                Control.Width *= 0.75f;
+            }
             DMI = new DriverMachineInterface((int)Control.Height, (int)Control.Width, locomotive, viewer, control);
         }
 
