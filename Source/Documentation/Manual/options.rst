@@ -516,6 +516,21 @@ meet.
     found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
     in the chapter  *Open Rails Train Operation*.
 
+.. _options-simple-control-and-physics:
+
+Simple control and physics
+--------------------------
+
+This is an option which players can set to simplify either the train controls or physics. 
+This feature is intended for players who want to focus on "running" trains and don't want to be bothered 
+by complex controls or prototypical physics which may require some additional expertise to operate.
+
+Initally this option affects only trains that use vacuum braking but other controls may be added in future versions.
+
+With vacuum braking, it is sometimes necessary to operate two different controls to apply and release the brakes. 
+With "Simple control and physics" checked, the player is able to operate the brakes just with the brake valve 
+and doesn't need to consider the steam ejector separately.
+
 .. _options-keyboard:
 
 Keyboard Options
