@@ -6257,6 +6257,7 @@ namespace Orts.Simulation.AIs
                 j++;
             }
             MSTSLocomotive lead = (MSTSLocomotive)Simulator.PlayerLocomotive;
+            EqualReservoirPressurePSIorInHg = Math.Min(EqualReservoirPressurePSIorInHg, lead.TrainBrakeController.MaxPressurePSI);
             foreach (TrainCar car in Cars)
             {
                 if (car.BrakeSystem is AirSinglePipe)
