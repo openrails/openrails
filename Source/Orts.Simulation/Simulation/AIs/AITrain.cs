@@ -292,6 +292,7 @@ namespace Orts.Simulation.AIs
             }
             // associate location events
             if (Simulator.ActivityRun != null) Simulator.ActivityRun.AssociateEvents(this);
+            LastSpeedMpS = SpeedMpS;
         }
 
         //================================================================================================//
@@ -376,6 +377,7 @@ namespace Orts.Simulation.AIs
                 AITrainThrottlePercent = initialThrottlepercent;
 
                 TraincarsInitializeMoving();
+                LastSpeedMpS = SpeedMpS;
             }
         }
 
@@ -701,24 +703,14 @@ namespace Orts.Simulation.AIs
                     return;
                 }
 
-                // set wipers on or off
-                try
+                if (Cars[0] is MSTSLocomotive leadingLoco)
                 {
-                    MSTSLocomotive leadingloco = Cars[0] as MSTSLocomotive;
-                    if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0 && !leadingloco.Wiper)
-                    {
-                        leadingloco.SignalEvent(Event.WiperOn);
-                        if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0 && !leadingloco.Wiper)
-                        {
-                            leadingloco.SignalEvent(Event.WiperOn);
-                        }
-                        else if (Simulator.Weather.PricipitationIntensityPPSPM2 == 0 && leadingloco.Wiper)
-                        {
-                            leadingloco.SignalEvent(Event.WiperOff);
-                        }
-                    }
+                    var isRainingOrSnowing = Simulator.Weather.PricipitationIntensityPPSPM2 > 0;
+                    if (leadingLoco.Wiper && !isRainingOrSnowing)
+                        leadingLoco.SignalEvent(Event.WiperOff);
+                    else if (!leadingLoco.Wiper && isRainingOrSnowing)
+                        leadingLoco.SignalEvent(Event.WiperOn);
                 }
-                catch { } // dummy catch
             }
 
             // switch on action depending on state
@@ -6265,6 +6257,7 @@ namespace Orts.Simulation.AIs
                 j++;
             }
             MSTSLocomotive lead = (MSTSLocomotive)Simulator.PlayerLocomotive;
+            EqualReservoirPressurePSIorInHg = Math.Min(EqualReservoirPressurePSIorInHg, lead.TrainBrakeController.MaxPressurePSI);
             foreach (TrainCar car in Cars)
             {
                 if (car.BrakeSystem is AirSinglePipe)

@@ -46,6 +46,8 @@ namespace Orts.Viewer3D.RollingStock
         List<ParticleEmitterViewer> SafetyValves = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Stack = new List<ParticleEmitterViewer>();
         List<ParticleEmitterViewer> Whistle = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> SmallEjector = new List<ParticleEmitterViewer>();
+        List<ParticleEmitterViewer> LargeEjector = new List<ParticleEmitterViewer>();
 
         public MSTSSteamLocomotiveViewer(Viewer viewer, MSTSSteamLocomotive car)
             : base(viewer, car)
@@ -71,6 +73,10 @@ namespace Orts.Viewer3D.RollingStock
                     Injectors1.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "injectors2fx")
                     Injectors2.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "smallejectorfx")
+                    SmallEjector.AddRange(emitter.Value);
+                else if (emitter.Key.ToLowerInvariant() == "largeejectorfx")
+                    LargeEjector.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "compressorfx")
                     Compressor.AddRange(emitter.Value);
                 else if (emitter.Key.ToLowerInvariant() == "generatorfx")
@@ -238,7 +244,13 @@ namespace Orts.Viewer3D.RollingStock
              foreach (var drawer in Injectors2)
                  drawer.SetOutput(car.Injector2SteamVelocityMpS, car.Injector2SteamVolumeM3pS, car.Injector2ParticleDurationS);
 
-             foreach (var drawer in Compressor)
+            foreach (var drawer in SmallEjector)
+                drawer.SetOutput(car.SmallEjectorSteamVelocityMpS, car.SmallEjectorSteamVolumeM3pS, car.SmallEjectorParticleDurationS);
+
+            foreach (var drawer in LargeEjector)
+                drawer.SetOutput(car.LargeEjectorSteamVelocityMpS, car.LargeEjectorSteamVolumeM3pS, car.LargeEjectorParticleDurationS);
+
+            foreach (var drawer in Compressor)
                 drawer.SetOutput(car.CompressorSteamVelocityMpS, car.CompressorSteamVolumeM3pS, car.CompressorParticleDurationS );
 
             foreach (var drawer in Generator)

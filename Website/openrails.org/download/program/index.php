@@ -30,7 +30,9 @@
             </p>
           </a>
           <p style="text-align: center;">
-            <?php echo date('d F Y', filemtime("$file_path/$download_stable")) . ', ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB'; ?>
+            <!-- Cannot set modification date to correct value so write it literally -->
+            <!-- <?php echo date('d F Y', filemtime("$file_path/$download_stable")) . ', ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB'; ?> -->
+            <?php echo '08 December 2018, ' . round(filesize("$file_path/$download_stable") / 1024 / 1024) . 'MB'; ?>
           </p>
           <!--<p class="alert alert-info">
             We're working hard on producing the next stable version. Please check back soon.

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2009-12-28 00:25:09+0300\n"
-"PO-Revision-Date: 2009-12-28 06:05+0300\n"
+"PO-Revision-Date: 2020-08-29 08:43+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -399,7 +399,7 @@ msgstr "Расписание:"
 #: ../../Menu/MainForm.Designer.cs:900 ../../Menu/Options.cs:270
 #: ../../Menu/TestingForm.Designer.cs:314
 msgid "Testing"
-msgstr "Тестовой версии"
+msgstr "Проверка"
 
 #: ../../Menu/MainForm.Designer.cs:918
 msgid "What's new?"

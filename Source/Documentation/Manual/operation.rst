@@ -7,6 +7,8 @@ Open Rails Train Operation
 Note that this document details behaviour while in single-player mode only. For 
 :ref:`multi-player mode <multiplayer>`, different rules may apply.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Open Rails Activities
 =====================
 
@@ -1194,18 +1196,24 @@ has reduced its speed to a specific value. Such control is used for diverging
 routes, to ensure the speed of the train is reduced sufficiently to safely 
 negotiate the switches onto the diverging route.
 
-Two script functions for use in OR have been defined which can be used to 
+Three script functions for use in OR have been defined which can be used to
 control the signal until the train has reached a specific position or has 
 reduced its speed.
 
 These functions are::
 
     APPROACH_CONTROL_POSITION(position)
+    APPROACH_CONTROL_POSITION_FORCED(position)
     APPROACH_CONTROL_SPEED(position, speed)
 
 These functions are Boolean functions: the returned value is 'true' if a train 
-is approaching the signal and is within the required distance of the signal 
-and, for APPROACH_CONTROL_SPEED, has reduced its speed below the required values.
+is approaching the signal and is within the required distance of the signal and,
+for ``APPROACH_CONTROL_SPEED``, has reduced its speed below the required values.
+
+``APPROACH_CONTROL_POSITION_FORCED`` function is similar to
+``APPROACH_CONTROL_POSITION``, but it can be used with any type of signal.
+Meanwhile, ``APPROACH_CONTROL_POSITION`` requires NORMAL signals, and will
+only clear the signal if it is the train's next signal.
 
 Parameters :
 
@@ -1488,6 +1496,8 @@ This function uses approach control for the 'lower' route.::
     // Get draw state
     draw_state = def_draw_state (state);
 
+.. _operation-callon-functions:
+    
 TrainHasCallOn, TrainHasCallOn_Advanced Functions
 -------------------------------------------------
 
@@ -1524,6 +1534,10 @@ It is a Boolean function and returns state as follows:
             - Train is part of ``RunRound`` command, and is to attach to the 
               train presently in the platform.
 
+Additionally, both in Timetable and Activity modes, this functions will return 
+true if the CallOn option is selected from signal's context menu in the
+:ref:`Dispatcher Window <driving-dispatcher>`.
+              
 The use of this function must be combined with a check for::
 
     blockstate ==# BLOCK_OCCUPIED
@@ -1607,6 +1621,9 @@ So, in a nutshell :
         - ``TrainsHasCallOn_Restricted()``:
 
             - Activity or Timetable: call-on never allowed
+
+All these functions can be set to true by hand from the
+:ref:`Dispatcher Window <driving-dispatcher>`.
 
 These signals can be laid down with the MSTS RE. In the .tdb file only a 
 reference to the  SignalType name is written, an in the world file only a 

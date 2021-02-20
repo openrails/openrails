@@ -115,6 +115,8 @@ trainbrake has 22 kN brake force at 40% train brake setting, then the
 dynamic brake will try to achieve, and maintain 22 kN braking force, instead 
 of just setting 40% dynamic brake percentage.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Refill
 ------
 
@@ -257,6 +259,8 @@ An example of the basic HUD for Steam locomotives:
 .. image:: images/driving-hud-steam.png
     :align: center
     :scale: 80%
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 The default :ref:`firing <physics-steam-firing>` setting is automatic fireman. 
 If manual firing is engaged with ``<Ctrl+F>``, then additional information 
@@ -407,14 +411,26 @@ the texts do not overlap. As a result, only the first object is always
 shown at the correct position, all other objects are as close to their 
 position as allowed by other objects closer to the train.
 
+Pressing ``<Shift+F4>`` toggles the Track Monitor's *immersive mode*. In this 
+mode, the window conceals upcoming signal aspects and upcoming signal speed 
+limits and does not display upcoming diverging switches. However, it retains 
+the locations of signals, mileposts, permanent speed limits, sidings, and 
+stations. This level of assistance reflects the route knowledge that a train 
+driver could be expected to know by memory.
+
 F6 Siding and Platform Names
 ----------------------------
 
-Hit the ``<F6>`` key to bring up the siding and platform names within a 
-region. These can be crowded so hitting ``<Shift+F6>`` will cycle 
-through showing platforms only, sidings only, and both.
+Hit the ``<F6>`` key to reveal labels naming the siding and platforms.
+Hit it again to hide them.
 
-Hitting ``<F6>`` again removes both siding and platform names.
+Items more distant will show more faded and platforms disappear altogether if more than 1km away from the user; 
+sidings disappear if more than 0.5km away.
+
+Use ``<Shift+F6>`` to cycle through platforms only (in yellow), sidings only (in orange), and both together.
+
+If the user is in Activity Mode or Timetable Mode, then a 4th step is added to the cycle and this step removes
+any labels not relevant to the activity or timetable.
 
 .. image:: images/driving-siding-names.png
 
@@ -750,6 +766,12 @@ When left- or right-clicking on a signal, a pop-up menu appears:
 Using the mouse, you can force the signal to Stop, Approach or Proceed. 
 Later you can return it to System Controlled mode.
 
+For signals using the TrainHasCallOn functions as described 
+:ref:`here <operation-callon-functions>`, an additional option labeled
+``Enable CallOn`` will appear in the pop-up menu. The use of this
+function allows a train to enter into an occupied platform if the
+dispatcher allows so.
+
 By left- or right-clicking on a switch, a small pop-up menu with the two 
 selections ``Main route`` and ``Side route`` appears. By clicking on them 
 you can throw the switch, provided the OR AI dispatcher allows it.
@@ -865,6 +887,8 @@ Note that this command does not work if the :ref:`Emergency Brake <physics-emerg
 button has 
 been pressed -- the button must be pressed again to cancel the emergency 
 brake condition.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 Connect/Disconnect Brake Hoses
 ------------------------------
@@ -1419,6 +1443,8 @@ other modes the weather can be selected in the start menu. A :ref:`Weather
 Change Activity Event <operation-activity-weather-change>` can be included 
 in an activity that will modify the weather during the activity.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Modifying Weather at Runtime
 ----------------------------
 
@@ -1452,6 +1478,8 @@ In activity mode Open Rails software determines the season, and its
 related alternative textures to display from the Season parameter in the 
 MSTS Activity file. In other modes the player can select the season in the 
 start menu.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 .. _driving-act-randomization:
 
@@ -1533,6 +1561,8 @@ All these train failures occur only on the player train.
   waiting point delay is introduced, that can have a maximum value of 25 seconds 
   for the standard WPs and 5 minutes for the absolute WPs. Such maximum 
   values depend also from randomization level.
+
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
 
 Screenshot - Print Screen
 =========================

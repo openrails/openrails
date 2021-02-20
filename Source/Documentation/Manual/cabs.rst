@@ -7,6 +7,8 @@ Open Rails Cabs
 OR supports both MSTS-compatible 2D cabs as well as native 3D cabs, even on 
 the same locomotive.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 2D Cabs
 =======
 
@@ -188,6 +190,39 @@ Here is an example of a cab light control block within the .cvf file::
 			      MouseControl ( 1 )
             )
 
+Dedicated buttons for brake controllers
+---------------------------------------
+
+.. index::
+    single: ORTS_BAILOFF
+
+In addition to the BailOff keyboard command, a cabview control named
+ORTS_BAILOFF is available. It is used to release the brakes of the engine
+while keeping the train brakes applied.
+
+.. index::
+    single: ORTS_QUICKRELEASE
+
+In some brake controllers, there is a button that provides a full and quick
+release of the train brake when pressed. OR supports this via the
+ORTS_QUICKRELEASE cabview control.
+
+.. index::
+    single: ORTS_OVERCHARGE
+
+Some brake controllers have a dedicated button to overcharge the brake pipe.
+The ORTS_OVERCHARGE cabview control can be used for this purpose.
+
+Here is an example of one of this controls within the .cvf file::
+
+			TwoState (
+            Type ( ORTS_BAILOFF TWO_STATE )
+			      Position ( 120 425 30 21 )
+			      Graphic ( BailOff.ace )
+			      NumFrames ( 2 2 1 )
+			      Style ( PRESSED )
+			      MouseControl ( 1 )
+            )
 
 Signed Traction Braking control
 -------------------------------

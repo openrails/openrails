@@ -1041,21 +1041,27 @@ namespace Orts.Viewer3D.WebServices
             });
         }
 
-        private static void ChangeLabelAt(List<ListLabel> labels, int index, Func<ListLabel, ListLabel> modifier)
+        private static void ChangeLabelAt(IList<ListLabel> labels, int index, Func<ListLabel, ListLabel> modifier)
         {
-            ListLabel label = labels.Count > index ? labels[index] : new ListLabel();
-            label = modifier(label);
-            CheckLabel(ref label);
-            while (labels.Count < index)
+            index = Math.Max(index, 0); // Fix invalid row indices.
+            if (index <= labels.Count)
             {
-                ListLabel empty = new ListLabel();
-                CheckLabel(ref empty);
-                labels.Add(empty);
-            }
-            if (labels.Count == index)
-                labels.Add(label);
-            else
+                var label = modifier(labels[index]);
+                CheckLabel(ref label);
                 labels[index] = label;
+            }
+            else
+            {
+                while (labels.Count < index)
+                {
+                    var empty = new ListLabel();
+                    CheckLabel(ref empty);
+                    labels.Add(empty);
+                }
+                var label = modifier(new ListLabel());
+                CheckLabel(ref label);
+                labels.Add(label);
+            }
         }
 
         /// <summary>
