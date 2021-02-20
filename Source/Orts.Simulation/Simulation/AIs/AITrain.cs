@@ -702,16 +702,23 @@ namespace Orts.Simulation.AIs
                 }
 
                 // set wipers on or off
-                MSTSLocomotive leadingloco = Cars[0] as MSTSLocomotive;
-                if (leadingloco != null)
+                try
+                {
+                    MSTSLocomotive leadingloco = Cars[0] as MSTSLocomotive;
                     if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0 && !leadingloco.Wiper)
                     {
                         leadingloco.SignalEvent(Event.WiperOn);
+                        if (Simulator.Weather.PricipitationIntensityPPSPM2 > 0 && !leadingloco.Wiper)
+                        {
+                            leadingloco.SignalEvent(Event.WiperOn);
+                        }
+                        else if (Simulator.Weather.PricipitationIntensityPPSPM2 == 0 && leadingloco.Wiper)
+                        {
+                            leadingloco.SignalEvent(Event.WiperOff);
+                        }
                     }
-                    else if (Simulator.Weather.PricipitationIntensityPPSPM2 == 0 && leadingloco.Wiper)
-                    {
-                        leadingloco.SignalEvent(Event.WiperOff);
-                    }
+                }
+                catch { } // dummy catch
             }
 
             // switch on action depending on state
