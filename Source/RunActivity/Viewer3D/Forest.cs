@@ -73,8 +73,6 @@ namespace Orts.Viewer3D
     public class ForestPrimitive : RenderPrimitive
     {
         readonly Viewer Viewer;
-        readonly VertexDeclaration VertexDeclaration;
-        readonly int VertexStride;
         readonly VertexBuffer VertexBuffer;
         public readonly int PrimitiveCount;
         public float MaximumCenterlineOffset;
@@ -90,10 +88,8 @@ namespace Orts.Viewer3D
 
             var trees = CalculateTrees(viewer.Tiles, forest, position, out ObjectRadius);
 
-            VertexDeclaration = new VertexDeclaration(viewer.GraphicsDevice, VertexPositionNormalTexture.VertexElements);
             if (trees.Count > 0)
             {
-                VertexStride = VertexDeclaration.GetVertexStrideSize(0);
                 VertexBuffer = new VertexBuffer(viewer.GraphicsDevice, typeof(VertexPositionNormalTexture), trees.Count, BufferUsage.WriteOnly);
                 VertexBuffer.SetData(trees.ToArray());
             }
@@ -402,8 +398,7 @@ namespace Orts.Viewer3D
 
         public override void Draw(GraphicsDevice graphicsDevice)
         {
-            graphicsDevice.VertexDeclaration = VertexDeclaration;
-            graphicsDevice.Vertices[0].SetSource(VertexBuffer, 0, VertexStride);
+            graphicsDevice.SetVertexBuffer(VertexBuffer);
             graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, PrimitiveCount);
         }
     }
@@ -429,13 +424,9 @@ namespace Orts.Viewer3D
             shader.ImageTexture = TreeTexture;
             shader.ReferenceAlpha = 200;
 
-            var rs = graphicsDevice.RenderState;
             // Enable alpha blending for everything: this allows distance scenery to appear smoothly.
-            rs.AlphaBlendEnable = true;
-            rs.DestinationBlend = Blend.InverseSourceAlpha;
-            rs.SourceBlend = Blend.SourceAlpha;
-
-            graphicsDevice.SamplerStates[0].AddressU = graphicsDevice.SamplerStates[0].AddressV = TextureAddressMode.Clamp;
+            graphicsDevice.BlendState = BlendState.NonPremultiplied;
+            graphicsDevice.SamplerStates[0] = SamplerState.LinearClamp;
         }
 
         public override void Render(GraphicsDevice graphicsDevice, IEnumerable<RenderItem> renderItems, ref Matrix XNAViewMatrix, ref Matrix XNAProjectionMatrix)
@@ -444,31 +435,23 @@ namespace Orts.Viewer3D
             var viewproj = XNAViewMatrix * XNAProjectionMatrix;
 
             shader.SetViewMatrix(ref XNAViewMatrix);
-            shader.Begin();
             ShaderPasses.Reset();
             while (ShaderPasses.MoveNext())
             {
-                ShaderPasses.Current.Begin();
                 foreach (var item in renderItems)
                 {
                     shader.SetMatrix(item.XNAMatrix, ref viewproj);
                     shader.ZBias = item.RenderPrimitive.ZBias;
-                    shader.CommitChanges();
+                    ShaderPasses.Current.Apply();
                     item.RenderPrimitive.Draw(graphicsDevice);
                 }
-                ShaderPasses.Current.End();
             }
-            shader.End();
         }
 
         public override void ResetState(GraphicsDevice graphicsDevice)
         {
             Viewer.MaterialManager.SceneryShader.ReferenceAlpha = 0;
-
-            var rs = graphicsDevice.RenderState;
-            rs.AlphaBlendEnable = false;
-            rs.DestinationBlend = Blend.Zero;
-            rs.SourceBlend = Blend.One;
+            graphicsDevice.BlendState = BlendState.Opaque;
         }
 
         public override Texture2D GetShadowTexture()

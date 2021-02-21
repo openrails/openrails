@@ -55,6 +55,19 @@ struct VERTEX_INPUT
 	float4x4 Instance : TEXCOORD1;
 };
 
+struct VERTEX_INPUT_FOREST
+{
+	float4 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float3 Normal   : NORMAL;
+};
+
+struct VERTEX_INPUT_BLUR
+{
+	float4 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+};
+
 ////////////////////    V E R T E X   O U T P U T S    /////////////////////////
 
 struct VERTEX_OUTPUT
@@ -79,7 +92,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 
 	if (determinant(In.Instance) != 0) {
 		In.Position = mul(In.Position, transpose(In.Instance));
-		In.Normal = mul(In.Normal, transpose(In.Instance));
+		In.Normal = mul(In.Normal, (float3x3)transpose(In.Instance));
 	}
 
 	Out.Position = mul(In.Position, WorldViewProjection);
@@ -89,7 +102,7 @@ VERTEX_OUTPUT VSShadowMap(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
+VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT_FOREST In)
 {
 	VERTEX_OUTPUT Out = (VERTEX_OUTPUT)0;
 
@@ -97,7 +110,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
 	float3 upVector = float3(0, -1, 0);
 
 	// Move the vertex left/right/up/down based on the normal values (tree size).
-	float3 newPosition = In.Position;
+	float3 newPosition = In.Position.xyz;
 	newPosition += (In.TexCoord.x - 0.5f) * SideVector * In.Normal.x;
 	newPosition += (In.TexCoord.y - 1.0f) * upVector * In.Normal.y;
 	In.Position = float4(newPosition, 1);
@@ -110,7 +123,7 @@ VERTEX_OUTPUT VSShadowMapForest(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT In)
+VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT_BLUR In)
 {
 	VERTEX_OUTPUT_BLUR Out;
 	
@@ -124,7 +137,7 @@ VERTEX_OUTPUT_BLUR VSShadowMapHorzBlur(in VERTEX_INPUT In)
 	return Out;
 }
 
-VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT In)
+VERTEX_OUTPUT_BLUR VSShadowMapVertBlur(in VERTEX_INPUT_BLUR In)
 {
 	VERTEX_OUTPUT_BLUR Out;
 	
@@ -168,32 +181,32 @@ float4 PSShadowMapBlur(in VERTEX_OUTPUT_BLUR In) : COLOR0
 
 technique ShadowMap {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSShadowMap();
-		PixelShader = compile ps_2_0 PSShadowMap();
+		VertexShader = compile vs_4_0_level_9_1 VSShadowMap();
+		PixelShader = compile ps_4_0_level_9_1 PSShadowMap();
 	}
 }
 
 technique ShadowMapForest {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSShadowMapForest();
-		PixelShader = compile ps_2_0 PSShadowMap();
+		VertexShader = compile vs_4_0_level_9_1 VSShadowMapForest();
+		PixelShader = compile ps_4_0_level_9_1 PSShadowMap();
 	}
 }
 
 technique ShadowMapBlocker {
 	pass Pass_0 {
-		VertexShader = compile vs_2_0 VSShadowMap();
-		PixelShader = compile ps_2_0 PSShadowMapBlocker();
+		VertexShader = compile vs_4_0_level_9_1 VSShadowMap();
+		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlocker();
 	}
 }
 
 technique ShadowMapBlur {
 	pass Blur_X {
-		VertexShader = compile vs_2_0 VSShadowMapHorzBlur();
-		PixelShader = compile ps_2_0 PSShadowMapBlur();
+		VertexShader = compile vs_4_0_level_9_1 VSShadowMapHorzBlur();
+		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlur();
 	}
 	pass Blur_Y {
-		VertexShader = compile vs_2_0 VSShadowMapVertBlur();
-		PixelShader = compile ps_2_0 PSShadowMapBlur();
+		VertexShader = compile vs_4_0_level_9_1 VSShadowMapVertBlur();
+		PixelShader = compile ps_4_0_level_9_1 PSShadowMapBlur();
 	}
 }
