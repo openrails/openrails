@@ -1241,7 +1241,7 @@ namespace Orts.Viewer3D
             VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) };
         }
 
-        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, List<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
             : this(material, vertexBufferSet, null, indexData.Min(), indexData.Max() - indexData.Min() + 1, indexData.Count / 3, hierarchy, hierarchyIndex)
         {
             IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
@@ -1279,19 +1279,12 @@ namespace Orts.Viewer3D
         /// which define the maximum sizes of the vertex and index buffers, respectively.
         /// </remarks>
         public MutableShapePrimitive(Material material, int maxVertices, int maxIndices, int[] hierarchy, int hierarchyIndex)
-        {
-            Material = material;
-            Hierarchy = hierarchy;
-            HierarchyIndex = hierarchyIndex;
-
-            var graphicsDevice = material.Viewer.GraphicsDevice;
-            VertexBuffer = new VertexBuffer(graphicsDevice, typeof(VertexPositionNormalTexture), maxVertices, BufferUsage.WriteOnly);
-            IndexBuffer = new IndexBuffer(graphicsDevice, typeof(I), maxIndices, BufferUsage.WriteOnly);
-
-            DummyVertexBuffer = new VertexBuffer(graphicsDevice, DummyVertexDeclaration, 1, BufferUsage.WriteOnly);
-            DummyVertexBuffer.SetData(DummyVertexData);
-            VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(DummyVertexBuffer) };
-        }
+            : base(material: material,
+                   vertexBufferSet: new SharedShape.VertexBufferSet(new VertexPositionNormalTexture[maxVertices], material.Viewer.GraphicsDevice),
+                   indexData: new ushort[maxIndices],
+                   graphicsDevice: material.Viewer.GraphicsDevice,
+                   hierarchy: hierarchy,
+                   hierarchyIndex: hierarchyIndex) { }
 
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
@@ -1305,8 +1298,6 @@ namespace Orts.Viewer3D
         {
             IndexBuffer.SetData(data);
         }
-
-        public override void Draw(GraphicsDevice graphicsDevice) => base.Draw(graphicsDevice);
     }
 
     struct ShapeInstanceData
