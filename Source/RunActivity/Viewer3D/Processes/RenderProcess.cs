@@ -140,15 +140,9 @@ namespace Orts.Viewer3D.Processes
 
             DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
-            try
-            {
-                // Validate that the DirectX feature level is one we understand
-                Enum.Parse(typeof(ORTS.Settings.UserSettings.DirectXFeature), "Level" + Game.Settings.DirectXFeatureLevel);
-            }
-            catch (Exception)
-            {
+            // Validate that the DirectX feature level is one we understand
+            if (!Enum.IsDefined(typeof(ORTS.Settings.UserSettings.DirectXFeature), "Level" + Game.Settings.DirectXFeatureLevel))
                 Game.Settings.DirectXFeatureLevel = "";
-            }
 
             if (Game.Settings.DirectXFeatureLevel == "")
             {
