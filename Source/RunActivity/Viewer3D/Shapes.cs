@@ -1241,7 +1241,7 @@ namespace Orts.Viewer3D
             VertexBufferBindings = new[] { new VertexBufferBinding(VertexBuffer), new VertexBufferBinding(GetDummyVertexBuffer(material.Viewer.GraphicsDevice)) };
         }
 
-        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, List<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
             : this(material, vertexBufferSet, null, indexData.Min(), indexData.Max() - indexData.Min() + 1, indexData.Count / 3, hierarchy, hierarchyIndex)
         {
             IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
@@ -1263,6 +1263,37 @@ namespace Orts.Viewer3D
         public virtual void Mark()
         {
             Material.Mark();
+        }
+    }
+
+    /// <summary>
+    /// A <c>ShapePrimitive</c> that permits manipulation of the vertex and index buffers to change geometry efficiently.
+    /// </summary>
+    public class MutableShapePrimitive : ShapePrimitive
+    {
+        /// <remarks>
+        /// Buffers cannot be expanded, so take care to properly set <paramref name="maxVertices"/> and <paramref name="maxIndices"/>,
+        /// which define the maximum sizes of the vertex and index buffers, respectively.
+        /// </remarks>
+        public MutableShapePrimitive(Material material, int maxVertices, int maxIndices, int[] hierarchy, int hierarchyIndex)
+            : base(material: material,
+                   vertexBufferSet: new SharedShape.VertexBufferSet(new VertexPositionNormalTexture[maxVertices], material.Viewer.GraphicsDevice),
+                   indexData: new ushort[maxIndices],
+                   graphicsDevice: material.Viewer.GraphicsDevice,
+                   hierarchy: hierarchy,
+                   hierarchyIndex: hierarchyIndex) { }
+
+        public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
+        {
+            VertexBuffer.SetData(data);
+            MinVertexIndex = minVertexIndex;
+            NumVerticies = numVertices;
+            PrimitiveCount = primitiveCount;
+        }
+
+        public void SetIndexData(short[] data)
+        {
+            IndexBuffer.SetData(data);
         }
     }
 
