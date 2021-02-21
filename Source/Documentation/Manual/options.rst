@@ -516,8 +516,6 @@ meet.
     found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
     in the chapter  *Open Rails Train Operation*.
 
-.. _options-simple-control-and-physics:
-
 Simple control and physics
 --------------------------
 
@@ -846,5 +844,4 @@ The reason for defining a square around your train is to minimize the moments wh
 is approaching the edge of the precipitation box.  Worst case is to save the activity,
 exit and re-enter the activity since doing this will set your train back in the middle of the
 precipitation box.
-
 
