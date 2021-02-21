@@ -1269,10 +1269,7 @@ namespace Orts.Viewer3D
     /// <summary>
     /// A <c>ShapePrimitive</c> that permits manipulation of the vertex and index buffers to change geometry efficiently.
     /// </summary>
-    /// <remarks>
-    /// <typeparamref name="I"/> represents the type stored in the index buffer.
-    /// </remarks>
-    public class MutableShapePrimitive<I> : ShapePrimitive where I : struct
+    public class MutableShapePrimitive : ShapePrimitive
     {
         /// <remarks>
         /// Buffers cannot be expanded, so take care to properly set <paramref name="maxVertices"/> and <paramref name="maxIndices"/>,
@@ -1294,7 +1291,7 @@ namespace Orts.Viewer3D
             PrimitiveCount = primitiveCount;
         }
 
-        public void SetIndexData(I[] data)
+        public void SetIndexData(short[] data)
         {
             IndexBuffer.SetData(data);
         }
