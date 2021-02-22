@@ -1541,7 +1541,7 @@ namespace Orts.Viewer3D.Debugging
 		  if (signalPickedItem == null) return;
 		  var y = LastCursorPosition.Y;
 		  if (LastCursorPosition.Y < 100) y = 100;
-		  if (LastCursorPosition.Y > pictureBox1.Size.Height - 100) y = pictureBox1.Size.Height - 100;
+		  if (LastCursorPosition.Y > pbCanvas.Size.Height - 100) y = pbCanvas.Size.Height - 100;
 
 		  if (boxSetSignal.Items.Count == 5)
 			  boxSetSignal.Items.RemoveAt(4);

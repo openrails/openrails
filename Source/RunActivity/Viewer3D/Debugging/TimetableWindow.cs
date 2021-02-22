@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using Color = System.Drawing.Color;
 
 namespace Orts.Viewer3D.Debugging
 {
