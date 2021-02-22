@@ -1601,7 +1601,7 @@ namespace Orts.Simulation.RollingStocks
             if (!AdvancedAdhesionModel)  // Advanced adhesion model turned off.
                AbsWheelSpeedMpS = AbsSpeedMpS;
 
-            UpdateMotiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
+            UpdateTractiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
 
             ApplyDirectionToMotiveForce();
 
@@ -1976,7 +1976,7 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
-        protected virtual void UpdateMotiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
+        protected virtual void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
@@ -1995,7 +1995,7 @@ namespace Orts.Simulation.RollingStocks
                         maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
                     if (AbsSpeedMpS > (MaxSpeedMpS))
                         maxForceN = 0;
-                    MotiveForceN = maxForceN;
+                    TractiveForceN = maxForceN;
                 }
                 else
                 {
@@ -2034,11 +2034,11 @@ namespace Orts.Simulation.RollingStocks
                             //MotiveForceN *= 1;     //Not necessary
                             break;
                         case Direction.Reverse:
-                            MotiveForceN *= -1;
+                            TractiveForceN *= -1;
                             break;
                         case Direction.N:
                         default:
-                            MotiveForceN *= 0;
+                            TractiveForceN *= 0;
                             break;
                     }
                 }
@@ -2047,7 +2047,7 @@ namespace Orts.Simulation.RollingStocks
                     switch (Direction)
                     {
                         case Direction.Reverse:
-                            MotiveForceN *= -1;
+                            TractiveForceN *= -1;
                             break;
                         default:
                             break;
@@ -2302,7 +2302,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
              {
-                // Steam locomotive details updated in UpdateMotiveForce method, and inserted into adhesion module
+                // Steam locomotive details updated in UpdateTractiveForce method, and inserted into adhesion module
                 // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
             }
             
@@ -2341,7 +2341,7 @@ namespace Orts.Simulation.RollingStocks
               //  LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
-                LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
+                LocomotiveAxle.DriveForceN = TractiveForceN - DynamicBrakeForceN;  //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
