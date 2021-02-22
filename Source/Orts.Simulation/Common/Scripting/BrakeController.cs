@@ -234,6 +234,13 @@ namespace ORTS.Scripting.Api
         Hold,                   // TrainBrakesControllerHoldStart
 
         // OR values
+        StrBrkReleaseOn,      // TrainBrakesControllerStraightBrakingReleaseOnStart
+        StrBrkReleaseOff,     // TrainBrakesControllerStraightBrakingReleaseOffStart
+        StrBrkRelease,      // TrainBrakesControllerStraightBrakingReleaseStart
+        StrBrkLap,          // TrainBrakesControllerStraightBrakingLapStart
+        StrBrkApply,        // TrainBrakesControllerStraightBrakingApplyStart
+        StrBrkApplyAll,     // TrainBrakesControllerStraightBrakingApplyAllStart
+        StrBrkEmergency,    // TrainBrakesControllerStraightBrakingEmergencyStart
         Overcharge,         // Overcharge
         EBPB,               // Emergency Braking Push Button
         TCSEmergency,       // TCS Emergency Braking
@@ -270,6 +277,13 @@ namespace ORTS.Scripting.Api
             {ControllerState.FullServ, Catalog.GetString("Full Service")},
             {ControllerState.MinimalReduction, Catalog.GetString("Minimum Reduction")},
             {ControllerState.Hold, Catalog.GetString("Hold")},
+            {ControllerState.StrBrkReleaseOn, Catalog.GetString("Str. Brk. Release On:")},
+            {ControllerState.StrBrkReleaseOff, Catalog.GetString("Str. Brk. Release Off:")},
+            {ControllerState.StrBrkRelease, Catalog.GetString("Str. Brk. Release:")},
+            {ControllerState.StrBrkLap, Catalog.GetString("Str. Brk. Lap:")},
+            {ControllerState.StrBrkApply, Catalog.GetString("Str. Brk. Apply:")},
+            {ControllerState.StrBrkApplyAll, Catalog.GetString("Str. Brk. Apply All:")},
+            {ControllerState.StrBrkEmergency, Catalog.GetString("Str. Brk. Emerg:")},
             {ControllerState.Overcharge, Catalog.GetString("Overcharge")},
             {ControllerState.EBPB, Catalog.GetString("Emergency Braking Push Button")},
             {ControllerState.TCSEmergency, Catalog.GetString("TCS Emergency Braking")},

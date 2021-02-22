@@ -644,7 +644,7 @@ namespace Orts.Viewer3D.Popups
                         (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumExhausterIsOn ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")));
                     }
 
-                    else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && (Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorFitted)
+                    else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && (Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorControllerFitted)
                     {
                         // Display if vacuum pump, large ejector and small ejector fitted
                         TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}\t{5}\t{6}\t\t{7}\t\t{8}",
@@ -659,7 +659,7 @@ namespace Orts.Viewer3D.Popups
                         (Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpOperating ? Viewer.Catalog.GetString("on") : Viewer.Catalog.GetString("off")
                         ));
                     }
-                    else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && !(Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorFitted) // Change display so that small ejector is not displayed for vacuum pump operated locomotives
+                    else if ((Viewer.PlayerLocomotive as MSTSLocomotive).VacuumPumpFitted && !(Viewer.PlayerLocomotive as MSTSLocomotive).SmallEjectorControllerFitted) // Change display so that small ejector is not displayed for vacuum pump operated locomotives
                     {
                         // Display if vacuum pump, and large ejector only fitted
                         TableAddLines(table, String.Format("{0}\t\t{1}\t\t{2}\t{3}\t\t{4}",
@@ -724,22 +724,44 @@ namespace Orts.Viewer3D.Popups
             // Different display depending upon whether vacuum braked, manual braked or air braked
             if ((Viewer.PlayerLocomotive as MSTSLocomotive).BrakeSystem is VacuumSinglePipe)
             {
-                TableSetCells(table, 0,
-                                Viewer.Catalog.GetString("Car"),
-                                Viewer.Catalog.GetString("Type"),
-                                Viewer.Catalog.GetString("BrkCyl"),
-                                Viewer.Catalog.GetString("BrkPipe"),
-                                Viewer.Catalog.GetString("VacRes"),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString(""),
-                                Viewer.Catalog.GetString("Handbrk"),
-                                Viewer.Catalog.GetString("Conn"),
-                                Viewer.Catalog.GetString("AnglCock")
-                                );
-                TableAddLine(table);
+                if ((Viewer.PlayerLocomotive as MSTSLocomotive).NonAutoBrakePresent) // Straight brake system
+                {
+                    TableSetCells(table, 0,
+                    Viewer.Catalog.GetString("Car"),
+                    Viewer.Catalog.GetString("Type"),
+                    Viewer.Catalog.GetString("BrkCyl"),
+                    Viewer.Catalog.GetString("BrkPipe"),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString("Handbrk"),
+                    Viewer.Catalog.GetString("Conn"),
+                    Viewer.Catalog.GetString("AnglCock")
+                                                                                                );
+                    TableAddLine(table);
+                }
+                else // automatic vacuum brake system
+                {
+                    TableSetCells(table, 0,
+                    Viewer.Catalog.GetString("Car"),
+                    Viewer.Catalog.GetString("Type"),
+                    Viewer.Catalog.GetString("BrkCyl"),
+                    Viewer.Catalog.GetString("BrkPipe"),
+                    Viewer.Catalog.GetString("VacRes"),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString(""),
+                    Viewer.Catalog.GetString("Handbrk"),
+                    Viewer.Catalog.GetString("Conn"),
+                    Viewer.Catalog.GetString("AnglCock")
+                                                                                                );
+                    TableAddLine(table);
+                }
 
                 var n = train.Cars.Count; // Number of lines to show
                 for (var i = 0; i < n; i++)

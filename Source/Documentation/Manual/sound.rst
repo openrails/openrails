@@ -300,6 +300,18 @@ Trigger       Function
 208           GearPosition8
 =========     =====================================
 
+Additional triggers for vacuum brakes:
+
+=========     =====================================
+Trigger       Function
+=========     =====================================
+210           LargeEjectorOn
+211           LargeEjectorOff
+212           SmallEjectorOn
+213           SmallEjectorOff
+=========     =====================================
+
+
 Variable Triggers
 -----------------
 
