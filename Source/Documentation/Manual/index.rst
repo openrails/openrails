@@ -42,4 +42,3 @@ Open Rails Manual
 
     * :ref:`genindex`
     * :ref:`search`
-

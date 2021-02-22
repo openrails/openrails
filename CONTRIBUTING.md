@@ -81,6 +81,14 @@ If you are in any doubt about the use of data by multiple threads, or your imple
 
 Your code should be fixing exactly one bug or adding a single new feature; mixing multiple bug fixes or new features makes it harder to review your changes and risks them not being accepted.
 
+### Testing and Unstable Versions
+
+Changes to the Git "master" branch are selected by peer review and the branch is automatically published as the "Testing Version" every Friday.
+Changes to the Git "unstable" branch are automatically selected and published as the "Unstable Version" every 15 minutes.
+Your changes should always start from the "master" branch and not the "unstable" branch.
+
+### Submitting your code
+
 When you're done writing code, you should make a pull request on GitHub or a merge request on Launchpad. The title and description of the requests should clearly and concisely indicate what bug or feature you've implemented and you will need to include links to whichever of the following are appropriate:
 
 * Bug report

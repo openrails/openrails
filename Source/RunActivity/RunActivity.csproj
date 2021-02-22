@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -57,8 +57,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\GNU.Gettext.WinForms.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=3.1.0.0, Culture=neutral, PublicKeyToken=6d5c3888ef60e27d, processorArchitecture=x86" />
+    <Reference Include="MonoGame.Framework">
+      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoGame.Framework.Content.Pipeline">
+      <HintPath>$(SolutionDir)\3rdPartyLibs\MonoGame\MonoGame.Framework.Content.Pipeline.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\3rdPartyLibs\Newtonsoft.Json.dll</HintPath>
@@ -186,6 +190,7 @@
     <Compile Include="Viewer3D\Weather.cs" />
     <Compile Include="Viewer3D\WebServices\TrackMonitorDisplay.cs" />
     <Compile Include="Viewer3D\WebServices\TrainDrivingDisplay.cs" />
+    <Compile Include="Viewer3D\WebServices\TrainInfo.cs" />
     <Compile Include="Viewer3D\WebServices\WebServer.cs" />
     <Compile Include="Viewer3D\Wire.cs" />
     <Compile Include="Viewer3D\World.cs" />
@@ -308,6 +313,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\SwitchStates.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\TakeScreenshot.wav">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\TrackMonitorImages.png">

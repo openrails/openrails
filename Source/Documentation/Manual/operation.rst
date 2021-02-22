@@ -7,6 +7,8 @@ Open Rails Train Operation
 Note that this document details behaviour while in single-player mode only. For 
 :ref:`multi-player mode <multiplayer>`, different rules may apply.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Open Rails Activities
 =====================
 
@@ -1194,18 +1196,24 @@ has reduced its speed to a specific value. Such control is used for diverging
 routes, to ensure the speed of the train is reduced sufficiently to safely 
 negotiate the switches onto the diverging route.
 
-Two script functions for use in OR have been defined which can be used to 
+Three script functions for use in OR have been defined which can be used to
 control the signal until the train has reached a specific position or has 
 reduced its speed.
 
 These functions are::
 
     APPROACH_CONTROL_POSITION(position)
+    APPROACH_CONTROL_POSITION_FORCED(position)
     APPROACH_CONTROL_SPEED(position, speed)
 
 These functions are Boolean functions: the returned value is 'true' if a train 
-is approaching the signal and is within the required distance of the signal 
-and, for APPROACH_CONTROL_SPEED, has reduced its speed below the required values.
+is approaching the signal and is within the required distance of the signal and,
+for ``APPROACH_CONTROL_SPEED``, has reduced its speed below the required values.
+
+``APPROACH_CONTROL_POSITION_FORCED`` function is similar to
+``APPROACH_CONTROL_POSITION``, but it can be used with any type of signal.
+Meanwhile, ``APPROACH_CONTROL_POSITION`` requires NORMAL signals, and will
+only clear the signal if it is the train's next signal.
 
 Parameters :
 
@@ -1488,6 +1496,8 @@ This function uses approach control for the 'lower' route.::
     // Get draw state
     draw_state = def_draw_state (state);
 
+.. _operation-callon-functions:
+    
 TrainHasCallOn, TrainHasCallOn_Advanced Functions
 -------------------------------------------------
 
@@ -1524,6 +1534,10 @@ It is a Boolean function and returns state as follows:
             - Train is part of ``RunRound`` command, and is to attach to the 
               train presently in the platform.
 
+Additionally, both in Timetable and Activity modes, this functions will return 
+true if the CallOn option is selected from signal's context menu in the
+:ref:`Dispatcher Window <driving-dispatcher>`.
+              
 The use of this function must be combined with a check for::
 
     blockstate ==# BLOCK_OCCUPIED
@@ -1607,6 +1621,9 @@ So, in a nutshell :
         - ``TrainsHasCallOn_Restricted()``:
 
             - Activity or Timetable: call-on never allowed
+
+All these functions can be set to true by hand from the
+:ref:`Dispatcher Window <driving-dispatcher>`.
 
 These signals can be laid down with the MSTS RE. In the .tdb file only a 
 reference to the  SignalType name is written, an in the world file only a 
@@ -1764,6 +1781,9 @@ lines within such EventCategory block must be present in the extension .act file
 No Halt by Activity Message Box
 -------------------------------
 
+.. index::
+   single: ORTSContinue
+
 MSTS activities may contain instructions to display a message box when the 
 player train reaches a specific location in the activity, or at a specific 
 time. Normally the simulation is halted when the message box is displayed until 
@@ -1823,6 +1843,10 @@ points within the paths with either the MSTS AE or through TrackViewer.
 AI Horn Blow at Level Crossings
 -------------------------------
 
+.. index::
+   single: ORTSAIHornAtCrossings
+   single: NextActivityObjectUID
+
 If the line::
 
     ORTSAIHornAtCrossings ( 1 )
@@ -1849,6 +1873,9 @@ the end of the horn blow.
 Location Event triggered by AI Train
 ------------------------------------
 
+.. index::
+   single: ORTSTriggeringTrain
+
 Under MSTS location events may only be triggered when the player train reaches 
 them. OR provides also location events that are triggered by AI trains.
 In this case a line like following one must be added within the
@@ -1871,6 +1898,11 @@ This feature is not yet managed by TSRE5.
 
 Location Event and Time Event Sound File
 ----------------------------------------
+
+.. index::
+   single: ORTSActivitySound
+   single: ORTSActSoundFile
+   single: ORTSSoundLocation
 
 An activity file can be modified so that a sound file is played when the train 
 reaches a location specified in an EventTypeLocation event in the .act file, 
@@ -1904,6 +1936,18 @@ to the ``EventCategoryLocation`` or ``EventCategoryTime`` event, where:
 
 Note: Parameter ORTSSoundLocation is needed only when *Soundtype* is ``Location``.
 
+.. index::
+   single: EventCategoryLocation
+   single: EventCategoryTime
+   single: EventTypeLocation
+   single: Activation_Level
+   single: Outcomes
+   single: DisplayMessage
+   single: Name
+   single: Location
+   single: TriggerOnStop
+   single: ORTSContinue
+
 For example::
 
     EventCategoryLocation (
@@ -1933,6 +1977,21 @@ This feature is not yet managed by TSRE5 in this format.
 
 Weather Change Activity Event 
 -----------------------------
+
+.. index::
+   single: ORTSWeatherChange
+   single: ORTSOvercast
+   single: final_overcastFactor
+   single: overcast_transitionTime
+   single: ORTSFog
+   single: final_fogDistance
+   single: fog_transitionTime
+   single: ORTSPrecipitationIntensity
+   single: final_precipitationIntensity
+   single: precipitationIntensity_transitionTime
+   single: ORTSPrecipitationLiquidity
+   single: final_precipitationLiquidity
+   single: precipitationLiquidity_transitionTime
 
 An activity can be modified so that the weather changes when running the 
 activity in ORTS. MSTS operation is not affected by these WeatherChange events. 
@@ -1982,6 +2041,9 @@ to pass from the initial weather feature value (overcastFactor, fogDistance
 and so on) to the final weather feature value. If such xx_transitionTime is 
 set to 0, the weather feature takes immediately the final value. This is 
 useful to start activities with weather features in intermediate states.
+
+.. index::
+   single: ORTSContinue
 
 The event can also include an ORTSContinue ( 0 ) line, therefore not displaying 
 messages and not suspending activity execution.
@@ -2044,6 +2106,19 @@ Syntax of the feature
 '''''''''''''''''''''
 To make use of this feature it is suggested to generate an :ref:`Extension activity 
 file <operation-extension-activity-file>` .
+
+.. index::
+   single: Tr_Activity
+   single: Tr_Activity_File
+   single: Events
+   single: EventCategoryLocation
+   single: ORTSContinue
+   single: Outcomes
+   single: ORTSRestartWaitingTrain
+   single: ORTSWaitingTrainToRestart
+   single: ORTSDelayToRestart
+   single: ORTSMatchingWPDelay
+
 Here is an example of an extension activity file using such feature::
 
   SIMISA@@@@@@@@@@JINX0a0t______
@@ -2102,6 +2177,10 @@ Old formats
 
 Following alternate formats are accepted by OR for Event Sound Files and 
 Weather Change. These formats are not recommended for new activities.
+
+.. index::
+   single: ORTSActSoundFile
+   single: ORTSWeatherChange
 
 Event Sound Files: The sound file may be defined by a single line::
 

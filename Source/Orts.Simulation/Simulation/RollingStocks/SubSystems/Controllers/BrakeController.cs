@@ -38,6 +38,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         private bool emergencyBrakingPushButton = false;
         private bool tcsEmergencyBraking = false;
         private bool tcsFullServiceBraking = false;
+        private bool overchargeButtonPressed = false;
+        private bool quickReleaseButtonPressed = false;
         public bool EmergencyBraking
         {
             get
@@ -100,10 +102,51 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 tcsFullServiceBraking = value;
             }
         }
+        public bool QuickReleaseButtonPressed
+        {
+            get
+            {
+                return quickReleaseButtonPressed;
+            }
+            set
+            {
+                if (Simulator.Confirmer != null)
+                {
+                    if (value && !quickReleaseButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.QuickRelease, CabSetting.On);
+                    else if (!value && quickReleaseButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.QuickRelease, CabSetting.Off);
+                }
+
+                quickReleaseButtonPressed = value;
+            }
+        }
+        public bool OverchargeButtonPressed
+        {
+            get
+            {
+                return overchargeButtonPressed;
+            }
+            set
+            {
+                if (Simulator.Confirmer != null)
+                {
+                    if (value && !overchargeButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.Overcharge, CabSetting.On);
+                    else if (!value && overchargeButtonPressed)
+                        Simulator.Confirmer.Confirm(CabControl.Overcharge, CabSetting.Off);
+                }
+
+                overchargeButtonPressed = value;
+            }
+        }
 
         public float MaxPressurePSI { get; set; }
+        public float MaxOverchargePressurePSI { get; private set; }
         public float ReleaseRatePSIpS { get; private set; }
         public float QuickReleaseRatePSIpS { get; private set; }
+        public float OverchargeEliminationRatePSIpS { get; private set; }
+        public float SlowApplicationRatePSIpS { get; private set; }
         public float ApplyRatePSIpS { get; private set; }
         public float EmergencyRatePSIpS { get; private set; }
         public float FullServReductionPSI { get; private set; }
@@ -123,7 +166,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
         {
             get
             {
-                return Notches.Count > 0 ? Notches[CurrentNotch].Type : ControllerState.Dummy;
+                if (Script is MSTSBrakeController)
+                    return Notches.Count > 0 ? Notches[CurrentNotch].Type : ControllerState.Dummy;
+                else
+                    return Script.GetState();
             }
         }
 
@@ -142,9 +188,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
             Locomotive = locomotive;
 
             MaxPressurePSI = 90;
+            MaxOverchargePressurePSI = 95;
             ReleaseRatePSIpS = 5;
             QuickReleaseRatePSIpS = 10;
+            OverchargeEliminationRatePSIpS = 0.036f;
             ApplyRatePSIpS = 2;
+            SlowApplicationRatePSIpS = 1;
             EmergencyRatePSIpS = 10;
             FullServReductionPSI = 26;
             MinReductionPSI = 6;
@@ -157,9 +206,12 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
             ScriptName = controller.ScriptName;
             MaxPressurePSI = controller.MaxPressurePSI;
+            MaxOverchargePressurePSI = controller.MaxOverchargePressurePSI;
             ReleaseRatePSIpS = controller.ReleaseRatePSIpS;
             QuickReleaseRatePSIpS = controller.QuickReleaseRatePSIpS;
+            OverchargeEliminationRatePSIpS = controller.OverchargeEliminationRatePSIpS;
             ApplyRatePSIpS = controller.ApplyRatePSIpS;
+            SlowApplicationRatePSIpS = controller.SlowApplicationRatePSIpS;
             EmergencyRatePSIpS = controller.EmergencyRatePSIpS;
             FullServReductionPSI = controller.FullServReductionPSI;
             MinReductionPSI = controller.MinReductionPSI;
@@ -195,6 +247,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                     MaxPressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
                     break;
 
+                case "engine(ortstrainbrakescontrollermaxoverchargepressure":
+                    MaxOverchargePressurePSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
+                    break;
+
                 case "engine(trainbrakescontrollermaxreleaserate":
                 case "engine(enginebrakescontrollermaxreleaserate":    
                     ReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
@@ -203,6 +259,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "engine(trainbrakescontrollermaxquickreleaserate":
                 case "engine(enginebrakescontrollermaxquickreleaserate":
                     QuickReleaseRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
+                    break;
+
+                case "engine(ortstrainbrakescontrolleroverchargeeliminationrate":
+                    OverchargeEliminationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
                     break;
 
                 case "engine(trainbrakescontrollermaxapplicationrate":
@@ -223,6 +283,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 case "engine(trainbrakescontrollerminpressurereduction":
                 case "engine(enginebrakescontrollerminpressurereduction":
                     MinReductionPSI = stf.ReadFloatBlock(STFReader.UNITS.PressureDefaultPSI, null);
+                    break;
+
+                case "engine(ortstrainbrakescontrollerslowapplicationrate":
+                case "engine(ortsenginebrakescontrollerslowapplicationrate":
+                    SlowApplicationRatePSIpS = stf.ReadFloatBlock(STFReader.UNITS.PressureRateDefaultPSIpS, null);
                     break;
 
                 case "engine(enginecontrollers(brake_train":
@@ -279,11 +344,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                 Script.ClockTime = () => (float)Simulator.ClockTime;
                 Script.GameTime = () => (float)Simulator.GameTime;
                 Script.DistanceM = () => Locomotive.DistanceM;
+                Script.SpeedMpS = () => Math.Abs(Locomotive.SpeedMpS);
 
                 // BrakeController
                 Script.EmergencyBrakingPushButton = () => EmergencyBrakingPushButton;
                 Script.TCSEmergencyBraking = () => TCSEmergencyBraking;
                 Script.TCSFullServiceBraking = () => TCSFullServiceBraking;
+                Script.QuickReleaseButtonPressed = () => QuickReleaseButtonPressed;
+                Script.OverchargeButtonPressed = () => OverchargeButtonPressed;
 
                 Script.MainReservoirPressureBar = () =>
                 {
@@ -293,8 +361,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
                         return float.MaxValue;
                 };
                 Script.MaxPressureBar = () => Bar.FromPSI(MaxPressurePSI);
+                Script.MaxOverchargePressureBar = () => Bar.FromPSI(MaxOverchargePressurePSI);
                 Script.ReleaseRateBarpS = () => BarpS.FromPSIpS(ReleaseRatePSIpS);
                 Script.QuickReleaseRateBarpS = () => BarpS.FromPSIpS(QuickReleaseRatePSIpS);
+                Script.OverchargeEliminationRateBarpS = () => BarpS.FromPSIpS(OverchargeEliminationRatePSIpS);
+                Script.SlowApplicationRateBarpS = () => BarpS.FromPSIpS(SlowApplicationRatePSIpS);
                 Script.ApplyRateBarpS = () => BarpS.FromPSIpS(ApplyRatePSIpS);
                 Script.EmergencyRateBarpS = () => BarpS.FromPSIpS(EmergencyRatePSIpS);
                 Script.FullServReductionBar = () => Bar.FromPSI(FullServReductionPSI);
@@ -308,6 +379,15 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Controllers
 
                 Script.SetCurrentValue = (value) => CurrentValue = value;
                 Script.SetUpdateValue = (value) => UpdateValue = value;
+
+                Script.SetDynamicBrakeIntervention = (value) =>
+                {
+                    // TODO: Set dynamic brake intervention instead of controller position
+                    // There are some issues that need to be identified and fixed before setting the intervention directly
+                    if (Locomotive.DynamicBrakeController == null) return;
+                    Locomotive.DynamicBrakeChangeActiveState(value > 0);
+                    Locomotive.DynamicBrakeController.SetValue(value);
+                };
 
                 Script.Initialize();
             }

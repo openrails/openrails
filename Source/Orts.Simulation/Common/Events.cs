@@ -133,6 +133,7 @@ namespace Orts.Common
         SteamPulse16,
         SteamSafetyValveOff,
         SteamSafetyValveOn,
+        TakeScreenshot,
         ThrottleChange,
         TrainBrakeChange,
         TrainBrakePressureDecrease,
@@ -182,6 +183,9 @@ namespace Orts.Common
 
         BoilerBlowdownOn,
         BoilerBlowdownOff,
+
+        WaterScoopRaiseLower,
+        WaterScoopBroken,
 
         SteamGearLeverToggle,
         AIFiremanSoundOn,
@@ -350,6 +354,9 @@ namespace Orts.Common
                         case 142: return Event.BrakePipePressureDecrease;
                         case 143: return Event.BrakePipePressureStoppedChanging;
 
+                        case 145: return Event.WaterScoopRaiseLower;
+                        case 146: return Event.WaterScoopBroken;
+
                         case 147: return Event.SteamGearLeverToggle;
                         case 148: return Event.AIFiremanSoundOn;
                         case 149: return Event.AIFiremanSoundOff;
@@ -388,6 +395,12 @@ namespace Orts.Common
 
                         case 175: return Event.BoilerBlowdownOn;
                         case 176: return Event.BoilerBlowdownOff;
+
+                        // These triggers have been released in MG????
+                    //    case 177: return Event.ORTS_BATTERY;
+                    //    case 178: return Event.ORTS_BATTERY;
+                    //    case 179: return Event.ORTS_POWERKEY;
+                    //    case 180: return Event.ORTS_POWERKEY;
 
                         case 181: return Event.GenericEvent1;
                         case 182: return Event.GenericEvent2;

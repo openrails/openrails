@@ -443,6 +443,15 @@ A number of miscellaneous functions which are not part of any of the groups deta
 | Note that the signal can be excluded from the normal update process as it will be updated through the
   direct link with the switch.
 
+Timing Functions
+-----------------
+These two functions allow time-triggered actions on signals, e.g. a fixed time-triggered delay on clearing etc..
+
+| **Activate_Timing_Trigger()** : activates a timing trigger.
+
+| **Check_Timing_Trigger(n)** : checks the timing trigger, and returns true if it was set more than n seconds ago.
+
+
 OR-specific additions to SIGCFG files
 =====================================
 Detailed below are OR-specific additions which can be set in the SIGCFG file to set specific characteristics

@@ -18,6 +18,7 @@
 using System;
 using System.IO;
 using ORTS.Common;
+using Orts.Common;
 using Orts.Simulation.RollingStocks;
 
 namespace ORTS.Scripting.Api
@@ -87,17 +88,24 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> NextDistanceSignalDistanceM;
         /// <summary>
-        /// Signal type of main head of hext generic signal.
+        /// Signal type of main head of hext generic signal. Not for NORMAL signals
         /// </summary>
         public Func<string, string> NextGenericSignalMainHeadSignalType;
         /// <summary>
-        /// Aspect of the next generic signal.
+        /// Aspect of the next generic signal. Not for NORMAL signals
         /// </summary>
         public Func<string, Aspect> NextGenericSignalAspect;
         /// <summary>
-        /// Distance to next generic signal.
+        /// Distance to next generic signal. Not for NORMAL signals
         /// </summary>
         public Func<string, float> NextGenericSignalDistanceM;
+        /// <summary>
+        /// Features of next generic signal. 
+        /// string: signal type (DISTANCE etc.)
+        /// int: position of signal in the signal sequence along the train route, starting from train front; 0 for first signal;
+        /// float: max testing distance
+        /// </summary>
+        public Func<string, int, float, SignalFeatures> NextGenericSignalFeatures;
         /// <summary>
         /// Next normal signal has a repeater head
         /// </summary>
@@ -115,29 +123,53 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<int, float> NextPostDistanceM;
         /// <summary>
+        /// Distance and length of next tunnels
+        /// int: position of tunnel along the train route, starting from train front; 0 for first tunnel;
+        /// If train is in tunnel, index 0 will contain the remaining length of the tunnel
+        /// </summary>
+        public Func<int, TunnelInfo> NextTunnel;
+        /// <summary>
+        /// Distance and value of next mileposts
+        /// int: return nth milepost ahead; 0 for first milepost
+        /// </summary>
+        public Func<int, MilepostInfo> NextMilepost;
+        /// <summary>
+        /// Distance to end of authority.
+        /// int: direction; 0: forwards; 1: backwards
+        /// </summary>
+        public Func<int, float> EOADistanceM;
+        /// <summary>
         /// Train's length
         /// </summary>
         public Func<float> TrainLengthM;
         /// <summary>
-        /// Train's actual absolute speed.
-        /// </summary>
-        public Func<float> SpeedMpS;
-        /// <summary>
-        /// Train's direction.
+        /// Locomotive direction.
         /// </summary>
         public Func<Direction> CurrentDirection;
         /// <summary>
-        /// True if train direction is forward.
+        /// True if locomotive direction is forward.
         /// </summary>
         public Func<bool> IsDirectionForward;
         /// <summary>
-        /// True if train direction is neutral.
+        /// True if locomotive direction is neutral.
         /// </summary>
         public Func<bool> IsDirectionNeutral;
         /// <summary>
-        /// True if train direction is reverse.
+        /// True if locomotive direction is reverse.
         /// </summary>
         public Func<bool> IsDirectionReverse;
+        /// <summary>
+        /// Train direction.
+        /// </summary>
+        public Func<Direction> CurrentTrainMUDirection;
+        /// <summary>
+        /// True if locomotive is flipped.
+        /// </summary>
+        public Func<bool> IsFlipped;
+        /// <summary>
+        /// True if player is in rear cab.
+        /// </summary>
+        public Func<bool> IsRearCab;
         /// <summary>
         /// True if train brake controller is in emergency position, otherwise false.
         /// </summary>
@@ -158,6 +190,27 @@ namespace ORTS.Scripting.Api
         /// True if circuit breaker or power contactor opening order is true.
         /// </summary>
         public Func<bool> CircuitBreakerOpeningOrder;
+         /// <summary>
+        /// Returns the number of pantographs on the locomotive.
+        /// </summary>
+        public Func<int> PantographCount;
+        /// <summary>
+        /// Checks the state of any pantograph
+        /// int: pantograph ID (1 for first pantograph)
+        /// </summary>
+        public Func<int, PantographState> GetPantographState;
+        /// <summary>
+        /// True if all pantographs are down.
+        /// </summary>
+        public Func<bool> ArePantographsDown;
+        /// <summary>
+        /// Returns throttle percent
+        /// </summary>
+        public Func<float> ThrottlePercent;
+        /// <summary>
+        /// Returns dynamic brake percent
+        /// </summary>
+        public Func<float> DynamicBrakePercent;
         /// <summary>
         /// True if traction is authorized.
         /// </summary>
@@ -178,6 +231,22 @@ namespace ORTS.Scripting.Api
         /// Train brake pressure value which triggers the power cut-off.
         /// </summary>
         public Func<float> BrakeCutsPowerAtBrakeCylinderPressureBar;
+        /// <summary>
+        /// State of the train brake controller.
+        /// </summary>
+        public Func<ControllerState> TrainBrakeControllerState;
+        /// <summary>
+        /// Locomotive acceleration.
+        /// </summary>
+        public Func<float> AccelerationMpSS;
+        /// <summary>
+        /// Locomotive altitude.
+        /// </summary>
+        public Func<float> AltitudeM;
+        /// <summary>
+        /// Track gradient percent at the locomotive's location (positive = uphill).
+        /// </summary>
+        public Func<float> CurrentGradientPercent;
         /// <summary>
         /// Line speed taken from .trk file.
         /// </summary>
@@ -259,6 +328,16 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Action SetPantographsDown;
         /// <summary>
+        /// Raise specified pantograph
+        /// int: pantographID, from 1 to 4
+        /// </summary>
+        public Action<int> SetPantographUp;
+        /// <summary>
+        /// Lower specified pantograph
+        /// int: pantographID, from 1 to 4
+        /// </summary>
+        public Action<int> SetPantographDown;
+        /// <summary>
         /// Set the circuit breaker or power contactor closing authorization.
         /// </summary>
         public Action<bool> SetPowerAuthorization;
@@ -322,6 +401,10 @@ namespace ORTS.Scripting.Api
         /// Trigger Deactivate sound event
         /// </summary>
         public Action TriggerSoundSystemDeactivate;
+        /// <summary>
+        /// Trigger generic sound event
+        /// </summary>
+        public Action<Event> TriggerGenericSound;
         /// <summary>
         /// Set ALERTER_DISPLAY cabcontrol display's alarm state on or off.
         /// </summary>
@@ -559,5 +642,61 @@ namespace ORTS.Scripting.Api
         /// Red color. Train control system intervention speed. Computer has to apply full service or emergency brake to maintain speed restriction.
         /// </summary>
         Intervention,
+    }
+
+    public struct SignalFeatures
+    {
+        public readonly string MainHeadSignalTypeName;
+        public readonly Aspect Aspect;
+        public readonly float DistanceM;
+        public readonly float SpeedLimitMpS;
+        public readonly float AltitudeM;
+
+        public SignalFeatures(string mainHeadSignalTypeName, Aspect aspect, float distanceM, float speedLimitMpS, float altitudeM)
+        {
+            MainHeadSignalTypeName = mainHeadSignalTypeName;
+            Aspect = aspect;
+            DistanceM = distanceM;
+            SpeedLimitMpS = speedLimitMpS;
+            AltitudeM = altitudeM;
+        }
+    }
+
+    public struct TunnelInfo
+    {
+        /// <summary>
+        /// Distance to tunnel (m)
+        /// -1 if train is in tunnel
+        /// </summary>
+        public readonly float DistanceM;
+        /// <summary>
+        /// Tunnel length (m)
+        /// If train is in tunnel, remaining distance to exit
+        /// </summary>
+        public readonly float LengthM;
+
+        public TunnelInfo(float distanceM, float lengthM)
+        {
+            DistanceM = distanceM;
+            LengthM = lengthM;
+        }
+    }
+
+    public struct MilepostInfo
+    {
+        /// <summary>
+        /// Distance to milepost (m)
+        /// </summary>
+        public readonly float DistanceM;
+        /// <summary>
+        /// Value of the milepost
+        /// </summary>
+        public readonly float Value;
+
+        public MilepostInfo(float distanceM, float value)
+        {
+            DistanceM = distanceM;
+            Value = value;
+        }
     }
 }

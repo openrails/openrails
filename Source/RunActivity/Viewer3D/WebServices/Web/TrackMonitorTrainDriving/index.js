@@ -56,8 +56,8 @@ async function ApiGet(path) {
 async function ApiTrackMonitor() {
 	// GET to fetch data, POST to send it
 	// "/API/APISAMPLE" /API is a prefix hard-coded into the WebServer class
-	let [tmData, tmDisplay] = await Promise.all([ApiGet("TRACKMONITOR"), ApiGet("TRACKMONITORDISPLAY")]);
-	
+	let [tnInfo, tmDisplay] = await Promise.all([ApiGet("TRAININFO"), ApiGet("TRACKMONITORDISPLAY")]);
+
 	let Str = "<table>";
 	let endIndexFirst = 0,
 		endIndexTrackLeft = 0,
@@ -84,8 +84,7 @@ async function ApiTrackMonitor() {
 	const codeColor = ['???', '??!', '?!?', '?!!', '!??', '!!?', '!!!', '%%%', '%$$', '%%$', '$%$', '$$$'];
 
 	//controlMode
-	const modes = ["AUTO_SIGNAL", "AUTO_NODE", "MANUAL", "EXPLORER", "OUT_OF_CONTROL", "INACTIVE", "TURNTABLE", "UNDEFINED"];
-	const controlMode = modes[tmData.ControlMode];
+	const controlMode = tnInfo.ControlMode;
 
 	// Table title
 	Str += "<tr> <td colspan='9' style='text-align: center'>" + 'Track Monitor' + "</td></tr>";
@@ -256,7 +255,7 @@ async function ApiTrainDriving() {//*** TrainDriving code ***
 		lastColor = false;
 		keyColor = false;
 		symbolColor = false;
-	
+
 		// FirstCol
 		if (data.FirstCol != null) {
 			endIndexFirst = data.FirstCol.length;
@@ -337,7 +336,7 @@ async function ApiTrainDriving() {//*** TrainDriving code ***
 	}
 
 	// space at bottom
-	Str += "<tr> <td colspan='5' onclick='changeNormalTextMode()' style='text-align: center'><img src='/or_logo.png' height='16' width='16'></img></td> </tr>";
+	Str += "<tr> <td colspan='5' onclick='changeNormalTextMode()' ontouchstart='this.onclick()' style='text-align: center'><img src='/or_logo.png' height='16' width='16'></img></td> </tr>";
 	Str += "</table>";
 	TrainDriving.innerHTML = Str;
 }
@@ -369,7 +368,7 @@ async function DownloadImage(path) {
 			image.onerror = reject;
 			image.src = path;
 		});
-    }
+	}
 }
 
 function DisplayItem(alignment, colspanvalue, isColor, colorCode, item, small){
@@ -463,9 +462,9 @@ function dragMouseElement(tdDrag) {
 		}else{
 			tdDrag.style.border = "0px solid gray";
 		}
-	offsetX = initX - event.clientX;
-	offsetY = initY - event.clientY;
-	initX = event.clientX;
+		offsetX = initX - event.clientX;
+		offsetY = initY - event.clientY;
+		initX = event.clientX;
 		initY = event.clientY;
 		// avoids to overlap the trackmonitor window
 		tdDrag.style.left = (collision && offsetX > 0 ? tdDrag.offsetLeft : tdDrag.offsetLeft - offsetX) + "px";// X
