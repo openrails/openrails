@@ -1687,8 +1687,8 @@ namespace Orts.Formats.Msts
                     var idx = list.IndexOf(part);
                     if (idx > -1)
                         return idx;
-                    return
-                        null;
+                    else
+                        return null;
                 }
                 (string, SCRTermType, Func<string, int?>)[] parameterParsers = {
                     // try BLOCK_CLEAR etc
