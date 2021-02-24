@@ -1657,121 +1657,71 @@ namespace Orts.Formats.Msts
 
             static public SCRParameterType process_TermPart(string TermString, IDictionary<string, uint> LocalFloats, IList<string> ORSignalTypes, IList<string> ORNormalSubtypes, int linenumber)
             {
-                var TermParts = new SCRParameterType(SCRTermType.Constant, 0);
-
                 TermString = TermString.ToUpper();
 
                 // Skip over any leading "#"
                 if (TermString.StartsWith("#"))
                     TermString = TermString.Substring(1);
 
-                if (int.TryParse(TermString, out int tmpint)) // try integer literal
-                {
-                    //Debugprocess_FunctionCall(new SCRParameterType(SCRTermType.Constant, tmpint));
+                // try integer literal
+                if (int.TryParse(TermString, out int tmpint))
                     return new SCRParameterType(SCRTermType.Constant, tmpint);
-                }
-                
-                if (Enum.TryParse(TermString, true, out SCRExternalFloats exFloat))  // try external float, e.g. BLOCK_STATE
-                {
-                    //Debugprocess_FunctionCall(new SCRParameterType(SCRTermType.ExternalFloat, (int)exFloat));
+
+                // try external float, e.g. BLOCK_STATE
+                else if (Enum.TryParse(TermString, true, out SCRExternalFloats exFloat))
                     return new SCRParameterType(SCRTermType.ExternalFloat, (int)exFloat);
-                }
 
-                if (TryParseFloat(TermString, LocalFloats, ref TermParts))  // try local float
-                {
-                    //Debugprocess_FunctionCall(TermParts);
-                    return TermParts;
-                }
+                // try local float
+                else if (LocalFloats.TryGetValue(TermString, out uint def))
+                    return new SCRParameterType(SCRTermType.LocalFloat, (int)def);
 
-                var tokenType = "BLOCK_";   // try BLOCK_CLEAR etc
-                if (TermString.StartsWith(tokenType))
+                int? ParseEnum<TEnum>(string part) where TEnum : struct
                 {
-                    string partString = TermString.Substring(tokenType.Length);
-                    if (Enum.TryParse(partString, true, out MstsBlockState Blockstate))
-                    {
-                        //Debugprocess_FunctionCall(new SCRParameterType(SCRTermType.Block, (int)Blockstate));
-                        return new SCRParameterType(SCRTermType.Block, (int)Blockstate);
-                    }                        
+                    if (Enum.TryParse(part, ignoreCase: true, out TEnum value))
+                        return (int)(object)value;
                     else
-                    {
-                        TraceError(linenumber, tokenType, TermString);
-                        //Debugprocess_FunctionCall(TermParts);
-                        return TermParts;
-                    }
+                        return null;
                 }
-
-                tokenType = "SIGASP_";  // try SIGASP definition
-                if (TermString.StartsWith(tokenType))
+                int? ParseList(IList<string> list, string part)
                 {
-                    string partString = TermString.Substring(tokenType.Length);
-                    if (Enum.TryParse(partString, true, out MstsSignalAspect Aspect))
-                    {
-                        //Debugprocess_FunctionCall(new SCRParameterType(SCRTermType.Sigasp, (int)Aspect));
-                        return new SCRParameterType(SCRTermType.Sigasp, (int)Aspect);
-                    }                        
+                    var idx = list.IndexOf(part);
+                    if (idx > -1)
+                        return idx;
                     else
+                        return null;
+                }
+                (string, SCRTermType, Func<string, int?>)[] parameterParsers = {
+                    // try BLOCK_CLEAR etc
+                    ("BLOCK_", SCRTermType.Block, ParseEnum<MstsBlockState>),
+                    // try SIGASP definition
+                    ("SIGASP_", SCRTermType.Sigasp, ParseEnum<MstsSignalAspect>),
+                    // try SIGFN definition
+                    ("SIGFN_", SCRTermType.Sigfn, part => ParseList(ORSignalTypes, part)),
+                    // try ORSubtype definition
+                    ("ORSUBTYPE_", SCRTermType.ORNormalSubtype, part => ParseList(ORNormalSubtypes, part)),
+                    // try SIGFEAT definition
+                    ("SIGFEAT_", SCRTermType.Sigfeat, part => ParseList(SignalShape.SignalSubObj.SignalSubTypes, part)),
+                };
+
+                foreach (var (tokenType, termType, Parse) in parameterParsers)
+                {
+                    if (TermString.StartsWith(tokenType))
                     {
-                        TraceError(linenumber, tokenType, TermString);
-                        //Debugprocess_FunctionCall(TermParts);
-                        return TermParts;
+                        var part = TermString.Substring(tokenType.Length);
+                        var parsed = Parse(part);
+                        if (parsed.HasValue)
+                        {
+                            return new SCRParameterType(termType, parsed.Value);
+                        }
+                        else
+                        {
+                            TraceError(linenumber, tokenType, TermString);
+                            break;
+                        }
                     }
                 }
 
-                tokenType = "SIGFN_";   // try SIGFN definition
-                if (TermString.StartsWith(tokenType))
-                {
-                    string partString = TermString.Substring(tokenType.Length);
-                    var index = ORSignalTypes.IndexOf(partString);
-                    if (index > -1)
-                    {
-                        //Debugprocess_FunctionCall(new SCRParameterType(SCRTermType.Sigfn, index));
-                        return new SCRParameterType(SCRTermType.Sigfn, index);
-                    }
-                        
-                    else
-                    {
-                        TraceError(linenumber, tokenType, TermString);
-                        //Debugprocess_FunctionCall(TermParts);
-                        return TermParts;
-                    }
-                }
-
-                tokenType = "ORSUBTYPE_";   // try ORSubtype definition
-                if (TermString.StartsWith(tokenType))
-                {
-                    string partString = TermString.Substring(tokenType.Length);
-                    var index = ORNormalSubtypes.IndexOf(partString);
-                    if (index > -1)
-                    {
-                        //Debugprocess_FunctionCall(new SCRParameterType(SCRTermType.ORNormalSubtype, index));
-                        return new SCRParameterType(SCRTermType.ORNormalSubtype, index);
-                    }
-                        
-                    else
-                    {
-                        TraceError(linenumber, tokenType, TermString);
-                        //Debugprocess_FunctionCall(TermParts);
-                        return TermParts;
-                    }
-                }
-
-                tokenType = "SIGFEAT_"; // try SIGFEAT definition
-                if (TermString.StartsWith(tokenType))
-                {
-                    string partString = TermString.Substring(tokenType.Length);
-                    var sfIndex = SignalShape.SignalSubObj.SignalSubTypes.IndexOf(partString);
-                    if (sfIndex > -1)
-                    {
-                        //Debugprocess_FunctionCall(new SCRParameterType(SCRTermType.Sigfeat, sfIndex));
-                        return new SCRParameterType(SCRTermType.Sigfeat, sfIndex);
-                    }
-                    else // nothing found - set error
-                    {
-                        TraceError(linenumber, "parameter in statement", TermString);
-                    }
-                }
-                //Debugprocess_FunctionCall(TermParts);
-                return TermParts;
+                return new SCRParameterType(SCRTermType.Constant, 0);
             }//process_TermPart
 
             private static void Debugprocess_FunctionCall(SCRParameterType TermParts)
@@ -1785,24 +1735,6 @@ namespace Orts.Formats.Msts
                                 File.AppendAllText(din_fileLoc + @"sigscr.txt", $"Unknown {tokenType} : {termString}\n");
 #endif
                 Trace.TraceWarning($"sigscr-file line {lineNumber} : Unknown {tokenType} : {termString}");
-            }
-
-            static private bool TryParseFloat(string TermString, IDictionary<string, uint> LocalFloats, ref SCRParameterType TermParts)
-            {
-                var floatFound = false;
-                foreach (KeyValuePair<string, uint> intFloat in LocalFloats)
-                {
-                    string intFloatName = intFloat.Key;
-                    uint intFloatDef = intFloat.Value;
-
-                    if (String.Compare(TermString, intFloatName) == 0)
-                    {
-                        TermParts = new SCRParameterType(SCRTermType.LocalFloat, (int)intFloatDef);
-                        floatFound = true;
-                        break;
-                    }
-                }
-                return floatFound;
             }
 
             //================================================================================================//
