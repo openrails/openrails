@@ -1573,15 +1573,20 @@ namespace Orts.Simulation.RollingStocks
 
             UpdateTractiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
 
-            ApplyDirectionToMotiveForce();
+            ApplyDirectionToTractiveForce();
 
-            // Update dynamic brake force
+            // Calculate the total motive force for the locomotive - ie TractiveForce (driving force) + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+            MotiveForceN = TractiveForceN;
+
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
                 float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
                 if (f > 0 && PowerOn)
                 {
                     DynamicBrakeForceN = f * (1 - PowerReduction);
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;
                 }
                 else
                 {
@@ -1969,29 +1974,28 @@ namespace Orts.Simulation.RollingStocks
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
-                    if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
-                        MotiveForceN = 0;
+                    TractiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
+                    if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
+                        TractiveForceN = 0;
                 }
-                TractiveForceN = MotiveForceN;
             }
             else
                 TractiveForceN = 0f;
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
             {
-                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
+                TractiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
                 float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
                 if (w < 0)
                     w = 0;
-                AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+                AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
         }
 
         /// <summary>
         /// This function applies a sign to the motive force as a function of the direction of the train.
         /// </summary>
-        protected virtual void ApplyDirectionToMotiveForce()
+        protected virtual void ApplyDirectionToTractiveForce()
         {
             // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
             if (!(this is MSTSSteamLocomotive))
@@ -2285,7 +2289,7 @@ namespace Orts.Simulation.RollingStocks
               //  LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
-                LocomotiveAxle.DriveForceN = TractiveForceN - DynamicBrakeForceN;  //Total force applied to wheels
+                LocomotiveAxle.DriveForceN = MotiveForceN;  //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
