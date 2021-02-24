@@ -1728,6 +1728,7 @@ namespace Orts.Simulation.Physics
                     car.TotalForceN = -car.TotalForceN;
                     car.SpeedMpS = -car.SpeedMpS;
                 }
+
                 if (car.WheelSlip)
                     whlslp = true;
                 if (car.WheelSlipWarning)
