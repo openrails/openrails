@@ -980,16 +980,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                 ApparentThrottleSetting = ReverseThrottleRPMTab[RealRPM];
             }
 
-            // Make sure apparent throttle value stays in range between 0 and 100.
-            if (ApparentThrottleSetting < 0)
-            {
-                ApparentThrottleSetting = 0;
-            }
-            else if (ApparentThrottleSetting > 100)
-            {
-                ApparentThrottleSetting = 100.0f;
-            }
-            
+            ApparentThrottleSetting = MathHelper.Clamp(ApparentThrottleSetting, 0.0f, 100.0f);  // Clamp throttle setting within bounds
+
             if (DieselPowerTab != null)
             {
                 CurrentDieselOutputPowerW = (DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) <= MaximumDieselPowerW * (1 - locomotive.PowerReduction) ? DieselPowerTab[RealRPM] * (1 - locomotive.PowerReduction) : MaximumDieselPowerW * (1 - locomotive.PowerReduction));
@@ -1641,24 +1633,22 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void InitDieselRailPowers(MSTSDieselLocomotive loco)
         {
 
-            // Set up the reverse ThrottleRPM table
+            // Set up the reverse ThrottleRPM table. This is used to provide an apparent throttle setting to the Tractive Force calculation, and allows the diesel engine to control the up/down time of 
+            // tractive force. This table should be creeated with all locomotives, as they will either use (create) a default ThrottleRPM table, or the user will enter one. 
+
             if (ThrottleRPMTab != null)
             {
-                int icount = 11;
-                float[] rpm = new float[icount];
-                float[] throttle = new float[icount];
+                var size = ThrottleRPMTab.GetSize();
+                float[] rpm = new float[size];
+                float[] throttle = new float[size];
 
-                float TabIncrement = 10.0f; // find the increment size for the throttle axis in table
-                float PreviousThrottleValue = 0;
                 throttle[0] = 0; // Set throttle value to 0
                 rpm[0] = ThrottleRPMTab[throttle[0]]; // Find rpm of this throttle value in ThrottleRPMTab 
 
-                for (int i = 1; i < icount; i++)
+                for (int i = 1; i < size; i++)
                 {
-                    float NewThrottleValue = PreviousThrottleValue + TabIncrement;
-                    throttle[i] = NewThrottleValue; // Increment throttle value between 0 and 100 by the number of steps in ThrottleRPMTab
-                    PreviousThrottleValue = NewThrottleValue; // For next time round
-                    rpm[i] = ThrottleRPMTab[NewThrottleValue]; // Find rpm of this throttle value in ThrottleRPMTab   
+                    throttle[i] = ThrottleRPMTab.X[i]; // read x co-ord
+                    rpm[i] = ThrottleRPMTab.Y[i]; // read y co-ord value of this throttle value in ThrottleRPMTab 
                 }
                 ReverseThrottleRPMTab = new Interpolator(rpm, throttle); // create reverse table
             }
