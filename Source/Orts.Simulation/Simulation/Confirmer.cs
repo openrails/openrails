@@ -84,6 +84,8 @@ namespace Orts.Simulation
       , Handbrake
       , Retainers
       , BrakeHose
+      , QuickRelease
+      , Overcharge
       // Cab Devices
       , Sander
       , Alerter
@@ -223,7 +225,9 @@ namespace Orts.Simulation
                 , new string [] { GetString("Brakes"), GetString("initialize"), null, null, null, null, GetString("cannot initialize. Stop train then re-try.") } 
                 , new string [] { GetString("Handbrake"), GetString("none"), null, GetString("full") } 
                 , new string [] { GetString("Retainers"), GetString("off"), null, GetString("on"), null, null, null, null, GetString("Exhaust"), GetString("High Pressure"), GetString("Low Pressure"), GetString("Slow Direct") } 
-                , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") } 
+                , new string [] { GetString("Brake Hose"), GetString("disconnect"), null, GetString("connect") }
+                , new string [] { GetString("Quick Release"), GetString("off"), null, GetString("on") }
+                , new string [] { GetString("Overcharge"), GetString("off"), null, GetString("on") }
                 // Cab Devices
                 , new string [] { GetString("Sander"), GetString("off"), null, GetString("on") } 
                 , new string [] { GetString("Alerter"), GetString("acknowledge"), null, GetParticularString("Alerter", "sound") } 

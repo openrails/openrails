@@ -33,6 +33,8 @@ As an example, in case of the parameter needed to avoid forest trees on tracks (
 
 Only OR will look in the ``Openrails`` folder.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 Repetition of Snow Terrain Textures
 ===================================
 

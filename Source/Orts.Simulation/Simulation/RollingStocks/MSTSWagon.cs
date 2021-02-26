@@ -119,6 +119,10 @@ namespace Orts.Simulation.RollingStocks
         public float WagonFrontalAreaM2; // Frontal area of wagon
         public float TrailLocoResistanceFactor; // Factor to reduce base and wind resistance if locomotive is not leading - based upon original Davis drag coefficients
 
+        bool TenderWeightInitialize = true;
+        float TenderWagonMaxCoalMassKG;
+        float TenderWagonMaxWaterMassKG;
+
         // Wind Impacts
         float WagonDirectionDeg;
         float WagonResultantWindComponentDeg;
@@ -232,6 +236,16 @@ namespace Orts.Simulation.RollingStocks
         /// Indicates whether a brake is present or not when Manual Braking is selected.
         /// </summary>
         public bool ManualBrakePresent;
+
+        /// <summary>
+        /// Indicates whether a non auto (straight) brake is present or not when braking is selected.
+        /// </summary>
+        public bool NonAutoBrakePresent;
+
+        /// <summary>
+        /// Indicates whether an auxiliary reservoir is present on the wagon or not.
+        /// </summary>
+        public bool AuxiliaryReservoirPresent;
 
         /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
@@ -867,7 +881,7 @@ namespace Orts.Simulation.RollingStocks
             Pantographs.Initialize();
 
             base.Initialize();
-
+                       
             if (UnbalancedSuperElevationM == 0 || UnbalancedSuperElevationM > 0.5) // If UnbalancedSuperElevationM > 18", or equal to zero, then set a default value
             {
                 switch (WagonType)
@@ -977,6 +991,8 @@ namespace Orts.Simulation.RollingStocks
                     }
                     break;
                 case "wagon(ortsauxtenderwatermass": AuxTenderWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortstenderwagoncoalmass": TenderWagonMaxCoalMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
+                case "wagon(ortstenderwagonwatermass": TenderWagonMaxWaterMassKG = stf.ReadFloatBlock(STFReader.UNITS.Mass, null); break;
                 case "wagon(ortsheatingwindowderatingfactor": WindowDeratingFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
                 case "wagon(ortsheatingcompartmenttemperatureset": DesiredCompartmentTempSetpointC = stf.ReadFloatBlock(STFReader.UNITS.Temperature, null); break; // Temperature conversion is incorrect - to be checked!!!
                 case "wagon(ortsheatingcompartmentpipeareafactor": CompartmentHeatingPipeAreaFactor = stf.ReadFloatBlock(STFReader.UNITS.None, null); break;
@@ -1034,6 +1050,7 @@ namespace Orts.Simulation.RollingStocks
                             case "graduated_release_triple_valve": DistributorPresent = true; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
+                            case "auxiliary_reservoir": AuxiliaryReservoirPresent = true; break;
                             case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
@@ -1290,6 +1307,8 @@ namespace Orts.Simulation.RollingStocks
             UnbalancedSuperElevationM = copy.UnbalancedSuperElevationM;
             RigidWheelBaseM = copy.RigidWheelBaseM;
             AuxTenderWaterMassKG = copy.AuxTenderWaterMassKG;
+            TenderWagonMaxCoalMassKG = copy.TenderWagonMaxCoalMassKG;
+            TenderWagonMaxWaterMassKG = copy.TenderWagonMaxWaterMassKG;
             WagonNumAxles = copy.WagonNumAxles;
             MSTSWagonNumWheels = copy.MSTSWagonNumWheels;
             MassKG = copy.MassKG;
@@ -1340,6 +1359,7 @@ namespace Orts.Simulation.RollingStocks
             DistributorPresent = copy.DistributorPresent;
             HandBrakePresent = copy.HandBrakePresent;
             ManualBrakePresent = copy.ManualBrakePresent;
+            AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
             RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;
@@ -1586,6 +1606,42 @@ namespace Orts.Simulation.RollingStocks
             base.Update(elapsedClockSeconds);
 
             ConfirmSteamLocomotiveTender(); // Confirms that a tender is connected to the steam locomotive
+
+            // Adjusts water and coal mass based upon values assigned to the tender found in the WAG file rather then those defined in ENG file.
+            if (WagonType == WagonTypes.Tender && TenderWeightInitialize && TenderWagonMaxCoalMassKG != 0 && TenderWagonMaxWaterMassKG != 0)
+            {
+
+                // Find the associated steam locomotive for this tender
+                if (TendersSteamLocomotive == null) FindTendersSteamLocomotive();
+
+                // If no locomotive is found to be associated with this tender, then OR crashes, ie TendersSteamLocomotive is still null. 
+                // This message will provide the user with information to correct the problem
+                if (TendersSteamLocomotive == null)
+                {
+                    Trace.TraceInformation("Tender @ position {0} does not have a locomotive associated with. Check that it is preceeded by a steam locomotive.", CarID);
+                }
+
+                if (TendersSteamLocomotive != null)
+                {
+                    if (TendersSteamLocomotive.IsTenderRequired == 1)
+                    {
+                        TendersSteamLocomotive.MaxTenderCoalMassKG = TenderWagonMaxCoalMassKG;
+
+                        // Combined total water found by taking the current combined water (which may have extra water added via the auxiliary tender), and subtracting the 
+                        // amount of water defined in the ENG file, and adding the water defiend in the WAG file.
+                        float TempMaxCombinedWater = TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG;
+                        TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG = (TempMaxCombinedWater - (Kg.ToLb(TendersSteamLocomotive.MaxLocoTenderWaterMassKG) / WaterLBpUKG)) + (Kg.ToLb(TenderWagonMaxWaterMassKG) / WaterLBpUKG);
+
+                        if (Simulator.Settings.VerboseConfigurationMessages)
+                        {
+                            Trace.TraceInformation("Fuel and Water Masses adjusted to Tender Values Specified in WAG File - Coal mass {0} kg, Water Mass {1}", FormatStrings.FormatMass(TendersSteamLocomotive.MaxTenderCoalMassKG, IsMetric), FormatStrings.FormatFuelVolume(L.FromGUK(TendersSteamLocomotive.MaxTotalCombinedWaterVolumeUKG), IsMetric, IsUK));
+                        }
+                    }
+                }
+
+                // Rest flag so that this loop is not executed again
+                TenderWeightInitialize = false;
+            }
 
             UpdateTenderLoad(); // Updates the load physics characteristics of tender and aux tender
 

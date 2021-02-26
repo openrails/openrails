@@ -36,6 +36,10 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> DistanceM;
         /// <summary>
+        /// Train's actual absolute speed.
+        /// </summary>
+        public Func<float> SpeedMpS;
+        /// <summary>
         /// Confirms a command done by the player with a pre-set message on the screen.
         /// </summary>
         public Action<CabControl, CabSetting> Confirm;

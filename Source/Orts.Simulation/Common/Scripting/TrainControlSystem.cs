@@ -143,10 +143,6 @@ namespace ORTS.Scripting.Api
         /// </summary>
         public Func<float> TrainLengthM;
         /// <summary>
-        /// Train's actual absolute speed.
-        /// </summary>
-        public Func<float> SpeedMpS;
-        /// <summary>
         /// Locomotive direction.
         /// </summary>
         public Func<Direction> CurrentDirection;

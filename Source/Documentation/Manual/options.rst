@@ -516,6 +516,19 @@ meet.
     found under :ref:`Location-Linked Passing Path Processing <operation-locationpath>`
     in the chapter  *Open Rails Train Operation*.
 
+Simple control and physics
+--------------------------
+
+This is an option which players can set to simplify either the train controls or physics. 
+This feature is intended for players who want to focus on "running" trains and don't want to be bothered 
+by complex controls or prototypical physics which may require some additional expertise to operate.
+
+Initally this option affects only trains that use vacuum braking but other controls may be added in future versions.
+
+With vacuum braking, it is sometimes necessary to operate two different controls to apply and release the brakes. 
+With "Simple control and physics" checked, the player is able to operate the brakes just with the brake valve 
+and doesn't need to consider the steam ejector separately.
+
 .. _options-keyboard:
 
 Keyboard Options
@@ -723,6 +736,8 @@ checked (only for single-pipe brake system):
   ``AirBrakesAirCompressorPowerRating`` (if this generates a value greater
   than 0.5 psi/s) instead of using a default value.
 
+For a full list of parameters, see :ref:`Developing OR Content - Parameters and Tokens<parameters_and_tokens>`
+
 .. _options-act-randomization:
 
 Activity randomization
@@ -829,5 +844,4 @@ The reason for defining a square around your train is to minimize the moments wh
 is approaching the edge of the precipitation box.  Worst case is to save the activity,
 exit and re-enter the activity since doing this will set your train back in the middle of the
 precipitation box.
-
 
