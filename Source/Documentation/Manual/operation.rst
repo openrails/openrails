@@ -1014,6 +1014,9 @@ how to modify these two files is contained in the Word document
 ``TECH DOCS`` folder of an MSTS installation. Note that these files must be 
 edited with a Unicode text editor.
 
+Additionally, a C# scripting interface is available to complement
+the ``sigscr.dat```file for more complex systems.
+
 SignalNumClearAhead
 -------------------
 
@@ -1072,6 +1075,56 @@ value, or if the sigcfg.dat file is located in the subfolder ``OpenRails``:
 - 0 : no signal will be cleared beyond this signal until train passes this 
   signal.
 - -1: signal does not count when determining the number of signals to clear.
+
+C# signal scripting
+-------------------
+To simulate especially complex behavior, Open Rails provides a C# scripting 
+interface for signals. These scripts are written in .cs files containing
+C# classes, but they are compiled and linked at runtime, so they don't depend 
+on changes in the core program itself and can be distributed with the route.
+
+C# signal scripts are placed in the ``Script/Signal`` subfolder within the
+main folder of the route. All C# files present in that folder will be compiled
+together at runtime into a single assembly.
+
+For each signal type defined in the ``sigcfg.dat`` file, OR tries to find a 
+class with the same name as the signal type in the compiled assembly. 
+If there are compile errors or no class with the required name
+is found, the script defined in the ``sigscr.dat`` file will be used instead,
+if there is an adequate script there.
+
+Each signal script must be inside the ``ORTS.Scripting.Script`` namespace
+and has to inherit from the ``CsSignalScript`` class, which contains all 
+the API functions available for the script.
+
+This example illustrates the minimum code required for a signal script::
+
+    using System;
+    using Orts.Simulation.Signalling;
+
+    namespace Orts.Simulation.Signalling
+    {
+        public class MYSIGNALTYPE : CsSignalScript
+        {
+            public override void Initialize()
+            {
+                // Perform some initializations here, taking into account
+                // that no route information is available at this point
+            }
+            public override void Update()
+            {
+                // Set the aspect of your signal here depending on route state
+            }
+            public override void HandleSignalMessage(int signalId, string message) {}
+        }
+    }
+    
+For a list of the API calls available for signal scripts, refer to the
+``Orts.Simulation/Simulation/Signalling/CsSignalScript.cs`` file in the OR source code.
+
+A development environment can be set up to accelerate development process.
+See the :ref:`engine scripting <features-scripting-csharp>` section for
+further information.
 
 OR-specific Signaling Functions
 ===============================
