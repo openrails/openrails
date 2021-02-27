@@ -46,8 +46,8 @@ namespace Orts.Viewer3D.Debugging
 			if (F.tWindow.SelectedIndex == 1) // 0 for Dispatch Window, 1 for Timetable Window
 			{
 				// Default is All Trains, unless in Timetable mode
-				F.rbShowActiveTrains.Checked = F.simulator.TimetableMode;
-				F.rbShowAllTrains.Checked = !(F.rbShowActiveTrains.Checked);
+				F.rbShowActiveTrainLabels.Checked = F.simulator.TimetableMode;
+				F.rbShowAllTrainLabels.Checked = !(F.rbShowActiveTrainLabels.Checked);
 
 				ShowTimetableControls(true);
 				ShowDispatchControls(false);
@@ -98,6 +98,7 @@ namespace Orts.Viewer3D.Debugging
 			F.resLabel.Visible = dispatchView;
 			F.refreshButton.Visible = dispatchView;
 		}
+
 		private void SetDispatchMedia()
 		{
 			F.trainFont = new Font("Arial", 14, FontStyle.Bold);
@@ -121,9 +122,9 @@ namespace Orts.Viewer3D.Debugging
 			F.cbShowTrainLabels.Visible = timetableView;
 			F.cbShowTrainState.Visible = timetableView;
 			F.bTrainKey.Visible = timetableView;
-			F.gbTrains.Visible = timetableView;
-			F.rbShowActiveTrains.Visible = timetableView;
-			F.rbShowAllTrains.Visible = timetableView;
+			F.gbTrainLabels.Visible = timetableView;
+			F.rbShowActiveTrainLabels.Visible = timetableView;
+			F.rbShowAllTrainLabels.Visible = timetableView;
 			F.lblDayLightOffsetHrs.Visible = timetableView;
 			F.nudDaylightOffsetHrs.Visible = timetableView;
 			F.bBackgroundColor.Visible = timetableView;
@@ -286,11 +287,9 @@ namespace Orts.Viewer3D.Debugging
 		private PointF GetMidPoint(PointF location1, PointF location2)
 		{
 			return new PointF()
-			{
-				X = (location1.X + location2.X) / 2
-				,
-				Y = (location1.Y + location2.Y) / 2
-			};
+				{	X = (location1.X + location2.X) / 2
+				,	Y = (location1.Y + location2.Y) / 2
+				};
 		}
 
 		private PointF GetRightHandPoint(PointF location1, PointF location2)
@@ -595,46 +594,52 @@ namespace Orts.Viewer3D.Debugging
 			F.selectedTrainList.Clear();
 
 			if (F.simulator.TimetableMode)
-            {
+			{
 				// Add the player's train
 				if (F.simulator.PlayerLocomotive.Train is Orts.Simulation.AIs.AITrain)
-					BuildSelectedTrainList(F.simulator.PlayerLocomotive.Train as Orts.Simulation.AIs.AITrain);
+					F.selectedTrainList.Add(F.simulator.PlayerLocomotive.Train as Orts.Simulation.AIs.AITrain);
 
 				// and all the other trains
 				foreach (var t in F.simulator.AI.AITrains)
-					BuildSelectedTrainList(t);
+					F.selectedTrainList.Add(t);
 			}
 			else
-            {
+			{
 				foreach (var t in F.simulator.Trains)
-					BuildSelectedTrainList(t);
+					F.selectedTrainList.Add(t);
 			}
 
 			foreach (var t in F.selectedTrainList)
 			{
 				string trainName;
 				WorldPosition worldPos;
-				TrainCar firstCar = null;
+				TrainCar locoCar = null;
 				if (t.LeadLocomotive != null)
 				{
 					trainName = t.GetTrainName(t.LeadLocomotive.CarID);
-					firstCar = t.LeadLocomotive;
+					locoCar = t.LeadLocomotive;
 				}
 				else if (t.Cars != null && t.Cars.Count > 0)
 				{
 					trainName = t.GetTrainName(t.Cars[0].CarID);
 					if (t.TrainType == Train.TRAINTYPE.AI)
 						trainName = t.Number.ToString() + ":" + t.Name;
-					firstCar = t.Cars[0];
+
+					locoCar = t.Cars.Where(r => r is MSTSLocomotive).FirstOrDefault();
+
+					// Skip trains with no loco
+					if (locoCar == null)
+						continue;
 				}
 				else
 					continue;
 
 				// Draw the path, then each car of the train, then maybe the name
 				var loc = t.FrontTDBTraveller.WorldLocation;
-				float x, y;
-				x = (loc.TileX * 2048 + loc.Location.X - F.subX) * F.xScale;
-				y = F.pbCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - F.subY) * F.yScale;
+				float x = (loc.TileX * 2048 + loc.Location.X - F.subX) * F.xScale;
+				float y = F.pbCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - F.subY) * F.yScale;
+
+				// If train out of view then skip it.
 				if (x < -margin2
 					|| y < -margin2)
 					continue;
@@ -650,25 +655,15 @@ namespace Orts.Viewer3D.Debugging
 				//  2       12
 				//  3       14
 				//  4		16
-				F.trainPen.Width = 8 + (F.grayPen.Width * 2);
+				F.trainPen.Width = F.grayPen.Width * 6;
 
-				var trainLengthM = 0f;
-				var minTrainLengthM = 2 * minTrainPx / F.xScale; // If train is shorter than 2 * minTrainPx pixels, draw the end cars only as squares of a fixed size.
-				var drawWholeTrain = false;
-				foreach (var car in t.Cars)
-				{
-					trainLengthM += car.CarLengthM;
-					if (trainLengthM > minTrainLengthM)
-					{
-						drawWholeTrain = true;
-						break;
-					}
-				}
+				var minTrainLengthM = minTrainPx / F.xScale; // Calculate length equivalent to a set number of pixels
+				bool drawEveryCar = IsDrawEveryCar(t, minTrainLengthM);
 
 				var scaledTrain = new PointF();
 				foreach (var car in t.Cars)
 				{
-					if (drawWholeTrain == false)
+					if (drawEveryCar == false)
 						// Skip the intermediate cars
 						if (car != t.Cars.First() && car != t.Cars.Last())
 							continue;
@@ -678,13 +673,16 @@ namespace Orts.Viewer3D.Debugging
 					var dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
 					if (dist > -1)
                     {
-                        if (drawWholeTrain)
+                        if (drawEveryCar)
                         {
                             t1.Move(dist + car.CarLengthM / 2); // Move along from centre of car to front of car
                             x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
                             y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
-                            if (x < -margin || y < -margin)
+
+							// If car out of view then skip it.
+							if (x < -margin || y < -margin)
                                 continue;
+
                             scaledTrain.X = x; scaledTrain.Y = y;
                             t1.Move(-car.CarLengthM + (1 / F.xScale)); // Move from front of car to rear less 1 pixel to create a visible gap
                         }
@@ -717,61 +715,90 @@ namespace Orts.Viewer3D.Debugging
                         }
                         x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
                         y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
-                        if (x < -margin || y < -margin)
-                            continue;
-                        scaledA.X = x; scaledA.Y = y;
 
-						SetTrainColor(t, firstCar, car);
+						// If car out of view then skip it.
+						if (x < -margin || y < -margin)
+							continue;
+                        
+						scaledA.X = x; scaledA.Y = y;
+
+						SetTrainColor(t, locoCar, car);
                         g.DrawLine(F.trainPen, scaledA, scaledTrain);
                     }
                 }
-				worldPos = firstCar.WorldPosition;
+				worldPos = locoCar.WorldPosition;
 				scaledTrain.X = (worldPos.TileX * 2048 - F.subX + worldPos.Location.X) * F.xScale;
 				scaledTrain.Y = -25 + F.pbCanvas.Height - (worldPos.TileZ * 2048 - F.subY + worldPos.Location.Z) * F.yScale;
 				if (F.cbShowTrainLabels.Checked)
-					ShowTrainNameAndState(g, scaledTrain, t, trainName);
+					DrawTrainLabels(g, t, trainName, locoCar, scaledTrain);
 			}
 		}
 
-        private void SetTrainColor(Train t, TrainCar firstCar, TrainCar car)
+        private void SetTrainColor(Train t, TrainCar locoCar, TrainCar car)
         {
-            // Draw train in green with locos in brown
-            // HSL values
-            // Saturation = 100/100
-            // if loco then H=50/360 else H=120/360
-            // if leading then L=45/100 else L=30/100
-            // RGB values
-            // leading loco: RGB 227,190,2
-            // trailing loco: RGB 153,128,0
-            // leading car: RGB 0,227,0
-            // trailing car: RGB 0,153,0
-            if (car is MSTSLocomotive)
-                F.trainPen.Color = (car == firstCar) ? Color.FromArgb(227, 190, 2) : Color.FromArgb(153, 128, 0);
-            else
-                F.trainPen.Color = (car == firstCar) ? Color.FromArgb(0, 227, 0) : Color.FromArgb(0, 153, 0);
+			// Draw train in green with locos in brown
+			// HSL values
+			// Saturation: 100/100
+			// Hue: if loco then H=50/360 else H=120/360
+			// Lightness: if active then L=40/100 else L=30/100
+			// RGB values
+			// active loco: RGB 204,170,0
+			// inactive loco: RGB 153,128,0
+			// active car: RGB 0,204,0
+			// inactive car: RGB 0,153,0
+			if (IsActiveTrain(t as Simulation.AIs.AITrain))
+				if (car is MSTSLocomotive)
+					F.trainPen.Color = (car == locoCar) ? Color.FromArgb(204, 170, 0) : Color.FromArgb(153, 128, 0);
+				else
+					F.trainPen.Color = Color.FromArgb(0, 204, 0);
+			else
+				if (car is MSTSLocomotive)
+					F.trainPen.Color = Color.FromArgb(153, 128, 0);
+				else
+					F.trainPen.Color = Color.FromArgb(0, 153, 0);
 
-            if (t.TrainType == Train.TRAINTYPE.PLAYER && !(t is Simulation.AIs.AITrain) && car == firstCar)
-                // Draw player train with leading vehicle in red
-                F.trainPen.Color = Color.Red;
-            else if (t is Simulation.AIs.AITrain)
-            {
-                if (((Simulation.AIs.AITrain)t).MovementState == Simulation.AIs.AITrain.AI_MOVEMENT_STATE.AI_STATIC)
-                    // Draw static trains as a ghost
-                    F.trainPen.Color = Color.LightGray;
-            }
-        }
+			// Draw player train with loco in red
+			if (t.TrainType == Train.TRAINTYPE.PLAYER && car == locoCar)
+				F.trainPen.Color = Color.Red;
+		}
 
-        private void BuildSelectedTrainList(Train t)
-        {
-            if (F.rbShowAllTrains.Checked)
-                F.selectedTrainList.Add(t);
+		/// <summary>
+		/// If the train is long enough then draw every car else just draw it as one or two blocks
+		/// </summary>
+		/// <param name="train"></param>
+		/// <param name="minTrainLengthM"></param>
+		/// <returns></returns>
+		private bool IsDrawEveryCar(Train train, float minTrainLengthM)
+		{
+			float trainLengthM = 0f;
+			foreach (var car in train.Cars)
+			{
+				trainLengthM += car.CarLengthM;
+				if (trainLengthM > minTrainLengthM)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
 
-            if (F.rbShowActiveTrains.Checked)
-                if (t is Simulation.AIs.AITrain && IsActiveTrain(t as Simulation.AIs.AITrain))
-                    F.selectedTrainList.Add(t);
-        }
+		private void DrawTrainLabels(Graphics g, Train t, string trainName, TrainCar firstCar, PointF scaledTrain)
+		{
+			WorldPosition worldPos = firstCar.WorldPosition;
+			scaledTrain.X = (worldPos.TileX * 2048 - F.subX + worldPos.Location.X) * F.xScale;
+			scaledTrain.Y = -25 + F.pbCanvas.Height - (worldPos.TileZ * 2048 - F.subY + worldPos.Location.Z) * F.yScale;
+			if (F.rbShowActiveTrainLabels.Checked)
+			{
+				if (t is Simulation.AIs.AITrain && IsActiveTrain(t as Simulation.AIs.AITrain))
+					ShowTrainNameAndState(g, scaledTrain, t, trainName);
+			}
+			else
+			{
+				ShowTrainNameAndState(g, scaledTrain, t, trainName);
+			}
+		}
 
-        private bool IsActiveTrain(Simulation.AIs.AITrain t)
+		private bool IsActiveTrain(Simulation.AIs.AITrain t)
 		{
 			if (t == null)
 				return false;

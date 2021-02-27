@@ -72,10 +72,10 @@
             this.cbShowSidings = new System.Windows.Forms.CheckBox();
             this.cbShowSignals = new System.Windows.Forms.CheckBox();
             this.cbShowSignalState = new System.Windows.Forms.CheckBox();
-            this.gbTrains = new System.Windows.Forms.GroupBox();
+            this.gbTrainLabels = new System.Windows.Forms.GroupBox();
             this.bTrainKey = new System.Windows.Forms.Button();
-            this.rbShowActiveTrains = new System.Windows.Forms.RadioButton();
-            this.rbShowAllTrains = new System.Windows.Forms.RadioButton();
+            this.rbShowActiveTrainLabels = new System.Windows.Forms.RadioButton();
+            this.rbShowAllTrainLabels = new System.Windows.Forms.RadioButton();
             this.nudDaylightOffsetHrs = new System.Windows.Forms.NumericUpDown();
             this.lblDayLightOffsetHrs = new System.Windows.Forms.Label();
             this.cdBackground = new System.Windows.Forms.ColorDialog();
@@ -93,7 +93,7 @@
             this.cbShowPlatforms = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.pbCanvas)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).BeginInit();
-            this.gbTrains.SuspendLayout();
+            this.gbTrainLabels.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudDaylightOffsetHrs)).BeginInit();
             this.tWindow.SuspendLayout();
             this.SuspendLayout();
@@ -557,26 +557,26 @@
             this.cbShowSignalState.UseVisualStyleBackColor = true;
             this.cbShowSignalState.Visible = false;
             // 
-            // gbTrains
+            // gbTrainLabels
             // 
-            this.gbTrains.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.gbTrains.Controls.Add(this.bTrainKey);
-            this.gbTrains.Controls.Add(this.rbShowActiveTrains);
-            this.gbTrains.Controls.Add(this.rbShowAllTrains);
-            this.gbTrains.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.gbTrains.Location = new System.Drawing.Point(779, 323);
-            this.gbTrains.Name = "gbTrains";
-            this.gbTrains.Size = new System.Drawing.Size(120, 129);
-            this.gbTrains.TabIndex = 43;
-            this.gbTrains.TabStop = false;
-            this.gbTrains.Text = "Trains";
-            this.gbTrains.Visible = false;
+            this.gbTrainLabels.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.gbTrainLabels.Controls.Add(this.bTrainKey);
+            this.gbTrainLabels.Controls.Add(this.rbShowActiveTrainLabels);
+            this.gbTrainLabels.Controls.Add(this.rbShowAllTrainLabels);
+            this.gbTrainLabels.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gbTrainLabels.Location = new System.Drawing.Point(779, 323);
+            this.gbTrainLabels.Name = "gbTrainLabels";
+            this.gbTrainLabels.Size = new System.Drawing.Size(120, 129);
+            this.gbTrainLabels.TabIndex = 43;
+            this.gbTrainLabels.TabStop = false;
+            this.gbTrainLabels.Text = "Train labels";
+            this.gbTrainLabels.Visible = false;
             // 
             // bTrainKey
             // 
             this.bTrainKey.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.bTrainKey.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.bTrainKey.Location = new System.Drawing.Point(71, 89);
+            this.bTrainKey.Location = new System.Drawing.Point(77, 89);
             this.bTrainKey.Name = "bTrainKey";
             this.bTrainKey.Size = new System.Drawing.Size(40, 23);
             this.bTrainKey.TabIndex = 57;
@@ -585,29 +585,29 @@
             this.bTrainKey.Visible = false;
             this.bTrainKey.Click += new System.EventHandler(this.bTrainKey_Click);
             // 
-            // rbShowActiveTrains
+            // rbShowActiveTrainLabels
             // 
-            this.rbShowActiveTrains.AutoSize = true;
-            this.rbShowActiveTrains.Checked = true;
-            this.rbShowActiveTrains.Location = new System.Drawing.Point(13, 22);
-            this.rbShowActiveTrains.Name = "rbShowActiveTrains";
-            this.rbShowActiveTrains.Size = new System.Drawing.Size(81, 19);
-            this.rbShowActiveTrains.TabIndex = 1;
-            this.rbShowActiveTrains.TabStop = true;
-            this.rbShowActiveTrains.Text = "Active only";
-            this.rbShowActiveTrains.UseVisualStyleBackColor = true;
-            this.rbShowActiveTrains.Visible = false;
+            this.rbShowActiveTrainLabels.AutoSize = true;
+            this.rbShowActiveTrainLabels.Checked = true;
+            this.rbShowActiveTrainLabels.Location = new System.Drawing.Point(13, 22);
+            this.rbShowActiveTrainLabels.Name = "rbShowActiveTrainLabels";
+            this.rbShowActiveTrainLabels.Size = new System.Drawing.Size(81, 19);
+            this.rbShowActiveTrainLabels.TabIndex = 1;
+            this.rbShowActiveTrainLabels.TabStop = true;
+            this.rbShowActiveTrainLabels.Text = "Active only";
+            this.rbShowActiveTrainLabels.UseVisualStyleBackColor = true;
+            this.rbShowActiveTrainLabels.Visible = false;
             // 
-            // rbShowAllTrains
+            // rbShowAllTrainLabels
             // 
-            this.rbShowAllTrains.AutoSize = true;
-            this.rbShowAllTrains.Location = new System.Drawing.Point(13, 44);
-            this.rbShowAllTrains.Name = "rbShowAllTrains";
-            this.rbShowAllTrains.Size = new System.Drawing.Size(38, 19);
-            this.rbShowAllTrains.TabIndex = 0;
-            this.rbShowAllTrains.Text = "All";
-            this.rbShowAllTrains.UseVisualStyleBackColor = true;
-            this.rbShowAllTrains.Visible = false;
+            this.rbShowAllTrainLabels.AutoSize = true;
+            this.rbShowAllTrainLabels.Location = new System.Drawing.Point(13, 44);
+            this.rbShowAllTrainLabels.Name = "rbShowAllTrainLabels";
+            this.rbShowAllTrainLabels.Size = new System.Drawing.Size(38, 19);
+            this.rbShowAllTrainLabels.TabIndex = 0;
+            this.rbShowAllTrainLabels.Text = "All";
+            this.rbShowAllTrainLabels.UseVisualStyleBackColor = true;
+            this.rbShowAllTrainLabels.Visible = false;
             // 
             // nudDaylightOffsetHrs
             // 
@@ -692,11 +692,11 @@
             this.cbShowTrainLabels.Checked = true;
             this.cbShowTrainLabels.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cbShowTrainLabels.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbShowTrainLabels.Location = new System.Drawing.Point(793, 395);
+            this.cbShowTrainLabels.Location = new System.Drawing.Point(790, 395);
             this.cbShowTrainLabels.Name = "cbShowTrainLabels";
-            this.cbShowTrainLabels.Size = new System.Drawing.Size(57, 19);
+            this.cbShowTrainLabels.Size = new System.Drawing.Size(60, 19);
             this.cbShowTrainLabels.TabIndex = 50;
-            this.cbShowTrainLabels.Text = "Label";
+            this.cbShowTrainLabels.Text = "Name";
             this.cbShowTrainLabels.UseVisualStyleBackColor = true;
             this.cbShowTrainLabels.Visible = false;
             // 
@@ -738,7 +738,7 @@
             this.cbShowTrainState.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbShowTrainState.AutoSize = true;
             this.cbShowTrainState.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.cbShowTrainState.Location = new System.Drawing.Point(793, 415);
+            this.cbShowTrainState.Location = new System.Drawing.Point(802, 415);
             this.cbShowTrainState.Name = "cbShowTrainState";
             this.cbShowTrainState.Size = new System.Drawing.Size(54, 19);
             this.cbShowTrainState.TabIndex = 52;
@@ -811,7 +811,7 @@
             this.Controls.Add(this.bBackgroundColor);
             this.Controls.Add(this.lblDayLightOffsetHrs);
             this.Controls.Add(this.nudDaylightOffsetHrs);
-            this.Controls.Add(this.gbTrains);
+            this.Controls.Add(this.gbTrainLabels);
             this.Controls.Add(this.cbShowSignalState);
             this.Controls.Add(this.cbShowSignals);
             this.Controls.Add(this.cbShowSidings);
@@ -853,8 +853,8 @@
             this.Leave += new System.EventHandler(this.DispatcherLeave);
             ((System.ComponentModel.ISupportInitialize)(this.pbCanvas)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.windowSizeUpDown)).EndInit();
-            this.gbTrains.ResumeLayout(false);
-            this.gbTrains.PerformLayout();
+            this.gbTrainLabels.ResumeLayout(false);
+            this.gbTrainLabels.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudDaylightOffsetHrs)).EndInit();
             this.tWindow.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -900,9 +900,9 @@
         public System.Windows.Forms.CheckBox cbShowSidings;
         public System.Windows.Forms.CheckBox cbShowSignals;
         public System.Windows.Forms.CheckBox cbShowSignalState;
-        public System.Windows.Forms.GroupBox gbTrains;
-        public System.Windows.Forms.RadioButton rbShowActiveTrains;
-        public System.Windows.Forms.RadioButton rbShowAllTrains;
+        public System.Windows.Forms.GroupBox gbTrainLabels;
+        public System.Windows.Forms.RadioButton rbShowActiveTrainLabels;
+        public System.Windows.Forms.RadioButton rbShowAllTrainLabels;
         public System.Windows.Forms.NumericUpDown nudDaylightOffsetHrs;
         public System.Windows.Forms.Label lblDayLightOffsetHrs;
         public System.Windows.Forms.Button bBackgroundColor;
