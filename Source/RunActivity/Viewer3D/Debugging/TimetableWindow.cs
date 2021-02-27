@@ -276,7 +276,6 @@ namespace Orts.Viewer3D.Debugging
 					Trace.TraceWarning("Platform '{0}' is incomplete as the two ends do not match. It will not show in full in the Timetable Tab of the Map Window", p.Name);
 		}
 
-
 		/// <summary>
 		/// Returns the mid-point between two locations
 		/// </summary>
@@ -589,7 +588,7 @@ namespace Orts.Viewer3D.Debugging
 			var margin2 = 5000 * F.xScale;
 
 			//variable for drawing train path
-			var mDist = 5000f; var pDist = 50; //segment length when draw path
+			var mDist = 5000f; var pDist = 50; //segment length when drawing path
 
 			F.selectedTrainList.Clear();
 
@@ -600,32 +599,32 @@ namespace Orts.Viewer3D.Debugging
 					F.selectedTrainList.Add(F.simulator.PlayerLocomotive.Train as Orts.Simulation.AIs.AITrain);
 
 				// and all the other trains
-				foreach (var t in F.simulator.AI.AITrains)
-					F.selectedTrainList.Add(t);
+				foreach (var train in F.simulator.AI.AITrains)
+					F.selectedTrainList.Add(train);
 			}
 			else
 			{
-				foreach (var t in F.simulator.Trains)
-					F.selectedTrainList.Add(t);
+				foreach (var train in F.simulator.Trains)
+					F.selectedTrainList.Add(train);
 			}
 
-			foreach (var t in F.selectedTrainList)
+			foreach (var train in F.selectedTrainList)
 			{
 				string trainName;
 				WorldPosition worldPos;
 				TrainCar locoCar = null;
-				if (t.LeadLocomotive != null)
+				if (train.LeadLocomotive != null)
 				{
-					trainName = t.GetTrainName(t.LeadLocomotive.CarID);
-					locoCar = t.LeadLocomotive;
+					trainName = train.GetTrainName(train.LeadLocomotive.CarID);
+					locoCar = train.LeadLocomotive;
 				}
-				else if (t.Cars != null && t.Cars.Count > 0)
+				else if (train.Cars != null && train.Cars.Count > 0)
 				{
-					trainName = t.GetTrainName(t.Cars[0].CarID);
-					if (t.TrainType == Train.TRAINTYPE.AI)
-						trainName = t.Number.ToString() + ":" + t.Name;
+					trainName = train.GetTrainName(train.Cars[0].CarID);
+					if (train.TrainType == Train.TRAINTYPE.AI)
+						trainName = train.Number.ToString() + ":" + train.Name;
 
-					locoCar = t.Cars.Where(r => r is MSTSLocomotive).FirstOrDefault();
+					locoCar = train.Cars.Where(r => r is MSTSLocomotive).FirstOrDefault();
 
 					// Skip trains with no loco
 					if (locoCar == null)
@@ -635,7 +634,7 @@ namespace Orts.Viewer3D.Debugging
 					continue;
 
 				// Draw the path, then each car of the train, then maybe the name
-				var loc = t.FrontTDBTraveller.WorldLocation;
+				var loc = train.FrontTDBTraveller.WorldLocation;
 				float x = (loc.TileX * 2048 + loc.Location.X - F.subX) * F.xScale;
 				float y = F.pbCanvas.Height - (loc.TileZ * 2048 + loc.Location.Z - F.subY) * F.yScale;
 
@@ -644,13 +643,13 @@ namespace Orts.Viewer3D.Debugging
 					|| y < -margin2)
 					continue;
 
-				F.DrawTrainPath(t, F.subX, F.subY, F.pathPen, g, scaledA, scaledB, pDist, mDist);
+				F.DrawTrainPath(train, F.subX, F.subY, F.pathPen, g, scaledA, scaledB, pDist, mDist);
 
 				// If zoomed out, so train occupies less than 2 * minTrainPx pixels, then 
 				// draw the train as 2 squares of combined length minTrainPx.
 				const int minTrainPx = 24;
 
-				// pen | train for a good presentation
+				// pen | train | Values for a good presentation
 				//  1		10
 				//  2       12
 				//  3       14
@@ -658,81 +657,89 @@ namespace Orts.Viewer3D.Debugging
 				F.trainPen.Width = F.grayPen.Width * 6;
 
 				var minTrainLengthM = minTrainPx / F.xScale; // Calculate length equivalent to a set number of pixels
-				bool drawEveryCar = IsDrawEveryCar(t, minTrainLengthM);
+				bool drawEveryCar = IsDrawEveryCar(train, minTrainLengthM);
 
+				foreach (var car in train.Cars)
+                    DrawCar(g, train, car, locoCar, margin, minTrainPx, drawEveryCar);
+
+                worldPos = locoCar.WorldPosition;
 				var scaledTrain = new PointF();
-				foreach (var car in t.Cars)
-				{
-					if (drawEveryCar == false)
-						// Skip the intermediate cars
-						if (car != t.Cars.First() && car != t.Cars.Last())
-							continue;
-
-					var t1 = new Traveller(t.RearTDBTraveller);
-					worldPos = car.WorldPosition;
-					var dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-					if (dist > -1)
-                    {
-                        if (drawEveryCar)
-                        {
-                            t1.Move(dist + car.CarLengthM / 2); // Move along from centre of car to front of car
-                            x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
-                            y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
-
-							// If car out of view then skip it.
-							if (x < -margin || y < -margin)
-                                continue;
-
-                            scaledTrain.X = x; scaledTrain.Y = y;
-                            t1.Move(-car.CarLengthM + (1 / F.xScale)); // Move from front of car to rear less 1 pixel to create a visible gap
-                        }
-                        else    // Draw the train as 2 boxes of fixed size
-                        {
-                            F.trainPen.Width = minTrainPx / 2;
-                            if (car == t.Cars.First())
-                            {
-                                // Draw first half a train back from the front of the first car as abox
-                                t1.Move(dist + car.CarLengthM / 2);
-                                x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
-                                y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
-                                if (x < -margin || y < -margin)
-                                    continue;
-                                t1.Move(-(minTrainPx - 2) / F.xScale / 2); // Move from front of car to rear less 1 pixel to create a visible gap
-                            }
-                            else // car == t.Cars.Last()
-                            {
-                                // Draw half a train back from the rear of the first box
-                                worldPos = t.Cars.First().WorldPosition;
-                                dist = t1.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
-                                t1.Move(dist + t.Cars.First().CarLengthM / 2 - minTrainPx / F.xScale / 2);
-                                x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
-                                y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
-                                if (x < -margin || y < -margin)
-                                    continue;
-                                t1.Move(-minTrainPx / F.xScale / 2);
-                            }
-                            scaledTrain.X = x; scaledTrain.Y = y;
-                        }
-                        x = (t1.TileX * 2048 + t1.Location.X - F.subX) * F.xScale;
-                        y = F.pbCanvas.Height - (t1.TileZ * 2048 + t1.Location.Z - F.subY) * F.yScale;
-
-						// If car out of view then skip it.
-						if (x < -margin || y < -margin)
-							continue;
-                        
-						scaledA.X = x; scaledA.Y = y;
-
-						SetTrainColor(t, locoCar, car);
-                        g.DrawLine(F.trainPen, scaledA, scaledTrain);
-                    }
-                }
-				worldPos = locoCar.WorldPosition;
 				scaledTrain.X = (worldPos.TileX * 2048 - F.subX + worldPos.Location.X) * F.xScale;
 				scaledTrain.Y = -25 + F.pbCanvas.Height - (worldPos.TileZ * 2048 - F.subY + worldPos.Location.Z) * F.yScale;
 				if (F.cbShowTrainLabels.Checked)
-					DrawTrainLabels(g, t, trainName, locoCar, scaledTrain);
+					DrawTrainLabels(g, train, trainName, locoCar, scaledTrain);
 			}
 		}
+
+        private void DrawCar(Graphics g, Train train, TrainCar car, TrainCar locoCar, float margin, int minTrainPx, bool drawEveryCar)
+        {
+            if (drawEveryCar == false)
+                // Skip the intermediate cars
+                if (car != train.Cars.First() && car != train.Cars.Last())
+                    return;
+
+            var t = new Traveller(train.RearTDBTraveller);
+            var worldPos = car.WorldPosition;
+            var dist = t.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
+            if (dist > -1)
+            {
+				var scaledTrain = new PointF();
+				float x;
+				float y;
+				if (drawEveryCar)
+                {
+                    t.Move(dist + car.CarLengthM / 2); // Move along from centre of car to front of car
+                    x = (t.TileX * 2048 + t.Location.X - F.subX) * F.xScale;
+                    y = F.pbCanvas.Height - (t.TileZ * 2048 + t.Location.Z - F.subY) * F.yScale;
+
+                    // If car out of view then skip it.
+                    if (x < -margin || y < -margin)
+						return;
+
+                    t.Move(-car.CarLengthM + (1 / F.xScale)); // Move from front of car to rear less 1 pixel to create a visible gap
+					scaledTrain.X = x; scaledTrain.Y = y;
+				}
+				else    // Draw the train as 2 boxes of fixed size
+                {
+                    F.trainPen.Width = minTrainPx / 2;
+                    if (car == train.Cars.First())
+                    {
+                        // Draw first half a train back from the front of the first car as abox
+                        t.Move(dist + car.CarLengthM / 2);
+                        x = (t.TileX * 2048 + t.Location.X - F.subX) * F.xScale;
+                        y = F.pbCanvas.Height - (t.TileZ * 2048 + t.Location.Z - F.subY) * F.yScale;
+
+						// If car out of view then skip it.
+						if (x < -margin || y < -margin)
+							return;
+                        
+						t.Move(-(minTrainPx - 2) / F.xScale / 2); // Move from front of car to rear less 1 pixel to create a visible gap
+                    }
+                    else // car == t.Cars.Last()
+                    {
+                        // Draw half a train back from the rear of the first box
+                        worldPos = train.Cars.First().WorldPosition;
+                        dist = t.DistanceTo(worldPos.WorldLocation.TileX, worldPos.WorldLocation.TileZ, worldPos.WorldLocation.Location.X, worldPos.WorldLocation.Location.Y, worldPos.WorldLocation.Location.Z);
+                        t.Move(dist + train.Cars.First().CarLengthM / 2 - minTrainPx / F.xScale / 2);
+                        x = (t.TileX * 2048 + t.Location.X - F.subX) * F.xScale;
+                        y = F.pbCanvas.Height - (t.TileZ * 2048 + t.Location.Z - F.subY) * F.yScale;
+                        if (x < -margin || y < -margin)
+							return;
+                        t.Move(-minTrainPx / F.xScale / 2);
+                    }
+                    scaledTrain.X = x; scaledTrain.Y = y;
+                }
+                x = (t.TileX * 2048 + t.Location.X - F.subX) * F.xScale;
+                y = F.pbCanvas.Height - (t.TileZ * 2048 + t.Location.Z - F.subY) * F.yScale;
+
+                // If car out of view then skip it.
+                if (x < -margin || y < -margin)
+					return;
+
+                SetTrainColor(train, locoCar, car);
+				g.DrawLine(F.trainPen, new PointF(x, y), scaledTrain);
+            }
+        }
 
         private void SetTrainColor(Train t, TrainCar locoCar, TrainCar car)
         {
