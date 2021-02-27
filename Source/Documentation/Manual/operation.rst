@@ -1819,8 +1819,12 @@ AI Train Horn Blow
 ------------------
 
 Horn blow by AI trains is achieved by inserting into the AI train path a 
-waiting point with a waiting time value between 60011 (1 second horn blow) and 
-60020 (10 seconds horn blow).
+waiting point.
+If the waiting time value is between 60011 (1 second horn blow) and 
+60020 (10 seconds horn blow), a single horn blow is generated.
+If the waiting time value is 60021, a horn blow sequence is generated, 
+with the pattern long blow - long blow - short blow - long blow (North 
+American horn pattern at level crossings).
 
 The AI train will not stop at these waiting points, but will continue at its 
 regular speed.
@@ -1857,7 +1861,22 @@ is inserted into the activity file following the line::
 
 (note that the number in the brackets may be different), then AI trains will 
 blow their horn at level crossings for a random time between 2 and 5 
-seconds.The level crossing must be defined as such in the MSTS route editor. 
+seconds. The level crossing must be defined as such in the MSTS route editor. 
+
+If line::
+
+    ORTSAIHornAtCrossings ( 1 )
+
+is followed by line::
+
+	ORTSAICrossingHornPattern ( US )
+
+instead of a single horn blow, a horn blow sequence will be generated
+for all AI trains before crossings,  
+with the pattern long blow - long blow - short blow - long blow (North 
+American horn pattern at level crossings). 
+
+
 *Simple* road crossings, not defined as level crossings, may also be present in 
 the route. The AI train will not blow the horn at these crossings. Examining 
 the route with TrackViewer allows identification of the true level crossings. 

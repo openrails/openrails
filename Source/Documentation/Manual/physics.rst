@@ -2856,10 +2856,10 @@ HUD will display *Emergency Brake Push Button* in the *Train Brake* line.
 
 .. _physics-vacuum:
 
-Vacuum Brakes
--------------
+Automatic Vacuum Brakes
+-----------------------
 
-Vacuum braking has been implemented in Open Rails in one of the two following forms:
+Automatic Vacuum braking has been implemented in Open Rails in one of the two following forms:
 
 - Direct Vacuum - in this form, while ever the Brake Pipe (BP) is connected to the ejectors
   or vacuum pump, depending upon the operating capacity of the ejectors, a vacuum will be
@@ -2869,6 +2869,15 @@ Vacuum braking has been implemented in Open Rails in one of the two following fo
   along with the equalising reservoir. Typically the main reservoir is maintained at a sufficiently
   high enough vacuum to create the vacuum in the BP to release the brakes. The BP vacuum will
   equalise at the vacuum set by the driver on the equalising reservoir.
+
+As the altitude at which the train is operating increases, so the effectiveness of vacuum brakes decreases. 
+For example, if a train is operating with a 21InHg system, based upon the following railway highest points 
+in the countries indicated, it would be expect that only the following maximum possible vacuum levels would 
+be achieveable:
+
+UK = 350m = 20InHg
+Aus = 923m = 19InHg
+USA = 4,301m = 14InHg
 
 In general, brakes (in particular a system with an equalising reservoir) will have three
 potential timings that impact the application or the releasing of the brakes.
@@ -3012,6 +3021,39 @@ If it is not desired to operate the large ejector, a simplified brake operation 
 Engine brakes can also be configured for locomotives as required. They will work in a similar fashion to those fitted 
 to air braked locomotives.
 
+Non Automatic Vacuum Brakes
+---------------------------
+
+Non automatic (or Straight) vacuum braking has been added to OR. This braking has been based upon the Eames and Hardy 
+vacuum braking systems.
+
+Straight brakes operate in the reverse way to "normal" vacuum brakes, ie the train brake pipe needs to have a vacuum 
+created in it to apply the brakes, and air needs to be allowed into the brake pipe to release the brakes. The straight 
+brake had the major disadvantage that if the brake pipe was interupted then the brakes would not be able to be applied 
+and stop the train. Consequently they were only mostly applied to early trains and were replaced over time by automatic 
+brakes.
+
+To configure a car with manual braking then in the car brake section configure the fllowing two parameters:
+
+``BrakeEquipmentType( "Straight_Vacuum_Single_Pipe" )``
+
+Additional train controllers have been added to facilitate the operation of straight braked controlled cars.
+
+``TrainBrakesControllerStraightBrakingReleaseOffStart`` - closes the Eames release valve
+``TrainBrakesControllerStraightBrakingReleaseOnStart`` - opens the Eames release valve to release the brakes. 
+The normal large ejector controls need to be used to apply the brakes (use *Alt-J* and *Ctrl-J* keys )
+
+``TrainBrakesControllerStraightBrakingReleaseStart`` - Hardy brake - release
+``TrainBrakesControllerStraightBrakingLapStart`` - Hardy brake - hold at current vacuum level
+``TrainBrakesControllerStraightBrakingApplyStart`` - Hardy brake - twin ejector - use large ejector to apply 
+brakes on train only
+``TrainBrakesControllerStraightBrakingApplyAllStart`` - Hardy brake - single ejector type - use large ejector to apply 
+brakes
+``TrainBrakesControllerStraightBrakingEmergencyStart`` - Hardy brake - twin ejector type - use large and small ejector 
+to apply brakes on train, locomotive and tender
+
+Similar timing parameters to those used in the Vacuum Brake above are used in this brake type. 
+
 .. _physics-manual:
 
 Manual Brakes
@@ -3036,7 +3078,7 @@ An additional engine controller has been added to facilitate the operation of al
 The controller can be added to an ENG file in a similar fashion to an air brake or vacuum controller by using the following 
 brake controller parameter: ``TrainBrakesControllerManualBrakingStart``
 
-To configure a car with manual braking then in the car brake section configure the fllowing two parameters:
+To configure a car with manual braking then in the car brake section configure the following two parameters:
 
 ``BrakeSystemType ( "Manual_Braking" )``
 ``BrakeEquipmentType( "Manual_brake, Handbrake" )``
@@ -3049,7 +3091,9 @@ The following values, in the wagon section of the file need to be set for a manu
 - ``MaxReleaseRate``
 - ``MaxApplicationRate``
 
-The manual brake can be increased by pressing Alt+], and decreased by pressing Alt+[.
+The manual brake can be increased by pressing *Alt-]*, and decreased by pressing *Alt-[*.
+
+.. _physics-steam:
 
 Steam Brakes
 ------------

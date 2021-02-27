@@ -1,4 +1,4 @@
-﻿// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
+// COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014, 2015 by the Open Rails project.
 // 
 // This file is part of Open Rails.
 // 
@@ -821,8 +821,8 @@ namespace Orts.Viewer3D.RollingStock
                     if (frameIndex < frameCount)
                     {
                         texture.GetData(0, new Rectangle(x * frameSize.X, y * frameSize.Y, copySize.X, copySize.Y), buffer, 0, buffer.Length);
-                        var frame = frames[frameIndex++] = new Texture2D(graphicsDevice, controlSize.X, controlSize.Y, 1, TextureUsage.None, texture.Format);
-                        frame.SetData(0, new Rectangle(0, 0, copySize.X, copySize.Y), buffer, 0, buffer.Length, SetDataOptions.None);
+                        var frame = frames[frameIndex++] = new Texture2D(graphicsDevice, controlSize.X, controlSize.Y, false, texture.Format);
+                        frame.SetData(0, new Rectangle(0, 0, copySize.X, copySize.Y), buffer, 0, buffer.Length);
                     }
                 }
             }
@@ -1035,6 +1035,7 @@ namespace Orts.Viewer3D.RollingStock
         private SpriteBatchMaterial _Sprite2DCabView;
         private Matrix _Scale = Matrix.Identity;
         private Texture2D _CabTexture;
+        private readonly Texture2D _LetterboxTexture;
         private CabShader _Shader;
 
         private Point _PrevScreenSize;
@@ -1052,9 +1053,29 @@ namespace Orts.Viewer3D.RollingStock
         public CabRenderer(Viewer viewer, MSTSLocomotive car)
         {
             //Sequence = RenderPrimitiveSequence.CabView;
-            _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
             _Viewer = viewer;
             _Locomotive = car;
+
+            // _Viewer.DisplaySize intercepted to adjust cab view height
+            Point DisplaySize = _Viewer.DisplaySize;
+            DisplaySize.Y = _Viewer.CabHeightPixels;
+
+            _PrevScreenSize = DisplaySize;
+
+            _LetterboxTexture = new Texture2D(viewer.GraphicsDevice, 1, 1);
+            _LetterboxTexture.SetData(new Color[] { Color.Black });
+
+            // Use same shader for both front-facing and rear-facing cabs.
+            if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
+            {
+                _Shader = new CabShader(viewer.GraphicsDevice,
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
+                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
+                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
+            }
+
+            _Sprite2DCabView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch", effect: _Shader);
 
             #region Create Control renderers
             ControlMap = new Dictionary<int, CabViewControlRenderer>();
@@ -1161,23 +1182,6 @@ namespace Orts.Viewer3D.RollingStock
             _Viewer.AdjustCabHeight(_Viewer.DisplaySize.X, _Viewer.DisplaySize.Y);
 
             _Viewer.CabCamera.ScreenChanged();
-
-            // _Viewer.DisplaySize intercepted to adjust cab view height
-            Point DisplaySize = _Viewer.DisplaySize;
-            DisplaySize.Y = _Viewer.CabHeightPixels;
-
-            // Use same shader for both front-facing and rear-facing cabs.
-            if (_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF != null)
-            {
-                _Shader = new CabShader(viewer.GraphicsDevice,
-                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Position, DisplaySize),
-                    ExtendedCVF.TranslatedPosition(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Position, DisplaySize),
-                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light1Color),
-                    ExtendedCVF.TranslatedColor(_Locomotive.CabViewList[(int)CabViewType.Front].ExtendedCVF.Light2Color));
-            }
-
-            _PrevScreenSize = DisplaySize;
-
         }
 
         public CabRenderer(Viewer viewer, MSTSLocomotive car, CabViewFile CVFFile) //used by 3D cab as a refrence, thus many can be eliminated
@@ -1330,8 +1334,7 @@ namespace Orts.Viewer3D.RollingStock
                 float overcast = _Viewer.Settings.UseMSTSEnv ? _Viewer.World.MSTSSky.mstsskyovercastFactor : _Viewer.Simulator.Weather.OvercastFactor;
                 _Shader.SetData(_Viewer.MaterialManager.sunDirection, _isNightTexture, false, overcast);
                 _Shader.SetTextureData(cabRect.Left, cabRect.Top, cabRect.Width, cabRect.Height);
-                _Shader.Begin();
-                _Shader.CurrentTechnique.Passes[0].Begin();
+                _Shader.CurrentTechnique.Passes[0].Apply();
             }
 
             if (_CabTexture == null)
@@ -1346,11 +1349,9 @@ namespace Orts.Viewer3D.RollingStock
             _Sprite2DCabView.SpriteBatch.Draw(_CabTexture, drawPos, cabRect, Color.White, 0f, drawOrigin, cabScale, SpriteEffects.None, 0f);
 
             // Draw letterboxing.
-            Texture2D letterboxTexture = new Texture2D(graphicsDevice, 1, 1);
-            letterboxTexture.SetData<Color>(new Color[] { Color.Black });
             void drawLetterbox(int x, int y, int w, int h)
             {
-                _Sprite2DCabView.SpriteBatch.Draw(letterboxTexture, new Rectangle(x, y, w, h), Color.White);
+                _Sprite2DCabView.SpriteBatch.Draw(_LetterboxTexture, new Rectangle(x, y, w, h), Color.White);
             }
             if (_Viewer.CabXLetterboxPixels > 0)
             {
@@ -1363,12 +1364,6 @@ namespace Orts.Viewer3D.RollingStock
                 drawLetterbox(0, _Viewer.CabYLetterboxPixels + _Viewer.CabHeightPixels, _Viewer.DisplaySize.X, _Viewer.DisplaySize.Y - _Viewer.CabHeightPixels - _Viewer.CabYLetterboxPixels);
             }
             //Materials.SpriteBatchMaterial.SpriteBatch.Draw(_CabTexture, _CabRect, Color.White);
-
-            if (_Shader != null)
-            {
-                _Shader.CurrentTechnique.Passes[0].End();
-                _Shader.End();
-            }
         }
 
         internal void Mark()
@@ -1406,7 +1401,7 @@ namespace Orts.Viewer3D.RollingStock
             Control = control;
             Shader = shader;
 
-            ControlView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch");
+            ControlView = (SpriteBatchMaterial)viewer.MaterialManager.Load("SpriteBatch", effect: Shader);
 
             HasCabLightDirectory = CABTextureManager.LoadTextures(Viewer, Control.ACEFile);
         }
@@ -1511,15 +1506,8 @@ namespace Orts.Viewer3D.RollingStock
             if (Shader != null)
             {
                 Shader.SetTextureData(Position.X, Position.Y, Texture.Width * ScaleToScreen, Texture.Height * ScaleToScreen);
-                Shader.Begin();
-                Shader.CurrentTechnique.Passes[0].Begin();
             }
             ControlView.SpriteBatch.Draw(Texture, Position, null, Color.White, Rotation, Origin, ScaleToScreen, SpriteEffects.None, 0);
-            if (Shader != null)
-            {
-                Shader.CurrentTechnique.Passes[0].End();
-                Shader.End();
-            }
         }
     }
 
@@ -1714,15 +1702,8 @@ namespace Orts.Viewer3D.RollingStock
             if (Shader != null)
             {
                 Shader.SetTextureData(DestinationRectangle.Left, DestinationRectangle.Top, DestinationRectangle.Width, DestinationRectangle.Height);
-                Shader.Begin();
-                Shader.CurrentTechnique.Passes[0].Begin();
             }
             ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor);
-            if (Shader != null)
-            {
-                Shader.CurrentTechnique.Passes[0].End();
-                Shader.End();
-            }
         }
     }
 
@@ -1811,15 +1792,8 @@ namespace Orts.Viewer3D.RollingStock
             if (Shader != null)
             {
                 Shader.SetTextureData(DestinationRectangle.Left, DestinationRectangle.Top, DestinationRectangle.Width, DestinationRectangle.Height);
-                Shader.Begin();
-                Shader.CurrentTechnique.Passes[0].Begin();
             }
             ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, Color.White);
-            if (Shader != null)
-            {
-                Shader.CurrentTechnique.Passes[0].End();
-                Shader.End();
-            }
         }
 
         /// <summary>
@@ -2723,6 +2697,7 @@ namespace Orts.Viewer3D.RollingStock
 
     public class ThreeDimCabDigit
     {
+        const int MaxDigits = 6;
         PoseableShape TrainCarShape;
         VertexPositionNormalTexture[] VertexList;
         int NumVertices;
@@ -2730,7 +2705,7 @@ namespace Orts.Viewer3D.RollingStock
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
         Matrix XNAMatrix;
         Viewer Viewer;
-        ShapePrimitive shapePrimitive;
+        MutableShapePrimitive shapePrimitive;
         CabViewDigitalRenderer CVFR;
         Material Material;
         Material AlertMaterial;
@@ -2771,10 +2746,11 @@ namespace Orts.Viewer3D.RollingStock
 
             offset.Y = -Size;
 
-            string speed = "000000";
-            for (var j = 0; j < speed.Length; j++)
+            var speed = new string('0', MaxDigits);
+            foreach (char ch in speed)
             {
-                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                var tX = GetTextureCoordX(ch);
+                var tY = GetTextureCoordY(ch);
                 var rot = Matrix.CreateRotationY(-rotation);
 
                 //the left-bottom vertex
@@ -2815,16 +2791,9 @@ namespace Orts.Viewer3D.RollingStock
                 offset.X += Size * 0.8f; offset.Y += 0; //move to next digit
             }
 
-            var i = 0;
             //create the shape primitive
-            short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
-            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = new ShapePrimitive(Material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            shapePrimitive = new MutableShapePrimitive(Material, NumVertices, NumIndices, new[] { -1 }, 0);
+            UpdateShapePrimitive();
 
         }
 
@@ -2902,9 +2871,10 @@ namespace Orts.Viewer3D.RollingStock
                 UsedMaterial = AlertMaterial;
             }
             //update vertex texture coordinate
-            for (var j = 0; j < speed.Length; j++)
+            foreach (char ch in speed.Substring(0, Math.Min(speed.Length, MaxDigits)))
             {
-                var tX = GetTextureCoordX(speed[j]); var tY = GetTextureCoordY(speed[j]);
+                var tX = GetTextureCoordX(ch);
+                var tY = GetTextureCoordY(ch);
                 //create first triangle
                 TriangleListIndices[NumIndices++] = (short)NumVertices;
                 TriangleListIndices[NumIndices++] = (short)(NumVertices + 2);
@@ -2921,20 +2891,21 @@ namespace Orts.Viewer3D.RollingStock
                 NumVertices += 4;
             }
 
-            var i = 0;
-            //create the new shape primitive
-            short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
-            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = null;
-            shapePrimitive = new ShapePrimitive(UsedMaterial, new SharedShape.VertexBufferSet(newVList, Viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            //update the shape primitive
+            UpdateShapePrimitive();
 
         }
 
+        private void UpdateShapePrimitive()
+        {
+            var indexData = new short[NumIndices];
+            Array.Copy(TriangleListIndices, indexData, NumIndices);
+            shapePrimitive.SetIndexData(indexData);
+
+            var vertexData = new VertexPositionNormalTexture[NumVertices];
+            Array.Copy(VertexList, vertexData, NumVertices);
+            shapePrimitive.SetVertexData(vertexData, 0, NumVertices, NumIndices / 3);
+        }
 
         //ACE MAP:
         // 0 1 2 3 
@@ -2990,7 +2961,7 @@ namespace Orts.Viewer3D.RollingStock
         public short[] TriangleListIndices;// Array of indices to vertices for triangles
         Matrix XNAMatrix;
         Viewer Viewer;
-        ShapePrimitive shapePrimitive;
+        MutableShapePrimitive shapePrimitive;
         CabViewGaugeRenderer CVFR;
         Material PositiveMaterial;
         Material NegativeMaterial;
@@ -3048,16 +3019,9 @@ namespace Orts.Viewer3D.RollingStock
             NumVertices += 4;
 
 
-            var i = 0;
             //create the shape primitive
-            short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
-            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = new ShapePrimitive(FindMaterial(), new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            shapePrimitive = new MutableShapePrimitive(FindMaterial(), NumVertices, NumIndices, new[] { -1 }, 0);
+            UpdateShapePrimitive();
 
         }
 
@@ -3137,17 +3101,8 @@ namespace Orts.Viewer3D.RollingStock
             VertexList[NumVertices + 3].Position = v4.Position; VertexList[NumVertices + 3].Normal = v4.Normal; VertexList[NumVertices + 3].TextureCoordinate = v4.TexCoord;
             NumVertices += 4;
 
-            var i = 0;
-            //create the new shape primitive
-            short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
-            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
-            IndexBuffer IndexBuffer = new IndexBuffer(Viewer.GraphicsDevice, typeof(short),
-                                                            NumIndices, BufferUsage.WriteOnly);
-            IndexBuffer.SetData(newTList);
-            shapePrimitive = null;
-            shapePrimitive = new ShapePrimitive(UsedMaterial, new SharedShape.VertexBufferSet(newVList, Viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            //update the shape primitive
+            UpdateShapePrimitive();
 
         }
 
@@ -3177,6 +3132,17 @@ namespace Orts.Viewer3D.RollingStock
             if (c == '4' || c == '5' || c == '6' || c == '7') return 0.5f;
             if (c == '8' || c == '9' || c == ':' || c == ' ') return 0.75f;
             return 1.0f;
+        }
+
+        private void UpdateShapePrimitive()
+        {
+            var indexData = new short[NumIndices];
+            Array.Copy(TriangleListIndices, indexData, NumIndices);
+            shapePrimitive.SetIndexData(indexData);
+
+            var vertexData = new VertexPositionNormalTexture[NumVertices];
+            Array.Copy(VertexList, vertexData, NumVertices);
+            shapePrimitive.SetVertexData(vertexData, 0, NumVertices, NumIndices / 3);
         }
 
         public void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)

@@ -15,19 +15,19 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Orts.Parsers.OR
 {
     /// <summary>
-    /// Reads a timetable file in to a 2D collection of unprocessed strings.
+    /// Reads a timetable file into a 2D collection of strings which will need further processing.
     /// </summary>
     public class TimetableReader
     {
+        // The data is saved as a list of spreadsheet rows and each row is an array of strings, one string for each cell.
         public List<string[]> Strings = new List<string[]>();
         public string FilePath;
 
@@ -36,23 +36,24 @@ namespace Orts.Parsers.OR
             FilePath = filePath;
             using (var filestream = new StreamReader(filePath, true))
             {
-                // read all lines in file
                 var readLine = filestream.ReadLine();
 
-                // extract separator from first line
-                var separator = readLine.Substring(0, 1);
+                // Extract the separator character from start of the first line.
+                char separator = readLine[0];
 
-                // check : only ";" or "," or "\tab" are allowed as separators
-                var validSeparator = separator == ";" || separator == "," || separator == "\t";
-                if (!validSeparator)
+                var validSeparators = ";,\t";
+                if (validSeparators.Contains(separator) == false) // Fatal error
                 {
-                    throw new InvalidDataException(String.Format("Expected separator ';' or ','; got '{1}' in timetable {0}", filePath, separator));
+                    throw new InvalidDataException($"Expected separators are {validSeparators} and tab but found '{separator}' as first character of timetable {filePath}");
                 }
 
-                // extract and store all strings
+                // Process the first line and then the remaining lines extracting each cell and storing it as a string in a list of arrays of strings.
                 do
                 {
-                    Strings.Add(readLine.Split(separator[0]));
+                    Strings.Add(
+                        (from s in readLine.Split(separator)
+                         select s.Trim() // Remove leading and trailing whitespace which is difficult to see in a spreadsheet and leads to parse failures which are hard to find.
+                        ).ToArray());
                     readLine = filestream.ReadLine();
                 } while (readLine != null);
             }

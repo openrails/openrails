@@ -142,7 +142,7 @@ namespace Orts.Viewer3D
                             v <= 15 && 5 < u && u < 9
                             || 15 < v && v <= 23 && 5f - (float)(v - 15) / 8f * 3f < u && u < 9f + (float)(v - 15) / 8f * 3f
                             || 23 < v && v < 82 && 2 < u && u < 12
-                        ) ? Color.White : Color.TransparentBlack;
+                        ) ? Color.White : Color.Transparent;
             }
         }
         
@@ -375,11 +375,8 @@ namespace Orts.Viewer3D
             }
 
             Shader.CurrentTechnique = Shader.Techniques["CircularSpeedGauge"];
-            Shader.Begin();
-            Shader.CurrentTechnique.Passes[0].Begin();
-            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.TransparentBlack, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
-            Shader.CurrentTechnique.Passes[0].End();
-            Shader.End();
+            Shader.CurrentTechnique.Passes[0].Apply();
+            spriteBatch.Draw(ColorTexture, new Vector2(position.X, position.Y), SourceRectangle, Color.Transparent, 0, new Vector2(0, 0), Scale, SpriteEffects.None, 0);
 
             foreach (var text in DialSpeeds)
             {

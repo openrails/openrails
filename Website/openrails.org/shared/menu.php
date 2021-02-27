@@ -53,6 +53,7 @@ function in_directory($cwd, $name) {
                 <li><a href="/learn/faq/">FAQ</a></li>
                 <li><a href="/learn/manual-and-tutorials/">Manual and Tutorials</a></li>
                 <li><a href="/learn/physics/">OR Physics</a></li>
+                <li><a href="/learn/activities/">Activities</a></li>
               </ul>
             </li>
 <?php if (in_directory($cwd, "share")) { echo "<li class='active dropdown'>"; }else{ echo "<li class='dropdown'>"; } ?>
