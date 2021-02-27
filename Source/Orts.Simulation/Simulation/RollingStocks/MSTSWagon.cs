@@ -238,12 +238,19 @@ namespace Orts.Simulation.RollingStocks
         public bool ManualBrakePresent;
 
         /// <summary>
+        /// Indicates whether a non auto (straight) brake is present or not when braking is selected.
+        /// </summary>
+        public bool NonAutoBrakePresent;
+
+        /// <summary>
+        /// Indicates whether an auxiliary reservoir is present on the wagon or not.
+        /// </summary>
+        public bool AuxiliaryReservoirPresent;
+
+        /// <summary>
         /// Attached steam locomotive in case this wagon is a tender
         /// </summary>
         public MSTSSteamLocomotive TendersSteamLocomotive { get; private set; }
-
-
-
 
         /// <summary>
         /// Attached steam locomotive in case this wagon is an auxiliary tender
@@ -1043,6 +1050,7 @@ namespace Orts.Simulation.RollingStocks
                             case "graduated_release_triple_valve": DistributorPresent = true; break;
                             case "emergency_brake_reservoir": EmergencyReservoirPresent = true; break;
                             case "handbrake": HandBrakePresent = true; break;
+                            case "auxiliary_reservoir": AuxiliaryReservoirPresent = true; break;
                             case "manual_brake": ManualBrakePresent = true; break;
                             case "retainer_3_position": RetainerPositions = 3; break;
                             case "retainer_4_position": RetainerPositions = 4; break;
@@ -1351,6 +1359,7 @@ namespace Orts.Simulation.RollingStocks
             DistributorPresent = copy.DistributorPresent;
             HandBrakePresent = copy.HandBrakePresent;
             ManualBrakePresent = copy.ManualBrakePresent;
+            AuxiliaryReservoirPresent = copy.AuxiliaryReservoirPresent;
             RetainerPositions = copy.RetainerPositions;
             InteriorShapeFileName = copy.InteriorShapeFileName;
             InteriorSoundFileName = copy.InteriorSoundFileName;

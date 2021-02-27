@@ -42,4 +42,20 @@ namespace ORTS.Common
                 return Direction.Forward;
         }
     }
+
+    /// <summary>
+    /// A type of horn pattern used by AI trains at level crossings.
+    /// </summary>
+    public enum LevelCrossingHornPattern
+    {
+        /// <summary>
+        /// A single blast just before the crossing.
+        /// </summary>
+        Single,
+
+        /// <summary>
+        /// A long-long-short-long pattern used in the United States and Canada.
+        /// </summary>
+        US,
+    }
 }
