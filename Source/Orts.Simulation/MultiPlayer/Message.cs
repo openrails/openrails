@@ -3574,6 +3574,7 @@ namespace Orts.MultiPlayer
                         else if (drawstate2 > 0) { sigHead.state = MstsSignalAspect.APPROACH_2; }
                         else { sigHead.state = MstsSignalAspect.APPROACH_3; }
                         sigHead.draw_state = sigHead.def_draw_state(sigHead.state);
+                        // Clear the text aspect so as not to leave C# scripted signals in an inconsistent state.
                         sigHead.TextSignalAspect = "";
                     }
                     break;
