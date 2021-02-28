@@ -98,7 +98,7 @@ namespace Orts.Simulation.Signalling
         /// </summary>
         /// <param name="name">Name of the draw state as defined in sigcfg</param>
         /// <returns>The index of the draw state, -1 if no one exist with that name</returns>
-        public int GetDrawState(string name) => SignalHead.signalType.DrawStates.ContainsKey(name) ? SignalHead.signalType.DrawStates[name].Index : -1;
+        public int GetDrawState(string name) => SignalHead.signalType.DrawStates.TryGetValue(name, out SignalDrawState drawState) ? drawState.Index : -1;
         /// <summary>
         /// Signal identity of this signal
         /// </summary>
