@@ -12,7 +12,7 @@ namespace Orts.Simulation.Signalling
         private SignalHead SignalHead { get; set; }
         private SignalObject SignalObject => SignalHead.mainSignal;
         private int SigFnIndex(string sigFn) => SignalObject.signalRef.ORTSSignalTypes.IndexOf(sigFn);
-        private SignalObject SignalObjectById(int id) => SignalObject.signalRef.SignalObjects[id];
+        private SignalObject SignalObjectById(int id) => SignalObject.signalRef.SignalObjects?[id];
 
         // Public interface
         /// <summary>
@@ -144,10 +144,11 @@ namespace Orts.Simulation.Signalling
         /// <param name="message">Message to send</param>
         public void SendSignalMessage(int signalId, string message)
         {
-            if (signalId < 0 || signalId > SignalObject.signalRef.SignalObjects.Length) return;
-            foreach (var head in SignalObjectById(signalId).SignalHeads)
+            var heads = SignalObjectById(signalId)?.SignalHeads;
+            if (heads != null)
             {
-                head.usedCsSignalScript?.HandleSignalMessage(SignalObject.thisRef, message);
+                foreach (SignalHead head in heads)
+                    head.usedCsSignalScript?.HandleSignalMessage(SignalObject.thisRef, message);
             }
         }
         /// <summary>
@@ -215,16 +216,19 @@ namespace Orts.Simulation.Signalling
         /// <param name="headindex">Get aspect of nth head of the specified type</param>
         public string IdTextSignalAspect(int id, string sigfn, int headindex=0)
         {
-            if (id < 0 || id > SignalObject.signalRef.SignalObjects.Length) return String.Empty;
-            foreach (var head in SignalObjectById(id).SignalHeads)
+            var heads = SignalObjectById(id)?.SignalHeads;
+            if (heads != null)
             {
-                if (head.ORTSsigFunctionIndex == SigFnIndex(sigfn))
+                foreach (SignalHead head in heads)
                 {
-                    if (headindex <= 0) return head.TextSignalAspect;
-                    headindex--;
+                    if (head.ORTSsigFunctionIndex == SigFnIndex(sigfn))
+                    {
+                        if (headindex <= 0) return head.TextSignalAspect;
+                        headindex--;
+                    }
                 }
             }
-            return String.Empty;
+            return "";
         }
         /// <summary>
         /// Obtains the most restrictive aspect of the signals of type A up to the first signal of type B
