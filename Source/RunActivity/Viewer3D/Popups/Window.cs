@@ -270,7 +270,7 @@ namespace Orts.Viewer3D.Popups
 
             graphicsDevice.SetVertexBuffer(WindowVertexBuffer);
 			graphicsDevice.Indices = WindowIndexBuffer;
-			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, 16, 0, 20);
+			graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, baseVertex: 0, startIndex: 0, primitiveCount: 20);
 		}
 
         [CallOnThread("Updater")]
