@@ -42,7 +42,6 @@ namespace Orts.Viewer3D.Popups
         readonly string Caption;
         readonly PropertyInfo SettingsProperty;
         ControlLayout WindowLayout;
-        VertexDeclaration WindowVertexDeclaration;
         VertexBuffer WindowVertexBuffer;
         IndexBuffer WindowIndexBuffer;
 
