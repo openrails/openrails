@@ -33,7 +33,7 @@ namespace Orts.Common.Scripting
     public class ScriptManager
     {
         readonly Simulator Simulator;
-        readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
+        readonly IDictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
         static readonly ProviderOptions ProviderOptions = new ProviderOptions(Path.Combine(new Uri(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase)).LocalPath, "roslyn", "csc.exe"), 10);
         static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(ProviderOptions);
 
@@ -77,29 +77,22 @@ namespace Orts.Common.Scripting
 
             var type = String.Format("{0}.{1}", nameSpace, Path.GetFileNameWithoutExtension(path).Replace('-', '_'));
 
-            if (Scripts.ContainsKey(path))
-            {
-                var assembly = Scripts[path];
-                if (assembly == null) return null;
-                return Scripts[path].CreateInstance(type, true);
-            }
+            if (!Scripts.ContainsKey(path))
+                Scripts[path] = CompileScript(path);
+            return Scripts[path]?.CreateInstance(type, true);
+        }
 
+        private static Assembly CompileScript(string path)
+        {
             try
             {
                 var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), path);
                 if (!compilerResults.Errors.HasErrors)
                 {
                     var script = compilerResults.CompiledAssembly;
-                    Scripts.Add(path, script);
-
-                    var instance = script.CreateInstance(type, true);
-
                     if (script == null)
-                    {
-                        Trace.TraceWarning("Script file {0} has compiled, but the class was not instanciated. The class name is probably wrong.", path); ;
-                    }
-
-                    return instance;
+                        Trace.TraceWarning($"Script file {path} has compiled, but the class was not instanciated. The class name is probably wrong.");
+                    return script;
                 }
                 else
                 {
@@ -113,14 +106,12 @@ namespace Orts.Common.Scripting
                     }
 
                     Trace.TraceWarning(errorString.ToString());
-                    Scripts.Add(path, null);
                     return null;
                 }
             }
             catch (InvalidDataException error)
             {
                 Trace.TraceWarning("Skipped script {0} with error: {1}", path, error.Message);
-                Scripts.Add(path, null);
                 return null;
             }
             catch (Exception error)
@@ -129,7 +120,6 @@ namespace Orts.Common.Scripting
                     Trace.WriteLine(new FileLoadException(path, error));
                 else
                     Trace.TraceWarning("Ignored missing script file {0}", path);
-                Scripts.Add(path, null);
                 return null;
             }
         }
