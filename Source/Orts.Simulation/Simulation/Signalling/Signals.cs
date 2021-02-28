@@ -12828,16 +12828,10 @@ namespace Orts.Simulation.Signalling
                 // get related signalscript
                 Signals.scrfile.SignalScripts.Scripts.TryGetValue(signalType, out usedSigScript);
 
-                usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Script) as CsSignalScript;
-                if (usedCsSignalScript == null)
-                {
-                    usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Name) as CsSignalScript;
-                }
-                if (usedCsSignalScript != null)
-                {
-                    usedCsSignalScript.AttachToHead(this);
-                    usedCsSignalScript.Initialize();
-                }
+                usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Script)
+                    ?? Signals.CsSignalScripts.LoadSignalScript(signalType.Name);
+                usedCsSignalScript?.AttachToHead(this);
+                usedCsSignalScript?.Initialize();
 
                 // set signal speeds
                 foreach (SignalAspect thisAspect in signalType.Aspects)

@@ -589,14 +589,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 {
                     aspect = (Aspect)Locomotive.Train.signalRef.TranslateToTCSAspect(trainSignal.SignalObject.this_sig_lr(fn_type));
                 }
-                foreach (var head in trainSignal.SignalObject.SignalHeads)
-                {
-                    if (head.ORTSsigFunctionIndex == fn_type)
-                    {
-                        textAspect = head.TextSignalAspect;
-                        break;
-                    }
-                }
+                var functionHead = trainSignal.SignalObject.SignalHeads.Find(head => head.ORTSsigFunctionIndex == fn_type);
+                textAspect = functionHead?.TextSignalAspect ?? "";
             }
             else if (type == Train.TrainObjectItem.TRAINOBJECTTYPE.SPEEDPOST)
             {
