@@ -134,7 +134,7 @@ namespace Orts.Common.Scripting
 
             if (!Directory.Exists(path)) return null;
 
-            string[] files = Directory.GetFiles(path, "*.cs");
+            var files = Directory.GetFiles(path, "*.cs");
 
             if (files == null || files.Length == 0) return null;
 
