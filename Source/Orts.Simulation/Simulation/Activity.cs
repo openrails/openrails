@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;

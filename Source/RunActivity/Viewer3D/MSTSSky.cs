@@ -342,29 +342,23 @@ namespace Orts.Viewer3D
                 case 1: // Sky dome
                     graphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
-                        0,
-                        0,
-                        (numVertices - 4) / 2,
-                        0,
-                        (indexCount - 6) / 6);
+                        baseVertex: 0,
+                        startIndex: 0,
+                        primitiveCount: (indexCount - 6) / 6);
                     break;
                 case 2: // Moon
                     graphicsDevice.DrawIndexedPrimitives(
-                    PrimitiveType.TriangleList,
-                    0,
-                    numVertices - 4,
-                    4,
-                    indexCount - 6,
-                    2);
+                        PrimitiveType.TriangleList,
+                        baseVertex: 4,
+                        startIndex: indexCount - 6,
+                        primitiveCount: 2);
                     break;
                 case 3: // Clouds Dome
                     graphicsDevice.DrawIndexedPrimitives(
                         PrimitiveType.TriangleList,
-                        0,
-                        (numVertices - 4) / 2,
-                        (numVertices - 4) / 2,
-                        (indexCount - 6) / 2,
-                        (indexCount - 6) / 6);
+                        baseVertex: 0,
+                        startIndex: (indexCount - 6) / 2,
+                        primitiveCount: (indexCount - 6) / 6);
                     break;
                 default:
                     break;
