@@ -265,6 +265,8 @@ the trainset is at the pickup/unloader location.
 Static OR Freightanims
 ''''''''''''''''''''''
 
+Only the two general parameters shown below are used for static OR freightanims::
+
 .. index::
    single: MSTSFreightAnimEnabled
    single: WagonEmptyWeight
@@ -275,8 +277,6 @@ Static OR Freightanims
    single: FreightWeight
    single: Flip
    single: Visibility
-
-Only the two general parameters shown below are used for static OR freightanims::
 
     MSTSFreightAnimEnabled (0)
     WagonEmptyWeight(22t)
