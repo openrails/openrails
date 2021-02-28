@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.label4 = new System.Windows.Forms.Label();
@@ -41,6 +41,8 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
+            this.pbDispatcherWindow = new System.Windows.Forms.PictureBox();
             this.label28 = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.checkEnableWebServer = new System.Windows.Forms.CheckBox();
@@ -91,6 +93,7 @@
             this.checkWire = new System.Windows.Forms.CheckBox();
             this.tabPageSimulation = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
             this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.checkHotStart = new System.Windows.Forms.CheckBox();
@@ -189,10 +192,19 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.checkUseLocationPassingPaths = new System.Windows.Forms.CheckBox();
+            this.pbAlerter = new System.Windows.Forms.PictureBox();
+            this.pbLAA = new System.Windows.Forms.PictureBox();
+            this.pbRetainer = new System.Windows.Forms.PictureBox();
+            this.pbRelease = new System.Windows.Forms.PictureBox();
+            this.pbChargingRate = new System.Windows.Forms.PictureBox();
+            this.pbLanguage = new System.Windows.Forms.PictureBox();
+            this.pbPressureUnit = new System.Windows.Forms.PictureBox();
+            this.pbOtherUnits = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDispatcherWindow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.tabPageAudio.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
@@ -231,6 +243,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -272,18 +292,18 @@
             this.label4.Location = new System.Drawing.Point(66, 173);
             this.label4.Margin = new System.Windows.Forms.Padding(3);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(159, 13);
+            this.label4.Size = new System.Drawing.Size(180, 13);
             this.label4.TabIndex = 8;
-            this.label4.Text = "Brake pipe charging rate (PSI/s)";
+            this.label4.Text = "       Brake pipe charging rate (PSI/s)";
             // 
             // checkGraduatedRelease
             // 
             this.checkGraduatedRelease.AutoSize = true;
             this.checkGraduatedRelease.Location = new System.Drawing.Point(6, 144);
             this.checkGraduatedRelease.Name = "checkGraduatedRelease";
-            this.checkGraduatedRelease.Size = new System.Drawing.Size(162, 17);
+            this.checkGraduatedRelease.Size = new System.Drawing.Size(183, 17);
             this.checkGraduatedRelease.TabIndex = 6;
-            this.checkGraduatedRelease.Text = "Graduated release air brakes";
+            this.checkGraduatedRelease.Text = "       Graduated release air brakes";
             this.checkGraduatedRelease.UseVisualStyleBackColor = true;
             // 
             // buttonCancel
@@ -302,9 +322,9 @@
             this.checkAlerter.AutoSize = true;
             this.checkAlerter.Location = new System.Drawing.Point(6, 6);
             this.checkAlerter.Name = "checkAlerter";
-            this.checkAlerter.Size = new System.Drawing.Size(88, 17);
+            this.checkAlerter.Size = new System.Drawing.Size(109, 17);
             this.checkAlerter.TabIndex = 0;
-            this.checkAlerter.Text = "Alerter in cab";
+            this.checkAlerter.Text = "       Alerter in cab";
             this.checkAlerter.UseVisualStyleBackColor = true;
             this.checkAlerter.CheckedChanged += new System.EventHandler(this.checkAlerter_CheckedChanged);
             // 
@@ -313,9 +333,9 @@
             this.checkConfirmations.AutoSize = true;
             this.checkConfirmations.Location = new System.Drawing.Point(6, 52);
             this.checkConfirmations.Name = "checkConfirmations";
-            this.checkConfirmations.Size = new System.Drawing.Size(124, 17);
+            this.checkConfirmations.Size = new System.Drawing.Size(145, 17);
             this.checkConfirmations.TabIndex = 4;
-            this.checkConfirmations.Text = "Control confirmations";
+            this.checkConfirmations.Text = "       Control confirmations";
             this.checkConfirmations.UseVisualStyleBackColor = true;
             // 
             // checkViewDispatcher
@@ -323,9 +343,9 @@
             this.checkViewDispatcher.AutoSize = true;
             this.checkViewDispatcher.Location = new System.Drawing.Point(6, 75);
             this.checkViewDispatcher.Name = "checkViewDispatcher";
-            this.checkViewDispatcher.Size = new System.Drawing.Size(116, 17);
+            this.checkViewDispatcher.Size = new System.Drawing.Size(137, 17);
             this.checkViewDispatcher.TabIndex = 2;
-            this.checkViewDispatcher.Text = "Dispatcher window";
+            this.checkViewDispatcher.Text = "       Dispatcher window";
             this.checkViewDispatcher.UseVisualStyleBackColor = true;
             // 
             // tabOptions
@@ -343,7 +363,7 @@
             this.tabOptions.Controls.Add(this.tabPageContent);
             this.tabOptions.Controls.Add(this.tabPageUpdater);
             this.tabOptions.Controls.Add(this.tabPageExperimental);
-            this.tabOptions.Location = new System.Drawing.Point(12, 12);
+            this.tabOptions.Location = new System.Drawing.Point(13, 12);
             this.tabOptions.Name = "tabOptions";
             this.tabOptions.SelectedIndex = 0;
             this.tabOptions.Size = new System.Drawing.Size(610, 428);
@@ -351,6 +371,16 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
+            this.tabPageGeneral.Controls.Add(this.pbPressureUnit);
+            this.tabPageGeneral.Controls.Add(this.pbLanguage);
+            this.tabPageGeneral.Controls.Add(this.pbChargingRate);
+            this.tabPageGeneral.Controls.Add(this.pbRelease);
+            this.tabPageGeneral.Controls.Add(this.pbRetainer);
+            this.tabPageGeneral.Controls.Add(this.pbLAA);
+            this.tabPageGeneral.Controls.Add(this.pbAlerter);
+            this.tabPageGeneral.Controls.Add(this.pbControlConfirmations);
+            this.tabPageGeneral.Controls.Add(this.pbDispatcherWindow);
             this.tabPageGeneral.Controls.Add(this.label28);
             this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
@@ -378,6 +408,30 @@
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
+            // 
+            // pbControlConfirmations
+            // 
+            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbControlConfirmations.Location = new System.Drawing.Point(22, 53);
+            this.pbControlConfirmations.Name = "pbControlConfirmations";
+            this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
+            this.pbControlConfirmations.TabIndex = 19;
+            this.pbControlConfirmations.TabStop = false;
+            this.pbControlConfirmations.Click += new System.EventHandler(this.pbControlConfirmations_Click);
+            this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.pbControlConfirmations_MouseEnter);
+            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.pbControlConfirmations_MouseLeave);
+            // 
+            // pbDispatcherWindow
+            // 
+            this.pbDispatcherWindow.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDispatcherWindow.Location = new System.Drawing.Point(22, 76);
+            this.pbDispatcherWindow.Name = "pbDispatcherWindow";
+            this.pbDispatcherWindow.Size = new System.Drawing.Size(18, 18);
+            this.pbDispatcherWindow.TabIndex = 18;
+            this.pbDispatcherWindow.TabStop = false;
+            this.pbDispatcherWindow.Click += new System.EventHandler(this.pbDispatcherWindow_Click);
+            this.pbDispatcherWindow.MouseEnter += new System.EventHandler(this.pbDispatcherWindow_MouseEnter);
+            this.pbDispatcherWindow.MouseLeave += new System.EventHandler(this.pbDispatcherWindow_MouseLeave);
             // 
             // label28
             // 
@@ -446,9 +500,9 @@
             this.labelOtherUnits.Location = new System.Drawing.Point(133, 254);
             this.labelOtherUnits.Margin = new System.Windows.Forms.Padding(3);
             this.labelOtherUnits.Name = "labelOtherUnits";
-            this.labelOtherUnits.Size = new System.Drawing.Size(58, 13);
+            this.labelOtherUnits.Size = new System.Drawing.Size(79, 13);
             this.labelOtherUnits.TabIndex = 9;
-            this.labelOtherUnits.Text = "Other units";
+            this.labelOtherUnits.Text = "       Other units";
             // 
             // labelPressureUnit
             // 
@@ -456,9 +510,9 @@
             this.labelPressureUnit.Location = new System.Drawing.Point(133, 227);
             this.labelPressureUnit.Margin = new System.Windows.Forms.Padding(3);
             this.labelPressureUnit.Name = "labelPressureUnit";
-            this.labelPressureUnit.Size = new System.Drawing.Size(68, 13);
+            this.labelPressureUnit.Size = new System.Drawing.Size(89, 13);
             this.labelPressureUnit.TabIndex = 12;
-            this.labelPressureUnit.Text = "Pressure unit";
+            this.labelPressureUnit.Text = "       Pressure unit";
             // 
             // comboBoxOtherUnits
             // 
@@ -474,9 +528,9 @@
             this.checkUseLargeAddressAware.AutoSize = true;
             this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 98);
             this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
-            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(342, 17);
+            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(366, 17);
             this.checkUseLargeAddressAware.TabIndex = 3;
-            this.checkUseLargeAddressAware.Text = "Large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
+            this.checkUseLargeAddressAware.Text = "        Large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
             this.checkUseLargeAddressAware.UseVisualStyleBackColor = true;
             // 
             // comboPressureUnit
@@ -494,9 +548,9 @@
             this.labelLanguage.Location = new System.Drawing.Point(133, 200);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
-            this.labelLanguage.Size = new System.Drawing.Size(55, 13);
+            this.labelLanguage.Size = new System.Drawing.Size(76, 13);
             this.labelLanguage.TabIndex = 10;
-            this.labelLanguage.Text = "Language";
+            this.labelLanguage.Text = "       Language";
             // 
             // comboLanguage
             // 
@@ -523,9 +577,9 @@
             this.checkRetainers.AutoSize = true;
             this.checkRetainers.Location = new System.Drawing.Point(6, 121);
             this.checkRetainers.Name = "checkRetainers";
-            this.checkRetainers.Size = new System.Drawing.Size(146, 17);
+            this.checkRetainers.Size = new System.Drawing.Size(170, 17);
             this.checkRetainers.TabIndex = 5;
-            this.checkRetainers.Text = "Retainer valve on all cars";
+            this.checkRetainers.Text = "        Retainer valve on all cars";
             this.checkRetainers.UseVisualStyleBackColor = true;
             // 
             // tabPageAudio
@@ -1033,6 +1087,17 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Activity Options";
             // 
+            // checkUseLocationPassingPaths
+            // 
+            this.checkUseLocationPassingPaths.AutoSize = true;
+            this.checkUseLocationPassingPaths.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(6, 71);
+            this.checkUseLocationPassingPaths.Name = "checkUseLocationPassingPaths";
+            this.checkUseLocationPassingPaths.Size = new System.Drawing.Size(215, 17);
+            this.checkUseLocationPassingPaths.TabIndex = 46;
+            this.checkUseLocationPassingPaths.Text = "Location-linked passing path processing";
+            this.checkUseLocationPassingPaths.UseVisualStyleBackColor = true;
+            // 
             // checkDoorsAITrains
             // 
             this.checkDoorsAITrains.AutoSize = true;
@@ -1064,13 +1129,13 @@
             this.checkHotStart.TabIndex = 8;
             this.checkHotStart.Text = "Steam locomotive hot start";
             this.checkHotStart.UseVisualStyleBackColor = true;
-            //
+            // 
             // checkSimpleControlPhysics
             // 
             this.checkSimpleControlPhysics.AutoSize = true;
             this.checkSimpleControlPhysics.Location = new System.Drawing.Point(6, 215);
             this.checkSimpleControlPhysics.Name = "checkSimpleControlPhysics";
-            this.checkSimpleControlPhysics.Size = new System.Drawing.Size(151, 17);
+            this.checkSimpleControlPhysics.Size = new System.Drawing.Size(153, 17);
             this.checkSimpleControlPhysics.TabIndex = 8;
             this.checkSimpleControlPhysics.Text = "Simple Control and Physics";
             this.checkSimpleControlPhysics.UseVisualStyleBackColor = true;
@@ -1587,27 +1652,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -2277,16 +2342,101 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // checkUseLocationPassingPaths
+            // pbAlerter
             // 
-            this.checkUseLocationPassingPaths.AutoSize = true;
-            this.checkUseLocationPassingPaths.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.checkUseLocationPassingPaths.Location = new System.Drawing.Point(6, 71);
-            this.checkUseLocationPassingPaths.Name = "checkUseLocationPassingPaths";
-            this.checkUseLocationPassingPaths.Size = new System.Drawing.Size(215, 17);
-            this.checkUseLocationPassingPaths.TabIndex = 46;
-            this.checkUseLocationPassingPaths.Text = "Location-linked passing path processing";
-            this.checkUseLocationPassingPaths.UseVisualStyleBackColor = true;
+            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAlerter.Location = new System.Drawing.Point(22, 7);
+            this.pbAlerter.Name = "pbAlerter";
+            this.pbAlerter.Size = new System.Drawing.Size(18, 18);
+            this.pbAlerter.TabIndex = 20;
+            this.pbAlerter.TabStop = false;
+            this.pbAlerter.Click += new System.EventHandler(this.pbAlerter_Click);
+            this.pbAlerter.MouseEnter += new System.EventHandler(this.pbAlerter_MouseEnter);
+            this.pbAlerter.MouseLeave += new System.EventHandler(this.pbAlerter_MouseLeave);
+            // 
+            // pbLAA
+            // 
+            this.pbLAA.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLAA.Location = new System.Drawing.Point(22, 99);
+            this.pbLAA.Name = "pbLAA";
+            this.pbLAA.Size = new System.Drawing.Size(18, 18);
+            this.pbLAA.TabIndex = 21;
+            this.pbLAA.TabStop = false;
+            this.pbLAA.Click += new System.EventHandler(this.pbLAA_Click);
+            this.pbLAA.MouseEnter += new System.EventHandler(this.pbLAA_MouseEnter);
+            this.pbLAA.MouseLeave += new System.EventHandler(this.pbLAA_MouseLeave);
+            // 
+            // pbRetainer
+            // 
+            this.pbRetainer.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRetainer.Location = new System.Drawing.Point(22, 122);
+            this.pbRetainer.Name = "pbRetainer";
+            this.pbRetainer.Size = new System.Drawing.Size(18, 18);
+            this.pbRetainer.TabIndex = 22;
+            this.pbRetainer.TabStop = false;
+            this.pbRetainer.Click += new System.EventHandler(this.pbRetainer_Click);
+            this.pbRetainer.MouseEnter += new System.EventHandler(this.pbRetainer_MouseEnter);
+            this.pbRetainer.MouseLeave += new System.EventHandler(this.pbRetainer_MouseLeave);
+            // 
+            // pbRelease
+            // 
+            this.pbRelease.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRelease.Location = new System.Drawing.Point(22, 145);
+            this.pbRelease.Name = "pbRelease";
+            this.pbRelease.Size = new System.Drawing.Size(18, 18);
+            this.pbRelease.TabIndex = 23;
+            this.pbRelease.TabStop = false;
+            this.pbRelease.Click += new System.EventHandler(this.pbRelease_Click);
+            this.pbRelease.MouseEnter += new System.EventHandler(this.pbRelease_MouseEnter);
+            this.pbRelease.MouseLeave += new System.EventHandler(this.pbRelease_MouseLeave);
+            // 
+            // pbChargingRate
+            // 
+            this.pbChargingRate.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbChargingRate.Location = new System.Drawing.Point(64, 173);
+            this.pbChargingRate.Name = "pbChargingRate";
+            this.pbChargingRate.Size = new System.Drawing.Size(18, 18);
+            this.pbChargingRate.TabIndex = 24;
+            this.pbChargingRate.TabStop = false;
+            this.pbChargingRate.Click += new System.EventHandler(this.pbChargingRate_Click);
+            this.pbChargingRate.MouseEnter += new System.EventHandler(this.pbChargingRate_MouseEnter);
+            this.pbChargingRate.MouseLeave += new System.EventHandler(this.pbChargingRate_MouseLeave);
+            // 
+            // pbLanguage
+            // 
+            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLanguage.Location = new System.Drawing.Point(130, 200);
+            this.pbLanguage.Name = "pbLanguage";
+            this.pbLanguage.Size = new System.Drawing.Size(18, 18);
+            this.pbLanguage.TabIndex = 25;
+            this.pbLanguage.TabStop = false;
+            this.pbLanguage.Click += new System.EventHandler(this.pbLanguage_Click);
+            this.pbLanguage.MouseEnter += new System.EventHandler(this.pbLanguage_MouseEnter);
+            this.pbLanguage.MouseLeave += new System.EventHandler(this.pbLanguage_MouseLeave);
+            // 
+            // pbPressureUnit
+            // 
+            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPressureUnit.Location = new System.Drawing.Point(130, 227);
+            this.pbPressureUnit.Name = "pbPressureUnit";
+            this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
+            this.pbPressureUnit.TabIndex = 26;
+            this.pbPressureUnit.TabStop = false;
+            this.pbPressureUnit.Click += new System.EventHandler(this.pbPressureUnit_Click);
+            this.pbPressureUnit.MouseEnter += new System.EventHandler(this.pbPressureUnit_MouseEnter);
+            this.pbPressureUnit.MouseLeave += new System.EventHandler(this.pbPressureUnit_MouseLeave);
+            // 
+            // pbOtherUnits
+            // 
+            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOtherUnits.Location = new System.Drawing.Point(130, 254);
+            this.pbOtherUnits.Name = "pbOtherUnits";
+            this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
+            this.pbOtherUnits.TabIndex = 27;
+            this.pbOtherUnits.TabStop = false;
+            this.pbOtherUnits.Click += new System.EventHandler(this.pbOtherUnits_Click);
+            this.pbOtherUnits.MouseEnter += new System.EventHandler(this.pbOtherUnits_MouseEnter);
+            this.pbOtherUnits.MouseLeave += new System.EventHandler(this.pbOtherUnits_MouseLeave);
             // 
             // OptionsForm
             // 
@@ -2308,6 +2458,8 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDispatcherWindow)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
             this.tabPageAudio.PerformLayout();
@@ -2356,6 +2508,14 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2521,5 +2681,15 @@
         private System.Windows.Forms.NumericUpDown numericWebServerPort;
         private System.Windows.Forms.Label label28;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
+        private System.Windows.Forms.PictureBox pbDispatcherWindow;
+        private System.Windows.Forms.PictureBox pbControlConfirmations;
+        private System.Windows.Forms.PictureBox pbAlerter;
+        private System.Windows.Forms.PictureBox pbLAA;
+        private System.Windows.Forms.PictureBox pbRetainer;
+        private System.Windows.Forms.PictureBox pbRelease;
+        private System.Windows.Forms.PictureBox pbChargingRate;
+        private System.Windows.Forms.PictureBox pbLanguage;
+        private System.Windows.Forms.PictureBox pbPressureUnit;
+        private System.Windows.Forms.PictureBox pbOtherUnits;
     }
 }

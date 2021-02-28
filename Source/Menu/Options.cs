@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -759,5 +760,116 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
+        /// <summary>
+        /// Loads a relevant page from the manual maintained by James Ross's automatic build
+        /// Info icon taken from https://icons8.com/icon/set/info/office--blue
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void pbAlerter_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#alerter-in-cab");
+        }
+        private void pbAlerter_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbAlerter_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbControlConfirmations_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#control-confirmations");
+        }
+        private void pbControlConfirmations_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbControlConfirmations_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbDispatcherWindow_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#dispatcher-window");
+        }
+        private void pbDispatcherWindow_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbDispatcherWindow_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbLAA_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#large-address-aware-binaries");
+        }
+        private void pbLAA_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbLAA_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbRetainer_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#retainer-valve-on-all-cars");
+        }
+        private void pbRetainer_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbRetainer_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbRelease_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#graduated-release-air-brakes");
+        }
+        private void pbRelease_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbRelease_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbChargingRate_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#brake-pipe-charging-rate");
+        }
+        private void pbChargingRate_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbChargingRate_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbLanguage_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#language");
+        }
+        private void pbLanguage_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbLanguage_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbPressureUnit_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#pressure-unit");
+        }
+        private void pbPressureUnit_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbPressureUnit_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        private void pbOtherUnits_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#other-units");
+        }
+        private void pbOtherUnits_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
+        private void pbOtherUnits_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+
+        /// <summary>
+        /// Opens a browser window to this URL
+        /// </summary>
+        /// <param name="url"></param>
+        private void ViewUrl(string url)
+        {
+            // This method is also compatible with .NET Core 3
+            var psi = new ProcessStartInfo
+            {
+                FileName = url
+                ,
+                UseShellExecute = true
+            };
+            Process.Start(psi);
+        }
+        
+        /// <summary>
+        /// Provides a small animation to show this is clickable
+        /// </summary>
+        /// <param name="sender"></param>
+        private static void MouseEnter(object sender)
+        {
+            Cursor.Current = Cursors.Help;
+            var pictureBox = sender as PictureBox;
+            pictureBox.Top += 2;
+            pictureBox.Left += 1;
+        }
+
+        private static void MouseLeave(object sender)
+        {
+            var pictureBox = sender as PictureBox;
+            pictureBox.Top -= 2;
+            pictureBox.Left -= 1;
+            Cursor.Current = Cursors.Default;
+        }
     }
 }
