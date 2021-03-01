@@ -581,40 +581,59 @@ namespace Orts.Simulation.RollingStocks
 
                 DieselEngineFractionPower = MathHelper.Clamp(DieselEngineFractionPower, 0.0f, 1.0f);  // Clamp decay within bounds
 
+
+                // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
+                // As wheel speed is increased tractive effort is decreased. Hence wheel slip is "controlled" to a certain extent.
+                // This doesn't cover all types of locomotives, for eaxmple if DC traction motors and no slip control, then the tractive effort shouldn't be reduced. This won't eliminate slip, but limits
+                // its impact. More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
+                // Simple adhesion control does not have any slip control feature built into it.
+                // TODO - a full review of slip/no slip control.
+                if (WheelSlip && AdvancedAdhesionModel)
+                {
+                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                }
+                else
+                {
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                }
+
                 if (TractiveForceCurves == null)
                 {
                     // This sets the maximum force of the locomotive, it will be adjusted down if it exceeds the max power of the locomotive.
-                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsSpeedMpS));
+                    float maxForceN = Math.Min(t * MaxForceN * (1 - PowerReduction), AbsTractionSpeedMpS == 0.0f ? (t * MaxForceN * (1 - PowerReduction)) : (t * LocomotiveMaxRailOutputPowerW / AbsTractionSpeedMpS));
 
                     // Maximum rail power is reduced by apparent throttle factor and the number of engines running (power ratio)
                     float maxPowerW = LocomotiveMaxRailOutputPowerW * DieselEngineFractionPower * LocomotiveApparentThrottleSetting;
 
                     // If unloading speed is in ENG file, and locomotive speed is greater then unloading speed, and less then max speed, then apply a decay factor to the power/force
-                    if (UnloadingSpeedMpS != 0 && AbsSpeedMpS > UnloadingSpeedMpS && AbsSpeedMpS < MaxSpeedMpS)
+                    if (UnloadingSpeedMpS != 0 && AbsTractionSpeedMpS > UnloadingSpeedMpS && AbsTractionSpeedMpS < MaxSpeedMpS && !WheelSlip)
                     {
                         // use straight line curve to decay power to zero by 2 x unloading speed
-                        float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsSpeedMpS - UnloadingSpeedMpS);
+                        float unloadingspeeddecay = 1.0f - (1.0f / UnloadingSpeedMpS) * (AbsTractionSpeedMpS - UnloadingSpeedMpS);
                         unloadingspeeddecay = MathHelper.Clamp(unloadingspeeddecay, 0.0f, 1.0f);  // Clamp decay within bounds
                         maxPowerW *= unloadingspeeddecay;
                     }
 
                     if (DieselEngines.HasGearBox)
                     {
-                        TractiveForceN = DieselEngines.TractiveForceN; 
+                        TractiveForceN = DieselEngines.TractiveForceN;
                     }
                     else
                     {
                         if (maxForceN * AbsSpeedMpS > maxPowerW)
-                            maxForceN = maxPowerW / AbsSpeedMpS;
+                            maxForceN = maxPowerW / AbsTractionSpeedMpS;
 
                         TractiveForceN = maxForceN;
                         // Motive force will be produced until power reaches zero, some locomotives had a overspeed monitor set at the maximum design speed
                     }
+
                 }
                 else
                 {
                     // Tractive force is read from Table using the apparent throttle setting, and then reduced by the number of engines running (power ratio)
-                    TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+
+                    TractiveForceN = TractiveForceCurves.Get(LocomotiveApparentThrottleSetting, AbsTractionSpeedMpS) * DieselEngineFractionPower * (1 - PowerReduction);
+
                     if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
                         TractiveForceN = 0;
                 }
