@@ -41,6 +41,14 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.pbOtherUnits = new System.Windows.Forms.PictureBox();
+            this.pbPressureUnit = new System.Windows.Forms.PictureBox();
+            this.pbLanguage = new System.Windows.Forms.PictureBox();
+            this.pbChargingRate = new System.Windows.Forms.PictureBox();
+            this.pbRelease = new System.Windows.Forms.PictureBox();
+            this.pbRetainer = new System.Windows.Forms.PictureBox();
+            this.pbLAA = new System.Windows.Forms.PictureBox();
+            this.pbAlerter = new System.Windows.Forms.PictureBox();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
             this.pbDispatcherWindow = new System.Windows.Forms.PictureBox();
             this.label28 = new System.Windows.Forms.Label();
@@ -192,17 +200,19 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.pbAlerter = new System.Windows.Forms.PictureBox();
-            this.pbLAA = new System.Windows.Forms.PictureBox();
-            this.pbRetainer = new System.Windows.Forms.PictureBox();
-            this.pbRelease = new System.Windows.Forms.PictureBox();
-            this.pbChargingRate = new System.Windows.Forms.PictureBox();
-            this.pbLanguage = new System.Windows.Forms.PictureBox();
-            this.pbPressureUnit = new System.Windows.Forms.PictureBox();
-            this.pbOtherUnits = new System.Windows.Forms.PictureBox();
+            this.pbDisableTcs = new System.Windows.Forms.PictureBox();
+            this.pbWebServer = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDispatcherWindow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
@@ -243,14 +253,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -371,6 +375,8 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.pbWebServer);
+            this.tabPageGeneral.Controls.Add(this.pbDisableTcs);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
             this.tabPageGeneral.Controls.Add(this.pbPressureUnit);
             this.tabPageGeneral.Controls.Add(this.pbLanguage);
@@ -409,6 +415,102 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
+            // pbOtherUnits
+            // 
+            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOtherUnits.Location = new System.Drawing.Point(130, 257);
+            this.pbOtherUnits.Name = "pbOtherUnits";
+            this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
+            this.pbOtherUnits.TabIndex = 27;
+            this.pbOtherUnits.TabStop = false;
+            this.pbOtherUnits.Click += new System.EventHandler(this.pbOtherUnits_Click);
+            this.pbOtherUnits.MouseEnter += new System.EventHandler(this.pbOtherUnits_MouseEnter);
+            this.pbOtherUnits.MouseLeave += new System.EventHandler(this.pbOtherUnits_MouseLeave);
+            // 
+            // pbPressureUnit
+            // 
+            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPressureUnit.Location = new System.Drawing.Point(130, 230);
+            this.pbPressureUnit.Name = "pbPressureUnit";
+            this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
+            this.pbPressureUnit.TabIndex = 26;
+            this.pbPressureUnit.TabStop = false;
+            this.pbPressureUnit.Click += new System.EventHandler(this.pbPressureUnit_Click);
+            this.pbPressureUnit.MouseEnter += new System.EventHandler(this.pbPressureUnit_MouseEnter);
+            this.pbPressureUnit.MouseLeave += new System.EventHandler(this.pbPressureUnit_MouseLeave);
+            // 
+            // pbLanguage
+            // 
+            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLanguage.Location = new System.Drawing.Point(130, 203);
+            this.pbLanguage.Name = "pbLanguage";
+            this.pbLanguage.Size = new System.Drawing.Size(18, 18);
+            this.pbLanguage.TabIndex = 25;
+            this.pbLanguage.TabStop = false;
+            this.pbLanguage.Click += new System.EventHandler(this.pbLanguage_Click);
+            this.pbLanguage.MouseEnter += new System.EventHandler(this.pbLanguage_MouseEnter);
+            this.pbLanguage.MouseLeave += new System.EventHandler(this.pbLanguage_MouseLeave);
+            // 
+            // pbChargingRate
+            // 
+            this.pbChargingRate.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbChargingRate.Location = new System.Drawing.Point(64, 173);
+            this.pbChargingRate.Name = "pbChargingRate";
+            this.pbChargingRate.Size = new System.Drawing.Size(18, 18);
+            this.pbChargingRate.TabIndex = 24;
+            this.pbChargingRate.TabStop = false;
+            this.pbChargingRate.Click += new System.EventHandler(this.pbChargingRate_Click);
+            this.pbChargingRate.MouseEnter += new System.EventHandler(this.pbChargingRate_MouseEnter);
+            this.pbChargingRate.MouseLeave += new System.EventHandler(this.pbChargingRate_MouseLeave);
+            // 
+            // pbRelease
+            // 
+            this.pbRelease.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRelease.Location = new System.Drawing.Point(22, 145);
+            this.pbRelease.Name = "pbRelease";
+            this.pbRelease.Size = new System.Drawing.Size(18, 18);
+            this.pbRelease.TabIndex = 23;
+            this.pbRelease.TabStop = false;
+            this.pbRelease.Click += new System.EventHandler(this.pbRelease_Click);
+            this.pbRelease.MouseEnter += new System.EventHandler(this.pbRelease_MouseEnter);
+            this.pbRelease.MouseLeave += new System.EventHandler(this.pbRelease_MouseLeave);
+            // 
+            // pbRetainer
+            // 
+            this.pbRetainer.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRetainer.Location = new System.Drawing.Point(22, 122);
+            this.pbRetainer.Name = "pbRetainer";
+            this.pbRetainer.Size = new System.Drawing.Size(18, 18);
+            this.pbRetainer.TabIndex = 22;
+            this.pbRetainer.TabStop = false;
+            this.pbRetainer.Click += new System.EventHandler(this.pbRetainer_Click);
+            this.pbRetainer.MouseEnter += new System.EventHandler(this.pbRetainer_MouseEnter);
+            this.pbRetainer.MouseLeave += new System.EventHandler(this.pbRetainer_MouseLeave);
+            // 
+            // pbLAA
+            // 
+            this.pbLAA.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLAA.Location = new System.Drawing.Point(22, 99);
+            this.pbLAA.Name = "pbLAA";
+            this.pbLAA.Size = new System.Drawing.Size(18, 18);
+            this.pbLAA.TabIndex = 21;
+            this.pbLAA.TabStop = false;
+            this.pbLAA.Click += new System.EventHandler(this.pbLAA_Click);
+            this.pbLAA.MouseEnter += new System.EventHandler(this.pbLAA_MouseEnter);
+            this.pbLAA.MouseLeave += new System.EventHandler(this.pbLAA_MouseLeave);
+            // 
+            // pbAlerter
+            // 
+            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAlerter.Location = new System.Drawing.Point(22, 7);
+            this.pbAlerter.Name = "pbAlerter";
+            this.pbAlerter.Size = new System.Drawing.Size(18, 18);
+            this.pbAlerter.TabIndex = 20;
+            this.pbAlerter.TabStop = false;
+            this.pbAlerter.Click += new System.EventHandler(this.pbAlerter_Click);
+            this.pbAlerter.MouseEnter += new System.EventHandler(this.pbAlerter_MouseEnter);
+            this.pbAlerter.MouseLeave += new System.EventHandler(this.pbAlerter_MouseLeave);
+            // 
             // pbControlConfirmations
             // 
             this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
@@ -436,7 +538,7 @@
             // label28
             // 
             this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(89, 340);
+            this.label28.Location = new System.Drawing.Point(89, 333);
             this.label28.Name = "label28";
             this.label28.Size = new System.Drawing.Size(66, 13);
             this.label28.TabIndex = 17;
@@ -444,7 +546,7 @@
             // 
             // numericWebServerPort
             // 
-            this.numericWebServerPort.Location = new System.Drawing.Point(8, 338);
+            this.numericWebServerPort.Location = new System.Drawing.Point(8, 331);
             this.numericWebServerPort.Maximum = new decimal(new int[] {
             65534,
             0,
@@ -467,11 +569,11 @@
             // checkEnableWebServer
             // 
             this.checkEnableWebServer.AutoSize = true;
-            this.checkEnableWebServer.Location = new System.Drawing.Point(8, 315);
+            this.checkEnableWebServer.Location = new System.Drawing.Point(6, 308);
             this.checkEnableWebServer.Name = "checkEnableWebServer";
-            this.checkEnableWebServer.Size = new System.Drawing.Size(116, 17);
+            this.checkEnableWebServer.Size = new System.Drawing.Size(132, 17);
             this.checkEnableWebServer.TabIndex = 15;
-            this.checkEnableWebServer.Text = "Enable WebServer";
+            this.checkEnableWebServer.Text = "       Enable webserver";
             this.checkEnableWebServer.UseVisualStyleBackColor = true;
             // 
             // checkSpeedControl
@@ -487,17 +589,17 @@
             // checkDisableTCSScripts
             // 
             this.checkDisableTCSScripts.AutoSize = true;
-            this.checkDisableTCSScripts.Location = new System.Drawing.Point(6, 279);
+            this.checkDisableTCSScripts.Location = new System.Drawing.Point(6, 285);
             this.checkDisableTCSScripts.Name = "checkDisableTCSScripts";
-            this.checkDisableTCSScripts.Size = new System.Drawing.Size(118, 17);
+            this.checkDisableTCSScripts.Size = new System.Drawing.Size(139, 17);
             this.checkDisableTCSScripts.TabIndex = 13;
-            this.checkDisableTCSScripts.Text = "Disable TCS scripts";
+            this.checkDisableTCSScripts.Text = "       Disable TCS scripts";
             this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
             // 
             // labelOtherUnits
             // 
             this.labelOtherUnits.AutoSize = true;
-            this.labelOtherUnits.Location = new System.Drawing.Point(133, 254);
+            this.labelOtherUnits.Location = new System.Drawing.Point(133, 257);
             this.labelOtherUnits.Margin = new System.Windows.Forms.Padding(3);
             this.labelOtherUnits.Name = "labelOtherUnits";
             this.labelOtherUnits.Size = new System.Drawing.Size(79, 13);
@@ -507,7 +609,7 @@
             // labelPressureUnit
             // 
             this.labelPressureUnit.AutoSize = true;
-            this.labelPressureUnit.Location = new System.Drawing.Point(133, 227);
+            this.labelPressureUnit.Location = new System.Drawing.Point(133, 230);
             this.labelPressureUnit.Margin = new System.Windows.Forms.Padding(3);
             this.labelPressureUnit.Name = "labelPressureUnit";
             this.labelPressureUnit.Size = new System.Drawing.Size(89, 13);
@@ -518,7 +620,7 @@
             // 
             this.comboBoxOtherUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxOtherUnits.FormattingEnabled = true;
-            this.comboBoxOtherUnits.Location = new System.Drawing.Point(6, 251);
+            this.comboBoxOtherUnits.Location = new System.Drawing.Point(6, 254);
             this.comboBoxOtherUnits.Name = "comboBoxOtherUnits";
             this.comboBoxOtherUnits.Size = new System.Drawing.Size(121, 21);
             this.comboBoxOtherUnits.TabIndex = 8;
@@ -537,7 +639,7 @@
             // 
             this.comboPressureUnit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboPressureUnit.FormattingEnabled = true;
-            this.comboPressureUnit.Location = new System.Drawing.Point(6, 224);
+            this.comboPressureUnit.Location = new System.Drawing.Point(6, 227);
             this.comboPressureUnit.Name = "comboPressureUnit";
             this.comboPressureUnit.Size = new System.Drawing.Size(121, 21);
             this.comboPressureUnit.TabIndex = 11;
@@ -545,7 +647,7 @@
             // labelLanguage
             // 
             this.labelLanguage.AutoSize = true;
-            this.labelLanguage.Location = new System.Drawing.Point(133, 200);
+            this.labelLanguage.Location = new System.Drawing.Point(133, 203);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
             this.labelLanguage.Size = new System.Drawing.Size(76, 13);
@@ -556,7 +658,7 @@
             // 
             this.comboLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboLanguage.FormattingEnabled = true;
-            this.comboLanguage.Location = new System.Drawing.Point(6, 197);
+            this.comboLanguage.Location = new System.Drawing.Point(6, 200);
             this.comboLanguage.Name = "comboLanguage";
             this.comboLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboLanguage.TabIndex = 9;
@@ -2342,101 +2444,29 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // pbAlerter
+            // pbDisableTcs
             // 
-            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbAlerter.Location = new System.Drawing.Point(22, 7);
-            this.pbAlerter.Name = "pbAlerter";
-            this.pbAlerter.Size = new System.Drawing.Size(18, 18);
-            this.pbAlerter.TabIndex = 20;
-            this.pbAlerter.TabStop = false;
-            this.pbAlerter.Click += new System.EventHandler(this.pbAlerter_Click);
-            this.pbAlerter.MouseEnter += new System.EventHandler(this.pbAlerter_MouseEnter);
-            this.pbAlerter.MouseLeave += new System.EventHandler(this.pbAlerter_MouseLeave);
+            this.pbDisableTcs.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDisableTcs.Location = new System.Drawing.Point(22, 286);
+            this.pbDisableTcs.Name = "pbDisableTcs";
+            this.pbDisableTcs.Size = new System.Drawing.Size(18, 18);
+            this.pbDisableTcs.TabIndex = 28;
+            this.pbDisableTcs.TabStop = false;
+            this.pbDisableTcs.Click += new System.EventHandler(this.pbDisableTcs_Click);
+            this.pbDisableTcs.MouseEnter += new System.EventHandler(this.pbDisableTcs_MouseEnter);
+            this.pbDisableTcs.MouseLeave += new System.EventHandler(this.pbDisableTcs_MouseLeave);
             // 
-            // pbLAA
+            // pbWebServer
             // 
-            this.pbLAA.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbLAA.Location = new System.Drawing.Point(22, 99);
-            this.pbLAA.Name = "pbLAA";
-            this.pbLAA.Size = new System.Drawing.Size(18, 18);
-            this.pbLAA.TabIndex = 21;
-            this.pbLAA.TabStop = false;
-            this.pbLAA.Click += new System.EventHandler(this.pbLAA_Click);
-            this.pbLAA.MouseEnter += new System.EventHandler(this.pbLAA_MouseEnter);
-            this.pbLAA.MouseLeave += new System.EventHandler(this.pbLAA_MouseLeave);
-            // 
-            // pbRetainer
-            // 
-            this.pbRetainer.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbRetainer.Location = new System.Drawing.Point(22, 122);
-            this.pbRetainer.Name = "pbRetainer";
-            this.pbRetainer.Size = new System.Drawing.Size(18, 18);
-            this.pbRetainer.TabIndex = 22;
-            this.pbRetainer.TabStop = false;
-            this.pbRetainer.Click += new System.EventHandler(this.pbRetainer_Click);
-            this.pbRetainer.MouseEnter += new System.EventHandler(this.pbRetainer_MouseEnter);
-            this.pbRetainer.MouseLeave += new System.EventHandler(this.pbRetainer_MouseLeave);
-            // 
-            // pbRelease
-            // 
-            this.pbRelease.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbRelease.Location = new System.Drawing.Point(22, 145);
-            this.pbRelease.Name = "pbRelease";
-            this.pbRelease.Size = new System.Drawing.Size(18, 18);
-            this.pbRelease.TabIndex = 23;
-            this.pbRelease.TabStop = false;
-            this.pbRelease.Click += new System.EventHandler(this.pbRelease_Click);
-            this.pbRelease.MouseEnter += new System.EventHandler(this.pbRelease_MouseEnter);
-            this.pbRelease.MouseLeave += new System.EventHandler(this.pbRelease_MouseLeave);
-            // 
-            // pbChargingRate
-            // 
-            this.pbChargingRate.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbChargingRate.Location = new System.Drawing.Point(64, 173);
-            this.pbChargingRate.Name = "pbChargingRate";
-            this.pbChargingRate.Size = new System.Drawing.Size(18, 18);
-            this.pbChargingRate.TabIndex = 24;
-            this.pbChargingRate.TabStop = false;
-            this.pbChargingRate.Click += new System.EventHandler(this.pbChargingRate_Click);
-            this.pbChargingRate.MouseEnter += new System.EventHandler(this.pbChargingRate_MouseEnter);
-            this.pbChargingRate.MouseLeave += new System.EventHandler(this.pbChargingRate_MouseLeave);
-            // 
-            // pbLanguage
-            // 
-            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbLanguage.Location = new System.Drawing.Point(130, 200);
-            this.pbLanguage.Name = "pbLanguage";
-            this.pbLanguage.Size = new System.Drawing.Size(18, 18);
-            this.pbLanguage.TabIndex = 25;
-            this.pbLanguage.TabStop = false;
-            this.pbLanguage.Click += new System.EventHandler(this.pbLanguage_Click);
-            this.pbLanguage.MouseEnter += new System.EventHandler(this.pbLanguage_MouseEnter);
-            this.pbLanguage.MouseLeave += new System.EventHandler(this.pbLanguage_MouseLeave);
-            // 
-            // pbPressureUnit
-            // 
-            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbPressureUnit.Location = new System.Drawing.Point(130, 227);
-            this.pbPressureUnit.Name = "pbPressureUnit";
-            this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
-            this.pbPressureUnit.TabIndex = 26;
-            this.pbPressureUnit.TabStop = false;
-            this.pbPressureUnit.Click += new System.EventHandler(this.pbPressureUnit_Click);
-            this.pbPressureUnit.MouseEnter += new System.EventHandler(this.pbPressureUnit_MouseEnter);
-            this.pbPressureUnit.MouseLeave += new System.EventHandler(this.pbPressureUnit_MouseLeave);
-            // 
-            // pbOtherUnits
-            // 
-            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbOtherUnits.Location = new System.Drawing.Point(130, 254);
-            this.pbOtherUnits.Name = "pbOtherUnits";
-            this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
-            this.pbOtherUnits.TabIndex = 27;
-            this.pbOtherUnits.TabStop = false;
-            this.pbOtherUnits.Click += new System.EventHandler(this.pbOtherUnits_Click);
-            this.pbOtherUnits.MouseEnter += new System.EventHandler(this.pbOtherUnits_MouseEnter);
-            this.pbOtherUnits.MouseLeave += new System.EventHandler(this.pbOtherUnits_MouseLeave);
+            this.pbWebServer.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWebServer.Location = new System.Drawing.Point(22, 309);
+            this.pbWebServer.Name = "pbWebServer";
+            this.pbWebServer.Size = new System.Drawing.Size(18, 18);
+            this.pbWebServer.TabIndex = 29;
+            this.pbWebServer.TabStop = false;
+            this.pbWebServer.Click += new System.EventHandler(this.pbWebServer_Click);
+            this.pbWebServer.MouseEnter += new System.EventHandler(this.pbWebServer_MouseEnter);
+            this.pbWebServer.MouseLeave += new System.EventHandler(this.pbWebServer_MouseLeave);
             // 
             // OptionsForm
             // 
@@ -2458,6 +2488,14 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDispatcherWindow)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
@@ -2508,14 +2546,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2691,5 +2723,7 @@
         private System.Windows.Forms.PictureBox pbLanguage;
         private System.Windows.Forms.PictureBox pbPressureUnit;
         private System.Windows.Forms.PictureBox pbOtherUnits;
+        private System.Windows.Forms.PictureBox pbWebServer;
+        private System.Windows.Forms.PictureBox pbDisableTcs;
     }
 }

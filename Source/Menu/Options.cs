@@ -760,6 +760,8 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
+
+        #region Help for General Options
         /// <summary>
         /// Loads a relevant page from the manual maintained by James Ross's automatic build
         /// Info icon taken from https://icons8.com/icon/set/info/office--blue
@@ -770,71 +772,85 @@ namespace ORTS
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#alerter-in-cab");
         }
-        private void pbAlerter_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbAlerter_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbAlerter_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbAlerter_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbControlConfirmations_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#control-confirmations");
         }
-        private void pbControlConfirmations_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbControlConfirmations_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbControlConfirmations_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbControlConfirmations_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbDispatcherWindow_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#dispatcher-window");
         }
-        private void pbDispatcherWindow_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbDispatcherWindow_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbDispatcherWindow_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbDispatcherWindow_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbLAA_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#large-address-aware-binaries");
         }
-        private void pbLAA_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbLAA_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbLAA_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbLAA_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbRetainer_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#retainer-valve-on-all-cars");
         }
-        private void pbRetainer_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbRetainer_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbRetainer_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbRetainer_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbRelease_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#graduated-release-air-brakes");
         }
-        private void pbRelease_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbRelease_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbRelease_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbRelease_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbChargingRate_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#brake-pipe-charging-rate");
         }
-        private void pbChargingRate_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbChargingRate_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbChargingRate_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbChargingRate_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbLanguage_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#language");
         }
-        private void pbLanguage_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbLanguage_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbLanguage_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbLanguage_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbPressureUnit_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#pressure-unit");
         }
-        private void pbPressureUnit_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbPressureUnit_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbPressureUnit_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbPressureUnit_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbOtherUnits_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#other-units");
         }
-        private void pbOtherUnits_MouseEnter(object sender, EventArgs e) { MouseEnter(sender); }
-        private void pbOtherUnits_MouseLeave(object sender, EventArgs e) { MouseLeave(sender); }
+        private void pbOtherUnits_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbOtherUnits_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
+
+        private void pbDisableTcs_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#disable-tcs-scripts");
+        }
+        private void pbDisableTcs_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbDisableTcs_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
+
+        private void pbWebServer_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#enable-web-server");
+        }
+        private void pbWebServer_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
+        private void pbWebServer_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         /// <summary>
         /// Opens a browser window to this URL
@@ -844,11 +860,9 @@ namespace ORTS
         {
             // This method is also compatible with .NET Core 3
             var psi = new ProcessStartInfo
-            {
-                FileName = url
-                ,
-                UseShellExecute = true
-            };
+                { FileName = url
+                , UseShellExecute = true
+                };
             Process.Start(psi);
         }
         
@@ -856,7 +870,7 @@ namespace ORTS
         /// Provides a small animation to show this is clickable
         /// </summary>
         /// <param name="sender"></param>
-        private static void MouseEnter(object sender)
+        private static void DoMouseEnter(object sender)
         {
             Cursor.Current = Cursors.Help;
             var pictureBox = sender as PictureBox;
@@ -864,12 +878,13 @@ namespace ORTS
             pictureBox.Left += 1;
         }
 
-        private static void MouseLeave(object sender)
+        private static void DoMouseLeave(object sender)
         {
             var pictureBox = sender as PictureBox;
             pictureBox.Top -= 2;
             pictureBox.Left -= 1;
             Cursor.Current = Cursors.Default;
         }
+        #endregion
     }
 }
