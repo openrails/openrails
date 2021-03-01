@@ -3024,7 +3024,10 @@ namespace Orts.MultiPlayer
         static List<int> changedAspectIndex = new List<int>();
         static string[] signalTextStates;
         static string[] preTextState;
-        //constructor to create a message from signal data
+
+        /// <summary>
+        /// Constructor to create a message from signal data
+        /// </summary>
         public MSGSignalStatus()
         {
             var i = 0;
@@ -3089,7 +3092,9 @@ namespace Orts.MultiPlayer
             }
         }
 
-        //constructor to decode the message "m"
+        /// <summary>
+        /// Constructor to decode the message "m"
+        /// </summary>
         public MSGSignalStatus(string m)
         {
             if (signals == null)
@@ -3125,10 +3130,14 @@ namespace Orts.MultiPlayer
                 {
                     gZipStream.Read(signalsStates, 0, signalsStates.Length); // Read integer values for aspect and draw state
 
-                    if (new BinaryFormatter().Deserialize(gZipStream) is SignalTextState[] textAspects)
+                    using (var reader = new BinaryReader(gZipStream, System.Text.Encoding.UTF8))
                     {
-                        foreach (SignalTextState state in textAspects)
-                            signalTextStates[state.Index] = state.TextAspect;
+                        int numChangedSignals = reader.ReadInt32();
+                        for (int i = 0; i < numChangedSignals; i++)
+                        {
+                            int signalIndex = reader.ReadInt32();
+                            signalTextStates[signalIndex] = reader.ReadString();
+                        }
                     }
                 }
             }
@@ -3160,18 +3169,18 @@ namespace Orts.MultiPlayer
             {
                 gZipStream.Write(buffer, 0, buffer.Length); // Send integer values for aspect and draw state first
 
-                var textAspects = new SignalTextState[SendEverything ? signals.Count : changedAspectIndex.Count];
-                for (int i = 0; i < textAspects.Length; i++)
+                using (var writer = new BinaryWriter(gZipStream, System.Text.Encoding.UTF8))
                 {
-                    int signalIndex = SendEverything ? i : changedAspectIndex[i];
-                    textAspects[i] = new SignalTextState
+                    int numToSend = SendEverything ? signals.Count : changedAspectIndex.Count;
+                    writer.Write(numToSend);
+                    for (int i = 0; i < numToSend; i++)
                     {
-                        Index = signalIndex,
-                        TextAspect = signalTextStates[signalIndex]
-                    };
-                    preTextState[signalIndex] = signalTextStates[signalIndex];
+                        int signalIndex = SendEverything ? i : changedAspectIndex[i];
+                        writer.Write(signalIndex);
+                        writer.Write(signalTextStates[signalIndex]);
+                        preTextState[signalIndex] = signalTextStates[signalIndex];
+                    }
                 }
-                new BinaryFormatter().Serialize(gZipStream, textAspects);
             }
 
             memoryStream.Position = 0;
@@ -3185,16 +3194,6 @@ namespace Orts.MultiPlayer
             string tmp = "SIGNALSTATES " + Convert.ToBase64String(gZipBuffer); // fill in the message body here
             return " " + tmp.Length + ": " + tmp;
         }
-    }
-
-    /// <summary>
-    /// Struct used to communicate the statuses of signal text aspects.
-    /// </summary>
-    [Serializable]
-    internal struct SignalTextState
-    {
-        public int Index;
-        public string TextAspect;
     }
 #endregion MSGSignalStatus
 
