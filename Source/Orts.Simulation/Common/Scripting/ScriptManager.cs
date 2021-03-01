@@ -91,7 +91,7 @@ namespace Orts.Common.Scripting
                 {
                     var script = compilerResults.CompiledAssembly;
                     if (script == null)
-                        Trace.TraceWarning($"Script file {path} has compiled, but the class was not instanciated. The class name is probably wrong.");
+                        Trace.TraceWarning($"Script file {path} could not be loaded into the process.");
                     return script;
                 }
                 else
