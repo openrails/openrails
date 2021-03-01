@@ -18,6 +18,7 @@
 using ORTS.Common;
 using System;
 using System.IO;
+using System.Diagnostics;
 
 namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
 {
@@ -452,7 +453,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             get
             {
-                return SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
+                var temp = SlipSpeedMpS / WheelSlipThresholdMpS * 100.0f;
+                if (float.IsNaN(temp)) temp = 0;//avoid NaN on HuD display when first starting OR
+                return temp;
             }
         }
 
