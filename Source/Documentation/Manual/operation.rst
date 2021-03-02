@@ -1102,7 +1102,7 @@ This example illustrates the minimum code required for a signal script::
     using System;
     using Orts.Simulation.Signalling;
 
-    namespace Orts.Simulation.Signalling
+    namespace ORTS.Scripting.Script
     {
         public class MYSIGNALTYPE : CsSignalScript
         {

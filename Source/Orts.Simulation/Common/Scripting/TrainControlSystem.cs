@@ -23,7 +23,7 @@ using Orts.Simulation.RollingStocks;
 
 namespace ORTS.Scripting.Api
 {
-    public abstract class TrainControlSystem : AbstractScriptClass
+    public abstract class TrainControlSystem : AbstractTrainScriptClass
     {
         public bool Activated { get; set; }
 
