@@ -772,85 +772,66 @@ namespace ORTS
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#alerter-in-cab");
         }
-        private void pbAlerter_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbAlerter_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbControlConfirmations_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#control-confirmations");
         }
-        private void pbControlConfirmations_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbControlConfirmations_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbDispatcherWindow_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#dispatcher-window");
         }
-        private void pbDispatcherWindow_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbDispatcherWindow_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbLAA_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#large-address-aware-binaries");
         }
-        private void pbLAA_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbLAA_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbRetainer_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#retainer-valve-on-all-cars");
         }
-        private void pbRetainer_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbRetainer_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbRelease_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#graduated-release-air-brakes");
         }
-        private void pbRelease_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbRelease_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbChargingRate_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#brake-pipe-charging-rate");
         }
-        private void pbChargingRate_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbChargingRate_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbLanguage_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#language");
         }
-        private void pbLanguage_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbLanguage_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbPressureUnit_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#pressure-unit");
         }
-        private void pbPressureUnit_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbPressureUnit_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbOtherUnits_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#other-units");
         }
-        private void pbOtherUnits_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbOtherUnits_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbDisableTcs_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#disable-tcs-scripts");
         }
-        private void pbDisableTcs_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbDisableTcs_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
 
         private void pbWebServer_Click(object sender, EventArgs e)
         {
             ViewUrl("https://open-rails.readthedocs.io/en/latest/options.html#enable-web-server");
         }
-        private void pbWebServer_MouseEnter(object sender, EventArgs e) { DoMouseEnter(sender); }
-        private void pbWebServer_MouseLeave(object sender, EventArgs e) { DoMouseLeave(sender); }
+
+        private void pbSpeedControl_Click(object sender, EventArgs e)
+        {
+            ViewUrl("https://open-rails.readthedocs.io/en/latest/physics.html?highlight=tcs#train-control-system");
+        }
 
         /// <summary>
         /// Opens a browser window to this URL
@@ -865,25 +846,135 @@ namespace ORTS
                 };
             Process.Start(psi);
         }
-        
-        /// <summary>
-        /// Provides a small animation to show this is clickable
-        /// </summary>
-        /// <param name="sender"></param>
-        private static void DoMouseEnter(object sender)
+
+        private void checkAlerter_MouseEnter(object sender, EventArgs e)
         {
-            Cursor.Current = Cursors.Help;
-            var pictureBox = sender as PictureBox;
-            pictureBox.Top += 2;
-            pictureBox.Left += 1;
+            this.pbAlerter.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
         }
 
-        private static void DoMouseLeave(object sender)
+        private void checkAlerter_MouseLeave(object sender, EventArgs e)
         {
-            var pictureBox = sender as PictureBox;
-            pictureBox.Top -= 2;
-            pictureBox.Left -= 1;
-            Cursor.Current = Cursors.Default;
+            this.pbAlerter.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkConfirmations_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbControlConfirmations.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkConfirmations_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbControlConfirmations.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkViewDispatcher_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbDispatcherWindow.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkViewDispatcher_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbDispatcherWindow.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkUseLargeAddressAware_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbLAA.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkUseLargeAddressAware_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbLAA.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkRetainers_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbRetainer.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkRetainers_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbRetainer.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkGraduatedRelease_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbRelease.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkGraduatedRelease_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbRelease.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void lBrakePipeChargingRate_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbChargingRate.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void lBrakePipeChargingRate_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbChargingRate.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void labelLanguage_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbLanguage.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void labelLanguage_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbLanguage.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void labelPressureUnit_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbPressureUnit.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void labelPressureUnit_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbPressureUnit.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void labelOtherUnits_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbOtherUnits.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void labelOtherUnits_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbOtherUnits.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkDisableTCSScripts_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbDisableTcs.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkDisableTCSScripts_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbDisableTcs.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkEnableWebServer_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbWebServer.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkEnableWebServer_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbWebServer.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
+        }
+
+        private void checkSpeedControl_MouseEnter(object sender, EventArgs e)
+        {
+            this.pbSpeedControl.Image = ((System.Drawing.Image)(Properties.Resources.info_18_hover));
+        }
+
+        private void checkSpeedControl_MouseLeave(object sender, EventArgs e)
+        {
+            this.pbSpeedControl.Image = ((System.Drawing.Image)(Properties.Resources.info_18));
         }
         #endregion
     }

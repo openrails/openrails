@@ -95,7 +95,7 @@ namespace ORTS.Properties {
         /// </summary>
         internal static System.Drawing.Bitmap info_18 {
             get {
-                object obj = ResourceManager.GetObject("info-18", resourceCulture);
+                object obj = ResourceManager.GetObject("info_18", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -103,9 +103,9 @@ namespace ORTS.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap info_24 {
+        internal static System.Drawing.Bitmap info_18_hover {
             get {
-                object obj = ResourceManager.GetObject("info-24", resourceCulture);
+                object obj = ResourceManager.GetObject("info_18_hover", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

@@ -29,11 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
+            this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
             this.checkGraduatedRelease = new System.Windows.Forms.CheckBox();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.checkAlerter = new System.Windows.Forms.CheckBox();
@@ -41,6 +42,8 @@
             this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.pbWebServer = new System.Windows.Forms.PictureBox();
+            this.pbDisableTcs = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
             this.pbPressureUnit = new System.Windows.Forms.PictureBox();
             this.pbLanguage = new System.Windows.Forms.PictureBox();
@@ -200,11 +203,12 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.pbDisableTcs = new System.Windows.Forms.PictureBox();
-            this.pbWebServer = new System.Windows.Forms.PictureBox();
+            this.pbSpeedControl = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
@@ -253,8 +257,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -290,15 +293,17 @@
             0,
             0});
             // 
-            // label4
+            // lBrakePipeChargingRate
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(66, 173);
-            this.label4.Margin = new System.Windows.Forms.Padding(3);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(180, 13);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "       Brake pipe charging rate (PSI/s)";
+            this.lBrakePipeChargingRate.AutoSize = true;
+            this.lBrakePipeChargingRate.Location = new System.Drawing.Point(66, 173);
+            this.lBrakePipeChargingRate.Margin = new System.Windows.Forms.Padding(3);
+            this.lBrakePipeChargingRate.Name = "lBrakePipeChargingRate";
+            this.lBrakePipeChargingRate.Size = new System.Drawing.Size(180, 13);
+            this.lBrakePipeChargingRate.TabIndex = 8;
+            this.lBrakePipeChargingRate.Text = "       Brake pipe charging rate (PSI/s)";
+            this.lBrakePipeChargingRate.MouseEnter += new System.EventHandler(this.lBrakePipeChargingRate_MouseEnter);
+            this.lBrakePipeChargingRate.MouseLeave += new System.EventHandler(this.lBrakePipeChargingRate_MouseLeave);
             // 
             // checkGraduatedRelease
             // 
@@ -309,6 +314,8 @@
             this.checkGraduatedRelease.TabIndex = 6;
             this.checkGraduatedRelease.Text = "       Graduated release air brakes";
             this.checkGraduatedRelease.UseVisualStyleBackColor = true;
+            this.checkGraduatedRelease.MouseEnter += new System.EventHandler(this.checkGraduatedRelease_MouseEnter);
+            this.checkGraduatedRelease.MouseLeave += new System.EventHandler(this.checkGraduatedRelease_MouseLeave);
             // 
             // buttonCancel
             // 
@@ -331,6 +338,8 @@
             this.checkAlerter.Text = "       Alerter in cab";
             this.checkAlerter.UseVisualStyleBackColor = true;
             this.checkAlerter.CheckedChanged += new System.EventHandler(this.checkAlerter_CheckedChanged);
+            this.checkAlerter.MouseEnter += new System.EventHandler(this.checkAlerter_MouseEnter);
+            this.checkAlerter.MouseLeave += new System.EventHandler(this.checkAlerter_MouseLeave);
             // 
             // checkConfirmations
             // 
@@ -341,6 +350,8 @@
             this.checkConfirmations.TabIndex = 4;
             this.checkConfirmations.Text = "       Control confirmations";
             this.checkConfirmations.UseVisualStyleBackColor = true;
+            this.checkConfirmations.MouseEnter += new System.EventHandler(this.checkConfirmations_MouseEnter);
+            this.checkConfirmations.MouseLeave += new System.EventHandler(this.checkConfirmations_MouseLeave);
             // 
             // checkViewDispatcher
             // 
@@ -351,6 +362,8 @@
             this.checkViewDispatcher.TabIndex = 2;
             this.checkViewDispatcher.Text = "       Dispatcher window";
             this.checkViewDispatcher.UseVisualStyleBackColor = true;
+            this.checkViewDispatcher.MouseEnter += new System.EventHandler(this.checkViewDispatcher_MouseEnter);
+            this.checkViewDispatcher.MouseLeave += new System.EventHandler(this.checkViewDispatcher_MouseLeave);
             // 
             // tabOptions
             // 
@@ -375,6 +388,7 @@
             // 
             // tabPageGeneral
             // 
+            this.tabPageGeneral.Controls.Add(this.pbSpeedControl);
             this.tabPageGeneral.Controls.Add(this.pbWebServer);
             this.tabPageGeneral.Controls.Add(this.pbDisableTcs);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
@@ -402,11 +416,11 @@
             this.tabPageGeneral.Controls.Add(this.checkViewDispatcher);
             this.tabPageGeneral.Controls.Add(this.checkConfirmations);
             this.tabPageGeneral.Controls.Add(this.checkAlerterExternal);
-            this.tabPageGeneral.Controls.Add(this.checkAlerter);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
             this.tabPageGeneral.Controls.Add(this.checkRetainers);
             this.tabPageGeneral.Controls.Add(this.checkGraduatedRelease);
-            this.tabPageGeneral.Controls.Add(this.label4);
+            this.tabPageGeneral.Controls.Add(this.lBrakePipeChargingRate);
+            this.tabPageGeneral.Controls.Add(this.checkAlerter);
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
             this.tabPageGeneral.Name = "tabPageGeneral";
             this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
@@ -415,125 +429,125 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
+            // pbWebServer
+            // 
+            this.pbWebServer.Image = ((System.Drawing.Image)(resources.GetObject("pbWebServer.Image")));
+            this.pbWebServer.Location = new System.Drawing.Point(22, 309);
+            this.pbWebServer.Name = "pbWebServer";
+            this.pbWebServer.Size = new System.Drawing.Size(18, 18);
+            this.pbWebServer.TabIndex = 29;
+            this.pbWebServer.TabStop = false;
+            this.pbWebServer.Click += new System.EventHandler(this.pbWebServer_Click);
+            // 
+            // pbDisableTcs
+            // 
+            this.pbDisableTcs.Image = ((System.Drawing.Image)(resources.GetObject("pbDisableTcs.Image")));
+            this.pbDisableTcs.Location = new System.Drawing.Point(22, 286);
+            this.pbDisableTcs.Name = "pbDisableTcs";
+            this.pbDisableTcs.Size = new System.Drawing.Size(18, 18);
+            this.pbDisableTcs.TabIndex = 28;
+            this.pbDisableTcs.TabStop = false;
+            this.pbDisableTcs.Click += new System.EventHandler(this.pbDisableTcs_Click);
+            // 
             // pbOtherUnits
             // 
-            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOtherUnits.Image = ((System.Drawing.Image)(resources.GetObject("pbOtherUnits.Image")));
             this.pbOtherUnits.Location = new System.Drawing.Point(130, 257);
             this.pbOtherUnits.Name = "pbOtherUnits";
             this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
             this.pbOtherUnits.TabIndex = 27;
             this.pbOtherUnits.TabStop = false;
             this.pbOtherUnits.Click += new System.EventHandler(this.pbOtherUnits_Click);
-            this.pbOtherUnits.MouseEnter += new System.EventHandler(this.pbOtherUnits_MouseEnter);
-            this.pbOtherUnits.MouseLeave += new System.EventHandler(this.pbOtherUnits_MouseLeave);
             // 
             // pbPressureUnit
             // 
-            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPressureUnit.Image = ((System.Drawing.Image)(resources.GetObject("pbPressureUnit.Image")));
             this.pbPressureUnit.Location = new System.Drawing.Point(130, 230);
             this.pbPressureUnit.Name = "pbPressureUnit";
             this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
             this.pbPressureUnit.TabIndex = 26;
             this.pbPressureUnit.TabStop = false;
             this.pbPressureUnit.Click += new System.EventHandler(this.pbPressureUnit_Click);
-            this.pbPressureUnit.MouseEnter += new System.EventHandler(this.pbPressureUnit_MouseEnter);
-            this.pbPressureUnit.MouseLeave += new System.EventHandler(this.pbPressureUnit_MouseLeave);
             // 
             // pbLanguage
             // 
-            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLanguage.Image = ((System.Drawing.Image)(resources.GetObject("pbLanguage.Image")));
             this.pbLanguage.Location = new System.Drawing.Point(130, 203);
             this.pbLanguage.Name = "pbLanguage";
             this.pbLanguage.Size = new System.Drawing.Size(18, 18);
             this.pbLanguage.TabIndex = 25;
             this.pbLanguage.TabStop = false;
             this.pbLanguage.Click += new System.EventHandler(this.pbLanguage_Click);
-            this.pbLanguage.MouseEnter += new System.EventHandler(this.pbLanguage_MouseEnter);
-            this.pbLanguage.MouseLeave += new System.EventHandler(this.pbLanguage_MouseLeave);
             // 
             // pbChargingRate
             // 
-            this.pbChargingRate.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbChargingRate.Image = ((System.Drawing.Image)(resources.GetObject("pbChargingRate.Image")));
             this.pbChargingRate.Location = new System.Drawing.Point(64, 173);
             this.pbChargingRate.Name = "pbChargingRate";
             this.pbChargingRate.Size = new System.Drawing.Size(18, 18);
             this.pbChargingRate.TabIndex = 24;
             this.pbChargingRate.TabStop = false;
             this.pbChargingRate.Click += new System.EventHandler(this.pbChargingRate_Click);
-            this.pbChargingRate.MouseEnter += new System.EventHandler(this.pbChargingRate_MouseEnter);
-            this.pbChargingRate.MouseLeave += new System.EventHandler(this.pbChargingRate_MouseLeave);
             // 
             // pbRelease
             // 
-            this.pbRelease.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRelease.Image = ((System.Drawing.Image)(resources.GetObject("pbRelease.Image")));
             this.pbRelease.Location = new System.Drawing.Point(22, 145);
             this.pbRelease.Name = "pbRelease";
             this.pbRelease.Size = new System.Drawing.Size(18, 18);
             this.pbRelease.TabIndex = 23;
             this.pbRelease.TabStop = false;
             this.pbRelease.Click += new System.EventHandler(this.pbRelease_Click);
-            this.pbRelease.MouseEnter += new System.EventHandler(this.pbRelease_MouseEnter);
-            this.pbRelease.MouseLeave += new System.EventHandler(this.pbRelease_MouseLeave);
             // 
             // pbRetainer
             // 
-            this.pbRetainer.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRetainer.Image = ((System.Drawing.Image)(resources.GetObject("pbRetainer.Image")));
             this.pbRetainer.Location = new System.Drawing.Point(22, 122);
             this.pbRetainer.Name = "pbRetainer";
             this.pbRetainer.Size = new System.Drawing.Size(18, 18);
             this.pbRetainer.TabIndex = 22;
             this.pbRetainer.TabStop = false;
             this.pbRetainer.Click += new System.EventHandler(this.pbRetainer_Click);
-            this.pbRetainer.MouseEnter += new System.EventHandler(this.pbRetainer_MouseEnter);
-            this.pbRetainer.MouseLeave += new System.EventHandler(this.pbRetainer_MouseLeave);
             // 
             // pbLAA
             // 
-            this.pbLAA.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLAA.Image = ((System.Drawing.Image)(resources.GetObject("pbLAA.Image")));
             this.pbLAA.Location = new System.Drawing.Point(22, 99);
             this.pbLAA.Name = "pbLAA";
             this.pbLAA.Size = new System.Drawing.Size(18, 18);
             this.pbLAA.TabIndex = 21;
             this.pbLAA.TabStop = false;
             this.pbLAA.Click += new System.EventHandler(this.pbLAA_Click);
-            this.pbLAA.MouseEnter += new System.EventHandler(this.pbLAA_MouseEnter);
-            this.pbLAA.MouseLeave += new System.EventHandler(this.pbLAA_MouseLeave);
             // 
             // pbAlerter
             // 
-            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAlerter.Image = ((System.Drawing.Image)(resources.GetObject("pbAlerter.Image")));
             this.pbAlerter.Location = new System.Drawing.Point(22, 7);
             this.pbAlerter.Name = "pbAlerter";
             this.pbAlerter.Size = new System.Drawing.Size(18, 18);
             this.pbAlerter.TabIndex = 20;
             this.pbAlerter.TabStop = false;
             this.pbAlerter.Click += new System.EventHandler(this.pbAlerter_Click);
-            this.pbAlerter.MouseEnter += new System.EventHandler(this.pbAlerter_MouseEnter);
-            this.pbAlerter.MouseLeave += new System.EventHandler(this.pbAlerter_MouseLeave);
             // 
             // pbControlConfirmations
             // 
-            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbControlConfirmations.Image = ((System.Drawing.Image)(resources.GetObject("pbControlConfirmations.Image")));
             this.pbControlConfirmations.Location = new System.Drawing.Point(22, 53);
             this.pbControlConfirmations.Name = "pbControlConfirmations";
             this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
             this.pbControlConfirmations.TabIndex = 19;
             this.pbControlConfirmations.TabStop = false;
             this.pbControlConfirmations.Click += new System.EventHandler(this.pbControlConfirmations_Click);
-            this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.pbControlConfirmations_MouseEnter);
-            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.pbControlConfirmations_MouseLeave);
             // 
             // pbDispatcherWindow
             // 
-            this.pbDispatcherWindow.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDispatcherWindow.Image = ((System.Drawing.Image)(resources.GetObject("pbDispatcherWindow.Image")));
             this.pbDispatcherWindow.Location = new System.Drawing.Point(22, 76);
             this.pbDispatcherWindow.Name = "pbDispatcherWindow";
             this.pbDispatcherWindow.Size = new System.Drawing.Size(18, 18);
             this.pbDispatcherWindow.TabIndex = 18;
             this.pbDispatcherWindow.TabStop = false;
             this.pbDispatcherWindow.Click += new System.EventHandler(this.pbDispatcherWindow_Click);
-            this.pbDispatcherWindow.MouseEnter += new System.EventHandler(this.pbDispatcherWindow_MouseEnter);
-            this.pbDispatcherWindow.MouseLeave += new System.EventHandler(this.pbDispatcherWindow_MouseLeave);
             // 
             // label28
             // 
@@ -575,16 +589,20 @@
             this.checkEnableWebServer.TabIndex = 15;
             this.checkEnableWebServer.Text = "       Enable webserver";
             this.checkEnableWebServer.UseVisualStyleBackColor = true;
+            this.checkEnableWebServer.MouseEnter += new System.EventHandler(this.checkEnableWebServer_MouseEnter);
+            this.checkEnableWebServer.MouseLeave += new System.EventHandler(this.checkEnableWebServer_MouseLeave);
             // 
             // checkSpeedControl
             // 
             this.checkSpeedControl.AutoSize = true;
             this.checkSpeedControl.Location = new System.Drawing.Point(304, 6);
             this.checkSpeedControl.Name = "checkSpeedControl";
-            this.checkSpeedControl.Size = new System.Drawing.Size(92, 17);
+            this.checkSpeedControl.Size = new System.Drawing.Size(113, 17);
             this.checkSpeedControl.TabIndex = 14;
-            this.checkSpeedControl.Text = "Speed control";
+            this.checkSpeedControl.Text = "       Speed control";
             this.checkSpeedControl.UseVisualStyleBackColor = true;
+            this.checkSpeedControl.MouseEnter += new System.EventHandler(this.checkSpeedControl_MouseEnter);
+            this.checkSpeedControl.MouseLeave += new System.EventHandler(this.checkSpeedControl_MouseLeave);
             // 
             // checkDisableTCSScripts
             // 
@@ -595,6 +613,8 @@
             this.checkDisableTCSScripts.TabIndex = 13;
             this.checkDisableTCSScripts.Text = "       Disable TCS scripts";
             this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
+            this.checkDisableTCSScripts.MouseEnter += new System.EventHandler(this.checkDisableTCSScripts_MouseEnter);
+            this.checkDisableTCSScripts.MouseLeave += new System.EventHandler(this.checkDisableTCSScripts_MouseLeave);
             // 
             // labelOtherUnits
             // 
@@ -605,6 +625,8 @@
             this.labelOtherUnits.Size = new System.Drawing.Size(79, 13);
             this.labelOtherUnits.TabIndex = 9;
             this.labelOtherUnits.Text = "       Other units";
+            this.labelOtherUnits.MouseEnter += new System.EventHandler(this.labelOtherUnits_MouseEnter);
+            this.labelOtherUnits.MouseLeave += new System.EventHandler(this.labelOtherUnits_MouseLeave);
             // 
             // labelPressureUnit
             // 
@@ -615,6 +637,8 @@
             this.labelPressureUnit.Size = new System.Drawing.Size(89, 13);
             this.labelPressureUnit.TabIndex = 12;
             this.labelPressureUnit.Text = "       Pressure unit";
+            this.labelPressureUnit.MouseEnter += new System.EventHandler(this.labelPressureUnit_MouseEnter);
+            this.labelPressureUnit.MouseLeave += new System.EventHandler(this.labelPressureUnit_MouseLeave);
             // 
             // comboBoxOtherUnits
             // 
@@ -630,10 +654,12 @@
             this.checkUseLargeAddressAware.AutoSize = true;
             this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 98);
             this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
-            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(366, 17);
+            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(363, 17);
             this.checkUseLargeAddressAware.TabIndex = 3;
-            this.checkUseLargeAddressAware.Text = "        Large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
+            this.checkUseLargeAddressAware.Text = "       Large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
             this.checkUseLargeAddressAware.UseVisualStyleBackColor = true;
+            this.checkUseLargeAddressAware.MouseEnter += new System.EventHandler(this.checkUseLargeAddressAware_MouseEnter);
+            this.checkUseLargeAddressAware.MouseLeave += new System.EventHandler(this.checkUseLargeAddressAware_MouseLeave);
             // 
             // comboPressureUnit
             // 
@@ -653,6 +679,8 @@
             this.labelLanguage.Size = new System.Drawing.Size(76, 13);
             this.labelLanguage.TabIndex = 10;
             this.labelLanguage.Text = "       Language";
+            this.labelLanguage.MouseEnter += new System.EventHandler(this.labelLanguage_MouseEnter);
+            this.labelLanguage.MouseLeave += new System.EventHandler(this.labelLanguage_MouseLeave);
             // 
             // comboLanguage
             // 
@@ -679,10 +707,12 @@
             this.checkRetainers.AutoSize = true;
             this.checkRetainers.Location = new System.Drawing.Point(6, 121);
             this.checkRetainers.Name = "checkRetainers";
-            this.checkRetainers.Size = new System.Drawing.Size(170, 17);
+            this.checkRetainers.Size = new System.Drawing.Size(167, 17);
             this.checkRetainers.TabIndex = 5;
-            this.checkRetainers.Text = "        Retainer valve on all cars";
+            this.checkRetainers.Text = "       Retainer valve on all cars";
             this.checkRetainers.UseVisualStyleBackColor = true;
+            this.checkRetainers.MouseEnter += new System.EventHandler(this.checkRetainers_MouseEnter);
+            this.checkRetainers.MouseLeave += new System.EventHandler(this.checkRetainers_MouseLeave);
             // 
             // tabPageAudio
             // 
@@ -1754,27 +1784,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -2444,29 +2474,15 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // pbDisableTcs
+            // pbSpeedControl
             // 
-            this.pbDisableTcs.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbDisableTcs.Location = new System.Drawing.Point(22, 286);
-            this.pbDisableTcs.Name = "pbDisableTcs";
-            this.pbDisableTcs.Size = new System.Drawing.Size(18, 18);
-            this.pbDisableTcs.TabIndex = 28;
-            this.pbDisableTcs.TabStop = false;
-            this.pbDisableTcs.Click += new System.EventHandler(this.pbDisableTcs_Click);
-            this.pbDisableTcs.MouseEnter += new System.EventHandler(this.pbDisableTcs_MouseEnter);
-            this.pbDisableTcs.MouseLeave += new System.EventHandler(this.pbDisableTcs_MouseLeave);
-            // 
-            // pbWebServer
-            // 
-            this.pbWebServer.Image = global::ORTS.Properties.Resources.info_18;
-            this.pbWebServer.Location = new System.Drawing.Point(22, 309);
-            this.pbWebServer.Name = "pbWebServer";
-            this.pbWebServer.Size = new System.Drawing.Size(18, 18);
-            this.pbWebServer.TabIndex = 29;
-            this.pbWebServer.TabStop = false;
-            this.pbWebServer.Click += new System.EventHandler(this.pbWebServer_Click);
-            this.pbWebServer.MouseEnter += new System.EventHandler(this.pbWebServer_MouseEnter);
-            this.pbWebServer.MouseLeave += new System.EventHandler(this.pbWebServer_MouseLeave);
+            this.pbSpeedControl.Image = ((System.Drawing.Image)(resources.GetObject("pbSpeedControl.Image")));
+            this.pbSpeedControl.Location = new System.Drawing.Point(320, 7);
+            this.pbSpeedControl.Name = "pbSpeedControl";
+            this.pbSpeedControl.Size = new System.Drawing.Size(18, 18);
+            this.pbSpeedControl.TabIndex = 30;
+            this.pbSpeedControl.TabStop = false;
+            this.pbSpeedControl.Click += new System.EventHandler(this.pbSpeedControl_Click);
             // 
             // OptionsForm
             // 
@@ -2488,6 +2504,8 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
@@ -2546,8 +2564,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2556,7 +2573,7 @@
 
         private System.Windows.Forms.Button buttonOK;
         private System.Windows.Forms.NumericUpDown numericBrakePipeChargingRate;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label lBrakePipeChargingRate;
         private System.Windows.Forms.CheckBox checkGraduatedRelease;
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.CheckBox checkAlerter;
@@ -2725,5 +2742,6 @@
         private System.Windows.Forms.PictureBox pbOtherUnits;
         private System.Windows.Forms.PictureBox pbWebServer;
         private System.Windows.Forms.PictureBox pbDisableTcs;
+        private System.Windows.Forms.PictureBox pbSpeedControl;
     }
 }
