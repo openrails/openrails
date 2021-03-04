@@ -3999,7 +3999,7 @@ namespace Orts.Simulation.AIs
                                 hornPattern = AILevelCrossingHornPattern.CreateInstance(ORTS.Common.LevelCrossingHornPattern.US);
                                 break;
                             default:
-                                hornPattern = LevelCrossingHornPattern;
+                                hornPattern = AILevelCrossingHornPattern.CreateInstance(ORTS.Common.LevelCrossingHornPattern.Single);
                                 break;
                         }
                         AIActionHornRef action = new AIActionHornRef(this, waitingPoint[5], 0f, waitingPoint[0], lastIndex, thisRoute[lastIndex].TCSectionIndex, direction, durationS, hornPattern);
