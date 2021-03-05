@@ -487,8 +487,8 @@ namespace Orts.Simulation.Timetables
                                     default:
                                         break;
                                 }
-                                nextfield++;
                             }
+                            nextfield++;
                         }
                         lineindex++;
                         break;
