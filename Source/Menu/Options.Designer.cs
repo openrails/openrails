@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -39,9 +39,10 @@
             this.buttonCancel = new System.Windows.Forms.Button();
             this.checkAlerter = new System.Windows.Forms.CheckBox();
             this.checkConfirmations = new System.Windows.Forms.CheckBox();
-            this.checkViewDispatcher = new System.Windows.Forms.CheckBox();
+            this.checkViewMapWindow = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
+            this.pbSpeedControl = new System.Windows.Forms.PictureBox();
             this.pbWebServer = new System.Windows.Forms.PictureBox();
             this.pbDisableTcs = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
@@ -203,10 +204,10 @@
             this.ElevationText = new System.Windows.Forms.Label();
             this.checkPreferDDSTexture = new System.Windows.Forms.CheckBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.pbSpeedControl = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
@@ -257,7 +258,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -353,17 +353,17 @@
             this.checkConfirmations.MouseEnter += new System.EventHandler(this.checkConfirmations_MouseEnter);
             this.checkConfirmations.MouseLeave += new System.EventHandler(this.checkConfirmations_MouseLeave);
             // 
-            // checkViewDispatcher
+            // checkViewMapWindow
             // 
-            this.checkViewDispatcher.AutoSize = true;
-            this.checkViewDispatcher.Location = new System.Drawing.Point(6, 75);
-            this.checkViewDispatcher.Name = "checkViewDispatcher";
-            this.checkViewDispatcher.Size = new System.Drawing.Size(137, 17);
-            this.checkViewDispatcher.TabIndex = 2;
-            this.checkViewDispatcher.Text = "       Dispatcher window";
-            this.checkViewDispatcher.UseVisualStyleBackColor = true;
-            this.checkViewDispatcher.MouseEnter += new System.EventHandler(this.checkViewDispatcher_MouseEnter);
-            this.checkViewDispatcher.MouseLeave += new System.EventHandler(this.checkViewDispatcher_MouseLeave);
+            this.checkViewMapWindow.AutoSize = true;
+            this.checkViewMapWindow.Location = new System.Drawing.Point(6, 75);
+            this.checkViewMapWindow.Name = "checkViewMapWindow";
+            this.checkViewMapWindow.Size = new System.Drawing.Size(107, 17);
+            this.checkViewMapWindow.TabIndex = 2;
+            this.checkViewMapWindow.Text = "       Map window";
+            this.checkViewMapWindow.UseVisualStyleBackColor = true;
+            this.checkViewMapWindow.MouseEnter += new System.EventHandler(this.checkViewDispatcher_MouseEnter);
+            this.checkViewMapWindow.MouseLeave += new System.EventHandler(this.checkViewDispatcher_MouseLeave);
             // 
             // tabOptions
             // 
@@ -413,7 +413,7 @@
             this.tabPageGeneral.Controls.Add(this.comboPressureUnit);
             this.tabPageGeneral.Controls.Add(this.labelLanguage);
             this.tabPageGeneral.Controls.Add(this.comboLanguage);
-            this.tabPageGeneral.Controls.Add(this.checkViewDispatcher);
+            this.tabPageGeneral.Controls.Add(this.checkViewMapWindow);
             this.tabPageGeneral.Controls.Add(this.checkConfirmations);
             this.tabPageGeneral.Controls.Add(this.checkAlerterExternal);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
@@ -428,6 +428,16 @@
             this.tabPageGeneral.TabIndex = 0;
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
+            // 
+            // pbSpeedControl
+            // 
+            this.pbSpeedControl.Image = ((System.Drawing.Image)(resources.GetObject("pbSpeedControl.Image")));
+            this.pbSpeedControl.Location = new System.Drawing.Point(320, 7);
+            this.pbSpeedControl.Name = "pbSpeedControl";
+            this.pbSpeedControl.Size = new System.Drawing.Size(18, 18);
+            this.pbSpeedControl.TabIndex = 30;
+            this.pbSpeedControl.TabStop = false;
+            this.pbSpeedControl.Click += new System.EventHandler(this.pbSpeedControl_Click);
             // 
             // pbWebServer
             // 
@@ -2474,16 +2484,6 @@
             this.checkPreferDDSTexture.Text = "Load DDS textures in preference to ACE";
             this.checkPreferDDSTexture.UseVisualStyleBackColor = true;
             // 
-            // pbSpeedControl
-            // 
-            this.pbSpeedControl.Image = ((System.Drawing.Image)(resources.GetObject("pbSpeedControl.Image")));
-            this.pbSpeedControl.Location = new System.Drawing.Point(320, 7);
-            this.pbSpeedControl.Name = "pbSpeedControl";
-            this.pbSpeedControl.Size = new System.Drawing.Size(18, 18);
-            this.pbSpeedControl.TabIndex = 30;
-            this.pbSpeedControl.TabStop = false;
-            this.pbSpeedControl.Click += new System.EventHandler(this.pbSpeedControl_Click);
-            // 
             // OptionsForm
             // 
             this.AcceptButton = this.buttonOK;
@@ -2504,6 +2504,7 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
@@ -2564,7 +2565,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationGauge)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSuperElevationMinLen)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUseSuperElevation)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -2578,7 +2578,7 @@
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.CheckBox checkAlerter;
         private System.Windows.Forms.CheckBox checkConfirmations;
-		private System.Windows.Forms.CheckBox checkViewDispatcher;
+		private System.Windows.Forms.CheckBox checkViewMapWindow;
         private System.Windows.Forms.TabControl tabOptions;
         private System.Windows.Forms.TabPage tabPageGeneral;
         private System.Windows.Forms.TabPage tabPageKeyboard;
