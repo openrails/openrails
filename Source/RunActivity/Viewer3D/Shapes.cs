@@ -1221,7 +1221,7 @@ namespace Orts.Viewer3D
             {
                 AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
             }
-            while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
+            while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount + (Turntable.GoToAutoTarget ? 1 : 0);
             while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
 
             Turntable.YAngle = MathHelper.WrapAngle(AnimationKey / 1800.0f * (float)Math.PI);
