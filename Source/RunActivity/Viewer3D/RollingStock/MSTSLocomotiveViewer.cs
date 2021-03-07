@@ -1522,6 +1522,7 @@ namespace Orts.Viewer3D.RollingStock
         Rectangle DestinationRectangle = new Rectangle();
         //      bool LoadMeterPositive = true;
         Color DrawColor;
+        float DrawRotation;
         Double Num;
         bool IsFire;
 
@@ -1605,20 +1606,21 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     if (Gauge.Orientation == 0)
                     {
-                        destX = (int)(xratio * (Control.PositionX + (zeropos < xpos ? zeropos : xpos)));
-                        destY = (int)(yratio * Control.PositionY);
-                        destW = (int)(xratio * (xpos > zeropos ? xpos - zeropos : zeropos - xpos));
+                        destX = (int)(xratio * (Control.PositionX)) + (int)(xratio * (zeropos < xpos ? zeropos : xpos));
+//                        destY = (int)(yratio * Control.PositionY);
+                        destY = (int)(yratio * (Control.PositionY) - (int)(yratio * (Gauge.Direction == 0 && zeropos > xpos ? (zeropos - xpos) * Math.Sin(DrawRotation) : 0)));
+                        destW = ((int)(xratio * xpos) - (int)(xratio * zeropos)) * (xpos >= zeropos ? 1 : -1);
                         destH = (int)(yratio * ypos);
                     }
                     else
                     {
-                        destX = (int)(xratio * Control.PositionX);
+                        destX = (int)(xratio * Control.PositionX) +(int)(xratio * (Gauge.Direction == 0 && ypos > zeropos ? (ypos - zeropos) * Math.Sin(DrawRotation) : 0));
                         if (Gauge.Direction != 1 && !IsFire)
-                            destY = (int)(yratio * (Control.PositionY + (zeropos > ypos ? zeropos : 2 * zeropos - ypos)));
+                            destY = (int)(yratio * (Control.PositionY + zeropos)) + (ypos > zeropos ? (int)(yratio * (zeropos - ypos)) : 0);
                         else
                             destY = (int)(yratio * (Control.PositionY + (zeropos < ypos ? zeropos : ypos)));
                         destW = (int)(xratio * xpos);
-                        destH = (int)(yratio * (ypos > zeropos ? ypos - zeropos : zeropos - ypos));
+                        destH = ((int)(yratio * (ypos - zeropos))) * (ypos > zeropos ? 1 : -1);
                     }
                 }
                 else
@@ -1626,9 +1628,16 @@ namespace Orts.Viewer3D.RollingStock
                     var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                     if (Gauge.Direction != 0)  // column grows from bottom or from right
                     {
-                        destX = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
                         if (Gauge.Orientation != 0)
+                        {
                             topY += Gauge.Height * (1 - percent);
+                            destX = (int)(xratio * (Control.PositionX + Gauge.Width - xpos + ypos * Math.Sin(DrawRotation)));
+                        }
+                        else
+                        {
+                            topY -= xpos * Math.Sin(DrawRotation);
+                            destX = (int)(xratio * (Control.PositionX + Gauge.Width - xpos));
+                        }
                     }
                     else
                     {
@@ -1641,20 +1650,33 @@ namespace Orts.Viewer3D.RollingStock
             }
             else // pointer gauge using texture
             {
+                // even if there is a rotation, we leave the X position unaltered (for small angles Cos(alpha) = 1)
                 var topY = Control.PositionY;  // top of visible column. +ve Y is downwards
                 if (Gauge.Orientation == 0) // gauge horizontal
                 {
+
                     if (Gauge.Direction != 0)  // column grows from right
+                    {
                         destX = (int)(xratio * (Control.PositionX + Gauge.Width - 0.5 * Gauge.Area.Width - xpos));
+                        topY -= xpos * Math.Sin(DrawRotation);
+                    }
                     else
+                    {
                         destX = (int)(xratio * (Control.PositionX - 0.5 * Gauge.Area.Width + xpos));
+                        topY += xpos * Math.Sin(DrawRotation);
+                    }
                 }
                 else // gauge vertical
                 {
+                    // even if there is a rotation, we leave the Y position unaltered (for small angles Cos(alpha) = 1)
                     topY += ypos - 0.5 * Gauge.Area.Height;
-                    destX = (int)(xratio * Control.PositionX);
-                    if (Gauge.Direction != 0)  // column grows from bottom
-                        topY += Gauge.Height - 2 * ypos;
+                    if (Gauge.Direction == 0)
+                        destX = (int)(xratio * (Control.PositionX - ypos * Math.Sin(DrawRotation)));
+                    else  // column grows from bottom
+                    {
+                        topY += Gauge.Height - 2.0f * ypos;
+                        destX = (int)(xratio * (Control.PositionX + ypos * Math.Sin(DrawRotation)));
+                    }
                 }
                 destY = (int)(yratio * topY);
                 destW = (int)(xratio * Gauge.Area.Width);
@@ -1693,6 +1715,7 @@ namespace Orts.Viewer3D.RollingStock
             DestinationRectangle.Y = destY;
             DestinationRectangle.Width = destW;
             DestinationRectangle.Height = destH;
+            DrawRotation = Gauge.Rotation;
         }
 
         public override void Draw(GraphicsDevice graphicsDevice)
@@ -1701,7 +1724,7 @@ namespace Orts.Viewer3D.RollingStock
             {
                 Shader.SetTextureData(DestinationRectangle.Left, DestinationRectangle.Top, DestinationRectangle.Width, DestinationRectangle.Height);
             }
-            ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor);
+            ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor, DrawRotation, Vector2.Zero, SpriteEffects.None, 0);
         }
     }
 
