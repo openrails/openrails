@@ -1851,6 +1851,7 @@ not be stopped.
 .. _timetable-midnight:
 
 Running Trains Around Midnight
+''''''''''''''''''''''''''''''
 
 A timetable can be defined for a full 24 hour day, and  so would include trains 
 running around midnight.
