@@ -1226,6 +1226,8 @@ namespace Orts.Viewer3D
                 nextKey = AnimationKey + moveFrames;
             }
             AnimationKey = nextKey % animation.FrameCount;
+            if (AnimationKey < 0)
+                AnimationKey += animation.FrameCount;
             Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
 
             if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
