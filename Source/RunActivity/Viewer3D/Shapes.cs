@@ -1071,23 +1071,25 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            float nextKey;
+            var animation = SharedShape.Animations[0];
             if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
             {
-                AnimationKey = (Turntable.TargetY / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
+                nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
             }
-
-            else if (Turntable.Counterclockwise)
+            else
             {
-                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                float moveFrames;
+                if (Turntable.Counterclockwise)
+                    moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;
+                else if (Turntable.Clockwise)
+                    moveFrames = -animation.FrameRate * elapsedTime.ClockSeconds;
+                else
+                    moveFrames = 0;
+                nextKey = AnimationKey + moveFrames;
             }
-            else if (Turntable.Clockwise)
-            {
-                AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-            }
-            while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount + (Turntable.GoToAutoTarget ? 1 : 0);
-            while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
-
-            Turntable.YAngle = MathHelper.WrapAngle(AnimationKey / 1800.0f * (float)Math.PI);
+            AnimationKey = nextKey % animation.FrameCount;
+            Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
 
             if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
             {
