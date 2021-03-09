@@ -1587,7 +1587,7 @@ namespace Orts.Simulation.RollingStocks
                 if (f > 0 && PowerOn)
                 {
                     DynamicBrakeForceN = f * (1 - PowerReduction);
-                    MotiveForceN -= (AbsTractionSpeedMpS > 0 ? 1 : AbsTractionSpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
                 }
                 else
                 {
