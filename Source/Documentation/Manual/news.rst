@@ -44,6 +44,7 @@ What's been improved
 - Train control system (TCS)
 - Visual effects for steam ejectors
 - Water troughs
+- Screenshot button now plays a camera shutter sound
 - Sound events for gear positions, injectors, fireman etc.
 - Traction braking display
 - Coverage and index in the manual
