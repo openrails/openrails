@@ -188,12 +188,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="info-24.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="info-18.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\info-18-2.png" />
   </ItemGroup>
   <ItemGroup>
