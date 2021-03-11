@@ -302,8 +302,6 @@
             this.lBrakePipeChargingRate.Size = new System.Drawing.Size(180, 13);
             this.lBrakePipeChargingRate.TabIndex = 8;
             this.lBrakePipeChargingRate.Text = "       Brake pipe charging rate (PSI/s)";
-            this.lBrakePipeChargingRate.MouseEnter += new System.EventHandler(this.lBrakePipeChargingRate_MouseEnter);
-            this.lBrakePipeChargingRate.MouseLeave += new System.EventHandler(this.lBrakePipeChargingRate_MouseLeave);
             // 
             // checkGraduatedRelease
             // 
@@ -314,8 +312,6 @@
             this.checkGraduatedRelease.TabIndex = 6;
             this.checkGraduatedRelease.Text = "       Graduated release air brakes";
             this.checkGraduatedRelease.UseVisualStyleBackColor = true;
-            this.checkGraduatedRelease.MouseEnter += new System.EventHandler(this.checkGraduatedRelease_MouseEnter);
-            this.checkGraduatedRelease.MouseLeave += new System.EventHandler(this.checkGraduatedRelease_MouseLeave);
             // 
             // buttonCancel
             // 
@@ -338,8 +334,6 @@
             this.checkAlerter.Text = "       Alerter in cab";
             this.checkAlerter.UseVisualStyleBackColor = true;
             this.checkAlerter.CheckedChanged += new System.EventHandler(this.checkAlerter_CheckedChanged);
-            this.checkAlerter.MouseEnter += new System.EventHandler(this.checkAlerter_MouseEnter);
-            this.checkAlerter.MouseLeave += new System.EventHandler(this.checkAlerter_MouseLeave);
             // 
             // checkConfirmations
             // 
@@ -350,8 +344,6 @@
             this.checkConfirmations.TabIndex = 4;
             this.checkConfirmations.Text = "       Control confirmations";
             this.checkConfirmations.UseVisualStyleBackColor = true;
-            this.checkConfirmations.MouseEnter += new System.EventHandler(this.checkConfirmations_MouseEnter);
-            this.checkConfirmations.MouseLeave += new System.EventHandler(this.checkConfirmations_MouseLeave);
             // 
             // checkViewMapWindow
             // 
@@ -362,8 +354,6 @@
             this.checkViewMapWindow.TabIndex = 2;
             this.checkViewMapWindow.Text = "       Map window";
             this.checkViewMapWindow.UseVisualStyleBackColor = true;
-            this.checkViewMapWindow.MouseEnter += new System.EventHandler(this.checkViewDispatcher_MouseEnter);
-            this.checkViewMapWindow.MouseLeave += new System.EventHandler(this.checkViewDispatcher_MouseLeave);
             // 
             // tabOptions
             // 
@@ -437,7 +427,9 @@
             this.pbSpeedControl.Size = new System.Drawing.Size(18, 18);
             this.pbSpeedControl.TabIndex = 30;
             this.pbSpeedControl.TabStop = false;
-            this.pbSpeedControl.Click += new System.EventHandler(this.pbSpeedControl_Click);
+            this.pbSpeedControl.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbSpeedControl.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbSpeedControl.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbWebServer
             // 
@@ -447,7 +439,9 @@
             this.pbWebServer.Size = new System.Drawing.Size(18, 18);
             this.pbWebServer.TabIndex = 29;
             this.pbWebServer.TabStop = false;
-            this.pbWebServer.Click += new System.EventHandler(this.pbWebServer_Click);
+            this.pbWebServer.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbWebServer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbWebServer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbDisableTcs
             // 
@@ -457,7 +451,9 @@
             this.pbDisableTcs.Size = new System.Drawing.Size(18, 18);
             this.pbDisableTcs.TabIndex = 28;
             this.pbDisableTcs.TabStop = false;
-            this.pbDisableTcs.Click += new System.EventHandler(this.pbDisableTcs_Click);
+            this.pbDisableTcs.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbDisableTcs.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbDisableTcs.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbOtherUnits
             // 
@@ -467,7 +463,9 @@
             this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
             this.pbOtherUnits.TabIndex = 27;
             this.pbOtherUnits.TabStop = false;
-            this.pbOtherUnits.Click += new System.EventHandler(this.pbOtherUnits_Click);
+            this.pbOtherUnits.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbOtherUnits.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbOtherUnits.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbPressureUnit
             // 
@@ -477,7 +475,9 @@
             this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
             this.pbPressureUnit.TabIndex = 26;
             this.pbPressureUnit.TabStop = false;
-            this.pbPressureUnit.Click += new System.EventHandler(this.pbPressureUnit_Click);
+            this.pbPressureUnit.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbPressureUnit.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbPressureUnit.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbLanguage
             // 
@@ -487,7 +487,9 @@
             this.pbLanguage.Size = new System.Drawing.Size(18, 18);
             this.pbLanguage.TabIndex = 25;
             this.pbLanguage.TabStop = false;
-            this.pbLanguage.Click += new System.EventHandler(this.pbLanguage_Click);
+            this.pbLanguage.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbChargingRate
             // 
@@ -497,7 +499,9 @@
             this.pbChargingRate.Size = new System.Drawing.Size(18, 18);
             this.pbChargingRate.TabIndex = 24;
             this.pbChargingRate.TabStop = false;
-            this.pbChargingRate.Click += new System.EventHandler(this.pbChargingRate_Click);
+            this.pbChargingRate.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbChargingRate.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbChargingRate.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbRelease
             // 
@@ -507,7 +511,9 @@
             this.pbRelease.Size = new System.Drawing.Size(18, 18);
             this.pbRelease.TabIndex = 23;
             this.pbRelease.TabStop = false;
-            this.pbRelease.Click += new System.EventHandler(this.pbRelease_Click);
+            this.pbRelease.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbRelease.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbRelease.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbRetainer
             // 
@@ -517,7 +523,9 @@
             this.pbRetainer.Size = new System.Drawing.Size(18, 18);
             this.pbRetainer.TabIndex = 22;
             this.pbRetainer.TabStop = false;
-            this.pbRetainer.Click += new System.EventHandler(this.pbRetainer_Click);
+            this.pbRetainer.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbRetainer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbRetainer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbLAA
             // 
@@ -527,7 +535,9 @@
             this.pbLAA.Size = new System.Drawing.Size(18, 18);
             this.pbLAA.TabIndex = 21;
             this.pbLAA.TabStop = false;
-            this.pbLAA.Click += new System.EventHandler(this.pbLAA_Click);
+            this.pbLAA.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbLAA.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbLAA.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbAlerter
             // 
@@ -537,7 +547,9 @@
             this.pbAlerter.Size = new System.Drawing.Size(18, 18);
             this.pbAlerter.TabIndex = 20;
             this.pbAlerter.TabStop = false;
-            this.pbAlerter.Click += new System.EventHandler(this.pbAlerter_Click);
+            this.pbAlerter.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAlerter.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAlerter.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbControlConfirmations
             // 
@@ -547,7 +559,9 @@
             this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
             this.pbControlConfirmations.TabIndex = 19;
             this.pbControlConfirmations.TabStop = false;
-            this.pbControlConfirmations.Click += new System.EventHandler(this.pbControlConfirmations_Click);
+            this.pbControlConfirmations.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbDispatcherWindow
             // 
@@ -557,7 +571,9 @@
             this.pbDispatcherWindow.Size = new System.Drawing.Size(18, 18);
             this.pbDispatcherWindow.TabIndex = 18;
             this.pbDispatcherWindow.TabStop = false;
-            this.pbDispatcherWindow.Click += new System.EventHandler(this.pbDispatcherWindow_Click);
+            this.pbDispatcherWindow.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbDispatcherWindow.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbDispatcherWindow.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // label28
             // 
@@ -599,8 +615,6 @@
             this.checkEnableWebServer.TabIndex = 15;
             this.checkEnableWebServer.Text = "       Enable webserver";
             this.checkEnableWebServer.UseVisualStyleBackColor = true;
-            this.checkEnableWebServer.MouseEnter += new System.EventHandler(this.checkEnableWebServer_MouseEnter);
-            this.checkEnableWebServer.MouseLeave += new System.EventHandler(this.checkEnableWebServer_MouseLeave);
             // 
             // checkSpeedControl
             // 
@@ -611,8 +625,6 @@
             this.checkSpeedControl.TabIndex = 14;
             this.checkSpeedControl.Text = "       Speed control";
             this.checkSpeedControl.UseVisualStyleBackColor = true;
-            this.checkSpeedControl.MouseEnter += new System.EventHandler(this.checkSpeedControl_MouseEnter);
-            this.checkSpeedControl.MouseLeave += new System.EventHandler(this.checkSpeedControl_MouseLeave);
             // 
             // checkDisableTCSScripts
             // 
@@ -623,8 +635,6 @@
             this.checkDisableTCSScripts.TabIndex = 13;
             this.checkDisableTCSScripts.Text = "       Disable TCS scripts";
             this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
-            this.checkDisableTCSScripts.MouseEnter += new System.EventHandler(this.checkDisableTCSScripts_MouseEnter);
-            this.checkDisableTCSScripts.MouseLeave += new System.EventHandler(this.checkDisableTCSScripts_MouseLeave);
             // 
             // labelOtherUnits
             // 
@@ -635,8 +645,6 @@
             this.labelOtherUnits.Size = new System.Drawing.Size(79, 13);
             this.labelOtherUnits.TabIndex = 9;
             this.labelOtherUnits.Text = "       Other units";
-            this.labelOtherUnits.MouseEnter += new System.EventHandler(this.labelOtherUnits_MouseEnter);
-            this.labelOtherUnits.MouseLeave += new System.EventHandler(this.labelOtherUnits_MouseLeave);
             // 
             // labelPressureUnit
             // 
@@ -647,8 +655,6 @@
             this.labelPressureUnit.Size = new System.Drawing.Size(89, 13);
             this.labelPressureUnit.TabIndex = 12;
             this.labelPressureUnit.Text = "       Pressure unit";
-            this.labelPressureUnit.MouseEnter += new System.EventHandler(this.labelPressureUnit_MouseEnter);
-            this.labelPressureUnit.MouseLeave += new System.EventHandler(this.labelPressureUnit_MouseLeave);
             // 
             // comboBoxOtherUnits
             // 
@@ -668,8 +674,6 @@
             this.checkUseLargeAddressAware.TabIndex = 3;
             this.checkUseLargeAddressAware.Text = "       Large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
             this.checkUseLargeAddressAware.UseVisualStyleBackColor = true;
-            this.checkUseLargeAddressAware.MouseEnter += new System.EventHandler(this.checkUseLargeAddressAware_MouseEnter);
-            this.checkUseLargeAddressAware.MouseLeave += new System.EventHandler(this.checkUseLargeAddressAware_MouseLeave);
             // 
             // comboPressureUnit
             // 
@@ -689,8 +693,6 @@
             this.labelLanguage.Size = new System.Drawing.Size(76, 13);
             this.labelLanguage.TabIndex = 10;
             this.labelLanguage.Text = "       Language";
-            this.labelLanguage.MouseEnter += new System.EventHandler(this.labelLanguage_MouseEnter);
-            this.labelLanguage.MouseLeave += new System.EventHandler(this.labelLanguage_MouseLeave);
             // 
             // comboLanguage
             // 
@@ -721,8 +723,6 @@
             this.checkRetainers.TabIndex = 5;
             this.checkRetainers.Text = "       Retainer valve on all cars";
             this.checkRetainers.UseVisualStyleBackColor = true;
-            this.checkRetainers.MouseEnter += new System.EventHandler(this.checkRetainers_MouseEnter);
-            this.checkRetainers.MouseLeave += new System.EventHandler(this.checkRetainers_MouseLeave);
             // 
             // tabPageAudio
             // 
