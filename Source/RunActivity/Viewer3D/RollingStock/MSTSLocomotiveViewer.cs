@@ -1724,7 +1724,7 @@ namespace Orts.Viewer3D.RollingStock
             {
                 Shader.SetTextureData(DestinationRectangle.Left, DestinationRectangle.Top, DestinationRectangle.Width, DestinationRectangle.Height);
             }
-            ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor, DrawRotation, Vector2.Zero, SpriteEffects.None, 0);
+            ControlView.SpriteBatch.Draw(Texture, DestinationRectangle, SourceRectangle, DrawColor, DrawRotation, origin: Vector2.Zero, SpriteEffects.None, layerDepth: 0);
         }
     }
 
