@@ -126,7 +126,6 @@ namespace Orts.Simulation.RollingStocks
         public bool DynamicBrake;
         public float MaxPowerW;
         public float MaxForceN;
-        //        public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
         public float AbsTractionSpeedMpS;
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
