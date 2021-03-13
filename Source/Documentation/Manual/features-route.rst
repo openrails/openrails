@@ -824,11 +824,11 @@ You will need:
 
 #. Shape and Texture Files
 
-   A shape file which defines each type of clock, its hands and their animation and the texture files used by the shape.
+   A shape file which defines each shape of clock, its hands and their animation and the texture files used by the shape.
 
 #. Reference File
 
-   For each occurrence of the clock in the route, a reference to the shape file in the reference file.
+   For each shape of clock in the route, a reference to the shape file in the reference file.
 
 #. Animated Clocks List File
 
@@ -836,19 +836,19 @@ You will need:
 
 #. World File
  
-   The location of each clock in the world must be specified.
+   The location of each clock in the world must be given in the world file.
 
 Details
 -------
 
-#. Shape File
+#. Shape and Texture Files
 
    Create a clock just like any other shape. The hands of the clock must be sub-objects within the shape. 
    They must have specific names and an animation.	
    
    Open Rails looks for the following names of clock hands in the shape file and animates them according to the simulation time.	
    
-   The names for the clock must start with:	
+   The names for the clock hands must start with:	
   
    - "ORTS_HHand_Clock" for the hour hand
    - "ORTS_MHand_Clock" for the minute hand
@@ -883,10 +883,10 @@ Details
 			)		
 		)
 
-   Finally, copy the clock shape and its textures into the corresponding folders SHAPES and TEXTURES of your route, 
+   Finally, move the clock shape and its textures into the corresponding folders SHAPES and TEXTURES of your route, 
    such as ROUTES\\<route_name>\\SHAPES\\clocks.s
 
-#. Reference
+#. Reference File
 
    Add a reference to the shape file into the reference file ROUTES\\<route_name>\\<route_name>.ref
    Make sure that this reference begins with the "Static" keyword.::
@@ -898,11 +898,11 @@ Details
 	    Description ( "ChurchClock" )
     )	
 
-#. Animated Items
+#. Animated Clocks List File
 
-   Create a ROUTES\\<route_name>\\openrails\\clocks.dat file listing the shape file for each type of clock that Open Rails will animate.
+   Create a ROUTES\\<route_name>\\openrails\\clocks.dat file listing the file for each shape of clock that Open Rails will animate.
    Open Rails is looking in this file for the ClockItem definitions.		
-   The type is always "analog" as "digital" is not yet supported.::		
+   The type parameter is always "analog" as "digital" types are not yet supported.::		
 	
       3
       ClockItem( "Clock01.s" analog )
@@ -915,7 +915,7 @@ Details
 
 #. World File
 
-   Use a route editor to locate the clocks into the world. 
+   Use a route editor to locate the clocks in the world file. 
    
    Note: Do not insert the shapes as animated ones. 
    Otherwise, if MSTS is used to view the route then the hands of the clock will rotate wildly.
