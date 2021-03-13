@@ -495,7 +495,7 @@ namespace Orts.Viewer3D
                     int clockQuadrant = 0;                                                  //Preset: Start with Anim-Control 0 (first quadrant of OR-Clock)
                     bool calculateClockHand = false;                                        //Preset: No drawing of a new matrix by default
                     float quadrantAmount = 1;                                               //Preset: Represents part of the way from position1 to position2 (float Value between 0 and 1)
-                    if (anim_node.Name.ToLowerInvariant().IndexOf("orts_chand_clock") > -1) //Shape matrix is a CentiSecond Hand (continuous moved second hand) of an analog OR-clock
+                    if (anim_node.Name.ToLowerInvariant().StartsWith("orts_chand_clock")) //Shape matrix is a CentiSecond Hand (continuous moved second hand) of an analog OR-clock
                     {
                         clockQuadrant = (int)clockSecond / 15;                              //Quadrant of the clock / Key-Index of anim_node (int Values: 0, 1, 2, 3)
                         quadrantAmount = (float)(clockSecond - (clockQuadrant * 15)) / 15;  //Seconds      Percentage quadrant related (float Value between 0 and 1) 
@@ -504,7 +504,23 @@ namespace Orts.Viewer3D
                             clockQuadrant = 0;  //If controller.Count dosen't match
                         calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
                     }
-                    if (anim_node.Name.ToLowerInvariant().IndexOf("orts_hhand_clock") > -1) //Shape matrix is an Hour Hand of an analog OR-clock
+                    else if (anim_node.Name.ToLowerInvariant().StartsWith("orts_shand_clock")) //Shape matrix is a Second Hand of an analog OR-clock
+                    {
+                        clockQuadrant = (int)clockSecond / 15;                              //Quadrant of the clock / Key-Index of anim_node (int Values: 0, 1, 2, 3)
+                        quadrantAmount = (float)(clockSecond - (clockQuadrant * 15)) / 15;  //Percentage quadrant related (float Value between 0 and 1) 
+                        if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
+                            clockQuadrant = 0;  //If controller.Count doesn't match
+                        calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
+                    }
+                    else if (anim_node.Name.ToLowerInvariant().StartsWith("orts_mhand_clock")) //Shape matrix is a Minute Hand of an analog OR-clock
+                    {
+                        clockQuadrant = (int)clockMinute / 15;                              //Quadrant of the clock / Key-Index of anim_node (Values: 0, 1, 2, 3)
+                        quadrantAmount = (float)(clockMinute - (clockQuadrant * 15)) / 15;  //Percentage quadrant related (Value between 0 and 1)
+                        if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
+                            clockQuadrant = 0; //If controller.Count dosen't match
+                        calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
+                    }
+                    else if (anim_node.Name.ToLowerInvariant().StartsWith("orts_hhand_clock")) //Shape matrix is an Hour Hand of an analog OR-clock
                     {
                         if (clockHour > 11)
                             clockHour -= 12;                                                //Reduce 24 to 12 format
