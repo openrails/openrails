@@ -471,7 +471,7 @@ The defined ORTS signal types can be set in the signal type definition and used 
 in the same way as the default MSTS types.
 
 Note that SPEED is a fixed signal type which is available in OR without explicit definition (see below for
-details on SPEED type signals). Also note that any type definition starting with “OR_” is not valid, these
+details on SPEED type signals). Also note that any type definition starting with "OR\_" is not valid, these
 names are reserved for future default types in OR.
 
 Syntax:
