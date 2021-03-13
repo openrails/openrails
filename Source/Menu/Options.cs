@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
@@ -138,7 +139,7 @@ namespace ORTS
             checkAlerter.Checked = Settings.Alerter;
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
-            checkSpeedControl.Checked = Settings.SpeedControl;
+            checkOverspeedMonitor.Checked = Settings.SpeedControl;
             checkConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewMapWindow.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
@@ -182,7 +183,7 @@ namespace ORTS
 
             // Simulation tab
 
-            checkSimpleControlPhysics.Checked = Settings.SimpleControlPhysics;
+            checkSimpleControlsPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
@@ -429,7 +430,7 @@ namespace ORTS
             // General tab
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
-            Settings.SpeedControl = checkSpeedControl.Checked;
+            Settings.SpeedControl = checkOverspeedMonitor.Checked;
             Settings.SuppressConfirmations = !checkConfirmations.Checked;
             Settings.ViewDispatcher = checkViewMapWindow.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
@@ -468,7 +469,7 @@ namespace ORTS
             Settings.DoubleWire = checkDoubleWire.Checked;
 
             // Simulation tab
-            Settings.SimpleControlPhysics = checkSimpleControlPhysics.Checked;
+            Settings.SimpleControlPhysics = checkSimpleControlsPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
@@ -759,5 +760,95 @@ namespace ORTS
             labelPerformanceTunerTarget.Enabled = checkPerformanceTuner.Checked;
         }
 
+
+        #region Help for General Options
+        /// <summary>
+        /// Loads a relevant page from the manual maintained by James Ross's automatic build.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void HelpIcon_Click(object sender, EventArgs _)
+        {
+            const string baseUrl = "https://open-rails.readthedocs.io/en/latest";
+            var urls = new Dictionary<object, string>
+            {
+                {
+                    pbAlerter,
+                    baseUrl + "/options.html#alerter-in-cab"
+                },
+                {
+                    pbControlConfirmations,
+                    baseUrl + "/options.html#control-confirmations"
+                },
+                {
+                    pbMapWindow,
+                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
+                    baseUrl + "/options.html#dispatcher-window"
+                },
+                {
+                    pbLAA,
+                    baseUrl + "/options.html#large-address-aware-binaries"
+                },
+                {
+                    pbRetainer,
+                    baseUrl + "/options.html#retainer-valve-on-all-cars"
+                },
+                {
+                    pbRelease,
+                    baseUrl + "/options.html#graduated-release-air-brakes"
+                },
+                {
+                    pbChargingRate,
+                    baseUrl + "/options.html#brake-pipe-charging-rate"
+                },
+                {
+                    pbLanguage,
+                    baseUrl + "/options.html#language"
+                },
+                {
+                    pbPressureUnit,
+                    baseUrl + "/options.html#pressure-unit"
+                },
+                {
+                    pbOtherUnits,
+                    baseUrl + "/options.html#other-units"
+                },
+                {
+                    pbDisableTcs,
+                    baseUrl + "/options.html#disable-tcs-scripts"
+                },
+                {
+                    pbWebServer,
+                    baseUrl + "/options.html#enable-web-server"
+                },
+                {
+                    pbOverspeedMonitor,
+                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
+                    baseUrl + "/physics.html#train-control-system"
+                },
+            };
+            if (urls.TryGetValue(sender, out var url))
+            {
+                // This method is also compatible with .NET Core 3
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+        }
+
+        private void HelpIcon_MouseEnter(object sender, EventArgs _)
+        {
+            if (sender is PictureBox pb)
+                pb.Image = Properties.Resources.info_18_hover;
+        }
+
+        private void HelpIcon_MouseLeave(object sender, EventArgs _)
+        {
+            if (sender is PictureBox pb)
+                pb.Image = Properties.Resources.info_18;
+        }
+        #endregion
     }
 }
