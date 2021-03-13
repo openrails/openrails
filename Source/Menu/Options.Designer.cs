@@ -30,8 +30,8 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -42,7 +42,7 @@
             this.checkViewMapWindow = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
-            this.pbSpeedControl = new System.Windows.Forms.PictureBox();
+            this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
             this.pbWebServer = new System.Windows.Forms.PictureBox();
             this.pbDisableTcs = new System.Windows.Forms.PictureBox();
             this.pbOtherUnits = new System.Windows.Forms.PictureBox();
@@ -54,11 +54,11 @@
             this.pbLAA = new System.Windows.Forms.PictureBox();
             this.pbAlerter = new System.Windows.Forms.PictureBox();
             this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
-            this.pbDispatcherWindow = new System.Windows.Forms.PictureBox();
-            this.label28 = new System.Windows.Forms.Label();
+            this.pbMapWindow = new System.Windows.Forms.PictureBox();
+            this.labelPortNumber = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.checkEnableWebServer = new System.Windows.Forms.CheckBox();
-            this.checkSpeedControl = new System.Windows.Forms.CheckBox();
+            this.checkOverspeedMonitor = new System.Windows.Forms.CheckBox();
             this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
             this.labelPressureUnit = new System.Windows.Forms.Label();
@@ -109,7 +109,7 @@
             this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.checkHotStart = new System.Windows.Forms.CheckBox();
-            this.checkSimpleControlPhysics = new System.Windows.Forms.CheckBox();
+            this.checkSimpleControlsPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             this.checkCurveResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkTunnelResistanceDependent = new System.Windows.Forms.CheckBox();
@@ -207,7 +207,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
@@ -219,7 +219,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDispatcherWindow)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMapWindow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.tabPageAudio.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
@@ -299,9 +299,9 @@
             this.lBrakePipeChargingRate.Location = new System.Drawing.Point(66, 173);
             this.lBrakePipeChargingRate.Margin = new System.Windows.Forms.Padding(3);
             this.lBrakePipeChargingRate.Name = "lBrakePipeChargingRate";
-            this.lBrakePipeChargingRate.Size = new System.Drawing.Size(180, 13);
+            this.lBrakePipeChargingRate.Size = new System.Drawing.Size(174, 13);
             this.lBrakePipeChargingRate.TabIndex = 8;
-            this.lBrakePipeChargingRate.Text = "       Brake pipe charging rate (PSI/s)";
+            this.lBrakePipeChargingRate.Text = "     Brake pipe charging rate (PSI/s)";
             // 
             // checkGraduatedRelease
             // 
@@ -378,7 +378,7 @@
             // 
             // tabPageGeneral
             // 
-            this.tabPageGeneral.Controls.Add(this.pbSpeedControl);
+            this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.pbWebServer);
             this.tabPageGeneral.Controls.Add(this.pbDisableTcs);
             this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
@@ -390,11 +390,11 @@
             this.tabPageGeneral.Controls.Add(this.pbLAA);
             this.tabPageGeneral.Controls.Add(this.pbAlerter);
             this.tabPageGeneral.Controls.Add(this.pbControlConfirmations);
-            this.tabPageGeneral.Controls.Add(this.pbDispatcherWindow);
-            this.tabPageGeneral.Controls.Add(this.label28);
+            this.tabPageGeneral.Controls.Add(this.pbMapWindow);
+            this.tabPageGeneral.Controls.Add(this.labelPortNumber);
             this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
-            this.tabPageGeneral.Controls.Add(this.checkSpeedControl);
+            this.tabPageGeneral.Controls.Add(this.checkOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
@@ -419,17 +419,17 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
-            // pbSpeedControl
+            // pbOverspeedMonitor
             // 
-            this.pbSpeedControl.Image = ((System.Drawing.Image)(resources.GetObject("pbSpeedControl.Image")));
-            this.pbSpeedControl.Location = new System.Drawing.Point(320, 7);
-            this.pbSpeedControl.Name = "pbSpeedControl";
-            this.pbSpeedControl.Size = new System.Drawing.Size(18, 18);
-            this.pbSpeedControl.TabIndex = 30;
-            this.pbSpeedControl.TabStop = false;
-            this.pbSpeedControl.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbSpeedControl.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbSpeedControl.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.pbOverspeedMonitor.Image = ((System.Drawing.Image)(resources.GetObject("pbOverspeedMonitor.Image")));
+            this.pbOverspeedMonitor.Location = new System.Drawing.Point(320, 7);
+            this.pbOverspeedMonitor.Name = "pbOverspeedMonitor";
+            this.pbOverspeedMonitor.Size = new System.Drawing.Size(18, 18);
+            this.pbOverspeedMonitor.TabIndex = 30;
+            this.pbOverspeedMonitor.TabStop = false;
+            this.pbOverspeedMonitor.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
             // pbWebServer
             // 
@@ -563,26 +563,26 @@
             this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
             this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // pbDispatcherWindow
+            // pbMapWindow
             // 
-            this.pbDispatcherWindow.Image = ((System.Drawing.Image)(resources.GetObject("pbDispatcherWindow.Image")));
-            this.pbDispatcherWindow.Location = new System.Drawing.Point(22, 76);
-            this.pbDispatcherWindow.Name = "pbDispatcherWindow";
-            this.pbDispatcherWindow.Size = new System.Drawing.Size(18, 18);
-            this.pbDispatcherWindow.TabIndex = 18;
-            this.pbDispatcherWindow.TabStop = false;
-            this.pbDispatcherWindow.Click += new System.EventHandler(this.HelpIcon_Click);
-            this.pbDispatcherWindow.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
-            this.pbDispatcherWindow.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            this.pbMapWindow.Image = ((System.Drawing.Image)(resources.GetObject("pbMapWindow.Image")));
+            this.pbMapWindow.Location = new System.Drawing.Point(22, 76);
+            this.pbMapWindow.Name = "pbMapWindow";
+            this.pbMapWindow.Size = new System.Drawing.Size(18, 18);
+            this.pbMapWindow.TabIndex = 18;
+            this.pbMapWindow.TabStop = false;
+            this.pbMapWindow.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbMapWindow.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbMapWindow.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
             // 
-            // label28
+            // labelPortNumber
             // 
-            this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(89, 333);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(66, 13);
-            this.label28.TabIndex = 17;
-            this.label28.Text = "Port Number";
+            this.labelPortNumber.AutoSize = true;
+            this.labelPortNumber.Location = new System.Drawing.Point(85, 333);
+            this.labelPortNumber.Name = "labelPortNumber";
+            this.labelPortNumber.Size = new System.Drawing.Size(64, 13);
+            this.labelPortNumber.TabIndex = 17;
+            this.labelPortNumber.Text = "Port number";
             // 
             // numericWebServerPort
             // 
@@ -616,15 +616,15 @@
             this.checkEnableWebServer.Text = "       Enable webserver";
             this.checkEnableWebServer.UseVisualStyleBackColor = true;
             // 
-            // checkSpeedControl
+            // checkOverspeedMonitor
             // 
-            this.checkSpeedControl.AutoSize = true;
-            this.checkSpeedControl.Location = new System.Drawing.Point(304, 6);
-            this.checkSpeedControl.Name = "checkSpeedControl";
-            this.checkSpeedControl.Size = new System.Drawing.Size(113, 17);
-            this.checkSpeedControl.TabIndex = 14;
-            this.checkSpeedControl.Text = "       Speed control";
-            this.checkSpeedControl.UseVisualStyleBackColor = true;
+            this.checkOverspeedMonitor.AutoSize = true;
+            this.checkOverspeedMonitor.Location = new System.Drawing.Point(304, 6);
+            this.checkOverspeedMonitor.Name = "checkOverspeedMonitor";
+            this.checkOverspeedMonitor.Size = new System.Drawing.Size(136, 17);
+            this.checkOverspeedMonitor.TabIndex = 14;
+            this.checkOverspeedMonitor.Text = "       Overspeed monitor";
+            this.checkOverspeedMonitor.UseVisualStyleBackColor = true;
             // 
             // checkDisableTCSScripts
             // 
@@ -642,9 +642,9 @@
             this.labelOtherUnits.Location = new System.Drawing.Point(133, 257);
             this.labelOtherUnits.Margin = new System.Windows.Forms.Padding(3);
             this.labelOtherUnits.Name = "labelOtherUnits";
-            this.labelOtherUnits.Size = new System.Drawing.Size(79, 13);
+            this.labelOtherUnits.Size = new System.Drawing.Size(73, 13);
             this.labelOtherUnits.TabIndex = 9;
-            this.labelOtherUnits.Text = "       Other units";
+            this.labelOtherUnits.Text = "     Other units";
             // 
             // labelPressureUnit
             // 
@@ -652,9 +652,9 @@
             this.labelPressureUnit.Location = new System.Drawing.Point(133, 230);
             this.labelPressureUnit.Margin = new System.Windows.Forms.Padding(3);
             this.labelPressureUnit.Name = "labelPressureUnit";
-            this.labelPressureUnit.Size = new System.Drawing.Size(89, 13);
+            this.labelPressureUnit.Size = new System.Drawing.Size(83, 13);
             this.labelPressureUnit.TabIndex = 12;
-            this.labelPressureUnit.Text = "       Pressure unit";
+            this.labelPressureUnit.Text = "     Pressure unit";
             // 
             // comboBoxOtherUnits
             // 
@@ -690,9 +690,9 @@
             this.labelLanguage.Location = new System.Drawing.Point(133, 203);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
-            this.labelLanguage.Size = new System.Drawing.Size(76, 13);
+            this.labelLanguage.Size = new System.Drawing.Size(70, 13);
             this.labelLanguage.TabIndex = 10;
-            this.labelLanguage.Text = "       Language";
+            this.labelLanguage.Text = "     Language";
             // 
             // comboLanguage
             // 
@@ -1198,7 +1198,7 @@
             // 
             this.tabPageSimulation.Controls.Add(this.groupBox1);
             this.tabPageSimulation.Controls.Add(this.checkHotStart);
-            this.tabPageSimulation.Controls.Add(this.checkSimpleControlPhysics);
+            this.tabPageSimulation.Controls.Add(this.checkSimpleControlsPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.checkCurveResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkTunnelResistanceDependent);
@@ -1272,15 +1272,15 @@
             this.checkHotStart.Text = "Steam locomotive hot start";
             this.checkHotStart.UseVisualStyleBackColor = true;
             // 
-            // checkSimpleControlPhysics
+            // checkSimpleControlsPhysics
             // 
-            this.checkSimpleControlPhysics.AutoSize = true;
-            this.checkSimpleControlPhysics.Location = new System.Drawing.Point(6, 215);
-            this.checkSimpleControlPhysics.Name = "checkSimpleControlPhysics";
-            this.checkSimpleControlPhysics.Size = new System.Drawing.Size(153, 17);
-            this.checkSimpleControlPhysics.TabIndex = 8;
-            this.checkSimpleControlPhysics.Text = "Simple Control and Physics";
-            this.checkSimpleControlPhysics.UseVisualStyleBackColor = true;
+            this.checkSimpleControlsPhysics.AutoSize = true;
+            this.checkSimpleControlsPhysics.Location = new System.Drawing.Point(6, 215);
+            this.checkSimpleControlsPhysics.Name = "checkSimpleControlsPhysics";
+            this.checkSimpleControlsPhysics.Size = new System.Drawing.Size(156, 17);
+            this.checkSimpleControlsPhysics.TabIndex = 8;
+            this.checkSimpleControlsPhysics.Text = "Simple controls and physics";
+            this.checkSimpleControlsPhysics.UseVisualStyleBackColor = true;
             // 
             // checkCurveSpeedDependent
             // 
@@ -1794,27 +1794,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle8;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
@@ -2504,7 +2504,7 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pbSpeedControl)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
@@ -2516,7 +2516,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pbDispatcherWindow)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMapWindow)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
             this.tabPageAudio.PerformLayout();
@@ -2658,7 +2658,7 @@
         private System.Windows.Forms.CheckBox checkAlerterExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkHotStart;
-        private System.Windows.Forms.CheckBox checkSimpleControlPhysics;
+        private System.Windows.Forms.CheckBox checkSimpleControlsPhysics;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
         private System.Windows.Forms.CheckBox checkVerticalSync;
         private System.Windows.Forms.ComboBox comboPressureUnit;
@@ -2712,7 +2712,7 @@
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.NumericUpDown precipitationBoxLength;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
-        private System.Windows.Forms.CheckBox checkSpeedControl;
+        private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.CheckBox checkDoubleWire;
@@ -2728,9 +2728,9 @@
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
         private System.Windows.Forms.CheckBox checkEnableWebServer;
         private System.Windows.Forms.NumericUpDown numericWebServerPort;
-        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.Label labelPortNumber;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
-        private System.Windows.Forms.PictureBox pbDispatcherWindow;
+        private System.Windows.Forms.PictureBox pbMapWindow;
         private System.Windows.Forms.PictureBox pbControlConfirmations;
         private System.Windows.Forms.PictureBox pbAlerter;
         private System.Windows.Forms.PictureBox pbLAA;
@@ -2742,6 +2742,6 @@
         private System.Windows.Forms.PictureBox pbOtherUnits;
         private System.Windows.Forms.PictureBox pbWebServer;
         private System.Windows.Forms.PictureBox pbDisableTcs;
-        private System.Windows.Forms.PictureBox pbSpeedControl;
+        private System.Windows.Forms.PictureBox pbOverspeedMonitor;
     }
 }

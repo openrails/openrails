@@ -139,7 +139,7 @@ namespace ORTS
             checkAlerter.Checked = Settings.Alerter;
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
-            checkSpeedControl.Checked = Settings.SpeedControl;
+            checkOverspeedMonitor.Checked = Settings.SpeedControl;
             checkConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewMapWindow.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
@@ -183,7 +183,7 @@ namespace ORTS
 
             // Simulation tab
 
-            checkSimpleControlPhysics.Checked = Settings.SimpleControlPhysics;
+            checkSimpleControlsPhysics.Checked = Settings.SimpleControlPhysics;
             checkUseAdvancedAdhesion.Checked = Settings.UseAdvancedAdhesion;
             labelAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked;
             numericAdhesionMovingAverageFilterSize.Enabled = checkUseAdvancedAdhesion.Checked; 
@@ -430,7 +430,7 @@ namespace ORTS
             // General tab
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
-            Settings.SpeedControl = checkSpeedControl.Checked;
+            Settings.SpeedControl = checkOverspeedMonitor.Checked;
             Settings.SuppressConfirmations = !checkConfirmations.Checked;
             Settings.ViewDispatcher = checkViewMapWindow.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
@@ -469,7 +469,7 @@ namespace ORTS
             Settings.DoubleWire = checkDoubleWire.Checked;
 
             // Simulation tab
-            Settings.SimpleControlPhysics = checkSimpleControlPhysics.Checked;
+            Settings.SimpleControlPhysics = checkSimpleControlsPhysics.Checked;
             Settings.UseAdvancedAdhesion = checkUseAdvancedAdhesion.Checked;
             Settings.AdhesionMovingAverageFilterSize = (int)numericAdhesionMovingAverageFilterSize.Value;
             Settings.BreakCouplers = checkBreakCouplers.Checked;
@@ -763,8 +763,7 @@ namespace ORTS
 
         #region Help for General Options
         /// <summary>
-        /// Loads a relevant page from the manual maintained by James Ross's automatic build
-        /// Info icon taken from https://icons8.com/icon/set/info/office--blue
+        /// Loads a relevant page from the manual maintained by James Ross's automatic build.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -782,7 +781,8 @@ namespace ORTS
                     baseUrl + "/options.html#control-confirmations"
                 },
                 {
-                    pbDispatcherWindow,
+                    pbMapWindow,
+                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
                     baseUrl + "/options.html#dispatcher-window"
                 },
                 {
@@ -822,7 +822,8 @@ namespace ORTS
                     baseUrl + "/options.html#enable-web-server"
                 },
                 {
-                    pbSpeedControl,
+                    pbOverspeedMonitor,
+                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
                     baseUrl + "/physics.html#train-control-system"
                 },
             };
