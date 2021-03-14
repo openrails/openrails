@@ -69,8 +69,10 @@ namespace Orts.Simulation.Signalling
         private Dictionary<uint, SignalRefObject> SignalRefList;
         private Dictionary<uint, SignalObject> SignalHeadList;
         public static SIGSCRfile scrfile;
+        public static CsSignalScripts CsSignalScripts;
         public int ORTSSignalTypeCount { get; private set; }
         public IList<string> ORTSSignalTypes;
+        public IList<string> ORTSNormalsubtypes;
 
         public int noSignals;
         private int foundSignals;
@@ -111,6 +113,7 @@ namespace Orts.Simulation.Signalling
 
             ORTSSignalTypeCount = sigcfg.ORTSFunctionTypes.Count;
             ORTSSignalTypes = sigcfg.ORTSFunctionTypes;
+            ORTSNormalsubtypes = sigcfg.ORTSNormalSubtypes;
 
             trackDB = simulator.TDB.TrackDB;
             tsectiondat = simulator.TSectionDat;
@@ -120,6 +123,7 @@ namespace Orts.Simulation.Signalling
 
             Trace.Write(" SIGSCR ");
             scrfile = new SIGSCRfile(new SignalScripts(sigcfg.ScriptPath, sigcfg.ScriptFiles, sigcfg.SignalTypes, sigcfg.ORTSFunctionTypes, sigcfg.ORTSNormalSubtypes));
+            CsSignalScripts = new CsSignalScripts(Simulator);
 
             // build list of signal world file information
 
@@ -12706,8 +12710,10 @@ namespace Orts.Simulation.Signalling
     public class SignalHead
     {
         public SignalType signalType;           // from sigcfg file
+        public CsSignalScript usedCsSignalScript = null;
         public SignalScripts.SCRScripts usedSigScript = null;   // used sigscript
         public MstsSignalAspect state = MstsSignalAspect.STOP;
+        public string TextSignalAspect = String.Empty;
         public int draw_state;
         public int trItemIndex;                 // Index to trItem   
         public uint TrackJunctionNode;          // Track Junction Node (= 0 if not set)
@@ -12821,6 +12827,11 @@ namespace Orts.Simulation.Signalling
 
                 // get related signalscript
                 Signals.scrfile.SignalScripts.Scripts.TryGetValue(signalType, out usedSigScript);
+
+                usedCsSignalScript = Signals.CsSignalScripts.LoadSignalScript(signalType.Script)
+                    ?? Signals.CsSignalScripts.LoadSignalScript(signalType.Name);
+                usedCsSignalScript?.AttachToHead(this);
+                usedCsSignalScript?.Initialize();
 
                 // set signal speeds
                 foreach (SignalAspect thisAspect in signalType.Aspects)
@@ -13268,6 +13279,8 @@ namespace Orts.Simulation.Signalling
             else
                 state = MstsSignalAspect.STOP;
 
+            TextSignalAspect = "";
+
             draw_state = def_draw_state(state);
         }//SetMostRestrictiveAspect
 
@@ -13282,6 +13295,9 @@ namespace Orts.Simulation.Signalling
                 state = signalType.GetLeastRestrictiveAspect();
             else
                 state = MstsSignalAspect.CLEAR_2;
+
+            TextSignalAspect = "";
+
             def_draw_state(state);
         }//SetLeastRestrictiveAspect
 
@@ -13335,7 +13351,14 @@ namespace Orts.Simulation.Signalling
 
         public void Update()
         {
-            SIGSCRfile.SH_update(this, Signals.scrfile);
+            if (usedCsSignalScript is CsSignalScript)
+            {
+                usedCsSignalScript.Update();
+            }
+            else
+            {
+                SIGSCRfile.SH_update(this, Signals.scrfile);
+            }
         }
     } //Update
 

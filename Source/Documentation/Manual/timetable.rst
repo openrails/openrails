@@ -1850,7 +1850,8 @@ not be stopped.
 
 .. _timetable-midnight:
 
-11.5.6.5 Running Trains Around Midnight.
+Running Trains Around Midnight
+''''''''''''''''''''''''''''''
 
 A timetable can be defined for a full 24 hour day, and  so would include trains 
 running around midnight.
@@ -1866,7 +1867,7 @@ The following rules apply for the player train:
   beginning of the day, unless the ``$next`` :ref:`command <timetable-cmd-next>` 
   is used.
 
-The following rules apply for AI trains :
+The following rules apply for AI trains:
 
 - Trains booked to start before midnight will be started at the end of the day, 
   but will continue to run if terminating after midnight.

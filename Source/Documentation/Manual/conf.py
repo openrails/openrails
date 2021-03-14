@@ -57,6 +57,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # is enabled with language, an equivalent format for the selected locale).
 today_fmt = '%d %B %Y'
 
+# NOTE: This is needed because ReadTheDocs uses an old version of Sphinx.
+# The master toctree document.
+master_doc = 'index'
+
 
 # -- Options for HTML output -------------------------------------------------
 

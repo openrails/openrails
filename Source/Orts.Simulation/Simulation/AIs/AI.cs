@@ -79,10 +79,10 @@ namespace Orts.Simulation.AIs
 #endif
             if (simulator.Activity != null && simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition != null)
             {
-                foreach (var sd in simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.ServiceDefinitionList)
+                var activityFile = simulator.Activity.Tr_Activity.Tr_Activity_File;
+                foreach (var sd in activityFile.Traffic_Definition.ServiceDefinitionList)
                 {
-                    AITrain train = CreateAITrain(sd,
-                    simulator.Activity.Tr_Activity.Tr_Activity_File.Traffic_Definition.TrafficFile.TrafficDefinition, simulator.TimetableMode);
+                    AITrain train = CreateAITrain(sd, activityFile.Traffic_Definition.TrafficFile.TrafficDefinition, simulator.TimetableMode);
                     if (cancellation.IsCancellationRequested) // ping loader watchdog
                         return;
                 }

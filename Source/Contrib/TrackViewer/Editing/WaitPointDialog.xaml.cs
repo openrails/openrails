@@ -84,7 +84,7 @@ namespace ORTS.TrackViewer.Editing
             {
                 aiRequestPassRed.IsChecked = true;
             }
-            else if (currentWaitTimeS >= 60011 && currentWaitTimeS <= 60020)
+            else if (currentWaitTimeS >= 60011 && currentWaitTimeS <= 60021)
             {
                 int seconds = currentWaitTimeS - 60010;
                 blowHornSeconds.Text = seconds.ToString(System.Globalization.CultureInfo.CurrentCulture);
@@ -134,7 +134,7 @@ namespace ORTS.TrackViewer.Editing
             }
             if (selectBlowHorn.IsChecked == true)
             {
-                // coding is 60011 to 60020
+                // coding is 60011 to 60021; 60021 used for American Horn Sequence
                 int seconds = GetIntOrZero(blowHornSeconds.Text);
                 if (seconds < 0)
                 {
@@ -142,10 +142,10 @@ namespace ORTS.TrackViewer.Editing
                     seconds = 1;
                     blowHornSeconds.Text = "1";
                 }
-                if (seconds > 10)
+                if (seconds > 11)
                 {
-                    seconds = 10;
-                    blowHornSeconds.Text = "10";
+                    seconds = 11;
+                    blowHornSeconds.Text = "11";
                 }
                 return 60010 + seconds;
             }

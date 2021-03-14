@@ -22,7 +22,7 @@ using System.Collections.Generic;
 
 namespace ORTS.Scripting.Api
 {
-    public abstract class BrakeController : AbstractScriptClass
+    public abstract class BrakeController : AbstractTrainScriptClass
     {
         /// <summary>
         /// True if the driver has asked for an emergency braking (push button)
