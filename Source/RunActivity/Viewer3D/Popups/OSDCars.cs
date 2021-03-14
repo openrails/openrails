@@ -37,7 +37,14 @@ namespace Orts.Viewer3D.Popups
             Trains = 0x1,
             Cars = 0x2,
         }
-        DisplayState State = DisplayState.Trains;
+        private DisplayState State
+        {
+            get => (DisplayState)Owner.Viewer.Settings.OSDCarsState;
+            set
+            {
+                Owner.Viewer.Settings.OSDCarsState = (int)value;
+            }
+        }
 
         Dictionary<TrainCar, LabelPrimitive> Labels = new Dictionary<TrainCar, LabelPrimitive>();
 
