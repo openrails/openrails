@@ -775,8 +775,6 @@ auxiliary systems can be adjusted by the optional parameter
 A :ref:`scripting interface <features-scripting-eps>` to customize the behavior
 of the power supply is also available.
 
-.. _physics-steam:
-
 Steam Locomotives
 =================
 
@@ -3092,8 +3090,6 @@ The following values, in the wagon section of the file need to be set for a manu
 - ``MaxApplicationRate``
 
 The manual brake can be increased by pressing *Alt-]*, and decreased by pressing *Alt-[*.
-
-.. _physics-steam:
 
 Steam Brakes
 ------------

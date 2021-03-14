@@ -59,10 +59,10 @@ others. The software is published so that the user community can
 understand how the software functions to facilitate feedback and to 
 improve the capabilities of Open Rails software.
 
-Open Rails is published under the GPL license which is "copyleft"[1]  to ensure 
+Open Rails is published under the GPL license which is "copyleft"[1]_ to ensure 
 that the source code always remains publicly available.
 
-.. [1] http://www.gnu.org/copyleft//
+.. [1] https://gnu.org/copyleft
 
 .. _intro-MSTSneeded:
 
