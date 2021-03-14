@@ -1871,23 +1871,18 @@ does not work for the terminating event of the activity.
 AI Train Horn Blow
 ------------------
 
-Horn blow by AI trains is achieved by inserting into the AI train path a 
-waiting point.
+Waiting points can be used to instruct AI trains to blow their horns at 
+specific locations.
+
 If the waiting time value is between 60011 (1 second horn blow) and 
 60020 (10 seconds horn blow), a single horn blow is generated.
+
 If the waiting time value is 60021, a horn blow sequence is generated, 
 with the pattern long blow - long blow - short blow - long blow (North 
 American horn pattern at level crossings).
 
 The AI train will not stop at these waiting points, but will continue at its 
 regular speed.
-
-If a "normal" waiting point follows a horn blow waiting point, the horn blow 
-must be terminated before the normal waiting point is reached ( just in case).
-
-On the other hand, a horn blow waiting point may be positioned just after a 
-normal WP (thus achieving the effect that the train blows the horn when it 
-restarts).
 
 If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
 set to 1 in the .eng file, the bell is played for further 30 seconds after 
@@ -1902,33 +1897,27 @@ AI Horn Blow at Level Crossings
 
 .. index::
    single: ORTSAIHornAtCrossings
+   single: ORTSAICrossingHornPattern
    single: NextActivityObjectUID
 
-If the line::
+Open Rails can also be instructed to have AI trains automatically blow their
+horns at level crossings. This feature is activated using special properties
+in the ``Tr_Activity_File`` block:
 
-    ORTSAIHornAtCrossings ( 1 )
+========================= ========================================================
+Property                  Meaning
+========================= ========================================================
+ORTSAIHornAtCrossings     Have AI trains blow their horns at level crossings ---
+                          ``( 1 )`` for yes, ``( 0 )`` or omitted for no.
+ORTSAICrossingHornPattern Specifies the horn pattern blown at level crossings ---
+                          ``( US )`` for a North American long-long-short-long
+                          pattern, ``( Single )`` or omitted for a single blast
+                          between 2 to 5 seconds long.
+========================= ========================================================
 
-is inserted into the activity file following the line::
-
-    NextActivityObjectUID ( 32768 )
-
-(note that the number in the brackets may be different), then AI trains will 
-blow their horn at level crossings for a random time between 2 and 5 
-seconds. The level crossing must be defined as such in the MSTS route editor. 
-
-If line::
-
-    ORTSAIHornAtCrossings ( 1 )
-
-is followed by line::
-
-	ORTSAICrossingHornPattern ( US )
-
-instead of a single horn blow, a horn blow sequence will be generated
-for all AI trains before crossings,  
-with the pattern long blow - long blow - short blow - long blow (North 
-American horn pattern at level crossings). 
-
+These lines **must** be placed after the ``NextActivityObjectUID ( 32768 )``
+line, or else the activity file will become unloadable in the MSTS Activity
+Editor.
 
 *Simple* road crossings, not defined as level crossings, may also be present in 
 the route. The AI train will not blow the horn at these crossings. Examining 
