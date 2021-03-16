@@ -230,14 +230,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         // Get the brake BC & BP for EOT conditions
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            string s = "Manual Brake";
+            string s = Simulator.Catalog.GetString("Manual Brake");
             return s;
         }
 
         // Get Brake information for train
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            string s = "Manual Brake";
+            string s = Simulator.Catalog.GetString("Manual Brake");
             return s;
         }
 
