@@ -124,29 +124,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
         public override string GetStatus(Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
             string s = string.Format(
-                " BC {0}",
+                Simulator.Catalog.GetString(" BC {0}"),
                 FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true));
-                s += string.Format(" BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true));
+                s += string.Format(Simulator.Catalog.GetString(" BP {0}"), FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true));
             return s;
         }
 
         // Get Brake information for train
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            string s = string.Format(" EQ {0}", FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true));
+            string s = string.Format(Simulator.Catalog.GetString(" EQ {0}"), FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.PSI, units[BrakeSystemComponent.EqualizingReservoir], true));
             s += string.Format(
-                " BC {0}",
+                Simulator.Catalog.GetString(" BC {0}"),
                 FormatStrings.FormatPressure(Car.Train.HUDWagonBrakeCylinderPSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true)
             );
 
             s += string.Format(
-                " BP {0}",                
+                Simulator.Catalog.GetString(" BP {0}"),                
                 FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true)
             );
             if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
-                s += " EOT " + lastCarBrakeSystem.GetStatus(units);
+                s += Simulator.Catalog.GetString(" EOT ") + lastCarBrakeSystem.GetStatus(units);
             if (HandbrakePercent > 0)
-                s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
+                s += string.Format(Simulator.Catalog.GetString(" Handbrake {0:F0}%"), HandbrakePercent);
             return s;
         }
 

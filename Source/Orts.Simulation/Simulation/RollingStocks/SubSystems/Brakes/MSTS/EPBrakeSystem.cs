@@ -63,9 +63,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
 
         public override string GetFullStatus(BrakeSystem lastCarBrakeSystem, Dictionary<BrakeSystemComponent, PressureUnit> units)
         {
-            string s = string.Format(" BC {0}", FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true));
+            string s = string.Format(Simulator.Catalog.GetString(" BC {0}"), FormatStrings.FormatPressure(CylPressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakeCylinder], true));
             if (HandbrakePercent > 0)
-                s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
+                s += string.Format(Simulator.Catalog.GetString(" Handbrake {0:F0}%"), HandbrakePercent);
             return s;
         }
     }
