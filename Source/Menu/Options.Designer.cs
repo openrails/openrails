@@ -29,9 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OptionsForm));
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
             this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
@@ -421,7 +420,7 @@
             // 
             // pbOverspeedMonitor
             // 
-            this.pbOverspeedMonitor.Image = ((System.Drawing.Image)(resources.GetObject("pbOverspeedMonitor.Image")));
+            this.pbOverspeedMonitor.Image = global::ORTS.Properties.Resources.info_18;
             this.pbOverspeedMonitor.Location = new System.Drawing.Point(320, 7);
             this.pbOverspeedMonitor.Name = "pbOverspeedMonitor";
             this.pbOverspeedMonitor.Size = new System.Drawing.Size(18, 18);
@@ -433,7 +432,7 @@
             // 
             // pbWebServer
             // 
-            this.pbWebServer.Image = ((System.Drawing.Image)(resources.GetObject("pbWebServer.Image")));
+            this.pbWebServer.Image = global::ORTS.Properties.Resources.info_18;
             this.pbWebServer.Location = new System.Drawing.Point(22, 309);
             this.pbWebServer.Name = "pbWebServer";
             this.pbWebServer.Size = new System.Drawing.Size(18, 18);
@@ -445,7 +444,7 @@
             // 
             // pbDisableTcs
             // 
-            this.pbDisableTcs.Image = ((System.Drawing.Image)(resources.GetObject("pbDisableTcs.Image")));
+            this.pbDisableTcs.Image = global::ORTS.Properties.Resources.info_18;
             this.pbDisableTcs.Location = new System.Drawing.Point(22, 286);
             this.pbDisableTcs.Name = "pbDisableTcs";
             this.pbDisableTcs.Size = new System.Drawing.Size(18, 18);
@@ -457,7 +456,7 @@
             // 
             // pbOtherUnits
             // 
-            this.pbOtherUnits.Image = ((System.Drawing.Image)(resources.GetObject("pbOtherUnits.Image")));
+            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
             this.pbOtherUnits.Location = new System.Drawing.Point(130, 257);
             this.pbOtherUnits.Name = "pbOtherUnits";
             this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
@@ -469,7 +468,7 @@
             // 
             // pbPressureUnit
             // 
-            this.pbPressureUnit.Image = ((System.Drawing.Image)(resources.GetObject("pbPressureUnit.Image")));
+            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
             this.pbPressureUnit.Location = new System.Drawing.Point(130, 230);
             this.pbPressureUnit.Name = "pbPressureUnit";
             this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
@@ -481,7 +480,7 @@
             // 
             // pbLanguage
             // 
-            this.pbLanguage.Image = ((System.Drawing.Image)(resources.GetObject("pbLanguage.Image")));
+            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
             this.pbLanguage.Location = new System.Drawing.Point(130, 203);
             this.pbLanguage.Name = "pbLanguage";
             this.pbLanguage.Size = new System.Drawing.Size(18, 18);
@@ -493,7 +492,7 @@
             // 
             // pbChargingRate
             // 
-            this.pbChargingRate.Image = ((System.Drawing.Image)(resources.GetObject("pbChargingRate.Image")));
+            this.pbChargingRate.Image = global::ORTS.Properties.Resources.info_18;
             this.pbChargingRate.Location = new System.Drawing.Point(64, 173);
             this.pbChargingRate.Name = "pbChargingRate";
             this.pbChargingRate.Size = new System.Drawing.Size(18, 18);
@@ -505,7 +504,7 @@
             // 
             // pbRelease
             // 
-            this.pbRelease.Image = ((System.Drawing.Image)(resources.GetObject("pbRelease.Image")));
+            this.pbRelease.Image = global::ORTS.Properties.Resources.info_18;
             this.pbRelease.Location = new System.Drawing.Point(22, 145);
             this.pbRelease.Name = "pbRelease";
             this.pbRelease.Size = new System.Drawing.Size(18, 18);
@@ -517,7 +516,7 @@
             // 
             // pbRetainer
             // 
-            this.pbRetainer.Image = ((System.Drawing.Image)(resources.GetObject("pbRetainer.Image")));
+            this.pbRetainer.Image = global::ORTS.Properties.Resources.info_18;
             this.pbRetainer.Location = new System.Drawing.Point(22, 122);
             this.pbRetainer.Name = "pbRetainer";
             this.pbRetainer.Size = new System.Drawing.Size(18, 18);
@@ -529,7 +528,7 @@
             // 
             // pbLAA
             // 
-            this.pbLAA.Image = ((System.Drawing.Image)(resources.GetObject("pbLAA.Image")));
+            this.pbLAA.Image = global::ORTS.Properties.Resources.info_18;
             this.pbLAA.Location = new System.Drawing.Point(22, 99);
             this.pbLAA.Name = "pbLAA";
             this.pbLAA.Size = new System.Drawing.Size(18, 18);
@@ -541,7 +540,7 @@
             // 
             // pbAlerter
             // 
-            this.pbAlerter.Image = ((System.Drawing.Image)(resources.GetObject("pbAlerter.Image")));
+            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
             this.pbAlerter.Location = new System.Drawing.Point(22, 7);
             this.pbAlerter.Name = "pbAlerter";
             this.pbAlerter.Size = new System.Drawing.Size(18, 18);
@@ -553,7 +552,7 @@
             // 
             // pbControlConfirmations
             // 
-            this.pbControlConfirmations.Image = ((System.Drawing.Image)(resources.GetObject("pbControlConfirmations.Image")));
+            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
             this.pbControlConfirmations.Location = new System.Drawing.Point(22, 53);
             this.pbControlConfirmations.Name = "pbControlConfirmations";
             this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
@@ -565,7 +564,7 @@
             // 
             // pbMapWindow
             // 
-            this.pbMapWindow.Image = ((System.Drawing.Image)(resources.GetObject("pbMapWindow.Image")));
+            this.pbMapWindow.Image = global::ORTS.Properties.Resources.info_18;
             this.pbMapWindow.Location = new System.Drawing.Point(22, 76);
             this.pbMapWindow.Name = "pbMapWindow";
             this.pbMapWindow.Size = new System.Drawing.Size(18, 18);
@@ -1794,27 +1793,27 @@
             this.dataGridViewContent.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dataGridViewContent.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.dataGridViewContent.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewContent.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewContent.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dataGridViewContent.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.nameDataGridViewTextBoxColumn,
             this.pathDataGridViewTextBoxColumn});
             this.dataGridViewContent.DataSource = this.bindingSourceContent;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewContent.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewContent.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridViewContent.Location = new System.Drawing.Point(0, 0);
             this.dataGridViewContent.MultiSelect = false;
