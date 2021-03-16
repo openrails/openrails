@@ -27,6 +27,7 @@ using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Orts.Simulation.Physics;
+using Orts.Viewer3D.RollingStock;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -231,6 +232,33 @@ namespace Orts.Viewer3D.WebServices
         #region /API/TRAINDRIVINGDISPLAY
         [Route(HttpVerbs.Get, "/TRAINDRIVINGDISPLAY")]
         public IEnumerable<TrainDrivingDisplay.ListLabel> TrainDrivingDisplay([QueryField] bool normalText) => Viewer.TrainDrivingDisplayList(normalText);
+        #endregion
+
+
+        #region /API/CABCONTROLS
+        public class ControlValue {
+            public string TypeName;
+            public double MinValue;
+            public double MaxValue;
+            public double RangeFraction;
+        }
+
+        [Route(HttpVerbs.Get, "/CABCONTROLS")]
+        public IEnumerable<ControlValue> CabControls()
+        {
+            var viewer = Viewer.PlayerLocomotiveViewer as MSTSLocomotiveViewer;
+            var controlValueList = new List<ControlValue>();
+            foreach (var controlRenderer in viewer._CabRenderer.ControlMap.Values)
+            {
+                controlValueList.Add(new ControlValue
+                    { TypeName = controlRenderer.GetControlType().ToString()
+                    , MinValue = controlRenderer.Control.MinValue
+                    , MaxValue = controlRenderer.Control.MaxValue
+                    , RangeFraction = controlRenderer.GetRangeFraction()
+                    });
+            }
+            return controlValueList;
+        }
         #endregion
     }
 }
