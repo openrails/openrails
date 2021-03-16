@@ -319,6 +319,7 @@ namespace Orts.Simulation.AIs
 
         public override void Save(BinaryWriter outf)
         {
+            // if something changes in this list, it must be changed also in Save(BinaryWriter outf) within TTTrain.cs
             outf.Write("AI");
             base.Save(outf);
             outf.Write(UiD);

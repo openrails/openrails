@@ -21,6 +21,9 @@ using Orts.Simulation;
 
 namespace ORTS.Scripting.Api
 {
+    /// <summary>
+    /// Base class for all scripts. Contains information about the simulation.
+    /// </summary>
     public abstract class AbstractScriptClass
     {
         /// <summary>
@@ -31,6 +34,13 @@ namespace ORTS.Scripting.Api
         /// Clock value (in seconds) for the simulation. Starts with a value = 0.
         /// </summary>
         public Func<float> GameTime;
+    }
+    /// <summary>
+    /// Base class for scripts related to train subsystems.
+    /// Provides train specific features such as speed and travelled distance.
+    /// </summary>
+    public abstract class AbstractTrainScriptClass : AbstractScriptClass
+    {
         /// <summary>
         /// Running total of distance travelled - always positive, updated by train physics.
         /// </summary>
@@ -84,7 +94,7 @@ namespace ORTS.Scripting.Api
 
     public class OdoMeter : Counter
     {
-        public OdoMeter(AbstractScriptClass asc)
+        public OdoMeter(AbstractTrainScriptClass asc)
         {
             CurrentValue = asc.DistanceM;
         }

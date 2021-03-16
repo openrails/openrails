@@ -1180,8 +1180,6 @@ namespace Orts.Viewer3D.RollingStock
             #endregion
 
             _Viewer.AdjustCabHeight(_Viewer.DisplaySize.X, _Viewer.DisplaySize.Y);
-
-            _Viewer.CabCamera.ScreenChanged();
         }
 
         public CabRenderer(Viewer viewer, MSTSLocomotive car, CabViewFile CVFFile) //used by 3D cab as a refrence, thus many can be eliminated

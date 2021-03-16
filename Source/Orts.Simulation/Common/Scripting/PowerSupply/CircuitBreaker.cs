@@ -23,7 +23,7 @@ namespace ORTS.Scripting.Api
     /// <summary>
     /// Circuit breaker for electric locomotives
     /// </summary>
-    public abstract class CircuitBreaker : AbstractScriptClass
+    public abstract class CircuitBreaker : AbstractTrainScriptClass
     {
         /// <summary>
         /// Current state of the circuit breaker

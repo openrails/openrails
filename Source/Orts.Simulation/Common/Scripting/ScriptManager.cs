@@ -33,7 +33,7 @@ namespace Orts.Common.Scripting
     public class ScriptManager
     {
         readonly Simulator Simulator;
-        readonly Dictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
+        readonly IDictionary<string, Assembly> Scripts = new Dictionary<string, Assembly>();
         static readonly ProviderOptions ProviderOptions = new ProviderOptions(Path.Combine(new Uri(Path.GetDirectoryName(Assembly.GetExecutingAssembly().CodeBase)).LocalPath, "roslyn", "csc.exe"), 10);
         static readonly CSharpCodeProvider Compiler = new CSharpCodeProvider(ProviderOptions);
 
@@ -57,7 +57,7 @@ namespace Orts.Common.Scripting
             Simulator = simulator;
         }
 
-        public object Load(string[] pathArray, string name)
+        public object Load(string[] pathArray, string name, string nameSpace = "ORTS.Scripting.Script")
         {
             if (Thread.CurrentThread.Name != "Loader Process")
                 Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
@@ -75,19 +75,24 @@ namespace Orts.Common.Scripting
             
             path = path.ToLowerInvariant();
 
-            var type = String.Format("ORTS.Scripting.Script.{0}", Path.GetFileNameWithoutExtension(path));
+            var type = String.Format("{0}.{1}", nameSpace, Path.GetFileNameWithoutExtension(path).Replace('-', '_'));
 
-            if (Scripts.ContainsKey(path))
-                return Scripts[path].CreateInstance(type, true);
+            if (!Scripts.ContainsKey(path))
+                Scripts[path] = CompileScript(path);
+            return Scripts[path]?.CreateInstance(type, true);
+        }
 
+        private static Assembly CompileScript(string path)
+        {
             try
             {
                 var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), path);
                 if (!compilerResults.Errors.HasErrors)
                 {
                     var script = compilerResults.CompiledAssembly;
-                    Scripts.Add(path, script);
-                    return script.CreateInstance(type, true);
+                    if (script == null)
+                        Trace.TraceWarning($"Script file {path} could not be loaded into the process.");
+                    return script;
                 }
                 else
                 {
@@ -115,6 +120,54 @@ namespace Orts.Common.Scripting
                     Trace.WriteLine(new FileLoadException(path, error));
                 else
                     Trace.TraceWarning("Ignored missing script file {0}", path);
+                return null;
+            }
+        }
+
+        public Assembly LoadFolder(string path)
+        {
+            if (Thread.CurrentThread.Name != "Loader Process")
+                Trace.TraceError("ScriptManager.Load incorrectly called by {0}; must be Loader Process or crashes will occur.", Thread.CurrentThread.Name);
+
+            if (path == null || path == "")
+                return null;
+
+            if (!Directory.Exists(path)) return null;
+
+            var files = Directory.GetFiles(path, "*.cs");
+
+            if (files == null || files.Length == 0) return null;
+
+            try
+            {
+                var compilerResults = Compiler.CompileAssemblyFromFile(GetCompilerParameters(), files);
+                if (!compilerResults.Errors.HasErrors)
+                {
+                    return compilerResults.CompiledAssembly;
+                }
+                else
+                {
+                    var errorString = new StringBuilder();
+                    errorString.AppendFormat("Skipped script folder {0} with error:", path);
+                    errorString.Append(Environment.NewLine);
+                    foreach (CompilerError error in compilerResults.Errors)
+                    {
+                        errorString.AppendFormat("   {0}, file: {1}, line: {2}, column: {3}", error.ErrorText, error.FileName, error.Line /*- prefixLines*/, error.Column);
+                        errorString.Append(Environment.NewLine);
+                    }
+
+                    Trace.TraceWarning(errorString.ToString());
+                    return null;
+                }
+            }
+            catch (InvalidDataException error)
+            {
+                Trace.TraceWarning("Skipped script folder {0} with error: {1}", path, error.Message);
+                return null;
+            }
+            catch (Exception error)
+            {
+                Trace.WriteLine(new FileLoadException(path, error));
                 return null;
             }
         }

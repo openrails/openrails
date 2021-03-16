@@ -265,7 +265,7 @@ namespace Orts.Viewer3D
             graphicsDevice.SetVertexBuffers(VertexBufferBindings);
             if (PatchIndexBuffer != null)
                 graphicsDevice.Indices = PatchIndexBuffer;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, 17 * 17, 0, PatchPrimitiveCount);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, PatchPrimitiveCount);
         }
 
         float Elevation(int x, int z)

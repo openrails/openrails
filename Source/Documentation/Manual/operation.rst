@@ -1014,6 +1014,9 @@ how to modify these two files is contained in the Word document
 ``TECH DOCS`` folder of an MSTS installation. Note that these files must be 
 edited with a Unicode text editor.
 
+Additionally, a C# scripting interface is available to complement
+the ``sigscr.dat```file for more complex systems.
+
 SignalNumClearAhead
 -------------------
 
@@ -1072,6 +1075,56 @@ value, or if the sigcfg.dat file is located in the subfolder ``OpenRails``:
 - 0 : no signal will be cleared beyond this signal until train passes this 
   signal.
 - -1: signal does not count when determining the number of signals to clear.
+
+C# signal scripting
+-------------------
+To simulate especially complex behavior, Open Rails provides a C# scripting 
+interface for signals. These scripts are written in .cs files containing
+C# classes, but they are compiled and linked at runtime, so they don't depend 
+on changes in the core program itself and can be distributed with the route.
+
+C# signal scripts are placed in the ``Script/Signal`` subfolder within the
+main folder of the route. All C# files present in that folder will be compiled
+together at runtime into a single assembly.
+
+For each signal type defined in the ``sigcfg.dat`` file, OR tries to find a 
+class with the same name as the signal type in the compiled assembly. 
+If there are compile errors or no class with the required name
+is found, the script defined in the ``sigscr.dat`` file will be used instead,
+if there is an adequate script there.
+
+Each signal script must be inside the ``ORTS.Scripting.Script`` namespace
+and has to inherit from the ``CsSignalScript`` class, which contains all 
+the API functions available for the script.
+
+This example illustrates the minimum code required for a signal script::
+
+    using System;
+    using Orts.Simulation.Signalling;
+
+    namespace ORTS.Scripting.Script
+    {
+        public class MYSIGNALTYPE : CsSignalScript
+        {
+            public override void Initialize()
+            {
+                // Perform some initializations here, taking into account
+                // that no route information is available at this point
+            }
+            public override void Update()
+            {
+                // Set the aspect of your signal here depending on route state
+            }
+            public override void HandleSignalMessage(int signalId, string message) {}
+        }
+    }
+    
+For a list of the API calls available for signal scripts, refer to the
+``Orts.Simulation/Simulation/Signalling/CsSignalScript.cs`` file in the OR source code.
+
+A development environment can be set up to accelerate development process.
+See the :ref:`engine scripting <features-scripting-csharp>` section for
+further information.
 
 OR-specific Signaling Functions
 ===============================
@@ -1818,23 +1871,18 @@ does not work for the terminating event of the activity.
 AI Train Horn Blow
 ------------------
 
-Horn blow by AI trains is achieved by inserting into the AI train path a 
-waiting point.
+Waiting points can be used to instruct AI trains to blow their horns at 
+specific locations.
+
 If the waiting time value is between 60011 (1 second horn blow) and 
 60020 (10 seconds horn blow), a single horn blow is generated.
+
 If the waiting time value is 60021, a horn blow sequence is generated, 
 with the pattern long blow - long blow - short blow - long blow (North 
 American horn pattern at level crossings).
 
 The AI train will not stop at these waiting points, but will continue at its 
 regular speed.
-
-If a "normal" waiting point follows a horn blow waiting point, the horn blow 
-must be terminated before the normal waiting point is reached ( just in case).
-
-On the other hand, a horn blow waiting point may be positioned just after a 
-normal WP (thus achieving the effect that the train blows the horn when it 
-restarts).
 
 If the lead locomotive of the AI train has parameter DoesHornTriggerBell 
 set to 1 in the .eng file, the bell is played for further 30 seconds after 
@@ -1849,33 +1897,27 @@ AI Horn Blow at Level Crossings
 
 .. index::
    single: ORTSAIHornAtCrossings
+   single: ORTSAICrossingHornPattern
    single: NextActivityObjectUID
 
-If the line::
+Open Rails can also be instructed to have AI trains automatically blow their
+horns at level crossings. This feature is activated using special properties
+in the ``Tr_Activity_File`` block:
 
-    ORTSAIHornAtCrossings ( 1 )
+========================= ========================================================
+Property                  Meaning
+========================= ========================================================
+ORTSAIHornAtCrossings     Have AI trains blow their horns at level crossings ---
+                          ``( 1 )`` for yes, ``( 0 )`` or omitted for no.
+ORTSAICrossingHornPattern Specifies the horn pattern blown at level crossings ---
+                          ``( US )`` for a North American long-long-short-long
+                          pattern, ``( Single )`` or omitted for a single blast
+                          between 2 to 5 seconds long.
+========================= ========================================================
 
-is inserted into the activity file following the line::
-
-    NextActivityObjectUID ( 32768 )
-
-(note that the number in the brackets may be different), then AI trains will 
-blow their horn at level crossings for a random time between 2 and 5 
-seconds. The level crossing must be defined as such in the MSTS route editor. 
-
-If line::
-
-    ORTSAIHornAtCrossings ( 1 )
-
-is followed by line::
-
-	ORTSAICrossingHornPattern ( US )
-
-instead of a single horn blow, a horn blow sequence will be generated
-for all AI trains before crossings,  
-with the pattern long blow - long blow - short blow - long blow (North 
-American horn pattern at level crossings). 
-
+These lines **must** be placed after the ``NextActivityObjectUID ( 32768 )``
+line, or else the activity file will become unloadable in the MSTS Activity
+Editor.
 
 *Simple* road crossings, not defined as level crossings, may also be present in 
 the route. The AI train will not blow the horn at these crossings. Examining 
