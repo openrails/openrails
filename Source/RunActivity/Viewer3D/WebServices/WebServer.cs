@@ -235,6 +235,12 @@ namespace Orts.Viewer3D.WebServices
         #endregion
 
 
+        // Note: to see the JSON, use "localhost:2150/API/CABCONTROLS" - Beware: case matters
+        // Note: to run the webpage, use "localhost:2150/CabControls/index.html" - case doesn't matter
+        // Do not use "localhost:2150/API/CABCONTROLS"
+        // or use "localhost:2150/API/CABCONTROLS/"
+        // as they will return the webpage, but the path will be "/" not "/CabControls/ and the wrong scripts will be loaded.
+
         #region /API/CABCONTROLS
         [Route(HttpVerbs.Get, "/CABCONTROLS")]
         public IEnumerable<MSTSLocomotiveViewer.ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetControlValueList();
