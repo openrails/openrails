@@ -1,5 +1,10 @@
 
-/* Developper: Used as help for cells alignment*/
+/* Developer: Used as help for cells alignment*/
 /*td{
 	border: blue 1px solid;
 }*/
+
+div { text-align: center; }
+table { margin: auto; }
+tr { text-align: right; }
+td { padding: 2px; }
