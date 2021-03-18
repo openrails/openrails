@@ -728,6 +728,7 @@ namespace Orts.Viewer3D.RollingStock
         }
         #endregion
 
+        // Makes cab controls readable from other threads, such as WebServer
         public class ControlValue
         {
             public string TypeName;
@@ -1404,7 +1405,8 @@ namespace Orts.Viewer3D.RollingStock
     {
         protected readonly Viewer Viewer;
         protected readonly MSTSLocomotive Locomotive;
-        protected readonly CabViewControl Control;
+        //protected readonly CabViewControl Control; //CJ
+        public readonly CabViewControl Control;
         protected readonly CabShader Shader;
         protected readonly SpriteBatchMaterial ControlView;
 
