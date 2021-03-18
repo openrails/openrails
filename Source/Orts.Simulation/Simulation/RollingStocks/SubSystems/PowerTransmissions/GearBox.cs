@@ -293,7 +293,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public GearBoxOperation GearBoxOperation = GearBoxOperation.Manual;
         public GearBoxOperation OriginalGearBoxOperation = GearBoxOperation.Manual;
 
-        public float MotiveForceN
+        public float TractiveForceN
         {
             get
             {
@@ -308,13 +308,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                         //        motiveForceN = DieselEngine.MaxOutputPowerW / CurrentSpeedMpS;
                         //}
 
-                        float motiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
+                        float tractiveForceN = DieselEngine.DieselTorqueTab[DieselEngine.RealRPM] * DieselEngine.DemandedThrottlePercent / DieselEngine.DieselTorqueTab.MaxY() * 0.01f * CurrentGear.MaxTractiveForceN;
                         if (CurrentSpeedMpS > 0)
                         {
-                            if (motiveForceN > (DieselEngine.CurrentDieselOutputPowerW/ CurrentSpeedMpS))
-                                motiveForceN = DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS;
+                            if (tractiveForceN > (DieselEngine.CurrentDieselOutputPowerW/ CurrentSpeedMpS))
+                                tractiveForceN = DieselEngine.CurrentDieselOutputPowerW / CurrentSpeedMpS;
                         }
-                        return motiveForceN;
+                        return tractiveForceN;
                     }
                     else
                         return -CurrentGear.CoastingForceN * (100f + ClutchPercent) / 100f;

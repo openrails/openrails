@@ -27,7 +27,7 @@ namespace Orts.Parsers.Msts
     /// </summary>
     public class Interpolator
     {
-        float[] X;  // must be in increasing order
+        public float[] X;  // must be in increasing order
         public float[] Y;
         float[] Y2;
         int Size;       // number of values populated
