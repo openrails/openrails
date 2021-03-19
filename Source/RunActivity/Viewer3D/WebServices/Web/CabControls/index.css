@@ -1,11 +1,8 @@
-
-/* Developer: Used as help for cells alignment*/
-/*td{
-	border: blue 1px solid;
-}*/
-
-div, th { text-align: center; }
+/* index.css */
 table { margin: auto; }
+div, th { text-align: center; }
+div#menu { text-align: left; }
 tr td { text-align: right;}
-.gauge {  background-color: rgba(233, 233, 49, 0.568); }
 td { padding: 2px; }
+.scale { width: 100px; background-color: lightgray; }
+.gauge { margin: 0px; background-color: gold; }

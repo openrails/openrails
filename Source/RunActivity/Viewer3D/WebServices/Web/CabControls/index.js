@@ -27,8 +27,7 @@ var httpCodeSuccess = 200;
 var xmlHttpRequestCodeDone = 4;
 
 function ApiCabControls() {
-	// GET to fetch data, POST to send it
-	// "/API/APISAMPLE" /API is a prefix hard-coded into the WebServer class
+	// "/API/CABCONTROLS" /API is a prefix hard-coded into the WebServer class
 	hr.open("GET", "/API/CABCONTROLS/", true);
 	hr.send();
 	hr.onreadystatechange = function () {
@@ -36,12 +35,15 @@ function ApiCabControls() {
 			var jso = JSON.parse(hr.responseText);
 			if (jso != null) // Can happen using IEv11
 			{
+				// Replaces any content (innerHTML) of the element with id=markup with the data from the jso JavaScript Object
 				markup.innerHTML = prepareData(jso);
 			}
 		}
 	}
 }
 
+// Extracts the data for each control and builds a table record for it.
+// | Control | Min | Value | Max | Scale |
 function prepareData(jso)
 {
 	let data = "";
@@ -49,6 +51,7 @@ function prepareData(jso)
 		let control = jso[i];
 		data += "<tr>";
 
+		// TypeName
 		// Replace "_" with " "
 		let typeName = control.TypeName.split("_").join(" ");
 		// Capitalise each word
@@ -57,34 +60,38 @@ function prepareData(jso)
 			words[i] = words[i][0].toUpperCase() + words[i].substr(1);
 		}
 		let value = words.join(" ");
-
 		data += "<td>" + value + "</td>";
 		
+		// MinValue
 		let range = control.MaxValue - control.MinValue;
 		data += "<td>" + control.MinValue + "</td>";
+
+		// Value
 		value = control.RangeFraction * (range) + control.MinValue;
 		let decimalPlaces = 4;
 		if (range > 0.01)
 			decimalPlaces -= 1;
 		if (range > 0.1)
 			decimalPlaces -= 1;
-		if (range > 1)
+		if (range > 2)
 			decimalPlaces -= 1;
 		if (range > 10)
 			decimalPlaces -= 1;
-		// if (range > 100)
-		// 	decimalPlaces -= 1;
 		if (range == 0)
 			value = "-";
 		else
 			value = value.toFixed(decimalPlaces);
+		data += "<td>" + value + "</td>";
+
+		// MaxValue
+		data += "<td>" + control.MaxValue + "</td>";
+
+		// Scale
 		let scale = 0;
 		if (value != "-")
 			scale = control.RangeFraction * 100;
-		if (scale > 100)
-			scale = 100;
-		data += "<td><div class='gauge' width=" + scale + ">" + value + "</div></td>";
-		data += "<td>" + control.MaxValue + "</td>";
+		data += "<td class='scale'><div class='gauge' style=' width: " + scale + "px;'>&nbsp;</div></td>";
+
 		data += "</tr>";
 	}
 	return data;
