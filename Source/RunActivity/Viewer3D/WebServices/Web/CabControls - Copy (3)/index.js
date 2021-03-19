@@ -78,12 +78,7 @@ function prepareData(jso)
 			value = "-";
 		else
 			value = value.toFixed(decimalPlaces);
-		let scale = 0;
-		if (value != "-")
-			scale = control.RangeFraction * 100;
-		if (scale > 100)
-			scale = 100;
-		data += "<td><div class='gauge' width=" + scale + ">" + value + "</div></td>";
+		data += "<td width=" + value/range + ">" + value + "</td>";
 		data += "<td>" + control.MaxValue + "</td>";
 		data += "</tr>";
 	}

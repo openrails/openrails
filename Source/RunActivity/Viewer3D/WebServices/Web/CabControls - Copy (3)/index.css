@@ -6,6 +6,5 @@
 
 div, th { text-align: center; }
 table { margin: auto; }
-tr td { text-align: right;}
-.gauge {  background-color: rgba(233, 233, 49, 0.568); }
+tr td { text-align: right; color: yellow; }
 td { padding: 2px; }
