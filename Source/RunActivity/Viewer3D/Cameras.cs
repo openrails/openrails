@@ -1549,6 +1549,12 @@ namespace Orts.Viewer3D
             LastCar();
         }
 
+        public override void LastCar()
+        {
+            base.LastCar();
+            attachedToRear = true;
+        }
+
     }
 
     public class InsideThreeDimCamera : NonTrackingCamera
