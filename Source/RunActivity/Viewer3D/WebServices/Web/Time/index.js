@@ -22,9 +22,9 @@
 // 2. It doesn't hide some returning error codes
 // 3. We don't need the ability to chain promises that fetch() offers.
 
-var hr = new XMLHttpRequest;
-var httpCodeSuccess = 200;
-var xmlHttpRequestCodeDone = 4;
+let hr = new XMLHttpRequest;
+let httpCodeSuccess = 200;
+let xmlHttpRequestCodeDone = 4;
 
 function ApiTime() {
 	// "/API/TIME" /API is a prefix hard-coded into the WebServer class

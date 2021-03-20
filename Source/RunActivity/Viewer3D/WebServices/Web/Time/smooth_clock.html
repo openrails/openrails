@@ -73,7 +73,7 @@
       }
     </style>
 </head>
-<body>
+<body onload="setInterval (ApiTime, 500)">
     <div id="container">
         <div class="clock">
             <div class="clock__hours-hand" id="hours-hand"></div>
@@ -122,6 +122,10 @@ const clockwiseRotate = (center, angle, point) => {
     x: x + center.x,
     y: y + center.y
   }
+}
+
+const rotate = (elm, deg) => {
+  elm.style.transform = `rotate(${deg}deg)`
 }
 
 const clock = document.getElementsByClassName('clock')[0]
@@ -174,33 +178,70 @@ secondsHand.style.left = width / 2 - secondsHandDims.width / 2 + 'px'
 secondsHand.style.height = (height / 2 - dialHours[11].offsetHeight + offByPivot) + 'px'
 secondsHand.style.transformOrigin = `${secondsHandDims.width / 2}px ${secondsHand.offsetHeight - offByPivot}px`
 
-const dt = new Date()
-const secsElpased = dt.getSeconds()
-const minsElapsed = dt.getMinutes() + secsElpased / 60
-const hrsElapsed = dt.getHours() % 12 + minsElapsed / 60
+// const dt = new Date()
+// const secsElpased = dt.getSeconds()
+// const minsElapsed = dt.getMinutes() + secsElpased / 60
+// const hrsElapsed = dt.getHours() % 12 + minsElapsed / 60
 
-const rotate = (elm, deg) => {
-  elm.style.transform = `rotate(${deg}deg)`
-}
-const init = () => {
-  let hrsRotn = hrsElapsed * 360 / 12
-  let minsRotn = minsElapsed * 360 / 60
-  let secsRotn = secsElpased * 360 / 60
-  rotate(hoursHand, hrsRotn)
-  rotate(minutesHand, minsRotn)
-  rotate(secondsHand, secsRotn)
-  setTimeout(() => (secondsHand.style.transition = 'transform 1s linear'), 0)
-  setInterval(() => {
-    // do %360
-    hrsRotn += 360 / (3600 * 12)
-    minsRotn += 360 / (60 * 60)
-    secsRotn += 360 / 60
-    rotate(hoursHand, hrsRotn)
-    rotate(minutesHand, minsRotn)
-    rotate(secondsHand, secsRotn)
-  }, 1000)
-}
-init()
+let secsElpased = 30;
+let minsElapsed = 20;
+let hrsElapsed = 10;
+let hrsRotn = hrsElapsed * 360 / 12;
+let minsRotn = minsElapsed * 360 / 60;
+let secsRotn = secsElpased * 360 / 60;
+// rotate(hoursHand, hrsRotn);
+// rotate(minutesHand, minsRotn);
+// rotate(secondsHand, secsRotn);
 
+// const init = () => {
+  // let hrsRotn = hrsElapsed * 360 / 12
+  // let minsRotn = minsElapsed * 360 / 60
+  // let secsRotn = secsElpased * 360 / 60
+  // rotate(hoursHand, hrsRotn)
+  // rotate(minutesHand, minsRotn)
+  // rotate(secondsHand, secsRotn)
+setTimeout(() => (secondsHand.style.transition = 'transform 1s linear'), 0)
+  // setInterval(() => {
+  //   // do %360
+    // hrsRotn += 360 / (3600 * 12)
+    // minsRotn += 360 / (60 * 60)
+    // secsRotn += 360 / 60
+    // rotate(hoursHand, hrsRotn)
+    // rotate(minutesHand, minsRotn)
+    // rotate(secondsHand, secsRotn)
+//  }, 1000)
+// }
+// init()
+let hr = new XMLHttpRequest;
+let httpCodeSuccess = 200;
+let xmlHttpRequestCodeDone = 4;
+
+function ApiTime() {
+	// "/API/TIME" /API is a prefix hard-coded into the WebServer class
+	hr.open("GET", "/API/TIME", true);
+	hr.send();
+	hr.onreadystatechange = function () {
+		if (this.readyState == xmlHttpRequestCodeDone && this.status == httpCodeSuccess) {
+      let vso = JSON.parse(hr.responseText);
+      if (vso != null) // Can happen using IEv11
+      {
+          let value = vso;
+          let hrsElapsed = Math.floor(value / (60 * 60));
+          let hoursRemainder = value - hrsElapsed * (60 * 60);
+          let minsElapsed = Math.floor(hoursRemainder / 60);
+          let minutesRemainder = hoursRemainder - (minsElapsed * 60);
+          let secsElpased = Math.floor(minutesRemainder);
+          let secondsRemainder = minutesRemainder - secsElpased;
+
+          hrsRotn = hrsElapsed * 360 / 12;
+          minsRotn = minsElapsed * 360 / 60;
+          secsRotn = secsElpased * 360 / 60;
+          rotate(hoursHand, hrsRotn);
+          rotate(minutesHand, minsRotn);
+          rotate(secondsHand, secsRotn);
+      }
+		}
+	}
+}
 </script>
 </html>
