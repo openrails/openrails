@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -355,6 +355,9 @@
     <Content Include="Viewer3D\WebServices\Web\index.css" />
     <Content Include="Viewer3D\WebServices\Web\index.html" />
     <Content Include="Viewer3D\WebServices\Web\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\Time\index.css" />
+    <Content Include="Viewer3D\WebServices\Web\Time\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\Time\index.js" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitorTrainDriving\index.css" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitorTrainDriving\index.html" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitorTrainDriving\index.js" />
