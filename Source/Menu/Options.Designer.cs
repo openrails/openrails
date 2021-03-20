@@ -33,7 +33,7 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.buttonOK = new System.Windows.Forms.Button();
             this.numericBrakePipeChargingRate = new System.Windows.Forms.NumericUpDown();
-            this.label4 = new System.Windows.Forms.Label();
+            this.lBrakePipeChargingRate = new System.Windows.Forms.Label();
             this.checkGraduatedRelease = new System.Windows.Forms.CheckBox();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.checkAlerter = new System.Windows.Forms.CheckBox();
@@ -41,10 +41,23 @@
             this.checkViewMapWindow = new System.Windows.Forms.CheckBox();
             this.tabOptions = new System.Windows.Forms.TabControl();
             this.tabPageGeneral = new System.Windows.Forms.TabPage();
-            this.label28 = new System.Windows.Forms.Label();
+            this.pbOverspeedMonitor = new System.Windows.Forms.PictureBox();
+            this.pbWebServer = new System.Windows.Forms.PictureBox();
+            this.pbDisableTcs = new System.Windows.Forms.PictureBox();
+            this.pbOtherUnits = new System.Windows.Forms.PictureBox();
+            this.pbPressureUnit = new System.Windows.Forms.PictureBox();
+            this.pbLanguage = new System.Windows.Forms.PictureBox();
+            this.pbChargingRate = new System.Windows.Forms.PictureBox();
+            this.pbRelease = new System.Windows.Forms.PictureBox();
+            this.pbRetainer = new System.Windows.Forms.PictureBox();
+            this.pbLAA = new System.Windows.Forms.PictureBox();
+            this.pbAlerter = new System.Windows.Forms.PictureBox();
+            this.pbControlConfirmations = new System.Windows.Forms.PictureBox();
+            this.pbMapWindow = new System.Windows.Forms.PictureBox();
+            this.labelPortNumber = new System.Windows.Forms.Label();
             this.numericWebServerPort = new System.Windows.Forms.NumericUpDown();
             this.checkEnableWebServer = new System.Windows.Forms.CheckBox();
-            this.checkSpeedControl = new System.Windows.Forms.CheckBox();
+            this.checkOverspeedMonitor = new System.Windows.Forms.CheckBox();
             this.checkDisableTCSScripts = new System.Windows.Forms.CheckBox();
             this.labelOtherUnits = new System.Windows.Forms.Label();
             this.labelPressureUnit = new System.Windows.Forms.Label();
@@ -95,7 +108,7 @@
             this.checkDoorsAITrains = new System.Windows.Forms.CheckBox();
             this.checkForcedRedAtStationStops = new System.Windows.Forms.CheckBox();
             this.checkHotStart = new System.Windows.Forms.CheckBox();
-            this.checkSimpleControlPhysics = new System.Windows.Forms.CheckBox();
+            this.checkSimpleControlsPhysics = new System.Windows.Forms.CheckBox();
             this.checkCurveSpeedDependent = new System.Windows.Forms.CheckBox();
             this.checkCurveResistanceDependent = new System.Windows.Forms.CheckBox();
             this.checkTunnelResistanceDependent = new System.Windows.Forms.CheckBox();
@@ -193,6 +206,19 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericBrakePipeChargingRate)).BeginInit();
             this.tabOptions.SuspendLayout();
             this.tabPageGeneral.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMapWindow)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).BeginInit();
             this.tabPageAudio.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericExternalSoundPassThruPercent)).BeginInit();
@@ -266,24 +292,24 @@
             0,
             0});
             // 
-            // label4
+            // lBrakePipeChargingRate
             // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(66, 173);
-            this.label4.Margin = new System.Windows.Forms.Padding(3);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(159, 13);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "Brake pipe charging rate (PSI/s)";
+            this.lBrakePipeChargingRate.AutoSize = true;
+            this.lBrakePipeChargingRate.Location = new System.Drawing.Point(66, 173);
+            this.lBrakePipeChargingRate.Margin = new System.Windows.Forms.Padding(3);
+            this.lBrakePipeChargingRate.Name = "lBrakePipeChargingRate";
+            this.lBrakePipeChargingRate.Size = new System.Drawing.Size(174, 13);
+            this.lBrakePipeChargingRate.TabIndex = 8;
+            this.lBrakePipeChargingRate.Text = "     Brake pipe charging rate (PSI/s)";
             // 
             // checkGraduatedRelease
             // 
             this.checkGraduatedRelease.AutoSize = true;
             this.checkGraduatedRelease.Location = new System.Drawing.Point(6, 144);
             this.checkGraduatedRelease.Name = "checkGraduatedRelease";
-            this.checkGraduatedRelease.Size = new System.Drawing.Size(162, 17);
+            this.checkGraduatedRelease.Size = new System.Drawing.Size(183, 17);
             this.checkGraduatedRelease.TabIndex = 6;
-            this.checkGraduatedRelease.Text = "Graduated release air brakes";
+            this.checkGraduatedRelease.Text = "       Graduated release air brakes";
             this.checkGraduatedRelease.UseVisualStyleBackColor = true;
             // 
             // buttonCancel
@@ -302,9 +328,9 @@
             this.checkAlerter.AutoSize = true;
             this.checkAlerter.Location = new System.Drawing.Point(6, 6);
             this.checkAlerter.Name = "checkAlerter";
-            this.checkAlerter.Size = new System.Drawing.Size(88, 17);
+            this.checkAlerter.Size = new System.Drawing.Size(109, 17);
             this.checkAlerter.TabIndex = 0;
-            this.checkAlerter.Text = "Alerter in cab";
+            this.checkAlerter.Text = "       Alerter in cab";
             this.checkAlerter.UseVisualStyleBackColor = true;
             this.checkAlerter.CheckedChanged += new System.EventHandler(this.checkAlerter_CheckedChanged);
             // 
@@ -313,9 +339,9 @@
             this.checkConfirmations.AutoSize = true;
             this.checkConfirmations.Location = new System.Drawing.Point(6, 52);
             this.checkConfirmations.Name = "checkConfirmations";
-            this.checkConfirmations.Size = new System.Drawing.Size(124, 17);
+            this.checkConfirmations.Size = new System.Drawing.Size(145, 17);
             this.checkConfirmations.TabIndex = 4;
-            this.checkConfirmations.Text = "Control confirmations";
+            this.checkConfirmations.Text = "       Control confirmations";
             this.checkConfirmations.UseVisualStyleBackColor = true;
             // 
             // checkViewMapWindow
@@ -323,9 +349,9 @@
             this.checkViewMapWindow.AutoSize = true;
             this.checkViewMapWindow.Location = new System.Drawing.Point(6, 75);
             this.checkViewMapWindow.Name = "checkViewMapWindow";
-            this.checkViewMapWindow.Size = new System.Drawing.Size(86, 17);
+            this.checkViewMapWindow.Size = new System.Drawing.Size(107, 17);
             this.checkViewMapWindow.TabIndex = 2;
-            this.checkViewMapWindow.Text = "Map window";
+            this.checkViewMapWindow.Text = "       Map window";
             this.checkViewMapWindow.UseVisualStyleBackColor = true;
             // 
             // tabOptions
@@ -343,7 +369,7 @@
             this.tabOptions.Controls.Add(this.tabPageContent);
             this.tabOptions.Controls.Add(this.tabPageUpdater);
             this.tabOptions.Controls.Add(this.tabPageExperimental);
-            this.tabOptions.Location = new System.Drawing.Point(12, 12);
+            this.tabOptions.Location = new System.Drawing.Point(13, 12);
             this.tabOptions.Name = "tabOptions";
             this.tabOptions.SelectedIndex = 0;
             this.tabOptions.Size = new System.Drawing.Size(610, 428);
@@ -351,10 +377,23 @@
             // 
             // tabPageGeneral
             // 
-            this.tabPageGeneral.Controls.Add(this.label28);
+            this.tabPageGeneral.Controls.Add(this.pbOverspeedMonitor);
+            this.tabPageGeneral.Controls.Add(this.pbWebServer);
+            this.tabPageGeneral.Controls.Add(this.pbDisableTcs);
+            this.tabPageGeneral.Controls.Add(this.pbOtherUnits);
+            this.tabPageGeneral.Controls.Add(this.pbPressureUnit);
+            this.tabPageGeneral.Controls.Add(this.pbLanguage);
+            this.tabPageGeneral.Controls.Add(this.pbChargingRate);
+            this.tabPageGeneral.Controls.Add(this.pbRelease);
+            this.tabPageGeneral.Controls.Add(this.pbRetainer);
+            this.tabPageGeneral.Controls.Add(this.pbLAA);
+            this.tabPageGeneral.Controls.Add(this.pbAlerter);
+            this.tabPageGeneral.Controls.Add(this.pbControlConfirmations);
+            this.tabPageGeneral.Controls.Add(this.pbMapWindow);
+            this.tabPageGeneral.Controls.Add(this.labelPortNumber);
             this.tabPageGeneral.Controls.Add(this.numericWebServerPort);
             this.tabPageGeneral.Controls.Add(this.checkEnableWebServer);
-            this.tabPageGeneral.Controls.Add(this.checkSpeedControl);
+            this.tabPageGeneral.Controls.Add(this.checkOverspeedMonitor);
             this.tabPageGeneral.Controls.Add(this.checkDisableTCSScripts);
             this.tabPageGeneral.Controls.Add(this.labelOtherUnits);
             this.tabPageGeneral.Controls.Add(this.labelPressureUnit);
@@ -366,11 +405,11 @@
             this.tabPageGeneral.Controls.Add(this.checkViewMapWindow);
             this.tabPageGeneral.Controls.Add(this.checkConfirmations);
             this.tabPageGeneral.Controls.Add(this.checkAlerterExternal);
-            this.tabPageGeneral.Controls.Add(this.checkAlerter);
             this.tabPageGeneral.Controls.Add(this.numericBrakePipeChargingRate);
             this.tabPageGeneral.Controls.Add(this.checkRetainers);
             this.tabPageGeneral.Controls.Add(this.checkGraduatedRelease);
-            this.tabPageGeneral.Controls.Add(this.label4);
+            this.tabPageGeneral.Controls.Add(this.lBrakePipeChargingRate);
+            this.tabPageGeneral.Controls.Add(this.checkAlerter);
             this.tabPageGeneral.Location = new System.Drawing.Point(4, 22);
             this.tabPageGeneral.Name = "tabPageGeneral";
             this.tabPageGeneral.Padding = new System.Windows.Forms.Padding(3);
@@ -379,18 +418,174 @@
             this.tabPageGeneral.Text = "General";
             this.tabPageGeneral.UseVisualStyleBackColor = true;
             // 
-            // label28
+            // pbOverspeedMonitor
             // 
-            this.label28.AutoSize = true;
-            this.label28.Location = new System.Drawing.Point(89, 340);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(66, 13);
-            this.label28.TabIndex = 17;
-            this.label28.Text = "Port Number";
+            this.pbOverspeedMonitor.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOverspeedMonitor.Location = new System.Drawing.Point(320, 7);
+            this.pbOverspeedMonitor.Name = "pbOverspeedMonitor";
+            this.pbOverspeedMonitor.Size = new System.Drawing.Size(18, 18);
+            this.pbOverspeedMonitor.TabIndex = 30;
+            this.pbOverspeedMonitor.TabStop = false;
+            this.pbOverspeedMonitor.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbOverspeedMonitor.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbOverspeedMonitor.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbWebServer
+            // 
+            this.pbWebServer.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbWebServer.Location = new System.Drawing.Point(22, 309);
+            this.pbWebServer.Name = "pbWebServer";
+            this.pbWebServer.Size = new System.Drawing.Size(18, 18);
+            this.pbWebServer.TabIndex = 29;
+            this.pbWebServer.TabStop = false;
+            this.pbWebServer.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbWebServer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbWebServer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbDisableTcs
+            // 
+            this.pbDisableTcs.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbDisableTcs.Location = new System.Drawing.Point(22, 286);
+            this.pbDisableTcs.Name = "pbDisableTcs";
+            this.pbDisableTcs.Size = new System.Drawing.Size(18, 18);
+            this.pbDisableTcs.TabIndex = 28;
+            this.pbDisableTcs.TabStop = false;
+            this.pbDisableTcs.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbDisableTcs.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbDisableTcs.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbOtherUnits
+            // 
+            this.pbOtherUnits.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbOtherUnits.Location = new System.Drawing.Point(130, 257);
+            this.pbOtherUnits.Name = "pbOtherUnits";
+            this.pbOtherUnits.Size = new System.Drawing.Size(18, 18);
+            this.pbOtherUnits.TabIndex = 27;
+            this.pbOtherUnits.TabStop = false;
+            this.pbOtherUnits.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbOtherUnits.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbOtherUnits.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbPressureUnit
+            // 
+            this.pbPressureUnit.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbPressureUnit.Location = new System.Drawing.Point(130, 230);
+            this.pbPressureUnit.Name = "pbPressureUnit";
+            this.pbPressureUnit.Size = new System.Drawing.Size(18, 18);
+            this.pbPressureUnit.TabIndex = 26;
+            this.pbPressureUnit.TabStop = false;
+            this.pbPressureUnit.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbPressureUnit.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbPressureUnit.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbLanguage
+            // 
+            this.pbLanguage.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLanguage.Location = new System.Drawing.Point(130, 203);
+            this.pbLanguage.Name = "pbLanguage";
+            this.pbLanguage.Size = new System.Drawing.Size(18, 18);
+            this.pbLanguage.TabIndex = 25;
+            this.pbLanguage.TabStop = false;
+            this.pbLanguage.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbLanguage.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbLanguage.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbChargingRate
+            // 
+            this.pbChargingRate.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbChargingRate.Location = new System.Drawing.Point(64, 173);
+            this.pbChargingRate.Name = "pbChargingRate";
+            this.pbChargingRate.Size = new System.Drawing.Size(18, 18);
+            this.pbChargingRate.TabIndex = 24;
+            this.pbChargingRate.TabStop = false;
+            this.pbChargingRate.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbChargingRate.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbChargingRate.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbRelease
+            // 
+            this.pbRelease.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRelease.Location = new System.Drawing.Point(22, 145);
+            this.pbRelease.Name = "pbRelease";
+            this.pbRelease.Size = new System.Drawing.Size(18, 18);
+            this.pbRelease.TabIndex = 23;
+            this.pbRelease.TabStop = false;
+            this.pbRelease.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbRelease.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbRelease.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbRetainer
+            // 
+            this.pbRetainer.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbRetainer.Location = new System.Drawing.Point(22, 122);
+            this.pbRetainer.Name = "pbRetainer";
+            this.pbRetainer.Size = new System.Drawing.Size(18, 18);
+            this.pbRetainer.TabIndex = 22;
+            this.pbRetainer.TabStop = false;
+            this.pbRetainer.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbRetainer.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbRetainer.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbLAA
+            // 
+            this.pbLAA.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbLAA.Location = new System.Drawing.Point(22, 99);
+            this.pbLAA.Name = "pbLAA";
+            this.pbLAA.Size = new System.Drawing.Size(18, 18);
+            this.pbLAA.TabIndex = 21;
+            this.pbLAA.TabStop = false;
+            this.pbLAA.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbLAA.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbLAA.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbAlerter
+            // 
+            this.pbAlerter.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbAlerter.Location = new System.Drawing.Point(22, 7);
+            this.pbAlerter.Name = "pbAlerter";
+            this.pbAlerter.Size = new System.Drawing.Size(18, 18);
+            this.pbAlerter.TabIndex = 20;
+            this.pbAlerter.TabStop = false;
+            this.pbAlerter.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbAlerter.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbAlerter.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbControlConfirmations
+            // 
+            this.pbControlConfirmations.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbControlConfirmations.Location = new System.Drawing.Point(22, 53);
+            this.pbControlConfirmations.Name = "pbControlConfirmations";
+            this.pbControlConfirmations.Size = new System.Drawing.Size(18, 18);
+            this.pbControlConfirmations.TabIndex = 19;
+            this.pbControlConfirmations.TabStop = false;
+            this.pbControlConfirmations.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbControlConfirmations.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbControlConfirmations.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // pbMapWindow
+            // 
+            this.pbMapWindow.Image = global::ORTS.Properties.Resources.info_18;
+            this.pbMapWindow.Location = new System.Drawing.Point(22, 76);
+            this.pbMapWindow.Name = "pbMapWindow";
+            this.pbMapWindow.Size = new System.Drawing.Size(18, 18);
+            this.pbMapWindow.TabIndex = 18;
+            this.pbMapWindow.TabStop = false;
+            this.pbMapWindow.Click += new System.EventHandler(this.HelpIcon_Click);
+            this.pbMapWindow.MouseEnter += new System.EventHandler(this.HelpIcon_MouseEnter);
+            this.pbMapWindow.MouseLeave += new System.EventHandler(this.HelpIcon_MouseLeave);
+            // 
+            // labelPortNumber
+            // 
+            this.labelPortNumber.AutoSize = true;
+            this.labelPortNumber.Location = new System.Drawing.Point(85, 333);
+            this.labelPortNumber.Name = "labelPortNumber";
+            this.labelPortNumber.Size = new System.Drawing.Size(64, 13);
+            this.labelPortNumber.TabIndex = 17;
+            this.labelPortNumber.Text = "Port number";
             // 
             // numericWebServerPort
             // 
-            this.numericWebServerPort.Location = new System.Drawing.Point(8, 338);
+            this.numericWebServerPort.Location = new System.Drawing.Point(8, 331);
             this.numericWebServerPort.Maximum = new decimal(new int[] {
             65534,
             0,
@@ -413,58 +608,58 @@
             // checkEnableWebServer
             // 
             this.checkEnableWebServer.AutoSize = true;
-            this.checkEnableWebServer.Location = new System.Drawing.Point(8, 315);
+            this.checkEnableWebServer.Location = new System.Drawing.Point(6, 308);
             this.checkEnableWebServer.Name = "checkEnableWebServer";
-            this.checkEnableWebServer.Size = new System.Drawing.Size(116, 17);
+            this.checkEnableWebServer.Size = new System.Drawing.Size(132, 17);
             this.checkEnableWebServer.TabIndex = 15;
-            this.checkEnableWebServer.Text = "Enable WebServer";
+            this.checkEnableWebServer.Text = "       Enable webserver";
             this.checkEnableWebServer.UseVisualStyleBackColor = true;
             // 
-            // checkSpeedControl
+            // checkOverspeedMonitor
             // 
-            this.checkSpeedControl.AutoSize = true;
-            this.checkSpeedControl.Location = new System.Drawing.Point(304, 6);
-            this.checkSpeedControl.Name = "checkSpeedControl";
-            this.checkSpeedControl.Size = new System.Drawing.Size(92, 17);
-            this.checkSpeedControl.TabIndex = 14;
-            this.checkSpeedControl.Text = "Speed control";
-            this.checkSpeedControl.UseVisualStyleBackColor = true;
+            this.checkOverspeedMonitor.AutoSize = true;
+            this.checkOverspeedMonitor.Location = new System.Drawing.Point(304, 6);
+            this.checkOverspeedMonitor.Name = "checkOverspeedMonitor";
+            this.checkOverspeedMonitor.Size = new System.Drawing.Size(136, 17);
+            this.checkOverspeedMonitor.TabIndex = 14;
+            this.checkOverspeedMonitor.Text = "       Overspeed monitor";
+            this.checkOverspeedMonitor.UseVisualStyleBackColor = true;
             // 
             // checkDisableTCSScripts
             // 
             this.checkDisableTCSScripts.AutoSize = true;
-            this.checkDisableTCSScripts.Location = new System.Drawing.Point(6, 279);
+            this.checkDisableTCSScripts.Location = new System.Drawing.Point(6, 285);
             this.checkDisableTCSScripts.Name = "checkDisableTCSScripts";
-            this.checkDisableTCSScripts.Size = new System.Drawing.Size(118, 17);
+            this.checkDisableTCSScripts.Size = new System.Drawing.Size(139, 17);
             this.checkDisableTCSScripts.TabIndex = 13;
-            this.checkDisableTCSScripts.Text = "Disable TCS scripts";
+            this.checkDisableTCSScripts.Text = "       Disable TCS scripts";
             this.checkDisableTCSScripts.UseVisualStyleBackColor = true;
             // 
             // labelOtherUnits
             // 
             this.labelOtherUnits.AutoSize = true;
-            this.labelOtherUnits.Location = new System.Drawing.Point(133, 254);
+            this.labelOtherUnits.Location = new System.Drawing.Point(133, 257);
             this.labelOtherUnits.Margin = new System.Windows.Forms.Padding(3);
             this.labelOtherUnits.Name = "labelOtherUnits";
-            this.labelOtherUnits.Size = new System.Drawing.Size(58, 13);
+            this.labelOtherUnits.Size = new System.Drawing.Size(73, 13);
             this.labelOtherUnits.TabIndex = 9;
-            this.labelOtherUnits.Text = "Other units";
+            this.labelOtherUnits.Text = "     Other units";
             // 
             // labelPressureUnit
             // 
             this.labelPressureUnit.AutoSize = true;
-            this.labelPressureUnit.Location = new System.Drawing.Point(133, 227);
+            this.labelPressureUnit.Location = new System.Drawing.Point(133, 230);
             this.labelPressureUnit.Margin = new System.Windows.Forms.Padding(3);
             this.labelPressureUnit.Name = "labelPressureUnit";
-            this.labelPressureUnit.Size = new System.Drawing.Size(68, 13);
+            this.labelPressureUnit.Size = new System.Drawing.Size(83, 13);
             this.labelPressureUnit.TabIndex = 12;
-            this.labelPressureUnit.Text = "Pressure unit";
+            this.labelPressureUnit.Text = "     Pressure unit";
             // 
             // comboBoxOtherUnits
             // 
             this.comboBoxOtherUnits.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxOtherUnits.FormattingEnabled = true;
-            this.comboBoxOtherUnits.Location = new System.Drawing.Point(6, 251);
+            this.comboBoxOtherUnits.Location = new System.Drawing.Point(6, 254);
             this.comboBoxOtherUnits.Name = "comboBoxOtherUnits";
             this.comboBoxOtherUnits.Size = new System.Drawing.Size(121, 21);
             this.comboBoxOtherUnits.TabIndex = 8;
@@ -474,16 +669,16 @@
             this.checkUseLargeAddressAware.AutoSize = true;
             this.checkUseLargeAddressAware.Location = new System.Drawing.Point(6, 98);
             this.checkUseLargeAddressAware.Name = "checkUseLargeAddressAware";
-            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(342, 17);
+            this.checkUseLargeAddressAware.Size = new System.Drawing.Size(363, 17);
             this.checkUseLargeAddressAware.TabIndex = 3;
-            this.checkUseLargeAddressAware.Text = "Large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
+            this.checkUseLargeAddressAware.Text = "       Large address aware binaries (for all 64bit and 3GB tuning on 32bit)";
             this.checkUseLargeAddressAware.UseVisualStyleBackColor = true;
             // 
             // comboPressureUnit
             // 
             this.comboPressureUnit.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboPressureUnit.FormattingEnabled = true;
-            this.comboPressureUnit.Location = new System.Drawing.Point(6, 224);
+            this.comboPressureUnit.Location = new System.Drawing.Point(6, 227);
             this.comboPressureUnit.Name = "comboPressureUnit";
             this.comboPressureUnit.Size = new System.Drawing.Size(121, 21);
             this.comboPressureUnit.TabIndex = 11;
@@ -491,18 +686,18 @@
             // labelLanguage
             // 
             this.labelLanguage.AutoSize = true;
-            this.labelLanguage.Location = new System.Drawing.Point(133, 200);
+            this.labelLanguage.Location = new System.Drawing.Point(133, 203);
             this.labelLanguage.Margin = new System.Windows.Forms.Padding(3);
             this.labelLanguage.Name = "labelLanguage";
-            this.labelLanguage.Size = new System.Drawing.Size(55, 13);
+            this.labelLanguage.Size = new System.Drawing.Size(70, 13);
             this.labelLanguage.TabIndex = 10;
-            this.labelLanguage.Text = "Language";
+            this.labelLanguage.Text = "     Language";
             // 
             // comboLanguage
             // 
             this.comboLanguage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboLanguage.FormattingEnabled = true;
-            this.comboLanguage.Location = new System.Drawing.Point(6, 197);
+            this.comboLanguage.Location = new System.Drawing.Point(6, 200);
             this.comboLanguage.Name = "comboLanguage";
             this.comboLanguage.Size = new System.Drawing.Size(121, 21);
             this.comboLanguage.TabIndex = 9;
@@ -523,9 +718,9 @@
             this.checkRetainers.AutoSize = true;
             this.checkRetainers.Location = new System.Drawing.Point(6, 121);
             this.checkRetainers.Name = "checkRetainers";
-            this.checkRetainers.Size = new System.Drawing.Size(146, 17);
+            this.checkRetainers.Size = new System.Drawing.Size(167, 17);
             this.checkRetainers.TabIndex = 5;
-            this.checkRetainers.Text = "Retainer valve on all cars";
+            this.checkRetainers.Text = "       Retainer valve on all cars";
             this.checkRetainers.UseVisualStyleBackColor = true;
             // 
             // tabPageAudio
@@ -1002,7 +1197,7 @@
             // 
             this.tabPageSimulation.Controls.Add(this.groupBox1);
             this.tabPageSimulation.Controls.Add(this.checkHotStart);
-            this.tabPageSimulation.Controls.Add(this.checkSimpleControlPhysics);
+            this.tabPageSimulation.Controls.Add(this.checkSimpleControlsPhysics);
             this.tabPageSimulation.Controls.Add(this.checkCurveSpeedDependent);
             this.tabPageSimulation.Controls.Add(this.checkCurveResistanceDependent);
             this.tabPageSimulation.Controls.Add(this.checkTunnelResistanceDependent);
@@ -1076,15 +1271,15 @@
             this.checkHotStart.Text = "Steam locomotive hot start";
             this.checkHotStart.UseVisualStyleBackColor = true;
             // 
-            // checkSimpleControlPhysics
+            // checkSimpleControlsPhysics
             // 
-            this.checkSimpleControlPhysics.AutoSize = true;
-            this.checkSimpleControlPhysics.Location = new System.Drawing.Point(6, 215);
-            this.checkSimpleControlPhysics.Name = "checkSimpleControlPhysics";
-            this.checkSimpleControlPhysics.Size = new System.Drawing.Size(153, 17);
-            this.checkSimpleControlPhysics.TabIndex = 8;
-            this.checkSimpleControlPhysics.Text = "Simple Control and Physics";
-            this.checkSimpleControlPhysics.UseVisualStyleBackColor = true;
+            this.checkSimpleControlsPhysics.AutoSize = true;
+            this.checkSimpleControlsPhysics.Location = new System.Drawing.Point(6, 215);
+            this.checkSimpleControlsPhysics.Name = "checkSimpleControlsPhysics";
+            this.checkSimpleControlsPhysics.Size = new System.Drawing.Size(156, 17);
+            this.checkSimpleControlsPhysics.TabIndex = 8;
+            this.checkSimpleControlsPhysics.Text = "Simple controls and physics";
+            this.checkSimpleControlsPhysics.UseVisualStyleBackColor = true;
             // 
             // checkCurveSpeedDependent
             // 
@@ -2308,6 +2503,19 @@
             this.tabOptions.ResumeLayout(false);
             this.tabPageGeneral.ResumeLayout(false);
             this.tabPageGeneral.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOverspeedMonitor)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbWebServer)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbDisableTcs)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbOtherUnits)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbPressureUnit)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLanguage)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbChargingRate)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRelease)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbRetainer)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbLAA)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbAlerter)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbControlConfirmations)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pbMapWindow)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericWebServerPort)).EndInit();
             this.tabPageAudio.ResumeLayout(false);
             this.tabPageAudio.PerformLayout();
@@ -2364,7 +2572,7 @@
 
         private System.Windows.Forms.Button buttonOK;
         private System.Windows.Forms.NumericUpDown numericBrakePipeChargingRate;
-        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label lBrakePipeChargingRate;
         private System.Windows.Forms.CheckBox checkGraduatedRelease;
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.CheckBox checkAlerter;
@@ -2449,7 +2657,7 @@
         private System.Windows.Forms.CheckBox checkAlerterExternal;
         private System.Windows.Forms.CheckBox checkCurveSpeedDependent;
         private System.Windows.Forms.CheckBox checkHotStart;
-        private System.Windows.Forms.CheckBox checkSimpleControlPhysics;
+        private System.Windows.Forms.CheckBox checkSimpleControlsPhysics;
         private System.Windows.Forms.CheckBox checkFastFullScreenAltTab;
         private System.Windows.Forms.CheckBox checkVerticalSync;
         private System.Windows.Forms.ComboBox comboPressureUnit;
@@ -2503,7 +2711,7 @@
         private System.Windows.Forms.Label label25;
         private System.Windows.Forms.NumericUpDown precipitationBoxLength;
         private System.Windows.Forms.CheckBox checkCorrectQuestionableBrakingParams;
-        private System.Windows.Forms.CheckBox checkSpeedControl;
+        private System.Windows.Forms.CheckBox checkOverspeedMonitor;
         private System.Windows.Forms.NumericUpDown numericExternalSoundPassThruPercent;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.CheckBox checkDoubleWire;
@@ -2519,7 +2727,20 @@
         private System.Windows.Forms.CheckBox checkShadowAllShapes;
         private System.Windows.Forms.CheckBox checkEnableWebServer;
         private System.Windows.Forms.NumericUpDown numericWebServerPort;
-        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.Label labelPortNumber;
         private System.Windows.Forms.CheckBox checkUseLocationPassingPaths;
+        private System.Windows.Forms.PictureBox pbMapWindow;
+        private System.Windows.Forms.PictureBox pbControlConfirmations;
+        private System.Windows.Forms.PictureBox pbAlerter;
+        private System.Windows.Forms.PictureBox pbLAA;
+        private System.Windows.Forms.PictureBox pbRetainer;
+        private System.Windows.Forms.PictureBox pbRelease;
+        private System.Windows.Forms.PictureBox pbChargingRate;
+        private System.Windows.Forms.PictureBox pbLanguage;
+        private System.Windows.Forms.PictureBox pbPressureUnit;
+        private System.Windows.Forms.PictureBox pbOtherUnits;
+        private System.Windows.Forms.PictureBox pbWebServer;
+        private System.Windows.Forms.PictureBox pbDisableTcs;
+        private System.Windows.Forms.PictureBox pbOverspeedMonitor;
     }
 }

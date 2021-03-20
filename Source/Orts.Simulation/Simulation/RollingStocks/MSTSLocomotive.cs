@@ -126,7 +126,7 @@ namespace Orts.Simulation.RollingStocks
         public bool DynamicBrake;
         public float MaxPowerW;
         public float MaxForceN;
-        public float TractiveForceN = 0f; // Raw tractive force for electric sound variable2
+        public float AbsTractionSpeedMpS;
         public float MaxCurrentA = 0;
         public float MaxSpeedMpS = 1e3f;
         public float UnloadingSpeedMpS;
@@ -1601,17 +1601,22 @@ namespace Orts.Simulation.RollingStocks
             if (!AdvancedAdhesionModel)  // Advanced adhesion model turned off.
                AbsWheelSpeedMpS = AbsSpeedMpS;
 
-            UpdateMotiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
+            UpdateTractiveForce(elapsedClockSeconds, t, AbsSpeedMpS, AbsWheelSpeedMpS);
 
-            ApplyDirectionToMotiveForce();
+            ApplyDirectionToTractiveForce();
 
-            // Update dynamic brake force
+            // Calculate the total motive force for the locomotive - ie TractiveForce (driving force) + Dynamic Braking force.
+            // Note typically only one of the above will only ever be non-zero at the one time.
+            // For flipped locomotives the force is "flipped" elsewhere, whereas dynamic brake force is "flipped" below by the direction of the speed.
+            MotiveForceN = TractiveForceN;
+
             if (DynamicBrakePercent > 0 && DynamicBrakeForceCurves != null && AbsSpeedMpS > 0)
             {
-                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsSpeedMpS);
+                float f = DynamicBrakeForceCurves.Get(.01f * DynamicBrakePercent, AbsTractionSpeedMpS);
                 if (f > 0 && PowerOn)
                 {
                     DynamicBrakeForceN = f * (1 - PowerReduction);
+                    MotiveForceN -= (SpeedMpS > 0 ? 1 : SpeedMpS < 0 ? -1 : Direction == Direction.Reverse ? -1 : 1) * DynamicBrakeForceN;                 
                 }
                 else
                 {
@@ -1654,10 +1659,8 @@ namespace Orts.Simulation.RollingStocks
                         }
                     }
 
-
-
                     AntiSlip = true; // Always set AI trains to AntiSlip
-                    SimpleAdhesion();                         //let's call the basic physics instead for now
+                    SimpleAdhesion();   // Simple adhesion model used for AI trains
                     if (Train.IsActualPlayerTrain) FilteredMotiveForceN = CurrentFilter.Filter(MotiveForceN, elapsedClockSeconds);
                     WheelSpeedMpS = Flipped ? -AbsSpeedMpS : AbsSpeedMpS;            //make the wheels go round
                     break;
@@ -1683,7 +1686,9 @@ namespace Orts.Simulation.RollingStocks
                             DynamicBrakeController.CurrentValue * 100);
                     }
 
-                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics && !Simulator.Paused) 
+
+
+                    if (Simulator.UseAdvancedAdhesion && !Simulator.Settings.SimpleControlPhysics) 
                     {
                         AdvancedAdhesion(elapsedClockSeconds); // Use advanced adhesion model
                         AdvancedAdhesionModel = true;  // Set flag to advise advanced adhesion model is in use
@@ -1976,52 +1981,68 @@ namespace Orts.Simulation.RollingStocks
         /// <summary>
         /// This function updates periodically the locomotive's motive force.
         /// </summary>
-        protected virtual void UpdateMotiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
+        protected virtual void UpdateTractiveForce(float elapsedClockSeconds, float t, float AbsSpeedMpS, float AbsWheelSpeedMpS)
         {
             // Method to set force and power info
             // An alternative method in the steam locomotive will override this and input force and power info for it.
             if (PowerOn && Direction != Direction.N)
             {
+
+                // For the advanced adhesion model, a rudimentary form of slip control is incorporated by using the wheel speed to calculate tractive effort.
+                // As wheel speed is increased tractive effort is decreased. Hence wheel slip is "controlled" to a certain extent.
+                // This doesn't cover all types of locomotives, for example if DC traction motors and no slip control, then the tractive effort shouldn't be reduced.
+                // This won't eliminate slip, but limits its impact. 
+                // More modern locomotive have a more sophisticated system that eliminates slip in the majority (if not all circumstances).
+                // Simple adhesion control does not have any slip control feature built into it.
+                // TODO - a full review of slip/no slip control.
+                if (WheelSlip && AdvancedAdhesionModel)
+                {
+                    AbsTractionSpeedMpS = AbsWheelSpeedMpS;
+                }
+                else
+                {
+                    AbsTractionSpeedMpS = AbsSpeedMpS;
+                }
+
                 if (TractiveForceCurves == null)
                 {
                     float maxForceN = MaxForceN * t * (1 - PowerReduction);
                     float maxPowerW = MaxPowerW * t * t * (1 - PowerReduction);
 
-                    if (maxForceN * AbsWheelSpeedMpS > maxPowerW)
-                        maxForceN = maxPowerW / AbsWheelSpeedMpS;
+                    if (maxForceN * AbsTractionSpeedMpS > maxPowerW)
+                        maxForceN = maxPowerW / AbsTractionSpeedMpS;
                     //if (AbsSpeedMpS > MaxSpeedMpS)
                     //    maxForceN = 0;
-                    if (AbsSpeedMpS > MaxSpeedMpS - 0.05f)
-                        maxForceN = 20 * (MaxSpeedMpS - AbsSpeedMpS) * maxForceN;
+                    if (AbsTractionSpeedMpS > MaxSpeedMpS - 0.05f)
+                        maxForceN = 20 * (MaxSpeedMpS - AbsTractionSpeedMpS) * maxForceN;
                     if (AbsSpeedMpS > (MaxSpeedMpS))
                         maxForceN = 0;
-                    MotiveForceN = maxForceN;
+                    TractiveForceN = maxForceN;
                 }
                 else
                 {
-                    MotiveForceN = TractiveForceCurves.Get(t, AbsWheelSpeedMpS) * (1 - PowerReduction);
-                    if (MotiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
-                        MotiveForceN = 0;
+                    TractiveForceN = TractiveForceCurves.Get(t, AbsTractionSpeedMpS) * (1 - PowerReduction);
+                    if (TractiveForceN < 0 && !TractiveForceCurves.AcceptsNegativeValues())
+                        TractiveForceN = 0;
                 }
-                TractiveForceN = MotiveForceN;
             }
             else
                 TractiveForceN = 0f;
 
             if (MaxForceN > 0 && MaxContinuousForceN > 0 && PowerReduction < 1)
             {
-                MotiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
+                TractiveForceN *= 1 - (MaxForceN - MaxContinuousForceN) / (MaxForceN * MaxContinuousForceN) * AverageForceN * (1 - PowerReduction);
                 float w = (ContinuousForceTimeFactor - elapsedClockSeconds) / ContinuousForceTimeFactor;
                 if (w < 0)
                     w = 0;
-                AverageForceN = w * AverageForceN + (1 - w) * MotiveForceN;
+                AverageForceN = w * AverageForceN + (1 - w) * TractiveForceN;
             }
         }
 
         /// <summary>
         /// This function applies a sign to the motive force as a function of the direction of the train.
         /// </summary>
-        protected virtual void ApplyDirectionToMotiveForce()
+        protected virtual void ApplyDirectionToTractiveForce()
         {
             // Steam locomotives have their MotiveForceN already pre-inverted based on Direction
             if (!(this is MSTSSteamLocomotive))
@@ -2034,11 +2055,11 @@ namespace Orts.Simulation.RollingStocks
                             //MotiveForceN *= 1;     //Not necessary
                             break;
                         case Direction.Reverse:
-                            MotiveForceN *= -1;
+                            TractiveForceN *= -1;
                             break;
                         case Direction.N:
                         default:
-                            MotiveForceN *= 0;
+                            TractiveForceN *= 0;
                             break;
                     }
                 }
@@ -2047,7 +2068,7 @@ namespace Orts.Simulation.RollingStocks
                     switch (Direction)
                     {
                         case Direction.Reverse:
-                            MotiveForceN *= -1;
+                            TractiveForceN *= -1;
                             break;
                         default:
                             break;
@@ -2302,7 +2323,7 @@ namespace Orts.Simulation.RollingStocks
 
             if (EngineType == EngineTypes.Steam && SteamEngineType != MSTSSteamLocomotive.SteamEngineTypes.Geared )
              {
-                // Steam locomotive details updated in UpdateMotiveForce method, and inserted into adhesion module
+                // Steam locomotive details updated in UpdateTractiveForce method, and inserted into adhesion module
                 // ****************  NB WheelSpeed updated within Steam Locomotive module at the moment - to be fixed to prevent discrepancies ******************
             }
             
@@ -2337,11 +2358,12 @@ namespace Orts.Simulation.RollingStocks
 
                 //Set axle model parameters
 
-               //LocomotiveAxle.BrakeForceN = FrictionForceN;
-              //  LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
+                //LocomotiveAxle.BrakeForceN = FrictionForceN;
+                //  LocomotiveAxle.BrakeRetardForceN = BrakeForceN;
+
                 LocomotiveAxle.BrakeRetardForceN = BrakeRetardForceN;
                 LocomotiveAxle.AxleWeightN = 9.81f * DrvWheelWeightKg;   //will be computed each time considering the tilting
-                LocomotiveAxle.DriveForceN = MotiveForceN;           //Developed force
+                LocomotiveAxle.DriveForceN = MotiveForceN;  //Total force applied to wheels
                 LocomotiveAxle.TrainSpeedMpS = SpeedMpS;            //Set the train speed of the axle model
                 LocomotiveAxle.Update(elapsedClockSeconds);         //Main updater of the axle model
                 MotiveForceN = LocomotiveAxle.AxleForceN;           //Get the Axle force and use it for the motion
