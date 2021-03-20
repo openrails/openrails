@@ -22,7 +22,7 @@ General Options
 
 .. image:: images/options-general.png
 
-Alerter in Cab
+Alerter in cab
 --------------
 
 As in real life, when this option is selected, the player driving the train
@@ -209,6 +209,14 @@ When activated, the server can be accessed (on the local machine only) at
            | data types.
          - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.ApiSampleData
 
+Overspeed Monitor
+-----------------
+
+If a Train Control Script (TCS) is specified for the loco and not disabled, then that takes priority.
+Otherwise, if the loco has an Overspeed Monitor specified in its ENG file, then that monitor will detect excessive speed and respond as it was specified, e.g. by applying emergency braking.
+
+This monitor is enabled by checking the option.
+
 Audio Options
 =============
 
@@ -297,7 +305,7 @@ consumption in fast PCs.
 
 .. _options-cab-stretch:
 
-% Cab 2D Stretch
+% Cab 2D stretch
 ----------------
 
 OR manages not only cab interiors using 2D images in a MSTS-compatible
@@ -338,7 +346,7 @@ higher distances Distant Mountains will be displayed (see below). This
 parameter increases CPU and GPU load. Also, some routes are optimized for
 the standard MSTS maximum viewing distance (2000m).
 
-Distant Mountains
+Distant mountains
 -----------------
 
 Distant mountains are supported in a way that is compatible with MSTS.
@@ -590,14 +598,13 @@ not always available.
 Click on the *Add* button, and locate the desired installation. OR will
 automatically enter a proposed name in the *Name:* window that will
 appear in the *Installation set:* window on the main menu form. Modify
-the name if desired, then Click *OK* to add the new path and name to
+the name if desired, then click *OK* to add the new path and name to
 Open Rails.
 
 To remove an entry (note that this does not remove the installation
 itself!) select the entry in the window, and click *Delete*, then *OK*
-to close the window. To modify an entry, use the *Browse...* button to
-access the location; make the necessary changes, and then *Save* the
-changes.
+to close the window. To modify an entry, use the *Change...* button to
+access the location and make the necessary changes.
 
 .. _options-updater:
 
