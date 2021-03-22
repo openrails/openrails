@@ -736,10 +736,10 @@ namespace Orts.Viewer3D
                 id = SpeedPostObj.GetTrItemID(idlocation);
             }
             //create the shape primitive
-            short[] newTList = new short[NumIndices];
-            for (i = 0; i < NumIndices; i++) newTList[i] = TriangleListIndices[i];
-            VertexPositionNormalTexture[] newVList = new VertexPositionNormalTexture[NumVertices];
-            for (i = 0; i < NumVertices; i++) newVList[i] = VertexList[i];
+            var newTList = new short[NumIndices];
+            Array.Copy(TriangleListIndices, newTList, NumIndices);
+            var newVList = new VertexPositionNormalTexture[NumVertices];
+            Array.Copy(VertexList, newVList, NumVertices);
             IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
                                                             NumIndices, BufferUsage.WriteOnly);
             IndexBuffer.SetData(newTList);
