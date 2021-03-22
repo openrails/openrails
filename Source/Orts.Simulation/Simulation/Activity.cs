@@ -917,7 +917,7 @@ namespace Orts.Simulation
                                 double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
                                                         - ActArrive).Value.TotalSeconds;
                                 BoardingEndS -= sinceActArriveS;
-                                double SchDepartS = SchDepart.Subtract(new DateTime(1, 1, 1, 0, 0, 0)).TotalSeconds;
+                                double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
                                 BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
 
                             }
