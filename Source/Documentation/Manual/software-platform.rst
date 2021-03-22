@@ -105,3 +105,82 @@ receives feedback from the community, improvements and better optimization of
 the software will contribute to better overall performance -- potentially 
 allowing high polygon models with densely populated routes at acceptable 
 frame rates.
+
+Web Server
+==========
+
+.. _sample-web-pages:
+
+Sample Web Pages
+----------------
+
+These pages give examples of what can be done with the APIs.
+
+Some of these sample pages repeat data from the in-game panels to provide a more convenient display.
+
+- The HUD web page repeats the F5 overlay.
+ 
+.. image:: images/web-page-hud.png
+
+- The Track Monitor page repeats the F4 panel and is also available with a dark background for night-time use.
+- The Train Driving page offers a panel which is not yet available in the official version of Open Rails.
+- Another page offers both of these and the panels can be dragged around for the best arrangement.
+  
+.. image:: images/web-page-both.png
+
+The sample pages can be found in the ``Content\Web`` subfolder of the OR
+program folder and the web server defaults to ``Content\Web\index.html``.
+
+If you choose to develop your own pages, please consider sharing them with the Open Rails community.
+
+.. _web-server-api:
+
+Application Programming Interfaces (APIs)
+-----------------------------------------
+
+The web server features a simple API to obtain data from the simulator.
+Responses are OR data structures
+`serialized <https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_JsonConvert.htm>`_
+in JSON format.
+
+You can see the JSON data just by browsing. E.g.: for APISample, browse to ``http://localhost:2150/API/APISAMPLE``
+
+.. image:: images/web-page-json.png
+
+Note: The API portion of this address is case-sensitive.
+
+Note: To avoid overloading the simulator, please keep API calls to once or twice a second.
+
+.. list-table::
+   :widths: 10 20 35 35
+   :header-rows: 1
+
+   * - Method
+     - API call
+     - Description
+     - Response type
+   * - | GET
+     - | ``/API/HUD/<n>``
+     - | Retrieves the information rendered on the ``<F5>`` HUD, row by row,
+       | page by page, where ``<n>`` is the HUD page number 0 to 7.
+     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .HudApiArray``
+   * - | GET
+     - | ``/API/TRAINMONITOR``
+       | or ``/API/TRAININFO``
+     - | Retrieves information rendered on the Track Monitor, such as speed,
+       | acceleration, grade, and upcoming hazards.
+     - | ``Orts.Simulation.Physics .Train.TrainInfo``
+   * - | GET
+     - | ``/API/CABCONTROLS``
+     - | Retrieves an array of the cab controls for the player localhost
+       | TypeName, MinValue, MaxValue, RangeFraction.
+     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiCabControls``
+   * - | GET
+     - | ``/API/APISAMPLE``
+     - | A test object that demonstrates the JSON serialization of various
+       | data types.
+     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiSampleData``
+
+
+
+
