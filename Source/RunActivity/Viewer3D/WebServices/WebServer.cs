@@ -243,7 +243,7 @@ namespace Orts.Viewer3D.WebServices
 
         #region /API/CABCONTROLS
         [Route(HttpVerbs.Get, "/CABCONTROLS")]
-        public IEnumerable<MSTSLocomotiveViewer.ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetControlValueList();
+        public IEnumerable<ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetWebControlValueList();
         #endregion
     }
 }
