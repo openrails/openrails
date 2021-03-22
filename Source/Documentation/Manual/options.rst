@@ -177,22 +177,22 @@ train status information in a web browser, intended for use on secondary screens
 When activated, the server can be accessed from a browser on the local machine at
 ``http://localhost:<port>``, where ``<port>`` is the specified port number.
 
-Sample web pages are included in the Open Rails installation and the browser will show
-a menu of sample pages. More details about the sample web pages can be found
-in the section :ref:`Sample Web Pages<sample-web-pages>`
-
-The server can also be accessed from a device on the local network, such as a smart-phone,
-tablet or another PC. 
-Use `Microsoft Support to find the IP address <https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_ 
-of your PC running Open Rails and then browse from a device on that network.
+If you `open
+<https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
+the web server port (just granting RunActivity.exe an exemption is not
+sufficient) in Windows Firewall, the server can also be accessed from a device
+on the local network, such as a smartphone, tablet or another PC, using your
+system's `IP address
+<https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_.
 E.g.: If your Open Rails PC is at IP address 192.168.0.99, browse to
 ``http://192.168.0.99:<port>``, where ``<port>`` is the specified port number.
 
-As well as a web browser, data from the web server can also be fetched by any program 
-which can make a web request, such as C# or Python.
+:ref:`Sample web pages <sample-web-pages>` are included in the Open Rails
+installation and the browser will show a menu of sample pages.
 
-More details about the web server and its Application Programming Interfaces (APIs) can be found
-in the section :ref:`Web Server API<web-server-api>`
+As well as a web browser, data from the web server can also be fetched by any
+program which can make a web request, such as C# or Python, using the
+:ref:`Application Programming Interface <web-server-api>` (API).
 
 Overspeed Monitor
 -----------------
