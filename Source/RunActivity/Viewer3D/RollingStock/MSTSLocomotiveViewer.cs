@@ -727,30 +727,6 @@ namespace Orts.Viewer3D.RollingStock
             else controller.StopDecrease();
         }
         #endregion
-
-        // Makes cab controls readable from other threads, such as WebServer
-        public class ControlValue
-        {
-            public string TypeName;
-            public double MinValue;
-            public double MaxValue;
-            public double RangeFraction;
-        }
-
-        public List<ControlValue> GetControlValueList()
-        { 
-            var controlValueList = new List<ControlValue>();
-            foreach (var controlRenderer in this._CabRenderer.ControlMap.Values)
-            {
-                controlValueList.Add(new ControlValue
-                    { TypeName = controlRenderer.GetControlType().ToString()
-                    , MinValue = controlRenderer.Control.MinValue
-                    , MaxValue = controlRenderer.Control.MaxValue
-                    , RangeFraction = controlRenderer.GetRangeFraction()
-                    });
-            }
-            return controlValueList;
-        }
     } // Class LocomotiveViewer
 
     // By GeorgeS
