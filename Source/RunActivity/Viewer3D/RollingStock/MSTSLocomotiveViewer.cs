@@ -1381,7 +1381,6 @@ namespace Orts.Viewer3D.RollingStock
     {
         protected readonly Viewer Viewer;
         protected readonly MSTSLocomotive Locomotive;
-        //protected readonly CabViewControl Control; //CJ
         public readonly CabViewControl Control;
         protected readonly CabShader Shader;
         protected readonly SpriteBatchMaterial ControlView;
