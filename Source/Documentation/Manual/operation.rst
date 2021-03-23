@@ -1015,7 +1015,7 @@ how to modify these two files is contained in the Word document
 edited with a Unicode text editor.
 
 Additionally, a C# scripting interface is available to complement
-the ``sigscr.dat```file for more complex systems.
+the ``sigscr.dat``` file for more complex systems.
 
 SignalNumClearAhead
 -------------------
