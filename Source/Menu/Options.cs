@@ -179,6 +179,8 @@ namespace ORTS
             comboWindowSize.Text = Settings.WindowSize;
             trackDayAmbientLight.Value = Settings.DayAmbientLight;
             trackDayAmbientLight_ValueChanged(null, null);
+            trackAntiAliasing.Value = Settings.AntiAliasing;
+            trackAntiAliasing_ValueChanged(null, null);
             checkDoubleWire.Checked = Settings.DoubleWire;
 
             // Simulation tab
@@ -467,6 +469,7 @@ namespace ORTS
 
             Settings.DayAmbientLight = (int)trackDayAmbientLight.Value;
             Settings.DoubleWire = checkDoubleWire.Checked;
+            Settings.AntiAliasing = trackAntiAliasing.Value;
 
             // Simulation tab
             Settings.SimpleControlPhysics = checkSimpleControlsPhysics.Checked;
@@ -625,6 +628,36 @@ namespace ORTS
         private void trackDayAmbientLight_ValueChanged(object sender, EventArgs e)
         {
             labelDayAmbientLight.Text = catalog.GetStringFmt("{0}%", trackDayAmbientLight.Value * 5);
+        }
+
+        private void trackAntiAliasing_ValueChanged(object sender, EventArgs e)
+        {
+            string method;
+            switch ((UserSettings.AntiAliasingMethod)trackAntiAliasing.Value)
+            {
+                case UserSettings.AntiAliasingMethod.None:
+                    method = "None";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA2x:
+                    method = "2x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA4x:
+                    method = "4x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA8x:
+                    method = "8x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA16x:
+                    method = "16x MSAA";
+                    break;
+                case UserSettings.AntiAliasingMethod.MSAA32x:
+                    method = "32x MSAA";
+                    break;
+                default:
+                    method = "";
+                    break;
+            }
+            labelAntiAliasingValue.Text = method;
         }
 
         private void trackLODBias_ValueChanged(object sender, EventArgs e)
