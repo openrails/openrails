@@ -373,7 +373,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (!Active) return;
             base.Draw(spriteBatch, position);
 
-            int x = 0, y = 0;
+            int x, y;
 
             foreach (var lines in DialLineCoords)
             {
@@ -382,9 +382,6 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 var length = (int)Math.Round(lines.Z * Scale);
                 spriteBatch.Draw(ColorTexture, new Rectangle(x, y, length, 1), null, Color.White, lines.W, new Vector2(0, 0), SpriteEffects.None, 0);
             }
-
-            // Monogame Spritebatch change Shaders procedure.
-            // Following spriteBatch.Begin statements must reflect those for CabSpriteBatchMaterial in materials.cs
 
             // Apply circular speed gauge shader
             spriteBatch.End();

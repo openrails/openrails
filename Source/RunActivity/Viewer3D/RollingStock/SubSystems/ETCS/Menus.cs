@@ -31,7 +31,8 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         public readonly List<DMIButton> Buttons = new List<DMIButton>();
         public MenuBar(DriverMachineInterface dmi)
         {
-            /*var main = new DMITextButton("Main", "Main", true, () =>
+            /* Default menus disabled. Interface with TCS to be defined in the future
+            var main = new DMITextButton("Main", "Main", true, () =>
             {
                 var buts = new List<DMIButton>();
                 buts.Add(new DMITextButton("Start", "Start", true, null, 153, 50, dmi));

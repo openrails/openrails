@@ -121,11 +121,14 @@ namespace ORTS.Scripting.Api.ETCS
         /// <summary>
         /// True if the text message area shall be displayed
         /// </summary>
+        public bool TextMessageAreaShown;
+        [Obsolete("ShowTextMessageArea is deprecated. Use TextMessageAreaShown instead.")]
         public bool ShowTextMessageArea;
         /// <summary>
         /// List of text messages to be displayed in text area. Do not rely on the order, as the DMI will reorder the list.
         /// </summary>
         public readonly List<TextMessage> TextMessages = new List<TextMessage>();
+        /* TODO: Interface between DMI and TCS for displaying menus to be defined in the future
         /// <summary>
         /// List of menu items to be shown
         /// </summary>
@@ -133,7 +136,7 @@ namespace ORTS.Scripting.Api.ETCS
         /// <summary>
         /// If not null, the window that shall be displayed to the driver
         /// </summary>
-        public DMISubwindowDefinition ActiveSubwindow;
+        public DMISubwindowDefinition ActiveSubwindow;*/
     }
 
     /// <summary>
