@@ -636,7 +636,7 @@ namespace ORTS
             switch ((UserSettings.AntiAliasingMethod)trackAntiAliasing.Value)
             {
                 case UserSettings.AntiAliasingMethod.None:
-                    method = "None";
+                    method = "Disabled";
                     break;
                 case UserSettings.AntiAliasingMethod.MSAA2x:
                     method = "2x MSAA";
