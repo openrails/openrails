@@ -124,6 +124,8 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerTransmissions\SeriesMotor.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\TrainControlSystem.cs" />
     <Compile Include="Simulation\RollingStocks\TrainCar.cs" />
+    <Compile Include="Simulation\Signalling\CsSignalScript.cs" />
+    <Compile Include="Simulation\Signalling\CsSignalScripts.cs" />
     <Compile Include="Simulation\Signalling\Signals.cs" />
     <Compile Include="Simulation\Signalling\SIGSCRfile.cs" />
     <Compile Include="Simulation\Simulator.cs" />

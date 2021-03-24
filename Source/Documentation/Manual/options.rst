@@ -22,7 +22,7 @@ General Options
 
 .. image:: images/options-general.png
 
-Alerter in Cab
+Alerter in cab
 --------------
 
 As in real life, when this option is selected, the player driving the train
@@ -32,9 +32,9 @@ sometimes use a view other than the cabview to follow the train, and
 therefore will not see the alerter warning, selecting the related option
 *Also in external views* enables the alerter in those views as well.
 
-.. _options-dispatcher:
+.. _options-map-window:
 
-Dispatcher window
+Map window
 -----------------
 
 It is suggested to always select this option. When this option is selected,
@@ -45,7 +45,7 @@ option :ref:`Fast fullscreen Alt+Tab <options-fullscreen>`.
 
 Through this window you can monitor train movements and also influence
 them, by setting signals and switches. A complete description of the
-dispatcher window can be found :ref:`here <driving-dispatcher>`.
+dispatcher tab can be found :ref:`here <driving-dispatcher>`.
 
 .. image:: images/options-dispatcher.png
 
@@ -172,42 +172,35 @@ Enable web server
 -----------------
 
 This option enables an internal web server that can be used to display game and
-train status information in a browser, intended for use on secondary screens.
-When activated, the server can be accessed (on the local machine only) at
+train status information in a web browser, intended for use on secondary screens.
+
+When activated, the server can be accessed from a browser on the local machine at
 ``http://localhost:<port>``, where ``<port>`` is the specified port number.
 
-.. admonition:: For core developers
+If you `open
+<https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
+the web server port (just granting RunActivity.exe an exemption is not
+sufficient) in Windows Firewall, the server can also be accessed from a device
+on the local network, such as a smartphone, tablet or another PC, using your
+system's `IP address
+<https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_.
+E.g.: If your Open Rails PC is at IP address 192.168.0.99, browse to
+``http://192.168.0.99:<port>``, where ``<port>`` is the specified port number.
 
-    The web server serves content out of the ``Content\Web`` subfolder of the OR
-    program folder; it features a simple API to obtain data from the simulator.
-    Responses are OR data structures
-    `serialized <https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_JsonConvert.htm>`_
-    in JSON format. API call paths are case-sensitive.
+:ref:`Sample web pages <sample-web-pages>` are included in the Open Rails
+installation and the browser will show a menu of sample pages.
 
-    .. list-table::
-       :widths: 15 15 35 35
-       :header-rows: 1
+As well as a web browser, data from the web server can also be fetched by any
+program which can make a web request, such as C# or Python, using the
+:ref:`Application Programming Interface <web-server-api>` (API).
 
-       * - Method
-         - API call
-         - Description
-         - Response type
-       * - GET
-         - ``/API/HUD/<n>``
-         - | Retrieves the information rendered on the ``<F5>`` HUD, row by row,
-           | page by page, where ``<n>`` is the desired HUD page number.
-         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.HudApiArray
-       * - GET
-         - | ``/API/TRAINMONITOR``
-           | or ``/API/TRAININFO``
-         - | Retrieves information rendered on the Track Monitor, such as speed,
-           | acceleration, grade, and upcoming hazards.
-         - Orts.Simulation.Physics.Train.TrainInfo
-       * - GET
-         - ``/API/APISAMPLE``
-         - | A test object that demonstrates the JSON serialization of various
-           | data types.
-         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.ApiSampleData
+Overspeed Monitor
+-----------------
+
+If a Train Control Script (TCS) is specified for the loco and not disabled, then that takes priority.
+Otherwise, if the loco has an Overspeed Monitor specified in its ENG file, then that monitor will detect excessive speed and respond as it was specified, e.g. by applying emergency braking.
+
+This monitor is enabled by checking the option.
 
 Audio Options
 =============
@@ -252,11 +245,13 @@ Fast full-screen Alt+Tab
 
 When this option is selected, and OR is running full-screen, pressing
 Alt+Tab leaves OR full-screen and running, and allows the
-:ref:`Dispatcher Window <driving-dispatcher>` to be shown in front of it. If this option is not selected, OR is
-minimized. The Dispatcher Window :ref:`option <options-dispatcher>` must also be selected and the
-Dispatcher Window started with Ctrl+9 to display the Dispatcher Window.
-Each successive press of Alt+Tab will toggle between the Dispatcher window
+:ref:`Dispatcher Window <driving-dispatcher>` to be shown in front of it. 
+If this option is not selected, OR is minimized. 
+Each successive press of Alt+Tab will toggle between the map window
 and the OR window.
+
+Note: To display the Map Window, the :ref:`Map window option <options-map-window>` 
+must also be selected and the Map Window started with Ctrl+9.
 
 Glass on in-game windows
 ------------------------
@@ -295,7 +290,7 @@ consumption in fast PCs.
 
 .. _options-cab-stretch:
 
-% Cab 2D Stretch
+% Cab 2D stretch
 ----------------
 
 OR manages not only cab interiors using 2D images in a MSTS-compatible
@@ -336,7 +331,7 @@ higher distances Distant Mountains will be displayed (see below). This
 parameter increases CPU and GPU load. Also, some routes are optimized for
 the standard MSTS maximum viewing distance (2000m).
 
-Distant Mountains
+Distant mountains
 -----------------
 
 Distant mountains are supported in a way that is compatible with MSTS.
@@ -588,14 +583,13 @@ not always available.
 Click on the *Add* button, and locate the desired installation. OR will
 automatically enter a proposed name in the *Name:* window that will
 appear in the *Installation set:* window on the main menu form. Modify
-the name if desired, then Click *OK* to add the new path and name to
+the name if desired, then click *OK* to add the new path and name to
 Open Rails.
 
 To remove an entry (note that this does not remove the installation
 itself!) select the entry in the window, and click *Delete*, then *OK*
-to close the window. To modify an entry, use the *Browse...* button to
-access the location; make the necessary changes, and then *Save* the
-changes.
+to close the window. To modify an entry, use the *Change...* button to
+access the location and make the necessary changes.
 
 .. _options-updater:
 

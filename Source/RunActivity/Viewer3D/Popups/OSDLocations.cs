@@ -40,7 +40,14 @@ namespace Orts.Viewer3D.Popups
             All = 0x3,
             Auto = 0x7,
         }
-        DisplayState State = DisplayState.Auto;
+        private DisplayState State
+        {
+            get => (DisplayState)Owner.Viewer.Settings.OSDLocationsState;
+            set
+            {
+                Owner.Viewer.Settings.OSDLocationsState = (int)value;
+            }
+        }
 
         Dictionary<TrItemLabel, LabelPrimitive> Labels = new Dictionary<TrItemLabel, LabelPrimitive>();
 

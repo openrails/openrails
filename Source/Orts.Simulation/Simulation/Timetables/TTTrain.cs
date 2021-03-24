@@ -644,6 +644,8 @@ namespace Orts.Simulation.Timetables
             outf.Write(UncondAttach);
             outf.Write(doorCloseAdvance);
             outf.Write(doorOpenDelay);
+            // dummy for level crossing horn pattern
+            outf.Write(-1);
 
             // dummy for service list count
             outf.Write(-1);

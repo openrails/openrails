@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -114,6 +114,8 @@
     <Compile Include="Viewer3D\Debugging\SoundDebugForm.Designer.cs">
       <DependentUpon>SoundDebugForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Viewer3D\Debugging\TimetableWindow.cs" />
+    <Compile Include="Viewer3D\DriverMachineInterface.cs" />
     <Compile Include="Viewer3D\DynamicTrack.cs" />
     <Compile Include="Viewer3D\Forest.cs" />
     <Compile Include="Viewer3D\InfoDisplay.cs" />
@@ -189,6 +191,7 @@
     <Compile Include="Viewer3D\Viewer.cs" />
     <Compile Include="Viewer3D\Water.cs" />
     <Compile Include="Viewer3D\Weather.cs" />
+    <Compile Include="Viewer3D\WebServices\ControlValue.cs" />
     <Compile Include="Viewer3D\WebServices\TrackMonitorDisplay.cs" />
     <Compile Include="Viewer3D\WebServices\TrainDrivingDisplay.cs" />
     <Compile Include="Viewer3D\WebServices\TrainInfo.cs" />

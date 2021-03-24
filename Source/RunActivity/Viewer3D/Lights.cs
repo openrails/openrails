@@ -551,7 +551,7 @@ namespace Orts.Viewer3D
         {
             graphicsDevice.SetVertexBuffer(VertexBuffer);
             graphicsDevice.Indices = IndexBuffer;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 6 * State, 0, 6, 0, 2);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 6 * State, startIndex: 0, primitiveCount: 2);
         }
     }
 
@@ -687,14 +687,14 @@ namespace Orts.Viewer3D
             graphicsDevice.DepthStencilState.StencilPass = StencilOperation.Increment;
             graphicsDevice.DepthStencilState.DepthBufferFunction = CompareFunction.Greater;
             graphicsDevice.BlendState = BlendState_SourceZeroDestOne;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: (CircleSegments + 2) * State, startIndex: 0, primitiveCount: 2 * CircleSegments);
 
             graphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
             graphicsDevice.DepthStencilState.StencilFunction = CompareFunction.Less;
             graphicsDevice.DepthStencilState.StencilPass = StencilOperation.Zero;
             graphicsDevice.DepthStencilState.DepthBufferFunction = CompareFunction.LessEqual;
             graphicsDevice.BlendState = BlendState.AlphaBlend;
-            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, (CircleSegments + 2) * State, 0, CircleSegments + 2, 0, 2 * CircleSegments);
+            graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: (CircleSegments + 2) * State, startIndex: 0, primitiveCount: 2 * CircleSegments);
 #endif
         }
 

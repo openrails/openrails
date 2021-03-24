@@ -1549,6 +1549,12 @@ namespace Orts.Viewer3D
             LastCar();
         }
 
+        public override void LastCar()
+        {
+            base.LastCar();
+            attachedToRear = true;
+        }
+
     }
 
     public class InsideThreeDimCamera : NonTrackingCamera
@@ -1824,7 +1830,6 @@ namespace Orts.Viewer3D
     public class ThreeDimCabCamera : InsideThreeDimCamera
     {
         public override Styles Style { get { return Styles.ThreeDimCab; } }
-        public bool Enabled { get; set; }
         public override bool IsAvailable
         {
             get
@@ -2043,6 +2048,7 @@ namespace Orts.Viewer3D
                     RotationRatioHorizontal = (float)(0.962314f * 2 * Viewer.DisplaySize.X / Viewer.DisplaySize.Y * Math.Tan(MathHelper.ToRadians(Viewer.Settings.ViewingFOV / 2)) / Viewer.DisplaySize.X);
             }
             InitialiseRotation(attachedCar);
+            ScreenChanged();
         }
 
         protected override void OnActivate(bool sameCamera)

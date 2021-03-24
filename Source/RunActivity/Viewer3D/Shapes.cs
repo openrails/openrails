@@ -590,7 +590,7 @@ namespace Orts.Viewer3D
             IndexBuffer IndexBuffer = new IndexBuffer(viewer.GraphicsDevice, typeof(short),
                                                             NumIndices, BufferUsage.WriteOnly);
             IndexBuffer.SetData(newTList);
-            shapePrimitive = new ShapePrimitive(material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, 0, NumVertices, NumIndices / 3, new[] { -1 }, 0);
+            shapePrimitive = new ShapePrimitive(material, new SharedShape.VertexBufferSet(newVList, viewer.GraphicsDevice), IndexBuffer, NumIndices / 3, new[] { -1 }, 0);
 
         }
 
@@ -1071,23 +1071,27 @@ namespace Orts.Viewer3D
 
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
+            float nextKey;
+            var animation = SharedShape.Animations[0];
             if (Turntable.GoToTarget || Turntable.GoToAutoTarget)
             {
-                AnimationKey = (Turntable.TargetY / (float)Math.PI * 1800.0f + 3600) % 3600.0f;
+                nextKey = Turntable.TargetY / (2 * (float)Math.PI) * animation.FrameCount;
             }
-
-            else if (Turntable.Counterclockwise)
+            else
             {
-                AnimationKey += SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
+                float moveFrames;
+                if (Turntable.Counterclockwise)
+                    moveFrames = animation.FrameRate * elapsedTime.ClockSeconds;
+                else if (Turntable.Clockwise)
+                    moveFrames = -animation.FrameRate * elapsedTime.ClockSeconds;
+                else
+                    moveFrames = 0;
+                nextKey = AnimationKey + moveFrames;
             }
-            else if (Turntable.Clockwise)
-            {
-                AnimationKey -= SharedShape.Animations[0].FrameRate * elapsedTime.ClockSeconds;
-            }
-            while (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey -= SharedShape.Animations[0].FrameCount;
-            while (AnimationKey < 0) AnimationKey += SharedShape.Animations[0].FrameCount;
-
-            Turntable.YAngle = MathHelper.WrapAngle(AnimationKey / 1800.0f * (float)Math.PI);
+            AnimationKey = nextKey % animation.FrameCount;
+            if (AnimationKey < 0)
+                AnimationKey += animation.FrameCount;
+            Turntable.YAngle = MathHelper.WrapAngle(nextKey / animation.FrameCount * 2 * (float)Math.PI);
 
             if ((Turntable.Clockwise || Turntable.Counterclockwise || Turntable.AutoClockwise || Turntable.AutoCounterclockwise) && !Rotating)
             {
@@ -1217,8 +1221,6 @@ namespace Orts.Viewer3D
 
         protected internal VertexBuffer VertexBuffer;
         protected internal IndexBuffer IndexBuffer;
-        protected internal int MinVertexIndex;
-        protected internal int NumVerticies;
         protected internal int PrimitiveCount;
 
         readonly VertexBufferBinding[] VertexBufferBindings;
@@ -1227,13 +1229,11 @@ namespace Orts.Viewer3D
         {
         }
 
-        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IndexBuffer indexBuffer, int minVertexIndex, int numVerticies, int primitiveCount, int[] hierarchy, int hierarchyIndex)
+        public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IndexBuffer indexBuffer, int primitiveCount, int[] hierarchy, int hierarchyIndex)
         {
             Material = material;
             VertexBuffer = vertexBufferSet.Buffer;
             IndexBuffer = indexBuffer;
-            MinVertexIndex = minVertexIndex;
-            NumVerticies = numVerticies;
             PrimitiveCount = primitiveCount;
             Hierarchy = hierarchy;
             HierarchyIndex = hierarchyIndex;
@@ -1242,7 +1242,7 @@ namespace Orts.Viewer3D
         }
 
         public ShapePrimitive(Material material, SharedShape.VertexBufferSet vertexBufferSet, IList<ushort> indexData, GraphicsDevice graphicsDevice, int[] hierarchy, int hierarchyIndex)
-            : this(material, vertexBufferSet, null, indexData.Min(), indexData.Max() - indexData.Min() + 1, indexData.Count / 3, hierarchy, hierarchyIndex)
+            : this(material, vertexBufferSet, null, indexData.Count / 3, hierarchy, hierarchyIndex)
         {
             IndexBuffer = new IndexBuffer(graphicsDevice, typeof(short), indexData.Count, BufferUsage.WriteOnly);
             IndexBuffer.SetData(indexData.ToArray());
@@ -1255,7 +1255,7 @@ namespace Orts.Viewer3D
                 // TODO consider sorting by Vertex set so we can reduce the number of SetSources required.
                 graphicsDevice.SetVertexBuffers(VertexBufferBindings);
                 graphicsDevice.Indices = IndexBuffer;
-                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount);
+                graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, primitiveCount: PrimitiveCount);
             }
         }
 
@@ -1286,8 +1286,6 @@ namespace Orts.Viewer3D
         public void SetVertexData(VertexPositionNormalTexture[] data, int minVertexIndex, int numVertices, int primitiveCount)
         {
             VertexBuffer.SetData(data);
-            MinVertexIndex = minVertexIndex;
-            NumVerticies = numVertices;
             PrimitiveCount = primitiveCount;
         }
 
@@ -1324,8 +1322,6 @@ namespace Orts.Viewer3D
         protected VertexDeclaration VertexDeclaration;
         protected int VertexBufferStride;
         protected IndexBuffer IndexBuffer;
-        protected int MinVertexIndex;
-        protected int NumVerticies;
         protected int PrimitiveCount;
 
         protected VertexBuffer InstanceBuffer;
@@ -1344,8 +1340,6 @@ namespace Orts.Viewer3D
             VertexBuffer = shapePrimitive.VertexBuffer;
             VertexDeclaration = shapePrimitive.VertexBuffer.VertexDeclaration;
             IndexBuffer = shapePrimitive.IndexBuffer;
-            MinVertexIndex = shapePrimitive.MinVertexIndex;
-            NumVerticies = shapePrimitive.NumVerticies;
             PrimitiveCount = shapePrimitive.PrimitiveCount;
 
             InstanceDeclaration = new VertexDeclaration(ShapeInstanceData.SizeInBytes, ShapeInstanceData.VertexElements);
@@ -1360,7 +1354,7 @@ namespace Orts.Viewer3D
         {
             graphicsDevice.Indices = IndexBuffer;
             graphicsDevice.SetVertexBuffers(VertexBufferBindings);
-            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, MinVertexIndex, NumVerticies, 0, PrimitiveCount, InstanceCount);
+            graphicsDevice.DrawInstancedPrimitives(PrimitiveType.TriangleList, baseVertex: 0, startIndex: 0, PrimitiveCount, InstanceCount);
         }
     }
 

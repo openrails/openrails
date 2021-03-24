@@ -265,8 +265,6 @@ the trainset is at the pickup/unloader location.
 Static OR Freightanims
 ''''''''''''''''''''''
 
-Only the two general parameters shown below are used for static OR freightanims::
-
 .. index::
    single: MSTSFreightAnimEnabled
    single: WagonEmptyWeight
@@ -277,6 +275,8 @@ Only the two general parameters shown below are used for static OR freightanims:
    single: FreightWeight
    single: Flip
    single: Visibility
+
+Only the two general parameters shown below are used for static OR freightanims::
 
     MSTSFreightAnimEnabled (0)
     WagonEmptyWeight(22t)
@@ -608,6 +608,7 @@ forward and backward, and should have a final fadeoff for best result.
 
 C# engine scripting
 ===================
+.. _features-scripting-csharp:
 
 To simulate especially complex behavior, Open Rails provides a C# scripting 
 interface for a number of systems on the player locomotive. Like the Open Rails 

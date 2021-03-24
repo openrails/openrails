@@ -16,7 +16,6 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework;
 using Orts.Formats.Msts;
 using Orts.Simulation.AIs;
 using Orts.Simulation.Physics;
@@ -918,7 +917,8 @@ namespace Orts.Simulation
                                 double sinceActArriveS = (new DateTime().Add(TimeSpan.FromSeconds(Simulator.ClockTime))
                                                         - ActArrive).Value.TotalSeconds;
                                 BoardingEndS -= sinceActArriveS;
-                                BoardingEndS = CompareTimes.LatestTime((int)SchDepart.TimeOfDay.TotalSeconds, (int)BoardingEndS);
+                                double SchDepartS = SchDepart.Subtract(new DateTime()).TotalSeconds;
+                                BoardingEndS = CompareTimes.LatestTime((int)SchDepartS, (int)BoardingEndS);
 
                             }
                         }
