@@ -1022,7 +1022,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
             Activated = true;
         }
-        float lastdistance = 0;
         public override void Update()
         {
             UpdateInputs();
@@ -1103,22 +1102,24 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                 else
                     Status = MonitoringStatus.Normal;
                 SetMonitoringStatus(Status);
+
+                // Provide basic functionality for ETCS DMI planning area
                 float maxDistanceAheadM = 0;
                 ETCSStatus.SpeedTargets.Clear();
                 ETCSStatus.SpeedTargets.Add(new PlanningTarget(0, CurrentSpeedLimitMpS));
                 for (int i=0; i<5; i++)
                 {
                     maxDistanceAheadM = NextSignalDistanceM(i);
+                    if (NextSignalAspect(i) == Aspect.Stop || NextSignalAspect(i) == Aspect.None) break;
                     float speedLimMpS = NextSignalSpeedLimitMpS(i); 
-                    if (NextSignalAspect(i) == Aspect.Stop) break;
-                    if (speedLimMpS >=0) ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, speedLimMpS));
+                    if (speedLimMpS >= 0) ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, speedLimMpS));
                 }
-                float prevDist=0;
+                float prevDist = 0;
                 float prevSpeed = 0;
                 for (int i=0; i<10; i++)
                 {
                     float distanceM = NextPostDistanceM(i);
-                    if (distanceM > maxDistanceAheadM) break;
+                    if (distanceM >= maxDistanceAheadM) break;
                     float speed = NextPostSpeedLimitMpS(i);
                     if (speed == prevSpeed || distanceM - prevDist < 10) continue;
                     ETCSStatus.SpeedTargets.Add(new PlanningTarget(distanceM, speed));
@@ -1126,9 +1127,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems
                     prevSpeed = speed;
                 }
                 ETCSStatus.SpeedTargets.Sort((x, y) => x.DistanceToTrainM.CompareTo(y.DistanceToTrainM));
-                ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, 0));
+                ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, 0)); 
                 ETCSStatus.GradientProfile.Clear();
-                ETCSStatus.GradientProfile.Add(new GradientProfileElement(0, (int)(Locomotive().CurrentElevationPercent * 10)));
+                ETCSStatus.GradientProfile.Add(new GradientProfileElement(0, (int)(CurrentGradientPercent() * 10)));
                 ETCSStatus.GradientProfile.Add(new GradientProfileElement(maxDistanceAheadM, 0)); // End of profile
             }
         }

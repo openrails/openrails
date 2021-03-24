@@ -123,7 +123,7 @@ namespace ORTS.Scripting.Api.ETCS
         /// </summary>
         public bool TextMessageAreaShown;
         [Obsolete("ShowTextMessageArea is deprecated. Use TextMessageAreaShown instead.")]
-        public bool ShowTextMessageArea;
+        public bool ShowTextMessageArea => TextMessageAreaShown;
         /// <summary>
         /// List of text messages to be displayed in text area. Do not rely on the order, as the DMI will reorder the list.
         /// </summary>

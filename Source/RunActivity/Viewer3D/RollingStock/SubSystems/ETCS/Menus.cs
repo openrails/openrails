@@ -204,6 +204,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         public override void PrepareFrame(ETCSStatus status)
         {
             base.PrepareFrame(status);
+            /* TODO: TCS menu interface to be defined
             if (status.ActiveSubwindow is DMIMenuWindowDefinition && status.ActiveSubwindow.WindowTitle == WindowTitle)
             {
                 DMIMenuWindowDefinition menu = (DMIMenuWindowDefinition)status.ActiveSubwindow;
@@ -211,7 +212,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                 {
                     Buttons[i].Enabled = menu.Buttons[i].Enabled;
                 }
-            }
+            }*/
         }
     }
 }

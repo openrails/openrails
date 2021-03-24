@@ -209,9 +209,9 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         }
         public override void PrepareFrame(ETCSStatus status)
         {
-            if (Visible != status.ShowTextMessageArea)
+            if (Visible != status.TextMessageAreaShown)
             {
-                Visible = status.ShowTextMessageArea;
+                Visible = status.TextMessageAreaShown;
                 ButtonScrollUp.Visible = Visible;
                 ButtonScrollDown.Visible = Visible;
             }
