@@ -411,27 +411,37 @@ Note that you cannot use the MS Cabview editor on the .cvf file after having
 inserted these optional lines, because the editor will delete these added 
 lines when the file is saved.
 
-Rotation of Digital controls
-----------------------------
+Rotation of Gauges and Digital controls
+---------------------------------------
 
 .. index::
    single: ORTSAngle
 
 One of the drawbacks of rendering a cabview in 2D is that some parts of it 
-are not shown with a frontal, horizontal, view. Displaying a horizontal digital 
-control on it generates an unrealistc effect. This is the rationale of following 
-entry, to be added within a Digital cabview control block in the .cvf file::
+are not shown with a frontal, precisely vertical or horizontal, view. 
+Displaying a vertical gauge or a horizontal digital control on it generates an
+unrealistic effect. This is the rationale of following entry, to be added
+within a Gauge or Digital cabview control block in the .cvf file::
 
   ORTSAngle ( 5 )
 
 The number in parenthesis is the angle in degrees with respect to the horizontal 
-(positive for counterclockwise rotation).
+(or to the vertical for vertical gauges). Positive values produce
+counterclockwise rotation.
+
+At the left of the picture an example of a white vertical gauge that has been rotated 
+by 12 degrees
+
+.. image:: images/cabs-gauges-rotation.png
 
 Here an example of a red max speed indication that has been rotated by 5 degrees
 
 .. image:: images/cabs-digitals-rotation.png
 
+Gauges may have Style POINTER or SOLID.
+
 Rotation may be applied, with the same syntax, also to DigitalClock cab controls.
+
 
 3D cabs
 =======
