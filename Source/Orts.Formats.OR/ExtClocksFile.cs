@@ -87,6 +87,13 @@ namespace Orts.Formats.OR
     {
         public string name;                                    //sFile of OR-Clock
         public string clockType;                               //Type of OR-Clock -> analog, digital
+
+        public ClockItemData(string name, string clockType)
+        {
+            this.name = name;
+            this.clockType = clockType;
+        }
+
         public ClockItemData(STFReader stf, string shapePath)
         {
             stf.MustMatch("(");
