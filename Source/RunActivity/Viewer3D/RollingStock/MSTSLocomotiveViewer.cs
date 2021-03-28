@@ -180,6 +180,8 @@ namespace Orts.Viewer3D.RollingStock
             UserInputCommands.Add(UserCommand.ControlOdoMeterDirection, new Action[] { Noop, () => new ToggleOdometerDirectionCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlCabRadio, new Action[] { Noop, () => new CabRadioCommand(Viewer.Log, !Locomotive.CabRadioOn) });
             UserInputCommands.Add(UserCommand.ControlDieselHelper, new Action[] { Noop, () => new ToggleHelpersEngineCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlBattery, new Action[] { Noop, () => new ToggleBatteryCommand(Viewer.Log) });
+            UserInputCommands.Add(UserCommand.ControlPowerKey, new Action[] { Noop, () => new TogglePowerKeyCommand(Viewer.Log) });
             UserInputCommands.Add(UserCommand.ControlGeneric1, new Action[] {
                 () => new TCSButtonCommand(Viewer.Log, false, 0),
                 () => {
@@ -1981,6 +1983,8 @@ namespace Orts.Viewer3D.RollingStock
                 case CABViewControlTypes.ORTS_LEFTDOOR:
                 case CABViewControlTypes.ORTS_RIGHTDOOR:
                 case CABViewControlTypes.ORTS_MIRRORS:
+                case CABViewControlTypes.ORTS_BATTERY:
+                case CABViewControlTypes.ORTS_POWERKEY:
                     index = (int)data;
                     break;
 
@@ -2197,6 +2201,10 @@ namespace Orts.Viewer3D.RollingStock
                          != ChangedValue(Locomotive.GetCabFlipped() ? (Locomotive.DoorLeftOpen ? 1 : 0) : Locomotive.DoorRightOpen ? 1 : 0)) new ToggleDoorsRightCommand(Viewer.Log); break;
                 case CABViewControlTypes.ORTS_MIRRORS:
                     if ((Locomotive.MirrorOpen ? 1 : 0) != ChangedValue(Locomotive.MirrorOpen ? 1 : 0)) new ToggleMirrorsCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_BATTERY:
+                    if ((Locomotive.Battery ? 1 : 0) != ChangedValue(Locomotive.Battery ? 1 : 0)) new ToggleBatteryCommand(Viewer.Log); break;
+                case CABViewControlTypes.ORTS_POWERKEY:
+                    if ((Locomotive.PowerKey ? 1 : 0) != ChangedValue(Locomotive.PowerKey ? 1 : 0)) new TogglePowerKeyCommand(Viewer.Log); break;
 
                 // Train Control System controls
                 case CABViewControlTypes.ORTS_TCS1:
