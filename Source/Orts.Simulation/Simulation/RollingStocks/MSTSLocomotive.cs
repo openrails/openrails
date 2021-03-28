@@ -1042,6 +1042,9 @@ namespace Orts.Simulation.RollingStocks
             LocomotiveName = locoCopy.LocomotiveName;
             MaxVaccuumMaxPressurePSI = locoCopy.MaxVaccuumMaxPressurePSI;
             VacuumBrakeEQFitted = locoCopy.VacuumBrakeEQFitted;
+            TrainBrakeFitted = locoCopy.TrainBrakeFitted;
+            EngineBrakeFitted = locoCopy.EngineBrakeFitted;
+            BrakemanBrakeFitted = locoCopy.BrakemanBrakeFitted;
             SteamEngineBrakeFitted = locoCopy.SteamEngineBrakeFitted;
             HasWaterScoop = locoCopy.HasWaterScoop;
             WaterScoopFillElevationM = locoCopy.WaterScoopFillElevationM;
