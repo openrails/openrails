@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-08-29 03:09:27+0300\n"
-"PO-Revision-Date: 2020-08-29 03:22+0300\n"
+"POT-Creation-Date: 2021-03-21 10:35:04+0300\n"
+"PO-Revision-Date: 2021-03-21 11:13+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -22,12 +22,12 @@ msgstr "Редактор сценариев"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:18
 msgid "0.1"
-msgstr ""
+msgstr "0.1"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:19
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.Designer.cs:136
 msgid "Copyright by Open Rails project"
-msgstr ""
+msgstr "© Open Rails project"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/AboutActEdit.cs:20
 msgid "OR"
@@ -83,6 +83,8 @@ msgid ""
 "How long does the action takes.  With a minimum of 10sec and a maximum of "
 "25sec.\r\n"
 msgstr ""
+"Длительность действия:\r\n"
+"Сколько времени длится действие.  Минимальо 10сек, максимально 25сек.\r\n"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStartProperties.Designer.cs:86
 msgid ""
@@ -93,7 +95,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:52
 msgid "No Parameter to set"
-msgstr ""
+msgstr "Параметры не выбраны"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/ActionProperties/ControlStoppedProperties.Designer.cs:62
 msgid "ControlStoppedProperties"
@@ -115,7 +117,7 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:91
 msgid "Activity Description"
 msgstr "Описание сценария"
 
@@ -167,7 +169,7 @@ msgstr "Название сценария : "
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:238
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:249
 msgid "Traffic Description"
-msgstr ""
+msgstr "Описание движения"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:464
 msgid "StartActivity"
@@ -193,7 +195,7 @@ msgstr ""
 msgid "WaitActivity"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:530
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.cs:524
 msgid "NoMoreAct"
 msgstr ""
 
@@ -208,7 +210,7 @@ msgstr "Файл"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:128
 msgid "New"
-msgstr "Новый"
+msgstr "Создать"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:135
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:292
@@ -218,7 +220,7 @@ msgstr "Сценарий"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:143
 msgid "Traffic"
-msgstr ""
+msgstr "Движение"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:154
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/SimpleTextEd.Designer.cs:68
@@ -248,16 +250,16 @@ msgstr "Выйти"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:208
 msgid "Tools"
-msgstr ""
+msgstr "Инструменты"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:214
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:532
 msgid "Options"
-msgstr ""
+msgstr "Настройки"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:221
 msgid "Import"
-msgstr ""
+msgstr "Импортировать"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:229
 msgid "Help"
@@ -265,7 +267,7 @@ msgstr "Помощь"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:235
 msgid "About Activity Editor"
-msgstr ""
+msgstr "О редакторе сценариев"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:246
 msgid "statusStrip1"
@@ -273,13 +275,13 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:252
 msgid "Status"
-msgstr ""
+msgstr "Состояние"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2026
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2128
 msgid "v"
-msgstr ""
+msgstr "v"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:312
 msgid "Edit Description"
@@ -316,11 +318,11 @@ msgstr "Повернуть"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:468
 msgid "Activity Start"
-msgstr ""
+msgstr "Начало сценария"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:478
 msgid "Activity Stop"
-msgstr ""
+msgstr "Конец сценария"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:488
 msgid "Waiting Point"
@@ -332,7 +334,7 @@ msgstr "Точка действия"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:508
 msgid "Action Check"
-msgstr ""
+msgstr "Проверить взаимодействие"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:518
 msgid "toolStripButton10"
@@ -340,15 +342,15 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:136
 msgid "Click to start new Activity Description (not ready)"
-msgstr ""
+msgstr "Создать описание сценария (not ready)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:144
 msgid "Click to create new Traffic description (not ready)"
-msgstr ""
+msgstr "Создать описания движения (not ready)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:177
 msgid "Click to load an existing OR Activity (not ready)"
-msgstr ""
+msgstr "Закрузить существующий сценарий ОРТС (not ready)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:185
 msgid "Click to Edit Metadata for a specified route"
@@ -358,25 +360,25 @@ msgstr "Править метаданные выбраного полигона"
 msgid "Form1"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:164
 msgid "Route MetaData"
 msgstr "Метаданные полигона"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2004
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2093
 msgid "Display"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2015
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2117
 msgid "x"
-msgstr ""
+msgstr "x"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2041
 msgid "Tag"
 msgstr "Метка"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2107
 msgid "Station"
 msgstr "Станция"
 
@@ -386,7 +388,7 @@ msgstr "Центрировать вид"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:114
 msgid "Editor Options"
-msgstr ""
+msgstr "Настройки редактора"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:124
 msgid "Show Platform Label"
@@ -411,15 +413,15 @@ msgstr "Показывать все светофоры"
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:232
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:435
 msgid "Editor Preference"
-msgstr ""
+msgstr "Предпочтения"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:250
 msgid "Path Options"
-msgstr ""
+msgstr "Выбор путей"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:261
 msgid "Please, configure your paths"
-msgstr "Пожалуйста, сформируйте маршруты"
+msgstr "Пожалуйста, задайте пути"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:305
 msgid "Add"
@@ -427,11 +429,11 @@ msgstr "Добавить"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:316
 msgid "Route Paths"
-msgstr ""
+msgstr "Пути к полигонам"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:324
 msgid "Browse"
-msgstr "Просмотреть"
+msgstr "Искать"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:342
 msgid "MSTS Path :"
@@ -451,7 +453,7 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:390
 msgid "Show Snap Line"
-msgstr ""
+msgstr "Показать линию привязки"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:401
 msgid "Show Ruler"
@@ -459,7 +461,7 @@ msgstr "Показывать линейку"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:412
 msgid "Show Track Info"
-msgstr ""
+msgstr "Сведения о секции пути"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:423
 msgid "Show Tiles"
@@ -467,11 +469,11 @@ msgstr "Показывать тайлы"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:451
 msgid "Actions Configuration"
-msgstr ""
+msgstr "Конфигурация действий"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:468
 msgid "< remove"
-msgstr "< убрать"
+msgstr "< Убрать"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Preference/Options.Designer.cs:478
 msgid "Add >"
@@ -522,15 +524,15 @@ msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:39
 msgid "Please Load Paths:"
-msgstr ""
+msgstr "Пожалуйста, загрузите маршруты:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:43
 msgid "List of Paths seems OK:"
-msgstr ""
+msgstr "Список маршрутов в порядке:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:120
 msgid "###"
-msgstr ""
+msgstr "###"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.cs:162
 msgid "Loaded:"
@@ -542,35 +544,35 @@ msgstr "Станция:"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:163
 msgid "From"
-msgstr ""
+msgstr "Из"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:174
 msgid " To "
-msgstr ""
+msgstr " В "
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:185
 msgid "Max. Platform Length"
-msgstr ""
+msgstr "Предельная длина платформ"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:196
 msgid "Max. Siding Length"
-msgstr ""
+msgstr "Предельная длина ст.путей"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:207
 msgid "Number of Platform"
-msgstr ""
+msgstr "Номер платформы"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:218
 msgid "Number of Siding"
-msgstr ""
+msgstr "Номер пути"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:229
 msgid "Max. Passing Length"
-msgstr ""
+msgstr "Предельная длина путей разъезда"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:248
 msgid "Load Paths"
-msgstr ""
+msgstr "Загружаю маршруты"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Route%20Metadata/StationDisplay.Designer.cs:260
 msgid "label7"
@@ -585,41 +587,41 @@ msgid "TrackSegmentInterface"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:107
 msgid "Activity Name"
 msgstr "Название сценария"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:123
 #: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
 msgid "Route Path"
 msgstr "Путь к полигону"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:140
 msgid "Activity Editor: Create new activity"
 msgstr "Редактор сценариев: Создать новый сценарий"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:48
 #: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:48
 msgid "Route Configuration: Select Route"
-msgstr ""
+msgstr "Конфигурация полигона: Выберите полигон"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:175
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:139
 msgid "Activity Editor: Specify Train Info"
-msgstr ""
+msgstr "Редактор сценариев: Введите информацию о поезде"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:194
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:158
 msgid "Select Train Consist"
-msgstr ""
+msgstr "Выберите сотав поезда"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/TrainInfo.cs:211
 #: ../../Contrib/ActivityEditor/AEWizard/TrainInfo.cs:175
 msgid "Train Name (Opt.)"
-msgstr ""
+msgstr "Название поезда (необязательно)"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/WizardForm.cs:192
 #: ../../Contrib/ActivityEditor/AEWizard/WizardForm.cs:192
@@ -656,6 +658,8 @@ msgid ""
 "Sample header subtitle will help a user complete a certain task in the "
 "Sample wizard by clarifying the task in some way."
 msgstr ""
+"Пояснение к заголовку образца поможет пользователю выполнить задачу в "
+"Мастере образцов, каким-то образом прояснив ее."
 
 #: ../../Contrib/ContentManager/ContentManagerGUI.cs:92
 msgid "Loading..."
@@ -665,15 +669,15 @@ msgstr "Загрузка..."
 msgid "Open Rails Content Manager"
 msgstr "Организатор наполнения"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:626
+#: ../../Contrib/TrackViewer/TrackViewer.cs:625
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Текущий маршрут содержит несохранённые правки.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:628
+#: ../../Contrib/TrackViewer/TrackViewer.cs:627
 msgid "Do you really want to Quit?"
 msgstr "Действительно хотите выйти?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:731
+#: ../../Contrib/TrackViewer/TrackViewer.cs:730
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -682,7 +686,7 @@ msgstr ""
 "Полигон не загрузить.\n"
 "Расширение {0} не поддерживается"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#: ../../Contrib/TrackViewer/TrackViewer.cs:737
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -691,22 +695,27 @@ msgstr ""
 "Полигон не загрузить.\n"
 "{0} не существует"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:744
+#: ../../Contrib/TrackViewer/TrackViewer.cs:743
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
 "While trying to open {0} the folder {1} was inferred as (MSTS or similar) "
 "install folder but does not contain expected files"
 msgstr ""
+"Полигон не удалось загрузить.\n"
+"При открытии {0} папки {1}, где подразумевалось наличие МСТС-контента, не "
+"обнаружены соответствующие файлы"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:769
+#: ../../Contrib/TrackViewer/TrackViewer.cs:768
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
 "{0} somehow could not be translated into a loadable route"
 msgstr ""
+"Полигон не удалось загрузить.\n"
+"{0} не удалось преобразовать в загружаемый маршрут"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:810
+#: ../../Contrib/TrackViewer/TrackViewer.cs:809
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -714,40 +723,40 @@ msgstr ""
 "Директория некорректна.\n"
 "Директория сборки должна содржать субдиректории ROUTES, GLOBAL, ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:884
+#: ../../Contrib/TrackViewer/TrackViewer.cs:883
 msgid "Loading route..."
 msgstr "Загрузка полигона..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:909
+#: ../../Contrib/TrackViewer/TrackViewer.cs:908
 msgid "Route cannot be loaded. Sorry"
 msgstr "К сожалению, полигон не удалось загрузить"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:980
+#: ../../Contrib/TrackViewer/TrackViewer.cs:979
 msgid "Loading .pat file ..."
 msgstr "Загрузка *.pat-файла ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:983
+#: ../../Contrib/TrackViewer/TrackViewer.cs:982
 msgid "Processing .pat file ..."
 msgstr "Обработка *.pat-файла ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1010
 msgid "Path has been modified. Loading a new path will discard changes."
 msgstr "Маршрут изменён. При загрузке другого маршрута правки будут потеряны."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
 msgid "Do you want to continue?"
 msgstr "Продолжить?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1013
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1094
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:85
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:102
 msgid "Trackviewer Path Editor"
 msgstr "Редактор маршрута"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1089
 msgid ""
 "This will open every single .pat file for this route, (try to) fix all "
 "broken nodes, and save the modified path. "
@@ -755,11 +764,11 @@ msgstr ""
 "Сейчас будут загружены все *.pat-файлы данного полигона, чтобы попытаться "
 "исправить все битые точки, а затем-сохранить изменённые маршруты. "
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
 msgid "Potentially it will therefore change all .pat files on disc."
 msgstr "Возможно, изменения затронут все *.pat-файлы на диске."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
 msgid ""
 "This can be useful when a route has been changed and you want all paths to "
 "be corrected."
@@ -851,12 +860,12 @@ msgstr "Цвет ограничений скорости"
 msgid "Select other-paths color"
 msgstr "Цвет прочих маршрутов"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:633
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:625
 #, csharp-format
 msgid "Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"
 msgstr "Загружаются текстуры грунта {0}-{1} (уменьшено на коэфициент {2})"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:659
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:651
 msgid "Rescaling previously loaded ace-files"
 msgstr "Масштабирование ранее загруженных *.ace-файлов"
 
@@ -1055,7 +1064,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:112
 msgid "Reopening it in TrackViewer, however, is likely to work."
-msgstr ""
+msgstr "Возможно, повторное открытие в TrackViewer, будет результативно."
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:270
 msgid "Set as invalid in .pat file"
@@ -1063,7 +1072,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:272
 msgid "Closest junction is too far away"
-msgstr ""
+msgstr "Ближайшая стрелка слишком далеко"
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:274
 msgid "Not able to place node on track"
@@ -1075,7 +1084,7 @@ msgstr ""
 
 #: ../../Contrib/TrackViewer/Editing/TrainpathNode.cs:278
 msgid "Unknown"
-msgstr ""
+msgstr "Неизвестно"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:52
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:53
@@ -1086,15 +1095,16 @@ msgstr ""
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:58
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:143
 msgid "1"
-msgstr ""
+msgstr "1"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
-msgid "10"
-msgstr ""
+#| msgid "1"
+msgid "11"
+msgstr "11"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:269
 msgid "99"
-msgstr ""
+msgstr "99"
 
 #: ../../Contrib/TrackViewer/UserInterface/Languages.cs:91
 msgid "Please restart TrackViewer in order to load the new language."
@@ -1158,23 +1168,23 @@ msgstr "L\tСоздать бирку\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:570
 msgid "shift-C\t\tShift center to current mouse location\n"
-msgstr "shift-C\t\tЦентрировать по курсору мыши\n"
+msgstr "shift-C\tЦентрировать по курсору мыши\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:571
 msgid "left arrow\tShift left\n"
-msgstr "left arrow\tСдвиг влево\n"
+msgstr "←\tСдвиг влево\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:572
 msgid "down arrow\tShift down\n"
-msgstr "down arrow\tСдвиг вниз\n"
+msgstr "↓\tСдвиг вниз\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:573
 msgid "right arrow\tShift right\n"
-msgstr "right arrow\tСдвиг вправо\n"
+msgstr "→\tСдвиг вправо\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:574
 msgid "up arrow\t\tShift up\n"
-msgstr "up arrow\t\tСдвиг вверх\n"
+msgstr "↑\tСдвиг вверх\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:576
 msgid "F5\tShow speed-limits\n"
@@ -1230,11 +1240,11 @@ msgstr "F11\tПоказывать маршруты\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:589
 msgid "shift-F11\tShow raw path\n"
-msgstr "shift-F11\tПоказывать схему маршрутв\n"
+msgstr "shift-F11\tПоказывать схему маршрутов\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:591
 msgid "C\t\tShift to center of current path node\n"
-msgstr "C\t\tЦентрироваит по выбранному узлу маршрута\n"
+msgstr "C\t\tЦентрировать по выбранному узлу маршрута\n"
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml.cs:592
 msgid "PgUp\t\tShow more of the path\n"
@@ -1412,68 +1422,71 @@ msgstr "минут"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
 msgid "Openrails advanced shunting options:"
-msgstr ""
+msgstr "Более сложные манёвры:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
 msgid "Wait until:  "
-msgstr ""
+msgstr "Дождаться:  "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:21
 msgid ":"
-msgstr ""
+msgstr ":"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:23
 msgid "HH:MM"
-msgstr ""
+msgstr "ЧЧ:ММ"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:27
 msgid "Uncouple: keep "
-msgstr ""
+msgstr "Отцепка: оставить "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:29
 msgid " cars, and wait"
-msgstr ""
+msgstr " вагонов и ждать"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "seconds. "
-msgstr ""
+msgstr "секунд. "
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:32
 msgid "Keep rear"
-msgstr ""
+msgstr "Оставить хвост"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
 msgid "Join and split"
-msgstr ""
+msgstr "Сцепка и расцепка"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
 msgid "AI train request to pass red signal"
-msgstr ""
+msgstr "Другой поезд запросил проследование зпрещающего сигнала"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
-msgstr ""
+msgstr "Подавать сигнал"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+msgid "seconds.  11 = American horn sequence."
+msgstr "секунд.  11 = американская последовательность."
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
-msgstr ""
+msgstr "Время ожидания в десятичном формате ="
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:51
 msgid "00000"
-msgstr ""
+msgstr "00000"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:52
 msgid "hexadecimal ="
-msgstr ""
+msgstr "в шестнадцатиричном ="
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:53
 msgid "0000"
-msgstr ""
+msgstr "0000"
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:6
 msgid "Charting the path"
-msgstr ""
+msgstr "Составляю профиль пути"
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:62
 msgid ""
@@ -1489,11 +1502,12 @@ msgstr "Сохранить json"
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:66
 msgid "Save the data of the chart in json format into a .js file."
-msgstr ""
+msgstr "Сохранить профиль пути в формате json в *.js-файле."
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:67
 msgid "The saved data can then be used to show the chart on an HTML5 canvas."
 msgstr ""
+"Эти данные можно использовать для просмотра профиля пути в HTML5 canvas."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
 msgid "_File"
@@ -1976,3 +1990,6 @@ msgstr "Элемент"
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
 msgstr "Прочая информация. Выберите через меню статус-строки"
+
+#~ msgid "10"
+#~ msgstr "10"
