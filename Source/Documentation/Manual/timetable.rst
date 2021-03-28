@@ -2248,12 +2248,12 @@ event. Concretely, a weather file follows the format:
 
     {
     "Changes": [
-        {
+         {
             "Type": "<type>",
             "<property>": "<value>"
-        }
-    ]
-}
+         }
+      ]
+    }
 
 There are three types of events: ``Clear``, ``Precipitation``, and ``Fog``, 
 each with their own individual sets of properties.
