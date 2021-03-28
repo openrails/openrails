@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-11-04 00:49:46+0300\n"
-"PO-Revision-Date: 2020-11-04 00:59+0300\n"
+"POT-Creation-Date: 2021-01-16 15:50:23+0300\n"
+"PO-Revision-Date: 2021-01-16 15:58+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -933,11 +933,11 @@ msgstr "Упр. Радиостанция"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:199
 msgid "Control AI Fire On"
-msgstr "Автокочегар Вкл"
+msgstr "Автокочегар Топить"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:200
 msgid "Control AI Fire Off"
-msgstr "Автокочегар Откл"
+msgstr "Автокочегар Не топить"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:201
 msgid "Control AI Fire Reset"

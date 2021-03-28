@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-08-29 03:09:37+0300\n"
-"PO-Revision-Date: 2020-08-29 03:29+0300\n"
+"POT-Creation-Date: 2021-01-16 15:50:24+0300\n"
+"PO-Revision-Date: 2021-01-16 15:59+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -13,7 +13,8 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
-#: ../../Orts.Formats.OR/TimetableFile.cs:286
+#: ../../Orts.Formats.OR/TimetableFile.cs:300
+#: ../../Orts.Formats.OR/TimetableFile.cs:302
 #, csharp-format
 msgid "Start time: {0}"
 msgstr "Время старта: {0}"
