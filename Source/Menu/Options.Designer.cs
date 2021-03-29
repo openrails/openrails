@@ -77,6 +77,9 @@
             this.numericSoundDetailLevel = new System.Windows.Forms.NumericUpDown();
             this.checkMSTSBINSound = new System.Windows.Forms.CheckBox();
             this.tabPageVideo = new System.Windows.Forms.TabPage();
+            this.labelAntiAliasingValue = new System.Windows.Forms.Label();
+            this.labelAntiAliasing = new System.Windows.Forms.Label();
+            this.trackAntiAliasing = new System.Windows.Forms.TrackBar();
             this.checkShadowAllShapes = new System.Windows.Forms.CheckBox();
             this.checkDoubleWire = new System.Windows.Forms.CheckBox();
             this.label15 = new System.Windows.Forms.Label();
@@ -225,6 +228,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundVolumePercent)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).BeginInit();
             this.tabPageVideo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackAntiAliasing)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackDayAmbientLight)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericDistantMountainsViewingDistance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericViewingDistance)).BeginInit();
@@ -835,6 +839,9 @@
             // 
             // tabPageVideo
             // 
+            this.tabPageVideo.Controls.Add(this.labelAntiAliasingValue);
+            this.tabPageVideo.Controls.Add(this.labelAntiAliasing);
+            this.tabPageVideo.Controls.Add(this.trackAntiAliasing);
             this.tabPageVideo.Controls.Add(this.checkShadowAllShapes);
             this.tabPageVideo.Controls.Add(this.checkDoubleWire);
             this.tabPageVideo.Controls.Add(this.label15);
@@ -867,6 +874,44 @@
             this.tabPageVideo.TabIndex = 4;
             this.tabPageVideo.Text = "Video";
             this.tabPageVideo.UseVisualStyleBackColor = true;
+            // 
+            // labelAntiAliasingValue
+            // 
+            this.labelAntiAliasingValue.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.labelAntiAliasingValue.Location = new System.Drawing.Point(376, 352);
+            this.labelAntiAliasingValue.Margin = new System.Windows.Forms.Padding(3);
+            this.labelAntiAliasingValue.Name = "labelAntiAliasingValue";
+            this.labelAntiAliasingValue.Size = new System.Drawing.Size(220, 13);
+            this.labelAntiAliasingValue.TabIndex = 23;
+            this.labelAntiAliasingValue.Text = "XXX";
+            this.labelAntiAliasingValue.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // labelAntiAliasing
+            // 
+            this.labelAntiAliasing.AutoSize = true;
+            this.labelAntiAliasing.Location = new System.Drawing.Point(304, 352);
+            this.labelAntiAliasing.Margin = new System.Windows.Forms.Padding(3);
+            this.labelAntiAliasing.Name = "labelAntiAliasing";
+            this.labelAntiAliasing.Size = new System.Drawing.Size(66, 13);
+            this.labelAntiAliasing.TabIndex = 22;
+            this.labelAntiAliasing.Text = "Anti-aliasing:";
+            // 
+            // trackAntiAliasing
+            // 
+            this.trackAntiAliasing.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.trackAntiAliasing.AutoSize = false;
+            this.trackAntiAliasing.BackColor = System.Drawing.SystemColors.Window;
+            this.trackAntiAliasing.LargeChange = 2;
+            this.trackAntiAliasing.Location = new System.Drawing.Point(304, 371);
+            this.trackAntiAliasing.Margin = new System.Windows.Forms.Padding(6, 3, 6, 3);
+            this.trackAntiAliasing.Maximum = 6;
+            this.trackAntiAliasing.Minimum = 1;
+            this.trackAntiAliasing.Name = "trackAntiAliasing";
+            this.trackAntiAliasing.Size = new System.Drawing.Size(292, 26);
+            this.trackAntiAliasing.TabIndex = 24;
+            this.toolTip1.SetToolTip(this.trackAntiAliasing, "Default is 2x MSAA");
+            this.trackAntiAliasing.Value = 2;
+            this.trackAntiAliasing.ValueChanged += new System.EventHandler(this.trackAntiAliasing_ValueChanged);
             // 
             // checkShadowAllShapes
             // 
@@ -2524,6 +2569,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericSoundDetailLevel)).EndInit();
             this.tabPageVideo.ResumeLayout(false);
             this.tabPageVideo.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.trackAntiAliasing)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackDayAmbientLight)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericDistantMountainsViewingDistance)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericViewingDistance)).EndInit();
@@ -2742,5 +2788,8 @@
         private System.Windows.Forms.PictureBox pbWebServer;
         private System.Windows.Forms.PictureBox pbDisableTcs;
         private System.Windows.Forms.PictureBox pbOverspeedMonitor;
+        private System.Windows.Forms.TrackBar trackAntiAliasing;
+        private System.Windows.Forms.Label labelAntiAliasingValue;
+        private System.Windows.Forms.Label labelAntiAliasing;
     }
 }
