@@ -280,6 +280,10 @@ Trigger       Function
 174           HotBoxBearingOff
 175           BoilerBlowdownOn
 176           BoilerBlowdownOff
+177           BatteryOn
+178           BatteryOff
+179           PowerKeyOn
+180           PowerKeyOff
 =========     =====================================
 
 

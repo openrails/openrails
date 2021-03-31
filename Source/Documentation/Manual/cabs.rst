@@ -266,15 +266,18 @@ Further OR cab controls
 -----------------------
 
 OR supports the cabview control to open/close the left doors, the right doors 
-and the mirrors.
+and the mirrors. Moreover it supports the controls for the battery state and for 
+the key state; these two controls have no effect on the state of the locomotive.
 
 .. index::
    single: ORTS_LEFTDOOR
    single: ORTS_RIGHTDOOR
    single: ORTS_MIRRORS
+   single: ORTS_BATTERY
+   single: ORTS_POWERKEY
 
 The control blocks are like the one shown for the cab light. The Type strings 
-are ORTS_LEFTDOOR, ORTS_RIGHTDOOR and ORTS_MIRRORS.
+are ORTS_LEFTDOOR, ORTS_RIGHTDOOR, ORTS_MIRRORS, ORTS_BATTERY and ORTS_POWERKEY.
 
 
 High-resolution Cab Backgrounds and Controls
