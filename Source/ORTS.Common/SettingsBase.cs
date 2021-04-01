@@ -43,7 +43,15 @@ namespace ORTS.Common
         /// <summary>The store of the settings</summary>
         protected SettingsStore SettingStore { get; private set; }
         /// <summary>Translates name of a setting to its source</summary>
-        protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
+        protected readonly IDictionary<string, Source> Sources = new Dictionary<string, Source>();
+        /// <summary>
+        /// Translates name of a setting to its value when first loaded.
+        /// </summary>
+        protected readonly IDictionary<string, object> InitialValues = new Dictionary<string, object>();
+        /// <summary>
+        /// True when the user settings store is in use and will be read from and written to.
+        /// </summary>
+        protected bool AllowUserSettings { get; private set; }
 
         /// <summary>
         /// Constructor
@@ -76,9 +84,8 @@ namespace ORTS.Common
         /// <summary>
         /// Load all settings, possibly partly from the given options
         /// </summary>
-        /// <param name="allowUserSettings">Are user settings allowed?</param>
         /// <param name="optionsDictionary">???</param>
-		protected abstract void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary);
+		protected abstract void Load(Dictionary<string, string> optionsDictionary);
 
         /// <summary>
         /// Save all settings to the store
@@ -103,7 +110,7 @@ namespace ORTS.Common
 		protected void Load(IEnumerable<string> options)
 		{
 			// This special command-line option prevents the registry values from being used.
-			var allowUserSettings = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
+			AllowUserSettings = !options.Contains("skip-user-settings", StringComparer.OrdinalIgnoreCase);
 
 			// Pull apart the command-line options so we can find them by setting name.
 			var optionsDictionary = new Dictionary<string, string>();
@@ -114,23 +121,22 @@ namespace ORTS.Common
 				optionsDictionary[k] = v;
 			}
 
-			Load(allowUserSettings, optionsDictionary);
+			Load(optionsDictionary);
 		}
 
         /// <summary>
         /// Load a single value from the store, once type of the setting is known
         /// </summary>
-        /// <param name="allowUserSettings">Are user settings allowed for this setting?</param>
         /// <param name="optionsDictionary">???</param>
         /// <param name="name">name of the setting</param>
         /// <param name="type">type of the setting</param>
-		protected void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary, string name, Type type)
+		protected void Load(Dictionary<string, string> optionsDictionary, string name, Type type)
 		{
 			// Get the default value.
 			var defValue = GetDefaultValue(name);
 
 			// Read in the user setting, if it exists.
-			var userValue = allowUserSettings ? SettingStore.GetUserValue(name, type) : null;
+			var userValue = AllowUserSettings ? SettingStore.GetUserValue(name, type) : null;
 
 			// Read in the command-line option, if it exists into optValue.
 			var propertyNameLower = name.ToLowerInvariant();
@@ -164,6 +170,7 @@ namespace ORTS.Common
 					throw new ArgumentException();
 
 				SetValue(name, value);
+                InitialValues[name] = value;
 				Sources.Add(name, value.Equals(defValue) ? Source.Default : optValue != null ? Source.CommandLine : userValue != null ? Source.User : Source.Default);
 			}
 			catch (ArgumentException)

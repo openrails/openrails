@@ -65,7 +65,7 @@ namespace Orts
             game.PushState(new GameStateRunActivity(args));
             game.Run();
 
-            settings.Save();
+            settings.SaveInGameChanges();
         }
     }
 }
