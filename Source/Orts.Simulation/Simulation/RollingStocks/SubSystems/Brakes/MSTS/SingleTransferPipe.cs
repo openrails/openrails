@@ -72,11 +72,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // display differently depending upon whether vacuum or air braked system
             if (Car.CarBrakeSystemType == "vacuum_piped")
             {
-                return string.Format(" BP {0}", FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false));
+                return $" {Simulator.Catalog.GetString("BP")} {FormatStrings.FormatPressure(Vac.FromPress(BrakeLine1PressurePSI), PressureUnit.InHg, PressureUnit.InHg, false)}";
             }
             else  // air braked by default
             {
-                return string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true));
+                return $"{Simulator.Catalog.GetString("BP")} {FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], true)}";
             }
         }
 
@@ -85,20 +85,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS
             // display differently depending upon whether vacuum or air braked system
             if (Car.CarBrakeSystemType == "vacuum_piped")
             {
-                string s = string.Format(" V {0}", FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.InHg, PressureUnit.InHg, true));
+                var s = $" {Simulator.Catalog.GetString("V")} {FormatStrings.FormatPressure(Car.Train.EqualReservoirPressurePSIorInHg, PressureUnit.InHg, PressureUnit.InHg, true)}";
                 if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
-                    s += " EOT " + lastCarBrakeSystem.GetStatus(units);
+                    s += $" {Simulator.Catalog.GetString("EOT")} {lastCarBrakeSystem.GetStatus(units)}";
                 if (HandbrakePercent > 0)
-                    s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
+                    s += $" {Simulator.Catalog.GetString("Handbrake")} {HandbrakePercent:F0}%";
                 return s;
             }
             else // air braked by default
             {
-                var s = string.Format("BP {0}", FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], false));
+                var s = $"{Simulator.Catalog.GetString("BP")} {FormatStrings.FormatPressure(BrakeLine1PressurePSI, PressureUnit.PSI, units[BrakeSystemComponent.BrakePipe], false)}";
                 if (lastCarBrakeSystem != null && lastCarBrakeSystem != this)
-                    s += " EOT " + lastCarBrakeSystem.GetStatus(units);
+                    s += $" {Simulator.Catalog.GetString("EOT")} {lastCarBrakeSystem.GetStatus(units)}";
                 if (HandbrakePercent > 0)
-                    s += string.Format(" Handbrake {0:F0}%", HandbrakePercent);
+                    s += $" {Simulator.Catalog.GetString("Handbrake")} {HandbrakePercent:F0}%";
                 return s;
             }
             

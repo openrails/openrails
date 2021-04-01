@@ -367,6 +367,17 @@ Ambient daylight brightness
 
 With this slider you can set the daylight brightness.
 
+Anti-aliasing
+-------------
+
+Controls the anti-aliasing method used by Open Rails. Anti-aliasing is a
+computer graphics technique that smooths any harsh edges, otherwise known as
+"jaggies," present in the video image. Currently, Open Rails only supports the
+multisample anti-aliasing (MSAA) method. Higher applications of anti-aliasing
+will require exponentially more graphics computing power.
+
+The default setting is MSAA with 2x sampling.
+
 .. _options-simulation:
 
 Simulation Options
