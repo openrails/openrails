@@ -540,7 +540,7 @@ namespace ORTS.Settings
             foreach (var property in GetProperties())
             {
                 var isGameChangeable = property.GetCustomAttribute(typeof(GameChangeableSettingAttribute), inherit: false) != null;
-                var hasChanged = GetValue(property.Name) != InitialValues?[property.Name];
+                var hasChanged = !GetValue(property.Name).Equals(InitialValues?[property.Name]);
                 if (isGameChangeable && hasChanged)
                     Save(property.Name, property.PropertyType);
             }
