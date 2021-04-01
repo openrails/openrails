@@ -40,6 +40,11 @@ namespace ORTS.Settings
     {
     }
 
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class GameChangeableSettingAttribute : Attribute
+    {
+    }
+
     public class UserSettings : SettingsBase
     {
         public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
@@ -435,14 +440,19 @@ namespace ORTS.Settings
 
         // In-game settings:
         [Default(false)]
+        [GameChangeableSetting]
         public bool Letterbox2DCab { get; set; }
         [Default(true)]
+        [GameChangeableSetting]
         public bool Use3DCab { get; set; }
         [Default(0x7)] // OSDLocations.DisplayState.Auto
+        [GameChangeableSetting]
         public int OSDLocationsState { get; set; }
         [Default(0x1)] // OSDCars.DisplayState.Trains
+        [GameChangeableSetting]
         public int OSDCarsState { get; set; }
         [Default(0)] // TrackMonitor.DisplayMode.All
+        [GameChangeableSetting]
         public int TrackMonitorDisplayMode { get; set; }
 
         #endregion
@@ -494,10 +504,10 @@ namespace ORTS.Settings
             GetProperty(name).SetValue(this, value, null);
         }
 
-        protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
+        protected override void Load(Dictionary<string, string> optionsDictionary)
         {
             foreach (var property in GetProperties())
-                Load(allowUserSettings, optionsDictionary, property.Name, property.PropertyType);
+                Load(optionsDictionary, property.Name, property.PropertyType);
         }
 
         public override void Save()
@@ -518,6 +528,22 @@ namespace ORTS.Settings
             var property = GetProperty(name);
             if (property.GetCustomAttributes(typeof(DoNotSaveAttribute), false).Length == 0)
                 Save(property.Name, property.PropertyType);
+        }
+
+        /// <summary>
+        /// Save any settings that have changed while in-game.
+        /// </summary>
+        public void SaveInGameChanges()
+        {
+            if (!AllowUserSettings)
+                return;
+            foreach (var property in GetProperties())
+            {
+                var isGameChangeable = property.GetCustomAttribute(typeof(GameChangeableSettingAttribute), inherit: false) != null;
+                var hasChanged = GetValue(property.Name) != InitialValues?[property.Name];
+                if (isGameChangeable && hasChanged)
+                    Save(property.Name, property.PropertyType);
+            }
         }
 
         public override void Reset()
