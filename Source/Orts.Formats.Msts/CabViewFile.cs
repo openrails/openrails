@@ -181,6 +181,8 @@ namespace Orts.Formats.Msts
         ORTS_BAILOFF,
         ORTS_QUICKRELEASE,
         ORTS_OVERCHARGE,
+        ORTS_BATTERY,
+        ORTS_POWERKEY,
 
         // TCS Controls
         ORTS_TCS1,
