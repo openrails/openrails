@@ -109,23 +109,15 @@ namespace Orts.DataConverter
             for (var i = 0; i < clockList.clockType.Count(); i++)
             {
                 var item = new ClockItemData(clockList.shapeNames[i], clockList.clockType[i]);
-                jso.ItemList.Add(item);
+                jso.ClockShapeList.Add(item);
             }
 
-            File.WriteAllText(conversion.Output.First(), JsonConvert.SerializeObject(jso));
+            File.WriteAllText(conversion.Output.First(), JsonConvert.SerializeObject(jso, Formatting.Indented));
         }
     }
 
     public class ClockDataSet
     {
-        public string Author;
-        public string LastModified;
-        public List<ClockItemData> ItemList = new List<ClockItemData>();
-
-        public ClockDataSet()
-        {
-            Author = System.Environment.UserName;
-            LastModified = DateTime.Today.ToString("yyyy-MM-dd");
-        }
+        public List<ClockItemData> ClockShapeList = new List<ClockItemData>();
     }
 }
