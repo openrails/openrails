@@ -6791,14 +6791,12 @@ namespace Orts.Simulation.Physics
                 if (positionNowBack == PresentPosition[0].TCSectionIndex && directionNowBack != PresentPosition[0].TCDirection)
                 {
                     ReverseFormation(IsActualPlayerTrain);
-                    // active subpath must be incremented in parallel in incorporated train if present
-                    if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
+                    TryIncrementSubpath();
                 }
                 else if (positionNow == PresentPosition[1].TCSectionIndex && directionNow != PresentPosition[1].TCDirection)
                 {
                     ReverseFormation(IsActualPlayerTrain);
-                    // active subpath must be incremented in parallel in incorporated train if present
-                    if (IncorporatedTrainNo >= 0) IncrementSubpath(Simulator.TrainDictionary[IncorporatedTrainNo]);
+                    TryIncrementSubpath();
                 }
             }
 
@@ -11613,6 +11611,23 @@ namespace Orts.Simulation.Physics
 
         //================================================================================================//
         //
+        // Checks if it has to go to next active subpath
+        //
+        public void TryIncrementSubpath()
+        {
+            // active subpath must be incremented in parallel in incorporated train if present; not if such train is at beginning of subpath
+            if (IncorporatedTrainNo >= 0)
+            {
+                var incorporatedTrain = Simulator.TrainDictionary[IncorporatedTrainNo];
+                if (incorporatedTrain.PresentPosition[0].RouteListIndex == -1 && incorporatedTrain.PresentPosition[1].RouteListIndex == -1
+                    || incorporatedTrain.PresentPosition[0].RouteListIndex >= incorporatedTrain.ValidRoute[0].Count - 2
+                    || incorporatedTrain.PresentPosition[1].RouteListIndex >= incorporatedTrain.ValidRoute[0].Count - 2)
+                    IncrementSubpath(incorporatedTrain);
+            }
+        }
+
+        //================================================================================================//
+        //
         // Goes to next active subpath
         //
         public void IncrementSubpath(Train thisTrain)
@@ -11621,6 +11636,8 @@ namespace Orts.Simulation.Physics
             {
                 thisTrain.TCRoute.activeSubpath++;
                 thisTrain.ValidRoute[0] = thisTrain.TCRoute.TCRouteSubpaths[thisTrain.TCRoute.activeSubpath];
+                thisTrain.PresentPosition[0].RouteListIndex = thisTrain.ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                thisTrain.PresentPosition[1].RouteListIndex = thisTrain.ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
             }
         }
 
