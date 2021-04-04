@@ -65,7 +65,6 @@ namespace Orts.Viewer3D.Popups
         {
             StateProperty = owner.Viewer.Settings.GetSavingProperty<int>("OSDLocationsState");
             UpdateLabelLists();
-            if (Platforms.Count + Sidings.Count == 0) State = DisplayState.All;
         }
 
         void UpdateLabelLists()
