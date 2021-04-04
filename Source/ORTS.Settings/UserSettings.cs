@@ -470,7 +470,7 @@ namespace ORTS.Settings
             if (property == null)
                 return null;
             else
-                return new SavingProperty<T>(this, property);
+                return new SavingProperty<T>(this, property, AllowUserSettings);
         }
 
         public override object GetDefaultValue(string name)
@@ -506,10 +506,10 @@ namespace ORTS.Settings
             GetProperty(name).SetValue(this, value, null);
         }
 
-        protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
+        protected override void Load(Dictionary<string, string> optionsDictionary)
         {
             foreach (var property in GetProperties())
-                Load(allowUserSettings, optionsDictionary, property.Name, property.PropertyType);
+                Load(optionsDictionary, property.Name, property.PropertyType);
         }
 
         public override void Save()
@@ -562,11 +562,13 @@ namespace ORTS.Settings
     {
         private readonly UserSettings Settings;
         private readonly PropertyInfo Property;
+        private readonly bool DoSave;
 
-        internal SavingProperty(UserSettings settings, PropertyInfo property)
+        internal SavingProperty(UserSettings settings, PropertyInfo property, bool allowSave = true)
         {
             Settings = settings;
             Property = property;
+            DoSave = allowSave;
         }
 
         /// <summary>
@@ -592,7 +594,8 @@ namespace ORTS.Settings
             if (!GetValue().Equals(value))
             {
                 Property.SetValue(Settings, value);
-                Settings.Save(Property.Name);
+                if (DoSave)
+                    Settings.Save(Property.Name);
             }
         }
     }
