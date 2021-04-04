@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-08-29 03:09:35+0300\n"
-"PO-Revision-Date: 2020-08-30 04:09+0300\n"
+"POT-Creation-Date: 2021-01-16 15:50:23+0300\n"
+"PO-Revision-Date: 2021-01-16 15:58+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
@@ -155,11 +155,11 @@ msgstr ""
 
 #: ../../ORTS.Common/Conversions.cs:559
 msgid "°C"
-msgstr ""
+msgstr "°C"
 
 #: ../../ORTS.Common/Conversions.cs:560
 msgid "°F"
-msgstr ""
+msgstr "°F"
 
 #: ../../ORTS.Common/Conversions.cs:561
 msgid "N"
@@ -497,7 +497,7 @@ msgstr "Вид Предыдущая свободная камера"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:89
 msgid "Camera Reset"
-msgstr "Вид Восстановить настройки текущей камеры"
+msgstr "Вид Сбросить настройки текущей камеры"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:90
 msgid "Camera Move Fast"
@@ -644,294 +644,302 @@ msgid "Control Engine Brake Decrease"
 msgstr "Ручки Локомотивный тормоз  -"
 
 #: ../../ORTS.Common/Input/UserCommand.cs:127
+msgid "Control Brakeman Brake Increase"
+msgstr "Тормозильщик Тормоза поезда +"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:128
+msgid "Control Brakeman Brake Decrease"
+msgstr "Тормозильщик Тормоза поезда -"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:129
 msgid "Control Dynamic Brake Increase"
 msgstr "Ручки Электродинамический тормоз +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:128
+#: ../../ORTS.Common/Input/UserCommand.cs:130
 msgid "Control Dynamic Brake Decrease"
 msgstr "Ручки Электродинамический тормоз  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:129
+#: ../../ORTS.Common/Input/UserCommand.cs:131
 msgid "Control Bail Off"
 msgstr "Ручки Отпустить независимый тормоз"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:130
+#: ../../ORTS.Common/Input/UserCommand.cs:132
 msgid "Control Initialize Brakes"
 msgstr "Мгновенно Восстановить тормоза"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:131
+#: ../../ORTS.Common/Input/UserCommand.cs:133
 msgid "Control Handbrake Full"
 msgstr "Ручки Ручной тормоз затянуть"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:132
+#: ../../ORTS.Common/Input/UserCommand.cs:134
 msgid "Control Handbrake None"
 msgstr "Ручки Ручной тормоз отпустить"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:133
+#: ../../ORTS.Common/Input/UserCommand.cs:135
 msgid "Control Odometer Show/Hide"
 msgstr "Одометр показать/скрыть"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:134
+#: ../../ORTS.Common/Input/UserCommand.cs:136
 msgid "Control Odometer Reset"
 msgstr "Одометр сбросить на ноль"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:135
+#: ../../ORTS.Common/Input/UserCommand.cs:137
 msgid "Control Odometer Direction"
 msgstr "Одометр отсчёт вперёд/назад"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:136
+#: ../../ORTS.Common/Input/UserCommand.cs:138
 msgid "Control Retainers On"
 msgstr "Ретейнеры Вкл"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:137
+#: ../../ORTS.Common/Input/UserCommand.cs:139
 msgid "Control Retainers Off"
 msgstr "Ретейнеры Откл"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:138
+#: ../../ORTS.Common/Input/UserCommand.cs:140
 msgid "Control Brake Hose Connect"
 msgstr "Рукава Соединить"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:139
+#: ../../ORTS.Common/Input/UserCommand.cs:141
 msgid "Control Brake Hose Disconnect"
 msgstr "Рукава Разъединить"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:140
+#: ../../ORTS.Common/Input/UserCommand.cs:142
 msgid "Control Alerter"
 msgstr "Кнопки Бдительность"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:141
+#: ../../ORTS.Common/Input/UserCommand.cs:143
 msgid "Control Emergency Push Button"
 msgstr "Кнопки Аварийный останов"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:142
+#: ../../ORTS.Common/Input/UserCommand.cs:144
 msgid "Control Sander"
 msgstr "Кнопки Пескоподача"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:143
+#: ../../ORTS.Common/Input/UserCommand.cs:145
 msgid "Control Sander Toggle"
 msgstr "Кнопки Пескоподача постоянно"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:144
+#: ../../ORTS.Common/Input/UserCommand.cs:146
 msgid "Control Wiper"
 msgstr "Кнопки Стеклоочистители"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:145
+#: ../../ORTS.Common/Input/UserCommand.cs:147
 msgid "Control Horn"
 msgstr "Кнопки Тифон"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:146
+#: ../../ORTS.Common/Input/UserCommand.cs:148
 msgid "Control Bell"
 msgstr "Кнопки Сигнал малой громкости"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:147
+#: ../../ORTS.Common/Input/UserCommand.cs:149
 msgid "Control Bell Toggle"
 msgstr "Кнопки Сигнал малой громкости Постоянно"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:148
+#: ../../ORTS.Common/Input/UserCommand.cs:150
 msgid "Control Door Left"
 msgstr "Двери Левые"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:149
+#: ../../ORTS.Common/Input/UserCommand.cs:151
 msgid "Control Door Right"
 msgstr "Двери Правые"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:150
+#: ../../ORTS.Common/Input/UserCommand.cs:152
 msgid "Control Mirror"
 msgstr "Зеркала"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:151
+#: ../../ORTS.Common/Input/UserCommand.cs:153
 msgid "Control Light"
 msgstr "Освещение кабины"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:152
+#: ../../ORTS.Common/Input/UserCommand.cs:154
 msgid "Control Pantograph 1"
 msgstr "Токоприёмник №1"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:153
+#: ../../ORTS.Common/Input/UserCommand.cs:155
 msgid "Control Pantograph 2"
 msgstr "Токоприёмник №2"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:154
+#: ../../ORTS.Common/Input/UserCommand.cs:156
 msgid "Control Pantograph 3"
 msgstr "Токоприёмник №3"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:155
+#: ../../ORTS.Common/Input/UserCommand.cs:157
 msgid "Control Pantograph 4"
 msgstr "Токоприёмник №4"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:156
+#: ../../ORTS.Common/Input/UserCommand.cs:158
 msgid "Control Circuit Breaker Closing Order"
 msgstr "Гл.Выключатель Вкл"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:157
+#: ../../ORTS.Common/Input/UserCommand.cs:159
 msgid "Control Circuit Breaker Opening Order"
 msgstr "Гл.Выключатель Откл"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:158
+#: ../../ORTS.Common/Input/UserCommand.cs:160
 msgid "Control Circuit Breaker Closing Authorization"
 msgstr "Гл.Выключатель Возврат"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:159
+#: ../../ORTS.Common/Input/UserCommand.cs:161
 msgid "Control Diesel Player"
 msgstr "ДВС первый запуск/останов"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:160
+#: ../../ORTS.Common/Input/UserCommand.cs:162
 msgid "Control Diesel Helper"
 msgstr "ДВС остальные запуск/останов"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:161
+#: ../../ORTS.Common/Input/UserCommand.cs:163
 msgid "Control Headlight Increase"
 msgstr "Огни  +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:162
+#: ../../ORTS.Common/Input/UserCommand.cs:164
 msgid "Control Headlight Decrease"
 msgstr "Огни   -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:163
+#: ../../ORTS.Common/Input/UserCommand.cs:165
 msgid "Control Injector 1 Increase"
 msgstr "Паровоз Инжектор 1, вода +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:164
+#: ../../ORTS.Common/Input/UserCommand.cs:166
 msgid "Control Injector 1 Decrease"
 msgstr "Паровоз Инжектор 1, вода  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:165
+#: ../../ORTS.Common/Input/UserCommand.cs:167
 msgid "Control Injector 1"
 msgstr "Паровоз Инжектор 1, пар"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:166
+#: ../../ORTS.Common/Input/UserCommand.cs:168
 msgid "Control Injector 2 Increase"
 msgstr "Паровоз Инжектор 2, вода +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:167
+#: ../../ORTS.Common/Input/UserCommand.cs:169
 msgid "Control Injector 2 Decrease"
 msgstr "Паровоз Инжектор 2, вода  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:168
+#: ../../ORTS.Common/Input/UserCommand.cs:170
 msgid "Control Injector 2"
 msgstr "Паровоз Инжектор 2, пар"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:169
+#: ../../ORTS.Common/Input/UserCommand.cs:171
 msgid "Control Blowdown Valve"
 msgstr "Паровоз Вентиль продувки"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:170
+#: ../../ORTS.Common/Input/UserCommand.cs:172
 msgid "Control Blower Increase"
 msgstr "Паровоз Сифон +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:171
+#: ../../ORTS.Common/Input/UserCommand.cs:173
 msgid "Control Blower Decrease"
 msgstr "Паровоз Сифон  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:172
+#: ../../ORTS.Common/Input/UserCommand.cs:174
 msgid "Control Steam Heat Increase"
 msgstr "Паровоз Пар на отопление +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:173
+#: ../../ORTS.Common/Input/UserCommand.cs:175
 msgid "Control Steam Heat Decrease"
 msgstr "Паровоз Пар на отопление  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:174
+#: ../../ORTS.Common/Input/UserCommand.cs:176
 msgid "Control Damper Increase"
 msgstr "Паровоз Поддувало +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:175
+#: ../../ORTS.Common/Input/UserCommand.cs:177
 msgid "Control Damper Decrease"
 msgstr "Паровоз Поддувало  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:176
+#: ../../ORTS.Common/Input/UserCommand.cs:178
 msgid "Control Firebox Open"
 msgstr "Паровоз Топка Открыть"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:177
+#: ../../ORTS.Common/Input/UserCommand.cs:179
 msgid "Control Firebox Close"
 msgstr "Паровоз Топка Закрыть"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:178
+#: ../../ORTS.Common/Input/UserCommand.cs:180
 msgid "Control Firing Rate Increase"
 msgstr "Паровоз Подача топлива +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:179
+#: ../../ORTS.Common/Input/UserCommand.cs:181
 msgid "Control Firing Rate Decrease"
 msgstr "Паровоз Подача топлива  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:180
+#: ../../ORTS.Common/Input/UserCommand.cs:182
 msgid "Control Fire Shovel Full"
 msgstr "Паровоз Подача топлива максимум"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:181
+#: ../../ORTS.Common/Input/UserCommand.cs:183
 msgid "Control Cylinder Cocks"
 msgstr "Паровоз Продувка цилиндров"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:182
+#: ../../ORTS.Common/Input/UserCommand.cs:184
 msgid "Control Large Ejector Increase"
 msgstr "Паровоз Бол. эжектор +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:183
+#: ../../ORTS.Common/Input/UserCommand.cs:185
 msgid "Control Large Ejector Decrease"
 msgstr "Паровоз Бол. эжектор  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:184
+#: ../../ORTS.Common/Input/UserCommand.cs:186
 msgid "Control Small Ejector Increase"
 msgstr "Паровоз Мал. эжектор +"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:185
+#: ../../ORTS.Common/Input/UserCommand.cs:187
 msgid "Control Small Ejector Decrease"
 msgstr "Паровоз Мал. эжектор  -"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:186
+#: ../../ORTS.Common/Input/UserCommand.cs:188
 msgid "Control Vacuum Exhauster"
 msgstr "Паровоз Эксгаустер"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:187
+#: ../../ORTS.Common/Input/UserCommand.cs:189
 msgid "Control Cylinder Compound"
 msgstr "Паровоз Байпас компаунда"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:188
+#: ../../ORTS.Common/Input/UserCommand.cs:190
 msgid "Control Firing"
 msgstr "Автркочегар вкл/откл"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:189
+#: ../../ORTS.Common/Input/UserCommand.cs:191
 msgid "Control Refill"
 msgstr "Экипировка"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:190
+#: ../../ORTS.Common/Input/UserCommand.cs:192
 msgid "Control Water Scoop"
 msgstr "Черпак"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:191
+#: ../../ORTS.Common/Input/UserCommand.cs:193
 msgid "Control ImmediateRefill"
 msgstr "Экипировка мгновенно"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:192
+#: ../../ORTS.Common/Input/UserCommand.cs:194
 msgid "Control Turntable Clockwise"
 msgstr "Повор.круг по часовой"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:193
+#: ../../ORTS.Common/Input/UserCommand.cs:195
 msgid "Control Turntable Counterclockwise"
 msgstr "Повор.круг против часовой"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:194
+#: ../../ORTS.Common/Input/UserCommand.cs:196
 msgid "Control Generic 1"
 msgstr "Упр. Общ.1"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:195
+#: ../../ORTS.Common/Input/UserCommand.cs:197
 msgid "Control Generic 2"
 msgstr "Упр. Общ.2"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:196
+#: ../../ORTS.Common/Input/UserCommand.cs:198
 msgid "Control Cab Radio"
 msgstr "Упр. Радиостанция"
 
-#: ../../ORTS.Common/Input/UserCommand.cs:197
-msgid "Control AI Fire On"
-msgstr "Автокочегар Вкл"
-
-#: ../../ORTS.Common/Input/UserCommand.cs:198
-msgid "Control AI Fire Off"
-msgstr "Автокочегар Откл"
-
 #: ../../ORTS.Common/Input/UserCommand.cs:199
+msgid "Control AI Fire On"
+msgstr "Автокочегар Топить"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:200
+msgid "Control AI Fire Off"
+msgstr "Автокочегар Не топить"
+
+#: ../../ORTS.Common/Input/UserCommand.cs:201
 msgid "Control AI Fire Reset"
 msgstr "Автокочегар Сброс"
 

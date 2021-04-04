@@ -51,9 +51,13 @@
             "Open Rails - Open Rails Activities" section of the <a href="https://www.trainsim.com/vbts/tslib.php?do=displaysearch">TrainSim.com Library</a>
             or download from these links: 
             <ul>
-              <li>Post 20-Oct-2020 <a href="https://www.trainsim.com/vbts/tslib.php?do=copyright&fid=36266">open_rails_starter_tutorial_2.zip</a></li>
               <li>Pre 20-Oct-2020 <a href="https://www.trainsim.com/vbts/tslib.php?do=copyright&fid=36048">open_rails_starter_tutorial_1_0x.zip</a></li>
               <li>and <a href="https://www.trainsim.com/vbts/tslib.php?do=copyright&fid=36050">open_rails_starter_tutorial_1_1.zip</a></li>
+            </ul>
+            <ul>
+              <li>Post 20-Oct-2020 <a href="https://www.trainsim.com/vbts/tslib.php?do=copyright&fid=36266">open_rails_starter_tutorial_2.zip</a></li>
+              <li>Also <a href="https://www.trainsim.com/vbts/tslib.php?do=copyright&fid=36326">bnsf_scenic_atk8_11.zip</a> - Amtrak train meets 6 freight trains</li>
+              <li>and <a href="https://www.trainsim.com/vbts/tslib.php?do=copyright&fid=36293">ortsscenicsubtimetable.zip</a> - 14 drivable trains, 24-hour timetable</li>
             </ul>
           </p>
           <h3>Developing Activities - 3</h3>
