@@ -31,15 +31,14 @@ namespace Orts.Formats.OR
     /// </summary>
     public class ClocksFile
     {
-        public List<ClockList> ClockListList = new List<ClockList>();
-        private ClockList ClockList = null;
+        public List<ClockShape> ClockShapeList = new List<ClockShape>();
         private string ShapePath = null;
+        private ClockShape ClockShape = null;
 
-
-        public ClocksFile(string fileName, string shapePath, List<ClockList> clockListList)
+        public ClocksFile(string fileName, string shapePath, List<ClockShape> clockShapeList)
         {
             ShapePath = shapePath;
-            ClockListList = clockListList;
+            ClockShapeList = clockShapeList;
             JsonReader.ReadFile(fileName, TryParse);
         }
 
@@ -54,14 +53,14 @@ namespace Orts.Formats.OR
                     break;
 
                 case "ClockShapeList[].":
-                    ClockList = new ClockList();
-                    ClockListList.Add(ClockList);
+                    ClockShape = new ClockShape();
+                    ClockShapeList.Add(ClockShape);
                     break;
                 
                 case "ClockShapeList[].name":
                     stringValue = item.AsString(invalid);
                     var path = ShapePath + stringValue;
-                    ClockList.shapeNames.Add(path);
+                    ClockShape.name = path;
                     if (stringValue == invalid)
                         return false;
                     if (File.Exists(path) == false)
@@ -70,7 +69,7 @@ namespace Orts.Formats.OR
 
                 case "ClockShapeList[].clockType":
                     stringValue = item.AsString(invalid);
-                    ClockList.clockType.Add(item.AsString(invalid));
+                    ClockShape.clockType = stringValue;
                     if (stringValue == invalid)
                         return false;
                     if (stringValue != "analog")

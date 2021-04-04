@@ -108,7 +108,7 @@ namespace Orts.DataConverter
             var clockList = clockLists.First();
             for (var i = 0; i < clockList.clockType.Count(); i++)
             {
-                var item = new ClockItemData(clockList.shapeNames[i], clockList.clockType[i]);
+                var item = new ClockShape(clockList.shapeNames[i], clockList.clockType[i]);
                 jso.ClockShapeList.Add(item);
             }
 
@@ -118,6 +118,6 @@ namespace Orts.DataConverter
 
     public class ClockDataSet
     {
-        public List<ClockItemData> ClockShapeList = new List<ClockItemData>();
+        public List<ClockShape> ClockShapeList = new List<ClockShape>();
     }
 }

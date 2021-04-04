@@ -47,10 +47,9 @@ namespace Orts.Formats.OR
         /// <param name="filePath"></param>
         /// <param name="clockLists"></param>
         /// <param name="shapePath"></param>
-        public ExtClockFile(string filePath, List<ClockList> clockLists, string shapePath)
+        public ExtClockFile(string filePath, List<ClockShape> clockShapeList, string shapePath)
         {
-            var ClocksFile = new ClocksFile(filePath, shapePath, clockLists);
-            clockLists = ClocksFile.ClockListList;
+            new ClocksFile(filePath, shapePath, clockShapeList);
         }
     }
 
@@ -72,13 +71,13 @@ namespace Orts.Formats.OR
         //        i++;
         //    }
         //}
-        public ClockList(List<ClockItemData> clockDataItems, string listName)
+        public ClockList(List<ClockShape> clockDataItems, string listName)
         {
             shapeNames = new List<string>();
             clockType = new List<string>();
             ListName = listName;
             int i = 0;
-            foreach (ClockItemData data in clockDataItems)
+            foreach (ClockShape data in clockDataItems)
             {
                 shapeNames.Add(data.name);
                 clockType.Add(data.clockType);
@@ -97,7 +96,7 @@ namespace Orts.Formats.OR
     {
         public ClockBlock(STFReader stf, string shapePath, List<ClockList> clockLists, string listName)
         {
-            var clockDataItems = new List<ClockItemData>();
+            var clockDataItems = new List<ClockShape>();
             var count = stf.ReadInt(null);
             stf.ParseBlock(new STFReader.TokenProcessor[] {
                     new STFReader.TokenProcessor("clockitem", ()=>{
@@ -105,7 +104,7 @@ namespace Orts.Formats.OR
                             STFException.TraceWarning(stf, "Skipped extra ClockItem");
                         else
                         {
-                            var dataItem = new ClockItemData(stf, shapePath);
+                            var dataItem = new ClockShape(stf, shapePath);
                             if (File.Exists(dataItem.name))
                                 clockDataItems.Add(dataItem);
                             else
@@ -120,22 +119,22 @@ namespace Orts.Formats.OR
         }
     }
 
-    public class ClockItemData
+    public class ClockShape
     {
         public string name = "incomplete";                                    //sFile of OR-Clock
         public string clockType = "incomplete";                               //Type of OR-Clock -> analog, digital
 
-        public ClockItemData(string name, string clockType)
+        public ClockShape(string name, string clockType)
         {
             this.name = name;
             this.clockType = clockType;
         }
 
-        public ClockItemData()
+        public ClockShape()
         {
         }
 
-        public ClockItemData(STFReader stf, string shapePath)
+        public ClockShape(STFReader stf, string shapePath)
         {
             stf.MustMatch("(");
             name = shapePath + stf.ReadString();

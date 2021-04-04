@@ -141,7 +141,8 @@ namespace Orts.Simulation
         public ExtCarSpawnerFile ExtCarSpawnerFile;
         public List<CarSpawnerList> CarSpawnerLists;
         public ExtClockFile ExtClockFile;            // External file of OR-Clocks
-        public List<ClockList> ClockLists;           // List of OR-Clocks given by external file "openrails\clocks.dat"
+        //public List<ClockList> ClockLists;           // List of OR-Clocks given by external file "openrails\clocks.dat"
+        public List<ClockShape> ClockShapeList = new List<ClockShape>();           // List of OR-Clocks given by external file "openrails\clocks.dat"
 
         // timetable pools
         public Poolholder PoolHolder;
@@ -356,9 +357,8 @@ namespace Orts.Simulation
             var extClockFile = RoutePath + @"\animated.clocks-or";
             if (File.Exists(extClockFile))
             {
-                if (ClockLists == null) ClockLists = new List<ClockList>();
                 Trace.Write(" EXTCLOCK");
-                ExtClockFile = new ExtClockFile(extClockFile, ClockLists, RoutePath + @"\shapes\");
+                ExtClockFile = new ExtClockFile(extClockFile, ClockShapeList, RoutePath + @"\shapes\");
             }
 
             Confirmer = new Confirmer(this, 1.5);
