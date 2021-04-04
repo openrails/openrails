@@ -47,7 +47,7 @@ namespace Orts.Viewer3D.Popups
             get => (DisplayState)StateProperty.Value;
             set
             {
-                StateProperty.Value =(int)value;
+                StateProperty.Value = (int)value;
             }
         }
 
