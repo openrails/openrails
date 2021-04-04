@@ -215,11 +215,14 @@ namespace Orts.Viewer3D.Popups
                             }
                             else if (signalObj != null)
                             {
+                                string aspects = string.Join(" / ", signalObj.Signal.SignalHeads.Select(
+                                    x => x.state.ToString() + (x.TextSignalAspect.Length > 0 ? $" ({x.TextSignalAspect})" : string.Empty)
+                                    ));
                                 primitives.Add(new DispatcherLabel(currentPosition.WorldLocation,
                                            GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Stop ? Color.Red :
                                                GetAspect(signalObj.Signal) == DebugWindowSignalAspect.Warning ? Color.Yellow :
                                                Color.Green,
-                                           String.Format("Signal ({0})", signalObj.Signal.this_sig_lr(MstsSignalFunction.NORMAL)),
+                                           String.Format("Signal {0} ({1})", signalObj.Signal.thisRef, aspects),
                                            Owner.TextFontDefaultOutlined));
                             }
 
