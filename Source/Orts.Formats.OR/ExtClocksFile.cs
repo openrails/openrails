@@ -27,14 +27,27 @@ namespace Orts.Formats.OR
 {
     public class ExtClockFile
     {
-        //public ExtClockFile(string filePath, string shapePath, List<ClockList> clockLists)
-        //{
-        //    using (STFReader stf = new STFReader(filePath, false))
-        //    {
-        //        var clockBlock = new ClockBlock(stf, shapePath, clockLists, "Default");
-        //    }
-        //}
+        /// <summary>
+        /// Reading STF file openrails\clocks.dat
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="shapePath"></param>
+        /// <param name="clockLists"></param>
         public ExtClockFile(string filePath, string shapePath, List<ClockList> clockLists)
+        {
+            using (STFReader stf = new STFReader(filePath, false))
+            {
+                var clockBlock = new ClockBlock(stf, shapePath, clockLists, "Default");
+            }
+        }
+
+        /// <summary>
+        /// Reading JSON file animated.clocks-or
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="clockLists"></param>
+        /// <param name="shapePath"></param>
+        public ExtClockFile(string filePath, List<ClockList> clockLists, string shapePath)
         {
             var ClocksFile = new ClocksFile(filePath, shapePath, clockLists);
             clockLists = ClocksFile.ClockListList;
@@ -46,6 +59,19 @@ namespace Orts.Formats.OR
         public List<string> shapeNames; //clock shape names
         public List<string> clockType;  //second parameter of the ClockItem is the OR-ClockType -> analog, digital
         public string ListName;
+        //public ClockList(List<ClockItemData> clockDataItems, string listName)
+        //{
+        //    shapeNames = new List<string>();
+        //    clockType = new List<string>();
+        //    ListName = listName;
+        //    int i = 0;
+        //    foreach (ClockItemData data in clockDataItems)
+        //    {
+        //        shapeNames[i] = data.name;
+        //        clockType[i] = data.clockType;
+        //        i++;
+        //    }
+        //}
         public ClockList(List<ClockItemData> clockDataItems, string listName)
         {
             shapeNames = new List<string>();
@@ -54,8 +80,8 @@ namespace Orts.Formats.OR
             int i = 0;
             foreach (ClockItemData data in clockDataItems)
             {
-                shapeNames[i] = data.name;
-                clockType[i] = data.clockType;
+                shapeNames.Add(data.name);
+                clockType.Add(data.clockType);
                 i++;
             }
         }

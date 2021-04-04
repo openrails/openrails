@@ -358,7 +358,7 @@ namespace Orts.Simulation
             {
                 if (ClockLists == null) ClockLists = new List<ClockList>();
                 Trace.Write(" EXTCLOCK");
-                ExtClockFile = new ExtClockFile(extClockFile, RoutePath + @"\shapes\", ClockLists);
+                ExtClockFile = new ExtClockFile(extClockFile, ClockLists, RoutePath + @"\shapes\");
             }
 
             Confirmer = new Confirmer(this, 1.5);
