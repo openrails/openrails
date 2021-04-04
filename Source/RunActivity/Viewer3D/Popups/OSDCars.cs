@@ -21,6 +21,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
+using ORTS.Settings;
 using System.Collections.Generic;
 
 namespace Orts.Viewer3D.Popups
@@ -37,12 +38,13 @@ namespace Orts.Viewer3D.Popups
             Trains = 0x1,
             Cars = 0x2,
         }
+        private readonly SavingProperty<int> StateProperty;
         private DisplayState State
         {
-            get => (DisplayState)Owner.Viewer.Settings.OSDCarsState;
+            get => (DisplayState)StateProperty.Value;
             set
             {
-                Owner.Viewer.Settings.OSDCarsState = (int)value;
+                StateProperty.Value = (int)value;
             }
         }
 
@@ -51,6 +53,7 @@ namespace Orts.Viewer3D.Popups
         public OSDCars(WindowManager owner)
             : base(owner, 0, 0, "OSD Cars")
         {
+            StateProperty = owner.Viewer.Settings.GetSavingProperty<int>("OSDCarsState");
         }
 
         public override bool Interactive

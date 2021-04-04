@@ -53,6 +53,7 @@ namespace Orts.Viewer3D
         public static Random Random { get; private set; }
         // User setups.
         public UserSettings Settings { get; private set; }
+        private readonly SavingProperty<bool> Use3DCabProperty;
         // Multi-threaded processes
         public LoaderProcess LoaderProcess { get; private set; }
         public UpdaterProcess UpdaterProcess { get; private set; }
@@ -142,7 +143,7 @@ namespace Orts.Viewer3D
         /// </summary>
         public void ToggleCabCameraView()
         {
-            Settings.Use3DCab = !Settings.Use3DCab;
+            Use3DCabProperty.Value = !Use3DCabProperty.Value;
             if (Camera == CabCamera || Camera == ThreeDimCabCamera)
                 ActivateCabCamera();
         }
@@ -270,6 +271,7 @@ namespace Orts.Viewer3D
             Simulator = simulator;
             Game = game;
             Settings = simulator.Settings;
+            Use3DCabProperty = Settings.GetSavingProperty<bool>("Use3DCab");
 
             RenderProcess = game.RenderProcess;
             UpdaterProcess = game.UpdaterProcess;

@@ -40,11 +40,6 @@ namespace ORTS.Settings
     {
     }
 
-    [AttributeUsage(AttributeTargets.Property)]
-    public sealed class GameChangeableSettingAttribute : Attribute
-    {
-    }
-
     public class UserSettings : SettingsBase
     {
         public static readonly string RegistryKey;        // ie @"SOFTWARE\OpenRails\ORTS"
@@ -440,19 +435,14 @@ namespace ORTS.Settings
 
         // In-game settings:
         [Default(false)]
-        [GameChangeableSetting]
         public bool Letterbox2DCab { get; set; }
         [Default(true)]
-        [GameChangeableSetting]
         public bool Use3DCab { get; set; }
         [Default(0x7)] // OSDLocations.DisplayState.Auto
-        [GameChangeableSetting]
         public int OSDLocationsState { get; set; }
         [Default(0x1)] // OSDCars.DisplayState.Trains
-        [GameChangeableSetting]
         public int OSDCarsState { get; set; }
         [Default(0)] // TrackMonitor.DisplayMode.All
-        [GameChangeableSetting]
         public int TrackMonitorDisplayMode { get; set; }
 
         #endregion
@@ -469,6 +459,18 @@ namespace ORTS.Settings
             Load(options);
             Folders = new FolderSettings(options);
             Input = new InputSettings(options);
+        }
+
+        /// <summary>
+        /// Get a saving property from this instance by name.
+        /// </summary>
+        public SavingProperty<T> GetSavingProperty<T>(string name)
+        {
+            var property = GetProperty(name);
+            if (property == null)
+                return null;
+            else
+                return new SavingProperty<T>(this, property, AllowUserSettings);
         }
 
         public override object GetDefaultValue(string name)
@@ -530,22 +532,6 @@ namespace ORTS.Settings
                 Save(property.Name, property.PropertyType);
         }
 
-        /// <summary>
-        /// Save any settings that have changed while in-game.
-        /// </summary>
-        public void SaveInGameChanges()
-        {
-            if (!AllowUserSettings)
-                return;
-            foreach (var property in GetProperties())
-            {
-                var isGameChangeable = property.GetCustomAttribute(typeof(GameChangeableSettingAttribute), inherit: false) != null;
-                var hasChanged = !GetValue(property.Name).Equals(InitialValues?[property.Name]);
-                if (isGameChangeable && hasChanged)
-                    Save(property.Name, property.PropertyType);
-            }
-        }
-
         public override void Reset()
         {
             foreach (var property in GetProperties())
@@ -564,6 +550,52 @@ namespace ORTS.Settings
                     Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source);
                 else
                     Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source);
+            }
+        }
+    }
+
+    /// <summary>
+    /// A wrapper for a UserSettings property that saves any new values immediately.
+    /// </summary>
+    /// <typeparam name="T">Cast values to this type.</typeparam>
+    public class SavingProperty<T>
+    {
+        private readonly UserSettings Settings;
+        private readonly PropertyInfo Property;
+        private readonly bool DoSave;
+
+        internal SavingProperty(UserSettings settings, PropertyInfo property, bool allowSave = true)
+        {
+            Settings = settings;
+            Property = property;
+            DoSave = allowSave;
+        }
+
+        /// <summary>
+        /// Get or set the current value of this property.
+        /// </summary>
+        public T Value
+        {
+            get => GetValue();
+            set => SetValue(value);
+        }
+
+        /// <summary>
+        /// Get the current value of this property.
+        /// </summary>
+        public T GetValue()
+            => Property.GetValue(Settings) is T cast ? cast : default;
+
+        /// <summary>
+        /// Set the current value of this property.
+        /// </summary>
+        public void SetValue(T value)
+        {
+            if (!GetValue().Equals(value))
+            {
+                Property.SetValue(Settings, value);
+                if (DoSave)
+                    Settings.Save(Property.Name);
             }
         }
     }

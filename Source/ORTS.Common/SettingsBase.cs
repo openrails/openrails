@@ -43,11 +43,8 @@ namespace ORTS.Common
         /// <summary>The store of the settings</summary>
         protected SettingsStore SettingStore { get; private set; }
         /// <summary>Translates name of a setting to its source</summary>
-        protected readonly IDictionary<string, Source> Sources = new Dictionary<string, Source>();
-        /// <summary>
-        /// Translates name of a setting to its value when first loaded.
-        /// </summary>
-        protected readonly IDictionary<string, object> InitialValues = new Dictionary<string, object>();
+        protected readonly Dictionary<string, Source> Sources = new Dictionary<string, Source>();
+
         /// <summary>
         /// True when the user settings store is in use and will be read from and written to.
         /// </summary>
@@ -170,7 +167,6 @@ namespace ORTS.Common
 					throw new ArgumentException();
 
 				SetValue(name, value);
-                InitialValues[name] = value;
 				Sources.Add(name, value.Equals(defValue) ? Source.Default : optValue != null ? Source.CommandLine : userValue != null ? Source.User : Source.Default);
 			}
 			catch (ArgumentException)

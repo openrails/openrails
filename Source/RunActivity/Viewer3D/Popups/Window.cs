@@ -20,9 +20,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ORTS.Common;
+using ORTS.Settings;
 using System;
 using System.IO;
-using System.Reflection;
 
 namespace Orts.Viewer3D.Popups
 {
@@ -40,7 +40,7 @@ namespace Orts.Viewer3D.Popups
         Rectangle location;
 
         readonly string Caption;
-        readonly PropertyInfo SettingsProperty;
+        readonly SavingProperty<int[]> SettingsProperty;
         ControlLayout WindowLayout;
         VertexBuffer WindowVertexBuffer;
         IndexBuffer WindowIndexBuffer;
@@ -51,10 +51,10 @@ namespace Orts.Viewer3D.Popups
             // We need to correct the window height for the ACTUAL font size, so that the title bar is shown correctly.
             location = new Rectangle(0, 0, width, height - BaseFontSize + owner.TextFontDefault.Height);
 
-            SettingsProperty = Owner.Viewer.Settings.GetType().GetProperty("WindowPosition_" + GetType().Name.Replace("Window", ""));
+            SettingsProperty = Owner.Viewer.Settings.GetSavingProperty<int[]>("WindowPosition_" + GetType().Name.Replace("Window", ""));
             if (SettingsProperty != null)
             {
-                var value = SettingsProperty.GetValue(Owner.Viewer.Settings, null) as int[];
+                var value = SettingsProperty.Value;
                 if ((value != null) && (value.Length >= 2))
                 {
                     location.X = (int)Math.Round((float)value[0] * (Owner.ScreenSize.X - location.Width) / 100);
@@ -104,11 +104,7 @@ namespace Orts.Viewer3D.Popups
 
         protected virtual void LocationChanged()
         {
-            if (SettingsProperty != null)
-            {
-                SettingsProperty.SetValue(Owner.Viewer.Settings, new[] { (int)Math.Round(100f * location.X / (Owner.ScreenSize.X - location.Width)), (int)Math.Round(100f * location.Y / (Owner.ScreenSize.Y - location.Height)) }, null);
-                Owner.Viewer.Settings.Save(SettingsProperty.Name);
-            }
+            SettingsProperty?.SetValue(new[] { (int)Math.Round(100f * location.X / (Owner.ScreenSize.X - location.Width)), (int)Math.Round(100f * location.Y / (Owner.ScreenSize.Y - location.Height)) });
 
             XNAWorld = Matrix.CreateWorld(new Vector3(location.X, location.Y, 0), -Vector3.UnitZ, Vector3.UnitY);
         }
