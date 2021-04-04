@@ -570,11 +570,11 @@ namespace Orts.Viewer3D
         {
             if (Program.Simulator.ClockLists != null && shape != null) //OR-Clocks list given by "openrails\clocks.dat" and given shape are not null
             {
-                for (var i = 0; i <= Program.Simulator.ClockLists[0].shapeNames.Count() - 1; i++)                                       //always the first (Default) list is used by now
+                for (var i = 0; i < Program.Simulator.ClockLists.Count(); i++)                                       //always the first (Default) list is used by now
                 {
-                    if (shape.ToLowerInvariant() == Path.GetFileName(Program.Simulator.ClockLists[0].shapeNames[i]).ToLowerInvariant()) //shape is an OR-Clock
-                        {
-                        string clockType = Program.Simulator.ClockLists[0].clockType[i].ToLowerInvariant();                             //Type of OR-Clock given by "openrails\clocks.dat"
+                    if (shape.ToLowerInvariant() == Path.GetFileName(Program.Simulator.ClockLists[i].shapeNames[0]).ToLowerInvariant()) //shape is an OR-Clock
+                    {
+                        string clockType = Program.Simulator.ClockLists[i].clockType[0].ToLowerInvariant();                             //Type of OR-Clock given by "openrails\clocks.dat"
                         if (clockType == "analog" || clockType == "digital")
                             return clockType; //Return OR-Clock-Type, analog or digital
                         else

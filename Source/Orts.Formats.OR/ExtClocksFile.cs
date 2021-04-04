@@ -27,24 +27,29 @@ namespace Orts.Formats.OR
 {
     public class ExtClockFile
     {
+        //public ExtClockFile(string filePath, string shapePath, List<ClockList> clockLists)
+        //{
+        //    using (STFReader stf = new STFReader(filePath, false))
+        //    {
+        //        var clockBlock = new ClockBlock(stf, shapePath, clockLists, "Default");
+        //    }
+        //}
         public ExtClockFile(string filePath, string shapePath, List<ClockList> clockLists)
         {
-            using (STFReader stf = new STFReader(filePath, false))
-            {
-                var clockBlock = new ClockBlock(stf, shapePath, clockLists, "Default");
-            }
+            var ClocksFile = new ClocksFile(filePath, shapePath, clockLists);
+            clockLists = ClocksFile.ClockListList;
         }
     }
 
     public class ClockList
     {
-        public string[] shapeNames; //clock shape names
-        public string[] clockType;  //second parameter of the ClockItem is the OR-ClockType -> analog, digital
+        public List<string> shapeNames; //clock shape names
+        public List<string> clockType;  //second parameter of the ClockItem is the OR-ClockType -> analog, digital
         public string ListName;
         public ClockList(List<ClockItemData> clockDataItems, string listName)
         {
-            shapeNames = new string[clockDataItems.Count];
-            clockType = new string[clockDataItems.Count];
+            shapeNames = new List<string>();
+            clockType = new List<string>();
             ListName = listName;
             int i = 0;
             foreach (ClockItemData data in clockDataItems)
@@ -53,6 +58,12 @@ namespace Orts.Formats.OR
                 clockType[i] = data.clockType;
                 i++;
             }
+        }
+
+        public ClockList()
+        {
+            shapeNames = new List<string>();
+            clockType = new List<string>();
         }
     }
 
@@ -85,13 +96,17 @@ namespace Orts.Formats.OR
 
     public class ClockItemData
     {
-        public string name;                                    //sFile of OR-Clock
-        public string clockType;                               //Type of OR-Clock -> analog, digital
+        public string name = "incomplete";                                    //sFile of OR-Clock
+        public string clockType = "incomplete";                               //Type of OR-Clock -> analog, digital
 
         public ClockItemData(string name, string clockType)
         {
             this.name = name;
             this.clockType = clockType;
+        }
+
+        public ClockItemData()
+        {
         }
 
         public ClockItemData(STFReader stf, string shapePath)

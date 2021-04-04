@@ -344,12 +344,21 @@ namespace Orts.Simulation
             }
 
             //Load OR-Clock if external file "openrails\clock.dat" exists --------------------------------------------------------
-            var extClockFile = RoutePath + @"\openrails\clocks.dat";
+            //var extClockFile = RoutePath + @"\openrails\clocks.dat";
+            //if (File.Exists(extClockFile))
+            //{
+            //    if (ClockLists == null) ClockLists = new List<ClockList>();
+            //    Trace.Write(" EXTCLOCK");
+            //    ExtClockFile = new ExtClockFile(RoutePath + @"\openrails\clocks.dat", RoutePath + @"\shapes\", ClockLists);
+            //}
+
+            //Load OR-Clock if external file "animated.clocks-or" exists --------------------------------------------------------
+            var extClockFile = RoutePath + @"\animated.clocks-or";
             if (File.Exists(extClockFile))
             {
                 if (ClockLists == null) ClockLists = new List<ClockList>();
                 Trace.Write(" EXTCLOCK");
-                ExtClockFile = new ExtClockFile(RoutePath + @"\openrails\clocks.dat", RoutePath + @"\shapes\", ClockLists);
+                ExtClockFile = new ExtClockFile(extClockFile, RoutePath + @"\shapes\", ClockLists);
             }
 
             Confirmer = new Confirmer(this, 1.5);
