@@ -1141,6 +1141,16 @@ namespace Orts.Viewer3D.RollingStock
                             count[(int)cvc.ControlType]++;
                             continue;
                         }
+                        CVCAnimatedDisplay anim = cvc as CVCAnimatedDisplay;
+                        if (anim != null)
+                        {
+                            CabViewAnimationsRenderer animr = new CabViewAnimationsRenderer(viewer, car, anim, _Shader);
+                            animr.SortIndex = controlSortIndex;
+                            CabViewControlRenderersList[i].Add(animr);
+                            if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, animr);
+                            count[(int)cvc.ControlType]++;
+                            continue;
+                        }
                         CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
                         if (multi != null)
                         {
@@ -1735,7 +1745,7 @@ namespace Orts.Viewer3D.RollingStock
     /// </summary>
     public class CabViewDiscreteRenderer : CabViewControlRenderer
     {
-        readonly CVCWithFrames ControlDiscrete;
+        protected readonly CVCWithFrames ControlDiscrete;
         readonly Rectangle SourceRectangle;
         Rectangle DestinationRectangle = new Rectangle();
         public readonly float CVCFlashTimeOn = 0.75f;
@@ -1823,7 +1833,7 @@ namespace Orts.Viewer3D.RollingStock
         /// Determines the index of the Texture to be drawn
         /// </summary>
         /// <returns>index of the Texture</returns>
-        public int GetDrawIndex()
+        public virtual int GetDrawIndex()
         {
             var data = Locomotive.GetDataOf(Control);
 
@@ -2226,7 +2236,7 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         /// <param name="percent">Percent to be translated</param>
         /// <returns>The calculated display index by the Control's Values</returns>
-        int PercentToIndex(float percent)
+        protected int PercentToIndex(float percent)
         {
             var index = 0;
 
@@ -2258,6 +2268,68 @@ namespace Orts.Viewer3D.RollingStock
             return index;
         }
     }
+
+    /// <summary>
+    /// Discrete renderer for animated controls, like external 2D wiper
+    /// </summary>
+    public class CabViewAnimationsRenderer : CabViewDiscreteRenderer
+    {
+        float CumulativeTime;
+        CVCAnimatedDisplay ControlAnimated;
+        float HalfCycleTimeS;
+        bool wiperOn = false;
+
+        public CabViewAnimationsRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCWithFrames control, CabShader shader)
+            : base(viewer, locomotive, control, shader)
+        {
+            ControlAnimated = (CVCAnimatedDisplay)ControlDiscrete;
+            HalfCycleTimeS = ControlAnimated.CycleTimeS * 0.5f;
+            wiperOn = Locomotive.Wiper;
+        }
+
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            if (Locomotive.Wiper) wiperOn = true;
+            if (wiperOn)
+            {
+                CumulativeTime += elapsedTime.ClockSeconds;
+                if (CumulativeTime > ControlAnimated.CycleTimeS && !Locomotive.Wiper)
+                    wiperOn = false;
+                while (CumulativeTime > ControlAnimated.CycleTimeS)
+                    CumulativeTime -= ControlAnimated.CycleTimeS;
+            }
+            base.PrepareFrame(frame, elapsedTime);
+        }
+
+
+        public override int GetDrawIndex()
+        {
+            var data = Locomotive.GetDataOf(Control);
+
+            var index = 0;
+            switch (ControlDiscrete.ControlType)
+            {
+                case CABViewControlTypes.ORTS_2DEXTERNALWIPERS:
+                    if (wiperOn)
+                    {
+                        if (CumulativeTime < HalfCycleTimeS)
+                            index = PercentToIndex(CumulativeTime / HalfCycleTimeS);
+                        else
+                            index = PercentToIndex((ControlAnimated.CycleTimeS - CumulativeTime) / HalfCycleTimeS);
+                    }
+                    break;
+            }
+            // If it is a control with NumPositions and NumValues, the index becomes the reference to the Positions entry, which in turn is the frame index within the .ace file
+            if (ControlDiscrete is CVCDiscrete && !(ControlDiscrete is CVCSignal) && (ControlDiscrete as CVCDiscrete).Positions.Count > index &&
+                (ControlDiscrete as CVCDiscrete).Positions.Count == ControlDiscrete.Values.Count && index >= 0)
+                index = (ControlDiscrete as CVCDiscrete).Positions[index];
+
+            if (index >= ControlDiscrete.FramesCount) index = ControlDiscrete.FramesCount - 1;
+            if (index < 0) index = 0;
+            return index;
+        }
+    }
+
 
     /// <summary>
     /// Digital Cab Control renderer
