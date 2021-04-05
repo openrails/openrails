@@ -11619,6 +11619,8 @@ namespace Orts.Simulation.Physics
             if (IncorporatedTrainNo >= 0)
             {
                 var incorporatedTrain = Simulator.TrainDictionary[IncorporatedTrainNo];
+                incorporatedTrain.PresentPosition[0].RouteListIndex = incorporatedTrain.ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
+                incorporatedTrain.PresentPosition[1].RouteListIndex = incorporatedTrain.ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
                 if (incorporatedTrain.PresentPosition[0].RouteListIndex == -1 && incorporatedTrain.PresentPosition[1].RouteListIndex == -1
                     || incorporatedTrain.PresentPosition[0].RouteListIndex >= incorporatedTrain.ValidRoute[0].Count - 2
                     || incorporatedTrain.PresentPosition[1].RouteListIndex >= incorporatedTrain.ValidRoute[0].Count - 2)
@@ -11636,8 +11638,6 @@ namespace Orts.Simulation.Physics
             {
                 thisTrain.TCRoute.activeSubpath++;
                 thisTrain.ValidRoute[0] = thisTrain.TCRoute.TCRouteSubpaths[thisTrain.TCRoute.activeSubpath];
-                thisTrain.PresentPosition[0].RouteListIndex = thisTrain.ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                thisTrain.PresentPosition[1].RouteListIndex = thisTrain.ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
             }
         }
 
