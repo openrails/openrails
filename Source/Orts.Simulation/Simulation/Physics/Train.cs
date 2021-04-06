@@ -11615,16 +11615,14 @@ namespace Orts.Simulation.Physics
         //
         public void TryIncrementSubpath()
         {
-            // active subpath must be incremented in parallel in incorporated train if present; not if such train is at beginning of subpath
+            // active subpath must be incremented in parallel in incorporated train if present; not just after incorporation
             if (IncorporatedTrainNo >= 0)
             {
                 var incorporatedTrain = Simulator.TrainDictionary[IncorporatedTrainNo];
-                incorporatedTrain.PresentPosition[0].RouteListIndex = incorporatedTrain.ValidRoute[0].GetRouteIndex(PresentPosition[0].TCSectionIndex, 0);
-                incorporatedTrain.PresentPosition[1].RouteListIndex = incorporatedTrain.ValidRoute[0].GetRouteIndex(PresentPosition[1].TCSectionIndex, 0);
-                if (incorporatedTrain.PresentPosition[0].RouteListIndex == -1 && incorporatedTrain.PresentPosition[1].RouteListIndex == -1
-                    || incorporatedTrain.PresentPosition[0].RouteListIndex >= incorporatedTrain.ValidRoute[0].Count - 2
-                    || incorporatedTrain.PresentPosition[1].RouteListIndex >= incorporatedTrain.ValidRoute[0].Count - 2)
+                if (incorporatedTrain.PresentPosition[0].TCSectionIndex != PresentPosition[1].TCSectionIndex && incorporatedTrain.PresentPosition[1].TCSectionIndex != PresentPosition[1].TCSectionIndex)
                     IncrementSubpath(incorporatedTrain);
+                incorporatedTrain.PresentPosition[0].TCSectionIndex = -1;
+                incorporatedTrain.PresentPosition[0].TCSectionIndex = -1;
             }
         }
 
