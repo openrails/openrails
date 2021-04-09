@@ -125,7 +125,7 @@ namespace ORTS.Scripting.Api.ETCS
         /// <summary>
         /// Legacy variable. Please use TextMessageAreaShown instead
         /// </summary>
-        public bool ShowTextMessageArea => TextMessageAreaShown;
+        public bool ShowTextMessageArea { get { return TextMessageAreaShown; } set { TextMessageAreaShown = true; } }
         /// <summary>
         /// List of text messages to be displayed in text area. Do not rely on the order, as the DMI will reorder the list.
         /// </summary>
