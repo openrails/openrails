@@ -806,6 +806,9 @@ Use the following .eng paramater to load an electric power supply script::
 The .cs extension is optional. "Default" will load the generic OR power supply 
 implementation, so do `not` use this name for your own script.
 
+
+.. _features-scripting-tcs:
+
 Train Control System
 --------------------
 
@@ -919,6 +922,17 @@ which returns a handle for the player locomotive instance of the MSTSLocomotive
 class. Through such handle all public classes, methods and variables of 
 the OR Simulation environment can be accessed within the script. 
 
+The Train Control System class provides the ETCSStatus field, which controls the information
+to be displayed in the ETCS DMI. For example, the following block orders the DMI to show the circular speed gauge in yellow colour as the train approaches a speed restriction:
+
+.. code-block:: csharp
+    
+    ETCSStatus.CurrentMonitor = Monitor.TargetSpeed;
+    ETCSStatus.CurrentSupervisionStatus = SupervisionStatus.Indication;
+    ETCSStatus.TargetDistanceM = 1234.5f;
+    ETCSStatus.AllowedSpeedMpS = 50;
+    ETCSStatus.InterventionSpeedMpS = 52.5f;
+    ETCSStatus.TargetSpeedMpS = 25;
 
 .. index::
    single: MultiStateDisplay
