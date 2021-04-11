@@ -77,7 +77,7 @@ namespace Orts.Formats.OR
                     ClockShapeList.Add(ClockShape);
                     break;
                 
-                case "[].name":
+                case "[].Name":
                     stringValue = item.AsString(invalid);
                     var path = ShapePath + stringValue;
                     ClockShape.Name = path;
@@ -87,7 +87,7 @@ namespace Orts.Formats.OR
                         Trace.TraceWarning($"Non-existent shape file {path} referenced in animated.clocks-or");
                     break;
 
-                case "[].clockType":
+                case "[].ClockType":
                     stringValue = item.AsString(invalid);
                     ClockShape.ClockType = stringValue;
                     if (stringValue == invalid)
