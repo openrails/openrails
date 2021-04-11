@@ -21,6 +21,9 @@ using System.IO;
 
 namespace ORTS
 {
+    /// <summary>
+    /// Manages conversion of shape files for animated clocks from STF (clocks.dat) to JSON (animated.clocks-or) formats.
+    /// </summary>
     public static class ClockConversion
     {
         private static string ClocksDat = "openrails\\clocks.dat";
@@ -53,21 +56,11 @@ namespace ORTS
             }
         }
 
-        public static int ConvertAnimatedClocks(string routePath, string from, string to)
-        {
-            var processStartInfo = new ProcessStartInfo()
-            {
-                FileName = "Contrib.DataConverter.exe",
-                Arguments = $"/input \"{routePath}\\{from}\" /output \"{routePath}\\{to}\"",
-                WindowStyle = ProcessWindowStyle.Normal,
-                WorkingDirectory = Application.StartupPath,
-                UseShellExecute = false
-            };
-            var process = Process.Start(processStartInfo);
-            process.WaitForExit();
-            return process.ExitCode;
-        }
-
+        /// <summary>
+        ///  Prompts to carry out conversion, carries it out using Contrib.DataConverter.exe and returns flag to continue.
+        /// </summary>
+        /// <param name="routePath"></param>
+        /// <returns></returns>
         public static bool IsDone(string routePath)
         {
             var reply = MessageBox.Show(
@@ -113,6 +106,21 @@ namespace ORTS
             {
                 return true;
             }
+        }
+
+        public static int ConvertAnimatedClocks(string routePath, string from, string to)
+        {
+            var processStartInfo = new ProcessStartInfo()
+            {
+                FileName = "Contrib.DataConverter.exe",
+                Arguments = $"/input \"{routePath}\\{from}\" /output \"{routePath}\\{to}\"",
+                WindowStyle = ProcessWindowStyle.Normal,
+                WorkingDirectory = Application.StartupPath,
+                UseShellExecute = false
+            };
+            var process = Process.Start(processStartInfo);
+            process.WaitForExit();
+            return process.ExitCode;
         }
     }
 }
