@@ -140,9 +140,7 @@ namespace Orts.Simulation
         public List<MovingTable> MovingTables = new List<MovingTable>();
         public ExtCarSpawnerFile ExtCarSpawnerFile;
         public List<CarSpawnerList> CarSpawnerLists;
-        public ExtClockFile ExtClockFile;            // External file of OR-Clocks
-        //public List<ClockList> ClockLists;           // List of OR-Clocks given by external file "openrails\clocks.dat"
-        public List<ClockShape> ClockShapeList = new List<ClockShape>();           // List of OR-Clocks given by external file "openrails\clocks.dat"
+        public List<ClockShape> ClockShapeList = new List<ClockShape>();           // List of animated clocks given by external file "animated.clocks-or"
 
         // timetable pools
         public Poolholder PoolHolder;
@@ -344,21 +342,12 @@ namespace Orts.Simulation
                 ExtCarSpawnerFile = new ExtCarSpawnerFile(RoutePath + @"\openrails\carspawn.dat", RoutePath + @"\shapes\", CarSpawnerLists);
             }
 
-            //Load OR-Clock if external file "openrails\clock.dat" exists --------------------------------------------------------
-            //var extClockFile = RoutePath + @"\openrails\clocks.dat";
-            //if (File.Exists(extClockFile))
-            //{
-            //    if (ClockLists == null) ClockLists = new List<ClockList>();
-            //    Trace.Write(" EXTCLOCK");
-            //    ExtClockFile = new ExtClockFile(RoutePath + @"\openrails\clocks.dat", RoutePath + @"\shapes\", ClockLists);
-            //}
-
-            //Load OR-Clock if external file "animated.clocks-or" exists --------------------------------------------------------
-            var extClockFile = RoutePath + @"\animated.clocks-or";
-            if (File.Exists(extClockFile))
+            // Load animated clocks if file "animated.clocks-or" exists --------------------------------------------------------
+            var clockFile = RoutePath + @"\animated.clocks-or";
+            if (File.Exists(clockFile))
             {
-                Trace.Write(" EXTCLOCK");
-                ExtClockFile = new ExtClockFile(extClockFile, ClockShapeList, RoutePath + @"\shapes\");
+                Trace.Write(" CLOCKS");
+                new ClocksFile(clockFile, ClockShapeList, RoutePath + @"\shapes\");
             }
 
             Confirmer = new Confirmer(this, 1.5);
