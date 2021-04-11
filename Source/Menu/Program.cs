@@ -151,7 +151,6 @@ namespace ORTS
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
                             break;
                     }
-
                     var joinedParameters = string.Join(" ", parameters);
                     if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
                     {
@@ -161,20 +160,32 @@ namespace ORTS
                             $"\n\n{joinedParameters}\n\n" +
                             "This is a debugging aid. If you wanted to start the simulator instead, select Start without holding down the Alt key.");
                     }
+                    else if(ClockConversion.IsAppropriate(MainForm.SelectedRoute.Path))
+                    {
+                        if (ClockConversion.IsDone(MainForm.SelectedRoute.Path))
+                        {
+                            Start(MainForm, joinedParameters);
+                        }
+                    }
                     else
                     {
-                        var processStartInfo = new ProcessStartInfo()
-                        {
-                            FileName = MainForm.RunActivityProgram,
-                            Arguments = joinedParameters,
-                            WindowStyle = ProcessWindowStyle.Normal,
-                            WorkingDirectory = Application.StartupPath,
-                        };
-                        var process = Process.Start(processStartInfo);
-                        process.WaitForExit();
+                        Start(MainForm, joinedParameters);
                     }
                 }
             }
+        }
+
+        private static void Start(MainForm MainForm, string joinedParameters)
+        {
+            var processStartInfo = new ProcessStartInfo()
+            {
+                FileName = MainForm.RunActivityProgram,
+                Arguments = joinedParameters,
+                WindowStyle = ProcessWindowStyle.Normal,
+                WorkingDirectory = Application.StartupPath,
+            };
+            var process = Process.Start(processStartInfo);
+            process.WaitForExit();
         }
     }
 }
