@@ -18,6 +18,7 @@
 using Newtonsoft.Json;
 using Orts.Formats.Msts;
 using Orts.Formats.OR;
+using Orts.Parsers.Msts;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -72,7 +73,6 @@ namespace Orts.DataConverter
                 var routeLength = inFilePath.Length - @"openrails\clocks.dat".Length;
                 var routePath = inFilePath.Substring(0, routeLength);
 
-                // List of lists seems excessive! We will ignore all but the first item.
                 clockLists = ParseInput(conversion, routePath);
             }
             catch (Orts.Parsers.Msts.STFException e)
@@ -81,7 +81,7 @@ namespace Orts.DataConverter
                 throw; // re-throw exception without losing the stack trace
             }
 
-            var jso = new ClockDataSet();
+            var jso = new List<ClockShape>();
 
             try
             {
@@ -99,25 +99,25 @@ namespace Orts.DataConverter
         private static List<ClockList> ParseInput(DataConversion conversion, string routePath)
         {
             var clockLists = new List<ClockList>();
-            var extClockFile = new ExtClockFile(conversion.Input, routePath + @"shapes\", clockLists);
+            {
+                using (STFReader stf = new STFReader(conversion.Input, false))
+                {
+                    var clockBlock = new ClockBlock(stf, routePath + @"shapes\", clockLists, "Default");
+                }
+            }
             return clockLists;
         }
 
-        private static void GenerateOutput(DataConversion conversion, List<ClockList> clockLists, ClockDataSet jso)
+        private static void GenerateOutput(DataConversion conversion, List<ClockList> clockLists, List<ClockShape> jso)
         {
             var clockList = clockLists.First();
-            for (var i = 0; i < clockList.clockType.Count(); i++)
+            for (var i = 0; i < clockList.ClockType.Count(); i++)
             {
-                var item = new ClockShape(clockList.shapeNames[i], clockList.clockType[i]);
-                jso.ClockShapeList.Add(item);
+                var item = new ClockShape(clockList.ShapeNames[i], clockList.ClockType[i]);
+                jso.Add(item);
             }
 
             File.WriteAllText(conversion.Output.First(), JsonConvert.SerializeObject(jso, Formatting.Indented));
         }
-    }
-
-    public class ClockDataSet
-    {
-        public List<ClockShape> ClockShapeList = new List<ClockShape>();
     }
 }

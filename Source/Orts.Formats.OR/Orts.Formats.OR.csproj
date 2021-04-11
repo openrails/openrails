@@ -61,7 +61,6 @@
     <Compile Include="AuxActionRef.cs" />
     <Compile Include="DrawUtility.cs" />
     <Compile Include="ExtCarSpawnerFile.cs" />
-    <Compile Include="ExtClocksFile.cs" />
     <Compile Include="GlobalItem.cs" />
     <Compile Include="MSTSCoord.cs" />
     <Compile Include="MSTSData.cs" />
