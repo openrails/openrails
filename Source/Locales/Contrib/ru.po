@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2020-11-04 00:49:36+0300\n"
-"PO-Revision-Date: 2020-11-04 02:03+0300\n"
+"POT-Creation-Date: 2021-04-04 04:39:45+0300\n"
+"PO-Revision-Date: 2021-04-04 04:47+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4\n"
+"X-Generator: Poedit 2.4.2\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 
@@ -117,7 +117,7 @@ msgstr ""
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:111
 #: ../../Contrib/ActivityEditor/ActivityEditor/Activity/StartActivity.Designer.cs:339
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:92
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:92
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:91
 msgid "Activity Description"
 msgstr "Описание сценария"
 
@@ -278,8 +278,8 @@ msgid "Status"
 msgstr "Состояние"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Engine/ActEditor.Designer.cs:302
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2025
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2127
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2026
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2128
 msgid "v"
 msgstr "v"
 
@@ -360,25 +360,25 @@ msgstr "Править метаданные выбраного полигона"
 msgid "Form1"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:163
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:164
 msgid "Route MetaData"
 msgstr "Метаданные полигона"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2003
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2092
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2004
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2093
 msgid "Display"
 msgstr ""
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2014
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2116
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2015
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2117
 msgid "x"
 msgstr "x"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2040
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2041
 msgid "Tag"
 msgstr "Метка"
 
-#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2106
+#: ../../Contrib/ActivityEditor/ActivityEditor/Engine/Viewer2D.cs:2107
 msgid "Station"
 msgstr "Станция"
 
@@ -587,19 +587,19 @@ msgid "TrackSegmentInterface"
 msgstr ""
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:108
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:108
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:107
 msgid "Activity Name"
 msgstr "Название сценария"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:124
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/SelectRoute.cs:69
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:124
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:123
 #: ../../Contrib/ActivityEditor/AEWizard/SelectRoute.cs:69
 msgid "Route Path"
 msgstr "Путь к полигону"
 
 #: ../../Contrib/ActivityEditor/ActivityEditor/Wizard/ActivityDescr.cs:141
-#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:141
+#: ../../Contrib/ActivityEditor/AEWizard/ActivityDescr.cs:140
 msgid "Activity Editor: Create new activity"
 msgstr "Редактор сценариев: Создать новый сценарий"
 
@@ -669,15 +669,15 @@ msgstr "Загрузка..."
 msgid "Open Rails Content Manager"
 msgstr "Организатор наполнения"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:626
+#: ../../Contrib/TrackViewer/TrackViewer.cs:625
 msgid "The path you are working on has un-saved changes.\n"
 msgstr "Текущий маршрут содержит несохранённые правки.\n"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:628
+#: ../../Contrib/TrackViewer/TrackViewer.cs:627
 msgid "Do you really want to Quit?"
 msgstr "Действительно хотите выйти?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:731
+#: ../../Contrib/TrackViewer/TrackViewer.cs:730
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -686,7 +686,7 @@ msgstr ""
 "Полигон не загрузить.\n"
 "Расширение {0} не поддерживается"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:738
+#: ../../Contrib/TrackViewer/TrackViewer.cs:737
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -695,7 +695,7 @@ msgstr ""
 "Полигон не загрузить.\n"
 "{0} не существует"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:744
+#: ../../Contrib/TrackViewer/TrackViewer.cs:743
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -706,7 +706,7 @@ msgstr ""
 "При открытии {0} папки {1}, где подразумевалось наличие МСТС-контента, не "
 "обнаружены соответствующие файлы"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:769
+#: ../../Contrib/TrackViewer/TrackViewer.cs:768
 #, csharp-format
 msgid ""
 "Route cannot be loaded.\n"
@@ -715,7 +715,7 @@ msgstr ""
 "Полигон не удалось загрузить.\n"
 "{0} не удалось преобразовать в загружаемый маршрут"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:810
+#: ../../Contrib/TrackViewer/TrackViewer.cs:809
 msgid ""
 "Directory is not a valid install directory.\n"
 "The install directory needs to contain ROUTES, GLOBAL, ..."
@@ -723,40 +723,40 @@ msgstr ""
 "Директория некорректна.\n"
 "Директория сборки должна содржать субдиректории ROUTES, GLOBAL, ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:884
+#: ../../Contrib/TrackViewer/TrackViewer.cs:883
 msgid "Loading route..."
 msgstr "Загрузка полигона..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:909
+#: ../../Contrib/TrackViewer/TrackViewer.cs:908
 msgid "Route cannot be loaded. Sorry"
 msgstr "К сожалению, полигон не удалось загрузить"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:980
+#: ../../Contrib/TrackViewer/TrackViewer.cs:979
 msgid "Loading .pat file ..."
 msgstr "Загрузка *.pat-файла ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:983
+#: ../../Contrib/TrackViewer/TrackViewer.cs:982
 msgid "Processing .pat file ..."
 msgstr "Обработка *.pat-файла ..."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1010
 msgid "Path has been modified. Loading a new path will discard changes."
 msgstr "Маршрут изменён. При загрузке другого маршрута правки будут потеряны."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1011
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:99
 msgid "Do you want to continue?"
 msgstr "Продолжить?"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1013
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1094
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1012
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1093
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:85
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:102
 msgid "Trackviewer Path Editor"
 msgstr "Редактор маршрута"
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1089
 msgid ""
 "This will open every single .pat file for this route, (try to) fix all "
 "broken nodes, and save the modified path. "
@@ -764,11 +764,11 @@ msgstr ""
 "Сейчас будут загружены все *.pat-файлы данного полигона, чтобы попытаться "
 "исправить все битые точки, а затем-сохранить изменённые маршруты. "
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1090
 msgid "Potentially it will therefore change all .pat files on disc."
 msgstr "Возможно, изменения затронут все *.pat-файлы на диске."
 
-#: ../../Contrib/TrackViewer/TrackViewer.cs:1092
+#: ../../Contrib/TrackViewer/TrackViewer.cs:1091
 msgid ""
 "This can be useful when a route has been changed and you want all paths to "
 "be corrected."
@@ -860,12 +860,12 @@ msgstr "Цвет ограничений скорости"
 msgid "Select other-paths color"
 msgstr "Цвет прочих маршрутов"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:633
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:625
 #, csharp-format
 msgid "Loading terrain ace-files {0}-{1} (scaled down with a factor {2})"
 msgstr "Загружаются текстуры грунта {0}-{1} (уменьшено на коэфициент {2})"
 
-#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:659
+#: ../../Contrib/TrackViewer/Drawing/DrawTerrain.cs:651
 msgid "Rescaling previously loaded ace-files"
 msgstr "Масштабирование ранее загруженных *.ace-файлов"
 
@@ -1060,7 +1060,7 @@ msgstr "Сохранение битых маршрутов может не ра�
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:111
 msgid "The MSTS format for defining broken paths is not understood very well."
-msgstr ""
+msgstr "Формат описания битых путей в MSTS не очень хорошо понятен."
 
 #: ../../Contrib/TrackViewer/Editing/SavePatFile.cs:112
 msgid "Reopening it in TrackViewer, however, is likely to work."
@@ -1098,8 +1098,8 @@ msgid "1"
 msgstr "1"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:148
-msgid "10"
-msgstr "10"
+msgid "11"
+msgstr "11"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml.cs:269
 msgid "99"
@@ -1421,7 +1421,7 @@ msgstr "минут"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:15
 msgid "Openrails advanced shunting options:"
-msgstr ""
+msgstr "Более сложные манёвры:"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:19
 msgid "Wait until:  "
@@ -1444,7 +1444,6 @@ msgid " cars, and wait"
 msgstr " вагонов и ждать"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:31
-#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
 msgid "seconds. "
 msgstr "секунд. "
 
@@ -1454,7 +1453,7 @@ msgstr "Оставить хвост"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:36
 msgid "Join and split"
-msgstr ""
+msgstr "Сцепка и расцепка"
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:40
 msgid "AI train request to pass red signal"
@@ -1463,6 +1462,10 @@ msgstr "Другой поезд запросил проследование зп
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:44
 msgid "Blow horn for"
 msgstr "Подавать сигнал"
+
+#: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:46
+msgid "seconds.  11 = American horn sequence."
+msgstr "секунд.  11 = американская последовательность."
 
 #: ../../Contrib/TrackViewer/Editing/WaitPointDialog.xaml:50
 msgid "Wait time code as decimal ="
@@ -1498,11 +1501,12 @@ msgstr "Сохранить json"
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:66
 msgid "Save the data of the chart in json format into a .js file."
-msgstr ""
+msgstr "Сохранить профиль пути в формате json в *.js-файле."
 
 #: ../../Contrib/TrackViewer/Editing/Charts/PathChartWindow.xaml:67
 msgid "The saved data can then be used to show the chart on an HTML5 canvas."
 msgstr ""
+"Эти данные можно использовать для просмотра профиля пути в HTML5 canvas."
 
 #: ../../Contrib/TrackViewer/UserInterface/MenuControl.xaml:7
 msgid "_File"
@@ -1985,3 +1989,6 @@ msgstr "Элемент"
 #: ../../Contrib/TrackViewer/UserInterface/StatusBarControl.xaml:99
 msgid "Any other relevant information. Make your choice via Statusbar menu"
 msgstr "Прочая информация. Выберите через меню статус-строки"
+
+#~ msgid "10"
+#~ msgstr "10"
