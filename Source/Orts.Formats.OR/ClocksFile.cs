@@ -37,7 +37,8 @@ namespace Orts.Formats.OR
 
         private string ShapePath = null;
         private ClockShape ClockShape = null;
-        private string BadProperties = "invalid, incomplete";
+        private const string invalid = "invalid";
+        private const string incomplete = "incomplete";
 
         /// <summary>
         /// Reads JSON file, parsing valid data into ClockShapeList and logging errors.
@@ -51,7 +52,8 @@ namespace Orts.Formats.OR
             ClockShapeList = clockShapeList;
             JsonReader.ReadFile(fileName, TryParse);
 
-            // Filter out results with incomplete or invalid properties
+            // Filter out objects with essentials properties that are either incomplete or invalid.
+            var BadProperties = invalid + incomplete;
             ClockShapeList = ClockShapeList
                 .Where(r => (BadProperties.Contains(r.Name) || BadProperties.Contains(r.ClockType)) == false)
                 .ToList();
@@ -64,7 +66,6 @@ namespace Orts.Formats.OR
         /// <returns></returns>
         protected virtual bool TryParse(JsonReader item)
         {
-            var invalid = "invalid";
             var stringValue = "";
             switch (item.Path)
             {
@@ -73,11 +74,13 @@ namespace Orts.Formats.OR
                     break;
 
                 case "[].":
-                    ClockShape = new ClockShape();
+                    // Create an object with properties which are initially incomplete, so omissions can be detected and the object rejected later.
+                    ClockShape = new ClockShape(incomplete, incomplete);
                     ClockShapeList.Add(ClockShape);
                     break;
                 
                 case "[].Name":
+                    // Parse the property with default value as invalid, so errors can be detected and the object rejected later.
                     stringValue = item.AsString(invalid);
                     var path = ShapePath + stringValue;
                     ClockShape.Name = path;
@@ -110,12 +113,8 @@ namespace Orts.Formats.OR
     /// </summary>
     public class ClockShape
     {
-        public string Name = "incomplete";
-        public string ClockType = "incomplete";
-
-        public ClockShape()
-        {
-        }
+        public string Name { get; set; }
+        public string ClockType { get; set; }
 
         public ClockShape(string name, string clockType)
         {

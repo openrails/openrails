@@ -811,7 +811,7 @@ Animated clocks
 .. image:: images/features-animated-clock4.png
 
 Animated clocks that show the simulation time can be added or retro-fitted to a route. 
-The clocks can have a second hand that ticks each second, or one that moves smoothly or none at all.
+The clocks can have a second-hand that ticks each second, or one that moves smoothly or none at all.
 Typically clocks could be station clocks, church tower clocks or clocks at other public buildings. 
 They are placed as normal static shapes in a route, similar to other shapes such as houses or trees.
 
@@ -900,18 +900,23 @@ Details
 
 #. Animated Clocks List File
 
-   Create a ROUTES\\<route_name>\\openrails\\clocks.dat file listing the file for each shape of clock that Open Rails will animate.
-   Open Rails is looking in this file for the ClockItem definitions.		
+   Create a file ROUTES\\<route_name>\\animated.clocks-or file the file for each shape of clock that Open Rails will animate.
    The type parameter is always "analog" as "digital" types are not yet supported.::		
-	
-      3
-      ClockItem( "Clock01.s" analog )
-      ClockItem( "ChurchClock.s" analog )
-      ClockItem( "PlatformClock.s" analog )
-		
-   Note: The first line must be blank, but that is difficult to reproduce in this manual.
    
-   Note: The second line contains the number of ClockItem entries in the file.		
+      [
+         {
+            "Name": "Clock01.s",
+            "ClockType": "analog"
+         },
+         {
+            "Name": "ChurchClock.s",
+            "ClockType": "analog"
+         },
+         {
+            "Name": "PlatformClock.s",
+            "ClockType": "analog"
+         }
+      ]
 
 #. World File
 
