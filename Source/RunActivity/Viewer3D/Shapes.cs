@@ -1284,7 +1284,7 @@ namespace Orts.Viewer3D
             : base(viewer, path, initialPosition, flags)
         {
             Transfertable = transfertable;
-            AnimationKey = (Transfertable.XPos - Transfertable.CenterOffset.X)/ Transfertable.Width * SharedShape.Animations[0].FrameCount;
+            AnimationKey = (Transfertable.OffsetPos - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
             for (var imatrix = 0; imatrix < SharedShape.Matrices.Length; ++imatrix)
             {
                 if (SharedShape.MatrixNames[imatrix].ToLower() == transfertable.Animations[0].ToLower())
@@ -1327,7 +1327,7 @@ namespace Orts.Viewer3D
         {
             if (Transfertable.GoToTarget)
             {
-                AnimationKey = (Transfertable.TargetX - Transfertable.CenterOffset.X) / Transfertable.Width * SharedShape.Animations[0].FrameCount;
+                AnimationKey = (Transfertable.TargetOffset - Transfertable.CenterOffsetComponent) / Transfertable.Span * SharedShape.Animations[0].FrameCount;
             }
 
             else if (Transfertable.Forward)
@@ -1341,7 +1341,7 @@ namespace Orts.Viewer3D
             if (AnimationKey > SharedShape.Animations[0].FrameCount) AnimationKey = SharedShape.Animations[0].FrameCount;
             if (AnimationKey < 0) AnimationKey = 0;
 
-            Transfertable.XPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Width + Transfertable.CenterOffset.X;
+            Transfertable.OffsetPos = AnimationKey / SharedShape.Animations[0].FrameCount * Transfertable.Span + Transfertable.CenterOffsetComponent;
 
             if ((Transfertable.Forward || Transfertable.Reverse) && !Translating)
             {
