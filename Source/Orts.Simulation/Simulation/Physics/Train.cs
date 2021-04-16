@@ -11622,7 +11622,7 @@ namespace Orts.Simulation.Physics
                 if (incorporatedTrain.PresentPosition[0].TCSectionIndex != PresentPosition[1].TCSectionIndex && incorporatedTrain.PresentPosition[1].TCSectionIndex != PresentPosition[1].TCSectionIndex)
                     IncrementSubpath(incorporatedTrain);
                 incorporatedTrain.PresentPosition[0].TCSectionIndex = -1;
-                incorporatedTrain.PresentPosition[0].TCSectionIndex = -1;
+                incorporatedTrain.PresentPosition[1].TCSectionIndex = -1;
             }
         }
 
