@@ -98,16 +98,16 @@ namespace ORTS
             comboLanguage.SelectedValue = Settings.Language;
             if (comboLanguage.SelectedValue == null) comboLanguage.SelectedIndex = 0;
 
-            comboBoxOtherUnits.DataSource = new[] {
+            comboOtherUnits.DataSource = new[] {
                 new ComboBoxMember { Code = "Route", Name = catalog.GetString("Route") },
                 new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Player's location") },
                 new ComboBoxMember { Code = "Metric", Name = catalog.GetString("Metric") },
                 new ComboBoxMember { Code = "US", Name = catalog.GetString("Imperial US") },
                 new ComboBoxMember { Code = "UK", Name = catalog.GetString("Imperial UK") },
             }.ToList();
-            comboBoxOtherUnits.DisplayMember = "Name";
-            comboBoxOtherUnits.ValueMember = "Code";
-            comboBoxOtherUnits.SelectedValue = Settings.Units;
+            comboOtherUnits.DisplayMember = "Name";
+            comboOtherUnits.ValueMember = "Code";
+            comboOtherUnits.SelectedValue = Settings.Units;
 
             comboPressureUnit.DataSource = new[] {
                 new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Automatic") },
@@ -140,7 +140,7 @@ namespace ORTS
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
-            checkConfirmations.Checked = !Settings.SuppressConfirmations;
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewMapWindow.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
@@ -148,7 +148,7 @@ namespace ORTS
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
-            comboBoxOtherUnits.Text = settings.Units;
+            comboOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
             checkEnableWebServer.Checked = Settings.WebServer;
             numericWebServerPort.Value = Settings.WebServerPort;
@@ -433,7 +433,7 @@ namespace ORTS
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
-            Settings.SuppressConfirmations = !checkConfirmations.Checked;
+            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
             Settings.ViewDispatcher = checkViewMapWindow.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
@@ -441,7 +441,7 @@ namespace ORTS
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
-            Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
+            Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
             Settings.WebServer = checkEnableWebServer.Checked;
 
@@ -823,15 +823,15 @@ namespace ORTS
                     baseUrl + "/options.html#large-address-aware-binaries"
                 },
                 {
-                    pbRetainer,
+                    pbRetainers,
                     baseUrl + "/options.html#retainer-valve-on-all-cars"
                 },
                 {
-                    pbRelease,
+                    pbGraduatedRelease,
                     baseUrl + "/options.html#graduated-release-air-brakes"
                 },
                 {
-                    pbChargingRate,
+                    pbBrakePipeChargingRate,
                     baseUrl + "/options.html#brake-pipe-charging-rate"
                 },
                 {
@@ -847,17 +847,16 @@ namespace ORTS
                     baseUrl + "/options.html#other-units"
                 },
                 {
-                    pbDisableTcs,
+                    pbDisableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
                 },
                 {
-                    pbWebServer,
+                    pbEnableWebServer,
                     baseUrl + "/options.html#enable-web-server"
                 },
                 {
                     pbOverspeedMonitor,
-                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
-                    baseUrl + "/physics.html#train-control-system"
+                    baseUrl + "/options.html#overspeed-monitor"
                 },
             };
             if (urls.TryGetValue(sender, out var url))
@@ -875,12 +874,69 @@ namespace ORTS
         {
             if (sender is PictureBox pb)
                 pb.Image = Properties.Resources.info_18_hover;
+            else
+            {
+                EnterHelp(sender, "checkAlerter", "pbAlerter");
+                EnterHelp(sender, "checkControlConfirmations", "pbControlConfirmations");
+                EnterHelp(sender, "checkViewMapWindow", "pbMapWindow");
+                EnterHelp(sender, "checkUseLargeAddressAware", "pbLAA");
+                EnterHelp(sender, "checkRetainers", "pbRetainers");
+                EnterHelp(sender, "checkGraduatedRelease", "pbGraduatedRelease");
+                EnterHelp(sender, "lBrakePipeChargingRate", "pbBrakePipeChargingRate");
+                EnterHelp(sender, "labelLanguage", "pbLanguage");
+                EnterHelp(sender, "comboLanguage", "pbLanguage");
+                EnterHelp(sender, "labelPressureUnit", "pbPressureUnit");
+                EnterHelp(sender, "comboPressureUnit", "pbPressureUnit");
+                EnterHelp(sender, "labelOtherUnits", "pbOtherUnits");
+                EnterHelp(sender, "comboOtherUnits", "pbOtherUnits");
+                EnterHelp(sender, "checkDisableTCSScripts", "pbDisableTcsScripts");
+                EnterHelp(sender, "checkEnableWebServer", "pbEnableWebServer");
+                EnterHelp(sender, "checkOverspeedMonitor", "pbOverspeedMonitor");
+            }
         }
 
         private void HelpIcon_MouseLeave(object sender, EventArgs _)
         {
             if (sender is PictureBox pb)
                 pb.Image = Properties.Resources.info_18;
+            else
+            {
+                LeaveHelp(sender, "checkAlerter", "pbAlerter");
+                LeaveHelp(sender, "checkControlConfirmations", "pbControlConfirmations");
+                LeaveHelp(sender, "checkViewMapWindow", "pbMapWindow");
+                LeaveHelp(sender, "checkUseLargeAddressAware", "pbLAA");
+                LeaveHelp(sender, "checkRetainers", "pbRetainers");
+                LeaveHelp(sender, "checkGraduatedRelease", "pbGraduatedRelease");
+                LeaveHelp(sender, "lBrakePipeChargingRate", "pbBrakePipeChargingRate");
+                LeaveHelp(sender, "comboLanguage", "pbLanguage");
+                LeaveHelp(sender, "labelPressureUnit", "pbPressureUnit");
+                LeaveHelp(sender, "comboPressureUnit", "pbPressureUnit");
+                LeaveHelp(sender, "labelOtherUnits", "pbOtherUnits");
+                LeaveHelp(sender, "comboOtherUnits", "pbOtherUnits");
+                LeaveHelp(sender, "checkDisableTCSScripts", "pbDisableTcsScripts");
+                LeaveHelp(sender, "checkEnableWebServer", "pbEnableWebServer");
+                LeaveHelp(sender, "checkOverspeedMonitor", "pbOverspeedMonitor");
+            }
+        }
+
+        private void EnterHelp(object sender, string controlName, string iconName)
+        {
+            if (sender is Control control && control.Name == controlName)
+            {
+                var iconArray = Controls.Find(iconName, true);
+                if (iconArray[0] is PictureBox pb2)
+                    pb2.Image = Properties.Resources.info_18_hover;
+            }
+        }
+
+        private void LeaveHelp(object sender, string controlName, string iconName)
+        {
+            if (sender is Control control && control.Name == controlName)
+            {
+                var iconArray = Controls.Find(iconName, true);
+                if (iconArray[0] is PictureBox pb2)
+                    pb2.Image = Properties.Resources.info_18;
+            }
         }
         #endregion
     }
