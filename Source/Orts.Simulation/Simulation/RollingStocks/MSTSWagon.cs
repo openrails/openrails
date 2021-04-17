@@ -1508,6 +1508,9 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(DavisAN);
             outf.Write(DavisBNSpM);
             outf.Write(DavisCNSSpMM);
+            outf.Write(Curtius_KnifflerA);
+            outf.Write(Curtius_KnifflerB);
+            outf.Write(Curtius_KnifflerC);
             outf.Write(StandstillFrictionN);
             outf.Write(MergeSpeedFrictionN);
             outf.Write(IsBelowMergeSpeed);
@@ -1553,6 +1556,9 @@ namespace Orts.Simulation.RollingStocks
             DavisAN = inf.ReadSingle();
             DavisBNSpM = inf.ReadSingle();
             DavisCNSSpMM = inf.ReadSingle();
+            Curtius_KnifflerA = inf.ReadSingle();
+            Curtius_KnifflerB = inf.ReadSingle();
+            Curtius_KnifflerC = inf.ReadSingle();
             StandstillFrictionN = inf.ReadSingle();
             MergeSpeedFrictionN = inf.ReadSingle();
             IsBelowMergeSpeed = inf.ReadBoolean();
