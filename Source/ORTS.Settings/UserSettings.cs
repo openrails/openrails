@@ -90,6 +90,37 @@ namespace ORTS.Settings
         }
         #endregion
 
+        /// <summary>
+        /// Specifies an anti-aliasing method. Currently, Monogame's MSAA is the only supported method.
+        /// </summary>
+        public enum AntiAliasingMethod
+        {
+            /// <summary>
+            /// No antialiasing
+            /// </summary>
+            None = 1,
+            /// <summary>
+            /// 2x multisampling
+            /// </summary>
+            MSAA2x = 2,
+            /// <summary>
+            /// 4x multisampling
+            /// </summary>
+            MSAA4x = 3,
+            /// <summary>
+            /// 8x multisampling
+            /// </summary>
+            MSAA8x = 4,
+            /// <summary>
+            /// 16x multisampling
+            /// </summary>
+            MSAA16x = 5,
+            /// <summary>
+            /// 32x multisampling
+            /// </summary>
+            MSAA32x = 6,
+        }
+
         public enum DirectXFeature
         {
             Level9_1,
@@ -195,6 +226,8 @@ namespace ORTS.Settings
         public string WindowSize { get; set; }
         [Default(20)]
         public int DayAmbientLight { get; set; }
+        [Default(AntiAliasingMethod.MSAA2x)]
+        public int AntiAliasing { get; set; }
 
         // Simulation settings:
 
@@ -428,6 +461,18 @@ namespace ORTS.Settings
             Input = new InputSettings(options);
         }
 
+        /// <summary>
+        /// Get a saving property from this instance by name.
+        /// </summary>
+        public SavingProperty<T> GetSavingProperty<T>(string name)
+        {
+            var property = GetProperty(name);
+            if (property == null)
+                return null;
+            else
+                return new SavingProperty<T>(this, property, AllowUserSettings);
+        }
+
         public override object GetDefaultValue(string name)
         {
             var property = GetType().GetProperty(name);
@@ -461,10 +506,10 @@ namespace ORTS.Settings
             GetProperty(name).SetValue(this, value, null);
         }
 
-        protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
+        protected override void Load(Dictionary<string, string> optionsDictionary)
         {
             foreach (var property in GetProperties())
-                Load(allowUserSettings, optionsDictionary, property.Name, property.PropertyType);
+                Load(optionsDictionary, property.Name, property.PropertyType);
         }
 
         public override void Save()
@@ -505,6 +550,52 @@ namespace ORTS.Settings
                     Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, String.Join(", ", ((int[])value).Select(v => v.ToString()).ToArray()), source);
                 else
                     Console.WriteLine("{0,-30} = {2,-14} {1}", property.Name, value, source);
+            }
+        }
+    }
+
+    /// <summary>
+    /// A wrapper for a UserSettings property that saves any new values immediately.
+    /// </summary>
+    /// <typeparam name="T">Cast values to this type.</typeparam>
+    public class SavingProperty<T>
+    {
+        private readonly UserSettings Settings;
+        private readonly PropertyInfo Property;
+        private readonly bool DoSave;
+
+        internal SavingProperty(UserSettings settings, PropertyInfo property, bool allowSave = true)
+        {
+            Settings = settings;
+            Property = property;
+            DoSave = allowSave;
+        }
+
+        /// <summary>
+        /// Get or set the current value of this property.
+        /// </summary>
+        public T Value
+        {
+            get => GetValue();
+            set => SetValue(value);
+        }
+
+        /// <summary>
+        /// Get the current value of this property.
+        /// </summary>
+        public T GetValue()
+            => Property.GetValue(Settings) is T cast ? cast : default;
+
+        /// <summary>
+        /// Set the current value of this property.
+        /// </summary>
+        public void SetValue(T value)
+        {
+            if (!GetValue().Equals(value))
+            {
+                Property.SetValue(Settings, value);
+                if (DoSave)
+                    Settings.Save(Property.Name);
             }
         }
     }

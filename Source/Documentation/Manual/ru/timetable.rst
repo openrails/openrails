@@ -1,59 +1,65 @@
 .. _timetable:
 
-**************
-Timetable Mode
-**************
+****************
+Режим расписания
+****************
 
-Introduction
-============
+Введение
+========
 
-The timetable concept is not a replacement for the activity definition, but is 
-an alternative way of defining both player and computer-controlled (AI and 
-Static) trains.
+Концепция расписания не является заменой режима сценария, а представляет собой
+альтернативный способ описания как поезда игрока, так и управляемых компьютером
+(Трафика и Статических) поездов.
 
-In an activity, the player train is defined explicitly, and all AI trains are 
-defined in a traffic definition. Static trains are defined separately.
+В сценарии, поезд игрока описывается явно, а все поезда, управляемые компьютером
+определяются в описании трафика. Статические поезда определяются отдельно.
 
-In a timetable all trains are defined in a similar way. On starting a timetable 
-run, the required player train is selected from the list of available trains. In 
-the timetable definition itself, no distinction is made between running trains -- 
-any of the running trains can be selected as player train, and if not selected 
-as such they will be run as AI trains. Static trains are also defined in the 
-same way but cannot be selected as the player train.
+В расписании же, все поезда определены одинаковым образом.
+Начиная игру в режиме расписания, желаемый поезд выбирается игроком из списка доступных поездов.
+В самом определении расписания не делается никакого различия между курсирующими поездами:
+любой из них может быть выбран в качестве поезда игрока, а те, что не выбраны
+в качестве такового, будут действовать как поезда, управляемые компьютером.
+Статические поезда определяются таким же образом, только не могут быть выбраны
+в качестве поезда игрока.
 
-As a result, the number of different 'activities' that can be played using the 
-same timetable file is equal to the number of trains which are defined in the 
-timetable, less static trains.
+В результате, количество различных "сценариев", которые могут быть реализованы
+с использованием одного и того же файла расписания, равно количеству поездов,
+определенных в расписании.
 
-**Important aspects where the use of specific OR or MSTS items for timetables
-differs significantly from its use in an activity are shown in bold**.
+Разработка концепции расписания до сих пор продолжается.
+Этот документ подробно описывает её состояние на данный момент,
+но также описывает функции, которые еще предстоит реализовать,
+или элементы, которые еще предстоит усовершенствовать.
 
-The development of the timetable concept is still very much a work in progress. 
-As work continues, all items are still subject to change.
+Чтобы различать эти элементы, в описании режима расписания используются следующие стили:
 
-General
-=======
+*Элементы, выделенные черным курсивом - доступны, но только в предварительной
+реализации или в ограниченном контексте. Дальнейшая разработка этих пунктов все
+еще требуется.*
 
-Data definition
----------------
+**Важные аспекты, в которых использование конкретных элементов ORTS или MSTS для расписаний
+существенно отличается от их использования в сценариях, выделены жирным шрифтом.**
 
-The timetable data is defined in a Spreadsheet, and saved as a \*.csv file 
-(character separated file) in Unicode format. As the separation character, 
-either ',' (comma), ';' (semi-colon) or the tab character must be used.
+Помимо пунктов, указанных выше, следует понимать, что по мере продолжения работы все пункты
+все еще могут быть изменены.
 
-Do not select space as the separation character.
+Общая часть
+===========
 
-As ';', ',', or tab are possible separation characters, these symbols must not 
-be used anywhere within the actual data. Enclosure of text by quotes (either 
-single or double) has no effect. Also, the character '#' should not be used in 
-train names, since it is the prefix for reserved words in the Timetable.
+Организация данных
+------------------
 
-File structure
---------------
+Данные расписания задаются в электронной таблице и сохраняются в виде файла \*.csv
+(файл с символами-разделителями) в формате Unicode. В качестве разделительного символа
+следует использовать либо ',' (запятая), либо ';' (точка с запятой).
 
-The saved ``*.csv`` files must be renamed with the extension ``*.timetable-or``. 
-The timetable files must be placed in a subdirectory named ``OpenRails`` created 
-in the route's ``Activities`` directory.
+Не выбирайте пробел или табуляцию в качестве разделительного символа.
+
+Поскольку '; ' или ',' являются возможными символами-разделитлями , эти символы
+не должны использоваться нигде в пределах фактических данных.
+Заключение текста в кавычки (одинарные или двойные) не имеет никакого эффекта.
+Кроме того, символ " # " не должен использоваться в именах поездов, так как это
+префикс для зарезервированных команд в расписании.
 
 Timetable groups
 ----------------
@@ -94,83 +100,120 @@ over the course of the timetable day. They are located in a special
 selecting it from the timetable mode section of the main menu; this overrides 
 the static weather condition.
 
-File and train selection
-------------------------
 
-When starting a timetable run, the mode *Timetable* is selected in the menu. The 
-desired timetable file or timetable group file must then be selected in the 
-*Timetable set* display.
-
-After selecting the required timetable, a list of all trains contained in that 
-timetable is displayed and the required train can be selected.
-
-Season and weather (static or file-defined) can also be selected; these are not 
-preset within the timetable definition.
-
-Timetable Definition
-====================
-
-General
--------
-
-A timetable consists of a list of trains, and, per train, the required timing of 
-these trains. The timing can be limited to just the start time, or it can 
-include intermediate times as well.
-
-At present, intermediate timings are limited to 'platform' locations as created 
-using the MSTS Route Editor.
-
-Each column in the spreadsheet contains data for a train and each row represents 
-a location. A cell at the intersection of a train and location contains the 
-timing data for that particular train at that location.
-
-Special rows and columns can be defined for general information or control 
-commands.
-
-The first row for each column contains the train definition.
-
-The first column for each row contains the location definition.
-
-The cell at the intersection of the first row and first column **must be empty**.
-
-This paragraph only lists the main outline, a fuller detailed description will 
-follow in the next paragraphs.
-
-Column definitions
+Файловая структура
 ------------------
 
-A column is defined by the contents of the first row.
+Сохраненные ``*.CSV-файлы`` файлы должны быть переименованы с расширением ``*.timetable_or``.
+Файлы расписания должны быть помещены в подкаталог с именем ``OpenRails``, созданный
+в каталоге ``Activities`` соответствующего маршрута.
 
-Default, the first row defines the train name.
+Выбор файла и поезда
+--------------------
 
-Special columns can be defined using the following syntax :
+При запуске режима расписания в меню выбирается режим *Расписание*. Затем
+нужный файл расписания должен быть выбран из списка *Набор расписаний*.
 
-    - ``#comment``: column contains comment only and is ignored when reading the 
-      timetable.
-    - <blank>: column is extension of preceding column.
+После выбора необходимого расписания отображается список всех поездов, содержащихся в этом
+расписании, и можно выбрать желаемый поезд.
 
-Row definitions
----------------
+Сезон и погода также могут быть выбраны; они не заданы жёстко в файлах расписания.
 
-A row is defined by the contents of the first column.
+Задание расписаний
+==================
 
-Default, the first column defines the stop location.
+Общая информация
+----------------
 
-Special columns can be defined using the following syntax :
+Расписание представляет собой список поездов и, для каждого поезда, задаёт требуемое время движения.
+Время может быть ограничено только временем старта, или оно может включать также промежуточное время.
 
-    - ``#comment``: row contains comment only and is ignored when reading the 
-      timetable
-    - <blank>:      row is extension of row above
-    - ``#path``:    defines train path
-    - ``#consist``: defines train consist
-    - ``#start``:   defines time when train is started
-    - ``#note``:    defines general notes and starting control commands for this train
-    - ``#dispose``: defines how train is handled after it has terminated
+*В настоящее время промежуточные времена ограничены местоположениями "платформы", заданными
+с помощью редактора маршрутов MSTS.*
+
+Каждый столбец в электронной таблице содержит все данные для поезда, а каждая строка представляет
+местоположение. Ячейка на пересечении столбца данного поезда и строки местоположения содержит
+временные данные для данного поезда в этом местоположении.
+
+Специальные строки и столбцы могут быть определены для общей информации или команд управления.
+
+Первая строка для каждого столбца содержит название поезда.
+
+Первый столбец для каждой строки содержит название местоположения.
+
+Ячейка на пересечении первой строки и первого столбца **должна быть пустой**.
+
+В этом параграфе даётся только общее представление, более полное и подробное описание будет
+приведено в следующих параграфах.
+
+Определения столбцов
+--------------------
+
+Столбец определяется содержимым ячейки в первой строке.
+
+По умолчанию, в первой строке задаётся имя поезда.
+
+Специальные столбцы могут быть определены с помощью следующего синтаксиса :
+
+- ``#comment``: столбец содержит только комментарий и игнорируется при чтении расписания.
+- <пусто>: столбец является продолжением предыдущего столбца.
+
+Определения строк
+-----------------
+
+Строки определяются содержимым ячеек первого столбца.
+
+По умолчанию первый столбец определяет местоположение остановки.
+
+Специальные строки могут быть определены с помощью следующего синтаксиса:
+
+- ``#comment``: строка содержит только комментарий и игнорируется при чтении расписания
+- <пусто>: строка является продолжением предыдущей строки
+- ``#path``: задаёт маршрут поезда
+- ``#consist``: задаёт состав поезда
+- ``#start``: определяет время старта поезда
+- ``#note``: задаёт общие команды для этого поезда
+- ``#dispose``: определяет, как обрабатывается поезд по окончании поездки.
+
     - ``#speed``, ``#speedmph``, or ``#speedkph``: defines train speed behavior 
       in meters per second, miles per hour, or kilometers per hour, respectively; 
       only one kind of speed row can be used in a single timetable file
     - ``#restartdelay``: defines randomized delays for a train
     - ``#briefing``: row contains briefing text for each train and is ignored when reading the timetable
+
+Задание времени
+---------------
+
+Каждая ячейка, которая находится на пересечении столбца поезда и строки местоположения, может
+содержать сведения о времени проследования этоим поездом данного места.
+
+*В настоящее время можно определить только детали остановки поезда. Позже будет также определено
+время проследования; это может быть использовано для определения задержки поезда.*
+
+Управляющие команды могут быть заданы в местах остановки поезда, но также могут быть
+установлены для мест, где не вводится время - когда поезд проходит через это
+место без остановки.
+
+Информация О Расписании
+=======================
+
+Описание Графика
+----------------
+
+Хотя строки и столбцы с заголовком ``#comment`` обычно игнорируются, содержимое
+ячейки на пересечении первой строки ``"#comment`` и первого ``#comment`` - столбца
+используется для задания имени расписания и отображается как имя расписания
+в меню Open Rails.
+
+Описание Поезда
+---------------
+
+Имя поезда, определенное в первой строке, должно быть уникальным для каждого поезда в
+файле расписания. Это имя также используется при ссылке на этот поезд в команде поезда;
+подробности см. ниже.
+
+Последовательность поездов не имеет значения.
+***
 
 Timing details
 --------------
@@ -1850,8 +1893,7 @@ not be stopped.
 
 .. _timetable-midnight:
 
-Running Trains Around Midnight
-''''''''''''''''''''''''''''''
+11.5.6.5 Running Trains Around Midnight.
 
 A timetable can be defined for a full 24 hour day, and  so would include trains 
 running around midnight.
@@ -1867,7 +1909,7 @@ The following rules apply for the player train:
   beginning of the day, unless the ``$next`` :ref:`command <timetable-cmd-next>` 
   is used.
 
-The following rules apply for AI trains:
+The following rules apply for AI trains :
 
 - Trains booked to start before midnight will be started at the end of the day, 
   but will continue to run if terminating after midnight.
@@ -2251,8 +2293,10 @@ event. Concretely, a weather file follows the format:
         "Changes": [
             {
                 "Type": "<type>",
-                "<property>": "<value>"
-            }
+                "<property>": <value>,
+                ...
+            },
+            ...
         ]
     }
 

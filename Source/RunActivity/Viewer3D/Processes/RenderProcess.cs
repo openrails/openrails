@@ -24,6 +24,7 @@ using ORTS.Common;
 using System;
 using System.Diagnostics;
 using System.Windows.Forms;
+using static ORTS.Settings.UserSettings;
 
 namespace Orts.Viewer3D.Processes
 {
@@ -98,7 +99,7 @@ namespace Orts.Viewer3D.Processes
             GraphicsDeviceManager.PreferredBackBufferFormat = SurfaceFormat.Color;
             GraphicsDeviceManager.PreferredDepthStencilFormat = DepthFormat.Depth24Stencil8;
             GraphicsDeviceManager.IsFullScreen = Game.Settings.FullScreen;
-            GraphicsDeviceManager.PreferMultiSampling = true;
+            GraphicsDeviceManager.PreferMultiSampling = (AntiAliasingMethod)Game.Settings.AntiAliasing != AntiAliasingMethod.None;
             GraphicsDeviceManager.HardwareModeSwitch = !Game.Settings.FastFullScreenAltTab;
             GraphicsDeviceManager.PreparingDeviceSettings += new EventHandler<PreparingDeviceSettingsEventArgs>(GDM_PreparingDeviceSettings);
         }
@@ -118,19 +119,38 @@ namespace Orts.Viewer3D.Processes
 
             e.GraphicsDeviceInformation.GraphicsProfile = e.GraphicsDeviceInformation.Adapter.IsProfileSupported(GraphicsProfile.HiDef) ? GraphicsProfile.HiDef : GraphicsProfile.Reach;
 
-            // TODO: XNA defaults to lowest multisample anti-aliasing quality (2x), so we'll do the same here until we add a setting for it.
-            e.GraphicsDeviceInformation.PresentationParameters.MultiSampleCount = 2;
-
-            if (e.GraphicsDeviceInformation.PresentationParameters.IsFullScreen)
+            var pp = e.GraphicsDeviceInformation.PresentationParameters;
+            switch ((AntiAliasingMethod)Game.Settings.AntiAliasing)
+            {
+                case AntiAliasingMethod.None:
+                default:
+                    break;
+                case AntiAliasingMethod.MSAA2x:
+                    pp.MultiSampleCount = 2;
+                    break;
+                case AntiAliasingMethod.MSAA4x:
+                    pp.MultiSampleCount = 4;
+                    break;
+                case AntiAliasingMethod.MSAA8x:
+                    pp.MultiSampleCount = 8;
+                    break;
+                case AntiAliasingMethod.MSAA16x:
+                    pp.MultiSampleCount = 16;
+                    break;
+                case AntiAliasingMethod.MSAA32x:
+                    pp.MultiSampleCount = 32;
+                    break;
+            }
+            if (pp.IsFullScreen)
             {
                 var screen = Screen.FromControl(GameForm);
-                e.GraphicsDeviceInformation.PresentationParameters.BackBufferWidth = screen.Bounds.Width;
-                e.GraphicsDeviceInformation.PresentationParameters.BackBufferHeight = screen.Bounds.Height;
+                pp.BackBufferWidth = screen.Bounds.Width;
+                pp.BackBufferHeight = screen.Bounds.Height;
             }
             else
             {
-                e.GraphicsDeviceInformation.PresentationParameters.BackBufferWidth = GameWindowSize.X;
-                e.GraphicsDeviceInformation.PresentationParameters.BackBufferHeight = GameWindowSize.Y;
+                pp.BackBufferWidth = GameWindowSize.X;
+                pp.BackBufferHeight = GameWindowSize.Y;
             }
         }
 
@@ -141,7 +161,7 @@ namespace Orts.Viewer3D.Processes
             DisplaySize = new Point(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // Validate that the DirectX feature level is one we understand
-            if (!Enum.IsDefined(typeof(ORTS.Settings.UserSettings.DirectXFeature), "Level" + Game.Settings.DirectXFeatureLevel))
+            if (!Enum.IsDefined(typeof(DirectXFeature), "Level" + Game.Settings.DirectXFeatureLevel))
                 Game.Settings.DirectXFeatureLevel = "";
 
             if (Game.Settings.DirectXFeatureLevel == "")
@@ -159,7 +179,7 @@ namespace Orts.Viewer3D.Processes
             ShadowMapCount = Game.Settings.ShadowMapCount;
             if (!Game.Settings.DynamicShadows)
                 ShadowMapCount = 0;
-            else if ((ShadowMapCount > 1) && !Game.Settings.IsDirectXFeatureLevelIncluded(ORTS.Settings.UserSettings.DirectXFeature.Level9_3))
+            else if ((ShadowMapCount > 1) && !Game.Settings.IsDirectXFeatureLevelIncluded(DirectXFeature.Level9_3))
                 ShadowMapCount = 1;
             else if (ShadowMapCount < 0)
                 ShadowMapCount = 0;

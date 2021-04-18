@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-08-29 03:09:35+0300\n"
-"PO-Revision-Date: 2020-08-29 03:09:36+0300\n"
+"POT-Creation-Date: 2021-03-28 17:45:02+0300\n"
+"PO-Revision-Date: 2021-03-28 17:45:02+0300\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -642,294 +642,302 @@ msgid "Control Engine Brake Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:127
-msgid "Control Dynamic Brake Increase"
+msgid "Control Brakeman Brake Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:128
-msgid "Control Dynamic Brake Decrease"
+msgid "Control Brakeman Brake Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:129
-msgid "Control Bail Off"
+msgid "Control Dynamic Brake Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:130
-msgid "Control Initialize Brakes"
+msgid "Control Dynamic Brake Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:131
-msgid "Control Handbrake Full"
+msgid "Control Bail Off"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:132
-msgid "Control Handbrake None"
+msgid "Control Initialize Brakes"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:133
-msgid "Control Odometer Show/Hide"
+msgid "Control Handbrake Full"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:134
-msgid "Control Odometer Reset"
+msgid "Control Handbrake None"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:135
-msgid "Control Odometer Direction"
+msgid "Control Odometer Show/Hide"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:136
-msgid "Control Retainers On"
+msgid "Control Odometer Reset"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:137
-msgid "Control Retainers Off"
+msgid "Control Odometer Direction"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:138
-msgid "Control Brake Hose Connect"
+msgid "Control Retainers On"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:139
-msgid "Control Brake Hose Disconnect"
+msgid "Control Retainers Off"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:140
-msgid "Control Alerter"
+msgid "Control Brake Hose Connect"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:141
-msgid "Control Emergency Push Button"
+msgid "Control Brake Hose Disconnect"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:142
-msgid "Control Sander"
+msgid "Control Alerter"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:143
-msgid "Control Sander Toggle"
+msgid "Control Emergency Push Button"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:144
-msgid "Control Wiper"
+msgid "Control Sander"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:145
-msgid "Control Horn"
+msgid "Control Sander Toggle"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:146
-msgid "Control Bell"
+msgid "Control Wiper"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:147
-msgid "Control Bell Toggle"
+msgid "Control Horn"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:148
-msgid "Control Door Left"
+msgid "Control Bell"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:149
-msgid "Control Door Right"
+msgid "Control Bell Toggle"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:150
-msgid "Control Mirror"
+msgid "Control Door Left"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:151
-msgid "Control Light"
+msgid "Control Door Right"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:152
-msgid "Control Pantograph 1"
+msgid "Control Mirror"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:153
-msgid "Control Pantograph 2"
+msgid "Control Light"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:154
-msgid "Control Pantograph 3"
+msgid "Control Pantograph 1"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:155
-msgid "Control Pantograph 4"
+msgid "Control Pantograph 2"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:156
-msgid "Control Circuit Breaker Closing Order"
+msgid "Control Pantograph 3"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:157
-msgid "Control Circuit Breaker Opening Order"
+msgid "Control Pantograph 4"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:158
-msgid "Control Circuit Breaker Closing Authorization"
+msgid "Control Circuit Breaker Closing Order"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:159
-msgid "Control Diesel Player"
+msgid "Control Circuit Breaker Opening Order"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:160
-msgid "Control Diesel Helper"
+msgid "Control Circuit Breaker Closing Authorization"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:161
-msgid "Control Headlight Increase"
+msgid "Control Diesel Player"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:162
-msgid "Control Headlight Decrease"
+msgid "Control Diesel Helper"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:163
-msgid "Control Injector 1 Increase"
+msgid "Control Headlight Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:164
-msgid "Control Injector 1 Decrease"
+msgid "Control Headlight Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:165
-msgid "Control Injector 1"
+msgid "Control Injector 1 Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:166
-msgid "Control Injector 2 Increase"
+msgid "Control Injector 1 Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:167
-msgid "Control Injector 2 Decrease"
+msgid "Control Injector 1"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:168
-msgid "Control Injector 2"
+msgid "Control Injector 2 Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:169
-msgid "Control Blowdown Valve"
+msgid "Control Injector 2 Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:170
-msgid "Control Blower Increase"
+msgid "Control Injector 2"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:171
-msgid "Control Blower Decrease"
+msgid "Control Blowdown Valve"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:172
-msgid "Control Steam Heat Increase"
+msgid "Control Blower Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:173
-msgid "Control Steam Heat Decrease"
+msgid "Control Blower Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:174
-msgid "Control Damper Increase"
+msgid "Control Steam Heat Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:175
-msgid "Control Damper Decrease"
+msgid "Control Steam Heat Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:176
-msgid "Control Firebox Open"
+msgid "Control Damper Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:177
-msgid "Control Firebox Close"
+msgid "Control Damper Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:178
-msgid "Control Firing Rate Increase"
+msgid "Control Firebox Open"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:179
-msgid "Control Firing Rate Decrease"
+msgid "Control Firebox Close"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:180
-msgid "Control Fire Shovel Full"
+msgid "Control Firing Rate Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:181
-msgid "Control Cylinder Cocks"
+msgid "Control Firing Rate Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:182
-msgid "Control Large Ejector Increase"
+msgid "Control Fire Shovel Full"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:183
-msgid "Control Large Ejector Decrease"
+msgid "Control Cylinder Cocks"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:184
-msgid "Control Small Ejector Increase"
+msgid "Control Large Ejector Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:185
-msgid "Control Small Ejector Decrease"
+msgid "Control Large Ejector Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:186
-msgid "Control Vacuum Exhauster"
+msgid "Control Small Ejector Increase"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:187
-msgid "Control Cylinder Compound"
+msgid "Control Small Ejector Decrease"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:188
-msgid "Control Firing"
+msgid "Control Vacuum Exhauster"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:189
-msgid "Control Refill"
+msgid "Control Cylinder Compound"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:190
-msgid "Control Water Scoop"
+msgid "Control Firing"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:191
-msgid "Control ImmediateRefill"
+msgid "Control Refill"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:192
-msgid "Control Turntable Clockwise"
+msgid "Control Water Scoop"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:193
-msgid "Control Turntable Counterclockwise"
+msgid "Control ImmediateRefill"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:194
-msgid "Control Generic 1"
+msgid "Control Turntable Clockwise"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:195
-msgid "Control Generic 2"
+msgid "Control Turntable Counterclockwise"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:196
-msgid "Control Cab Radio"
+msgid "Control Generic 1"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:197
-msgid "Control AI Fire On"
+msgid "Control Generic 2"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:198
-msgid "Control AI Fire Off"
+msgid "Control Cab Radio"
 msgstr ""
 
 #: ../../ORTS.Common/Input/UserCommand.cs:199
+msgid "Control AI Fire On"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:200
+msgid "Control AI Fire Off"
+msgstr ""
+
+#: ../../ORTS.Common/Input/UserCommand.cs:201
 msgid "Control AI Fire Reset"
 msgstr ""
 

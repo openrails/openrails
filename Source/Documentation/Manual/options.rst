@@ -172,42 +172,27 @@ Enable web server
 -----------------
 
 This option enables an internal web server that can be used to display game and
-train status information in a browser, intended for use on secondary screens.
-When activated, the server can be accessed (on the local machine only) at
+train status information in a web browser, intended for use on secondary screens.
+
+When activated, the server can be accessed from a browser on the local machine at
 ``http://localhost:<port>``, where ``<port>`` is the specified port number.
 
-.. admonition:: For core developers
+If you `open
+<https://www.howtogeek.com/394735/how-do-i-open-a-port-on-windows-firewall/>`_
+the web server port (just granting RunActivity.exe an exemption is not
+sufficient) in Windows Firewall, the server can also be accessed from a device
+on the local network, such as a smartphone, tablet or another PC, using your
+system's `IP address
+<https://support.microsoft.com/en-us/windows/find-your-ip-address-f21a9bbc-c582-55cd-35e0-73431160a1b9>`_.
+E.g.: If your Open Rails PC is at IP address 192.168.0.99, browse to
+``http://192.168.0.99:<port>``, where ``<port>`` is the specified port number.
 
-    The web server serves content out of the ``Content\Web`` subfolder of the OR
-    program folder; it features a simple API to obtain data from the simulator.
-    Responses are OR data structures
-    `serialized <https://www.newtonsoft.com/json/help/html/T_Newtonsoft_Json_JsonConvert.htm>`_
-    in JSON format. API call paths are case-sensitive.
+:ref:`Sample web pages <sample-web-pages>` are included in the Open Rails
+installation and the browser will show a menu of sample pages.
 
-    .. list-table::
-       :widths: 15 15 35 35
-       :header-rows: 1
-
-       * - Method
-         - API call
-         - Description
-         - Response type
-       * - GET
-         - ``/API/HUD/<n>``
-         - | Retrieves the information rendered on the ``<F5>`` HUD, row by row,
-           | page by page, where ``<n>`` is the desired HUD page number.
-         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.HudApiArray
-       * - GET
-         - | ``/API/TRAINMONITOR``
-           | or ``/API/TRAININFO``
-         - | Retrieves information rendered on the Track Monitor, such as speed,
-           | acceleration, grade, and upcoming hazards.
-         - Orts.Simulation.Physics.Train.TrainInfo
-       * - GET
-         - ``/API/APISAMPLE``
-         - | A test object that demonstrates the JSON serialization of various
-           | data types.
-         - Orts.Viewer3D.WebServices.WebServer.ORTSApiController.ApiSampleData
+As well as a web browser, data from the web server can also be fetched by any
+program which can make a web request, such as C# or Python, using the
+:ref:`Application Programming Interface <web-server-api>` (API).
 
 Overspeed Monitor
 -----------------
@@ -381,6 +366,17 @@ Ambient daylight brightness
 ---------------------------
 
 With this slider you can set the daylight brightness.
+
+Anti-aliasing
+-------------
+
+Controls the anti-aliasing method used by Open Rails. Anti-aliasing is a
+computer graphics technique that smooths any harsh edges, otherwise known as
+"jaggies," present in the video image. Currently, Open Rails only supports the
+multisample anti-aliasing (MSAA) method. Higher applications of anti-aliasing
+will require exponentially more graphics computing power.
+
+The default setting is MSAA with 2x sampling.
 
 .. _options-simulation:
 

@@ -34,6 +34,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using ORTS.Common;
 using ORTS.Scripting.Api;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -232,7 +233,7 @@ namespace Orts.Simulation.RollingStocks
             else
             {
                 float dV2;
-                dV2 = TractiveForceN / MaxForceN * 100f - Variable2;
+                dV2 = Math.Abs(TractiveForceN) / MaxForceN * 100f - Variable2;
                 float max = 2f;
                 if (dV2 > max) dV2 = max;
                 else if (dV2 < -max) dV2 = -max;
