@@ -1,206 +1,51 @@
-<!DOCTYPE html>
-<!-- https://www.cssscript.com/analog-clock-scss/ -->
+<!DOCTYPE HTML>
+<!--
+COPYRIGHT 2009, 2010, 2011, 2012, 2013, 2014 by the Open Rails project.
+
+This file is part of Open Rails.
+
+Open Rails is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Open Rails is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
+-->
 <html>
 <head>
+    <title>OPEN RAILS - Sample API</title>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Smooth Clock</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-      html {
-        box-sizing: border-box;
-      }
-      *, *:before, *:after {
-        box-sizing: inherit;
-      }
-      .clock {
-        background-color: #f9f9f9;
-        border-radius: 50%;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        position: relative;
-        box-shadow: inset 0 0 20px gray;
-        border: 10px solid black;
-      }
-      .clock__dial-hour {
-        color: #4d4d4d;
-        text-shadow: 1px 1px 4px;
-        position: absolute;
-      }
-      .clock__dial-hour--main {
-        color: black;
-        font-size: 1.6em;
-        font-weight: 500;
-      }
-      .clock__hand-pivot {
-        box-shadow: 0 0 2px 2px red;
-        border: 5px solid white;
-        border-radius: 50%;
-        height: 0px;
-        width: 0px;
-        position: absolute;
-      }
-      .clock__hours-hand {
-        box-shadow: 1px 1px 1px 1px gray;
-        border-radius: 40% 40% 20% 20%;
-        position: absolute;
-        border: 2px solid black;
-        background-color: white;
-        width: 8px;
-      }
-      .clock__minutes-hand {
-        box-shadow: 1px 1px 1px 1px gray;
-        position: absolute;
-        border-radius: 40% 40% 20% 20%;
-        background-color: white;
-        border: 1px solid black;
-        width: 4px;
-      }
-      .clock__seconds-hand {
-        box-shadow: 1px 1px 1px 0px red;
-        position: absolute;
-        border-radius: 30%;
-        background-color: red;
-        width: 1px;
-      }
-      #container {
-        padding: 10px;
-        height: 500px;
-        font-size: 30px;
-        width: 500px;
-        margin: auto;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1"><!-- adds zooming for mobiles -->
+    <link rel="shortcut icon" type="image/png" href="/or_logo.png"><!-- This icon appears in the page's tab and its bookmark. -->
+    <link rel="stylesheet" type="text/css" href="/index.css"><!-- share styles with home page -->
+    <link href="index.css" rel="stylesheet" type="text/css">
+    <script src="index.js"></script>
 </head>
-<body>
-    <div id="container">
-        <div class="clock">
-            <div class="clock__hours-hand" id="hours-hand"></div>
-            <div class="clock__minutes-hand" id="minutes-hand"></div>
-            <div class="clock__seconds-hand" id="seconds-hand"></div>
-            <span class="clock__hand-pivot" id="hand-pivot"></span>
-            <span class="clock__dial-hour">1</span>
-            <span class="clock__dial-hour">2</span>
-            <span class="clock__dial-hour clock__dial-hour--main">3</span>
-            <span class="clock__dial-hour">4</span>
-            <span class="clock__dial-hour">5</span>
-            <span class="clock__dial-hour clock__dial-hour--main">6</span>
-            <span class="clock__dial-hour">7</span>
-            <span class="clock__dial-hour">8</span>
-            <span class="clock__dial-hour clock__dial-hour--main">9</span>
-            <span class="clock__dial-hour">10</span>
-            <span class="clock__dial-hour">11</span>
-            <span class="clock__dial-hour clock__dial-hour--main">12</span>
-        </div>
-    </div>
+
+<body onload="setInterval (ApiTime, 500)">
+    <div id="menu"><a href="/">Back to Menu</a></div>
+    <br>
+    <h2>Open Rails Web Server - Simulation Time</h2>
+    <h3>Seconds since midnight</h3>
+    <div id="time"></div>
+    <table>
+        <tr>
+            <td id="hours"></td><td>:</td>
+            <td id="minutes"></td><td>:</td>
+            <td id="seconds"></td><td>.</td>
+            <td id="centiseconds"></td>
+        </tr>
+    </table>
+    <ul>
+        <li><a href="flat_clock.html">Flat Clock</a></li>
+        <li><a href="shadow_clock.html">Shadow Clock</a></li>
+        <li><a href="smooth_clock.html">Smooth Clock</a></li>
+    </ul>
 </body>
-<script>
-const getDims = (elm, removeBorder = true, removePadding = true) => {
-  const elmStyles = window.getComputedStyle(elm)
-  return {
-    height: elm.offsetHeight +
-      (removeBorder ? -parseInt(elmStyles.borderTopWidth, 10) - parseInt(elmStyles.borderBottomWidth, 10) : 0) +
-      (removePadding ? -parseInt(elmStyles.paddingTop, 10) - parseInt(elmStyles.paddingBottom, 10) : 0),
-    width: elm.offsetWidth +
-      (removeBorder ? -parseInt(elmStyles.borderLeftWidth, 10) - parseInt(elmStyles.borderRightWidth, 10) : 0) +
-      (removePadding ? -parseInt(elmStyles.paddingLeft, 10) - parseInt(elmStyles.paddingRight, 10) : 0)
-  }
-}
-
-const clockwiseRotate = (center, angle, point) => {
-  const movex = point.x - center.x
-  const movey = point.y - center.y
-
-  const s = Math.sin(angle * Math.PI / 180)
-  const c = Math.cos(angle * Math.PI / 180)
-
-  const x = movex * c - movey * s
-  const y = movex * s + movey * c
-
-  return {
-    x: x + center.x,
-    y: y + center.y
-  }
-}
-
-const clock = document.getElementsByClassName('clock')[0]
-const {height: boxH, width: boxW} = getDims(clock, false, false)
-const minv = Math.min(boxH, boxW)
-clock.style.height = clock.style.width = minv
-
-const {height, width} = getDims(clock)
-let dialHours = document.getElementsByClassName('clock__dial-hour')
-let offsetFix = dialHours[11].offsetHeight / 10
-let refx = 0
-let refy = -height / 2 + dialHours[11].offsetHeight / 2
-const origin = {x: 0, y: 0}
-
-for (let i = 1; i <= 12; ++i) {
-  let newc = clockwiseRotate(origin, 30, {x: refx, y: refy})
-  refx = Math.round(newc.x)
-  refy = Math.round(newc.y)
-  newc.x = Math.round(newc.x - dialHours[i - 1].offsetWidth / 2 + width / 2)
-  newc.y = Math.round(newc.y - dialHours[i - 1].offsetHeight / 2 + height / 2 + offsetFix)
-  dialHours[i - 1].style.top = newc.y + 'px'
-  dialHours[i - 1].style.left = newc.x + 'px'
-}
-
-const handPivot = document.getElementById('hand-pivot')
-const pivotBoxDims = getDims(handPivot, false, false)
-handPivot.style.top = height / 2 - pivotBoxDims.height / 2 + 'px'
-handPivot.style.left = width / 2 - pivotBoxDims.width / 2 + 'px'
-
-const hoursHand = document.getElementById('hours-hand')
-const minutesHand = document.getElementById('minutes-hand')
-const secondsHand = document.getElementById('seconds-hand')
-const offByPivot = 0.05 * height
-
-const hoursHandDims = getDims(hoursHand, false, false)
-hoursHand.style.top = 1.6 * dialHours[11].offsetHeight + 'px'
-hoursHand.style.left = width / 2 - hoursHandDims.width / 2 + 'px'
-hoursHand.style.height = (height / 2 - 1.6 * dialHours[11].offsetHeight + offByPivot) + 'px'
-hoursHand.style.transformOrigin = `${hoursHandDims.width / 2}px ${hoursHand.offsetHeight - offByPivot}px`
-
-const minutesHandDims = getDims(minutesHand, false, false)
-minutesHand.style.top = 1.2 * dialHours[11].offsetHeight + 'px'
-minutesHand.style.left = width / 2 - minutesHandDims.width / 2 + 'px'
-minutesHand.style.height = (height / 2 - 1.2 * dialHours[11].offsetHeight + offByPivot) + 'px'
-minutesHand.style.transformOrigin = `${minutesHandDims.width / 2}px ${minutesHand.offsetHeight - offByPivot}px`
-
-const secondsHandDims = getDims(minutesHand, false, false)
-secondsHand.style.top = dialHours[11].offsetHeight + 'px'
-secondsHand.style.left = width / 2 - secondsHandDims.width / 2 + 'px'
-secondsHand.style.height = (height / 2 - dialHours[11].offsetHeight + offByPivot) + 'px'
-secondsHand.style.transformOrigin = `${secondsHandDims.width / 2}px ${secondsHand.offsetHeight - offByPivot}px`
-
-const dt = new Date()
-const secsElpased = dt.getSeconds()
-const minsElapsed = dt.getMinutes() + secsElpased / 60
-const hrsElapsed = dt.getHours() % 12 + minsElapsed / 60
-
-const rotate = (elm, deg) => {
-  elm.style.transform = `rotate(${deg}deg)`
-}
-const init = () => {
-  let hrsRotn = hrsElapsed * 360 / 12
-  let minsRotn = minsElapsed * 360 / 60
-  let secsRotn = secsElpased * 360 / 60
-  rotate(hoursHand, hrsRotn)
-  rotate(minutesHand, minsRotn)
-  rotate(secondsHand, secsRotn)
-  setTimeout(() => (secondsHand.style.transition = 'transform 1s linear'), 0)
-  setInterval(() => {
-    // do %360
-    hrsRotn += 360 / (3600 * 12)
-    minsRotn += 360 / (60 * 60)
-    secsRotn += 360 / 60
-    rotate(hoursHand, hrsRotn)
-    rotate(minutesHand, minsRotn)
-    rotate(secondsHand, secsRotn)
-  }, 1000)
-}
-init()
-
-</script>
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- https://www.cssscript.com/analog-clock-scss/ -->
+<!-- Based on https://www.cssscript.com/analog-clock-scss/ -->
 <html>
 <head>
     <meta charset="utf-8" />
@@ -178,40 +178,6 @@ secondsHand.style.left = width / 2 - secondsHandDims.width / 2 + 'px'
 secondsHand.style.height = (height / 2 - dialHours[11].offsetHeight + offByPivot) + 'px'
 secondsHand.style.transformOrigin = `${secondsHandDims.width / 2}px ${secondsHand.offsetHeight - offByPivot}px`
 
-// const dt = new Date()
-// const secsElpased = dt.getSeconds()
-// const minsElapsed = dt.getMinutes() + secsElpased / 60
-// const hrsElapsed = dt.getHours() % 12 + minsElapsed / 60
-
-let secsElpased = 30;
-let minsElapsed = 20;
-let hrsElapsed = 10;
-let hrsRotn = hrsElapsed * 360 / 12;
-let minsRotn = minsElapsed * 360 / 60;
-let secsRotn = secsElpased * 360 / 60;
-// rotate(hoursHand, hrsRotn);
-// rotate(minutesHand, minsRotn);
-// rotate(secondsHand, secsRotn);
-
-// const init = () => {
-  // let hrsRotn = hrsElapsed * 360 / 12
-  // let minsRotn = minsElapsed * 360 / 60
-  // let secsRotn = secsElpased * 360 / 60
-  // rotate(hoursHand, hrsRotn)
-  // rotate(minutesHand, minsRotn)
-  // rotate(secondsHand, secsRotn)
-setTimeout(() => (secondsHand.style.transition = 'transform 1s linear'), 0)
-  // setInterval(() => {
-  //   // do %360
-    // hrsRotn += 360 / (3600 * 12)
-    // minsRotn += 360 / (60 * 60)
-    // secsRotn += 360 / 60
-    // rotate(hoursHand, hrsRotn)
-    // rotate(minutesHand, minsRotn)
-    // rotate(secondsHand, secsRotn)
-//  }, 1000)
-// }
-// init()
 let hr = new XMLHttpRequest;
 let httpCodeSuccess = 200;
 let xmlHttpRequestCodeDone = 4;
@@ -230,15 +196,21 @@ function ApiTime() {
           let hoursRemainder = value - hrsElapsed * (60 * 60);
           let minsElapsed = Math.floor(hoursRemainder / 60);
           let minutesRemainder = hoursRemainder - (minsElapsed * 60);
-          let secsElpased = Math.floor(minutesRemainder);
-          let secondsRemainder = minutesRemainder - secsElpased;
+          let secsElapsed = Math.floor(minutesRemainder);
+          let secondsRemainder = minutesRemainder - secsElapsed;
 
           hrsRotn = hrsElapsed * 360 / 12;
           minsRotn = minsElapsed * 360 / 60;
-          secsRotn = secsElpased * 360 / 60;
+          secsRotn = secsElapsed * 360 / 60;
           rotate(hoursHand, hrsRotn);
           rotate(minutesHand, minsRotn);
           rotate(secondsHand, secsRotn);
+
+          // Smooth second hand. Restart around zero else goes wrong way round for the last second !
+          if (secsElapsed > 0 && secsElapsed <= 59)
+            secondsHand.style.transition = 'transform 1s linear';
+          else
+            secondsHand.style.transition = null;
       }
 		}
 	}

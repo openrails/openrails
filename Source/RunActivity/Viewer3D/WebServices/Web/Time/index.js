@@ -35,21 +35,23 @@ function ApiTime() {
             let vso = JSON.parse(hr.responseText);
             if (vso != null) // Can happen using IEv11
             {
-                let value = vso;
-                let hoursValue = Math.floor(value / (60 * 60));
-                let hoursRemainder = value - hoursValue * (60 * 60);
-                let minutesValue = Math.floor(hoursRemainder / 60);
-                let minutesRemainder = hoursRemainder - (minutesValue * 60);
-                let secondsValue = Math.floor(minutesRemainder);
-                let secondsRemainder = minutesRemainder - secondsValue;
-                let centisecondsValue = Math.floor(secondsRemainder * 100);
+                let secondsSinceMidnight = vso;
+                let daysInteger = Math.floor(secondsSinceMidnight / (60 * 60 * 24));
+                let daysFraction = secondsSinceMidnight - daysInteger * (60 * 60 * 24);
+                let hoursInteger = Math.floor(daysFraction / (60 * 60));
+                let hoursFraction = daysFraction - hoursInteger * (60 * 60);
+                let minutesInteger = Math.floor(hoursFraction / 60);
+                let minutesFraction = hoursFraction - (minutesInteger * 60);
+                let secondsInteger = Math.floor(minutesFraction);
+                let secondsFraction = minutesFraction - secondsInteger;
+                let centisecondsInteger = Math.floor(secondsFraction * 100);
                 
-                time.innerHTML = value.toFixed(2);
+                time.innerHTML = secondsSinceMidnight.toFixed(2);
 
-                hours.innerHTML = ((hoursValue < 10) ? "0" : "") + hoursValue;
-                minutes.innerHTML = ((minutesValue < 10) ? "0" : "") + minutesValue;
-                seconds.innerHTML = ((secondsValue < 10) ? "0" : "") + secondsValue;
-                centiseconds.innerHTML = ((centisecondsValue < 10) ? "0" : "") + centisecondsValue;
+                hours.innerHTML = ((hoursInteger < 10) ? "0" : "") + hoursInteger;
+                minutes.innerHTML = ((minutesInteger < 10) ? "0" : "") + minutesInteger;
+                seconds.innerHTML = ((secondsInteger < 10) ? "0" : "") + secondsInteger;
+                centiseconds.innerHTML = ((centisecondsInteger < 10) ? "0" : "") + centisecondsInteger;
             }
 		}
 	}
