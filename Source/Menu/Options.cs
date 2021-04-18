@@ -870,6 +870,11 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Highlight the Help Icon if the user mouses over the icon or its control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="_"></param>
         private void HelpIcon_MouseEnter(object sender, EventArgs _)
         {
             if (sender is PictureBox pb)
