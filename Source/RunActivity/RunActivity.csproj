@@ -356,6 +356,9 @@
     <Content Include="Viewer3D\WebServices\Web\index.css" />
     <Content Include="Viewer3D\WebServices\Web\index.html" />
     <Content Include="Viewer3D\WebServices\Web\or_logo.png" />
+    <Content Include="Viewer3D\WebServices\Web\Time\index.css" />
+    <Content Include="Viewer3D\WebServices\Web\Time\index.html" />
+    <Content Include="Viewer3D\WebServices\Web\Time\index.js" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitorTrainDriving\index.css" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitorTrainDriving\index.html" />
     <Content Include="Viewer3D\WebServices\Web\TrackMonitorTrainDriving\index.js" />
