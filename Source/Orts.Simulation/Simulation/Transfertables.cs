@@ -42,8 +42,8 @@ namespace Orts.Simulation
     {
         public float Span; // horizontal or vertical
         public List<float> Offsets = new List<float>();
-        public bool VerticalTransfer = false;
         public float CenterOffsetComponent = 0;
+        private bool VerticalTransfer = false;
         // Dynamic data
         public bool Forward; // forward motion on
         public bool Reverse; // reverse motion on
