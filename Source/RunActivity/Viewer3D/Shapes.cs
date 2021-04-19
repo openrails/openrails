@@ -459,14 +459,13 @@ namespace Orts.Viewer3D
                         index = i;
                     else if (controller[i].Frame > key) // Optimisation, not required for algorithm.
                         break;
-    
+
                 //OR-Clock-hands Animation -------------------------------------------------------------------------------------------------------------
-                if (anim_node.Name.ToLowerInvariant().IndexOf("hand_clock") > -1)           //anim_node seems to be an OR-Clock-hand-matrix of an analog OR-Clock
+                var animName = anim_node.Name.ToLowerInvariant();
+                if (animName.IndexOf("hand_clock") > -1)           //anim_node seems to be an OR-Clock-hand-matrix of an analog OR-Clock
                 {
                     int gameTimeInSec = Convert.ToInt32((long)TimeSpan.FromSeconds(Viewer.Simulator.ClockTime).Ticks / 100000); //Game time as integer in milliseconds
-                    int clockHour = gameTimeInSec / 360000;                                 //HOUR of Game time
-                    if (clockHour > 24)                                                     //If HOUR bigger than 24 
-                        clockHour = clockHour - (clockHour / 24) * 24;                      //  then reduced to an HOUR of the current day
+                    int clockHour = gameTimeInSec / 360000 % 24;                          //HOUR of Game time
                     gameTimeInSec %= 360000;                                                //Game time by Modulo 360000 -> resultes minutes as rest
                     int clockMinute = gameTimeInSec / 6000;                                 //MINUTE of Game time
                     gameTimeInSec %= 6000;                                                  //Game time by Modulo 6000 -> resultes seconds as rest
@@ -475,16 +474,16 @@ namespace Orts.Viewer3D
                     int clockQuadrant = 0;                                                  //Preset: Start with Anim-Control 0 (first quadrant of OR-Clock)
                     bool calculateClockHand = false;                                        //Preset: No drawing of a new matrix by default
                     float quadrantAmount = 1;                                               //Preset: Represents part of the way from position1 to position2 (float Value between 0 and 1)
-                    if (anim_node.Name.ToLowerInvariant().StartsWith("orts_chand_clock")) //Shape matrix is a CentiSecond Hand (continuous moved second hand) of an analog OR-clock
+                    if (animName.StartsWith("orts_chand_clock")) //Shape matrix is a CentiSecond Hand (continuous moved second hand) of an analog OR-clock
                     {
                         clockQuadrant = (int)clockSecond / 15;                              //Quadrant of the clock / Key-Index of anim_node (int Values: 0, 1, 2, 3)
                         quadrantAmount = (float)(clockSecond - (clockQuadrant * 15)) / 15;  //Seconds      Percentage quadrant related (float Value between 0 and 1) 
-                        quadrantAmount = quadrantAmount + ((float)clockCenti / 100 / 15);   //CentiSeconds Percentage quadrant related (float Value between 0 and 0.0666666)
+                        quadrantAmount += ((float)clockCenti / 100 / 15);                   //CentiSeconds Percentage quadrant related (float Value between 0 and 0.0666666)
                         if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
                             clockQuadrant = 0;  //If controller.Count dosen't match
                         calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
                     }
-                    else if (anim_node.Name.ToLowerInvariant().StartsWith("orts_shand_clock")) //Shape matrix is a Second Hand of an analog OR-clock
+                    else if (animName.StartsWith("orts_shand_clock")) //Shape matrix is a Second Hand of an analog OR-clock
                     {
                         clockQuadrant = (int)clockSecond / 15;                              //Quadrant of the clock / Key-Index of anim_node (int Values: 0, 1, 2, 3)
                         quadrantAmount = (float)(clockSecond - (clockQuadrant * 15)) / 15;  //Percentage quadrant related (float Value between 0 and 1) 
@@ -492,7 +491,7 @@ namespace Orts.Viewer3D
                             clockQuadrant = 0;  //If controller.Count doesn't match
                         calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
                     }
-                    else if (anim_node.Name.ToLowerInvariant().StartsWith("orts_mhand_clock")) //Shape matrix is a Minute Hand of an analog OR-clock
+                    else if (animName.StartsWith("orts_mhand_clock")) //Shape matrix is a Minute Hand of an analog OR-clock
                     {
                         clockQuadrant = (int)clockMinute / 15;                              //Quadrant of the clock / Key-Index of anim_node (Values: 0, 1, 2, 3)
                         quadrantAmount = (float)(clockMinute - (clockQuadrant * 15)) / 15;  //Percentage quadrant related (Value between 0 and 1)
@@ -500,13 +499,12 @@ namespace Orts.Viewer3D
                             clockQuadrant = 0; //If controller.Count dosen't match
                         calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
                     }
-                    else if (anim_node.Name.ToLowerInvariant().StartsWith("orts_hhand_clock")) //Shape matrix is an Hour Hand of an analog OR-clock
+                    else if (animName.StartsWith("orts_hhand_clock")) //Shape matrix is an Hour Hand of an analog OR-clock
                     {
-                        if (clockHour > 11)
-                            clockHour -= 12;                                                //Reduce 24 to 12 format
+                        clockHour %= 12;                                                    //Reduce 24 to 12 format
                         clockQuadrant = (int)clockHour / 3;                                 //Quadrant of the clock / Key-Index of anim_node (Values: 0, 1, 2, 3)
                         quadrantAmount = (float)(clockHour - (clockQuadrant * 3)) / 3;      //Percentage quadrant related (Value between 0 and 1)
-                        quadrantAmount = quadrantAmount + (((float)1 / 3) * ((float)clockMinute / 60)); //add fine minute-percentage for Hour Hand between the full hours
+                        quadrantAmount += (((float)1 / 3) * ((float)clockMinute / 60));     //add fine minute-percentage for Hour Hand between the full hours
                         if (controller.Count == 0 || clockQuadrant < 0 || clockQuadrant + 1 > controller.Count - 1)
                             clockQuadrant = 0; //If controller.Count doesn't match
                         calculateClockHand = true;                                          //Calculate the new Hand position (Quaternion) below
@@ -515,32 +513,26 @@ namespace Orts.Viewer3D
                     {
                         var position1 = controller[clockQuadrant];
                         var position2 = controller[clockQuadrant + 1];
-                        if (position1.GetType() == typeof(slerp_rot) && position2.GetType() == typeof(slerp_rot))  //OR-Clock anim.node has slerp keys
+                        if (position1 is slerp_rot sr1 && position2 is slerp_rot sr2)  //OR-Clock anim.node has slerp keys
                         {
-                            slerp_rot MSTS1 = (slerp_rot)position1;
-                            slerp_rot MSTS2 = (slerp_rot)position2;
-                            Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
-                            Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
+                            Quaternion XNA1 = new Quaternion(sr1.X, sr1.Y, -sr1.Z, sr1.W);
+                            Quaternion XNA2 = new Quaternion(sr2.X, sr2.Y, -sr2.Z, sr2.W);
                             Quaternion q = Quaternion.Slerp(XNA1, XNA2, quadrantAmount);
                             Vector3 location = xnaPose.Translation;
                             xnaPose = Matrix.CreateFromQuaternion(q);
                             xnaPose.Translation = location;
                         }
-                        else if (position1.GetType() == typeof(linear_key) && position2.GetType() == typeof(linear_key)) //OR-Clock anim.node has tcb keys
+                        else if (position1 is linear_key lk1 && position2 is linear_key lk2) //OR-Clock anim.node has tcb keys
                         {
-                            linear_key MSTS1 = (linear_key)position1;
-                            linear_key MSTS2 = (linear_key)position2;
-                            Vector3 XNA1 = new Vector3(MSTS1.X, MSTS1.Y, -MSTS1.Z);
-                            Vector3 XNA2 = new Vector3(MSTS2.X, MSTS2.Y, -MSTS2.Z);
+                            Vector3 XNA1 = new Vector3(lk1.X, lk1.Y, -lk1.Z);
+                            Vector3 XNA2 = new Vector3(lk2.X, lk2.Y, -lk2.Z);
                             Vector3 v = Vector3.Lerp(XNA1, XNA2, quadrantAmount);
                             xnaPose.Translation = v;
                         }
-                        else if (position1.GetType() == typeof(tcb_key) && position2.GetType() == typeof(tcb_key)) //OR-Clock anim.node has tcb keys
+                        else if (position1 is tcb_key tk1 && position2 is tcb_key tk2) //OR-Clock anim.node has tcb keys
                         {
-                            tcb_key MSTS1 = (tcb_key)position1;
-                            tcb_key MSTS2 = (tcb_key)position2;
-                            Quaternion XNA1 = new Quaternion(MSTS1.X, MSTS1.Y, -MSTS1.Z, MSTS1.W);
-                            Quaternion XNA2 = new Quaternion(MSTS2.X, MSTS2.Y, -MSTS2.Z, MSTS2.W);
+                            Quaternion XNA1 = new Quaternion(tk1.X, tk1.Y, -tk1.Z, tk1.W);
+                            Quaternion XNA2 = new Quaternion(tk2.X, tk2.Y, -tk2.Z, tk2.W);
                             Quaternion q = Quaternion.Slerp(XNA1, XNA2, quadrantAmount);
                             Vector3 location = xnaPose.Translation;
                             xnaPose = Matrix.CreateFromQuaternion(q);
