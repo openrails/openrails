@@ -1,0 +1,221 @@
+<!doctype html>
+<!-- Based on https://www.programmersought.com/article/31327047900/ -->
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <style>
+    canvas{
+      display: block;
+      margin: auto;
+	  border: 1px solid #CCC;
+    }
+  </style>
+  <title>Flat Clock</title>
+</head>
+<body onload="setInterval (ApiTime, 500)">
+ <canvas id="canvas" >Your browser does not support canvas</canvas>
+</body>
+<script>
+ 
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  var width = 1000;
+  var height = 500;
+     var cx = width / 2; // Canvas center x
+     var cy = height / 2; // Canvas center y
+  
+     var size = 200; // table size
+  
+  canvas.width = width;
+  canvas.height = height;
+  
+  //draw();
+  
+  function draw(hours, mins, secs){
+	  //  // Time class
+	  // var date = new Date();
+	  //  // When getting
+	  // var hours = date.getHours();
+	  //  // Get points
+	  // var min = date.getMinutes();
+	  //  // Get seconds
+	  // var sec = date.getSeconds();
+	   // outer ring
+	  drawOuter();
+	   // time
+	  drawText();
+	   // scale
+	  drawScale();
+	   // hour hand
+	  drawHour(hours, mins);
+	   // minute hand
+	  drawMid(mins, secs);
+	   // second hand
+	  drawSec(secs);
+  }
+  
+     // Draw the outer circle of the watch
+  function drawOuter(){
+	   // outermost circle
+	  ctx.arc(cx, cy, size + 30, 0, Math.PI * 2);
+	  ctx.fillStyle = "#000033";
+	  ctx.fill();
+	  ctx.beginPath();
+	  
+	   // inner circle
+	  ctx.arc(cx, cy, size, 0, Math.PI * 2);
+	  ctx.fillStyle = "white";
+	  ctx.fill();
+	  ctx.beginPath();
+	  
+	   // middle origin
+	  ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+	  ctx.fillStyle = "#000033";
+	  ctx.fill();
+	  ctx.beginPath(); 
+  }
+  
+     // Painting
+  function drawText(){
+	  var radian = 0, x = 0, y = 0;
+	   var angle = -60; // start drawing from 1 point, the angle between 1 and 2 is 30 degrees
+	  for(var i = 0 ; i < 12 ; i++){ 
+	      radian = angle * Math.PI / 180;
+		  x = Math.cos(radian) * (size - 50) + cx;
+		  y = Math.sin(radian) * (size - 50) + cy;
+		   ctx.textAlign = "center"; // text is centered horizontally
+		   ctx.textBaseline = "middle"; // The text is centered vertically
+		  ctx.font = "45px Arial";
+		  ctx.fillText(i + 1, x, y);
+		  ctx.beginPath();
+		  angle += 30;
+	  }
+  }
+  
+     // draw scale
+  function drawScale(){
+	  var radian = 0, x = 0, y = 0;
+	  var s = 15;
+	  var lineWidth  = 0;
+	  for(var angle = 0 ; angle <= 360 ; angle += 6){ 
+	      radian = angle * Math.PI / 180;
+		  
+		   // draw long scale
+		  if(angle % 30 == 0){
+		      s = 20;
+			  lineWidth = 3;
+		  }
+		   // draw short
+		  else{  
+		      s = 15;
+			  lineWidth = 1;
+		  }
+		  
+		   // The starting point of the scale is size-s 
+		  x = Math.cos(radian) * (size - s) + cx;
+		  y = Math.sin(radian) * (size - s) + cy;
+		  ctx.moveTo(x, y);
+		  
+		   // End of scale
+		  for(var j = 0 ; j < s ; j++){
+			  x += Math.cos(radian);
+			  y += Math.sin(radian);
+		  }
+		  ctx.lineTo(x, y);
+		  
+		   // Set the scale width
+		  ctx.lineWidth = lineWidth;
+		  ctx.stroke();
+		  ctx.beginPath();
+	  }
+  }
+  
+     // Draw the hour hand, hour time, min minutes
+  function drawHour(hour, min){
+	   // hour * angle between hours-90 degrees (default points to 3 o'clock, 3*30=90) + (percentage of the hour that the minute has passed) 
+	  var angle = (hour * 30 - 90) + (30 * (min / 60));
+	   // The angle is converted to radians, and the parameters of cos sin are all radians
+	  var radian = angle * Math.PI / 180;
+	   // length
+	  var s = 100; 
+	  ctx.beginPath();
+	  ctx.moveTo(cx, cy);
+	  ctx.lineTo(Math.cos(radian) * s + cx, Math.sin(radian) * s + cy);
+	  ctx.lineWidth = 10;
+	  ctx.stroke();
+  }
+  
+     // draw minute hand
+  function drawMid(min, src){
+	   // 0 defaults to the 3 o'clock position, the angle between the minute and the minute is 6 degrees, to subtract 15 minutes * 6 degrees, point the minute to 12 o'clock
+	   // (6 * (src / 60)) = seconds have passed, the percentage of this minute * 6 degrees
+	  var angle = (min * 6 - 15 * 6) + (6 * (src / 60));
+	   // The angle is converted to radians, and the parameters of cos sin are all radians
+	  var radian = angle * Math.PI / 180;
+	   var s = 180; // length
+	  ctx.beginPath();
+	  ctx.moveTo(cx, cy);
+	  ctx.lineTo(Math.cos(radian) * s + cx, Math.sin(radian) * s + cy);
+	  ctx.lineWidth = 5;
+	  ctx.stroke();
+  }
+  
+       // draw seconds
+  function drawSec(src){
+	   var angle = src * 6-15 * 6; // 0 defaults to the 3 o'clock position, the angle between the minute and the minute is 6 degrees, to subtract 15 minutes * 6 degrees, point the minute to 12 o'clock
+	  var radian = angle * Math.PI / 180;
+	   var s = 160; // second hand 1 length
+	   var s1 = 50; // second hand 2 length
+	  
+	   // second hand
+	  ctx.beginPath();
+	  ctx.moveTo(cx, cy);
+	  ctx.lineTo(Math.cos(radian) * s + cx, Math.sin(radian) * s + cy);
+	  ctx.lineWidth = 1;
+	  ctx.stroke();
+	  
+	   // second hand red dot
+	  ctx.beginPath();
+	  ctx.arc(Math.cos(radian) * s + cx, Math.sin(radian) * s + cy, 5, 0, Math.PI * 2);
+	  ctx.fillStyle = "red";
+	  ctx.fill();
+	  
+	   // Reverse (short) second hand
+	   angle = (src * 6-15 * 6) + 180; // +180 degrees, opposite to the second hand
+	  radian = angle * Math.PI / 180;
+	  ctx.beginPath();
+	  ctx.moveTo(cx, cy);
+	  ctx.lineTo(Math.cos(radian) * s1 + cx, Math.sin(radian) * s1 + cy);
+	  ctx.lineWidth = 3;
+	  ctx.stroke();
+  }
+
+  let hr = new XMLHttpRequest;
+  let httpCodeSuccess = 200;
+  let xmlHttpRequestCodeDone = 4;
+
+  function ApiTime() {
+    // "/API/TIME" /API is a prefix hard-coded into the WebServer class
+    hr.open("GET", "/API/TIME", true);
+    hr.send();
+    hr.onreadystatechange = function () {
+      if (this.readyState == xmlHttpRequestCodeDone && this.status == httpCodeSuccess) {
+        let vso = JSON.parse(hr.responseText);
+        if (vso != null) // Can happen using IEv11
+        {
+            let value = vso;
+            let daysInteger = Math.floor(value / (60 * 60 * 24));
+            let daysFraction = value - daysInteger * (60 * 60 * 24);
+            let hoursInteger = Math.floor(daysFraction / (60 * 60));
+            let hoursFraction = value - hoursInteger * (60 * 60);
+            let minutesInteger = Math.floor(hoursFraction / 60);
+            let minutesFraction = hoursFraction - (minutesInteger * 60);
+            let secondsInteger = Math.floor(minutesFraction);
+
+            draw(hoursInteger, minutesInteger, secondsInteger);
+        }
+      }
+    }
+  }  
+</script> 
+</html>

@@ -128,6 +128,11 @@ Some of these sample pages repeat data from the in-game panels to provide a more
   
 .. image:: images/web-page-both.png
 
+- The time page shows the simulation time as a digital clock and links to 3 versions of an analogue clock.
+
+.. image:: images/web-page-clock.png
+
+
 The sample pages can be found in the ``Content\Web`` subfolder of the OR
 program folder and the web server defaults to ``Content\Web\index.html``.
 
@@ -170,6 +175,10 @@ Note: To avoid overloading the simulator, please keep API calls to once or twice
      - | Retrieves information rendered on the Track Monitor, such as speed,
        | acceleration, grade, and upcoming hazards.
      - | ``Orts.Simulation.Physics .Train.TrainInfo``
+   * - | GET
+     - | ``/API/TIME``
+     - | Retrieves just the simulation time in seconds since midnight.
+     - | ``Orts.Viewer3D.WebServices .WebServer.ORTSApiController .ApiTime``
    * - | GET
      - | ``/API/CABCONTROLS``
      - | Retrieves an array of the cab controls for the player localhost
