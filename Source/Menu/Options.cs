@@ -67,6 +67,8 @@ namespace ORTS
             Settings = settings;
             UpdateManager = updateManager;
 
+            InitializeHelpIcons();
+
             // Collect all the available language codes by searching for
             // localisation files, but always include English (base language).
             var languageCodes = new List<string> { "en" };
@@ -796,6 +798,67 @@ namespace ORTS
 
         #region Help for General Options
         /// <summary>
+        /// Allows multiple controls to change a single help icon with their hover events.
+        /// </summary>
+        private class HelpIconHover
+        {
+            private readonly PictureBox Icon;
+            private int HoverCount = 0;
+
+            public HelpIconHover(PictureBox pb)
+            {
+                Icon = pb;
+            }
+
+            public void Enter()
+            {
+                HoverCount++;
+                SetImage();
+            }
+
+            public void Leave()
+            {
+                HoverCount--;
+                SetImage();
+            }
+
+            private void SetImage()
+            {
+                Icon.Image = HoverCount > 0 ? Properties.Resources.info_18_hover : Properties.Resources.info_18;
+            }
+        }
+
+        private readonly IDictionary<Control, HelpIconHover> ToHelpIcon = new Dictionary<Control, HelpIconHover>();
+
+        private void InitializeHelpIcons()
+        {
+            // static mapping of picture boxes to controls
+            var helpIconControls = new (PictureBox, Control[])[]
+            {
+                (pbAlerter, new[] { checkAlerter }),
+                (pbControlConfirmations, new[] { checkControlConfirmations }),
+                (pbMapWindow, new[] { checkViewMapWindow }),
+                (pbLAA, new[] { checkUseLargeAddressAware }),
+                (pbRetainers, new[] { checkRetainers }),
+                (pbGraduatedRelease, new[] { checkGraduatedRelease }),
+                (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
+                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
+                (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
+                (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
+                (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
+                (pbEnableWebServer, new[] { checkEnableWebServer }),
+                (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+            };
+            foreach ((PictureBox pb, Control[] controls) in helpIconControls)
+            {
+                var hover = new HelpIconHover(pb);
+                ToHelpIcon[pb] = hover;
+                foreach (Control control in controls)
+                    ToHelpIcon[control] = hover;
+            }
+        }
+
+        /// <summary>
         /// Loads a relevant page from the manual maintained by James Ross's automatic build.
         /// </summary>
         /// <param name="sender"></param>
@@ -877,71 +940,14 @@ namespace ORTS
         /// <param name="_"></param>
         private void HelpIcon_MouseEnter(object sender, EventArgs _)
         {
-            if (sender is PictureBox pb)
-                pb.Image = Properties.Resources.info_18_hover;
-            else
-            {
-                EnterHelp(sender, "checkAlerter", "pbAlerter");
-                EnterHelp(sender, "checkControlConfirmations", "pbControlConfirmations");
-                EnterHelp(sender, "checkViewMapWindow", "pbMapWindow");
-                EnterHelp(sender, "checkUseLargeAddressAware", "pbLAA");
-                EnterHelp(sender, "checkRetainers", "pbRetainers");
-                EnterHelp(sender, "checkGraduatedRelease", "pbGraduatedRelease");
-                EnterHelp(sender, "lBrakePipeChargingRate", "pbBrakePipeChargingRate");
-                EnterHelp(sender, "labelLanguage", "pbLanguage");
-                EnterHelp(sender, "comboLanguage", "pbLanguage");
-                EnterHelp(sender, "labelPressureUnit", "pbPressureUnit");
-                EnterHelp(sender, "comboPressureUnit", "pbPressureUnit");
-                EnterHelp(sender, "labelOtherUnits", "pbOtherUnits");
-                EnterHelp(sender, "comboOtherUnits", "pbOtherUnits");
-                EnterHelp(sender, "checkDisableTCSScripts", "pbDisableTcsScripts");
-                EnterHelp(sender, "checkEnableWebServer", "pbEnableWebServer");
-                EnterHelp(sender, "checkOverspeedMonitor", "pbOverspeedMonitor");
-            }
+            if (sender is Control control && ToHelpIcon.TryGetValue(control, out var hover))
+                hover.Enter();
         }
 
         private void HelpIcon_MouseLeave(object sender, EventArgs _)
         {
-            if (sender is PictureBox pb)
-                pb.Image = Properties.Resources.info_18;
-            else
-            {
-                LeaveHelp(sender, "checkAlerter", "pbAlerter");
-                LeaveHelp(sender, "checkControlConfirmations", "pbControlConfirmations");
-                LeaveHelp(sender, "checkViewMapWindow", "pbMapWindow");
-                LeaveHelp(sender, "checkUseLargeAddressAware", "pbLAA");
-                LeaveHelp(sender, "checkRetainers", "pbRetainers");
-                LeaveHelp(sender, "checkGraduatedRelease", "pbGraduatedRelease");
-                LeaveHelp(sender, "lBrakePipeChargingRate", "pbBrakePipeChargingRate");
-                LeaveHelp(sender, "comboLanguage", "pbLanguage");
-                LeaveHelp(sender, "labelPressureUnit", "pbPressureUnit");
-                LeaveHelp(sender, "comboPressureUnit", "pbPressureUnit");
-                LeaveHelp(sender, "labelOtherUnits", "pbOtherUnits");
-                LeaveHelp(sender, "comboOtherUnits", "pbOtherUnits");
-                LeaveHelp(sender, "checkDisableTCSScripts", "pbDisableTcsScripts");
-                LeaveHelp(sender, "checkEnableWebServer", "pbEnableWebServer");
-                LeaveHelp(sender, "checkOverspeedMonitor", "pbOverspeedMonitor");
-            }
-        }
-
-        private void EnterHelp(object sender, string controlName, string iconName)
-        {
-            if (sender is Control control && control.Name == controlName)
-            {
-                var iconArray = Controls.Find(iconName, true);
-                if (iconArray[0] is PictureBox pb2)
-                    pb2.Image = Properties.Resources.info_18_hover;
-            }
-        }
-
-        private void LeaveHelp(object sender, string controlName, string iconName)
-        {
-            if (sender is Control control && control.Name == controlName)
-            {
-                var iconArray = Controls.Find(iconName, true);
-                if (iconArray[0] is PictureBox pb2)
-                    pb2.Image = Properties.Resources.info_18;
-            }
+            if (sender is Control control && ToHelpIcon.TryGetValue(control, out var hover))
+                hover.Leave();
         }
         #endregion
     }
