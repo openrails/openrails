@@ -37,8 +37,6 @@ namespace Orts.Formats.OR
 
         private string ShapePath = null;
         private ClockShape ClockShape = null;
-        private const string invalid = "invalid";
-        private const string incomplete = "incomplete";
 
         /// <summary>
         /// Reads JSON file, parsing valid data into ClockShapeList and logging errors.
@@ -53,9 +51,8 @@ namespace Orts.Formats.OR
             JsonReader.ReadFile(fileName, TryParse);
 
             // Filter out objects with essentials properties that are either incomplete or invalid.
-            var BadProperties = invalid + incomplete;
             ClockShapeList = ClockShapeList
-                .Where(r => (BadProperties.Contains(r.Name) || BadProperties.Contains(r.ClockType)) == false)
+                .Where(r => !string.IsNullOrEmpty(r.Name) && r.ClockType != null)
                 .ToList();
         }
 
@@ -75,28 +72,32 @@ namespace Orts.Formats.OR
 
                 case "[].":
                     // Create an object with properties which are initially incomplete, so omissions can be detected and the object rejected later.
-                    ClockShape = new ClockShape(incomplete, incomplete);
+                    ClockShape = new ClockShape(stringValue, null);
                     ClockShapeList.Add(ClockShape);
                     break;
                 
                 case "[].Name":
                     // Parse the property with default value as invalid, so errors can be detected and the object rejected later.
-                    stringValue = item.AsString(invalid);
+                    stringValue = item.AsString(stringValue);
                     var path = ShapePath + stringValue;
                     ClockShape.Name = path;
-                    if (stringValue == invalid)
+                    if (string.IsNullOrEmpty(stringValue))
                         return false;
                     if (File.Exists(path) == false)
                         Trace.TraceWarning($"Non-existent shape file {path} referenced in animated.clocks-or");
                     break;
 
                 case "[].ClockType":
-                    stringValue = item.AsString(invalid);
-                    ClockShape.ClockType = stringValue;
-                    if (stringValue == invalid)
-                        return false;
-                    if (stringValue != "analog")
+                    stringValue = item.AsString(stringValue);
+                    if (stringValue == "analog")
+                    {
+                        ClockShape.ClockType = ClockType.Analog;
+                    }
+                    else
+                    {
                         Trace.TraceWarning($"ClockType \"{stringValue}\" found, but \"analog\" expected");
+                        return false;
+                    }
                     break;
 
                 default:
@@ -108,15 +109,23 @@ namespace Orts.Formats.OR
     }
 
     /// <summary>
+    /// Denotes a type of clock.
+    /// </summary>
+    public enum ClockType
+    {
+        Analog,
+    }
+
+    /// <summary>
     /// Holds a reference to a shape file and a clocktype.
     /// Can parse an STF element to populate the object.
     /// </summary>
     public class ClockShape
     {
         public string Name { get; set; }
-        public string ClockType { get; set; }
+        public ClockType? ClockType { get; set; }
 
-        public ClockShape(string name, string clockType)
+        public ClockShape(string name, ClockType? clockType)
         {
             this.Name = name;
             this.ClockType = clockType;
@@ -126,7 +135,8 @@ namespace Orts.Formats.OR
         {
             stf.MustMatch("(");
             Name = stf.ReadString();
-            ClockType = stf.ReadString();
+            if (stf.ReadString() == "analog")
+                ClockType = OR.ClockType.Analog;
             stf.SkipRestOfBlock();
         }
     }
@@ -135,13 +145,13 @@ namespace Orts.Formats.OR
     public class ClockList
     {
         public List<string> ShapeNames; //clock shape names
-        public List<string> ClockType;  //second parameter of the ClockItem is the OR-ClockType -> analog, digital
+        public List<ClockType?> ClockType;  //second parameter of the ClockItem is the OR-ClockType -> analog, digital
         public string ListName;
 
         public ClockList(List<ClockShape> clockDataItems, string listName)
         {
             ShapeNames = new List<string>();
-            ClockType = new List<string>();
+            ClockType = new List<ClockType?>();
             ListName = listName;
             int i = 0;
             foreach (ClockShape data in clockDataItems)
