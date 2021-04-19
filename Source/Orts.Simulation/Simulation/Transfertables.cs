@@ -42,8 +42,11 @@ namespace Orts.Simulation
     {
         public float Span; // horizontal or vertical
         public List<float> Offsets = new List<float>();
-        public float CenterOffsetComponent = 0;
         private bool VerticalTransfer = false;
+        public float CenterOffsetComponent
+        {
+            get => VerticalTransfer ? CenterOffset.Y : CenterOffset.X;
+        }
         // Dynamic data
         public bool Forward; // forward motion on
         public bool Reverse; // reverse motion on
@@ -154,12 +157,12 @@ namespace Orts.Simulation
             }
             if (VerticalTransfer)
             {
-                OffsetPos = CenterOffsetComponent = CenterOffset.Y;
+                OffsetPos = CenterOffset.Y;
                 Span = (float)(trackShape.SectionIdxs[trackShape.SectionIdxs.Length - 1].Y - trackShape.SectionIdxs[0].Y);
             }
             else
             {
-                OffsetPos = CenterOffsetComponent = CenterOffset.X;
+                OffsetPos = CenterOffset.X;
                 Span = (float)(trackShape.SectionIdxs[trackShape.SectionIdxs.Length - 1].X - trackShape.SectionIdxs[0].X);
             }
         }
