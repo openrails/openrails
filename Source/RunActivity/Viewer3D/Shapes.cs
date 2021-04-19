@@ -130,8 +130,6 @@ namespace Orts.Viewer3D
         public readonly WorldPosition Location;
         public readonly ShapeFlags Flags;
         public readonly SharedShape SharedShape;
-        private string shapeFilePath;
-        private WorldPosition worldMatrix;
 
         /// <summary>
         /// Construct and initialize the class
@@ -257,7 +255,7 @@ namespace Orts.Viewer3D
     /// </summary>
     public class PoseableShape : StaticShape
     {
-        protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>(); //"protected" added for derived classes
+        protected static Dictionary<string, bool> SeenShapeAnimationError = new Dictionary<string, bool>();
 
         public Matrix[] XNAMatrices = new Matrix[0];  // the positions of the subobjects
 
@@ -289,7 +287,7 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Adjust the pose of the specified node to the frame position specifed by key.
         /// </summary>
-        public virtual void AnimateMatrix(int iMatrix, float key) //"virtual" added for "override" in class "AnalogClockShape"
+        public void AnimateMatrix(int iMatrix, float key)
         {
             // Animate the given matrix.
             AnimateOneMatrix(iMatrix, key);
@@ -300,7 +298,7 @@ namespace Orts.Viewer3D
                     AnimateMatrix(i, key);
         }
 
-        void AnimateOneMatrix(int iMatrix, float key)
+        protected virtual void AnimateOneMatrix(int iMatrix, float key)
         {
             if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
             {
@@ -400,11 +398,6 @@ namespace Orts.Viewer3D
             FrameRateMultiplier = 1 / frameRateDivisor;
         }
 
-        public AnimatedShape(Viewer viewer, string path, WorldPosition initialPosition, bool shadowCaster)
-            : this(viewer, path, initialPosition, ShapeFlags.None)
-        {
-        }
-
         public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
         {
             // if the shape has animations
@@ -429,21 +422,8 @@ namespace Orts.Viewer3D
             : base(viewer, path, initialPosition, flags)
         {
         }
- 
-        /// <summary>
-        /// Adjust the pose of the specified ORClock hand node to the frame position specifed by key.
-        /// </summary>
-        public override void AnimateMatrix(int iMatrix, float key)
-        {
-            AnimateORClock(iMatrix, key);                      //animate matrix of analog ORClock hand
 
-            // Animate all child nodes in the hierarchy too.
-            for (var i = 0; i<Hierarchy.Length; i++)
-                if (Hierarchy[i] == iMatrix)
-                    AnimateMatrix(i, key);
-        }
-
-        void AnimateORClock(int iMatrix, float key)
+        protected override void AnimateOneMatrix(int iMatrix, float key)
         {
             if (SharedShape.Animations == null || SharedShape.Animations.Count == 0)
             {
