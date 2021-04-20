@@ -16,7 +16,7 @@
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
 // Use this define to diagnose issues in the JSON reader below.
-#define DEBUG_JSON_READER
+//#define DEBUG_JSON_READER
 
 using System;
 using System.Collections.Generic;

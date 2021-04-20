@@ -327,7 +327,7 @@ namespace Orts.Viewer3D
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
                 var animated = (worldObject.StaticFlags & (uint)StaticFlag.Animate) != 0;
-                var isAnalogClock = (GetClockType(worldObject.FileName) == "analog");
+                var isAnalogClock = GetClockType(worldObject.FileName) == ClockType.Analog;
                 var global = (worldObject is TrackObj) || (worldObject is HazardObj) || (worldObject.StaticFlags & (uint)StaticFlag.Global) != 0;
 
                 // TransferObj have a FileName but it is not a shape, so we need to avoid sanity-checking it as if it was.
@@ -574,14 +574,14 @@ namespace Orts.Viewer3D
         /// <summary>
         /// Returns type of clock (e.g. "analog") or "not a clock" by checking that the shape filename is in the ClockShapeList
         /// </summary>
-        public string GetClockType(string shapeFilePath)
+        public ClockType? GetClockType(string shapeFilePath)
         {
-            if (String.IsNullOrWhiteSpace(shapeFilePath))
-                return "not a clock";
+            if (string.IsNullOrWhiteSpace(shapeFilePath))
+                return null;
 
             var shapeFileName = Path.GetFileName(shapeFilePath);
             var clockShape = Program.Simulator.ClockShapeList.Where(r => String.CompareOrdinal(Path.GetFileName(r.Name), shapeFileName) == 0).FirstOrDefault();
-            return (clockShape == null) ? "not a clock" : clockShape.ClockType;
+            return clockShape?.ClockType;
         }
 
         [CallOnThread("Loader")]
