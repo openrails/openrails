@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
+using System.Linq;
 using ORTS.Scripting.Api.ETCS;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
@@ -1131,7 +1132,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             float maxDistanceAheadM = 0;
             ETCSStatus.SpeedTargets.Clear();
             ETCSStatus.SpeedTargets.Add(new PlanningTarget(0, CurrentSpeedLimitMpS));
-            for (int i=0; i<5; i++)
+            foreach (int i in Enumerable.Range(0, 5))
             {
                 maxDistanceAheadM = NextSignalDistanceM(i);
                 if (NextSignalAspect(i) == Aspect.Stop || NextSignalAspect(i) == Aspect.None) break;
@@ -1140,7 +1141,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems
             }
             float prevDist = 0;
             float prevSpeed = 0;
-            for (int i=0; i<10; i++)
+            foreach (int i in Enumerable.Range(0, 10))
             {
                 float distanceM = NextPostDistanceM(i);
                 if (distanceM >= maxDistanceAheadM) break;
