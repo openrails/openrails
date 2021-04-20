@@ -25,9 +25,6 @@ using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 {
@@ -132,7 +129,8 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             int totalseconds = (int)timestampS;
             int hour = (totalseconds / 3600) % 24;
             int minute = (totalseconds / 60) % 60;
-            DisplayedTimes[row] = new TextPrimitive(new Point(3, (row + 1) * RowHeight - (int)FontHeightTimestamp), Color.White, (hour < 10 ? "0" : "") + hour.ToString() + ":" + (minute < 10 ? "0" : "") + minute.ToString(), FontTimestamp);
+            var text = $"{(hour < 10 ? "0" : "")}{hour}:{(minute < 10 ? "0" : "")}{minute}";
+            DisplayedTimes[row] = new TextPrimitive(new Point(3, (row + 1) * RowHeight - (int)FontHeightTimestamp), Color.White, text, FontTimestamp);
         }
         void SetTextPrimitive(string text, int row, bool isBold)
         {
@@ -160,7 +158,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         }
         void SetMessages()
         {
-            for (int i = 0; i < MaxTextLines; i++)
+            foreach (int i in Enumerable.Range(0, MaxTextLines))
             {
                 DisplayedTexts[i] = null;
                 DisplayedTimes[i] = null;
@@ -173,7 +171,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                 CurrentPage = 0;
                 SetDatePrimitive(msg.TimestampS, 0);
                 string[] text = GetRowSeparated(msg.Text, false);
-                for (int j = 0; j < text.Length && j < MaxTextLines; j++)
+                foreach (int j in Enumerable.Range(0, Math.Min(text.Length, MaxTextLines)))
                 {
                     SetTextPrimitive(text[j], j, false);
                 }
@@ -185,7 +183,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
             {
                 if (!MessageList[0].Displayed) CurrentPage = 0;
                 int row = 0;
-                for (int i=0; i<MessageList.Count; i++)
+                foreach (int i in Enumerable.Range(0, MessageList.Count))
                 {
                     var msg = MessageList[i];
                     string[] text = GetRowSeparated(msg.Text, msg.FirstGroup);
@@ -194,11 +192,11 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
                         msg.Displayed = true;
                         SetDatePrimitive(msg.TimestampS, row % MaxTextLines);
                     }
-                    for (int j = 0; j < text.Length; j++)
+                    foreach (string c in text)
                     {
                         if (CurrentPage * MaxTextLines <= row && row < (CurrentPage + 1) * MaxTextLines)
                         {
-                            SetTextPrimitive(text[j], row % MaxTextLines, msg.FirstGroup);
+                            SetTextPrimitive(c, row % MaxTextLines, msg.FirstGroup);
                         }
                         row++;
                     }
