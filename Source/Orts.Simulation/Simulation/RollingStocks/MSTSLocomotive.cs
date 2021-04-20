@@ -424,6 +424,7 @@ namespace Orts.Simulation.RollingStocks
         public Axle LocomotiveAxle;
         public IIRFilter CurrentFilter;
         public IIRFilter AdhesionFilter;
+        public float SaveAdhesionFilter;
 
         public float FilteredMotiveForceN;
 
@@ -1110,6 +1111,7 @@ namespace Orts.Simulation.RollingStocks
             outf.Write(ScoopIsBroken);
             outf.Write(IsWaterScoopDown);
             outf.Write(CurrentTrackSandBoxCapacityM3);
+            outf.Write(SaveAdhesionFilter);
 
             base.Save(outf);
 
@@ -1154,13 +1156,15 @@ namespace Orts.Simulation.RollingStocks
             ScoopIsBroken = inf.ReadBoolean();
             IsWaterScoopDown = inf.ReadBoolean();
             CurrentTrackSandBoxCapacityM3 = inf.ReadSingle();
-            
-            AdhesionFilter.Reset(0.5f);
+            SaveAdhesionFilter = inf.ReadSingle();
+
+            AdhesionFilter.Reset(SaveAdhesionFilter);
 
             base.Restore(inf);
 
             TrainControlSystem.Restore(inf);
             LocomotiveAxle = new Axle(inf);
+            MoveParamsToAxle();
         }
 
         public bool IsLeadLocomotive()
@@ -2796,7 +2800,8 @@ namespace Orts.Simulation.RollingStocks
             // Set adhesion conditions for diesel, electric or steam geared locomotives
             if (elapsedClockSeconds > 0)
             {
-                LocomotiveAxle.AdhesionConditions = AdhesionMultiplier * AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
+                SaveAdhesionFilter = AdhesionFilter.Filter(BaseFrictionCoefficientFactor + AdhesionRandom, elapsedClockSeconds);
+                LocomotiveAxle.AdhesionConditions = AdhesionMultiplier * SaveAdhesionFilter;
                 LocomotiveAxle.AdhesionConditions = MathHelper.Clamp(LocomotiveAxle.AdhesionConditions, 0.05f, 2.5f); // Avoids NaNs in axle speed computing
             }
 
