@@ -18,17 +18,13 @@
 using Microsoft.Xna.Framework;
 using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
 using ORTS.Scripting.Api.ETCS;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 {
     public class MenuBar
     {
-        public readonly List<DMIButton> Buttons = new List<DMIButton>();
+        public readonly IList<DMIButton> Buttons = new List<DMIButton>();
         public MenuBar(DriverMachineInterface dmi)
         {
             /* Default menus disabled. Interface with TCS to be defined in the future
