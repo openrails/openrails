@@ -1084,53 +1084,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
                 SetPenaltyApplicationDisplay(IsBrakeEmergency() || IsBrakeFullService());
 
-                // Update monitoring status
-                if (SpeedMpS() > CurrentSpeedLimitMpS)
-                {
-                    if (OverspeedMonitor != null && (OverspeedMonitor.AppliesEmergencyBrake || OverspeedMonitor.AppliesFullBrake))
-                        Status = MonitoringStatus.Intervention;
-                    else
-                        Status = MonitoringStatus.Warning;
-                }
-                else if (NextSpeedLimitMpS < CurrentSpeedLimitMpS && SpeedMpS() > NextSpeedLimitMpS)
-                {
-                    if (Deceleration(SpeedMpS(), NextSpeedLimitMpS, NextSignalDistanceM(0)) > 0.7f)
-                        Status = MonitoringStatus.Overspeed;
-                    else
-                        Status = MonitoringStatus.Indication;
-                }
-                else
-                    Status = MonitoringStatus.Normal;
-                SetMonitoringStatus(Status);
-
-                // Provide basic functionality for ETCS DMI planning area
-                float maxDistanceAheadM = 0;
-                ETCSStatus.SpeedTargets.Clear();
-                ETCSStatus.SpeedTargets.Add(new PlanningTarget(0, CurrentSpeedLimitMpS));
-                for (int i=0; i<5; i++)
-                {
-                    maxDistanceAheadM = NextSignalDistanceM(i);
-                    if (NextSignalAspect(i) == Aspect.Stop || NextSignalAspect(i) == Aspect.None) break;
-                    float speedLimMpS = NextSignalSpeedLimitMpS(i); 
-                    if (speedLimMpS >= 0) ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, speedLimMpS));
-                }
-                float prevDist = 0;
-                float prevSpeed = 0;
-                for (int i=0; i<10; i++)
-                {
-                    float distanceM = NextPostDistanceM(i);
-                    if (distanceM >= maxDistanceAheadM) break;
-                    float speed = NextPostSpeedLimitMpS(i);
-                    if (speed == prevSpeed || distanceM - prevDist < 10) continue;
-                    ETCSStatus.SpeedTargets.Add(new PlanningTarget(distanceM, speed));
-                    prevDist = distanceM;
-                    prevSpeed = speed;
-                }
-                ETCSStatus.SpeedTargets.Sort((x, y) => x.DistanceToTrainM.CompareTo(y.DistanceToTrainM));
-                ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, 0)); 
-                ETCSStatus.GradientProfile.Clear();
-                ETCSStatus.GradientProfile.Add(new GradientProfileElement(0, (int)(CurrentGradientPercent() * 10)));
-                ETCSStatus.GradientProfile.Add(new GradientProfileElement(maxDistanceAheadM, 0)); // End of profile
+                UpdateMonitoringStatus();
+                UpdateETCSPlanning();
             }
         }
 
@@ -1147,6 +1102,59 @@ namespace Orts.Simulation.RollingStocks.SubSystems
 
             SetCurrentSpeedLimitMpS(CurrentSpeedLimitMpS);
             SetNextSpeedLimitMpS(NextSpeedLimitMpS);
+        }
+
+        private void UpdateMonitoringStatus()
+        {
+            if (SpeedMpS() > CurrentSpeedLimitMpS)
+            {
+                if (OverspeedMonitor != null && (OverspeedMonitor.AppliesEmergencyBrake || OverspeedMonitor.AppliesFullBrake))
+                    Status = MonitoringStatus.Intervention;
+                else
+                    Status = MonitoringStatus.Warning;
+            }
+            else if (NextSpeedLimitMpS < CurrentSpeedLimitMpS && SpeedMpS() > NextSpeedLimitMpS)
+            {
+                if (Deceleration(SpeedMpS(), NextSpeedLimitMpS, NextSignalDistanceM(0)) > 0.7f)
+                    Status = MonitoringStatus.Overspeed;
+                else
+                    Status = MonitoringStatus.Indication;
+            }
+            else
+                Status = MonitoringStatus.Normal;
+            SetMonitoringStatus(Status);
+        }
+
+        // Provide basic functionality for ETCS DMI planning area
+        private void UpdateETCSPlanning()
+        {
+            float maxDistanceAheadM = 0;
+            ETCSStatus.SpeedTargets.Clear();
+            ETCSStatus.SpeedTargets.Add(new PlanningTarget(0, CurrentSpeedLimitMpS));
+            for (int i=0; i<5; i++)
+            {
+                maxDistanceAheadM = NextSignalDistanceM(i);
+                if (NextSignalAspect(i) == Aspect.Stop || NextSignalAspect(i) == Aspect.None) break;
+                float speedLimMpS = NextSignalSpeedLimitMpS(i); 
+                if (speedLimMpS >= 0) ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, speedLimMpS));
+            }
+            float prevDist = 0;
+            float prevSpeed = 0;
+            for (int i=0; i<10; i++)
+            {
+                float distanceM = NextPostDistanceM(i);
+                if (distanceM >= maxDistanceAheadM) break;
+                float speed = NextPostSpeedLimitMpS(i);
+                if (speed == prevSpeed || distanceM - prevDist < 10) continue;
+                ETCSStatus.SpeedTargets.Add(new PlanningTarget(distanceM, speed));
+                prevDist = distanceM;
+                prevSpeed = speed;
+            }
+            ETCSStatus.SpeedTargets.Sort((x, y) => x.DistanceToTrainM.CompareTo(y.DistanceToTrainM));
+            ETCSStatus.SpeedTargets.Add(new PlanningTarget(maxDistanceAheadM, 0)); 
+            ETCSStatus.GradientProfile.Clear();
+            ETCSStatus.GradientProfile.Add(new GradientProfileElement(0, (int)(CurrentGradientPercent() * 10)));
+            ETCSStatus.GradientProfile.Add(new GradientProfileElement(maxDistanceAheadM, 0)); // End of profile
         }
 
         public override void HandleEvent(TCSEvent evt, string message)
