@@ -313,6 +313,98 @@ The animation block for the above transfertable is as follows::
 3600 is not a mandatory value, however to have a reasonable transfer speed a number of 
 animation keys equal to 60 - 90 every meter should be selected. 
 
+
+Locomotive and wagon elevators
+------------------------------
+.. index::
+   single: Elevator
+
+The elevator is managed by ORTS as a  vertically moving transfertable. So files needed 
+are the same as used for a transfertable, with content modified where needed.
+
+Info to identify an elevator in a route is stored in file turntables.dat, as it is 
+for turntables and transfertables. The same file can store info for moving tables of 
+different types. Here a turntables.dat file that contains info for an elevator::
+
+  1
+  Transfertable(
+  WFile ( "w-005578+014976.w" )
+  UiD ( 75 )
+  XOffset ( 0 )
+  YOffset ( -0.18 )
+  ZOffset ( 13.405)
+  VerticalTransfer ( 1 )
+  TrackShapeIndex ( 37301 )
+  Animation ( "TRACKPIECE" )
+  Length ( 26.81 )
+  )
+
+What identifies this as an elevator is the presence of the VerticalTransfer parameter 
+with value 1. The other difference to a transfertable is the presence of the YOffset 
+parameter, which is the vertical offset of the zero position of the elevator with respect to 
+the shape file zero.
+
+An example of the animation block in the elevator shape file is shown here below::
+
+	animations ( 1
+		animation ( 1800 30
+			anim_nodes ( 2
+				anim_node BASIN (
+					controllers ( 0 )
+				)
+				anim_node TRACKPIECE (
+					controllers ( 1
+						linear_pos ( 2
+              linear_key (	0	0	-1.92177	0	 )
+              linear_key (	1800	0	6.07823	0	 )
+						)					
+					)
+				)
+			)
+		)
+	)
+
+wich generates a vertical movement with a span of 8 meters which is covered in 60 
+seconds. Of course the 1800 value may be modified to get the desired motion speed.
+
+The elevator must also be defined as a TrackShape in tsection.dat. It is suggested 
+to define it in a route specific ``tsection.dat`` extension file, which, for the 
+sample elevator, is as follows::
+
+
+  
+  include ( "../../../Global/tsection.dat" )
+  _INFO ( Track section and shape addition for transfer table derived from turntable 27m )
+  
+  TrackSections ( 40000
+  
+  _SKIP ( No change here )
+  
+  )
+  
+  
+  TrackShapes ( 40000
+  
+  _INFO(TrackShape for for vertical transfer table derived from turntable 27m)
+   
+  TrackShape ( 37301
+   FileName ( A1t27mVerticalTransfertable.s )
+    NumPaths ( 2 )
+    SectionIdx ( 1 0 -0.18 0.0000 0 338 )
+    SectionIdx ( 1 0 7.82 0.0000 0 338 )
+   )
+  )
+
+To insert the elevator in a route using TSRE5 it must be reminded that the latter 
+doesn't look at the tsection.dat file within the Openrails subfolder. So, for the sole 
+time of the editing of the route, the TrackShape() block must be inserted in the global 
+tsection.dat. After route editing is terminated, the block may be removed.
+Tsection.dat build 38 or higher is required within the main Global folder.
+
+At runtime the elevator is moved with the keys used for transfertables and turntables. 
+Alt-C moves the elevator upwards, while Ctrl-C moves the elevator downwards.
+
+
 .. _features-route-turntable-operation:
 
 Path laying and operation considerations
