@@ -23,17 +23,15 @@ using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Orts.Viewer3D.Popups;
 
 namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
 {
     public class Keyboard
     {
-        public readonly List<DMIButton> Keys = new List<DMIButton>();
+        public readonly IList<DMIButton> Keys = new List<DMIButton>();
         public readonly DMIButton MoreKey;
-        public int CurrentKeyPage;
+        public int CurrentKeyPage { get; private set; }
         public Keyboard(DataEntryField field)
         {
             MoreKey = new DMIIconButton("NA_23.bmp", "NA_23.bmp", "More", false, () =>
@@ -115,7 +113,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
     {
         public NumericKeyboard(DataEntryField field, bool enhanced = false) : base(field)
         {
-            for (int i = 1; i < 10; i++)
+            foreach (int i in Enumerable.Range(1, 10 - 1))
             {
                 string digitname = i.ToString();
                 Keys.Add(new DMITextButton(digitname, digitname, false, () => field.HandleKeyPress(digitname), 102, 50, field.DMI, 16));
@@ -388,7 +386,8 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         }
         public void ScaleChanged()
         {
-            Keyboard.Keys.ForEach(x => x.ScaleChanged());
+            foreach (DMIButton key in Keyboard.Keys)
+                key.ScaleChanged();
             Keyboard.MoreKey.ScaleChanged();
             DataArea.ScaleChanged();
             if (LabelArea != null)
@@ -445,7 +444,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         int NumPages => (Fields.Count - 1) / 4 + 1;
         int CurrentPage => ActiveField/4;
         public int ActiveField;
-        public readonly List<DataEntryField> Fields = new List<DataEntryField>();
+        public readonly IList<DataEntryField> Fields = new List<DataEntryField>();
         DMIButton[] KeyboardButtons = new DMIButton[12];
         DMIButton NextButton;
         DMIButton PrevButton;
@@ -601,7 +600,7 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         {
             base.Draw(spriteBatch, drawPosition);
             if (!FullScreen) return;
-            for (int i = 0; i < Fields.Count; i++)
+            foreach (int i in Enumerable.Range(0, Fields.Count))
             {
                 {
                     var text = Fields[i].LabelEchoText;
@@ -619,9 +618,11 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         }
         public void PrepareLayout()
         {
-            List<DMIArea> areas = new List<DMIArea>();
-            areas.Add(CloseButton);
-            for (int i = 0; i < Fields.Count; i++)
+            List<DMIArea> areas = new List<DMIArea>
+            {
+                CloseButton
+            };
+            foreach (int i in Enumerable.Range(0, Fields.Count))
             {
                 if (i != ActiveField) Fields[i].SetSelected(false);
             }
@@ -738,11 +739,16 @@ namespace Orts.Viewer3D.RollingStock.SubSystems.ETCS
         {
             base.ScaleChanged();
             LabelFont = GetFont(FontHeightLabel);
-            Fields.ForEach(x => x.ScaleChanged());
+            foreach (DataEntryField field in Fields)
+                field.ScaleChanged();
         }
         public void UnlockNavigationButtons()
         {
-            Fields.ForEach(x => { x.DataArea.Enabled = true; x.DataArea.DelayType = false; });
+            foreach (DataEntryField field in Fields)
+            {
+                field.DataArea.Enabled = true;
+                field.DataArea.DelayType = false;
+            }
             if (FullScreen)
             {
                 PrevButton.Enabled = CurrentPage > 0;
