@@ -27,6 +27,7 @@ using ORTS.Common;
 using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
@@ -36,9 +37,9 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public readonly MSTSLocomotive Locomotive;
         public readonly bool GaugeOnly;
         public readonly Viewer Viewer;
-        public List<DMIWindow> Windows = new List<DMIWindow>();
+        public IList<DMIWindow> Windows = new List<DMIWindow>();
         float PrevScale = 1;
-        public ETCSStatus ETCSStatus;
+        public ETCSStatus ETCSStatus { get; private set; }
 
         bool Active;
         public float Scale { get; private set; }
@@ -67,8 +68,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
 
         public Texture2D ColorTexture { get; private set; }
 
-        public bool Blinker2Hz;
-        public bool Blinker4Hz;
+        public bool Blinker2Hz { get; private set; }
+        public bool Blinker4Hz { get; private set; }
         float BlinkerTime;
 
         public float CurrentTime => (float)Viewer.Simulator.ClockTime;
@@ -114,8 +115,12 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
         public Texture2D LoadTexture(string name)
         {
-            if (MipMapScale == 2) return SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "mipmap-2", name));
-            else return SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, System.IO.Path.Combine(Viewer.ContentPath, "ETCS", name));
+            string path;
+            if (MipMapScale == 2)
+                path = System.IO.Path.Combine(Viewer.ContentPath, "ETCS", "mipmap-2", name);
+            else
+                path = System.IO.Path.Combine(Viewer.ContentPath, "ETCS", name);
+            return SharedTextureManager.Get(Viewer.RenderProcess.GraphicsDevice, path);
         }
         public void PrepareFrame(float elapsedSeconds)
         {
@@ -306,7 +311,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             AddToLayout(MessageArea, new Point(54, DMI.IsSoftLayout ? 350 : 365));
             AddToLayout(MessageArea.ButtonScrollUp, new Point(54+234, DMI.IsSoftLayout ? 350 : 365));
             AddToLayout(MessageArea.ButtonScrollDown, new Point(54+234, MessageArea.Height / 2 + (DMI.IsSoftLayout ? 350 : 365)));
-            for (int i=0; i<MenuBar.Buttons.Count; i++)
+            foreach (int i in Enumerable.Range(0, MenuBar.Buttons.Count))
             {
                 AddToLayout(MenuBar.Buttons[i], new Point(580, 15 + 50*i));
             }
@@ -603,7 +608,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
         void SetText()
         {
-            for (int i=0; i<Caption.Length; i++)
+            foreach (int i in Enumerable.Range(0, Caption.Length))
             {
                 int fontWidth = (int)(CaptionFont.MeasureString(Caption[i]) / Scale);
                 CaptionText[i] = new TextPrimitive(new Point((Width - fontWidth) / 2, (Height - FontHeightButton) / 2 + FontHeightButton * (2 * i - Caption.Length + 1)), Color.White, Caption[i], CaptionFont);
@@ -684,7 +689,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         }
         void SetText()
         {
-            for (int i = 0; i < Caption.Length; i++)
+            foreach (int i in Enumerable.Range(0, Caption.Length))
             {
                 int fontWidth = (int)(CaptionFont.MeasureString(Caption[i]) / Scale);
                 CaptionText[i] = new TextPrimitive(new Point((Width - fontWidth) / 2, (Height - FontHeightButton) / 2 + FontHeightButton * (2 * i - Caption.Length + 1)), ColorGrey, Caption[i], CaptionFont);
@@ -823,91 +828,4 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             ControlView.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, Shader);
         }
     }
-    /// <summary>
-    /// Wrapper class for DriverMachineInterface, to display it as UI window control.
-    /// </summary>
-    /*public class DriverMachineInterfaceControl : Control
-    {
-        public readonly DriverMachineInterface DMI;
-
-        public DriverMachineInterfaceControl(int width, int height, WindowManager owner)
-            : base(0, 0, width, height)
-        {
-            DMI = new DriverMachineInterface(width, height, owner.Viewer.PlayerLocomotive as MSTSLocomotive, owner.Viewer);
-            DMI.DisplayBackground = true;
-        }
-
-        /// <summary>
-        /// Resize control to fit into a new rectangle, by keeping aspect ratio.
-        /// </summary>
-        /// <param name="width">The new width of the control</param>
-        /// <param name="height">The new height of the control</param>
-        public void SizeTo(int width, int height)
-        {
-            Position.Width = width;
-            Position.Height = height;
-            DMI.SizeTo(width, height);
-        }
-
-        public void PrepareFrame(float elapsedSeconds)
-        {
-            DMI.PrepareFrame(elapsedSeconds);
-        }
-        public bool IsMouseWithin(WindowMouseEvent e)
-        {
-            int x = (int)((e.MousePosition.X - Position.X - 8) / DMI.Scale);
-            int y = (int)((e.MousePosition.Y - Position.Y) / DMI.Scale);
-            foreach (DMIButton b in DMI.ActiveWindow.SubAreas)
-            {
-                if (b.SensitiveArea.Contains(x, y) && b.Enabled) return true;
-            }
-            return false;
-        }
-        internal override bool HandleUserInput(WindowMouseEvent e)
-        {
-            int x = (int)((e.MousePosition.X - Position.X - 8) / DMI.Scale);
-            int y = (int)((e.MousePosition.Y - Position.Y) / DMI.Scale);
-            DMI.HandleMouseInput(UserInput.IsMouseLeftButtonDown, x, y);
-            return IsMouseWithin(e);
-        }
-        internal override bool HandleMouseDown(WindowMouseEvent e)
-        {
-            return HandleUserInput(e);
-        }
-        internal override bool HandleMouseUp(WindowMouseEvent e)
-        {
-            return HandleUserInput(e);
-        }
-        internal override bool HandleMouseMove(WindowMouseEvent e)
-        {
-            return HandleUserInput(e);
-        }
-        internal override void Draw(SpriteBatch spriteBatch, Point position)
-        {
-            position.X += 8;
-            position.Y += 25;
-            DMI.Draw(spriteBatch, position);
-            spriteBatch.End();
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, null, DepthStencilState.Default, null, null);
-        }
-    }
-    public class DriverMachineInterfaceWindow : Window
-    {
-        DriverMachineInterfaceControl Control;
-        public DriverMachineInterfaceWindow(WindowManager owner)
-            : base(owner, 400, 300, Viewer.Catalog.GetString("ERTMS/ETCS Driver Machine Interface"))
-        {
-        }
-        protected override ControlLayout Layout(ControlLayout layout)
-        {
-            var vbox = base.Layout(layout).AddLayoutVertical();
-            vbox.Add(Control = new DriverMachineInterfaceControl(vbox.RemainingWidth, vbox.RemainingHeight, Owner));
-            return vbox;
-        }
-        public override void PrepareFrame(ElapsedTime elapsedTime, bool updateFull)
-        {
-            base.PrepareFrame(elapsedTime, updateFull);
-            Control?.PrepareFrame(elapsedTime.ClockSeconds);
-        }
-    }*/
 }

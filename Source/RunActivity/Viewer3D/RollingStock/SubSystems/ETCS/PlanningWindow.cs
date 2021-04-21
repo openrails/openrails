@@ -19,6 +19,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Viewer3D.Popups;
@@ -92,8 +93,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         public PlanningWindow(DriverMachineInterface dmi) : base(dmi, 246, 300)
         {
             ButtonScaleUp = new DMIIconButton("NA_03.bmp", "NA_05.bmp", Viewer.Catalog.GetString("Scale Up"), true, ScaleUp, 40, 15, dmi);
-            ButtonScaleDown = new DMIIconButton("NA_04.bmp", "NA_06.bmp", Viewer.Catalog.GetString("Scale Down"), true, ScaleDown, 40, 15, dmi);
-            ButtonScaleDown.ExtendedSensitiveArea = new Rectangle(0, 15, 0, 0);
+            ButtonScaleDown = new DMIIconButton("NA_04.bmp", "NA_06.bmp", Viewer.Catalog.GetString("Scale Down"), true, ScaleDown, 40, 15, dmi)
+            {
+                ExtendedSensitiveArea = new Rectangle(0, 15, 0, 0)
+            };
             ButtonScaleUp.ExtendedSensitiveArea = new Rectangle(0, 0, 0, 15);
             ButtonScaleUp.ShowButtonBorder = false;
             ButtonScaleDown.ShowButtonBorder = false;
@@ -134,7 +137,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
 
             // Distance lines
-            for (int i = 0; i < 9; i++)
+            foreach (int i in Enumerable.Range(0, 9))
             {
                 if (i == 0 || i == 5 || i == 8) DrawIntRectangle(spriteBatch, position, 40, LinePositions[i], 200, 2, ColorMediumGrey);
                 else DrawIntRectangle(spriteBatch, position, 40, LinePositions[i], 200, 1, ColorDarkGrey);
@@ -190,7 +193,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             var gradientText = new List<TextPrimitive>();
             var gradientRectangles = new Dictionary<Point, bool>();
-            for (int i = 0; i + 1 < GradientProfile.Count; i++)
+            foreach (int i in Enumerable.Range(0, GradientProfile.Count - 1))
             {
                 GradientProfileElement e = GradientProfile[i];
                 if (e.DistanceToTrainM > MaxViewingDistanceM) break;
@@ -231,7 +234,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             bool oth2 = false;
             float widthFactor = 1;
             float allowedSpeedMpS = prev_pasp.TargetSpeedMpS;
-            for (int i = 1; i < SpeedTargets.Count; i++)
+            foreach (int i in Enumerable.Range(1, SpeedTargets.Count - 1))
             {
                 PlanningTarget cur = SpeedTargets[i];
                 PlanningTarget prev = SpeedTargets[i - 1];
@@ -277,10 +280,10 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             var speedTargetText = new List<TextPrimitive>(speedTargets.Count);
             var speedTargetTextures = new List<LocatedTexture>(speedTargets.Count);
             int ld = 0;
-            for (int i = 1; i < speedTargets.Count; i++)
+            foreach (int i in Enumerable.Range(1, speedTargets.Count - 1))
             {
                 bool overlap = false;
-                for (int j = 1; j < speedTargets.Count; j++)
+                foreach (int j in Enumerable.Range(1, speedTargets.Count - 1))
                 {
                     if (i != j && CheckTargetOverlap(speedTargets[i], speedTargets[j]))
                     {
@@ -317,7 +320,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         {
             var trackConditionTextures = new List<LocatedTexture>(trackConditions.Count);
             int[] prevObject = { LinePositions[0] + 10, LinePositions[0] + 10, LinePositions[0] + 10 };
-            for (int i = 0; i < trackConditions.Count; i++)
+            foreach (int i in Enumerable.Range(0, trackConditions.Count))
             {
                 PlanningTrackCondition condition = trackConditions[i];
                 int posy = GetPlanningHeight(condition.DistanceToTrainM) - 35;
@@ -471,7 +474,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
         void SetDistanceText()
         {
             var distanceScaleText = new List<TextPrimitive>(DistanceScaleText.Count);
-            for (int i = 0; i < 9; i++)
+            foreach (int i in Enumerable.Range(0, 9))
             {
                 if (i == 0 || i > 4)
                 {

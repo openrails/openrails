@@ -25,6 +25,7 @@ using ORTS.Common;
 using ORTS.Scripting.Api.ETCS;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static Orts.Viewer3D.RollingStock.Subsystems.ETCS.DriverMachineInterface;
 
 namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
@@ -104,7 +105,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             SetRange(MaxSpeed);
 
             CurrentSpeed = new TextPrimitive[3];
-            for (var i = 0; i < CurrentSpeed.Length; i++)
+            foreach (int i in Enumerable.Range(0, CurrentSpeed.Length))
                 CurrentSpeed[i] = new TextPrimitive(new Point(CurrentSpeedPosition[i], CurrentSpeedPosition[3]), Color.Black, "0", FontCurrentSpeed);
 
             ReleaseSpeed = new TextPrimitive(ReleaseSpeedPosition, ColorGrey, String.Empty, FontReleaseSpeed);
@@ -114,8 +115,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 NeedleTextureData = new Color[128 * 16];
 
                 // Needle texture is according to ETCS specification
-                for (var v = 0; v < 128; v++)
-                    for (var u = 0; u < 16; u++)
+                foreach (int v in Enumerable.Range(0, 128))
+                    foreach (int u in Enumerable.Range(0, 16))
                         NeedleTextureData[u + 16 * v] = (
                             v <= 15 && 5 < u && u < 9
                             || 15 < v && v <= 23 && 5f - (float)(v - 15) / 8f * 3f < u && u < 9f + (float)(v - 15) / 8f * 3f
@@ -290,42 +291,56 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             if (currentSpeed > permittedSpeed && currentSpeed > interventionSpeed)
                 interventionSpeed = Math.Max(currentSpeed - 1, releaseSpeed);
 
-            if (status.CurrentMode == Mode.SB || status.CurrentMode == Mode.NL || status.CurrentMode == Mode.PT)
+            switch (status.CurrentMode)
             {
-                NeedleColor = ColorGrey;
-            }
-            else if (status.CurrentMode == Mode.TR)
-            {
-                NeedleColor = ColorRed;
-            }
-            else if (status.CurrentMode == Mode.SH || status.CurrentMode == Mode.RV)
-            {
-                if (currentSpeed <= permittedSpeed) NeedleColor = ColorGrey;
-                else NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
-            }
-            else if (status.CurrentMode == Mode.SR || status.CurrentMode == Mode.UN)
-            {
-                if (currentSpeed > permittedSpeed) NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
-                else if (status.CurrentMonitor == Monitor.TargetSpeed) NeedleColor = currentSpeed < targetSpeed ? ColorGrey : ColorYellow;
-                else if (targetSpeed < permittedSpeed && currentSpeed >= targetSpeed) NeedleColor = Color.White;
-                else NeedleColor = ColorGrey;
-            }
-            else if (status.CurrentMode == Mode.LS)
-            {
-                if (currentSpeed > permittedSpeed) NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
-                else if (status.CurrentMonitor == Monitor.ReleaseSpeed) NeedleColor = ColorYellow;
-                else NeedleColor = ColorGrey;
-            }
-            else if (status.CurrentMode == Mode.FS || status.CurrentMode == Mode.OS)
-            {
-                if (currentSpeed > permittedSpeed) NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
-                else if (status.CurrentMonitor == Monitor.TargetSpeed || status.CurrentMonitor == Monitor.ReleaseSpeed) NeedleColor = currentSpeed < targetSpeed ? ColorGrey : ColorYellow;
-                else if (targetSpeed < permittedSpeed && currentSpeed >= targetSpeed) NeedleColor = Color.White;
-                else NeedleColor = ColorGrey;
-            }
-            else if (status.CurrentMode == Mode.SN)
-            {
-                // TODO: Allow direct management of colors from STM
+                case Mode.SB:
+                case Mode.NL:
+                case Mode.PT:
+                    NeedleColor = ColorGrey;
+                    break;
+                case Mode.TR:
+                    NeedleColor = ColorRed;
+                    break;
+                case Mode.SH:
+                case Mode.RV:
+                    if (currentSpeed <= permittedSpeed)
+                        NeedleColor = ColorGrey;
+                    else
+                        NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+                    break;
+                case Mode.SR:
+                case Mode.UN:
+                    if (currentSpeed > permittedSpeed)
+                        NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+                    else if (status.CurrentMonitor == Monitor.TargetSpeed)
+                        NeedleColor = currentSpeed < targetSpeed ? ColorGrey : ColorYellow;
+                    else if (targetSpeed < permittedSpeed && currentSpeed >= targetSpeed)
+                        NeedleColor = Color.White;
+                    else
+                        NeedleColor = ColorGrey;
+                    break;
+                case Mode.LS:
+                    if (currentSpeed > permittedSpeed)
+                        NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+                    else if (status.CurrentMonitor == Monitor.ReleaseSpeed)
+                        NeedleColor = ColorYellow;
+                    else
+                        NeedleColor = ColorGrey;
+                    break;
+                case Mode.FS:
+                case Mode.OS:
+                    if (currentSpeed > permittedSpeed)
+                        NeedleColor = status.CurrentSupervisionStatus == SupervisionStatus.Intervention ? ColorRed : ColorOrange;
+                    else if (status.CurrentMonitor == Monitor.TargetSpeed || status.CurrentMonitor == Monitor.ReleaseSpeed)
+                        NeedleColor = currentSpeed < targetSpeed ? ColorGrey : ColorYellow;
+                    else if (targetSpeed < permittedSpeed && currentSpeed >= targetSpeed)
+                        NeedleColor = Color.White;
+                    else
+                        NeedleColor = ColorGrey;
+                    break;
+                case Mode.SN:
+                    // TODO: Allow direct management of colors from STM
+                    break;
             }
             SpeedColor = NeedleColor == ColorRed ? Color.White : Color.Black;
             if (status.CurrentMode == Mode.FS)
@@ -462,7 +477,7 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
             }
             if (tti.HasValue)
             {
-                for (int n = 1; n <= 10; n++)
+                foreach (int n in Enumerable.Range(1, 10))
                 {
                     if (T_dispTTI * (10 - n) / 10f <= tti && tti < T_dispTTI * (10 - (n - 1)) / 10f)
                     {
@@ -504,10 +519,8 @@ namespace Orts.Viewer3D.RollingStock.Subsystems.ETCS
                 DrawRectangle(spriteBatch, position, DistanceBar.X, DistanceBar.Y + 30, DistanceBar.Z, DistanceBar.W, ColorGrey);
 
                 // Distance speed lines
-                for (int i = 0; i < 11; i++)
-                {
+                foreach (int i in Enumerable.Range(0, 11))
                     DrawIntRectangle(spriteBatch, position, DistanceLinePositionsX[i], DistanceLinePositionsY[i] + 30, 25 - DistanceLinePositionsX[i], (int)Math.Max(1, 1 / Scale), ColorGrey);
-                }
             }
             if (DisplayDistanceText)
             {

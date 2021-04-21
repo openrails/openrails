@@ -1359,8 +1359,7 @@ namespace Orts.Viewer3D
                 {
                     foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
                     {
-                        ICabViewMouseControlRenderer mouseRenderer = controlRenderer as ICabViewMouseControlRenderer;
-                        if (mouseRenderer != null && mouseRenderer.IsMouseWithin())
+                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
                             MouseChangingControl = mouseRenderer;
                             break;
@@ -1388,8 +1387,7 @@ namespace Orts.Viewer3D
                 {
                     foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
                     {
-                        ICabViewMouseControlRenderer mouseRenderer = controlRenderer as ICabViewMouseControlRenderer;
-                        if (mouseRenderer != null && mouseRenderer.IsMouseWithin())
+                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
                             MousePickedControl = mouseRenderer;
                             break;
