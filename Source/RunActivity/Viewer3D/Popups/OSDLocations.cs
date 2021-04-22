@@ -21,6 +21,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Orts.Simulation;
 using ORTS.Common;
+using ORTS.Settings;
 using System.Collections.Generic;
 
 namespace Orts.Viewer3D.Popups
@@ -40,12 +41,13 @@ namespace Orts.Viewer3D.Popups
             All = 0x3,
             Auto = 0x7,
         }
+        private readonly SavingProperty<int> StateProperty;
         private DisplayState State
         {
-            get => (DisplayState)Owner.Viewer.Settings.OSDLocationsState;
+            get => (DisplayState)StateProperty.Value;
             set
             {
-                Owner.Viewer.Settings.OSDLocationsState = (int)value;
+                StateProperty.Value = (int)value;
             }
         }
 
@@ -61,8 +63,8 @@ namespace Orts.Viewer3D.Popups
         public OSDLocations(WindowManager owner)
             : base(owner, 0, 0, "OSD Locations")
         {
+            StateProperty = owner.Viewer.Settings.GetSavingProperty<int>("OSDLocationsState");
             UpdateLabelLists();
-            if (Platforms.Count + Sidings.Count == 0) State = DisplayState.All;
         }
 
         void UpdateLabelLists()

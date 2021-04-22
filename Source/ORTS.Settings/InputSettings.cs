@@ -110,10 +110,10 @@ namespace ORTS.Settings
             Commands[(int)GetCommand(name)].PersistentDescriptor = (string)value;
         }
 
-        protected override void Load(bool allowUserSettings, Dictionary<string, string> optionsDictionary)
+        protected override void Load(Dictionary<string, string> optionsDictionary)
         {
             foreach (var command in GetCommands())
-                Load(allowUserSettings, optionsDictionary, command.ToString(), typeof(string));
+                Load(optionsDictionary, command.ToString(), typeof(string));
         }
 
         public override void Save()
