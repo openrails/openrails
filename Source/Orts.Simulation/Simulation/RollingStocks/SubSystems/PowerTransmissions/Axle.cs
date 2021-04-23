@@ -79,6 +79,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         protected float totalForceN;
 
+        protected float restoredelapsedClockSeconds;
+        protected float saveelapsedClockSeconds;
+
         /// <summary>
         /// Damping force covered by DampingForceN interface
         /// </summary>
@@ -636,6 +639,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             axleSpeedMpS = inf.ReadSingle();
             adhesionK = inf.ReadSingle();
             AdhesionConditions = inf.ReadSingle();
+            dampingNs = inf.ReadSingle();
+            frictionN = inf.ReadSingle();
+            slipDerivationMpSS = inf.ReadSingle();
+            restoredelapsedClockSeconds = inf.ReadSingle();
+            brakeRetardForceN = inf.ReadSingle();
         }
 
         /// <summary>
@@ -653,6 +661,11 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(axleSpeedMpS);
             outf.Write(adhesionK);
             outf.Write(AdhesionConditions);
+            outf.Write(frictionN);
+            outf.Write(dampingNs);
+            outf.Write(slipDerivationMpSS);
+            outf.Write(saveelapsedClockSeconds);
+            outf.Write(brakeRetardForceN);
         }
 
         /// <summary>
@@ -664,10 +677,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
         public virtual void Update(float timeSpan)
         {
-         //   Trace.TraceInformation("Axle Force#1 - {0} AdhesionK {1} AxleSpeed {2} TrainSpeed {3} Conditions {4} Adhesion2 {5} Curtius_C {6}", axleForceN, adhesionK, AxleSpeedMpS, TrainSpeedMpS, AdhesionConditions, Adhesion2, curtiusKnifflerC);
+        //    Trace.TraceInformation("Axle Force#1 - {0} AdhesionK {1} AxleSpeed {2} TrainSpeed {3} Conditions {4} Adhesion2 {5} Curtius_C {6}", axleForceN, adhesionK, AxleSpeedMpS, TrainSpeedMpS, AdhesionConditions, Adhesion2, curtiusKnifflerC);
             //Update axle force ( = k * loadTorqueNm)
             axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
-           // Trace.TraceInformation("Axle Force#2 - {0}", axleForceN);
+        //  Trace.TraceInformation("Axle Force#2 - {0}", axleForceN);
 
             switch (driveType)
             {
@@ -697,6 +710,29 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     //Axle revolutions integration
                     if (TrainSpeedMpS > 0.01f)
                     {
+
+                        var integratorvalue = (driveForceN * transmissionEfficiency
+                                - brakeRetardForceN
+                                - slipDerivationMpSS * dampingNs
+                                - Math.Abs(SlipSpeedMpS) * frictionN
+                                - AxleForceN
+                            )
+                            / totalInertiaKgm2;
+
+                        //     Trace.TraceInformation("Axlespeed#1 - {0} timespan {1} value {2} damping {3} SlipSpeed {4} DriveForce {5} AxleForce {6} Friction {7} restoredclock {8}", axleSpeedMpS, timeSpan, integratorvalue, dampingNs, SlipSpeedMpS, driveForceN, AxleForceN, frictionN, restoredelapsedClockSeconds);
+
+                        // This section of code restores the timespan value based upon the saved value when a resume is undertaken. 
+                        // Having a zero value of timespan on resumption prevents the integration code from producing a suitable calculated value (results in zero output)
+                        if (restoredelapsedClockSeconds != 0 && timeSpan == 0)
+                        {
+                            timeSpan = restoredelapsedClockSeconds;
+                        }
+                        else if (timeSpan != 0)
+                        {
+                            restoredelapsedClockSeconds = 0;
+                        }
+                        saveelapsedClockSeconds = timeSpan; // save elapsed clock seconds for future potential resumption
+
                         axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                             (
                                 driveForceN * transmissionEfficiency
@@ -707,6 +743,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             )
                             / totalInertiaKgm2
                         );
+                  //      Trace.TraceInformation("Axlespeed#2 - {0} timespan {1}", axleSpeedMpS, timeSpan);
 
                         if (brakeRetardForceN > driveForceN && AxleSpeedMpS < 0.1f)
                         {
