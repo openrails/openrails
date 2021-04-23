@@ -1139,7 +1139,7 @@ namespace Orts.Simulation.RollingStocks
             VacuumExhausterIsOn = inf.ReadBoolean();
             TrainBrakePipeLeakPSIorInHgpS = inf.ReadSingle();
             AverageForceN = inf.ReadSingle();
-            LocomotiveAxle.Reset(Simulator.GameTime, inf.ReadSingle());
+            float axleSpeedMpS = inf.ReadSingle();
             CabLightOn = inf.ReadBoolean();
             UsingRearCab = inf.ReadBoolean();
             CalculatedCarHeaterSteamUsageLBpS = inf.ReadSingle();
@@ -1165,6 +1165,8 @@ namespace Orts.Simulation.RollingStocks
             TrainControlSystem.Restore(inf);
             LocomotiveAxle = new Axle(inf);
             MoveParamsToAxle();
+            LocomotiveAxle.FilterMovingAverage.Initialize(AverageForceN);
+            LocomotiveAxle.Reset(Simulator.GameTime, axleSpeedMpS);
         }
 
         public bool IsLeadLocomotive()
