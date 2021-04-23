@@ -79,9 +79,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// </summary>
         protected float totalForceN;
 
-        protected float restoredelapsedClockSeconds;
-        protected float saveelapsedClockSeconds;
-
         /// <summary>
         /// Damping force covered by DampingForceN interface
         /// </summary>
@@ -275,54 +272,9 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// - Set 0.7 for wet, rainy weather
         /// </summary>
         public float AdhesionConditions { set; get; }
-
-        /// <summary>
-        /// Curtius-Kniffler equation A parameter
-        /// </summary>
-        float curtiusKnifflerA;
-        public float CurtiusKnifflerA
-        {
-            set
-            {
-                curtiusKnifflerA = value;
-            }
-            get
-            {
-                return curtiusKnifflerA;
-            }
-        }
-
-        /// <summary>
-        /// Curtius-Kniffler equation B parameter
-        /// </summary>
-        float curtiusKnifflerB;
-        public float CurtiusKnifflerB
-        {
-            set
-            {
-                curtiusKnifflerB = value;
-            }
-            get
-            {
-                return curtiusKnifflerB;
-            }
-        }
-
-        /// <summary>
-        /// Curtius-Kniffler equation C parameter
-        /// </summary>
-        float curtiusKnifflerC;
-        public float CurtiusKnifflerC
-        {
-            set
-            {
-                curtiusKnifflerC = value;
-            }
-            get
-            {
-                return curtiusKnifflerC;
-            }
-        }
+        public float CurtiusKnifflerA { set; get; }
+        public float CurtiusKnifflerB { set; get; }
+        public float CurtiusKnifflerC { set; get; }
 
         /// <summary>
         /// Read/Write correction parameter of adhesion, it has proportional impact on adhesion limit
@@ -431,11 +383,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 float c = A*C;
                 return ((-b - (float)Math.Sqrt(b * b - 4.0f * a * c)) / (2.0f * a));
             }
-
-            set
-            {
-                var restorewheelslipthreshold = value;
-            }
         }
 
         /// <summary>
@@ -483,11 +430,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                 {
                     return (axleSpeedMpS - TrainSpeedMpS);
                 }
-            }
-
-            set
-            {
-                var restorewheelspeed = value;
             }
         }
 
@@ -632,18 +574,13 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             previousSlipPercent = inf.ReadSingle();
             previousSlipSpeedMpS = inf.ReadSingle();
-            SlipSpeedMpS = inf.ReadSingle();
-            WheelSlipThresholdMpS = inf.ReadSingle();
             axleForceN = inf.ReadSingle();
             driveForceN = inf.ReadSingle();
             axleSpeedMpS = inf.ReadSingle();
             adhesionK = inf.ReadSingle();
             AdhesionConditions = inf.ReadSingle();
-            dampingNs = inf.ReadSingle();
             frictionN = inf.ReadSingle();
-            slipDerivationMpSS = inf.ReadSingle();
-            restoredelapsedClockSeconds = inf.ReadSingle();
-            brakeRetardForceN = inf.ReadSingle();
+            dampingNs = inf.ReadSingle();
         }
 
         /// <summary>
@@ -654,8 +591,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         {
             outf.Write(previousSlipPercent);
             outf.Write(previousSlipSpeedMpS);
-            outf.Write(SlipSpeedMpS);
-            outf.Write(WheelSlipThresholdMpS);
             outf.Write(axleForceN);
             outf.Write(driveForceN);
             outf.Write(axleSpeedMpS);
@@ -663,9 +598,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(AdhesionConditions);
             outf.Write(frictionN);
             outf.Write(dampingNs);
-            outf.Write(slipDerivationMpSS);
-            outf.Write(saveelapsedClockSeconds);
-            outf.Write(brakeRetardForceN);
         }
 
         /// <summary>
@@ -719,20 +651,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             )
                             / totalInertiaKgm2;
 
-                        //     Trace.TraceInformation("Axlespeed#1 - {0} timespan {1} value {2} damping {3} SlipSpeed {4} DriveForce {5} AxleForce {6} Friction {7} restoredclock {8}", axleSpeedMpS, timeSpan, integratorvalue, dampingNs, SlipSpeedMpS, driveForceN, AxleForceN, frictionN, restoredelapsedClockSeconds);
-
-                        // This section of code restores the timespan value based upon the saved value when a resume is undertaken. 
-                        // Having a zero value of timespan on resumption prevents the integration code from producing a suitable calculated value (results in zero output)
-                        if (restoredelapsedClockSeconds != 0 && timeSpan == 0)
-                        {
-                            timeSpan = restoredelapsedClockSeconds;
-                        }
-                        else if (timeSpan != 0)
-                        {
-                            restoredelapsedClockSeconds = 0;
-                        }
-                        saveelapsedClockSeconds = timeSpan; // save elapsed clock seconds for future potential resumption
-
                         axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                             (
                                 driveForceN * transmissionEfficiency
@@ -743,7 +661,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                             )
                             / totalInertiaKgm2
                         );
-                  //      Trace.TraceInformation("Axlespeed#2 - {0} timespan {1}", axleSpeedMpS, timeSpan);
 
                         if (brakeRetardForceN > driveForceN && AxleSpeedMpS < 0.1f)
                         {
@@ -861,7 +778,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         public float SlipCharacteristics(float slipSpeed, float speed, float K, float conditions, float Adhesion2)
         {
             speed = Math.Abs(3.6f*speed);
-            float umax = (curtiusKnifflerA / (speed + curtiusKnifflerB) + curtiusKnifflerC);// *Adhesion2 / 0.331455f; // Curtius - Kniffler equation
+            float umax = (CurtiusKnifflerA / (speed + CurtiusKnifflerB) + CurtiusKnifflerC);// *Adhesion2 / 0.331455f; // Curtius - Kniffler equation
             umax *= conditions;
             if (K == 0.0)
                 K = 1;
