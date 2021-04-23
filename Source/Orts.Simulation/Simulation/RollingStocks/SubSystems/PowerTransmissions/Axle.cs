@@ -272,8 +272,20 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// - Set 0.7 for wet, rainy weather
         /// </summary>
         public float AdhesionConditions { set; get; }
+
+        /// <summary>
+        /// Curtius-Kniffler equation A parameter
+        /// </summary>
         public float CurtiusKnifflerA { set; get; }
+
+        /// <summary>
+        /// Curtius-Kniffler equation B parameter
+        /// </summary>
         public float CurtiusKnifflerB { set; get; }
+
+        /// <summary>
+        /// Curtius-Kniffler equation C parameter
+        /// </summary>
         public float CurtiusKnifflerC { set; get; }
 
         /// <summary>
@@ -575,8 +587,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             previousSlipPercent = inf.ReadSingle();
             previousSlipSpeedMpS = inf.ReadSingle();
             axleForceN = inf.ReadSingle();
-            driveForceN = inf.ReadSingle();
-            axleSpeedMpS = inf.ReadSingle();
             adhesionK = inf.ReadSingle();
             AdhesionConditions = inf.ReadSingle();
             frictionN = inf.ReadSingle();
@@ -592,8 +602,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
             outf.Write(previousSlipPercent);
             outf.Write(previousSlipSpeedMpS);
             outf.Write(axleForceN);
-            outf.Write(driveForceN);
-            outf.Write(axleSpeedMpS);
             outf.Write(adhesionK);
             outf.Write(AdhesionConditions);
             outf.Write(frictionN);
@@ -609,10 +617,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
         /// <param name="timeSpan"></param>
         public virtual void Update(float timeSpan)
         {
-        //    Trace.TraceInformation("Axle Force#1 - {0} AdhesionK {1} AxleSpeed {2} TrainSpeed {3} Conditions {4} Adhesion2 {5} Curtius_C {6}", axleForceN, adhesionK, AxleSpeedMpS, TrainSpeedMpS, AdhesionConditions, Adhesion2, curtiusKnifflerC);
             //Update axle force ( = k * loadTorqueNm)
             axleForceN = AxleWeightN * SlipCharacteristics(AxleSpeedMpS - TrainSpeedMpS, TrainSpeedMpS, AdhesionK, AdhesionConditions, Adhesion2);
-        //  Trace.TraceInformation("Axle Force#2 - {0}", axleForceN);
 
             switch (driveType)
             {
@@ -642,15 +648,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerTransmissions
                     //Axle revolutions integration
                     if (TrainSpeedMpS > 0.01f)
                     {
-
-                        var integratorvalue = (driveForceN * transmissionEfficiency
-                                - brakeRetardForceN
-                                - slipDerivationMpSS * dampingNs
-                                - Math.Abs(SlipSpeedMpS) * frictionN
-                                - AxleForceN
-                            )
-                            / totalInertiaKgm2;
-
                         axleSpeedMpS = AxleRevolutionsInt.Integrate(timeSpan,
                             (
                                 driveForceN * transmissionEfficiency
