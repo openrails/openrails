@@ -32,6 +32,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -1166,7 +1167,7 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             CabViewDigitalRenderer cvdr;
                             if (viewer.Settings.CircularSpeedGauge && digital.ControlStyle == CABViewControlStyles.NEEDLE)
-                                cvdr = new CabViewCircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
+                                cvdr = new CircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
                             else
                                 cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
                             cvdr.SortIndex = controlSortIndex;
@@ -1174,6 +1175,19 @@ namespace Orts.Viewer3D.RollingStock
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
                             count[(int)cvc.ControlType]++;
                             continue;
+                        }
+                        CVCScreen screen = cvc as CVCScreen;
+                        if (screen != null)
+                        {
+                            if (screen.ControlType == CABViewControlTypes.ORTS_ETCS)
+                            {
+                                var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                                cvr.SortIndex = controlSortIndex;
+                                CabViewControlRenderersList[i].Add(cvr);
+                                if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                                count[(int)cvc.ControlType]++;
+                                continue;
+                            }
                         }
                     }
                 }
@@ -1265,7 +1279,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     CabViewDigitalRenderer cvdr;
                     if (viewer.Settings.CircularSpeedGauge && digital.ControlStyle == CABViewControlStyles.NEEDLE)
-                        cvdr = new CabViewCircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
+                        cvdr = new CircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
                     else
                         cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
                     cvdr.SortIndex = controlSortIndex;
@@ -1273,6 +1287,19 @@ namespace Orts.Viewer3D.RollingStock
                     if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
                     count[(int)cvc.ControlType]++;
                     continue;
+                }
+                CVCScreen screen = cvc as CVCScreen;
+                if (screen != null)
+                {
+                    if (screen.ControlType == CABViewControlTypes.ORTS_ETCS)
+                    {
+                        var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                        cvr.SortIndex = controlSortIndex;
+                        CabViewControlRenderersList[i].Add(cvr);
+                        if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                        count[(int)cvc.ControlType]++;
+                        continue;
+                    }
                 }
             }
             #endregion
@@ -1443,6 +1470,17 @@ namespace Orts.Viewer3D.RollingStock
         {
             Viewer.TextureManager.Mark(Texture);
         }
+    }
+
+    /// <summary>
+    /// Interface for mouse controllable CabViewControls
+    /// </summary>
+    public interface ICabViewMouseControlRenderer
+    {
+        bool IsMouseWithin();
+        void HandleUserInput();
+        string GetControlName();
+
     }
 
     /// <summary>
@@ -1733,7 +1771,7 @@ namespace Orts.Viewer3D.RollingStock
     /// <summary>
     /// Discrete renderer for Lever, Twostate, Tristate, Multistate, Signal
     /// </summary>
-    public class CabViewDiscreteRenderer : CabViewControlRenderer
+    public class CabViewDiscreteRenderer : CabViewControlRenderer, ICabViewMouseControlRenderer
     {
         readonly CVCWithFrames ControlDiscrete;
         readonly Rectangle SourceRectangle;
@@ -2026,6 +2064,11 @@ namespace Orts.Viewer3D.RollingStock
         public bool IsMouseWithin()
         {
             return ControlDiscrete.MouseControl & DestinationRectangle.Contains(UserInput.MouseX, UserInput.MouseY);
+        }
+
+        public string GetControlName()
+        {
+            return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(GetControlType().ToString());
         }
 
         /// <summary>

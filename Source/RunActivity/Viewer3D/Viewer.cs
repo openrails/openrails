@@ -172,9 +172,9 @@ namespace Orts.Viewer3D
         public Cursor ActualCursor = Cursors.Default;
         public static Viewport DefaultViewport;
 
-        CabViewDiscreteRenderer MouseChangingControl;
-        CabViewDiscreteRenderer MousePickedControl;
-        CabViewDiscreteRenderer OldMousePickedControl;
+        ICabViewMouseControlRenderer MouseChangingControl;
+        ICabViewMouseControlRenderer MousePickedControl;
+        ICabViewMouseControlRenderer OldMousePickedControl;
 
         public bool SaveScreenshot { get; set; }
         public bool SaveActivityThumbnail { get; private set; }
@@ -1359,10 +1359,9 @@ namespace Orts.Viewer3D
                 {
                     foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
                     {
-                        CabViewDiscreteRenderer discreteRenderer = controlRenderer as CabViewDiscreteRenderer;
-                        if (discreteRenderer != null && discreteRenderer.IsMouseWithin())
+                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
-                            MouseChangingControl = discreteRenderer;
+                            MouseChangingControl = mouseRenderer;
                             break;
                         }
                     }
@@ -1388,18 +1387,16 @@ namespace Orts.Viewer3D
                 {
                     foreach (var controlRenderer in (PlayerLocomotiveViewer as MSTSLocomotiveViewer)._CabRenderer.ControlMap.Values)
                     {
-                        CabViewDiscreteRenderer discreteRenderer = controlRenderer as CabViewDiscreteRenderer;
-                        if (discreteRenderer != null && discreteRenderer.IsMouseWithin())
+                        if (controlRenderer is ICabViewMouseControlRenderer mouseRenderer && mouseRenderer.IsMouseWithin())
                         {
-                            MousePickedControl = discreteRenderer;
+                            MousePickedControl = mouseRenderer;
                             break;
                         }
                     }
                     if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
                     {
                         // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None,
-                            (PlayerLocomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(MousePickedControl.GetControlType().ToString()));
+                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlName());
                     }
                     if (MousePickedControl != null) ActualCursor = Cursors.Hand;
                     else if (ActualCursor == Cursors.Hand) ActualCursor = Cursors.Default;
@@ -1522,8 +1519,7 @@ namespace Orts.Viewer3D
                     if (MousePickedControl != null & MousePickedControl != OldMousePickedControl)
                     {
                         // say what control you have here
-                        Simulator.Confirmer.Message(ConfirmLevel.None,
-                            (PlayerLocomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(MousePickedControl.GetControlType().ToString()));
+                        Simulator.Confirmer.Message(ConfirmLevel.None, MousePickedControl.GetControlName());
                     }
                     if (MousePickedControl != null)
                     {

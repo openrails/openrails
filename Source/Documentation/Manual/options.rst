@@ -695,6 +695,18 @@ system ETCS.
             Units ( KM_PER_HOUR )
         )
 
+It is also possible to display the full ETCS display using the following block
+instead::
+
+		ScreenDisplay (
+			Type ( ORTS_ETCS SCREEN_DISPLAY )
+			Position ( 280 272 320 240 )
+			Units ( KM_PER_HOUR )
+		)
+
+The information displayed in the DMI is controlled via the TCS script. For more details,
+see :ref:`C# engine scripting - Train Control System <features-scripting-tcs>`.
+
 Load day/night textures only when needed
 ----------------------------------------
 

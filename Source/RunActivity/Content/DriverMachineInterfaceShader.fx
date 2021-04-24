@@ -27,6 +27,7 @@ float4   LimitAngle;   // radian, x: target speed (colored start), y: permitted 
 
 float4   LimitColor;   // dark grey, white or yellow
 float4   PointerColor; // medium grey, white, yellow or red
+float4	 InterventionColor; // yellow or red
 
 texture  ImageTexture;
 
@@ -56,10 +57,10 @@ sampler ImageSampler = sampler_state
 
 struct PIXEL_INPUT
 {
-	//float2 Position  : VPOS;
-	float2 TexCoords : TEXCOORD0;
-	float4 Color     : COLOR0;
-	float3 Normal    : NORMAL;
+    float4 Position  : SV_POSITION;
+    float4 Color     : COLOR0;
+    float2 TexCoords : TEXCOORD0;
+    float3 Normal    : NORMAL;
 };
 
 ////////////////////    V E R T E X   S H A D E R S    /////////////////////////
@@ -76,12 +77,12 @@ float4 PSCircularSpeedGauge(PIXEL_INPUT In) : COLOR0
 
 	if (radius < radiusNeedleCenter)
 		returnColor = PointerColor;
-    else if (radius > radiusOutside)
+	else if (radius > radiusOutside)
 		returnColor = origColor;
 	else if (radius < radiusLimitPointer)
 		returnColor = origColor;
 	else
-    {
+	{
 		float angle = atan(-dist.x / dist.y);
 		if (dist.y < 0)
 		{
@@ -97,9 +98,19 @@ float4 PSCircularSpeedGauge(PIXEL_INPUT In) : COLOR0
 		{
 			returnColor = origColor;
 		}
+        else if (LimitAngle.x < limitStartAngle) // Do not display gauge
+        {
+            returnColor = origColor;
+        }
 		else if (angle > LimitAngle.y)
-            // Exceeded limit pointer at overspeed
-            returnColor = PointerColor;
+        {
+            if (angle > LimitAngle.w) // Exceeded limit pointer at overspeed
+                returnColor = InterventionColor;
+            else if (radius > radiusInside)
+                returnColor = ReleaseColor;
+			else
+				returnColor = origColor;
+        }
 		else if (angle > LimitAngle.x)
 		{
 			if (angle > LimitAngle.w)
@@ -128,6 +139,6 @@ float4 PSCircularSpeedGauge(PIXEL_INPUT In) : COLOR0
 
 technique CircularSpeedGauge {
 	pass Pass_0 {
-		PixelShader = compile ps_4_0_level_9_1 PSCircularSpeedGauge();
+		PixelShader = compile ps_4_0_level_9_3 PSCircularSpeedGauge();
 	}
 }
