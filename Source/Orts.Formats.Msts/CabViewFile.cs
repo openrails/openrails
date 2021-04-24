@@ -183,6 +183,7 @@ namespace Orts.Formats.Msts
         ORTS_OVERCHARGE,
         ORTS_BATTERY,
         ORTS_POWERKEY,
+        ORTS_2DEXTERNALWIPERS,
 
         // TCS Controls
         ORTS_TCS1,
@@ -302,6 +303,7 @@ namespace Orts.Formats.Msts
             int count = stf.ReadInt(null);
 
             stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("ortsanimateddisplay", ()=>{ Add(new CVCAnimatedDisplay(stf, basepath)); }),
                 new STFReader.TokenProcessor("dial", ()=>{ Add(new CVCDial(stf, basepath)); }),
                 new STFReader.TokenProcessor("gauge", ()=>{ Add(new CVCGauge(stf, basepath)); }),
                 new STFReader.TokenProcessor("lever", ()=>{ Add(new CVCDiscrete(stf, basepath)); }),
@@ -1165,6 +1167,54 @@ namespace Orts.Formats.Msts
             return style;
         }
     }
+
+    public class CVCAnimatedDisplay : CVCWithFrames
+    {
+        public List<double> MSStyles = new List<double>();
+        public float CycleTimeS;
+
+        public CVCAnimatedDisplay(STFReader stf, string basepath)
+        {
+
+            stf.MustMatch("(");
+            stf.ParseBlock(new STFReader.TokenProcessor[] {
+                new STFReader.TokenProcessor("type", ()=>{ ParseType(stf); }),
+                new STFReader.TokenProcessor("position", ()=>{ ParsePosition(stf);  }),
+                new STFReader.TokenProcessor("scalerange", ()=>{ ParseScaleRange(stf); }),
+                new STFReader.TokenProcessor("graphic", ()=>{ ParseGraphic(stf, basepath); }),
+                new STFReader.TokenProcessor("units", ()=>{ ParseUnits(stf); }),
+                new STFReader.TokenProcessor("ortscycletime", ()=>{
+                    CycleTimeS = stf.ReadFloatBlock(STFReader.UNITS.Time, null); }),
+                new STFReader.TokenProcessor("states", ()=>{
+                    stf.MustMatch("(");
+                    FramesCount = stf.ReadInt(null);
+                    FramesX = stf.ReadInt(null);
+                    FramesY = stf.ReadInt(null);
+                    stf.ParseBlock(new STFReader.TokenProcessor[] {
+                        new STFReader.TokenProcessor("state", ()=>{
+                            stf.MustMatch("(");
+                            stf.ParseBlock( new STFReader.TokenProcessor[] {
+                                new STFReader.TokenProcessor("style", ()=>{ MSStyles.Add(ParseNumStyle(stf));
+                                }),
+                                new STFReader.TokenProcessor("switchval", ()=>{ Values.Add(stf.ReadFloatBlock(STFReader.UNITS.None, null))
+                                ; }),
+                        });}),
+                    });
+                    if (Values.Count > 0) MaxValue = Values.Last();
+                    for (int i = Values.Count; i < FramesCount; i++)
+                        Values.Add(-10000);
+                }),
+            });
+        }
+        protected int ParseNumStyle(STFReader stf)
+        {
+            stf.MustMatch("(");
+            var style = stf.ReadInt(0);
+            stf.SkipRestOfBlock();
+            return style;
+        }
+    }
+
     #endregion
 
     #region Screen based controls

@@ -262,6 +262,69 @@ ORTS_SIGNED_TRACTION_BRAKING, with the only difference that the braking
 force does include also the train brake force in addition to the dynamic 
 brake force.
 
+Animated 2D Wipers
+------------------
+
+.. index::
+   single:  ORTS_2DEXTERNALWIPERS
+
+This control animates the wipers as seen from a 2D cab.
+Animation is triggered on/off through key V.
+
+Here is an example of a 2D wipers control block within the .cvf file::
+
+
+        ORTSAnimatedDisplay  (
+			Type ( ORTS_2DEXTERNALWIPERS MULTI_STATE_DISPLAY )
+			Position ( 155 0 331.875 236.25 )
+			Graphic ( ..//..//Common.Cab//CabE464_DMI//e464Tergicristallo9.ace )
+			ORTSCycleTime ( 1.35 )
+			States ( 9 3 3
+				State (
+					Style ( 0 )
+					SwitchVal ( 0 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.11 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.22 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.33 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.44 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.55 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.66 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.77 )
+				)
+				State (
+					Style ( 0 )
+					SwitchVal ( 0.88 )
+				)
+			)
+		)
+
+ORTSCycleTime is expressed in seconds.
+The .ace file must contain only the frames related to half cycle, that is 
+if e.g. the wiper moves from left to right and back, only the frames related 
+to the motion from left to right have to be included. For the reverse 
+motion the same frames are used from last to first. SwitchVal can vary from 0 to 1.
+
 Further OR cab controls
 -----------------------
 
