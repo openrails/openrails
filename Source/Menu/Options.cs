@@ -67,6 +67,8 @@ namespace ORTS
             Settings = settings;
             UpdateManager = updateManager;
 
+            InitializeHelpIcons();
+
             // Collect all the available language codes by searching for
             // localisation files, but always include English (base language).
             var languageCodes = new List<string> { "en" };
@@ -98,16 +100,16 @@ namespace ORTS
             comboLanguage.SelectedValue = Settings.Language;
             if (comboLanguage.SelectedValue == null) comboLanguage.SelectedIndex = 0;
 
-            comboBoxOtherUnits.DataSource = new[] {
+            comboOtherUnits.DataSource = new[] {
                 new ComboBoxMember { Code = "Route", Name = catalog.GetString("Route") },
                 new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Player's location") },
                 new ComboBoxMember { Code = "Metric", Name = catalog.GetString("Metric") },
                 new ComboBoxMember { Code = "US", Name = catalog.GetString("Imperial US") },
                 new ComboBoxMember { Code = "UK", Name = catalog.GetString("Imperial UK") },
             }.ToList();
-            comboBoxOtherUnits.DisplayMember = "Name";
-            comboBoxOtherUnits.ValueMember = "Code";
-            comboBoxOtherUnits.SelectedValue = Settings.Units;
+            comboOtherUnits.DisplayMember = "Name";
+            comboOtherUnits.ValueMember = "Code";
+            comboOtherUnits.SelectedValue = Settings.Units;
 
             comboPressureUnit.DataSource = new[] {
                 new ComboBoxMember { Code = "Automatic", Name = catalog.GetString("Automatic") },
@@ -140,7 +142,7 @@ namespace ORTS
             checkAlerterExternal.Enabled = Settings.Alerter;
             checkAlerterExternal.Checked = Settings.Alerter && !Settings.AlerterDisableExternal;
             checkOverspeedMonitor.Checked = Settings.SpeedControl;
-            checkConfirmations.Checked = !Settings.SuppressConfirmations;
+            checkControlConfirmations.Checked = !Settings.SuppressConfirmations;
             checkViewMapWindow.Checked = Settings.ViewDispatcher;
             checkUseLargeAddressAware.Checked = Settings.UseLargeAddressAware;
             checkRetainers.Checked = Settings.RetainersOnAllCars;
@@ -148,7 +150,7 @@ namespace ORTS
             numericBrakePipeChargingRate.Value = Settings.BrakePipeChargingRate;
             comboLanguage.Text = Settings.Language;
             comboPressureUnit.Text = Settings.PressureUnit;
-            comboBoxOtherUnits.Text = settings.Units;
+            comboOtherUnits.Text = settings.Units;
             checkDisableTCSScripts.Checked = Settings.DisableTCSScripts;
             checkEnableWebServer.Checked = Settings.WebServer;
             numericWebServerPort.Value = Settings.WebServerPort;
@@ -433,7 +435,7 @@ namespace ORTS
             Settings.Alerter = checkAlerter.Checked;
             Settings.AlerterDisableExternal = !checkAlerterExternal.Checked;
             Settings.SpeedControl = checkOverspeedMonitor.Checked;
-            Settings.SuppressConfirmations = !checkConfirmations.Checked;
+            Settings.SuppressConfirmations = !checkControlConfirmations.Checked;
             Settings.ViewDispatcher = checkViewMapWindow.Checked;
             Settings.UseLargeAddressAware = checkUseLargeAddressAware.Checked;
             Settings.RetainersOnAllCars = checkRetainers.Checked;
@@ -441,7 +443,7 @@ namespace ORTS
             Settings.BrakePipeChargingRate = (int)numericBrakePipeChargingRate.Value;
             Settings.Language = comboLanguage.SelectedValue.ToString();
             Settings.PressureUnit = comboPressureUnit.SelectedValue.ToString();
-            Settings.Units = comboBoxOtherUnits.SelectedValue.ToString();
+            Settings.Units = comboOtherUnits.SelectedValue.ToString();
             Settings.DisableTCSScripts = checkDisableTCSScripts.Checked;
             Settings.WebServer = checkEnableWebServer.Checked;
 
@@ -796,6 +798,67 @@ namespace ORTS
 
         #region Help for General Options
         /// <summary>
+        /// Allows multiple controls to change a single help icon with their hover events.
+        /// </summary>
+        private class HelpIconHover
+        {
+            private readonly PictureBox Icon;
+            private int HoverCount = 0;
+
+            public HelpIconHover(PictureBox pb)
+            {
+                Icon = pb;
+            }
+
+            public void Enter()
+            {
+                HoverCount++;
+                SetImage();
+            }
+
+            public void Leave()
+            {
+                HoverCount--;
+                SetImage();
+            }
+
+            private void SetImage()
+            {
+                Icon.Image = HoverCount > 0 ? Properties.Resources.info_18_hover : Properties.Resources.info_18;
+            }
+        }
+
+        private readonly IDictionary<Control, HelpIconHover> ToHelpIcon = new Dictionary<Control, HelpIconHover>();
+
+        private void InitializeHelpIcons()
+        {
+            // static mapping of picture boxes to controls
+            var helpIconControls = new (PictureBox, Control[])[]
+            {
+                (pbAlerter, new[] { checkAlerter }),
+                (pbControlConfirmations, new[] { checkControlConfirmations }),
+                (pbMapWindow, new[] { checkViewMapWindow }),
+                (pbLAA, new[] { checkUseLargeAddressAware }),
+                (pbRetainers, new[] { checkRetainers }),
+                (pbGraduatedRelease, new[] { checkGraduatedRelease }),
+                (pbBrakePipeChargingRate, new[] { lBrakePipeChargingRate }),
+                (pbLanguage, new Control[] { labelLanguage, comboLanguage }),
+                (pbPressureUnit, new Control[] { labelPressureUnit, comboPressureUnit }),
+                (pbOtherUnits, new Control[] { labelOtherUnits, comboOtherUnits }),
+                (pbDisableTcsScripts, new[] { checkDisableTCSScripts }),
+                (pbEnableWebServer, new[] { checkEnableWebServer }),
+                (pbOverspeedMonitor, new[] { checkOverspeedMonitor }),
+            };
+            foreach ((PictureBox pb, Control[] controls) in helpIconControls)
+            {
+                var hover = new HelpIconHover(pb);
+                ToHelpIcon[pb] = hover;
+                foreach (Control control in controls)
+                    ToHelpIcon[control] = hover;
+            }
+        }
+
+        /// <summary>
         /// Loads a relevant page from the manual maintained by James Ross's automatic build.
         /// </summary>
         /// <param name="sender"></param>
@@ -823,15 +886,15 @@ namespace ORTS
                     baseUrl + "/options.html#large-address-aware-binaries"
                 },
                 {
-                    pbRetainer,
+                    pbRetainers,
                     baseUrl + "/options.html#retainer-valve-on-all-cars"
                 },
                 {
-                    pbRelease,
+                    pbGraduatedRelease,
                     baseUrl + "/options.html#graduated-release-air-brakes"
                 },
                 {
-                    pbChargingRate,
+                    pbBrakePipeChargingRate,
                     baseUrl + "/options.html#brake-pipe-charging-rate"
                 },
                 {
@@ -847,17 +910,16 @@ namespace ORTS
                     baseUrl + "/options.html#other-units"
                 },
                 {
-                    pbDisableTcs,
+                    pbDisableTcsScripts,
                     baseUrl + "/options.html#disable-tcs-scripts"
                 },
                 {
-                    pbWebServer,
+                    pbEnableWebServer,
                     baseUrl + "/options.html#enable-web-server"
                 },
                 {
                     pbOverspeedMonitor,
-                    // This URL is temporary, waiting for https://open-rails.readthedocs.io to be updated to match the Manual in PDF format.
-                    baseUrl + "/physics.html#train-control-system"
+                    baseUrl + "/options.html#overspeed-monitor"
                 },
             };
             if (urls.TryGetValue(sender, out var url))
@@ -871,16 +933,21 @@ namespace ORTS
             }
         }
 
+        /// <summary>
+        /// Highlight the Help Icon if the user mouses over the icon or its control.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="_"></param>
         private void HelpIcon_MouseEnter(object sender, EventArgs _)
         {
-            if (sender is PictureBox pb)
-                pb.Image = Properties.Resources.info_18_hover;
+            if (sender is Control control && ToHelpIcon.TryGetValue(control, out var hover))
+                hover.Enter();
         }
 
         private void HelpIcon_MouseLeave(object sender, EventArgs _)
         {
-            if (sender is PictureBox pb)
-                pb.Image = Properties.Resources.info_18;
+            if (sender is Control control && ToHelpIcon.TryGetValue(control, out var hover))
+                hover.Leave();
         }
         #endregion
     }

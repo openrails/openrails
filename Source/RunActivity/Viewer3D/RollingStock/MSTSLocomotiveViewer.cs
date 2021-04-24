@@ -32,6 +32,7 @@ using Orts.Simulation.RollingStocks;
 using Orts.Simulation.RollingStocks.SubSystems.Controllers;
 using Orts.Viewer3D.Common;
 using Orts.Viewer3D.Popups;
+using Orts.Viewer3D.RollingStock.Subsystems.ETCS;
 using ORTS.Common;
 using ORTS.Common.Input;
 using ORTS.Scripting.Api;
@@ -1141,6 +1142,16 @@ namespace Orts.Viewer3D.RollingStock
                             count[(int)cvc.ControlType]++;
                             continue;
                         }
+                        CVCAnimatedDisplay anim = cvc as CVCAnimatedDisplay;
+                        if (anim != null)
+                        {
+                            CabViewAnimationsRenderer animr = new CabViewAnimationsRenderer(viewer, car, anim, _Shader);
+                            animr.SortIndex = controlSortIndex;
+                            CabViewControlRenderersList[i].Add(animr);
+                            if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, animr);
+                            count[(int)cvc.ControlType]++;
+                            continue;
+                        }
                         CVCMultiStateDisplay multi = cvc as CVCMultiStateDisplay;
                         if (multi != null)
                         {
@@ -1166,7 +1177,7 @@ namespace Orts.Viewer3D.RollingStock
                         {
                             CabViewDigitalRenderer cvdr;
                             if (viewer.Settings.CircularSpeedGauge && digital.ControlStyle == CABViewControlStyles.NEEDLE)
-                                cvdr = new CabViewCircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
+                                cvdr = new CircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
                             else
                                 cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
                             cvdr.SortIndex = controlSortIndex;
@@ -1174,6 +1185,19 @@ namespace Orts.Viewer3D.RollingStock
                             if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
                             count[(int)cvc.ControlType]++;
                             continue;
+                        }
+                        CVCScreen screen = cvc as CVCScreen;
+                        if (screen != null)
+                        {
+                            if (screen.ControlType == CABViewControlTypes.ORTS_ETCS)
+                            {
+                                var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                                cvr.SortIndex = controlSortIndex;
+                                CabViewControlRenderersList[i].Add(cvr);
+                                if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                                count[(int)cvc.ControlType]++;
+                                continue;
+                            }
                         }
                     }
                 }
@@ -1265,7 +1289,7 @@ namespace Orts.Viewer3D.RollingStock
                 {
                     CabViewDigitalRenderer cvdr;
                     if (viewer.Settings.CircularSpeedGauge && digital.ControlStyle == CABViewControlStyles.NEEDLE)
-                        cvdr = new CabViewCircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
+                        cvdr = new CircularSpeedGaugeRenderer(viewer, car, digital, _Shader);
                     else
                         cvdr = new CabViewDigitalRenderer(viewer, car, digital, _Shader);
                     cvdr.SortIndex = controlSortIndex;
@@ -1273,6 +1297,19 @@ namespace Orts.Viewer3D.RollingStock
                     if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvdr);
                     count[(int)cvc.ControlType]++;
                     continue;
+                }
+                CVCScreen screen = cvc as CVCScreen;
+                if (screen != null)
+                {
+                    if (screen.ControlType == CABViewControlTypes.ORTS_ETCS)
+                    {
+                        var cvr = new DriverMachineInterfaceRenderer(viewer, car, screen, _Shader);
+                        cvr.SortIndex = controlSortIndex;
+                        CabViewControlRenderersList[i].Add(cvr);
+                        if (!ControlMap.ContainsKey(key)) ControlMap.Add(key, cvr);
+                        count[(int)cvc.ControlType]++;
+                        continue;
+                    }
                 }
             }
             #endregion
@@ -1443,6 +1480,17 @@ namespace Orts.Viewer3D.RollingStock
         {
             Viewer.TextureManager.Mark(Texture);
         }
+    }
+
+    /// <summary>
+    /// Interface for mouse controllable CabViewControls
+    /// </summary>
+    public interface ICabViewMouseControlRenderer
+    {
+        bool IsMouseWithin();
+        void HandleUserInput();
+        string GetControlName();
+
     }
 
     /// <summary>
@@ -1733,7 +1781,7 @@ namespace Orts.Viewer3D.RollingStock
     /// <summary>
     /// Discrete renderer for Lever, Twostate, Tristate, Multistate, Signal
     /// </summary>
-    public class CabViewDiscreteRenderer : CabViewControlRenderer
+    public class CabViewDiscreteRenderer : CabViewControlRenderer, ICabViewMouseControlRenderer
     {
         readonly CVCWithFrames ControlDiscrete;
         readonly Rectangle SourceRectangle;
@@ -1792,6 +1840,12 @@ namespace Orts.Viewer3D.RollingStock
                 if ((mS.MSStyles.Count > index) && (mS.MSStyles[index] == 1) && (CumulativeTime > CVCFlashTimeOn))
                     return;
             }
+
+            PrepareFrameForIndex(frame, elapsedTime, index);
+        }
+
+        protected void PrepareFrameForIndex(RenderFrame frame, ElapsedTime elapsedTime, int index)
+        {
             var dark = Viewer.MaterialManager.sunDirection.Y <= -0.085f || Viewer.Camera.IsUnderground;
 
             Texture = CABTextureManager.GetTextureByIndexes(Control.ACEFile, index, dark, Locomotive.CabLightOn, out IsNightTexture, HasCabLightDirectory);
@@ -2028,6 +2082,11 @@ namespace Orts.Viewer3D.RollingStock
             return ControlDiscrete.MouseControl & DestinationRectangle.Contains(UserInput.MouseX, UserInput.MouseY);
         }
 
+        public string GetControlName()
+        {
+            return (Locomotive as MSTSLocomotive).TrainControlSystem.GetDisplayString(GetControlType().ToString());
+        }
+
         /// <summary>
         /// Handles cabview mouse events, and changes the corresponding locomotive control values.
         /// </summary>
@@ -2226,7 +2285,7 @@ namespace Orts.Viewer3D.RollingStock
         /// </summary>
         /// <param name="percent">Percent to be translated</param>
         /// <returns>The calculated display index by the Control's Values</returns>
-        int PercentToIndex(float percent)
+        protected int PercentToIndex(float percent)
         {
             var index = 0;
 
@@ -2258,6 +2317,51 @@ namespace Orts.Viewer3D.RollingStock
             return index;
         }
     }
+
+    /// <summary>
+    /// Discrete renderer for animated controls, like external 2D wiper
+    /// </summary>
+    public class CabViewAnimationsRenderer : CabViewDiscreteRenderer
+    {
+        private float CumulativeTime;
+        private readonly float CycleTimeS;
+        private bool AnimationOn = false;
+
+        public CabViewAnimationsRenderer(Viewer viewer, MSTSLocomotive locomotive, CVCAnimatedDisplay control, CabShader shader)
+            : base(viewer, locomotive, control, shader)
+        {
+            CycleTimeS = control.CycleTimeS;
+        }
+
+        public override void PrepareFrame(RenderFrame frame, ElapsedTime elapsedTime)
+        {
+            var animate = Locomotive.GetDataOf(Control) != 0;
+            if (animate)
+                AnimationOn = true;
+
+            int index;
+            var halfCycleS = CycleTimeS / 2f;
+            if (AnimationOn)
+            {
+                CumulativeTime += elapsedTime.ClockSeconds;
+                if (CumulativeTime > CycleTimeS && !animate)
+                    AnimationOn = false;
+                CumulativeTime %= CycleTimeS;
+
+                if (CumulativeTime < halfCycleS)
+                    index = PercentToIndex(CumulativeTime / halfCycleS);
+                else
+                    index = PercentToIndex((CycleTimeS - CumulativeTime) / halfCycleS);
+            }
+            else
+            {
+                index = 0;
+            }
+
+            PrepareFrameForIndex(frame, elapsedTime, index);
+        }
+    }
+
 
     /// <summary>
     /// Digital Cab Control renderer

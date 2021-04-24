@@ -20,12 +20,15 @@ using System.IO;
 using ORTS.Common;
 using Orts.Common;
 using Orts.Simulation.RollingStocks;
+using ORTS.Scripting.Api.ETCS;
 
 namespace ORTS.Scripting.Api
 {
     public abstract class TrainControlSystem : AbstractTrainScriptClass
     {
         public bool Activated { get; set; }
+
+        public readonly ETCSStatus ETCSStatus = new ETCSStatus();
 
         /// <summary>
         /// True if train control is switched on (the locomotive is the lead locomotive and the train is not autopiloted).

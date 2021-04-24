@@ -234,16 +234,20 @@ namespace Orts.Viewer3D.WebServices
         public IEnumerable<TrainDrivingDisplay.ListLabel> TrainDrivingDisplay([QueryField] bool normalText) => Viewer.TrainDrivingDisplayList(normalText);
         #endregion
 
-
         // Note: to see the JSON, use "localhost:2150/API/CABCONTROLS" - Beware: case matters
         // Note: to run the webpage, use "localhost:2150/CabControls/index.html" - case doesn't matter
-        // Do not use "localhost:2150/API/CABCONTROLS"
-        // or use "localhost:2150/API/CABCONTROLS/"
-        // as they will return the webpage, but the path will be "/" not "/CabControls/ and the wrong scripts will be loaded.
+        // or use "localhost:2150/CabControls/"
+        // Do not use "localhost:2150/CabControls/"
+        // as that will return the webpage, but the path will be "/" not "/CabControls/ and the appropriate scripts will not be loaded.
 
         #region /API/CABCONTROLS
         [Route(HttpVerbs.Get, "/CABCONTROLS")]
         public IEnumerable<ControlValue> CabControls() => ((MSTSLocomotiveViewer)Viewer.PlayerLocomotiveViewer).GetWebControlValueList();
+        #endregion
+
+        #region /API/TIME
+        [Route(HttpVerbs.Get, "/TIME")]
+        public double Time() => Viewer.Simulator.ClockTime;
         #endregion
     }
 }
