@@ -36,5 +36,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         void HandleEvent(PowerSupplyEvent evt);
         void HandleEvent(PowerSupplyEvent evt, int id);
+        void HandleEventFromLeadLocomotive(PowerSupplyEvent evt);
+        void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id);
     }
 }
