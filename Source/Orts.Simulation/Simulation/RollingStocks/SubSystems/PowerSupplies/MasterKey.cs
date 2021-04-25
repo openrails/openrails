@@ -99,7 +99,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void Copy(MasterKey other)
         {
             Mode = other.Mode;
-            On = other.On;
+            DelayS = other.DelayS;
             HeadlightControl = other.HeadlightControl;
         }
 
