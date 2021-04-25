@@ -1650,7 +1650,7 @@ namespace Orts.Simulation.RollingStocks
                 case Train.TRAINTYPE.AI_PLAYERHOSTING:
                     if (AcceptMUSignals)
                     {
-                        if (!LocomotivePowerSupply.MainPowerSupplyOn)
+                        if (!LocomotivePowerSupply?.MainPowerSupplyOn ?? false)
                         {
                             Train.SignalEvent(PowerSupplyEvent.RaisePantograph, 1);
 
