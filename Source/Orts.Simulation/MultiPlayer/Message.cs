@@ -3230,7 +3230,7 @@ namespace Orts.MultiPlayer
             TT = loco.ThrottleController.CurrentValue;
             if (loco is MSTSElectricLocomotive)
             {
-                VL = (loco as MSTSElectricLocomotive).PowerSupply.FilterVoltageV;
+                VL = (loco as MSTSElectricLocomotive).ElectricPowerSupply.FilterVoltageV;
             }
             tnum = loco.Train.Number;
             user = u;
@@ -3302,7 +3302,7 @@ namespace Orts.MultiPlayer
             loco.ThrottleController.UpdateValue = 0.0f;
             if (loco is MSTSElectricLocomotive)
             {
-                (loco as MSTSElectricLocomotive).PowerSupply.FilterVoltageV = VL;
+                (loco as MSTSElectricLocomotive).ElectricPowerSupply.FilterVoltageV = VL;
             }
             loco.notificationReceived = true;
         }
