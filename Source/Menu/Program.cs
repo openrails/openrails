@@ -151,6 +151,7 @@ namespace ORTS
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
                             break;
                     }
+                    
                     var joinedParameters = string.Join(" ", parameters);
                     if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
                     {
@@ -159,33 +160,33 @@ namespace ORTS
                             "RunActivity.exe arguments have been copied to the clipboard:" +
                             $"\n\n{joinedParameters}\n\n" +
                             "This is a debugging aid. If you wanted to start the simulator instead, select Start without holding down the Alt key.");
+                        continue;
                     }
-                    else if(ClockConversion.IsAppropriate(MainForm.SelectedRoute.Path))
+
+                    var dataConverters = new IDataConverter[]
                     {
-                        if (ClockConversion.IsDone(MainForm.SelectedRoute.Path))
+                        new ClockConversion()
+                    };
+                    foreach (IDataConverter converter in dataConverters)
+                    {
+                        if (converter.IsAppropriate(MainForm))
                         {
-                            Start(MainForm, joinedParameters);
+                            if (!converter.IsDone(MainForm))
+                                continue;
                         }
                     }
-                    else
+
+                    var processStartInfo = new ProcessStartInfo()
                     {
-                        Start(MainForm, joinedParameters);
-                    }
+                        FileName = MainForm.RunActivityProgram,
+                        Arguments = joinedParameters,
+                        WindowStyle = ProcessWindowStyle.Normal,
+                        WorkingDirectory = Application.StartupPath,
+                    };
+                    var process = Process.Start(processStartInfo);
+                    process.WaitForExit();
                 }
             }
-        }
-
-        private static void Start(MainForm MainForm, string joinedParameters)
-        {
-            var processStartInfo = new ProcessStartInfo()
-            {
-                FileName = MainForm.RunActivityProgram,
-                Arguments = joinedParameters,
-                WindowStyle = ProcessWindowStyle.Normal,
-                WorkingDirectory = Application.StartupPath,
-            };
-            var process = Process.Start(processStartInfo);
-            process.WaitForExit();
         }
     }
 }

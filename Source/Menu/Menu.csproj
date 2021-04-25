@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClockConversion.cs" />
+    <Compile Include="DataConverter.cs" />
     <Compile Include="KeyInputEditControl.cs">
       <SubType>Form</SubType>
     </Compile>

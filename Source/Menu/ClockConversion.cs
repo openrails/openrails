@@ -24,7 +24,7 @@ namespace ORTS
     /// <summary>
     /// Manages conversion of shape files for animated clocks from STF (clocks.dat) to JSON (animated.clocks-or) formats.
     /// </summary>
-    public static class ClockConversion
+    public class ClockConversion : IDataConverter
     {
         private static string ClocksDat = "openrails\\clocks.dat";
         private static string AnimatedClocksOr = "animated.clocks-or";
@@ -33,8 +33,9 @@ namespace ORTS
         /// If a source file is available and more recent than any destination file, then conversion is appropriate.
         /// </summary>
         /// <returns></returns>
-        public static bool IsAppropriate(string routePath)
+        public bool IsAppropriate(MainForm form)
         {
+            var routePath = form.SelectedRoute.Path;
             var fromPath = $"{routePath}\\{ClocksDat}";
             if (File.Exists(fromPath))
             {
@@ -61,8 +62,9 @@ namespace ORTS
         /// </summary>
         /// <param name="routePath"></param>
         /// <returns></returns>
-        public static bool IsDone(string routePath)
+        public bool IsDone(MainForm form)
         {
+            var routePath = form.SelectedRoute.Path;
             var reply = MessageBox.Show(
                   "Animated clocks file \"clocksDat\" found."
                 + "\n\nTo simulate animated clocks, allow Open Rails to create a file \"animatedClocksOr\" in folder"
@@ -108,7 +110,7 @@ namespace ORTS
             }
         }
 
-        public static int ConvertAnimatedClocks(string routePath, string from, string to)
+        private static int ConvertAnimatedClocks(string routePath, string from, string to)
         {
             var processStartInfo = new ProcessStartInfo()
             {
