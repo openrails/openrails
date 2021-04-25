@@ -160,7 +160,7 @@ namespace ORTS
                             "RunActivity.exe arguments have been copied to the clipboard:" +
                             $"\n\n{joinedParameters}\n\n" +
                             "This is a debugging aid. If you wanted to start the simulator instead, select Start without holding down the Alt key.");
-                        return;
+                        continue;
                     }
 
                     var dataConverters = new IDataConverter[]
@@ -172,7 +172,7 @@ namespace ORTS
                         if (converter.IsAppropriate(MainForm))
                         {
                             if (!converter.IsDone(MainForm))
-                                return;
+                                continue;
                         }
                     }
 
