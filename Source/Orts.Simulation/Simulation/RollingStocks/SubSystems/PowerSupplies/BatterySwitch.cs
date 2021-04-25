@@ -86,7 +86,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         public void Copy(BatterySwitch other)
         {
             Mode = other.Mode;
-            On = other.On;
+            DelayS = other.DelayS;
         }
 
         public virtual void Initialize()
@@ -109,20 +109,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
         /// </summary>
         public virtual void InitializeMoving()
         {
+            CommandSwitch = true;
             On = true;
         }
 
         public virtual void Save(BinaryWriter outf)
         {
-            outf.Write(Mode.ToString());
-            outf.Write(DelayS);
+            outf.Write(CommandSwitch);
+            outf.Write(CommandButtonOn);
+            outf.Write(CommandButtonOff);
             outf.Write(On);
         }
 
         public virtual void Restore(BinaryReader inf)
         {
-            Mode = (ModeType) Enum.Parse(typeof(ModeType), inf.ReadString());
-            DelayS = inf.ReadSingle();
+            CommandSwitch = inf.ReadBoolean();
+            CommandButtonOn = inf.ReadBoolean();
+            CommandButtonOff = inf.ReadBoolean();
             On = inf.ReadBoolean();
         }
 
