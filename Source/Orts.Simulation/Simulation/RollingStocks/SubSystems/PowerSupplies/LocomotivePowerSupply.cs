@@ -234,6 +234,16 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             AbstractScript?.HandleEvent(evt, id);
         }
 
+        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
+        {
+            AbstractScript?.HandleEventFromLeadLocomotive(evt);
+        }
+
+        public void HandleEventFromLeadLocomotive(PowerSupplyEvent evt, int id)
+        {
+            AbstractScript?.HandleEventFromLeadLocomotive(evt, id);
+        }
+
         protected virtual void AssignScriptFunctions()
         {
             // AbstractScriptClass
@@ -287,7 +297,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         if (locomotive != Locomotive && locomotive != Locomotive.Train.LeadLocomotive && locomotive.AcceptMUSignals)
                         {
-                            locomotive.LocomotivePowerSupply.HandleEvent(evt);
+                            locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt);
                         }
                     }
                 }
@@ -300,7 +310,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         if (locomotive != Locomotive && locomotive != Locomotive.Train.LeadLocomotive && locomotive.AcceptMUSignals)
                         {
-                            locomotive.LocomotivePowerSupply.HandleEvent(evt, id);
+                            locomotive.LocomotivePowerSupply.HandleEventFromLeadLocomotive(evt, id);
                         }
                     }
                 }
@@ -313,7 +323,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         if (car != Locomotive && car != Locomotive.Train.LeadLocomotive && car.AcceptMUSignals)
                         {
-                            car.PowerSupply?.HandleEvent(evt);
+                            car.PowerSupply?.HandleEventFromLeadLocomotive(evt);
                         }
                     }
                 }
@@ -326,7 +336,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     {
                         if (car != Locomotive && car != Locomotive.Train.LeadLocomotive && car.AcceptMUSignals)
                         {
-                            car.PowerSupply?.HandleEvent(evt, id);
+                            car.PowerSupply?.HandleEventFromLeadLocomotive(evt, id);
                         }
                     }
                 }

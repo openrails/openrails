@@ -77,5 +77,13 @@ namespace ORTS.Scripting.Api
             // By default, send the event to every component
             SignalEventToCircuitBreaker(evt);
         }
+
+        public override void HandleEventFromLeadLocomotive(PowerSupplyEvent evt)
+        {
+            base.HandleEventFromLeadLocomotive(evt);
+
+            // By default, send the event to every component
+            SignalEventToCircuitBreaker(evt);
+        }
     }
 }
