@@ -15,13 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Orts.Parsers.Msts;
-using Orts.Parsers.OR;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using JsonReader = Orts.Parsers.OR.JsonReader;
 
 namespace Orts.Formats.OR
 {
@@ -123,6 +125,7 @@ namespace Orts.Formats.OR
     public class ClockShape
     {
         public string Name { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
         public ClockType? ClockType { get; set; }
 
         public ClockShape(string name, ClockType? clockType)
