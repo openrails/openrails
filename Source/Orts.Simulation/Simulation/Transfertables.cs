@@ -57,6 +57,9 @@ namespace Orts.Simulation
 
         protected Transfertable(STFReader stf, Simulator simulator) : base(stf, simulator) { }
 
+        /// <summary>
+        /// Create a transfer table from an STF definition block.
+        /// </summary>
         public static Transfertable CreateFrom(STFReader stf, Simulator simulator)
         {
             var worldPosition = new WorldPosition();
