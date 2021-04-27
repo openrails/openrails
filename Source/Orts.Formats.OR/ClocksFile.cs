@@ -90,7 +90,7 @@ namespace Orts.Formats.OR
                     break;
 
                 case "[].ClockType":
-                    stringValue = item.AsString(stringValue);
+                    stringValue = item.AsString(stringValue).ToLower();
                     if (stringValue == "analog")
                     {
                         ClockShape.ClockType = ClockType.Analog;
