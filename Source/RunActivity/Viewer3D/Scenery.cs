@@ -327,6 +327,7 @@ namespace Orts.Viewer3D
 
                 var shadowCaster = (worldObject.StaticFlags & (uint)StaticFlag.AnyShadow) != 0 || viewer.Settings.ShadowAllShapes;
                 var animated = (worldObject.StaticFlags & (uint)StaticFlag.Animate) != 0;
+                var isAnalogClock = GetClockType(worldObject.FileName) == ClockType.Analog;
                 var global = (worldObject is TrackObj) || (worldObject is HazardObj) || (worldObject.StaticFlags & (uint)StaticFlag.Global) != 0;
 
                 // TransferObj have a FileName but it is not a shape, so we need to avoid sanity-checking it as if it was.
@@ -462,9 +463,11 @@ namespace Orts.Viewer3D
                         if (Program.Simulator.CarSpawnerLists != null && ((CarSpawnerObj)worldObject).ListName != null)
                         {
                             ((CarSpawnerObj)worldObject).CarSpawnerListIdx = Program.Simulator.CarSpawnerLists.FindIndex(x => x.ListName == ((CarSpawnerObj)worldObject).ListName);
-                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count-1) ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
+                            if (((CarSpawnerObj)worldObject).CarSpawnerListIdx < 0 || ((CarSpawnerObj)worldObject).CarSpawnerListIdx > Program.Simulator.CarSpawnerLists.Count-1) 
+                                ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         }
-                        else ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
+                        else 
+                            ((CarSpawnerObj)worldObject).CarSpawnerListIdx = 0;
                         carSpawners.Add(new RoadCarSpawner(viewer, worldMatrix, (CarSpawnerObj)worldObject));
                     }
                     else if (worldObject.GetType() == typeof(SidingObj))
@@ -477,17 +480,22 @@ namespace Orts.Viewer3D
                     }
                     else if (worldObject.GetType() == typeof(StaticObj))
                     {
-                        if (animated)
+                        if (isAnalogClock)
+                        {
+                            sceneryObjects.Add(new AnalogClockShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                        }
+                        else if (animated)
+                        {
                             sceneryObjects.Add(new AnimatedShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                        }
                         else
-                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));                     
+                        {
+                            sceneryObjects.Add(new StaticShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None));
+                        }
                     }
                     else if (worldObject.GetType() == typeof(PickupObj))
                     {
-                        if (animated)
-                            sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
-                        else
-                            sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
+                        sceneryObjects.Add(new FuelPickupItemShape(viewer, shapeFilePath, worldMatrix, shadowCaster ? ShapeFlags.ShadowCaster : ShapeFlags.None, (PickupObj)worldObject));
                         PickupList.Add((PickupObj)worldObject);
                     }
                     else // It's some other type of object - not one of the above.
@@ -561,6 +569,19 @@ namespace Orts.Viewer3D
 
             if (viewer.Simulator.UseSuperElevation > 0) SuperElevationManager.DecomposeStaticSuperElevation(Viewer, dTrackList, TileX, TileZ);
             if (Viewer.World.Sounds != null) Viewer.World.Sounds.AddByTile(TileX, TileZ);
+        }
+
+        /// <summary>
+        /// Returns type of clock (e.g. "analog") or "not a clock" by checking that the shape filename is in the ClockShapeList
+        /// </summary>
+        public ClockType? GetClockType(string shapeFilePath)
+        {
+            if (string.IsNullOrWhiteSpace(shapeFilePath))
+                return null;
+
+            var shapeFileName = Path.GetFileName(shapeFilePath);
+            var clockShape = Program.Simulator.ClockShapeList.Where(r => String.CompareOrdinal(Path.GetFileName(r.Name), shapeFileName) == 0).FirstOrDefault();
+            return clockShape?.ClockType;
         }
 
         [CallOnThread("Loader")]

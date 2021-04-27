@@ -34,9 +34,9 @@ namespace Orts.DataConverter
         public void ShowConversions()
         {
             //                "1234567890123456789012345678901234567890123456789012345678901234567890123456789"
-            //                "    Input   Output  Description"
-            Console.WriteLine("    t       dae     Creates a set of COLLADA files for the tile's terrain.");
-            Console.WriteLine("    w       dae     Creates a set of COLLADA files for the tile's terrain.");
+            //                "               Input  Output              Description"
+            Console.WriteLine("                 *.t  *.dae               Creates a set of COLLADA files for the tile's terrain.");
+            Console.WriteLine("                 *.w  *.dae               Creates a set of COLLADA files for the tile's terrain.");
         }
 
         public bool DoConversion(DataConversion conversion)
