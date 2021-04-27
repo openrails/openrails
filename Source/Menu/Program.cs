@@ -163,19 +163,6 @@ namespace ORTS
                         continue;
                     }
 
-                    var dataConverters = new IDataConverter[]
-                    {
-                        new ClockConversion()
-                    };
-                    foreach (IDataConverter converter in dataConverters)
-                    {
-                        if (converter.IsAppropriate(MainForm))
-                        {
-                            if (!converter.IsDone(MainForm))
-                                continue;
-                        }
-                    }
-
                     var processStartInfo = new ProcessStartInfo()
                     {
                         FileName = MainForm.RunActivityProgram,
