@@ -62,7 +62,7 @@ namespace Orts.Simulation
                         if (--count < 0)
                             STFException.TraceWarning(stf, "Skipped extra Transfertable");
                         else
-                            movingTables.Add(new Transfertable(stf, simulator));
+                            movingTables.Add(Transfertable.CreateFrom(stf, simulator));
                     }),
                 });
                 if (count > 0)
