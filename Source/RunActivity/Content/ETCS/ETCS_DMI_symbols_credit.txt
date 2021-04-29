@@ -1,0 +1,1 @@
+ETCS DMI symbols are as specified in ERA_ERTMS_015560, version 3.6.0

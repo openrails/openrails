@@ -151,7 +151,7 @@ namespace ORTS
                             parameters.Add("\"" + MainForm.SelectedSaveFile + "\"");
                             break;
                     }
-
+                    
                     var joinedParameters = string.Join(" ", parameters);
                     if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
                     {
@@ -160,19 +160,18 @@ namespace ORTS
                             "RunActivity.exe arguments have been copied to the clipboard:" +
                             $"\n\n{joinedParameters}\n\n" +
                             "This is a debugging aid. If you wanted to start the simulator instead, select Start without holding down the Alt key.");
+                        continue;
                     }
-                    else
+
+                    var processStartInfo = new ProcessStartInfo()
                     {
-                        var processStartInfo = new ProcessStartInfo()
-                        {
-                            FileName = MainForm.RunActivityProgram,
-                            Arguments = joinedParameters,
-                            WindowStyle = ProcessWindowStyle.Normal,
-                            WorkingDirectory = Application.StartupPath,
-                        };
-                        var process = Process.Start(processStartInfo);
-                        process.WaitForExit();
-                    }
+                        FileName = MainForm.RunActivityProgram,
+                        Arguments = joinedParameters,
+                        WindowStyle = ProcessWindowStyle.Normal,
+                        WorkingDirectory = Application.StartupPath,
+                    };
+                    var process = Process.Start(processStartInfo);
+                    process.WaitForExit();
                 }
             }
         }
