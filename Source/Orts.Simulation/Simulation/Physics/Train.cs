@@ -12727,7 +12727,7 @@ namespace Orts.Simulation.Physics
                                 {
                                     int otherSectionIndex = thisElement.Direction == 0 ?
                                         otherPlatform.TCSectionIndex[0] :
-                                        otherPlatform.TCSectionIndex[thisPlatform.TCSectionIndex.Count - 1];
+                                        otherPlatform.TCSectionIndex[otherPlatform.TCSectionIndex.Count - 1];
                                     if (otherSectionIndex == beginSectionIndex)
                                     {
                                         if (otherPlatform.TCOffset[0, thisElement.Direction] < actualBegin)
