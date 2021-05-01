@@ -47,7 +47,7 @@ Code style (placement of braces, etc.) is expected to follow the default Visual 
 
 Code should be well structured, with small methods performing a single key task (indicated by their name), and larger complex operations formed through calls to multiple smaller methods.
 
-Code architecture, especially for new features, should be consistent with the [Open Rails Architecture](ARCHITECTURE.md).
+Code architecture, especially for new features, should be consistent with the [Open Rails Architecture](Architecture.md).
 
 ### Physics requirements
 
