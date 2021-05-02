@@ -804,3 +804,124 @@ property::
 
 The value is the fade time in seconds. Use ``0`` to disable the effect 
 completely.
+
+Animated clocks
+===============
+
+.. image:: images/features-animated-clock4.png
+
+Animated clocks that show the simulation time can be added or retro-fitted to a route. 
+The clocks can have a second-hand that ticks each second, or one that moves smoothly or none at all.
+Typically clocks could be station clocks, church tower clocks or clocks at other public buildings. 
+They are placed as normal static shapes in a route, similar to other shapes such as houses or trees.
+
+Note: Loco cabs already have provision for both analogue and digital clocks.
+
+Overview
+--------
+
+You will need:
+
+#. Shape and Texture Files
+
+   A shape file which defines each shape of clock, its hands and their animation and the texture files used by the shape.
+
+#. Reference File
+
+   For each shape of clock in the route, a reference to the shape file in the reference file.
+
+#. Animated Clocks List File
+
+   A file listing the shape file for each clock that Open Rails is to animate.
+
+#. World File
+ 
+   The location of each clock in the world must be given in the world file.
+
+Details
+-------
+
+#. Shape and Texture Files
+
+   Create a clock just like any other shape. The hands of the clock must be sub-objects within the shape. 
+   They must have specific names and an animation.	
+   
+   Open Rails looks for the following names of clock hands in the shape file and animates them according to the simulation time.	
+   
+   The names for the clock hands must start with:	
+  
+   - "ORTS_HHand_Clock" for the hour hand
+   - "ORTS_MHand_Clock" for the minute hand
+   - "ORTS_SHand_Clock" for the second hand
+   - "ORTS_CHand_Clock" for the centi-second hand
+     
+   This last is used to provide a smooth movement in hundredths of a second whereas the second hand ticks forward once a second.	
+   It is suggested to use either the second hand or the centisecond hand or neither.	
+	
+   .. image:: images/features-animated-clock5.png
+   
+   If a clock is to have several hands of the same type, simply append a number to the names of the hands, like this:
+
+   .. image:: images/features-animated-clock6.png
+
+   The animation requires 4 key frames at the 12, 3, 6 and 9 positions and calculates the intermediate 
+   positions using linear interpolation. 	
+   
+   .. image:: images/features-animated-clock3.png
+					
+   For example: ::
+
+	  anim_node ORTS_HHand_Clock01 (				
+		  controllers ( 1			
+			  tcb_rot ( 5		
+				  slerp_rot ( 0  0     0 0 -1 )	
+				  slerp_rot ( 1 -0.707 0 0 -0.707 )	
+				  slerp_rot ( 2 -1     0 0  0 )	
+				  slerp_rot ( 3 -0.707 0 0  0.707 )	
+				  slerp_rot ( 4  0     0 0  1 )	
+				)	
+			)		
+		)
+
+   Finally, move the clock shape and its textures into the corresponding folders SHAPES and TEXTURES of your route, 
+   such as ROUTES\\<route_name>\\SHAPES\\clocks.s
+
+#. Reference File
+
+   Add a reference to the shape file into the reference file ROUTES\\<route_name>\\<route_name>.ref
+   Make sure that this reference begins with the "Static" keyword.::
+
+    Static (	
+	    Filename    ( "ChurchClock.s" )
+	    Class       ( "Clocks" )
+	    Align       ( None )
+	    Description ( "ChurchClock" )
+    )	
+
+#. Animated Clocks List File
+
+   Create a file ROUTES\\<route_name>\\animated.clocks-or file the file for each shape of clock that Open Rails will animate.
+   The type parameter is always "analog" as "digital" types are not yet supported.::		
+   
+      [
+         {
+            "Name": "Clock01.s",
+            "ClockType": "analog"
+         },
+         {
+            "Name": "ChurchClock.s",
+            "ClockType": "analog"
+         },
+         {
+            "Name": "PlatformClock.s",
+            "ClockType": "analog"
+         }
+      ]
+
+#. World File
+
+   Use a route editor to locate the clocks in the world file. 
+   
+   Note: Do not insert the shapes as animated ones. 
+   Otherwise, if MSTS is used to view the route then the hands of the clock will rotate wildly.
+   In Open Rails they will match the simulation time anyway.
