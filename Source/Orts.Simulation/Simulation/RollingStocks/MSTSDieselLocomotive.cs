@@ -691,20 +691,6 @@ namespace Orts.Simulation.RollingStocks
             }
         }
 
-        public override void SignalEvent(PowerSupplyEvent evt)
-        {
-            LocomotivePowerSupply.HandleEvent(evt);
-
-            base.SignalEvent(evt);
-        }
-
-        public override void SignalEvent(PowerSupplyEvent evt, int id)
-        {
-            LocomotivePowerSupply.HandleEvent(evt, id);
-
-            base.SignalEvent(evt, id);
-        }
-
         public override void ChangeGearUp()
         {
             if (DieselEngines[0].GearBox != null)

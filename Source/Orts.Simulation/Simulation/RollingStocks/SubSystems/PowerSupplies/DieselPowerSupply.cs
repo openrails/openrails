@@ -202,7 +202,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         SetCurrentMainPowerSupplyState(PowerSupplyState.PowerOff);
                     }
                     SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
-                    SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
                     break;
 
                 case DieselEngineState.Running:
@@ -245,8 +244,21 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                         AuxPowerOnTimer.Start();
 
                     SetCurrentAuxiliaryPowerSupplyState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
-                    SetCurrentElectricTrainSupplyState(ElectricTrainSupplySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
                     break;
+            }
+
+            if (ElectricTrainSupplyUnfitted())
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
+            }
+            else if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn
+                    && ElectricTrainSupplySwitchOn())
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
+            }
+            else
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
             }
 
             UpdateSounds();

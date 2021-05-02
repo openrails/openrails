@@ -194,8 +194,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                     SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                     SetPantographVoltageV(PantographFilter.Filter(0.0f, elapsedClockSeconds));
                     SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
-
-                    SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
                     break;
 
                 case PantographState.Up:
@@ -223,7 +221,6 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             }
                             SetCurrentAuxiliaryPowerSupplyState(PowerSupplyState.PowerOff);
                             SetFilterVoltageV(VoltageFilter.Filter(0.0f, elapsedClockSeconds));
-                            SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
                             break;
 
                         case CircuitBreakerState.Closed:
@@ -242,10 +239,23 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
                             }
                             SetCurrentAuxiliaryPowerSupplyState(AuxPowerOnTimer.Triggered ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
                             SetFilterVoltageV(VoltageFilter.Filter(PantographVoltageV(), elapsedClockSeconds));
-                            SetCurrentElectricTrainSupplyState(ElectricTrainSupplySwitchOn() ? PowerSupplyState.PowerOn : PowerSupplyState.PowerOff);
                             break;
                     }
                     break;
+            }
+
+            if (ElectricTrainSupplyUnfitted())
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.Unavailable);
+            }
+            else if (CurrentAuxiliaryPowerSupplyState() == PowerSupplyState.PowerOn
+                    && ElectricTrainSupplySwitchOn())
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOn);
+            }
+            else
+            {
+                SetCurrentElectricTrainSupplyState(PowerSupplyState.PowerOff);
             }
         }
 
