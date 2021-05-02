@@ -252,7 +252,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class CircuitBreakerClosingOrderCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public CircuitBreakerClosingOrderCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -275,7 +275,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class CircuitBreakerClosingOrderButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public CircuitBreakerClosingOrderButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -298,7 +298,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class CircuitBreakerOpeningOrderButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public CircuitBreakerOpeningOrderButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -321,7 +321,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class CircuitBreakerClosingAuthorizationCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public CircuitBreakerClosingAuthorizationCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -344,7 +344,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TractionCutOffRelayClosingOrderCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public TractionCutOffRelayClosingOrderCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -367,7 +367,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TractionCutOffRelayClosingOrderButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public TractionCutOffRelayClosingOrderButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -390,7 +390,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TractionCutOffRelayOpeningOrderButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public TractionCutOffRelayOpeningOrderButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -413,7 +413,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class TractionCutOffRelayClosingAuthorizationCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public TractionCutOffRelayClosingAuthorizationCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -436,7 +436,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ServiceRetentionButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public ServiceRetentionButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -459,7 +459,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ServiceRetentionCancellationButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public ServiceRetentionCancellationButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -1183,7 +1183,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class BatterySwitchCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public BatterySwitchCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -1205,7 +1205,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class BatterySwitchCloseButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public BatterySwitchCloseButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -1227,7 +1227,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class BatterySwitchOpenButtonCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public BatterySwitchOpenButtonCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -1249,7 +1249,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ToggleMasterKeyCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public ToggleMasterKeyCommand(CommandLog log, bool toState)
             : base(log, toState)
@@ -1271,7 +1271,7 @@ namespace Orts.Common
     [Serializable()]
     public sealed class ElectricTrainSupplyCommand : BooleanCommand
     {
-        public static ScriptedLocomotivePowerSupply Receiver { get; set; }
+        public static ILocomotivePowerSupply Receiver { get; set; }
 
         public ElectricTrainSupplyCommand(CommandLog log, bool toState)
             : base(log, toState)

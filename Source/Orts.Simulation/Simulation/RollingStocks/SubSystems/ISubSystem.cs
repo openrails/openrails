@@ -15,11 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with Open Rails.  If not, see <http://www.gnu.org/licenses/>.
 
+using Orts.Parsers.Msts;
 using System.IO;
 
 namespace Orts.Simulation.RollingStocks.SubSystems
 {
-    public interface ISubSystem<T>
+    public interface ISubSystem<T> where T : ISubSystem<T>
     {
         void Copy(T other);
         void Initialize();
@@ -27,5 +28,10 @@ namespace Orts.Simulation.RollingStocks.SubSystems
         void Save(BinaryWriter outf);
         void Restore(BinaryReader inf);
         void Update(float elapsedClockSeconds);
+    }
+
+    public interface IParsable
+    {
+        void Parse(string lowercasetoken, STFReader stf);
     }
 }

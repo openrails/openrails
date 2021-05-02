@@ -28,6 +28,7 @@ using Orts.Simulation.RollingStocks.SubSystems.Brakes.MSTS;
 using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 using Orts.Viewer3D.Processes;
 using ORTS.Common;
+using ORTS.Scripting.Api;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -652,22 +653,42 @@ namespace Orts.Viewer3D.Popups
             {
                 IPowerSupply powerSupply = car.PowerSupply;
                 ILocomotivePowerSupply locomotivePowerSupply = powerSupply as ILocomotivePowerSupply;
-                IPassengerCarPowerSupply passengerCarPowerSupply = powerSupply as IPassengerCarPowerSupply;
 
                 string pantographState = string.Empty;
                 string dieselEngineState = string.Empty;
                 string circuitBreakerState = string.Empty;
                 string tractionCutOffRelayState = string.Empty;
+                string mainPowerSupplyState = string.Empty;
+                string auxiliaryPowerSupplyState = string.Empty;
+                string electricTrainSupplyState = string.Empty;
+                string electricTrainSupplyCableState = string.Empty;
+                string electricTrainSupplyPower = string.Empty;
 
                 if (powerSupply is ScriptedElectricPowerSupply electricPowerSupply)
                 {
                     pantographState = Viewer.Catalog.GetParticularString("Pantograph", GetStringAttribute.GetPrettyName((car as MSTSWagon).Pantographs.State));
                     circuitBreakerState = Viewer.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(electricPowerSupply.CircuitBreaker.State));
+                    mainPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState));
+                    auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
+                    if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
                 }
                 else if (powerSupply is ScriptedDieselPowerSupply dieselPowerSupply)
                 {
                     dieselEngineState = Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName((car as MSTSDieselLocomotive).DieselEngines.State));
                     tractionCutOffRelayState = Viewer.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(dieselPowerSupply.TractionCutOffRelay.State));
+                    mainPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState));
+                    auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
+                    if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
                 }
                 else if (powerSupply is ScriptedDualModePowerSupply dualModePowerSupply)
                 {
@@ -675,7 +696,25 @@ namespace Orts.Viewer3D.Popups
                     // TODO with DualModeLocomotive : dieselEngineState = Viewer.Catalog.GetParticularString("Engine", GetStringAttribute.GetPrettyName((car as MSTSDualModeLocomotive).DieselEngines.State));
                     circuitBreakerState = Viewer.Catalog.GetParticularString("CircuitBreaker", GetStringAttribute.GetPrettyName(dualModePowerSupply.CircuitBreaker.State));
                     tractionCutOffRelayState = Viewer.Catalog.GetParticularString("TractionCutOffRelay", GetStringAttribute.GetPrettyName(dualModePowerSupply.TractionCutOffRelay.State));
+                    mainPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState));
+                    auxiliaryPowerSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState));
+                    if (locomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
                 }
+                else if (powerSupply is IPassengerCarPowerSupply passengerCarPowerSupply)
+                {
+                    if (passengerCarPowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable)
+                    {
+                        electricTrainSupplyState = Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState));
+                        electricTrainSupplyCableState = car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected");
+                        electricTrainSupplyPower = FormatStrings.FormatPower(passengerCarPowerSupply.ElectricTrainSupplyPowerW, true, false, false);
+                    }
+                }
+                // If power supply is steam power supply, do nothing.
 
                 TableAddLine(table);
                 TableSetCells(table, 0,
@@ -685,14 +724,14 @@ namespace Orts.Viewer3D.Popups
                     dieselEngineState,
                     circuitBreakerState,
                     tractionCutOffRelayState,
-                    locomotivePowerSupply != null ? Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.MainPowerSupplyState)) : string.Empty,
-                    locomotivePowerSupply != null ? Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.AuxiliaryPowerSupplyState)) : string.Empty,
+                    mainPowerSupplyState,
+                    auxiliaryPowerSupplyState,
                     Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.BatteryState)),
                     Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.LowVoltagePowerSupplyState)),
                     locomotivePowerSupply != null ? Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(locomotivePowerSupply.CabPowerSupplyState)) : string.Empty,
-                    Viewer.Catalog.GetParticularString("PowerSupply", GetStringAttribute.GetPrettyName(car.PowerSupply.ElectricTrainSupplyState)),
-                    car.PowerSupply.FrontElectricTrainSupplyCableConnected ? Viewer.Catalog.GetString("connected") : Viewer.Catalog.GetString("disconnected"),
-                    locomotivePowerSupply != null ? FormatStrings.FormatPower(locomotivePowerSupply.ElectricTrainSupplyPowerW, true, false, false) : (passengerCarPowerSupply != null ? FormatStrings.FormatPower(passengerCarPowerSupply.ElectricTrainSupplyPowerW, true, false, false) : string.Empty)
+                    electricTrainSupplyState,
+                    electricTrainSupplyCableState,
+                    electricTrainSupplyPower
                     );
             }
         }
