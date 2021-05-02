@@ -109,6 +109,14 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
             }
         }
 
+        public void Copy(IPowerSupply other)
+        {
+            if (other is ScriptedPassengerCarPowerSupply scriptedOther)
+            {
+                Copy(scriptedOther);
+            }
+        }
+
         public void Copy(ScriptedPassengerCarPowerSupply other)
         {
             BatterySwitch.Copy(other.BatterySwitch);
@@ -193,7 +201,7 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
                 // Connect the power supply cable if the previous car is a locomotive or another passenger car
                 if (previousCar != null
-                    && (previousCar is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply.ElectricTrainSupplySwitch.Mode != ElectricTrainSupplySwitch.ModeType.Unfitted
+                    && (previousCar is MSTSLocomotive locomotive && locomotive.LocomotivePowerSupply.ElectricTrainSupplyState != PowerSupplyState.Unavailable
                         || previousCar.WagonSpecialType == TrainCar.WagonSpecialTypes.PowerVan
                         || previousCar.WagonType == TrainCar.WagonTypes.Passenger && previousCar.PowerSupply is ScriptedPassengerCarPowerSupply)
                     )
