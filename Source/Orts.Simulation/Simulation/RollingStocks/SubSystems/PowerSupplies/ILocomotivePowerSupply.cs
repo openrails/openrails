@@ -21,6 +21,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 {
     public interface ILocomotivePowerSupply : IPowerSupply
     {
+        PowerSupplyType Type { get; }
+
         MasterKey MasterKey { get; }
         ElectricTrainSupplySwitch ElectricTrainSupplySwitch { get; }
 
@@ -32,5 +34,8 @@ namespace Orts.Simulation.RollingStocks.SubSystems.PowerSupplies
 
         PowerSupplyState CabPowerSupplyState { get; }
         bool CabPowerSupplyOn { get; }
+
+        bool ServiceRetentionButton { get; }
+        bool ServiceRetentionCancellationButton { get; }
     }
 }

@@ -416,7 +416,7 @@ namespace Orts.Simulation.RollingStocks
         public float DynamicBrakeIntervention = -1;
         protected float PreviousDynamicBrakeIntervention = -1;
 
-        public ScriptedLocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ScriptedLocomotivePowerSupply;
+        public ILocomotivePowerSupply LocomotivePowerSupply => PowerSupply as ILocomotivePowerSupply;
         public ScriptedTrainControlSystem TrainControlSystem;
 
         public Axle LocomotiveAxle;
@@ -3829,6 +3829,20 @@ namespace Orts.Simulation.RollingStocks
             return string.Format("{0}", DynamicBrakeController.GetStatus());
         }
         #endregion
+
+        public override void SignalEvent(PowerSupplyEvent evt)
+        {
+            LocomotivePowerSupply.HandleEvent(evt);
+
+            base.SignalEvent(evt);
+        }
+
+        public override void SignalEvent(PowerSupplyEvent evt, int id)
+        {
+            LocomotivePowerSupply.HandleEvent(evt, id);
+
+            base.SignalEvent(evt, id);
+        }
 
         public virtual void SetPower(bool toState)
         {

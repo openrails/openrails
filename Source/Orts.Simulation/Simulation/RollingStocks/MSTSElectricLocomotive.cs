@@ -220,20 +220,6 @@ namespace Orts.Simulation.RollingStocks
                 Variable3 = 0;
         }
 
-        public override void SignalEvent(PowerSupplyEvent evt)
-        {
-            LocomotivePowerSupply.HandleEvent(evt);
-
-            base.SignalEvent(evt);
-        }
-
-        public override void SignalEvent(PowerSupplyEvent evt, int id)
-        {
-            LocomotivePowerSupply.HandleEvent(evt, id);
-
-            base.SignalEvent(evt, id);
-        }
-
         public override float GetDataOf(CabViewControl cvc)
         {
             float data = 0;
