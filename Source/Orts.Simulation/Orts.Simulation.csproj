@@ -126,6 +126,7 @@
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\IPassengerCarPowerSupply.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\IPowerSupply.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\PassengerCarPowerSupply.cs" />
+    <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\SteamPowerSupply.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\TractionCutOffRelay.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\DieselPowerSupply.cs" />
     <Compile Include="Simulation\RollingStocks\SubSystems\PowerSupplies\MasterKey.cs" />
