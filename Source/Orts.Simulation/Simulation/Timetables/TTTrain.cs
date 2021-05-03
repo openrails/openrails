@@ -3030,6 +3030,7 @@ namespace Orts.Simulation.Timetables
                     {
                         MSTSLocomotive loco = car as MSTSLocomotive;
                         loco.SetPower(true);
+                        loco.AuxPowerOn = true;
                     }
                 }
                 PowerState = true;
@@ -3078,6 +3079,7 @@ namespace Orts.Simulation.Timetables
                         {
                             MSTSLocomotive loco = car as MSTSLocomotive;
                             loco.SetPower(true);
+                            loco.AuxPowerOn = true;
                         }
                     }
                     PowerState = true;
@@ -6476,6 +6478,7 @@ namespace Orts.Simulation.Timetables
                 {
                     MSTSLocomotive loco = tcar as MSTSLocomotive;
                     loco.SetPower(true);
+                    loco.AuxPowerOn = true;
                     loco.AntiSlip = leadLocoAntiSlip;
                 }
             }

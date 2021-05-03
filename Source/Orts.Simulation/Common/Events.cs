@@ -27,10 +27,8 @@ namespace Orts.Common
     public enum Event
     {
         None,
-        BatterySwitchOff,
-        BatterySwitchOn,
-        BatterySwitchCommandOff,
-        BatterySwitchCommandOn,
+        BatteryOff,
+        BatteryOn,
         BellOff,
         BellOn,
         BlowerChange,
@@ -66,10 +64,6 @@ namespace Orts.Common
         DynamicBrakeChange,
         DynamicBrakeIncrease, // NOTE: Currently not used in Open Rails.
         DynamicBrakeOff,
-        ElectricTrainSupplyOff,
-        ElectricTrainSupplyOn,
-        ElectricTrainSupplyCommandOff,
-        ElectricTrainSupplyCommandOn,
         EngineBrakeChange,
         EngineBrakePressureDecrease,
         EngineBrakePressureIncrease,
@@ -95,8 +89,6 @@ namespace Orts.Common
         HornOff,
         HornOn,
         LightSwitchToggle,
-        MasterKeyOff,
-        MasterKeyOn,
         MirrorClose, 
         MirrorOpen, 
         Pantograph1Down,
@@ -119,10 +111,6 @@ namespace Orts.Common
         SanderOff,
         SanderOn,
         SemaphoreArm,
-        ServiceRetentionButtonOff,
-        ServiceRetentionButtonOn,
-        ServiceRetentionCancellationButtonOff,
-        ServiceRetentionCancellationButtonOn,
         LargeEjectorChange,
         SmallEjectorChange,
         WaterInjector1Off,
@@ -151,15 +139,6 @@ namespace Orts.Common
         SteamSafetyValveOn,
         TakeScreenshot,
         ThrottleChange,
-        TractionCutOffRelayOpen,
-        TractionCutOffRelayClosing,
-        TractionCutOffRelayClosed,
-        TractionCutOffRelayClosingOrderOff,
-        TractionCutOffRelayClosingOrderOn,
-        TractionCutOffRelayOpeningOrderOff,
-        TractionCutOffRelayOpeningOrderOn,
-        TractionCutOffRelayClosingAuthorizationOff,
-        TractionCutOffRelayClosingAuthorizationOn,
         TrainBrakeChange,
         TrainBrakePressureDecrease,
         TrainBrakePressureIncrease,
@@ -231,15 +210,6 @@ namespace Orts.Common
         SmallEjectorOn,
         SmallEjectorOff,
 
-        PowerConverterOff,
-        PowerConverterOn,
-        VentilationOff,
-        VentilationLow,
-        VentilationHigh,
-        HeatingOff,
-        HeatingOn,
-        AirConditioningOff,
-        AirConditioningOn,
     }
 
     public static class Events
@@ -434,6 +404,12 @@ namespace Orts.Common
                         case 175: return Event.BoilerBlowdownOn;
                         case 176: return Event.BoilerBlowdownOff;
 
+                        case 177: return Event.BatteryOn;
+                        case 178: return Event.BatteryOff;
+
+                        case 179: return Event.PowerKeyOn;
+                        case 180: return Event.PowerKeyOff;
+
                         case 181: return Event.GenericEvent1;
                         case 182: return Event.GenericEvent2;
                         case 183: return Event.GenericEvent3;
@@ -442,19 +418,8 @@ namespace Orts.Common
                         case 186: return Event.GenericEvent6;
                         case 187: return Event.GenericEvent7;
                         case 188: return Event.GenericEvent8;
+                        //
 
-                        case 189: return Event.BatterySwitchOn;
-                        case 190: return Event.BatterySwitchOff;
-                        case 191: return Event.BatterySwitchCommandOn;
-                        case 192: return Event.BatterySwitchCommandOff;
-
-                        case 193: return Event.MasterKeyOn;
-                        case 194: return Event.MasterKeyOff;
-
-                        case 195: return Event.ServiceRetentionButtonOn;
-                        case 196: return Event.ServiceRetentionButtonOff;
-                        case 197: return Event.ServiceRetentionCancellationButtonOn;
-                        case 198: return Event.ServiceRetentionCancellationButtonOff;
 
                         case 200: return Event.GearPosition0;
                         case 201: return Event.GearPosition1;
@@ -470,31 +435,6 @@ namespace Orts.Common
                         case 211: return Event.LargeEjectorOff;
                         case 212: return Event.SmallEjectorOn;
                         case 213: return Event.SmallEjectorOff;
-
-                        case 214: return Event.TractionCutOffRelayOpen;
-                        case 215: return Event.TractionCutOffRelayClosing;
-                        case 216: return Event.TractionCutOffRelayClosed;
-                        case 217: return Event.TractionCutOffRelayClosingOrderOn;
-                        case 218: return Event.TractionCutOffRelayClosingOrderOff;
-                        case 219: return Event.TractionCutOffRelayOpeningOrderOn;
-                        case 220: return Event.TractionCutOffRelayOpeningOrderOff;
-                        case 221: return Event.TractionCutOffRelayClosingAuthorizationOn;
-                        case 222: return Event.TractionCutOffRelayClosingAuthorizationOff;
-
-                        case 223: return Event.ElectricTrainSupplyOn;
-                        case 224: return Event.ElectricTrainSupplyOff;
-                        case 225: return Event.ElectricTrainSupplyCommandOn;
-                        case 226: return Event.ElectricTrainSupplyCommandOff;
-
-                        case 227: return Event.PowerConverterOn;
-                        case 228: return Event.PowerConverterOff;
-                        case 229: return Event.VentilationHigh;
-                        case 230: return Event.VentilationLow;
-                        case 231: return Event.VentilationOff;
-                        case 232: return Event.HeatingOn;
-                        case 233: return Event.HeatingOff;
-                        case 234: return Event.AirConditioningOn;
-                        case 235: return Event.AirConditioningOff;
 
                         default: return 0;
                     }

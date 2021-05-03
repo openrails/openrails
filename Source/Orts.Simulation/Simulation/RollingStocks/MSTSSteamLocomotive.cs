@@ -76,7 +76,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Event = Orts.Common.Event;
-using Orts.Simulation.RollingStocks.SubSystems.PowerSupplies;
 
 namespace Orts.Simulation.RollingStocks
 {
@@ -729,8 +728,6 @@ namespace Orts.Simulation.RollingStocks
         public MSTSSteamLocomotive(Simulator simulator, string wagFile)
             : base(simulator, wagFile)
         {
-            PowerSupply = new SteamPowerSupply(this);
-
             RefillTenderWithCoal();
             RefillTenderWithWater();
         }
@@ -863,14 +860,6 @@ namespace Orts.Simulation.RollingStocks
                     string typeString2 = stf.ReadString();
                     IsFixGeared = String.Compare(typeString2, "Fixed") == 0;
                     IsSelectGeared = String.Compare(typeString2, "Select") == 0;
-                    break;
-
-                case "engine(ortsbattery(mode":
-                case "engine(ortsbattery(delay":
-                case "engine(ortsmasterkey(mode":
-                case "engine(ortsmasterkey(delayoff":
-                case "engine(ortsmasterkey(headlightcontrol":
-                    LocomotivePowerSupply.Parse(lowercasetoken, stf);
                     break;
 
                 default: base.Parse(lowercasetoken, stf); break;
@@ -1900,6 +1889,8 @@ namespace Orts.Simulation.RollingStocks
 
             ApplyBoilerPressure();
 
+            AuxPowerOn = true;
+
             if (Simulator.Settings.DataLogSteamPerformance)
             {
                 Trace.TraceInformation("============================================= Steam Locomotive Performance - Locomotive Details =========================================================");
@@ -1964,6 +1955,7 @@ namespace Orts.Simulation.RollingStocks
         /// </summary>
         public override void Update(float elapsedClockSeconds)
         {
+            PowerOn = true;
             base.Update(elapsedClockSeconds);
             UpdateFX(elapsedClockSeconds);
 
@@ -6239,11 +6231,11 @@ namespace Orts.Simulation.RollingStocks
                    Simulator.Catalog.GetString("Press"),
                    FormatStrings.FormatPressure(Train.LastCar.CarSteamHeatMainPipeSteamPressurePSI, PressureUnit.PSI, MainPressureUnit, true),
                    Simulator.Catalog.GetString("Temp"),
-                   FormatStrings.FormatTemperature(Train.LastCar.CarInsideTempC, IsMetric, false),
+                   FormatStrings.FormatTemperature(Train.LastCar.CarCurrentCarriageHeatTempC, IsMetric, false),
                    Simulator.Catalog.GetString("OutTemp"),
-                   FormatStrings.FormatTemperature(CarOutsideTempC, IsMetric, false),
+                   FormatStrings.FormatTemperature(Train.TrainOutsideTempC, IsMetric, false),
                    Simulator.Catalog.GetString("NetHt"),
-                   Train.LastCar.CarNetHeatFlowRateW);
+                   Train.LastCar.DisplayTrainNetSteamHeatLossWpTime);
             }
 
             status.AppendFormat("\n\t\t === {0} === \n", Simulator.Catalog.GetString("Fireman"));
