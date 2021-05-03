@@ -15,8 +15,10 @@
      <div class="col-md-3"></div>
 			<div class="col-md-6">
 <h2>License</h2>
-The GNU Public License allows a user to use Open Rails in any way, except that you may not distribute software containing part of Open Rails without respecting
+<p>
+<a href="http://www.gnu.org/licenses/licenses.html" title="The Free Software Foundation's license">The GNU Public License</a> allows a user to use Open Rails in any way, except that you may not distribute software containing part of Open Rails without respecting
 the license terms.
+</p>
 
 <h2>Liability</h2>
 <p>
@@ -25,7 +27,7 @@ the license terms.
 
 <h2>Code Submissions</h2>
 <p>
-Code contributions to our repository must be in Microsoft's C# language.
+<a href="https://github.com/openrails/openrails/blob/master/Docs/Contributing.md" title="Guidelines for contributors">Code contributions to our repository</a> must be in Microsoft's C# language.
 An authorised developer may not change content in the official version of Open Rails without approval from another authorised developer.
 </p>
 
