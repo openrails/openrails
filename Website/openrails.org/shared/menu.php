@@ -70,6 +70,7 @@ function in_directory($cwd, $name) {
                 <li><a href="/contribute/reporting-bugs/">Reporting Bugs</a></li>
                 <li><a href="/contribute/building-models/">Building Models</a></li>
                 <li><a href="/contribute/developing-code/">Developing Code</a></li>
+                <li><a href="/contribute/team-policies/">Team Policies</a></li>
                 <li><a href="/contribute/joining-the-team/">Joining the Team</a></li>
                 <li><a href="/contribute/credits/">Credits</a></li>
               </ul>
