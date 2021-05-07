@@ -23,14 +23,15 @@ using Orts.Parsers.Msts;
 using Orts.Simulation.RollingStocks;
 using ORTS.Common;
 using ORTS.Common.Input;
-using PIEHidDotNet;
+
+using RailDriver;
 
 namespace Orts.Viewer3D
 {
     /// <summary>
     /// Class to get data from RailDriver and translate it into something useful for UserInput
     /// </summary>
-    public class UserInputRailDriver : PIEDataHandler, PIEErrorHandler
+    public class UserInputRailDriver : IDataHandler, IErrorHandler
     {
         PIEDevice Device;                   // Our RailDriver
         byte[] WriteBuffer;                 // Buffer for sending data to RailDriver
@@ -69,7 +70,7 @@ namespace Orts.Viewer3D
         {
             try
             {
-                PIEDevice[] devices = PIEHidDotNet.PIEDevice.EnumeratePIE();
+                PIEDevice[] devices = PIEDevice.EnumeratePIE();
                 for (int i = 0; i < devices.Length; i++)
                 {
                     if (devices[i].HidUsagePage == 0xc && devices[i].Pid == 210)
@@ -77,7 +78,7 @@ namespace Orts.Viewer3D
                         Device = devices[i];
                         Device.SetupInterface();
                         Device.SetErrorCallback(this);
-                        Device.SetDataCallback(this, DataCallbackFilterType.callOnChangedData);
+                        Device.SetDataCallback(this);
                         WriteBuffer = new byte[Device.WriteLength];
                         State = new RailDriverState();
                         SetLEDs(0x40, 0x40, 0x40);
@@ -98,7 +99,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="data"></param>
         /// <param name="sourceDevice"></param>
-        public void HandlePIEHidData(Byte[] data, PIEDevice sourceDevice)
+        public void HandleHidData(byte[] data, PIEDevice sourceDevice, int error)
         {
             if (sourceDevice != Device)
                 return;
@@ -157,7 +158,7 @@ namespace Orts.Viewer3D
         /// </summary>
         /// <param name="error"></param>
         /// <param name="sourceDevice"></param>
-        public void HandlePIEHidError(Int32 error, PIEDevice sourceDevice)
+        public void HandleHidError(PIEDevice sourceDevice, int error)
         {
             Trace.TraceWarning("RailDriver Error: {0}", error);
         }
