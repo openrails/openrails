@@ -42,6 +42,11 @@ namespace Orts.Simulation
     {
         public float Span; // horizontal or vertical
         public List<float> Offsets = new List<float>();
+        private bool VerticalTransfer = false;
+        public float CenterOffsetComponent
+        {
+            get => VerticalTransfer ? CenterOffset.Y : CenterOffset.X;
+        }
         // Dynamic data
         public bool Forward; // forward motion on
         public bool Reverse; // reverse motion on
@@ -53,52 +58,32 @@ namespace Orts.Simulation
 
         public Signals signalRef { get; protected set; }
 
-        public virtual float CenterOffsetComponent { get => CenterOffset.X; }
-
-        protected Transfertable(STFReader stf, Simulator simulator) : base(stf, simulator) { }
-
-        /// <summary>
-        /// Create a transfer table from an STF definition block.
-        /// </summary>
-        public static Transfertable CreateFrom(STFReader stf, Simulator simulator)
+        public Transfertable(STFReader stf, Simulator simulator): base(stf, simulator)
         {
-            var worldPosition = new WorldPosition();
-            worldPosition.XNAMatrix.M44 = 100000000; //WorlPosition not yet defined, will be loaded when loading related tile
-            var wFile = "";
-            var uid = -1;
-            var animations = new List<string>();
-            var isVertical = false;
-            var length = 0f;
-            var centerOffset = new Vector3();
-            var trackShapeIndex = -1;
-
+            signalRef = Simulator.Signals;
+            string animation;
+            WorldPosition.XNAMatrix.M44 = 100000000; //WorlPosition not yet defined, will be loaded when loading related tile
             stf.MustMatch("(");
               stf.ParseBlock(new[] {
                 new STFReader.TokenProcessor("wfile", ()=>{
-                    wFile = stf.ReadStringBlock(null);
-                    worldPosition.TileX = int.Parse(wFile.Substring(1, 7));
-                    worldPosition.TileZ = int.Parse(wFile.Substring(8, 7));                
+                    WFile = stf.ReadStringBlock(null);
+                    WorldPosition.TileX = int.Parse(WFile.Substring(1, 7));
+                    WorldPosition.TileZ = int.Parse(WFile.Substring(8, 7));                
                 }),
-                new STFReader.TokenProcessor("uid", ()=>{ uid = stf.ReadIntBlock(null); }),
-                new STFReader.TokenProcessor("animation", ()=>{ var animation = stf.ReadStringBlock(null);
-                                                                animations.Add(animation.ToLower());}),
-                new STFReader.TokenProcessor("verticaltransfer", ()=>{ isVertical = stf.ReadBoolBlock(isVertical);}),
-                new STFReader.TokenProcessor("length", ()=>{ length = stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
-                new STFReader.TokenProcessor("xoffset", ()=>{ centerOffset.X = stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
-                new STFReader.TokenProcessor("zoffset", ()=>{ centerOffset.Z = -stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
-                new STFReader.TokenProcessor("yoffset", ()=>{ centerOffset.Y = stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
-                new STFReader.TokenProcessor("trackshapeindex", ()=> { trackShapeIndex = stf.ReadIntBlock(null); }),
+                new STFReader.TokenProcessor("uid", ()=>{ UID = stf.ReadIntBlock(-1); }),
+                new STFReader.TokenProcessor("animation", ()=>{ animation = stf.ReadStringBlock(null);
+                                                                Animations.Add(animation.ToLower());}),
+                new STFReader.TokenProcessor("verticaltransfer", ()=>{ VerticalTransfer = stf.ReadBoolBlock(false);}),
+                new STFReader.TokenProcessor("length", ()=>{ Length = stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
+                new STFReader.TokenProcessor("xoffset", ()=>{ CenterOffset.X = stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
+                new STFReader.TokenProcessor("zoffset", ()=>{ CenterOffset.Z = -stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
+                new STFReader.TokenProcessor("yoffset", ()=>{ CenterOffset.Y = stf.ReadFloatBlock(STFReader.UNITS.None , null);}),
+                new STFReader.TokenProcessor("trackshapeindex", ()=>
+                {
+                    TrackShapeIndex = stf.ReadIntBlock(-1);
+                    InitializeOffsetsAndTrackNodes();
+                }),
              });
-
-            var table = isVertical ? new VerticalTransfertable(null, simulator) : new Transfertable(null, simulator);
-            table.signalRef = table.Simulator.Signals;
-            table.WorldPosition = worldPosition;
-            table.UID = uid;
-            table.Animations.AddRange(animations);
-            table.CenterOffset = centerOffset;
-            table.TrackShapeIndex = trackShapeIndex;
-            table.InitializeOffsetsAndTrackNodes();
-            return table;
         }
 
         /// <summary>
@@ -134,7 +119,7 @@ namespace Orts.Simulation
             TargetOffset = inf.ReadSingle();
         }
 
-        protected virtual void InitializeOffsetsAndTrackNodes()
+        protected void InitializeOffsetsAndTrackNodes()
         {
             var trackShape = Simulator.TSectionDat.TrackShapes.Get((uint)TrackShapeIndex);
             var nSections = trackShape.SectionIdxs[0].NoSections;
@@ -144,7 +129,7 @@ namespace Orts.Simulation
             var iMyTrackNodes = 0;
             foreach (var sectionIdx in trackShape.SectionIdxs)
             {
-                Offsets.Add((float)sectionIdx.X);
+                Offsets.Add(VerticalTransfer ? (float)sectionIdx.Y : (float)sectionIdx.X);
                 MyTrackNodesIndex[iMyTrackNodes] = -1;
                 MyTrVectorSectionsIndex[iMyTrackNodes] = -1;
                 iMyTrackNodes++;
@@ -170,9 +155,16 @@ namespace Orts.Simulation
                     }
                 }
             }
-            OffsetPos = CenterOffset.X;
-            // Compute width of transfer table
-            Span = (float)(trackShape.SectionIdxs[trackShape.SectionIdxs.Length - 1].X - trackShape.SectionIdxs[0].X);
+            if (VerticalTransfer)
+            {
+                OffsetPos = CenterOffset.Y;
+                Span = (float)(trackShape.SectionIdxs[trackShape.SectionIdxs.Length - 1].Y - trackShape.SectionIdxs[0].Y);
+            }
+            else
+            {
+                OffsetPos = CenterOffset.X;
+                Span = (float)(trackShape.SectionIdxs[trackShape.SectionIdxs.Length - 1].X - trackShape.SectionIdxs[0].X);
+            }
         }
 
         /// <summary>
@@ -311,10 +303,13 @@ namespace Orts.Simulation
              Continuous = true;
         }
 
-        public virtual void ComputeCenter(WorldPosition worldPosition)
+        public void ComputeCenter(WorldPosition worldPosition)
         {
             Vector3 movingCenterOffset = CenterOffset;
-            movingCenterOffset.X = OffsetPos;
+            if (VerticalTransfer)
+                movingCenterOffset.Y = OffsetPos;
+            else
+                movingCenterOffset.X = OffsetPos;
             Vector3 originCoordinates;
             Vector3.Transform(ref movingCenterOffset, ref worldPosition.XNAMatrix, out originCoordinates);
             WorldPosition = new WorldPosition(worldPosition);
@@ -440,69 +435,6 @@ namespace Orts.Simulation
                 ComputeCenter(worldPosition);
                 TargetExactlyReached();
             }
-        }
-    }
-
-    /// <summary>
-    /// A transfer table that moves vertically.
-    /// </summary>
-    public class VerticalTransfertable : Transfertable
-    {
-        public override float CenterOffsetComponent { get => CenterOffset.Y; }
-
-        internal VerticalTransfertable(STFReader stf, Simulator simulator) : base(stf, simulator) { }
-
-        protected override void InitializeOffsetsAndTrackNodes()
-        {
-            var trackShape = Simulator.TSectionDat.TrackShapes.Get((uint)TrackShapeIndex);
-            var nSections = trackShape.SectionIdxs[0].NoSections;
-            MyTrackNodesIndex = new int[trackShape.SectionIdxs.Length];
-            MyTrackNodesOrientation = new bool[MyTrackNodesIndex.Length];
-            MyTrVectorSectionsIndex = new int[MyTrackNodesIndex.Length];
-            var iMyTrackNodes = 0;
-            foreach (var sectionIdx in trackShape.SectionIdxs)
-            {
-                Offsets.Add((float)sectionIdx.Y);
-                MyTrackNodesIndex[iMyTrackNodes] = -1;
-                MyTrVectorSectionsIndex[iMyTrackNodes] = -1;
-                iMyTrackNodes++;
-            }
-            var trackNodes = Simulator.TDB.TrackDB.TrackNodes;
-            int iTrackNode = 0;
-            for (iTrackNode = 1; iTrackNode < trackNodes.Length; iTrackNode++)
-            {
-                if (trackNodes[iTrackNode].TrVectorNode != null && trackNodes[iTrackNode].TrVectorNode.TrVectorSections != null)
-                {
-                    var iTrVectorSection = Array.FindIndex(trackNodes[iTrackNode].TrVectorNode.TrVectorSections, trVectorSection =>
-                        (trVectorSection.WFNameX == WorldPosition.TileX && trVectorSection.WFNameZ == WorldPosition.TileZ && trVectorSection.WorldFileUiD == UID));
-                    if (iTrVectorSection >= 0)
-                    {
-                        if (trackNodes[iTrackNode].TrVectorNode.TrVectorSections.Length > (int)nSections)
-                        {
-                            iMyTrackNodes = trackNodes[iTrackNode].TrVectorNode.TrVectorSections[iTrVectorSection].Flag1 / 2;
-                            MyTrackNodesIndex[iMyTrackNodes] = iTrackNode;
-                            MyTrVectorSectionsIndex[iMyTrackNodes] = iTrVectorSection;
-                            MyTrackNodesOrientation[iMyTrackNodes] = trackNodes[iTrackNode].TrVectorNode.TrVectorSections[iTrVectorSection].Flag1 % 2 == 0 ? true : false;
-
-                        }
-                    }
-                }
-            }
-            OffsetPos = CenterOffset.Y;
-            // Compute height of transfer table
-            Span = (float)(trackShape.SectionIdxs[trackShape.SectionIdxs.Length - 1].Y - trackShape.SectionIdxs[0].Y);
-        }
-
-        public override void ComputeCenter(WorldPosition worldPosition)
-        {
-            Vector3 movingCenterOffset = CenterOffset;
-            movingCenterOffset.Y = OffsetPos;
-            Vector3 originCoordinates;
-            Vector3.Transform(ref movingCenterOffset, ref worldPosition.XNAMatrix, out originCoordinates);
-            WorldPosition = new WorldPosition(worldPosition);
-            WorldPosition.XNAMatrix.M41 = originCoordinates.X;
-            WorldPosition.XNAMatrix.M42 = originCoordinates.Y;
-            WorldPosition.XNAMatrix.M43 = originCoordinates.Z;
         }
     }
 
